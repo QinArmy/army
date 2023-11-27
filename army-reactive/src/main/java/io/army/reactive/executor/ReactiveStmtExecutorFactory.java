@@ -1,13 +1,13 @@
 package io.army.reactive.executor;
 
 import io.army.reactive.ReactiveCloseable;
-import io.army.session.executor.StmtExecutorFactorySpec;
+import io.army.session.executor.StmtExecutorFactory;
 import reactor.core.publisher.Mono;
 
 
 /**
  * <p>This interface representing {@link ReactiveStmtExecutor} factory.
- * <p>This interface extends {@link StmtExecutorFactorySpec} and have overridden following methods:
+ * <p>This interface extends {@link StmtExecutorFactory} and have overridden following methods:
  * <ul>
  *     <li>{@link #metaExecutor()}</li>
  *     <li>{@link #localExecutor(String, boolean)}</li>
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
  *
  * @since 1.0
  */
-public interface ReactiveStmtExecutorFactory extends StmtExecutorFactorySpec, ReactiveCloseable {
+public interface ReactiveStmtExecutorFactory extends StmtExecutorFactory, ReactiveCloseable {
 
 
     @Override

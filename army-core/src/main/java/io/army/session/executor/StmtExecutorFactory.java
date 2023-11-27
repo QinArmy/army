@@ -12,14 +12,14 @@ import io.army.session.OptionSpec;
  * </ul>
  * The sub interface must override following methods :
  * <ul>
- *     <li>{@link #metaExecutor(String)}</li>
- *     <li>{@link #localExecutor(String)}</li>
- *     <li>{@link #rmExecutor(String)}</li>
+ *     <li>{@link #metaExecutor()}</li>
+ *     <li>{@link #localExecutor(String, boolean)}</li>
+ *     <li>{@link #rmExecutor(String, boolean)}</li>
  * </ul>
  *
  * @since 1.0
  */
-public interface StmtExecutorFactorySpec extends CloseableSpec, OptionSpec {
+public interface StmtExecutorFactory extends CloseableSpec, OptionSpec {
 
 
     /**

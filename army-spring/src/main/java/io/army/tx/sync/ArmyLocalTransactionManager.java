@@ -1,14 +1,17 @@
 package io.army.tx.sync;
 
+import io.army.session.HandleMode;
+import io.army.session.Option;
 import io.army.session.SessionException;
-import io.army.sync.LocalTransaction;
+import io.army.session.TransactionOption;
 import io.army.sync.SyncLocalSession;
-import io.army.sync.SyncLocalSessionFactory;
-import io.army.sync.SyncSession;
-import org.springframework.beans.factory.BeanNameAware;
+import io.army.sync.SyncSessionFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
-import org.springframework.transaction.*;
+import org.springframework.transaction.SavepointManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionUsageException;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.SmartTransactionObject;
@@ -18,28 +21,27 @@ import org.springframework.util.Assert;
 /**
  * @since 1.0
  */
-public class ArmyTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean
-        , BeanNameAware {
+public final class ArmyLocalTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean {
 
-    private final SyncLocalSessionFactory sessionFactory;
+    static ArmyLocalTransactionManager create(SyncSessionFactory sessionFactory) {
+        return new ArmyLocalTransactionManager(sessionFactory);
+    }
+
+    private final SyncSessionFactory sessionFactory;
 
     private final boolean supportSavePoints;
 
-    private String beanName;
+    private boolean useReadOnlyTransaction;
 
-    private boolean wrapSession = true;
+    private boolean useTransactionName;
 
 
-    public ArmyTransactionManager(SyncLocalSessionFactory sessionFactory) {
+    private ArmyLocalTransactionManager(SyncSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
         this.supportSavePoints = sessionFactory.isSupportSavePoints();
     }
 
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
 
     @Override
     public void afterPropertiesSet() {
@@ -47,19 +49,31 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         //TransactionDefinitionHolder.registerTransactionManager(this.beanName, this.useSavepointForNestedTransaction());
     }
 
-
-    public final void setWrapSession(boolean wrapSession) {
-        this.wrapSession = wrapSession;
+    public boolean isUseReadOnlyTransaction() {
+        return this.useReadOnlyTransaction;
     }
 
-    public final boolean isWrapSession() {
-        return this.wrapSession;
+    public void setUseReadOnlyTransaction(boolean useReadOnlyTransaction) {
+        this.useReadOnlyTransaction = useReadOnlyTransaction;
+    }
+
+
+    public boolean isUseTransactionName() {
+        return this.useTransactionName;
+    }
+
+    public void setUseTransactionName(boolean useTransactionName) {
+        this.useTransactionName = useTransactionName;
+    }
+
+    public boolean isSupportSavePoints() {
+        return this.supportSavePoints;
     }
 
     /*################################## blow AbstractPlatformTransactionManager template method ##################################*/
 
     @Override
-    protected final Object doGetTransaction() throws TransactionException {
+    protected Object doGetTransaction() throws TransactionException {
         final ArmyTransactionObject txObject = new ArmyTransactionObject();
         final SyncLocalSession session;
         session = (SyncLocalSession) TransactionSynchronizationManager.getResource(this.sessionFactory);
@@ -70,14 +84,21 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     }
 
     @Override
-    protected final boolean isExistingTransaction(final Object transaction) throws TransactionException {
+    protected boolean isExistingTransaction(final Object transaction) throws TransactionException {
         final SyncLocalSession session = ((ArmyTransactionObject) transaction).session;
-        return session != null && session.inTransaction();
+        if (session == null) {
+            return false;
+        }
+        try {
+            return session.inTransaction();
+        } catch (SessionException e) {
+            throw SpringUtils.wrapSessionError(e);
+        }
     }
 
     @Override
-    protected final Object doSuspend(final Object transaction) throws TransactionException {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
+    protected Object doSuspend(final Object transaction) throws TransactionException {
+        final ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
         if (txObject.session == null) {
             throw transactionNoSession();
         }
@@ -86,56 +107,91 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     }
 
     @Override
-    protected final void doBegin(final Object transaction, final TransactionDefinition definition)
+    protected void doBegin(final Object transaction, final TransactionDefinition definition)
             throws TransactionException {
         final ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
 
+        SyncLocalSession session = null;
         try {
             //1.get transaction name
-            final String txName;
-            txName = definition.getName();
+            final String txLabel;
+            txLabel = definition.getName();
 
             //2. create session
-            final SyncLocalSession session;
-            session = this.sessionFactory.builder()
-                    .name(txName)
+            final boolean readOnly;
+            readOnly = definition.isReadOnly();
+
+            session = this.sessionFactory.localBuilder()
+                    .name(txLabel)
+                    .readonly(readOnly)
                     .build();
+
             // bind to txObject
             txObject.setSession(session);
 
-            //3. get timeout seconds
-            int timeoutSeconds;
-            timeoutSeconds = definition.getTimeout();
-            if (timeoutSeconds == TransactionDefinition.TIMEOUT_DEFAULT) {
-                timeoutSeconds = getDefaultTimeout();
+            final int isolationLevel;
+            isolationLevel = definition.getIsolationLevel();
+
+            if (!readOnly || isolationLevel != TransactionDefinition.ISOLATION_DEFAULT || this.useReadOnlyTransaction) {
+
+                //3 . create TransactionOption
+                final TransactionOption.Builder builder;
+                builder = TransactionOption.builder()
+                        .option(Option.READ_ONLY, readOnly);
+
+
+                if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
+                    builder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
+                }
+
+                if (txLabel != null) {
+                    builder.option(Option.LABEL, txLabel);
+                    if (this.useTransactionName) {
+                        builder.option(Option.NAME, txLabel);
+                    }
+                }
+
+                int timeoutSeconds;
+                timeoutSeconds = definition.getTimeout();
+                if (timeoutSeconds == TransactionDefinition.TIMEOUT_DEFAULT) {
+                    timeoutSeconds = getDefaultTimeout();
+                }
+                if (timeoutSeconds > 0) {
+                    final long timeoutMillis = timeoutSeconds * 1000L;
+                    if (timeoutMillis > Integer.MAX_VALUE) {
+                        throw new TransactionUsageException("timeout milliseconds greater than Integer.MAX_VALUE");
+                    }
+                    builder.option(Option.TIMEOUT, (int) timeoutMillis);
+                }
+
+                // 5. start transaction
+                session.startTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
+
+
+            } //    if (!readOnly  || isolationLevel != TransactionDefinition.ISOLATION_DEFAULT)
+
+
+            // 6. bind current session
+            TransactionSynchronizationManager.bindResource(this.sessionFactory, session);
+
+        } catch (Exception e) {
+            if (session != null) {
+                session.close();
             }
-
-            //4. create and start transaction
-            session.builder()
-                    .isolation(SpringUtils.toArmyIsolation(definition.getIsolationLevel()))
-                    .readonly(definition.isReadOnly())
-                    .timeout(timeoutSeconds)
-                    .build()
-                    .start();//start transaction
-
-            //5. bind current session
-            final SyncSession currentSession;
-            if (this.wrapSession) {
-                throw new UnsupportedOperationException();
-            } else {
-                currentSession = session;
+            if (e instanceof SessionException) {
+                throw SpringUtils.wrapSessionError((SessionException) e);
             }
-            TransactionSynchronizationManager.bindResource(this.sessionFactory, currentSession);
-
-        } catch (io.army.tx.CannotCreateTransactionException e) {
-            throw SpringUtils.wrapTransactionError(e);
-        } catch (io.army.session.DataAccessException e) {
-            throw new CannotCreateTransactionException("Could not open Army transaction", e);
+            throw e;
+        } catch (Throwable e) {
+            if (session != null) {
+                session.close();
+            }
+            throw e;
         }
     }
 
     @Override
-    protected final void doCommit(final DefaultTransactionStatus status) throws TransactionException {
+    protected void doCommit(final DefaultTransactionStatus status) throws TransactionException {
         final ArmyTransactionObject txObject;
         txObject = (ArmyTransactionObject) status.getTransaction();
         final SyncLocalSession session = txObject.session;
@@ -156,7 +212,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         } catch (io.army.session.TransactionException e) {
             throw SpringUtils.wrapTransactionError(e);
         } catch (SessionException e) {
-            throw SpringUtils.convertSessionException(e);
+            throw SpringUtils.wrapSessionError(e);
         }
     }
 
@@ -178,7 +234,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         } catch (io.army.session.TransactionException e) {
             throw SpringUtils.wrapTransactionError(e);
         } catch (SessionException e) {
-            throw SpringUtils.convertSessionException(e);
+            throw SpringUtils.wrapSessionError(e);
         }
     }
 
@@ -203,12 +259,12 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         } catch (io.army.session.TransactionException e) {
             throw SpringUtils.wrapTransactionError(e);
         } catch (SessionException e) {
-            throw SpringUtils.convertSessionException(e);
+            throw SpringUtils.wrapSessionError(e);
         }
     }
 
     @Override
-    protected final void doResume(final @Nullable Object transaction, final Object suspendedResources)
+    protected void doResume(final @Nullable Object transaction, final Object suspendedResources)
             throws TransactionException {
 
         final SyncLocalSessionFactory sessionFactory = this.sessionFactory;
@@ -236,13 +292,13 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         try {
             session.close();
         } catch (SessionException e) {
-            throw SpringUtils.convertSessionException(e);
+            throw SpringUtils.wrapSessionError(e);
         }
     }
 
 
     @Override
-    protected final boolean useSavepointForNestedTransaction() {
+    protected boolean useSavepointForNestedTransaction() {
         return this.supportSavePoints;
     }
 
@@ -342,8 +398,6 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
     }//ArmyTransactionObject
-
-
 
 
 }

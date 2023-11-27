@@ -13,7 +13,6 @@ import io.army.meta.TableMeta;
 import io.army.schema.SchemaInfo;
 import io.army.schema._SchemaComparer;
 import io.army.schema._SchemaResult;
-import io.army.session.DataAccessException;
 import io.army.session.DdlMode;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmyFactoryBuilder;
@@ -22,31 +21,41 @@ import io.army.sync.executor.SyncStmtExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
- * <p>This class is base class of following :
- * <ul>
- *     <li>{@link ArmySyncLocalFactoryBuilder}</li>
- *     <li>{@link ArmySyncRmFactoryBuilder}</li>
- * </ul>
+ * <p>This class is a implementation of {@link SyncFactoryBuilder}.
+ * <p>This class is the builder of {@link ArmySyncSessionFactory}.
  *
- * @param <B> builder interface java type
- * @param <R> java type of {@link SyncSessionFactory}'s sub interface
+ * @see ArmySyncSessionFactory
  * @since 1.0
  */
-abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _ArmyFactoryBuilder<B, R> {
+final class ArmySyncFactoryBuilder
+        extends _ArmyFactoryBuilder<SyncFactoryBuilder, SyncSessionFactory> implements SyncFactoryBuilder {
+
+    /**
+     * @see SyncFactoryBuilder#builder()
+     */
+    static SyncFactoryBuilder create() {
+        return new ArmySyncFactoryBuilder();
+    }
+
+    private static final Logger LOG = LoggerFactory.getLogger(ArmySyncFactoryBuilder.class);
 
     SyncStmtExecutorFactory stmtExecutorFactory;
 
-    ArmySyncFactoryBuilder() {
+    /**
+     * private constructor
+     */
+    private ArmySyncFactoryBuilder() {
     }
 
+
     @Override
-    public final R buildAfterScanTableMeta(final String name, final Object dataSource, final ArmyEnvironment env) {
-        final Logger log = getLogger();
+    protected SyncSessionFactory buildAfterScanTableMeta(final String name, final Object dataSource, final ArmyEnvironment env) {
 
         try {
 
@@ -91,26 +100,25 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
             //9. create SessionFactoryImpl instance
             this.stmtExecutorFactory = executorFactory;
             this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
-            final R sessionFactory;
-            sessionFactory = createSessionFactory();
-            if (log.isDebugEnabled()) {
-                log.debug("Created {}", sessionFactory);
+            final ArmySyncSessionFactory sessionFactory;
+            sessionFactory = ArmySyncSessionFactory.create(this);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Created {}", sessionFactory);
             }
-            final ArmySyncSessionFactory factory = (ArmySyncSessionFactory) sessionFactory;
-            assert name.equals(factory.name());
-            assert factory.stmtExecutorFactory == this.stmtExecutorFactory;
+            assert name.equals(sessionFactory.name());
+            assert sessionFactory.stmtExecutorFactory == this.stmtExecutorFactory;
 
             //9. invoke beforeInitialize
             if (factoryAdvice != null) {
-                factoryAdvice.beforeInitialize(factory);
+                factoryAdvice.beforeInitialize(sessionFactory);
             }
 
             //10. invoke initializingFactory
-            initializingFactory(factory);
+            initializingFactory(sessionFactory);
 
             //7. invoke afterInitialize
             if (factoryAdvice != null) {
-                factoryAdvice.afterInitialize(factory);
+                factoryAdvice.afterInitialize(sessionFactory);
             }
             return sessionFactory;
         } catch (SessionFactoryException e) {
@@ -121,11 +129,14 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
     }
 
     @Override
-    protected final R handleError(SessionFactoryException cause) {
+    protected SyncSessionFactory handleError(SessionFactoryException cause) {
         throw cause;
     }
 
-    abstract R createSessionFactory();
+    @Override
+    protected Logger getLogger() {
+        return LOG;
+    }
 
 
     /**
@@ -165,7 +176,7 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
 
         final String msgPrefix;
         msgPrefix = String.format("Initializing database of %s[%s],%s[%s]",
-                SyncLocalSessionFactory.class.getName(), sessionFactory.name(),
+                SyncSessionFactory.class.getName(), sessionFactory.name(),
                 DdlMode.class.getName(), ddlMode);
 
         log.info(msgPrefix);
@@ -230,9 +241,9 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
                     throw _Exceptions.unexpectedEnum(ddlMode);
             }
             log.info("{},cost {} ms.", msgPrefix, System.currentTimeMillis() - startTime);
-        } catch (DataAccessException e) {
-            String m = String.format("%s[%s] schema initializing failure."
-                    , SyncLocalSessionFactory.class.getName(), sessionFactory.name());
+        } catch (Exception e) {
+            String m = String.format("%s[%s] schema initializing failure.", SyncSessionFactory.class.getName(),
+                    sessionFactory.name());
             throw new SessionFactoryException(m, e);
         }
 

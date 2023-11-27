@@ -5,10 +5,16 @@ import reactor.core.publisher.Mono;
 
 /**
  * <p>This interface representing a reactive {@link SessionFactory}.
+ * <p>The instance of this interface is created by {@link ReactiveFactoryBuilder}
  *
  * @since 1.0
  */
 public interface ReactiveSessionFactory extends SessionFactory, ReactiveCloseable {
+
+    Mono<ReactiveLocalSession> localSession();
+
+    Mono<ReactiveRmSession> rmSession();
+
 
     LocalSessionBuilder localBuilder();
 

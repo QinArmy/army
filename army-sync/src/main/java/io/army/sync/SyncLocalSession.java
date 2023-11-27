@@ -7,15 +7,13 @@ import java.util.function.Function;
 
 /**
  * <p>This interface representing local {@link SyncLocalSession} that support database local transaction.
- * <p>The instance of this interface is created by {@link SyncLocalSessionFactory.SessionBuilder}.
+ * <p>The instance of this interface is created by {@link SyncSessionFactory.LocalSessionBuilder}.
  *
- * @see SyncLocalSessionFactory
+ * @see SyncSessionFactory
  * @since 1.0
  */
 public interface SyncLocalSession extends SyncSession, LocalSession {
 
-    @Override
-    SyncLocalSessionFactory sessionFactory();
 
     TransactionInfo startTransaction();
 

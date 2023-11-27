@@ -7,8 +7,7 @@ import io.army.datasource.sync.DruidDataSourceUtils;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.sync.SyncLocalSessionFactory;
-import io.army.tx.sync.ArmyTransactionManager;
+import io.army.tx.sync.ArmyLocalTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -48,9 +47,9 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean(BankSyncBaseService.TX_MANAGER)
-    public ArmyTransactionManager bankSyncTransactionManager(
+    public ArmyLocalTransactionManager bankSyncTransactionManager(
             @Qualifier("bankSyncSessionFactory") SyncLocalSessionFactory sessionFactory) {
-        ArmyTransactionManager manager = new ArmyTransactionManager(sessionFactory);
+        ArmyLocalTransactionManager manager = new ArmyLocalTransactionManager(sessionFactory);
         manager.setWrapSession(false);
         manager.setNestedTransactionAllowed(true);
         return manager;

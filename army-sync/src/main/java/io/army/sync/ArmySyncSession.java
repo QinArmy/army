@@ -38,22 +38,27 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     private boolean sessionClosed;
 
-    protected ArmySyncSession(ArmySyncSessionFactory.SyncSessionBuilder<?, ?> builder) {
+    ArmySyncSession(ArmySyncSessionFactory.SyncBuilder<?, ?> builder) {
         super(builder);
         this.stmtExecutor = builder.stmtExecutor;
         assert this.stmtExecutor != null;
     }
 
     @Override
-    public final boolean isReactiveSession() {
+    public final boolean isReactive() {
         // always false
         return false;
     }
 
     @Override
-    public final boolean isSyncSession() {
+    public final boolean isSync() {
         // always true
         return true;
+    }
+
+    @Override
+    public final SyncSessionFactory sessionFactory() {
+        return (SyncSessionFactory) this.factory;
     }
 
     @Override
@@ -205,7 +210,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> Stream<R> query(DqlStatement statement, final Class<R> resultClass, SyncStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.query(s, resultClass, o));
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.query(s, resultClass, o)); // here ,use o not option
     }
 
     @Override
@@ -215,7 +220,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> Stream<R> queryObject(DqlStatement statement, final Supplier<R> constructor, SyncStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryObject(s, constructor, o));
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryObject(s, constructor, o)); // here ,use o not option
     }
 
     @Override
@@ -225,7 +230,10 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> Stream<R> queryRecord(DqlStatement statement, final Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryRecord(s, function, o));
+        if (statement instanceof _Statement._ChildStatement) {
+            throw new SessionException("queryRecord api don't support two statement mode");
+        }
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryRecord(s, function, o)); // here ,use o not option
     }
 
     @Override
@@ -407,23 +415,58 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             return;
         }
 
-        try {
-            this.sessionClosed = true;
-            this.stmtExecutor.close();
-        } catch (Exception e) {
-            throw wrapSessionError(e);
+        synchronized (this) {
+            if (this.sessionClosed) {
+                return;
+            }
+            try {
+                this.sessionClosed = true;
+                this.stmtExecutor.close();
+            } catch (Exception e) {
+                throw wrapSessionError(e);
+            }
         }
+
     }
 
 
 
     /*-------------------below private methods -------------------*/
 
+    private SyncStmtOption defaultOption() {
+        final TransactionInfo info;
+        info = obtainTransactionInfo();
 
-    private <R> Stream<R> executeQuery(final DqlStatement statement, final SyncStmtOption option,
+        final SyncStmtOption option;
+        if (info == null) {
+            option = ArmySyncStmtOptions.DEFAULT;
+        } else {
+            option = ArmySyncStmtOptions.overrideOptionIfNeed(ArmySyncStmtOptions.DEFAULT, info);
+        }
+        return option;
+    }
+
+    private SyncStmtOption replaceIfNeed(final SyncStmtOption option) {
+        final TransactionInfo info;
+
+        final SyncStmtOption newOption;
+        if (option instanceof ArmySyncStmtOptions.TransactionOverrideOption
+                || (info = obtainTransactionInfo()) == null) {
+            newOption = option;
+        } else {
+            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info);
+        }
+        return newOption;
+    }
+
+
+    private <R> Stream<R> executeQuery(final DqlStatement statement, final SyncStmtOption unsafeOption,
                                        final BiFunction<SimpleStmt, SyncStmtOption, Stream<R>> exeFunc) {
         try {
             assertSession(statement);
+
+            final SyncStmtOption option;
+            option = replaceIfNeed(unsafeOption);
 
             final Stmt stmt;
             stmt = parseDqlStatement(statement, option);
@@ -433,7 +476,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                 stream = exeFunc.apply((SimpleStmt) stmt, option);
             } else if (!(stmt instanceof PairStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
-            } else if (!this.inTransaction()) {
+            } else if (!inTransaction()) {
                 throw updateChildNoTransaction();
             } else if (statement instanceof InsertStatement) {
                 stream = executePairInsertQuery((InsertStatement) statement, option, (PairStmt) stmt, exeFunc);
@@ -456,10 +499,11 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     /**
+     * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #executeQuery(DqlStatement, SyncStmtOption, BiFunction)
      */
     private <R> Stream<R> executePairInsertQuery(InsertStatement statement,
-                                                 SyncStmtOption option, PairStmt stmt,
+                                                 final SyncStmtOption option, PairStmt stmt,
                                                  BiFunction<SimpleStmt, SyncStmtOption, Stream<R>> exeFunc) {
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
@@ -497,7 +541,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                         throw _Exceptions.parentChildRowsNotMatch(this, childTable, parentRows, states.rowCount());
                     }
                 };
-                stream = exeFunc.apply(stmt.secondStmt(), new WrapSyncStmtOption(option, statesConsumer));
+                stream = exeFunc.apply(stmt.secondStmt(), ArmySyncStmtOptions.replaceStateConsumer(option, statesConsumer));
             }
             return stream;
         } catch (Throwable e) {
@@ -511,13 +555,16 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
      * @see #update(SimpleDmlStatement, SyncStmtOption)
      * @see #updateAsStates(SimpleDmlStatement, SyncStmtOption)
      */
-    private <R> R updateAsResult(final SimpleDmlStatement statement, SyncStmtOption option, Class<R> resultClass) {
+    private <R> R updateAsResult(final SimpleDmlStatement statement, final SyncStmtOption unsafeOption, Class<R> resultClass) {
         try {
             if (statement instanceof _BatchStatement) {
                 throw _Exceptions.unexpectedStatement(statement);
             }
 
             assertSession(statement);
+
+            final SyncStmtOption option;
+            option = replaceIfNeed(unsafeOption);
 
             final R result;
             if (statement instanceof InsertStatement) {
@@ -540,6 +587,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
 
     /**
+     * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #updateAsResult(SimpleDmlStatement, SyncStmtOption, Class)
      */
     private <R> R executeInsert(InsertStatement statement, SyncStmtOption option, Class<R> resultClass)
@@ -553,7 +601,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             states = this.stmtExecutor.insert((SimpleStmt) statement, option, resultClass);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
-        } else {
+        } else if (inTransaction()) {
             final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_Insert) statement).table();
             final PairStmt pairStmt = (PairStmt) stmt;
 
@@ -577,11 +625,14 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             if (childRows != parentRows) {
                 throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentRows, childRows);
             }
+        } else {
+            throw updateChildNoTransaction();
         }
         return states;
     }
 
     /**
+     * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #updateAsResult(SimpleDmlStatement, SyncStmtOption, Class)
      */
     private <R> R executeUpdate(SimpleDmlStatement statement, SyncStmtOption option, final Class<R> resultClass)
@@ -599,7 +650,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
-        } else {
+        } else if (inTransaction()) {
             final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
             final PairStmt pairStmt = (PairStmt) stmt;
 
@@ -620,6 +671,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                         obtainAffectedRows(childResult));
             }
 
+        } else {
+            throw updateChildNoTransaction();
         }
         return result;
     }
@@ -642,10 +695,6 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
 
-    private SyncStmtOption defaultOption() {
-        throw new UnsupportedOperationException();
-    }
-
 
     /*-------------------below private static method -------------------*/
 
@@ -656,30 +705,5 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         return ((ResultStates) result).affectedRows();
     }
 
-
-    private static final class WrapSyncStmtOption extends WrapStmtOption implements SyncStmtOption {
-
-        private WrapSyncStmtOption(SyncStmtOption option, Consumer<ResultStates> statesConsumer) {
-            super(option, statesConsumer);
-        }
-
-        @Nullable
-        @Override
-        public Consumer<StreamCommander> streamCommanderConsumer() {
-            return ((SyncStmtOption) this.option).streamCommanderConsumer();
-        }
-
-        @Override
-        public int splitSize() {
-            return ((SyncStmtOption) this.option).splitSize();
-        }
-
-        @Override
-        public boolean isPreferClientStream() {
-            return ((SyncStmtOption) this.option).isPreferClientStream();
-        }
-
-
-    } // WrapSyncStmtOption
 
 }

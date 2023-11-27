@@ -61,6 +61,22 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
     }
 
     @Override
+    public Mono<ReactiveLocalSession> localSession() {
+        if (isClosed()) {
+            return Mono.error(_Exceptions.sessionFactoryClosed(this));
+        }
+        return new ArmyLocalBuilder(this).build();
+    }
+
+    @Override
+    public Mono<ReactiveRmSession> rmSession() {
+        if (isClosed()) {
+            return Mono.error(_Exceptions.sessionFactoryClosed(this));
+        }
+        return new ArmyRmBuilder(this).build();
+    }
+
+    @Override
     public LocalSessionBuilder localBuilder() {
         if (isClosed()) {
             throw _Exceptions.sessionFactoryClosed(this);

@@ -4,7 +4,6 @@ import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
 import io.army.session.FactoryUtils;
 import io.army.sync.SyncLocalSession;
-import io.army.sync.SyncLocalSessionFactory;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;

@@ -124,12 +124,12 @@ public interface Session extends CloseableSpec, OptionSpec {
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      */
-    boolean isReactiveSession();
+    boolean isReactive();
 
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      */
-    boolean isSyncSession();
+    boolean isSync();
 
 
     /**

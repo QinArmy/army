@@ -19,12 +19,12 @@ import java.util.stream.Stream;
 /**
  * <p>This class is a implementation of {@link SyncRmSession}
  *
- * @see ArmySyncRmSessionFactory
+ * @see ArmySyncSessionFactory
  * @since 1.0
  */
 class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
-    static ArmySyncRmSession create(ArmySyncRmSessionFactory.RmSessionBuilder builder) {
+    static ArmySyncRmSession create(ArmySyncSessionFactory.RmBuilder builder) {
         final ArmySyncRmSession session;
         if (builder.inOpenDriverSpi()) {
             session = new OpenDriverSpiSession(builder);
@@ -45,14 +45,9 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     /**
      * private constructor
      */
-    private ArmySyncRmSession(ArmySyncRmSessionFactory.RmSessionBuilder builder) {
+    private ArmySyncRmSession(ArmySyncSessionFactory.RmBuilder builder) {
         super(builder);
         assert this.stmtExecutor instanceof SyncRmStmtExecutor;
-    }
-
-    @Override
-    public final SyncRmSessionFactory sessionFactory() {
-        return (SyncRmSessionFactory) this.factory;
     }
 
 
@@ -297,13 +292,13 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final List<Xid> recoverList(int flags, Function<Option<?>, ?> optionFunc) {
-        return recover(flags, optionFunc, StreamOption.defaultOption())
+        return recover(flags, optionFunc, ArmyStreamOptions.DEFAULT)
                 .collect(Collectors.toCollection(_Collections::arrayList));
     }
 
     @Override
     public final Stream<Xid> recover(int flags) {
-        return this.recover(flags, Option.EMPTY_OPTION_FUNC, StreamOption.defaultOption());
+        return this.recover(flags, Option.EMPTY_OPTION_FUNC, ArmyStreamOptions.DEFAULT);
     }
 
     @Override
@@ -375,7 +370,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     private static final class OpenDriverSpiSession extends ArmySyncRmSession implements DriverSpiHolder {
 
-        private OpenDriverSpiSession(ArmySyncRmSessionFactory.RmSessionBuilder builder) {
+        private OpenDriverSpiSession(ArmySyncSessionFactory.RmBuilder builder) {
             super(builder);
         }
 

@@ -696,7 +696,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             spliterator = new XidRowSpliterator(this, option, statement, resultSet, dataTypeArray, function);
 
             final Consumer<StreamCommander> consumer;
-            consumer = option.streamCommanderConsumer();
+            consumer = option.commanderConsumer();
             if (consumer != null) {
                 consumer.accept(spliterator::cancel);
             }
@@ -1494,7 +1494,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      */
     private <R> Stream<R> assembleStream(final JdbcRowSpliterator<R> spliterator, final SyncStmtOption option) {
         final Consumer<StreamCommander> consumer;
-        consumer = option.streamCommanderConsumer();
+        consumer = option.commanderConsumer();
         if (consumer != null) {
             consumer.accept(spliterator::cancel); // cancel event
         }

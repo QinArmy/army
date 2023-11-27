@@ -5,11 +5,10 @@ import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
 
 import javax.annotation.Nullable;
-
 import java.util.function.Function;
 
 /**
- * <p>This interface representing provider of {@link StmtExecutorFactorySpec} spec.
+ * <p>This interface representing provider of {@link StmtExecutorFactory} spec.
  * This implementation of this interface must declared :
  * <pre>
  *      <code>

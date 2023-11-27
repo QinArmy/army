@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  * <a href="http://www.opengroup.org/public/pubs/catalog/c193.htm">The XA Specification</a>,
  * here ,you can download the pdf about The XA Specification.
  *
- * <p>The instance of this interface is created by {@link SyncRmSessionFactory.SessionBuilder#build()}.
+ * <p>The instance of this interface is created by {@link SyncSessionFactory.RmSessionBuilder#build()}.
  * <p>Application developer can control XA transaction by following methods :
  * <ol>
  *     <li>{@link #start(Xid, int, TransactionOption)}</li>
@@ -41,13 +41,10 @@ import java.util.stream.Stream;
  *     <li>{@link #isSameRm(XaTransactionSupportSpec)}</li>
  * </ul>
  *
- * @see SyncRmSessionFactory
+ * @see SyncSessionFactory
  * @since 1.0
  */
 public interface SyncRmSession extends SyncSession, RmSession {
-
-    @Override
-    SyncRmSessionFactory sessionFactory();
 
     TransactionInfo start(Xid xid);
 

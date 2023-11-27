@@ -2,14 +2,14 @@ package io.army.sync.executor;
 
 
 import io.army.session.DataAccessException;
-import io.army.session.executor.StmtExecutorFactorySpec;
+import io.army.session.executor.StmtExecutorFactory;
 
 /**
  * <p>This interface representing blocking {@link SyncStmtExecutor} factory.
  *
  * @since 1.0
  */
-public interface SyncStmtExecutorFactory extends StmtExecutorFactorySpec, AutoCloseable {
+public interface SyncStmtExecutorFactory extends StmtExecutorFactory, AutoCloseable {
 
 
     @Override

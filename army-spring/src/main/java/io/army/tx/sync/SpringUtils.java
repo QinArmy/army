@@ -14,7 +14,7 @@ public abstract class SpringUtils {
     }
 
 
-    public static org.springframework.dao.DataAccessException convertSessionException(SessionException ex) {
+    public static org.springframework.dao.DataAccessException wrapSessionError(SessionException ex) {
         return new org.springframework.dao.DataAccessException(ex.getMessage(), ex) {
 
         };

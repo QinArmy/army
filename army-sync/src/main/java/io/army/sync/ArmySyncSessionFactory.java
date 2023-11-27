@@ -6,20 +6,20 @@ import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutorFactory;
+import io.army.util._Exceptions;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
  * <p>This class is a implementation of {@link SyncSessionFactory}.
- * <p>This class is base class of following :
- * <ul>
- *     <li>{@link ArmySyncLocalSessionFactory}</li>
- *     <li>{@link ArmySyncRmSessionFactory}</li>
- * </ul>
  *
  * @since 1.0
  */
-abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSessionFactory {
+final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSessionFactory {
+
+    static ArmySyncSessionFactory create(ArmySyncFactoryBuilder builder) {
+        return new ArmySyncSessionFactory(builder);
+    }
 
     private static final AtomicIntegerFieldUpdater<ArmySyncSessionFactory> FACTORY_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmySyncSessionFactory.class, "factoryClosed");
@@ -32,7 +32,10 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
     final boolean jdbcDriver;
     private volatile int factoryClosed;
 
-    ArmySyncSessionFactory(ArmySyncFactoryBuilder<?, ?> builder) throws SessionFactoryException {
+    /**
+     * private constructor
+     */
+    private ArmySyncSessionFactory(ArmySyncFactoryBuilder builder) throws SessionFactoryException {
         super(builder);
         this.stmtExecutorFactory = builder.stmtExecutorFactory;
         assert this.stmtExecutorFactory != null;
@@ -42,24 +45,54 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
     }
 
     @Override
-    public final String driverSpiVendor() {
+    public String driverSpiVendor() {
         return this.stmtExecutorFactory.driverSpiVendor();
     }
 
     @Override
-    public final boolean isReactive() {
+    public boolean isReactive() {
         // always false
         return false;
     }
 
+    @Override
+    public boolean isSync() {
+        return true;
+    }
 
     @Override
-    public final boolean isClosed() {
+    public SyncLocalSession localSession() {
+        return localBuilder().build();
+    }
+
+    @Override
+    public SyncRmSession rmSession() {
+        return rmBuilder().build();
+    }
+
+    @Override
+    public LocalSessionBuilder localBuilder() {
+        if (isClosed()) {
+            throw _Exceptions.sessionFactoryClosed(this);
+        }
+        return new LocalBuilder(this);
+    }
+
+    @Override
+    public RmSessionBuilder rmBuilder() {
+        if (isClosed()) {
+            throw _Exceptions.sessionFactoryClosed(this);
+        }
+        return new RmBuilder(this);
+    }
+
+    @Override
+    public boolean isClosed() {
         return this.factoryClosed != 0;
     }
 
     @Override
-    public final void close() throws SessionFactoryException {
+    public void close() throws SessionFactoryException {
         if (!FACTORY_CLOSED.compareAndSet(this, 0, 1)) {
             return;
         }
@@ -70,11 +103,11 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
         }
     }
 
-    static abstract class SyncSessionBuilder<B, R> extends ArmySessionBuilder<B, R> {
+    static abstract class SyncBuilder<B, R> extends ArmySessionBuilder<B, R> {
 
         SyncStmtExecutor stmtExecutor;
 
-        SyncSessionBuilder(ArmySyncSessionFactory factory) {
+        SyncBuilder(ArmySyncSessionFactory factory) {
             super(factory);
         }
 
@@ -85,7 +118,44 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
         }
 
 
-    } // SyncSessionBuilder
+    } // SyncBuilder
+
+
+    static final class LocalBuilder extends SyncBuilder<LocalSessionBuilder, SyncLocalSession>
+            implements LocalSessionBuilder {
+
+        private LocalBuilder(ArmySyncSessionFactory factory) {
+            super(factory);
+        }
+
+
+        @Override
+        protected SyncLocalSession createSession(String sessionName, boolean readOnly) {
+            this.stmtExecutor = ((ArmySyncSessionFactory) this.factory)
+                    .stmtExecutorFactory.localExecutor(sessionName, readOnly);
+            return ArmySyncLocalSession.create(this);
+        }
+
+
+    } // LocalBuilder
+
+    static final class RmBuilder extends SyncBuilder<RmSessionBuilder, SyncRmSession>
+            implements RmSessionBuilder {
+
+        private RmBuilder(ArmySyncSessionFactory factory) {
+            super(factory);
+        }
+
+
+        @Override
+        protected SyncRmSession createSession(String sessionName, boolean readOnly) {
+            this.stmtExecutor = ((ArmySyncSessionFactory) this.factory).stmtExecutorFactory
+                    .rmExecutor(sessionName, readOnly);
+            return ArmySyncRmSession.create(this);
+        }
+
+
+    } // SyncRmSessionBuilder
 
 
 }

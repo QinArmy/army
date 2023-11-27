@@ -1,10 +1,6 @@
 package io.army.session;
 
-import io.army.session.record.ResultStates;
-
-import java.util.function.Consumer;
-
-public interface StmtOption {
+public interface StmtOption extends StmtOptionSpec {
 
 
     boolean isPreferServerPrepare();
@@ -39,8 +35,6 @@ public interface StmtOption {
      */
     int restMillSeconds() throws TimeoutException;
 
-    int fetchSize();
-
     /**
      * <p>Get frequency to help driver caching server-prepared statement.
      * <p>Default : -1  in the implementation of jdbd-spi,so if you don't invoke this method,driver will ignore this option.
@@ -58,19 +52,13 @@ public interface StmtOption {
     MultiStmtMode multiStmtMode();
 
 
-    Consumer<ResultStates> stateConsumer();
-
-
-    interface BuilderSpec<B> {
-        B fetchSize(int value);
+    interface BuilderSpec<B> extends OptionBuilderSpec<B> {
 
         B frequency(int value);
 
         B timeoutMillis(int millis);
 
         B multiStmtMode(MultiStmtMode mode);
-
-        B stateConsumer(Consumer<ResultStates> consumer);
 
         B parseBatchAsMultiStmt(boolean yes);
 

@@ -4,7 +4,6 @@ import io.army.criteria.Select;
 import io.army.example.common.ArmySyncBaseDao;
 import io.army.example.common.BaseService;
 import io.army.example.common.Pair;
-import io.army.sync.SyncLocalSessionFactory;
 import io.army.sync.SyncSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

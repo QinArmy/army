@@ -13,14 +13,14 @@ import java.util.function.Function;
 /**
  * <p>This class is a implementation of {@link SyncLocalSession}
  *
- * @see ArmySyncLocalSessionFactory
+ * @see ArmySyncSessionFactory
  */
 class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     /**
-     * @see ArmySyncLocalSessionFactory.LocalSessionBuilder#createSession(String)
+     * @see ArmySyncSessionFactory.LocalBuilder#createSession(String, boolean)
      */
-    static ArmySyncLocalSession create(ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
+    static ArmySyncLocalSession create(ArmySyncSessionFactory.LocalBuilder builder) {
         final ArmySyncLocalSession session;
         if (builder.inOpenDriverSpi()) {
             session = new OpenDriverSpiSession(builder);
@@ -39,19 +39,12 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     /**
      * private constructor
      *
-     * @see ArmySyncLocalSession#create(ArmySyncLocalSessionFactory.LocalSessionBuilder)
+     * @see ArmySyncLocalSession#create(ArmySyncSessionFactory.LocalBuilder)
      */
-    private ArmySyncLocalSession(final ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
+    private ArmySyncLocalSession(final ArmySyncSessionFactory.LocalBuilder builder) {
         super(builder);
         assert this.stmtExecutor instanceof SyncLocalStmtExecutor;
     }
-
-
-    @Override
-    public final SyncLocalSessionFactory sessionFactory() {
-        return (SyncLocalSessionFactory) this.factory;
-    }
-
 
     @Override
     public final boolean hasTransactionInfo() {
@@ -186,9 +179,9 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     private static final class OpenDriverSpiSession extends ArmySyncLocalSession implements DriverSpiHolder {
 
         /**
-         * @see ArmySyncLocalSession#create(ArmySyncLocalSessionFactory.LocalSessionBuilder)
+         * @see ArmySyncLocalSession#create(ArmySyncSessionFactory.LocalBuilder)
          */
-        private OpenDriverSpiSession(ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
+        private OpenDriverSpiSession(ArmySyncSessionFactory.LocalBuilder builder) {
             super(builder);
         }
 

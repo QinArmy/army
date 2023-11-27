@@ -63,12 +63,12 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     @Override
-    public final boolean isReactiveSession() {
+    public final boolean isReactive() {
         return true;
     }
 
     @Override
-    public final boolean isSyncSession() {
+    public final boolean isSync() {
         return false;
     }
 
@@ -333,14 +333,16 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                         .onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairStmt)) {
                 // no bug,never here
-                throw _Exceptions.unexpectedStmt(stmt);
+                flux = Flux.error(_Exceptions.unexpectedStmt(stmt));
+            } else if (!inTransaction()) {
+                flux = Flux.error(updateChildNoTransaction());
             } else if (statement instanceof InsertStatement) {
                 flux = executePairInsertQuery((InsertStatement) statement, (PairStmt) stmt, option, exeFunc)
                         .onErrorMap(this::handlePairStmtError);
             } else {
                 //TODO add DmlStatement code for firebird
                 // no bug,never here
-                throw _Exceptions.unexpectedStatement(statement);
+                flux = Flux.error(_Exceptions.unexpectedStatement(statement));
             }
         } catch (Throwable e) {
             flux = Flux.error(_ArmySession.wrapIfNeed(e));
@@ -414,7 +416,9 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             if (stmt instanceof SimpleStmt) {
                 mono = this.stmtExecutor.insert((SimpleStmt) stmt, option)
                         .onErrorMap(this::handleExecutionError);
-            } else if (stmt instanceof PairStmt) {
+            } else if (!(stmt instanceof PairStmt)) {
+                mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
+            } else if (inTransaction()) {
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_Insert) statement).table();
 
@@ -427,7 +431,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                                 })
                         ).onErrorMap(this::handlePairStmtError);
             } else {
-                mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
+                mono = Mono.error(updateChildNoTransaction());
             }
         } catch (Throwable e) {
             mono = Mono.error(_ArmySession.wrapIfNeed(e));
@@ -454,7 +458,9 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             if (stmt instanceof SimpleStmt) {
                 mono = this.stmtExecutor.update((SimpleStmt) stmt, option, Option.EMPTY_OPTION_FUNC)
                         .onErrorMap(this::handleExecutionError);
-            } else if (stmt instanceof PairStmt) {
+            } else if (!(stmt instanceof PairStmt)) {
+                mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
+            } else if (inTransaction()) {
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
 
@@ -466,8 +472,9 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                                     }
                                 })
                         ).onErrorMap(this::handlePairStmtError);
+
             } else {
-                mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
+                mono = Mono.error(updateChildNoTransaction());
             }
         } catch (Throwable e) {
             mono = Mono.error(_ArmySession.wrapIfNeed(e));

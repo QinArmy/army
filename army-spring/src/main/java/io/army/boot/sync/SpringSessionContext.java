@@ -4,7 +4,6 @@ import io.army.ArmyException;
 import io.army.session.NoCurrentSessionException;
 import io.army.sync.SessionContext;
 import io.army.sync.SyncLocalSession;
-import io.army.sync.SyncLocalSessionFactory;
 import io.army.sync.SyncSession;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 

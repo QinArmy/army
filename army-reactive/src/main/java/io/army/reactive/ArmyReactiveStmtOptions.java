@@ -77,7 +77,7 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
         assert startMillis != null;
 
         final TransactionOverrideOption newOption;
-        if (option instanceof OnlyTimeoutOption) {
+        if (option == DEFAULT || option instanceof OnlyTimeoutOption) {
             newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
         } else {
             newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis);

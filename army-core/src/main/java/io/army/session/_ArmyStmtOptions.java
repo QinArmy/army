@@ -84,6 +84,40 @@ public abstract class _ArmyStmtOptions {
 
         }
 
+        public ArmyStmtOption(final StmtOption option, final Consumer<ResultStates> statesConsumer) {
+
+            this.statesConsumer = statesConsumer;
+
+            if (option instanceof ArmyStmtOption) {
+                final ArmyStmtOption armyOption = (ArmyStmtOption) option;
+
+                this.preferServerPrepare = armyOption.preferServerPrepare;
+                this.parseBatchAsMultiStmt = armyOption.parseBatchAsMultiStmt;
+                this.fetchSize = armyOption.fetchSize;
+                this.frequency = armyOption.frequency;
+
+                this.timeoutMillis = armyOption.timeoutMillis;
+                this.startMills = armyOption.startMills;
+                this.multiStmtMode = armyOption.multiStmtMode;
+            } else {
+                this.preferServerPrepare = option.isPreferServerPrepare();
+                this.parseBatchAsMultiStmt = option.isParseBatchAsMultiStmt();
+                this.fetchSize = option.fetchSize();
+                this.frequency = option.frequency();
+
+                if (option instanceof ArmyOnlyTimeoutOption) {
+                    final ArmyOnlyTimeoutOption armyOption = (ArmyOnlyTimeoutOption) option;
+                    this.timeoutMillis = armyOption.timeoutMillis;
+                    this.startMills = armyOption.startMillis;
+                } else {
+                    this.timeoutMillis = 0;
+                    this.startMills = 0L;
+                }
+                this.multiStmtMode = option.multiStmtMode();
+            }
+
+        }
+
 
         @Override
         public final boolean isPreferServerPrepare() {

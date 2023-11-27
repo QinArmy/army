@@ -10,7 +10,6 @@ import io.army.env.SqlLogMode;
 import io.army.env.StandardEnvironment;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.sync.LocalFactoryBuilder;
-import io.army.sync.SyncLocalSessionFactory;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
