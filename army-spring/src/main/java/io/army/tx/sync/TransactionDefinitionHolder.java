@@ -72,7 +72,7 @@ public abstract class TransactionDefinitionHolder {
     /**
      * This method classically is used by {@link TransactionDefinitionInterceptor#invoke(MethodInvocation)} .
      *
-     * @param txManagerName {@link Transactional#value()} or {@link ArmyLocalTransactionManager#setBeanName(String)}
+     * @param txManagerName {@link Transactional#value()} or {@link ArmySyncLocalTransactionManager#setBeanName(String)}
      * @return true:use save points for nested transaction.
      * @throws IllegalArgumentException throw when txManagerName not register
      * @see #registerTransactionManager(String, boolean)

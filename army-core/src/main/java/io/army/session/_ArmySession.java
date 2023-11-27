@@ -66,6 +66,9 @@ public abstract class _ArmySession implements Session {
 
     @Override
     public final boolean isReadOnlyStatus() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
         final boolean readOnlyStatus;
         final TransactionInfo info;
         if (this.readonly) {
@@ -91,11 +94,17 @@ public abstract class _ArmySession implements Session {
 
     @Override
     public final boolean hasTransactionInfo() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
         return obtainTransactionInfo() != null;
     }
 
     @Override
     public final boolean inPseudoTransaction() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
         final TransactionInfo info;
         info = obtainTransactionInfo();
         return info != null && !info.inTransaction();
@@ -130,12 +139,14 @@ public abstract class _ArmySession implements Session {
 
     @Override
     public final String toString() {
-        return _StringUtils.builder(48)
+        return _StringUtils.builder(86)
                 .append(getClass().getName())
                 .append("[name:")
                 .append(this.name)
                 .append(",hash:")
                 .append(System.identityHashCode(this))
+                .append(",factory:")
+                .append(this.factory)
                 .append(']')
                 .toString();
     }
@@ -149,55 +160,6 @@ public abstract class _ArmySession implements Session {
 
 
     protected abstract void rollbackOnlyOnError(ChildUpdateException cause);
-
-
-    protected final void printSqlIfNeed(final Stmt stmt) {
-        final SqlLogMode mode;
-        final _ArmySessionFactory factory = this.factory;
-        if (factory.sqlLogDynamic) {
-            mode = factory.env.getOrDefault(ArmyKey.SQL_LOG_MODE);
-        } else {
-            mode = factory.sqlLogMode;
-        }
-        final boolean debug, beautify;
-        switch (mode) {
-            case OFF:
-                return;
-            case SIMPLE:
-                beautify = debug = false;
-                break;
-            case DEBUG:
-                debug = true;
-                beautify = false;
-                break;
-            case BEAUTIFY:
-                debug = false;
-                beautify = true;
-                break;
-            case BEAUTIFY_DEBUG:
-                beautify = debug = true;
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-
-        final Logger logger;
-        logger = this.getLogger();
-        if ((debug && !logger.isDebugEnabled()) || (!debug && !logger.isInfoEnabled())) {
-            return;
-        }
-        final StringBuilder builder = new StringBuilder(128);
-        builder.append("session[name : ")
-                .append(this.name)
-                .append("]\n");
-        factory.dialectParser.printStmt(stmt, beautify, builder::append);
-        if (debug) {
-            logger.debug(builder.toString());
-        } else {
-            logger.info(builder.toString());
-        }
-
-    }
 
 
     protected final Stmt parseDqlStatement(final DqlStatement statement, final StmtOption option) {
@@ -265,6 +227,57 @@ public abstract class _ArmySession implements Session {
         }
 
     }
+
+    /*-------------------below private methods -------------------*/
+
+    private void printSqlIfNeed(final Stmt stmt) {
+        final SqlLogMode mode;
+        final _ArmySessionFactory factory = this.factory;
+        if (factory.sqlLogDynamic) {
+            mode = factory.env.getOrDefault(ArmyKey.SQL_LOG_MODE);
+        } else {
+            mode = factory.sqlLogMode;
+        }
+        final boolean debug, beautify;
+        switch (mode) {
+            case OFF:
+                return;
+            case SIMPLE:
+                beautify = debug = false;
+                break;
+            case DEBUG:
+                debug = true;
+                beautify = false;
+                break;
+            case BEAUTIFY:
+                debug = false;
+                beautify = true;
+                break;
+            case BEAUTIFY_DEBUG:
+                beautify = debug = true;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+
+        final Logger logger;
+        logger = this.getLogger();
+        if ((debug && !logger.isDebugEnabled()) || (!debug && !logger.isInfoEnabled())) {
+            return;
+        }
+        final StringBuilder builder = new StringBuilder(128);
+        builder.append("session[name : ")
+                .append(this.name)
+                .append("]\n");
+        factory.dialectParser.printStmt(stmt, beautify, builder::append);
+        if (debug) {
+            logger.debug(builder.toString());
+        } else {
+            logger.info(builder.toString());
+        }
+
+    }
+
 
     /*-------------------below static method -------------------*/
 

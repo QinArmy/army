@@ -1,9 +1,11 @@
 package io.army.tx.sync;
 
 import io.army.session.Isolation;
+import io.army.session.Session;
 import io.army.session.SessionException;
-import io.army.session.TransactionTimeOutException;
-import org.springframework.transaction.*;
+import org.springframework.core.NestedRuntimeException;
+import org.springframework.transaction.IllegalTransactionStateException;
+import org.springframework.transaction.TransactionDefinition;
 
 import javax.annotation.Nullable;
 
@@ -14,31 +16,16 @@ public abstract class SpringUtils {
     }
 
 
-    public static org.springframework.dao.DataAccessException wrapSessionError(SessionException ex) {
+    public static NestedRuntimeException wrapSessionError(SessionException ex) {
         return new org.springframework.dao.DataAccessException(ex.getMessage(), ex) {
 
         };
     }
 
 
-    public static org.springframework.transaction.TransactionException wrapTransactionError(
-            final io.army.session.TransactionException ex) {
-
-        final org.springframework.transaction.TransactionException e;
-        if (ex instanceof io.army.tx.CannotCreateTransactionException) {
-            e = new CannotCreateTransactionException(ex.getMessage(), ex);
-        } else if (ex instanceof io.army.session.TransactionSystemException) {
-            e = new TransactionSystemException(ex.getMessage(), ex);
-        } else if (ex instanceof io.army.tx.IllegalTransactionStateException) {
-            e = new IllegalTransactionStateException(ex.getMessage(), ex);
-        } else if (ex instanceof TransactionTimeOutException) {
-            e = new TransactionTimedOutException(ex.getMessage(), ex);
-        } else {
-            e = new TransactionException(ex.getMessage(), ex) {
-
-            };
-        }
-        return e;
+    public static org.springframework.transaction.IllegalTransactionStateException unexpectedTransactionEnd(Session session) {
+        String m = String.format("%s transaction have ended , please check you code.", session);
+        return new IllegalTransactionStateException(m);
     }
 
 

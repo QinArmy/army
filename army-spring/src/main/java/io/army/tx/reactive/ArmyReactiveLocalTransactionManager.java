@@ -2,6 +2,7 @@ package io.army.tx.reactive;
 
 
 import io.army.reactive.ReactiveLocalSession;
+import io.army.reactive.ReactiveSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionDefinition;
@@ -9,18 +10,56 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.reactive.AbstractReactiveTransactionManager;
 import org.springframework.transaction.reactive.GenericReactiveTransaction;
 import org.springframework.transaction.reactive.TransactionSynchronizationManager;
+import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 
-public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionManager {
+public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveTransactionManager {
 
-    private ReactiveLocalSessionFactory sessionFactory;
+    public static ArmyReactiveLocalTransactionManager create(ReactiveSessionFactory sessionFactory) {
+        Assert.notNull(sessionFactory, "sessionFactory required");
+        return new ArmyReactiveLocalTransactionManager(sessionFactory);
+    }
+
+
+    private final ReactiveSessionFactory sessionFactory;
+
+    private boolean useReadOnlyTransaction = true;
+
+    private boolean useTransactionName;
+
+
+    /**
+     * private constructor
+     */
+    private ArmyReactiveLocalTransactionManager(ReactiveSessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
+    public boolean isUseReadOnlyTransaction() {
+        return this.useReadOnlyTransaction;
+    }
+
+    public void setUseReadOnlyTransaction(boolean useReadOnlyTransaction) {
+        this.useReadOnlyTransaction = useReadOnlyTransaction;
+    }
+
+
+    public boolean isUseTransactionName() {
+        return this.useTransactionName;
+    }
+
+    public void setUseTransactionName(boolean useTransactionName) {
+        this.useTransactionName = useTransactionName;
+    }
 
 
     @Override
-    protected Object doGetTransaction(TransactionSynchronizationManager synchronizationManager)
+    protected Object doGetTransaction(final TransactionSynchronizationManager synchronizationManager)
             throws TransactionException {
-        ArmyTransactionObject txObject = new ArmyTransactionObject();
-        ReactiveLocalSession session = (ReactiveLocalSession) synchronizationManager.getResource(this.sessionFactory);
+        final LocalTransactionObject txObject = new LocalTransactionObject();
+
+        final ReactiveLocalSession session;
+        session = (ReactiveLocalSession) synchronizationManager.getResource(this.sessionFactory);
         if (session != null) {
             txObject.reset(session);
         }
@@ -28,8 +67,8 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     }
 
     @Override
-    protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, final Object transaction
-            , TransactionDefinition definition) throws TransactionException {
+    protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, final Object transaction,
+                                 TransactionDefinition definition) throws TransactionException {
         return obtainSession(synchronizationManager)
                 .flatMap(session -> this.startSessionTransaction(session, transaction, definition));
     }
@@ -66,7 +105,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
 
     @Override
     protected boolean isExistingTransaction(Object transaction) throws TransactionException {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
+        LocalTransactionObject txObject = (LocalTransactionObject) transaction;
         return txObject.session != null
                 && txObject.session.inTransaction();
     }
@@ -74,7 +113,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     @Override
     protected Mono<Object> doSuspend(TransactionSynchronizationManager synchronizationManager, Object transaction)
             throws TransactionException {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
+        LocalTransactionObject txObject = (LocalTransactionObject) transaction;
         ReactiveLocalSessionFactory sessionFactory = this.sessionFactory;
         synchronizationManager.unbindResource(sessionFactory);
         return txObject.suspend();
@@ -101,7 +140,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     @Override
     protected Mono<Void> doCleanupAfterCompletion(TransactionSynchronizationManager synchronizationManager
             , Object transaction) {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
+        LocalTransactionObject txObject = (LocalTransactionObject) transaction;
 //        ReactiveSessionFactory sessionFactory = this.sessionFactory;
 //        if (synchronizationManager.hasResource(sessionFactory)) {
 //            synchronizationManager.unbindResource(sessionFactory);
@@ -162,7 +201,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
 
     /*################################## blow static inner class ##################################*/
 
-    private static final class ArmyTransactionObject {
+    private static final class LocalTransactionObject {
 
         private ReactiveLocalSession session;
 
@@ -176,12 +215,11 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
             return Mono.just(reactiveSession);
         }
 
-        private Mono<ReactiveLocalSession> reset(ReactiveLocalSession newSession) {
+        private void reset(ReactiveLocalSession newSession) {
             if (this.session != null) {
-                return Mono.error(new IllegalStateException("ArmyTransactionObject session not null,couldn't reset"));
+                throw new IllegalStateException("session not null,couldn't reset");
             }
             this.session = newSession;
-            return Mono.just(this.session);
         }
     }
 

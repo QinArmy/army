@@ -63,6 +63,17 @@ public final class Isolation {
     public static final Isolation SERIALIZABLE = from("SERIALIZABLE");
 
 
+    /**
+     * A pseudo isolation,this is used by pseudo transaction :
+     * <ul>
+     *     <li>{@link LocalSession#pseudoTransaction(TransactionOption, HandleMode)}</li>
+     *     <li>{@link RmSession#pseudoTransaction(Xid, TransactionOption)}</li>
+     * </ul>
+     * <p><strong>NOTE</strong>: Only when  {@link Session#isReadonlySession()} is true, pseudo transaction exists.
+     */
+    public static final Isolation PSEUDO = from("PSEUDO");
+
+
     private final String name;
 
     private Isolation(String name) {

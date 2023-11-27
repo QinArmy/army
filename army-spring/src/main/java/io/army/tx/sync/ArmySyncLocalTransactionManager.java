@@ -1,17 +1,14 @@
 package io.army.tx.sync;
 
-import io.army.session.HandleMode;
-import io.army.session.Option;
-import io.army.session.SessionException;
-import io.army.session.TransactionOption;
+import io.army.session.*;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncSessionFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
-import org.springframework.transaction.SavepointManager;
-import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionUsageException;
+import org.springframework.transaction.*;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.SmartTransactionObject;
@@ -19,27 +16,29 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Assert;
 
 /**
+ * <p>This class is Army sync local transaction manager
+ *
  * @since 1.0
  */
-public final class ArmyLocalTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean {
+public final class ArmySyncLocalTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean {
 
-    static ArmyLocalTransactionManager create(SyncSessionFactory sessionFactory) {
-        return new ArmyLocalTransactionManager(sessionFactory);
+    public static ArmySyncLocalTransactionManager create(SyncSessionFactory sessionFactory) {
+        Assert.notNull(sessionFactory, "sessionFactory required");
+        return new ArmySyncLocalTransactionManager(sessionFactory);
     }
 
     private final SyncSessionFactory sessionFactory;
 
-    private final boolean supportSavePoints;
 
     private boolean useReadOnlyTransaction = true;
 
     private boolean useTransactionName;
 
-
-    private ArmyLocalTransactionManager(SyncSessionFactory sessionFactory) {
-        Assert.notNull(sessionFactory, "sessionFactory required");
+    /**
+     * private constructor
+     */
+    private ArmySyncLocalTransactionManager(SyncSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
-        this.supportSavePoints = sessionFactory.isSupportSavePoints();
     }
 
 
@@ -66,9 +65,6 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
         this.useTransactionName = useTransactionName;
     }
 
-    public boolean isSupportSavePoints() {
-        return this.supportSavePoints;
-    }
 
     /*################################## blow AbstractPlatformTransactionManager template method ##################################*/
 
@@ -125,10 +121,6 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
                     .option(Option.READ_ONLY, readOnly);
 
 
-            if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
-                builder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
-            }
-
             if (txLabel != null) {
                 builder.option(Option.LABEL, txLabel);
                 if (this.useTransactionName) {
@@ -153,15 +145,30 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
                 builder.option(Option.TIMEOUT_MILLIS, (int) timeoutMillis);
             }
 
+            final TransactionInfo info;
+
             // 5. start transaction
             if (!readOnly
                     || isolationLevel != TransactionDefinition.ISOLATION_DEFAULT
                     || this.useReadOnlyTransaction) {
+
+                if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
+                    builder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
+                }
                 // start real transaction
-                session.startTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
+                info = session.startTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
+
+                assert info.inTransaction();
+                assert !info.isReadOnly();
             } else {
+                builder.option(Option.ISOLATION, Isolation.PSEUDO);
+
                 // start pseudo transaction
-                session.pseudoTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
+                info = session.pseudoTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
+
+                assert !info.inTransaction();
+                assert info.isReadOnly();
+                assert info.isolation() == Isolation.PSEUDO;
             }
 
             // 6. bind current session
@@ -190,6 +197,9 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
         final SyncLocalSession session = txObject.session;
         if (session == null) {
             throw transactionNoSession();
+        } else if (!session.hasTransactionInfo()) {
+            // application developer end transaction by SyncLocalSession api
+            throw SpringUtils.unexpectedTransactionEnd(session);
         }
 
         try {
@@ -206,6 +216,9 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
         final SyncLocalSession session = txObject.session;
         if (session == null) {
             throw transactionNoSession();
+        } else if (!session.hasTransactionInfo()) {
+            // application developer end transaction by SyncLocalSession api
+            throw SpringUtils.unexpectedTransactionEnd(session);
         }
         try {
             session.rollback(Option.EMPTY_OPTION_FUNC);
@@ -241,27 +254,37 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
     protected void doResume(final @Nullable Object transaction, final Object suspendedResources)
             throws TransactionException {
 
+        final LocalTransactionObject txObject = (LocalTransactionObject) transaction;
+        if (txObject == null) {
+            // no bug never here
+            throw new IllegalTransactionStateException("no transaction object");
+        }
+
         final SyncSessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             // From non-transactional code running in active transaction synchronization
             // -> can be safely removed, will be closed on transaction completion.
             TransactionSynchronizationManager.unbindResource(sessionFactory);
         }
+
         final SyncLocalSession session = (SyncLocalSession) suspendedResources;
+        txObject.setSession(session);
+
         TransactionSynchronizationManager.bindResource(sessionFactory, session);
     }
 
     @Override
     protected void doCleanupAfterCompletion(final Object transaction) {
         final LocalTransactionObject txObject = (LocalTransactionObject) transaction;
-        final SyncLocalSession session = txObject.session;
-        if (session == null) {
-            throw transactionNoSession();
-        }
 
         final SyncSessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             TransactionSynchronizationManager.unbindResource(sessionFactory);
+        }
+
+        final SyncLocalSession session = txObject.session;
+        if (session == null) {
+            return;
         }
         try {
             session.close();
@@ -273,7 +296,7 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
 
     @Override
     protected boolean useSavepointForNestedTransaction() {
-        return this.supportSavePoints;
+        return true;
     }
 
 
@@ -358,8 +381,7 @@ public final class ArmyLocalTransactionManager extends AbstractPlatformTransacti
         @Override
         public boolean isRollbackOnly() {
             final SyncLocalSession session = this.session;
-            return session != null
-                    && session.isRollbackOnly();
+            return session != null && session.isRollbackOnly();
         }
 
         @Override

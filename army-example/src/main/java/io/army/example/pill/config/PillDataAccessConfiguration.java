@@ -8,7 +8,7 @@ import io.army.example.common.BaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.pill.service.sync.PillSyncBaseService;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.tx.sync.ArmyLocalTransactionManager;
+import io.army.tx.sync.ArmySyncLocalTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -55,9 +55,9 @@ public class PillDataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean(PillSyncBaseService.TX_MANAGER)
-    public ArmyLocalTransactionManager pillSyncTransactionManager(
+    public ArmySyncLocalTransactionManager pillSyncTransactionManager(
             @Qualifier("pillSyncSessionFactory") SyncLocalSessionFactory sessionFactory) {
-        ArmyLocalTransactionManager manager = new ArmyLocalTransactionManager(sessionFactory);
+        ArmySyncLocalTransactionManager manager = new ArmySyncLocalTransactionManager(sessionFactory);
         manager.setWrapSession(false);
         manager.setNestedTransactionAllowed(true);
         return manager;
