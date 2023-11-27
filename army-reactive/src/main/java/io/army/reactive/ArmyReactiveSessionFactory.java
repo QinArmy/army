@@ -65,7 +65,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionFactoryClosed(this));
         }
-        return new ArmyLocalBuilder(this).build();
+        return new LocalBuilder(this).build();
     }
 
     @Override
@@ -73,7 +73,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionFactoryClosed(this));
         }
-        return new ArmyRmBuilder(this).build();
+        return new RmBuilder(this).build();
     }
 
     @Override
@@ -81,7 +81,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         if (isClosed()) {
             throw _Exceptions.sessionFactoryClosed(this);
         }
-        return new ArmyLocalBuilder(this);
+        return new LocalBuilder(this);
     }
 
     @Override
@@ -89,7 +89,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         if (isClosed()) {
             throw _Exceptions.sessionFactoryClosed(this);
         }
-        return new ArmyRmBuilder(this);
+        return new RmBuilder(this);
     }
 
     @Override
@@ -123,22 +123,24 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
     }//ReactiveSessionBuilder
 
 
-    static final class ArmyLocalBuilder extends ReactiveSessionBuilder<LocalSessionBuilder, Mono<ReactiveLocalSession>>
+    static final class LocalBuilder extends ReactiveSessionBuilder<LocalSessionBuilder, Mono<ReactiveLocalSession>>
             implements LocalSessionBuilder {
 
         /**
          * private constructor
          */
-        private ArmyLocalBuilder(ArmyReactiveSessionFactory sessionFactory) {
+        private LocalBuilder(ArmyReactiveSessionFactory sessionFactory) {
             super(sessionFactory);
         }
 
         @Override
-        protected Mono<ReactiveLocalSession> createSession(String sessionName, boolean readonly) {
-            return ((ArmyReactiveSessionFactory) this.factory).stmtExecutorFactory
-                    .localExecutor(sessionName, readonly)
-                    .map(this::createLocalSession)
-                    .onErrorMap(_ArmySession::wrapIfNeed);
+        protected Mono<ReactiveLocalSession> createSession(final String sessionName, final boolean readonly) {
+            return Mono.defer(() ->
+                    ((ArmyReactiveSessionFactory) this.factory).stmtExecutorFactory
+                            .localExecutor(sessionName, readonly)
+                            .map(this::createLocalSession)
+                            .onErrorMap(_ArmySession::wrapIfNeed)
+            );
         }
 
 
@@ -152,26 +154,28 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
             return ArmyReactiveLocalSession.create(this);
         }
 
-    } // ArmyLocalBuilder
+    } // LocalBuilder
 
 
-    static final class ArmyRmBuilder extends ReactiveSessionBuilder<RmSessionBuilder, Mono<ReactiveRmSession>>
+    static final class RmBuilder extends ReactiveSessionBuilder<RmSessionBuilder, Mono<ReactiveRmSession>>
             implements RmSessionBuilder {
 
         /**
          * private constructor
          */
-        private ArmyRmBuilder(ArmyReactiveSessionFactory factory) {
+        private RmBuilder(ArmyReactiveSessionFactory factory) {
             super(factory);
         }
 
 
         @Override
-        protected Mono<ReactiveRmSession> createSession(String sessionName, boolean readonly) {
-            return ((ArmyReactiveSessionFactory) this.factory).stmtExecutorFactory
-                    .rmExecutor(sessionName, readonly)
-                    .map(this::createRmSession)
-                    .onErrorMap(_ArmySession::wrapIfNeed);
+        protected Mono<ReactiveRmSession> createSession(final String sessionName, final boolean readonly) {
+            return Mono.defer(() ->
+                    ((ArmyReactiveSessionFactory) this.factory).stmtExecutorFactory
+                            .rmExecutor(sessionName, readonly)
+                            .map(this::createRmSession)
+                            .onErrorMap(_ArmySession::wrapIfNeed)
+            );
         }
 
         @Override

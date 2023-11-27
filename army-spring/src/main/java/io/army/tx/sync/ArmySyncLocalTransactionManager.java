@@ -243,6 +243,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
         return txObject.suspend();
     }
 
+
     @Override
     protected void doResume(final @Nullable Object transaction, final Object suspendedResources)
             throws TransactionException {
@@ -280,6 +281,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
             return;
         }
         try {
+            txObject.session = null;
             session.close();
         } catch (SessionException e) {
             throw SpringUtils.wrapSessionError(e);

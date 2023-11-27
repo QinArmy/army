@@ -22,9 +22,9 @@ import java.util.function.Function;
 class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
 
     /**
-     * @see ArmyReactiveSessionFactory.ArmyLocalBuilder#createSession(String, boolean)
+     * @see ArmyReactiveSessionFactory.LocalBuilder#createSession(String, boolean)
      */
-    static ArmyReactiveLocalSession create(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
+    static ArmyReactiveLocalSession create(ArmyReactiveSessionFactory.LocalBuilder builder) {
         final ArmyReactiveLocalSession session;
         if (builder.inOpenDriverSpi()) {
             session = new OpenDriverSpiSession(builder);
@@ -49,9 +49,9 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     /**
      * private constructor
      *
-     * @see ArmyReactiveLocalSession#create(ArmyReactiveSessionFactory.ArmyLocalBuilder)
+     * @see ArmyReactiveLocalSession#create(ArmyReactiveSessionFactory.LocalBuilder)
      */
-    private ArmyReactiveLocalSession(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
+    private ArmyReactiveLocalSession(ArmyReactiveSessionFactory.LocalBuilder builder) {
         super(builder);
     }
 
@@ -230,9 +230,9 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     private static final class OpenDriverSpiSession extends ArmyReactiveLocalSession implements DriverSpiHolder {
 
         /**
-         * @see ArmyReactiveLocalSession#create(ArmyReactiveSessionFactory.ArmyLocalBuilder)
+         * @see ArmyReactiveLocalSession#create(ArmyReactiveSessionFactory.LocalBuilder)
          */
-        private OpenDriverSpiSession(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
+        private OpenDriverSpiSession(ArmyReactiveSessionFactory.LocalBuilder builder) {
             super(builder);
         }
 

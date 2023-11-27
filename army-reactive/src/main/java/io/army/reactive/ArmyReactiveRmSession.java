@@ -24,9 +24,9 @@ import java.util.function.Function;
 class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSession {
 
     /**
-     * @see ArmyReactiveSessionFactory.ArmyRmBuilder#createSession(String, boolean)
+     * @see ArmyReactiveSessionFactory.RmBuilder#createSession(String, boolean)
      */
-    static ArmyReactiveRmSession create(ArmyReactiveSessionFactory.ArmyRmBuilder builder) {
+    static ArmyReactiveRmSession create(ArmyReactiveSessionFactory.RmBuilder builder) {
         final ArmyReactiveRmSession session;
         if (builder.inOpenDriverSpi()) {
             session = new OpenDriverSpiSession(builder);
@@ -52,7 +52,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
     /**
      * private constructor
      */
-    private ArmyReactiveRmSession(ArmyReactiveSessionFactory.ArmyRmBuilder builder) {
+    private ArmyReactiveRmSession(ArmyReactiveSessionFactory.RmBuilder builder) {
         super(builder);
     }
 
@@ -393,7 +393,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     private static final class OpenDriverSpiSession extends ArmyReactiveRmSession implements DriverSpiHolder {
 
-        private OpenDriverSpiSession(ArmyReactiveSessionFactory.ArmyRmBuilder builder) {
+        private OpenDriverSpiSession(ArmyReactiveSessionFactory.RmBuilder builder) {
             super(builder);
         }
 
