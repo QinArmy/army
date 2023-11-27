@@ -23,6 +23,11 @@ public abstract class SpringUtils {
     }
 
 
+    public static IllegalTransactionStateException transactionNoSession() {
+        return new IllegalTransactionStateException("current transaction no session.");
+    }
+
+
     public static org.springframework.transaction.IllegalTransactionStateException unexpectedTransactionEnd(Session session) {
         String m = String.format("%s transaction have ended , please check you code.", session);
         return new IllegalTransactionStateException(m);
