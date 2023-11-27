@@ -7,9 +7,9 @@ import javax.annotation.Nullable;
 public interface OptionSpec {
 
     @Nullable
-    <T> T valueOf(ArmyOption<T> option);
+    <T> T valueOf(Option<T> option);
 
-    default <T> T nonNullOf(ArmyOption<T> option) {
+    default <T> T nonNullOf(Option<T> option) {
         final T value;
         value = valueOf(option);
         if (value == null) {

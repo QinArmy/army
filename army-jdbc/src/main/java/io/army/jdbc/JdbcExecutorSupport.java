@@ -205,7 +205,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         @Nullable
         @Override
-        public final <T> T getOf(int indexBasedZero, ArmyOption<T> option) throws DataAccessException {
+        public final <T> T getOf(int indexBasedZero, Option<T> option) throws DataAccessException {
             checkIndex(indexBasedZero);
             return null;
         }
@@ -766,13 +766,13 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @SuppressWarnings("unchecked")
         @Nullable
         @Override
-        public <T> T valueOf(final ArmyOption<T> option) {
+        public <T> T valueOf(final Option<T> option) {
             final Object value;
-            if (option == ArmyOption.MESSAGE) {
+            if (option == Option.MESSAGE) {
                 value = this.message;
-            } else if (option == ArmyOption.SQL_STATE) {
+            } else if (option == Option.SQL_STATE) {
                 value = this.sqlState;
-            } else if (option == ArmyOption.VENDOR_CODE) {
+            } else if (option == Option.VENDOR_CODE) {
                 value = this.vendor;
             } else {
                 value = null;
@@ -837,12 +837,12 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         @Nullable
         @Override
-        public final <T> T valueOf(final ArmyOption<T> option) {
+        public final <T> T valueOf(final Option<T> option) {
             final TransactionInfo info = this.info;
             final T value;
             if (info == null) {
                 value = null;
-            } else if (option == ArmyOption.IN_TRANSACTION || option == ArmyOption.READ_ONLY) {
+            } else if (option == Option.IN_TRANSACTION || option == Option.READ_ONLY) {
                 value = info.valueOf(option);
             } else {
                 value = null;

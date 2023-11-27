@@ -1,9 +1,9 @@
 package io.army.sync;
 
 import io.army.criteria.Selection;
-import io.army.session.ArmyOption;
 import io.army.session.Cursor;
 import io.army.session.Direction;
+import io.army.session.Option;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  *     <li>{@link SyncProcCursor},it's produced by procedure,army don't know {@link Selection} list</li>
  * </ul>
  *
- * @see ResultStates#valueOf(ArmyOption)
+ * @see ResultStates#valueOf(Option)
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
  * @since 1.0

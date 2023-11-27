@@ -59,21 +59,21 @@ public interface SyncRmSession extends SyncSession, RmSession {
 
     TransactionInfo end(Xid xid, int flags);
 
-    TransactionInfo end(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
+    TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
     int prepare(Xid xid);
 
-    int prepare(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
+    int prepare(Xid xid, Function<Option<?>, ?> optionFunc);
 
     void commit(Xid xid);
 
     void commit(Xid xid, int flags);
 
-    void commit(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
+    void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
     void rollback(Xid xid);
 
-    void rollback(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
+    void rollback(Xid xid, Function<Option<?>, ?> optionFunc);
 
     void forget(Xid xid);
 
@@ -84,15 +84,15 @@ public interface SyncRmSession extends SyncSession, RmSession {
      *                          </ul>
      * @see #isSupportForget()
      */
-    void forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
+    void forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
     List<Xid> recoverList(int flags);
 
-    List<Xid> recoverList(int flags, Function<ArmyOption<?>, ?> optionFunc);
+    List<Xid> recoverList(int flags, Function<Option<?>, ?> optionFunc);
 
     Stream<Xid> recover(int flags);
 
-    Stream<Xid> recover(int flags, Function<ArmyOption<?>, ?> optionFunc, StreamOption option);
+    Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option);
 
 
 }

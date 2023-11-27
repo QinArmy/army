@@ -143,13 +143,13 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<?> setSavePoint(Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
         return Mono.from(this.session.setSavePoint(this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
-    public final Mono<Void> releaseSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Void> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
@@ -160,7 +160,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     @Override
-    public final Mono<Void> rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Void> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
@@ -244,7 +244,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @Override
     public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveStmtOption option,
-                                           Function<ArmyOption<?>, ?> optionFunc) {
+                                           Function<Option<?>, ?> optionFunc) {
         Mono<ResultStates> mono;
         try {
             final BindStatement statement;
@@ -373,10 +373,27 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     @Override
-    public final Mono<TransactionInfo> startTransaction(TransactionOption option) {
+    public final Mono<TransactionInfo> startTransaction(final TransactionOption option, final HandleMode mode) {
         if (!(this instanceof ReactiveLocalStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
+
+        final io.jdbd.session.HandleMode jdbdMode;
+        switch (mode) {
+            case ERROR_IF_EXISTS:
+                jdbdMode = io.jdbd.session.HandleMode.ERROR_IF_EXISTS;
+                break;
+            case ROLLBACK_IF_EXISTS:
+                jdbdMode = io.jdbd.session.HandleMode.ROLLBACK_IF_EXISTS;
+                break;
+            case COMMIT_IF_EXISTS:
+                jdbdMode = io.jdbd.session.HandleMode.COMMIT_IF_EXISTS;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+
+
         final io.jdbd.session.TransactionOption jdbdOption;
 
         try {
@@ -385,13 +402,14 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             return Mono.error(wrapExecuteIfNeed(e));
         }
 
-        return Mono.from(((LocalDatabaseSession) this.session).startTransaction(jdbdOption))
+
+        return Mono.from(((LocalDatabaseSession) this.session).startTransaction(jdbdOption, jdbdMode))
                 .map(this::mapToArmyTransactionInfo)
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
-    public final Mono<Optional<TransactionInfo>> commit(Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveLocalStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -402,7 +420,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     @Override
-    public final Mono<Optional<TransactionInfo>> rollback(Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveLocalStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -435,7 +453,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<TransactionInfo> end(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<TransactionInfo> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -451,7 +469,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<Integer> prepare(Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Integer> prepare(Xid xid, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -466,7 +484,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<Void> commit(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Void> commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -482,7 +500,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<Void> rollback(Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Void> rollback(Xid xid, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -498,7 +516,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<Void> forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Void> forget(Xid xid, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -514,7 +532,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Flux<Optional<Xid>> recover(int flags, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Flux<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Flux.error(new UnsupportedOperationException());
         }
@@ -581,7 +599,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <T> T valueOf(final @Nullable ArmyOption<T> option) {
+    public final <T> T valueOf(final @Nullable Option<T> option) {
         final Object v;
         final T value;
         final io.jdbd.session.Option<?> jdbdOption;
@@ -942,7 +960,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     /**
      * @throws ArmyException throw when isolation is unsupported by driver.
      * @see #setTransactionCharacteristics(TransactionOption)
-     * @see #startTransaction(TransactionOption)
+     * @see #startTransaction(TransactionOption, HandleMode)
      * @see #start(Xid, int, TransactionOption)
      */
     private io.jdbd.session.TransactionOption mapToJdbdTransactionOption(final TransactionOption option)
@@ -1885,20 +1903,20 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private final io.jdbd.result.ResultStates jdbdStates;
 
-        private final Function<ArmyOption<?>, io.jdbd.session.Option<?>> optionFunc;
+        private final Function<Option<?>, io.jdbd.session.Option<?>> optionFunc;
 
         private Warning warning;
 
 
         private ArmyResultStates(io.jdbd.result.ResultStates jdbdStates,
-                                 Function<ArmyOption<?>, io.jdbd.session.Option<?>> optionFunc) {
+                                 Function<Option<?>, io.jdbd.session.Option<?>> optionFunc) {
             this.jdbdStates = jdbdStates;
             this.optionFunc = optionFunc;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> T valueOf(ArmyOption<T> option) {
+        public <T> T valueOf(Option<T> option) {
             final io.jdbd.session.Option<?> jdbdOption;
             jdbdOption = this.optionFunc.apply(option);
             final Object value;
@@ -1977,17 +1995,17 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         private final io.jdbd.result.Warning jdbdWarning;
 
 
-        private final Function<ArmyOption<?>, io.jdbd.session.Option<?>> optionFunc;
+        private final Function<Option<?>, io.jdbd.session.Option<?>> optionFunc;
 
         private ArmyWarning(io.jdbd.result.Warning jdbdWarning,
-                            Function<ArmyOption<?>, io.jdbd.session.Option<?>> optionFunc) {
+                            Function<Option<?>, io.jdbd.session.Option<?>> optionFunc) {
             this.jdbdWarning = jdbdWarning;
             this.optionFunc = optionFunc;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> T valueOf(ArmyOption<T> option) {
+        public <T> T valueOf(Option<T> option) {
             final io.jdbd.session.Option<?> jdbdOption;
             jdbdOption = this.optionFunc.apply(option);
             final Object value;

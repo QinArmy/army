@@ -766,7 +766,7 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
     }
 
-    public static NullPointerException optionValueIsNull(ArmyOption<?> option) {
+    public static NullPointerException optionValueIsNull(Option<?> option) {
         String m = String.format("error %s.nonNullOf(),the value of %s is null", OptionSpec.class.getName(), option);
         return new NullPointerException(m);
     }

@@ -3,8 +3,8 @@ package io.army.jdbd;
 import io.army.criteria.Selection;
 import io.army.reactive.ReactiveMultiResultSpec;
 import io.army.reactive.executor.ReactiveExecutorSupport;
-import io.army.session.ArmyOption;
 import io.army.session.DataAccessException;
+import io.army.session.Option;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.FieldType;
 import io.army.session.record.KeyType;
@@ -44,7 +44,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
         @SuppressWarnings("unchecked")
         @Nullable
         @Override
-        public final <T> T getOf(final int indexBasedZero, ArmyOption<T> option) throws DataAccessException {
+        public final <T> T getOf(final int indexBasedZero, Option<T> option) throws DataAccessException {
             try {
                 final io.jdbd.session.Option<T> jdbdOption;
                 jdbdOption = (io.jdbd.session.Option<T>) this.executor.factory.mapToJdbdOption(option);

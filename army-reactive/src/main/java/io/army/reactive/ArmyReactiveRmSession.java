@@ -74,11 +74,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> releaseSavePoint(Object savepoint) {
-        return releaseSavePoint(savepoint, ArmyOption.EMPTY_OPTION_FUNC);
+        return releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Mono<ReactiveRmSession> releaseSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<ReactiveRmSession> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
@@ -89,11 +89,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> rollbackToSavePoint(Object savepoint) {
-        return rollbackToSavePoint(savepoint, ArmyOption.EMPTY_OPTION_FUNC);
+        return rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Mono<ReactiveRmSession> rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<ReactiveRmSession> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
@@ -125,10 +125,10 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             mono = ((ReactiveRmStmtExecutor) this.stmtExecutor).start(xid, flags, option)
                     .doOnSuccess(info -> {
                         assert info.inTransaction();  // fail ,executor bug
-                        assert xid.equals(info.valueOf(ArmyOption.XID));  // fail ,executor bug
-                        assert info.valueOf(ArmyOption.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
+                        assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
+                        assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
 
-                        assert info.nonNullOf(ArmyOption.XA_FLAGS) == flags;  // fail ,executor bug
+                        assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
                         TRANSACTION_INFO.set(this, info);
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
@@ -143,16 +143,16 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> end(Xid xid) {
-        return end(xid, TM_NO_FLAGS, ArmyOption.EMPTY_OPTION_FUNC);
+        return end(xid, TM_NO_FLAGS, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
     public final Mono<ReactiveRmSession> end(Xid xid, int flags) {
-        return end(xid, flags, ArmyOption.EMPTY_OPTION_FUNC);
+        return end(xid, flags, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Mono<ReactiveRmSession> end(final @Nullable Xid xid, final int flags, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<ReactiveRmSession> end(final @Nullable Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
         final Mono<ReactiveRmSession> mono;
 
         final TransactionInfo lastInfo;
@@ -164,18 +164,18 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         } else if (xid == null) {
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if ((lastInfo = this.transactionInfo) == null
-                || !(infoXid = lastInfo.nonNullOf(ArmyOption.XID)).equals(xid)) {
+                || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {
             mono = Mono.error(_Exceptions.xaNonCurrentTransaction(xid));
-        } else if ((states = lastInfo.nonNullOf(ArmyOption.XA_STATES)) != XaStates.ACTIVE) {
+        } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.ACTIVE) {
             mono = Mono.error(_Exceptions.xaTransactionDontSupportEndCommand(infoXid, states)); // use infoXid
         } else {
             mono = ((ReactiveRmStmtExecutor) this.stmtExecutor).end(infoXid, flags, optionFunc) // use infoXid
                     .doOnSuccess(info -> {
                         assert info.inTransaction();  // fail ,executor bug
-                        assert infoXid.equals(info.valueOf(ArmyOption.XID));  // fail ,executor bug
-                        assert info.valueOf(ArmyOption.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
+                        assert infoXid.equals(info.valueOf(Option.XID));  // fail ,executor bug
+                        assert info.valueOf(Option.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
 
-                        assert info.nonNullOf(ArmyOption.XA_FLAGS) == flags;  // fail ,executor bug
+                        assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
                         TRANSACTION_INFO.set(this, info);
                     }).onErrorMap(_ArmySession::wrapIfNeed)
@@ -186,11 +186,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<Integer> prepare(Xid xid) {
-        return prepare(xid, ArmyOption.EMPTY_OPTION_FUNC);
+        return prepare(xid, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Mono<Integer> prepare(final @Nullable Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<Integer> prepare(final @Nullable Xid xid, Function<Option<?>, ?> optionFunc) {
         final Mono<Integer> mono;
 
         final TransactionInfo lastInfo;
@@ -202,11 +202,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         } else if (xid == null) {
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if ((lastInfo = this.transactionInfo) == null
-                || !(infoXid = lastInfo.nonNullOf(ArmyOption.XID)).equals(xid)) {
+                || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {
             mono = Mono.error(_Exceptions.xaNonCurrentTransaction(xid));
-        } else if ((states = lastInfo.nonNullOf(ArmyOption.XA_STATES)) != XaStates.IDLE) {
+        } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             mono = Mono.error(_Exceptions.xaStatesDontSupportPrepareCommand(infoXid, states)); // use infoXid
-        } else if ((lastInfo.nonNullOf(ArmyOption.XA_FLAGS) & RmSession.TM_FAIL) != 0 || ROLLBACK_ONLY.get(this) != 0) {
+        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0 || ROLLBACK_ONLY.get(this) != 0) {
             mono = Mono.error(_Exceptions.xaTransactionRollbackOnly(infoXid));
         } else {
             mono = ((ReactiveRmStmtExecutor) this.stmtExecutor).prepare(infoXid, optionFunc) // use infoXid
@@ -218,16 +218,16 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> commit(Xid xid) {
-        return commit(xid, TM_NO_FLAGS, ArmyOption.EMPTY_OPTION_FUNC);
+        return commit(xid, TM_NO_FLAGS, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
     public final Mono<ReactiveRmSession> commit(Xid xid, int flags) {
-        return commit(xid, flags, ArmyOption.EMPTY_OPTION_FUNC);
+        return commit(xid, flags, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Mono<ReactiveRmSession> commit(final @Nullable Xid xid, final int flags, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<ReactiveRmSession> commit(final @Nullable Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
         final Mono<ReactiveRmSession> mono;
 
         final TransactionInfo lastInfo;
@@ -243,11 +243,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
         } else if ((lastInfo = this.transactionInfo) == null
-                || !(infoXid = lastInfo.nonNullOf(ArmyOption.XID)).equals(xid)) {
+                || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {
             mono = Mono.error(_Exceptions.xaNonCurrentTransaction(xid));
-        } else if ((states = lastInfo.nonNullOf(ArmyOption.XA_STATES)) != XaStates.IDLE) {
+        } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             mono = Mono.error(_Exceptions.xaStatesDontSupportCommitCommand(infoXid, states)); // use infoXid
-        } else if ((lastInfo.nonNullOf(ArmyOption.XA_FLAGS) & RmSession.TM_FAIL) != 0 || ROLLBACK_ONLY.get(this) != 0) {
+        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0 || ROLLBACK_ONLY.get(this) != 0) {
             mono = Mono.error(_Exceptions.xaTransactionRollbackOnly(infoXid));
         } else {   // one phase commit
             mono = ((ReactiveRmStmtExecutor) this.stmtExecutor).commit(infoXid, flags, optionFunc) // use infoXid
@@ -260,11 +260,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> rollback(Xid xid) {
-        return rollback(xid, ArmyOption.EMPTY_OPTION_FUNC);
+        return rollback(xid, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Mono<ReactiveRmSession> rollback(final @Nullable Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<ReactiveRmSession> rollback(final @Nullable Xid xid, Function<Option<?>, ?> optionFunc) {
         final Mono<ReactiveRmSession> mono;
 
         final TransactionInfo lastInfo;
@@ -277,11 +277,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         } else if (xid == null) {
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if ((lastInfo = this.transactionInfo) == null
-                || !(infoXid = lastInfo.nonNullOf(ArmyOption.XID)).equals(xid)) {
+                || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {
             mono = ((ReactiveRmStmtExecutor) this.stmtExecutor).rollback(xid, optionFunc) // use xid
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
-        } else if ((states = lastInfo.nonNullOf(ArmyOption.XA_STATES)) != XaStates.IDLE) {
+        } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             mono = Mono.error(_Exceptions.xaStatesDontSupportRollbackCommand(xid, states)); // use xid
         } else {
             mono = ((ReactiveRmStmtExecutor) this.stmtExecutor).rollback(infoXid, optionFunc) // use infoXid
@@ -294,11 +294,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> forget(Xid xid) {
-        return forget(xid, ArmyOption.EMPTY_OPTION_FUNC);
+        return forget(xid, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Mono<ReactiveRmSession> forget(final @Nullable Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<ReactiveRmSession> forget(final @Nullable Xid xid, Function<Option<?>, ?> optionFunc) {
         final Mono<ReactiveRmSession> mono;
         if (isClosed()) {
             mono = Mono.error(_Exceptions.sessionClosed(this));
@@ -315,11 +315,11 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Flux<Optional<Xid>> recover(int flags) {
-        return recover(flags, ArmyOption.EMPTY_OPTION_FUNC);
+        return recover(flags, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final Flux<Optional<Xid>> recover(final int flags, Function<ArmyOption<?>, ?> optionFunc) {
+    public final Flux<Optional<Xid>> recover(final int flags, Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             return Flux.error(_Exceptions.sessionClosed(this));
         }

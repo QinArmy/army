@@ -1,8 +1,8 @@
 package io.army.session.record;
 
 import io.army.criteria.Selection;
-import io.army.session.ArmyOption;
 import io.army.session.DataAccessException;
+import io.army.session.Option;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.type.BlobPath;
@@ -25,9 +25,9 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
     ArmyType getArmyType(int indexBasedZero) throws DataAccessException;
 
     @Nullable
-    <T> T getOf(int indexBasedZero, ArmyOption<T> option) throws DataAccessException;
+    <T> T getOf(int indexBasedZero, Option<T> option) throws DataAccessException;
 
-    <T> T getNonNullOf(int indexBasedZero, ArmyOption<T> option) throws DataAccessException;
+    <T> T getNonNullOf(int indexBasedZero, Option<T> option) throws DataAccessException;
 
 
     /**
@@ -197,9 +197,9 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
     ArmyType getArmyType(String columnLabel) throws DataAccessException;
 
     @Nullable
-    <T> T getOf(String columnLabel, ArmyOption<T> option) throws DataAccessException;
+    <T> T getOf(String columnLabel, Option<T> option) throws DataAccessException;
 
-    <T> T getNonNullOf(String columnLabel, ArmyOption<T> option) throws DataAccessException;
+    <T> T getNonNullOf(String columnLabel, Option<T> option) throws DataAccessException;
 
 
     /**

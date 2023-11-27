@@ -27,10 +27,10 @@ public interface SyncLocalSession extends SyncSession, LocalSession {
 
 
     @Nullable
-    TransactionInfo commit(Function<ArmyOption<?>, ?> optionFunc);
+    TransactionInfo commit(Function<Option<?>, ?> optionFunc);
 
     @Nullable
-    TransactionInfo rollback(Function<ArmyOption<?>, ?> optionFunc);
+    TransactionInfo rollback(Function<Option<?>, ?> optionFunc);
 
 
     void rollback();

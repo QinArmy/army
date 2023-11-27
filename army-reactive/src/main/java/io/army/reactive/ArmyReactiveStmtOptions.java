@@ -1,7 +1,7 @@
 package io.army.reactive;
 
-import io.army.session.ArmyOption;
 import io.army.session.MultiStmtMode;
+import io.army.session.Option;
 import io.army.session.TransactionInfo;
 import io.army.session._ArmyStmtOptions;
 import io.army.session.record.ResultStates;
@@ -68,12 +68,12 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
 
     static ReactiveStmtOption overrideOptionIfNeed(final ReactiveStmtOption option, final TransactionInfo info) {
         final Integer timeout;
-        timeout = info.valueOf(ArmyOption.TIMEOUT);
+        timeout = info.valueOf(Option.TIMEOUT);
         if (timeout == null || option instanceof TransactionOverrideOption) {
             return option;
         }
         final Long startMillis;
-        startMillis = info.valueOf(ArmyOption.START_MILLIS);
+        startMillis = info.valueOf(Option.START_MILLIS);
         assert startMillis != null;
 
         final TransactionOverrideOption newOption;

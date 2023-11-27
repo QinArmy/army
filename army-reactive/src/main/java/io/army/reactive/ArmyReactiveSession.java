@@ -241,18 +241,18 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     @Override
     public final Mono<?> setSavePoint() {
-        return this.setSavePoint(ArmyOption.EMPTY_OPTION_FUNC);
+        return this.setSavePoint(Option.EMPTY_OPTION_FUNC);
     }
 
 
     @Override
-    public final Mono<?> setSavePoint(Function<ArmyOption<?>, ?> optionFunc) {
+    public final Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
         return this.stmtExecutor.setSavePoint(optionFunc)
                 .onErrorMap(this::handleExecutionError);
     }
 
     @Override
-    public final <T> T valueOf(final ArmyOption<T> option) {
+    public final <T> T valueOf(final Option<T> option) {
         try {
             return this.stmtExecutor.valueOf(option);
         } catch (Exception e) {
@@ -452,14 +452,14 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             final Stmt stmt;
             stmt = parseDmlStatement(statement, option);
             if (stmt instanceof SimpleStmt) {
-                mono = this.stmtExecutor.update((SimpleStmt) stmt, option, ArmyOption.EMPTY_OPTION_FUNC)
+                mono = this.stmtExecutor.update((SimpleStmt) stmt, option, Option.EMPTY_OPTION_FUNC)
                         .onErrorMap(this::handleExecutionError);
             } else if (stmt instanceof PairStmt) {
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
 
-                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, ArmyOption.EMPTY_OPTION_FUNC)
-                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, ArmyOption.EMPTY_OPTION_FUNC)
+                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, Option.EMPTY_OPTION_FUNC)
+                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.EMPTY_OPTION_FUNC)
                                 .doOnSuccess(childStates -> {
                                     if (childStates.affectedRows() != parentStates.affectedRows()) {
                                         throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());

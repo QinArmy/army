@@ -58,20 +58,20 @@ public interface TransactionOption extends OptionSpec {
          *
          * @param option transaction option key,for example :
          *               <ul>
-         *                    <li>{@link ArmyOption#ISOLATION}</li>
-         *                    <li>{@link ArmyOption#READ_ONLY}</li>
-         *                    <li>{@link ArmyOption#NAME} ,transaction name</li>
+         *                    <li>{@link Option#ISOLATION}</li>
+         *                    <li>{@link Option#READ_ONLY}</li>
+         *                    <li>{@link Option#NAME} ,transaction name</li>
          *                    <li>{@code  Option#WITH_CONSISTENT_SNAPSHOT}</li>
          *                    <li>{@code Option#DEFERRABLE}</li>
-         *                    <li>{@link ArmyOption#WAIT}</li>
-         *                    <li>{@link ArmyOption#LOCK_TIMEOUT}</li>
+         *                    <li>{@link Option#WAIT}</li>
+         *                    <li>{@link Option#LOCK_TIMEOUT}</li>
          *               </ul>
          */
-        <T> Builder option(ArmyOption<T> option, @Nullable T value);
+        <T> Builder option(Option<T> option, @Nullable T value);
 
         /**
          * @throws IllegalArgumentException throw when <ul>
-         *                                  <li>{@link ArmyOption#IN_TRANSACTION} exists</li>
+         *                                  <li>{@link Option#IN_TRANSACTION} exists</li>
          *                                  </ul>
          */
         TransactionOption build() throws IllegalArgumentException;

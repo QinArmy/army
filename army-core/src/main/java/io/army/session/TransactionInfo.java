@@ -46,18 +46,18 @@ public interface TransactionInfo extends TransactionOption {
      * <p>
      * Application developer can get
      *     <ul>
-     *         <li>{@link XaStates} with {@link ArmyOption#XA_STATES}</li>
-     *         <li>{@link Xid} with {@link ArmyOption#XID}</li>
-     *         <li>{@code flag} of last phase with {@link ArmyOption#XA_FLAGS}</li>
+     *         <li>{@link XaStates} with {@link Option#XA_STATES}</li>
+     *         <li>{@link Xid} with {@link Option#XID}</li>
+     *         <li>{@code flag} of last phase with {@link Option#XA_FLAGS}</li>
      *     </ul>
      *     when this instance is returned by {@link RmSession}.
      * <br/>
      */
     @Override
-    <T> T valueOf(ArmyOption<T> option);
+    <T> T valueOf(Option<T> option);
 
     static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
-                                Function<ArmyOption<?>, ?> optionFunc) {
+                                Function<Option<?>, ?> optionFunc) {
         return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
     }
 

@@ -1,7 +1,7 @@
 package io.army.sqltype;
 
-import io.army.session.ArmyOption;
 import io.army.session.Cursor;
+import io.army.session.Option;
 import io.army.session.record.DataRecord;
 import io.army.session.record.ResultRecordMeta;
 import io.army.session.record.ResultStates;
@@ -251,13 +251,15 @@ public enum ArmyType {
 
     /*-------------------  -------------------*/
 
+    NULL,
+
     UNKNOWN,
 
 
     /**
      * Identifies the generic SQL type {@code REF_CURSOR}.
      * <p>If {@link ResultRecordMeta#getArmyType(int)} is this enum instance,then {@link DataRecord#get(int)} always is {@link String} instance.
-     * <p>Application developer can get the instance of {@link Cursor} by {@link ResultStates#valueOf(ArmyOption)}
+     * <p>Application developer can get the instance of {@link Cursor} by {@link ResultStates#valueOf(Option)}
      *
      * @see Cursor
      */
@@ -281,7 +283,6 @@ public enum ArmyType {
      * <p> This enum instance is only returned by {@link ResultRecordMeta#getArmyType(int)}
      */
     DIALECT_TYPE;
-
 
 
     public final boolean isUnknown() {

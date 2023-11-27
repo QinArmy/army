@@ -15,7 +15,7 @@ final class ArmyXid implements Xid {
 
 
     static ArmyXid from(final String gtrid, final @Nullable String bqual, final int formatId,
-                        @Nullable Function<ArmyOption<?>, ?> optionFunc) {
+                        @Nullable Function<Option<?>, ?> optionFunc) {
         if (!_StringUtils.hasText(gtrid)) {
             throw new IllegalArgumentException("gtrid must have text");
         } else if (bqual != null && !_StringUtils.hasText(gtrid)) {
@@ -32,9 +32,9 @@ final class ArmyXid implements Xid {
 
     private final int formatId;
 
-    private final Function<ArmyOption<?>, ?> optionFunc;
+    private final Function<Option<?>, ?> optionFunc;
 
-    private ArmyXid(String gtrid, @Nullable String bqual, int formatId, Function<ArmyOption<?>, ?> optionFunc) {
+    private ArmyXid(String gtrid, @Nullable String bqual, int formatId, Function<Option<?>, ?> optionFunc) {
         this.gtrid = gtrid;
         this.bqual = bqual;
         this.formatId = formatId;
@@ -58,7 +58,7 @@ final class ArmyXid implements Xid {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T valueOf(final @Nullable ArmyOption<T> option) {
+    public <T> T valueOf(final @Nullable Option<T> option) {
         if (option == null) {
             return null;
         }
@@ -71,7 +71,7 @@ final class ArmyXid implements Xid {
     }
 
     @Override
-    public <T> T nonNullOf(ArmyOption<T> option) {
+    public <T> T nonNullOf(Option<T> option) {
         throw new NullPointerException();
     }
 

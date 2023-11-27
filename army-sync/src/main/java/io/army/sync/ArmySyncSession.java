@@ -392,7 +392,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
-    public final <T> T valueOf(ArmyOption<T> option) {
+    public final <T> T valueOf(Option<T> option) {
         return this.stmtExecutor.valueOf(option);
     }
 
@@ -592,7 +592,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
         final R result;
         if (stmt instanceof SimpleStmt) {
-            result = this.stmtExecutor.update((SimpleStmt) stmt, option, resultClass, ArmyOption.EMPTY_OPTION_FUNC);
+            result = this.stmtExecutor.update((SimpleStmt) stmt, option, resultClass, Option.EMPTY_OPTION_FUNC);
 
             if (stmt.hasOptimistic() && obtainAffectedRows(result) == 0) {
                 throw _Exceptions.optimisticLock();
@@ -604,13 +604,13 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             final PairStmt pairStmt = (PairStmt) stmt;
 
             final R childResult;
-            childResult = this.stmtExecutor.update(pairStmt.firstStmt(), option, resultClass, ArmyOption.EMPTY_OPTION_FUNC);
+            childResult = this.stmtExecutor.update(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_OPTION_FUNC);
 
             if (stmt.hasOptimistic() && obtainAffectedRows(childResult) == 0) {
                 throw _Exceptions.optimisticLock();
             }
             try {
-                result = this.stmtExecutor.update(pairStmt.secondStmt(), option, resultClass, ArmyOption.EMPTY_OPTION_FUNC);
+                result = this.stmtExecutor.update(pairStmt.secondStmt(), option, resultClass, Option.EMPTY_OPTION_FUNC);
             } catch (Throwable e) {
                 throw _Exceptions.childUpdateError(this, domainTable, e);
             }

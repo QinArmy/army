@@ -1,63 +1,87 @@
 package io.army.sqltype;
 
-import io.army.criteria.SQLWords;
 import io.army.dialect.Database;
-import io.army.dialect._Constant;
+import io.army.type.BlobPath;
+import io.army.type.TextPath;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.*;
+
 /**
+ * <p>This enum representing MySQL build-in data type
+ *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/data-types.html">MySQL Data Types</a>
  */
-public enum MySQLType implements SqlType, SQLWords {
+public enum MySQLType implements SqlType {
 
-    NULL,
-    BOOLEAN,
+    NULL("NULL", ArmyType.NULL, Object.class),
+    BOOLEAN("BOOLEAN", ArmyType.BOOLEAN, Boolean.class),
 
-    TINYINT,
-    TINYINT_UNSIGNED,
-    SMALLINT,
-    SMALLINT_UNSIGNED,
+    TINYINT("TINYINT", ArmyType.TINYINT, Byte.class),
+    TINYINT_UNSIGNED("TINYINT UNSIGNED", ArmyType.TINYINT_UNSIGNED, Short.class),
+    SMALLINT("SMALLINT", ArmyType.SMALLINT, Short.class),
+    SMALLINT_UNSIGNED("SMALLINT UNSIGNED", ArmyType.SMALLINT_UNSIGNED, Integer.class),
 
-    INT,
-    INT_UNSIGNED,
-    MEDIUMINT,
-    MEDIUMINT_UNSIGNED,
+    MEDIUMINT("MEDIUMINT", ArmyType.BOOLEAN, Integer.class),
+    MEDIUMINT_UNSIGNED("MEDIUMINT UNSIGNED", ArmyType.MEDIUMINT_UNSIGNED, Integer.class),
+    INT("INT", ArmyType.INTEGER, Integer.class),
 
-    BIGINT,
-    BIGINT_UNSIGNED,
-    DECIMAL,
-    DECIMAL_UNSIGNED,
+    INT_UNSIGNED("INT UNSIGNED", ArmyType.INTEGER_UNSIGNED, Long.class),
+    BIGINT("BIGINT", ArmyType.BIGINT, Long.class),
+    BIGINT_UNSIGNED("BIGINT UNSIGNED", ArmyType.BIGINT_UNSIGNED, BigInteger.class),
 
-    FLOAT,
-    DOUBLE,
+    DECIMAL("DECIMAL", ArmyType.DECIMAL, BigDecimal.class),
+    DECIMAL_UNSIGNED("DECIMAL UNSIGNED", ArmyType.DECIMAL_UNSIGNED, BigDecimal.class),
 
-    TIME,
-    DATE,
-    YEAR,
-    DATETIME,
+    FLOAT("FLOAT", ArmyType.FLOAT, Float.class),
+    DOUBLE("DOUBLE", ArmyType.DOUBLE, Double.class),
 
-    CHAR,
-    VARCHAR,
-    TINYTEXT,
-    TEXT,
-    MEDIUMTEXT,
-    LONGTEXT,
+    TIME("TIME", ArmyType.TIME, LocalTime.class),
+    DATE("DATE", ArmyType.DATE, LocalDate.class),
+    YEAR("YEAR", ArmyType.YEAR, Year.class),
+    DATETIME("DATETIME", ArmyType.TIMESTAMP, LocalDateTime.class),
 
-    BINARY,
-    VARBINARY,
-    TINYBLOB,
-    BLOB,
-    MEDIUMBLOB,
-    LONGBLOB,
+    CHAR("CHAR", ArmyType.CHAR, String.class),
+    VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class),
 
-    BIT,
-    ENUM,
-    SET,
-    JSON,
+    TINYTEXT("TINYTEXT", ArmyType.TINYTEXT, String.class),
+    TEXT("TEXT", ArmyType.TEXT, String.class),
+    MEDIUMTEXT("MEDIUMTEXT", ArmyType.MEDIUMTEXT, String.class),
+    LONGTEXT("LONGTEXT", ArmyType.LONGTEXT, String.class),
 
-    GEOMETRY,
+    BINARY("BINARY", ArmyType.BINARY, byte[].class),
+    VARBINARY("VARBINARY", ArmyType.VARBINARY, byte[].class),
 
-    UNKNOWN;
+    TINYBLOB("TINYBLOB", ArmyType.TINYBLOB, byte[].class),
+    BLOB("BLOB", ArmyType.BLOB, byte[].class),
+    MEDIUMBLOB("MEDIUMBLOB", ArmyType.MEDIUMBLOB, byte[].class),
+    LONGBLOB("LONGBLOB", ArmyType.LONGBLOB, byte[].class),
+
+    BIT("BIT", ArmyType.BIT, Long.class),
+    ENUM("ENUM", ArmyType.ENUM, String.class),
+    SET("SET", ArmyType.DIALECT_TYPE, String.class),
+    JSON("JSON", ArmyType.JSON, String.class),
+
+    GEOMETRY("GEOMETRY", ArmyType.GEOMETRY, byte[].class),
+
+    UNKNOWN("UNKNOWN", ArmyType.UNKNOWN, Object.class);
+
+
+    private final String typeName;
+
+    private final ArmyType armyType;
+
+    private final Class<?> javaType;
+
+    MySQLType(String typeName, ArmyType armyType, Class<?> javaType) {
+
+        this.typeName = typeName;
+        this.armyType = armyType;
+        this.javaType = javaType;
+    }
 
 
     @Override
@@ -65,10 +89,48 @@ public enum MySQLType implements SqlType, SQLWords {
         return Database.MySQL;
     }
 
+    @Override
+    public final ArmyType armyType() {
+        return this.armyType;
+    }
+
+    @Override
+    public final Class<?> firstJavaType() {
+        return this.javaType;
+    }
+
+    @Nullable
+    @Override
+    public final Class<?> secondJavaType() {
+        final Class<?> javaType;
+        switch (this) {
+            case TIME:
+                javaType = Duration.class;
+                break;
+            case LONGBLOB:
+            case GEOMETRY:
+                javaType = BlobPath.class;
+                break;
+            case LONGTEXT:
+                javaType = TextPath.class;
+                break;
+            default:
+                javaType = null;
+        }
+        return javaType;
+    }
+
+    @Nullable
+    @Override
+    public final SqlType elementType() {
+        // MySQL don't support array
+        return null;
+    }
+
 
     @Override
     public final String typeName() {
-        return null;
+        return this.typeName;
     }
 
     @Override
@@ -137,7 +199,6 @@ public enum MySQLType implements SqlType, SQLWords {
         switch (this) {
             case VARCHAR:
             case CHAR:
-            case NCHAR:
             case TINYTEXT:
             case TEXT:
             case MEDIUMTEXT:
@@ -149,35 +210,6 @@ public enum MySQLType implements SqlType, SQLWords {
         }
         return match;
     }
-
-    @Override
-    public final String spaceRender() {
-        final String words;
-        switch (this) {
-            case TINYINT_UNSIGNED:
-                words = " TINYINT UNSIGNED";
-                break;
-            case SMALLINT_UNSIGNED:
-                words = " SMALLINT UNSIGNED";
-                break;
-            case MEDIUMINT_UNSIGNED:
-                words = " MEDIUMINT UNSIGNED";
-                break;
-            case INT_UNSIGNED:
-                words = " INT UNSIGNED";
-                break;
-            case DECIMAL_UNSIGNED:
-                words = " DECIMAL UNSIGNED";
-                break;
-            case BIGINT_UNSIGNED:
-                words = " BIGINT UNSIGNED";
-                break;
-            default:
-                words = _Constant.SPACE + this.name();
-        }
-        return words;
-    }
-
 
     @Override
     public final String toString() {

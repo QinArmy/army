@@ -113,11 +113,11 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     @Override
     public final void commit() {
-        this.commit(ArmyOption.EMPTY_OPTION_FUNC);
+        this.commit(Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final TransactionInfo commit(Function<ArmyOption<?>, ?> optionFunc) {
+    public final TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         } else if (isRollbackOnly()) {
@@ -127,8 +127,8 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         final TransactionInfo info;
         info = ((SyncLocalStmtExecutor) this.stmtExecutor).commit(optionFunc);
 
-        if (optionFunc != ArmyOption.EMPTY_OPTION_FUNC
-                && Boolean.TRUE.equals(optionFunc.apply(ArmyOption.CHAIN))) {
+        if (optionFunc != Option.EMPTY_OPTION_FUNC
+                && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
             assert info != null && info.inTransaction(); // fail,executor bug
         } else {
             assert info == null; // fail,executor bug
@@ -139,11 +139,11 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     @Override
     public final void rollback() {
-        this.rollback(ArmyOption.EMPTY_OPTION_FUNC);
+        this.rollback(Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final TransactionInfo rollback(Function<ArmyOption<?>, ?> optionFunc) {
+    public final TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
@@ -151,8 +151,8 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         final TransactionInfo info;
         info = ((SyncLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc);
 
-        if (optionFunc != ArmyOption.EMPTY_OPTION_FUNC
-                && Boolean.TRUE.equals(optionFunc.apply(ArmyOption.CHAIN))) {
+        if (optionFunc != Option.EMPTY_OPTION_FUNC
+                && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
             assert info != null && info.inTransaction();
         } else {
             assert info == null;

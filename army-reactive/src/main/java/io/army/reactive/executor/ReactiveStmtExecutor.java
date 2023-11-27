@@ -38,15 +38,15 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
     Mono<Void> setTransactionCharacteristics(TransactionOption option);
 
-    Mono<?> setSavePoint(Function<ArmyOption<?>, ?> optionFunc);
+    Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc);
 
-    Mono<Void> releaseSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
+    Mono<Void> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
-    Mono<Void> rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
+    Mono<Void> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
     Mono<ResultStates> insert(SimpleStmt stmt, ReactiveStmtOption option);
 
-    Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option, Function<ArmyOption<?>, ?> optionFunc);
+    Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
     Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option);
 
@@ -79,9 +79,9 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
         Mono<TransactionInfo> startTransaction(TransactionOption option, HandleMode mode);
 
-        Mono<Optional<TransactionInfo>> commit(Function<ArmyOption<?>, ?> optionFunc);
+        Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc);
 
-        Mono<Optional<TransactionInfo>> rollback(Function<ArmyOption<?>, ?> optionFunc);
+        Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc);
 
     }
 
@@ -95,18 +95,18 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
         Mono<TransactionInfo> start(Xid xid, int flags, TransactionOption option);
 
-        Mono<TransactionInfo> end(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
+        Mono<TransactionInfo> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
-        Mono<Integer> prepare(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
+        Mono<Integer> prepare(Xid xid, Function<Option<?>, ?> optionFunc);
 
-        Mono<Void> commit(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
+        Mono<Void> commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
-        Mono<Void> rollback(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
+        Mono<Void> rollback(Xid xid, Function<Option<?>, ?> optionFunc);
 
 
-        Mono<Void> forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
+        Mono<Void> forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
-        Flux<Optional<Xid>> recover(int flags, Function<ArmyOption<?>, ?> optionFunc);
+        Flux<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
 
 
     }

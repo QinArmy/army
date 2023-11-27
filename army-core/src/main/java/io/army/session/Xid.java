@@ -24,7 +24,7 @@ import java.util.function.Function;
  *     Application developer can get the instance of {@link Xid} by {@link #from(String, String, int)} method.
  * <br/>
  *
- * @see ArmyOption#XID
+ * @see Option#XID
  * @see RmSession
  */
 public interface Xid extends OptionSpec {
@@ -143,7 +143,7 @@ public interface Xid extends OptionSpec {
      */
     @Nullable
     @Override
-    <T> T valueOf(ArmyOption<T> option);
+    <T> T valueOf(Option<T> option);
 
     /**
      * <p>
@@ -155,7 +155,7 @@ public interface Xid extends OptionSpec {
      * @throws IllegalArgumentException throw when gtrid or bqual error.
      */
     static Xid from(String gtrid, @Nullable String bqual, int formatId) {
-        return ArmyXid.from(gtrid, bqual, formatId, ArmyOption.EMPTY_OPTION_FUNC);
+        return ArmyXid.from(gtrid, bqual, formatId, Option.EMPTY_OPTION_FUNC);
     }
 
     /**
@@ -168,7 +168,7 @@ public interface Xid extends OptionSpec {
      * @throws IllegalArgumentException throw when gtrid or bqual error.
      * @throws NullPointerException     throw when optionFunc is null
      */
-    static Xid from(String gtrid, @Nullable String bqual, int formatId, Function<ArmyOption<?>, ?> optionFunc) {
+    static Xid from(String gtrid, @Nullable String bqual, int formatId, Function<Option<?>, ?> optionFunc) {
         return ArmyXid.from(gtrid, bqual, formatId, optionFunc);
     }
 

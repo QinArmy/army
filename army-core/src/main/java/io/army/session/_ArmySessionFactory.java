@@ -337,9 +337,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
             }
 
             final _ArmySessionFactory factory = this.factory;
-
+            final boolean readonly = this.readonly;
             try {
-                if (!this.readonly && factory.readonly) {
+                if (!readonly && factory.readonly) {
                     String m = String.format("%s is read only.", factory);
                     throw new CreateSessionException(m);
                 } else if (visible != Visible.ONLY_VISIBLE && factory.isSessionDontSupportVisible(sessionName)) {
@@ -354,8 +354,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
             } catch (SessionException e) {
                 return handleError(e);
             }
-
-            return this.createSession(sessionName);
+            return createSession(sessionName, readonly);
         }
 
         public final boolean inOpenDriverSpi() {

@@ -12,10 +12,7 @@ import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveMetaExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.reactive.executor.ReactiveStmtExecutorFactory;
-import io.army.session.ArmyOption;
-import io.army.session.DataAccessException;
-import io.army.session.DriverException;
-import io.army.session.ServerException;
+import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -60,9 +57,9 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
 
     private final RmExecutorFunction rmFunc;
 
-    private final Function<ArmyOption<?>, io.jdbd.session.Option<?>> armyToJdbdOptionFunc;
+    private final Function<Option<?>, io.jdbd.session.Option<?>> armyToJdbdOptionFunc;
 
-    private final Function<io.jdbd.session.Option<?>, ArmyOption<?>> jdbdToArmyOptionFunc;
+    private final Function<io.jdbd.session.Option<?>, Option<?>> jdbdToArmyOptionFunc;
 
     private volatile int factoryClosed;
 
@@ -86,8 +83,8 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         this.localFunc = (LocalExecutorFunction) executorFuncArray[0];
         this.rmFunc = (RmExecutorFunction) executorFuncArray[1];
 
-        this.armyToJdbdOptionFunc = (Function<ArmyOption<?>, io.jdbd.session.Option<?>>) executorFuncArray[2];
-        this.jdbdToArmyOptionFunc = (Function<io.jdbd.session.Option<?>, ArmyOption<?>>) executorFuncArray[3];
+        this.armyToJdbdOptionFunc = (Function<Option<?>, io.jdbd.session.Option<?>>) executorFuncArray[2];
+        this.jdbdToArmyOptionFunc = (Function<io.jdbd.session.Option<?>, Option<?>>) executorFuncArray[3];
 
     }
 
@@ -164,7 +161,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
     @Override
-    public <T> T valueOf(ArmyOption<T> option) {
+    public <T> T valueOf(Option<T> option) {
         return null;
     }
 
@@ -199,6 +196,8 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         } else if (cause instanceof io.jdbd.result.ServerException) {
             final io.jdbd.result.ServerException se = (io.jdbd.result.ServerException) cause;
             e = new ServerException(cause, se.getSqlState(), se.getVendorCode(), mapToArmyOptionFunc(se::valueOf));
+        } else if (cause instanceof io.jdbd.session.SessionCloseException) {
+            e = new SessionClosedException(cause);
         } else {
             final JdbdException je = (JdbdException) cause;
             e = new DriverException(cause, je.getSqlState(), je.getVendorCode());
@@ -214,12 +213,12 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
 
-    Function<io.jdbd.session.Option<?>, ?> mapToJdbdOptionFunc(final @Nullable Function<ArmyOption<?>, ?> optionFunc) {
-        if (optionFunc == ArmyOption.EMPTY_OPTION_FUNC || optionFunc == null) {
+    Function<io.jdbd.session.Option<?>, ?> mapToJdbdOptionFunc(final @Nullable Function<Option<?>, ?> optionFunc) {
+        if (optionFunc == Option.EMPTY_OPTION_FUNC || optionFunc == null) {
             return io.jdbd.session.Option.EMPTY_OPTION_FUNC;
         }
         return jdbdOption -> {
-            final ArmyOption<?> armyOption;
+            final Option<?> armyOption;
             armyOption = mapToArmyOption(jdbdOption);
             if (armyOption == null) {
                 return null;
@@ -229,9 +228,9 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
 
-    Function<ArmyOption<?>, ?> mapToArmyOptionFunc(final @Nullable Function<io.jdbd.session.Option<?>, ?> optionFunc) {
+    Function<Option<?>, ?> mapToArmyOptionFunc(final @Nullable Function<io.jdbd.session.Option<?>, ?> optionFunc) {
         if (optionFunc == io.jdbd.session.Option.EMPTY_OPTION_FUNC || optionFunc == null) {
-            return ArmyOption.EMPTY_OPTION_FUNC;
+            return Option.EMPTY_OPTION_FUNC;
         }
         return armyOption -> {
             final io.jdbd.session.Option<?> jdbdOption;
@@ -245,35 +244,35 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
 
 
     @Nullable
-    io.jdbd.session.Option<?> mapToJdbdOption(final @Nullable ArmyOption<?> option) {
+    io.jdbd.session.Option<?> mapToJdbdOption(final @Nullable Option<?> option) {
         final io.jdbd.session.Option<?> jdbdOption;
         if (option == null) {
             jdbdOption = null;
-        } else if (option == ArmyOption.IN_TRANSACTION) {
+        } else if (option == Option.IN_TRANSACTION) {
             jdbdOption = io.jdbd.session.Option.IN_TRANSACTION;
-        } else if (option == ArmyOption.ISOLATION) {
+        } else if (option == Option.ISOLATION) {
             jdbdOption = io.jdbd.session.Option.ISOLATION;
-        } else if (option == ArmyOption.READ_ONLY) {
+        } else if (option == Option.READ_ONLY) {
             jdbdOption = io.jdbd.session.Option.READ_ONLY;
-        } else if (option == ArmyOption.XID) {
+        } else if (option == Option.XID) {
             jdbdOption = io.jdbd.session.Option.XID;
-        } else if (option == ArmyOption.XA_STATES) {
+        } else if (option == Option.XA_STATES) {
             jdbdOption = io.jdbd.session.Option.XA_STATES;
-        } else if (option == ArmyOption.XA_FLAGS) {
+        } else if (option == Option.XA_FLAGS) {
             jdbdOption = io.jdbd.session.Option.XA_FLAGS;
-        } else if (option == ArmyOption.NAME) {
+        } else if (option == Option.NAME) {
             jdbdOption = io.jdbd.session.Option.NAME;
-        } else if (option == ArmyOption.CHAIN) {
+        } else if (option == Option.CHAIN) {
             jdbdOption = io.jdbd.session.Option.CHAIN;
-        } else if (option == ArmyOption.RELEASE) {
+        } else if (option == Option.RELEASE) {
             jdbdOption = io.jdbd.session.Option.RELEASE;
-        } else if (option == ArmyOption.AUTO_COMMIT) {
+        } else if (option == Option.AUTO_COMMIT) {
             jdbdOption = io.jdbd.session.Option.AUTO_COMMIT;
-        } else if (option == ArmyOption.WAIT) {
+        } else if (option == Option.WAIT) {
             jdbdOption = io.jdbd.session.Option.WAIT;
-        } else if (option == ArmyOption.LOCK_TIMEOUT) {
+        } else if (option == Option.LOCK_TIMEOUT) {
             jdbdOption = io.jdbd.session.Option.LOCK_TIMEOUT;
-        } else if (option == ArmyOption.READ_ONLY_SESSION) {
+        } else if (option == Option.READ_ONLY_SESSION) {
             jdbdOption = io.jdbd.session.Option.READ_ONLY_SESSION;
         } else {
             jdbdOption = this.armyToJdbdOptionFunc.apply(option);
@@ -282,36 +281,36 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
     @Nullable
-    ArmyOption<?> mapToArmyOption(final @Nullable io.jdbd.session.Option<?> option) {
-        final ArmyOption<?> armyOption;
+    Option<?> mapToArmyOption(final @Nullable io.jdbd.session.Option<?> option) {
+        final Option<?> armyOption;
         if (option == null) {
             armyOption = null;
         } else if (option == io.jdbd.session.Option.IN_TRANSACTION) {
-            armyOption = ArmyOption.IN_TRANSACTION;
+            armyOption = Option.IN_TRANSACTION;
         } else if (option == io.jdbd.session.Option.ISOLATION) {
-            armyOption = ArmyOption.ISOLATION;
+            armyOption = Option.ISOLATION;
         } else if (option == io.jdbd.session.Option.READ_ONLY) {
-            armyOption = ArmyOption.READ_ONLY;
+            armyOption = Option.READ_ONLY;
         } else if (option == io.jdbd.session.Option.XID) {
-            armyOption = ArmyOption.XID;
+            armyOption = Option.XID;
         } else if (option == io.jdbd.session.Option.XA_STATES) {
-            armyOption = ArmyOption.XA_STATES;
+            armyOption = Option.XA_STATES;
         } else if (option == io.jdbd.session.Option.XA_FLAGS) {
-            armyOption = ArmyOption.XA_FLAGS;
+            armyOption = Option.XA_FLAGS;
         } else if (option == io.jdbd.session.Option.NAME) {
-            armyOption = ArmyOption.NAME;
+            armyOption = Option.NAME;
         } else if (option == io.jdbd.session.Option.CHAIN) {
-            armyOption = ArmyOption.CHAIN;
+            armyOption = Option.CHAIN;
         } else if (option == io.jdbd.session.Option.RELEASE) {
-            armyOption = ArmyOption.RELEASE;
+            armyOption = Option.RELEASE;
         } else if (option == io.jdbd.session.Option.AUTO_COMMIT) {
-            armyOption = ArmyOption.AUTO_COMMIT;
+            armyOption = Option.AUTO_COMMIT;
         } else if (option == io.jdbd.session.Option.WAIT) {
-            armyOption = ArmyOption.WAIT;
+            armyOption = Option.WAIT;
         } else if (option == io.jdbd.session.Option.LOCK_TIMEOUT) {
-            armyOption = ArmyOption.LOCK_TIMEOUT;
+            armyOption = Option.LOCK_TIMEOUT;
         } else if (option == io.jdbd.session.Option.READ_ONLY_SESSION) {
-            armyOption = ArmyOption.READ_ONLY_SESSION;
+            armyOption = Option.READ_ONLY_SESSION;
         } else {
             armyOption = this.jdbdToArmyOptionFunc.apply(option);
         }
@@ -357,8 +356,8 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     private static Object[] createLocalExecutorFunc(final Database serverDatabase) {
         final LocalExecutorFunction localFunc;
         final RmExecutorFunction rmFunc;
-        final Function<ArmyOption<?>, io.jdbd.session.Option<?>> armyToJdbdOptionFunc;
-        final Function<io.jdbd.session.Option<?>, ArmyOption<?>> jdbdToArmyOptionFunc;
+        final Function<Option<?>, io.jdbd.session.Option<?>> armyToJdbdOptionFunc;
+        final Function<io.jdbd.session.Option<?>, Option<?>> jdbdToArmyOptionFunc;
 
         switch (serverDatabase) {
             case MySQL:

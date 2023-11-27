@@ -42,15 +42,15 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
 
     Mono<?> setSavePoint();
 
-    Mono<?> setSavePoint(Function<ArmyOption<?>, ?> optionFunc);
+    Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc);
 
     Mono<? extends ReactiveSession> releaseSavePoint(Object savepoint);
 
-    Mono<? extends ReactiveSession> releaseSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
+    Mono<? extends ReactiveSession> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
     Mono<? extends ReactiveSession> rollbackToSavePoint(Object savepoint);
 
-    Mono<? extends ReactiveSession> rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
+    Mono<? extends ReactiveSession> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
     /*-------------------below query methods-------------------*/
 
