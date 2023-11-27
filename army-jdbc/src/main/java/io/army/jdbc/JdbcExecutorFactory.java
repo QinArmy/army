@@ -9,8 +9,8 @@ import io.army.env.SyncKey;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
+import io.army.session.ArmyOption;
 import io.army.session.DataAccessException;
-import io.army.session.Option;
 import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
@@ -232,7 +232,7 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     @Nullable
     @Override
-    public <T> T valueOf(Option<T> option) {
+    public <T> T valueOf(ArmyOption<T> option) {
         return null;
     }
 

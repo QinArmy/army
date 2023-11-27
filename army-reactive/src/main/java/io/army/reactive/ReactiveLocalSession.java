@@ -24,11 +24,11 @@ public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 
     Mono<ReactiveLocalSession> commit();
 
-    Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc);
+    Mono<Optional<TransactionInfo>> commit(Function<ArmyOption<?>, ?> optionFunc);
 
     Mono<ReactiveLocalSession> rollback();
 
-    Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc);
+    Mono<Optional<TransactionInfo>> rollback(Function<ArmyOption<?>, ?> optionFunc);
 
 
     @Override
@@ -39,13 +39,13 @@ public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 
 
     @Override
-    Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+    Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
 
     @Override
     Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint);
 
     @Override
-    Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+    Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
 
 
 }

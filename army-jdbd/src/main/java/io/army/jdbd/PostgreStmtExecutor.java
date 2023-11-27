@@ -3,7 +3,7 @@ package io.army.jdbd;
 import io.army.mapping.MappingType;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
-import io.army.session.Option;
+import io.army.session.ArmyOption;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.jdbd.meta.JdbdType;
@@ -29,7 +29,7 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
     }
 
     @Nullable
-    static io.jdbd.session.Option<?> mapToJdbdDialectOption(final Option<?> option) {
+    static io.jdbd.session.Option<?> mapToJdbdDialectOption(final ArmyOption<?> option) {
         final io.jdbd.session.Option<?> jdbdOption;
         if (DEFERRABLE.equals(option)) {
             jdbdOption = io.jdbd.session.Option.DEFERRABLE;
@@ -40,8 +40,8 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
     }
 
     @Nullable
-    static Option<?> mapToArmyDialectOption(final io.jdbd.session.Option<?> option) {
-        final Option<?> armyOption;
+    static ArmyOption<?> mapToArmyDialectOption(final io.jdbd.session.Option<?> option) {
+        final ArmyOption<?> armyOption;
         if (io.jdbd.session.Option.DEFERRABLE.equals(option)) {
             armyOption = DEFERRABLE;
         } else {
@@ -59,7 +59,7 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
      * @see LocalDatabaseSession#startTransaction(TransactionOption, HandleMode)
      * @see <a href="https://www.postgresql.org/docs/current/sql-start-transaction.html">postgre : DEFERRABLE</a>
      */
-    private static final Option<Boolean> DEFERRABLE = Option.from("DEFERRABLE", Boolean.class);
+    private static final ArmyOption<Boolean> DEFERRABLE = ArmyOption.from("DEFERRABLE", Boolean.class);
 
 
     /**

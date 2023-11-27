@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
 import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
+import io.army.session.executor.DriverSpiHolder;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
@@ -23,7 +24,6 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -44,8 +44,12 @@ import java.util.stream.Collectors;
  */
 abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSession {
 
+    private static final AtomicIntegerFieldUpdater<ArmyReactiveSession> SESSION_CLOSED =
+            AtomicIntegerFieldUpdater.newUpdater(ArmyReactiveSession.class, "sessionClosed");
+
+
     final ReactiveStmtExecutor stmtExecutor;
-    private final AtomicBoolean sessionClosed = new AtomicBoolean(false);
+    private volatile int sessionClosed;
 
     ArmyReactiveSession(ArmyReactiveSessionFactory.ReactiveSessionBuilder<?, ?> builder) {
         super(builder);
@@ -81,7 +85,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             info = obtainTransactionInfo();
             in = info != null && info.inTransaction();
         } catch (Exception e) {
-            throw wrapSessionError(e);
+            throw (RuntimeException) handleExecutionError(e);
         }
         return in;
 
@@ -94,7 +98,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     @Override
     public final <R> Flux<R> query(DqlStatement statement, Class<R> resultClass) {
-        return this.query(statement, resultClass, defaultOption());
+        return query(statement, resultClass, defaultOption());
     }
 
     @Override
@@ -109,7 +113,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     @Override
-    public <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
+    public final <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
         return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryOptional(s, resultClass, o)); // here ,use o not option
     }
 
@@ -135,39 +139,39 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     @Override
     public final Mono<ResultStates> save(Object domain) {
-        return this.update(ArmyCriteria.insertStmt(this, domain), defaultOption());
+        return update(ArmyCriteria.insertStmt(this, domain), defaultOption());
     }
 
     @Override
     public final Mono<ResultStates> update(SimpleDmlStatement statement) {
-        return this.update(statement, defaultOption());
+        return update(statement, defaultOption());
     }
 
     @Override
-    public final Mono<ResultStates> update(SimpleDmlStatement statement, ReactiveStmtOption option) {
+    public final Mono<ResultStates> update(SimpleDmlStatement statement, final ReactiveStmtOption unsafeOption) {
         final Mono<ResultStates> mono;
         if (statement instanceof _BatchStatement) {
             mono = Mono.error(_Exceptions.unexpectedStatement(statement));
         } else if (statement instanceof InsertStatement) {
-            mono = this.executeInsert((InsertStatement) statement, option);
+            mono = executeInsert((InsertStatement) statement, replaceIfNeed(unsafeOption));
         } else {
-            mono = this.executeUpdate(statement, option);
+            mono = executeUpdate(statement, replaceIfNeed(unsafeOption));
         }
         return mono;
     }
 
     @Override
     public final <T> Mono<ResultStates> batchSave(List<T> domainList) {
-        return this.update(ArmyCriteria.batchInsertStmt(this, domainList), defaultOption());
+        return update(ArmyCriteria.batchInsertStmt(this, domainList), defaultOption());
     }
 
     @Override
     public final Flux<ResultStates> batchUpdate(BatchDmlStatement statement) {
-        return this.batchUpdate(statement, defaultOption());
+        return batchUpdate(statement, defaultOption());
     }
 
     @Override
-    public Flux<ResultStates> batchUpdate(BatchDmlStatement statement, final ReactiveStmtOption option) {
+    public final Flux<ResultStates> batchUpdate(BatchDmlStatement statement, final ReactiveStmtOption option) {
         Flux<ResultStates> flux;
         try {
             if (!(statement instanceof _BatchStatement)) {
@@ -198,7 +202,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 throw updateChildNoTransaction();
             }
         } catch (Throwable e) {
-            flux = Flux.error(_Exceptions.wrapIfNeed(e));
+            flux = Flux.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).close();
@@ -210,42 +214,61 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     @Override
     public final long sessionIdentifier() throws SessionException {
-        if (this.sessionClosed.get()) {
+        if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
         try {
             return this.stmtExecutor.sessionIdentifier();
         } catch (Exception e) {
-            throw new SessionException(e.getMessage(), e);
+            throw (RuntimeException) handleExecutionError(e);
         }
     }
 
     @Override
     public final Mono<TransactionInfo> transactionInfo() {
-        return this.stmtExecutor.transactionInfo()
-                .onErrorMap(_Exceptions::wrapIfNeed);
+        final Mono<TransactionInfo> mono;
+        final TransactionInfo info;
+        if (isClosed()) {
+            mono = Mono.error(_Exceptions.sessionClosed(this));
+        } else if ((info = obtainTransactionInfo()) == null) {
+            mono = this.stmtExecutor.transactionInfo()
+                    .onErrorMap(this::handleExecutionError);
+        } else {
+            mono = Mono.just(info);
+        }
+        return mono;
     }
 
     @Override
     public final Mono<?> setSavePoint() {
-        return this.setSavePoint(Option.EMPTY_OPTION_FUNC);
+        return this.setSavePoint(ArmyOption.EMPTY_OPTION_FUNC);
     }
 
 
     @Override
-    public final Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
+    public final Mono<?> setSavePoint(Function<ArmyOption<?>, ?> optionFunc) {
         return this.stmtExecutor.setSavePoint(optionFunc)
-                .onErrorMap(_Exceptions::wrapIfNeed);
+                .onErrorMap(this::handleExecutionError);
     }
 
     @Override
-    public final <T> T valueOf(Option<T> option) {
-        return null;
+    public final <T> T valueOf(final ArmyOption<T> option) {
+        try {
+            return this.stmtExecutor.valueOf(option);
+        } catch (Exception e) {
+            throw (RuntimeException) handleExecutionError(e);
+        }
     }
 
     @Override
     public final boolean isClosed() {
-        return this.sessionClosed.get();
+        final boolean closed;
+        if (this instanceof DriverSpiHolder) {
+            closed = this.sessionClosed != 0 || this.stmtExecutor.isClosed();
+        } else {
+            closed = this.sessionClosed != 0;
+        }
+        return closed;
     }
 
     @Override
@@ -257,10 +280,36 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     /*-------------------below package methods -------------------*/
 
-    abstract ReactiveStmtOption defaultOption();
+
 
 
     /*-------------------below private methods -------------------*/
+
+    private ReactiveStmtOption defaultOption() {
+        final TransactionInfo info;
+        info = obtainTransactionInfo();
+
+        final ReactiveStmtOption option;
+        if (info == null) {
+            option = ArmyReactiveStmtOptions.DEFAULT;
+        } else {
+            option = ArmyReactiveStmtOptions.overrideOptionIfNeed(ArmyReactiveStmtOptions.DEFAULT, info);
+        }
+        return option;
+    }
+
+    private ReactiveStmtOption replaceIfNeed(final ReactiveStmtOption option) {
+        final TransactionInfo info;
+
+        final ReactiveStmtOption newOption;
+        if (option instanceof ArmyReactiveStmtOptions.TransactionOverrideOption
+                || (info = obtainTransactionInfo()) == null) {
+            newOption = option;
+        } else {
+            newOption = ArmyReactiveStmtOptions.overrideOptionIfNeed(option, info);
+        }
+        return newOption;
+    }
 
     /**
      * @see #query(DqlStatement, Class, ReactiveStmtOption)
@@ -281,13 +330,13 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             stmt = parseDqlStatement(statement, option);
             if (stmt instanceof SingleSqlStmt) {
                 flux = exeFunc.apply((SingleSqlStmt) stmt, option)
-                        .onErrorMap(_ArmySession::wrapIfNeed);
+                        .onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairStmt)) {
                 // no bug,never here
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (statement instanceof InsertStatement) {
                 flux = executePairInsertQuery((InsertStatement) statement, (PairStmt) stmt, option, exeFunc)
-                        .onErrorMap(_ArmySession::wrapIfNeed);
+                        .onErrorMap(this::handlePairStmtError);
             } else {
                 //TODO add DmlStatement code for firebird
                 // no bug,never here
@@ -353,13 +402,13 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     /**
+     * @param option the instance is returned by {@link #replaceIfNeed(ReactiveStmtOption)}.
      * @see #update(SimpleDmlStatement, ReactiveStmtOption)
      */
-    private Mono<ResultStates> executeInsert(InsertStatement statement, ReactiveStmtOption option) {
+    private Mono<ResultStates> executeInsert(final InsertStatement statement, final ReactiveStmtOption option) {
         Mono<ResultStates> mono;
         try {
             assertSession(statement);
-
             final Stmt stmt;
             stmt = parseInsertStatement(statement);
             if (stmt instanceof SimpleStmt) {
@@ -381,7 +430,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
             }
         } catch (Throwable e) {
-            mono = Mono.error(_Exceptions.wrapIfNeed(e));
+            mono = Mono.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).close();
@@ -392,9 +441,10 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
 
     /**
+     * @param option the instance is returned by {@link #replaceIfNeed(ReactiveStmtOption)}.
      * @see #update(SimpleDmlStatement, ReactiveStmtOption)
      */
-    private Mono<ResultStates> executeUpdate(SimpleDmlStatement statement, ReactiveStmtOption option) {
+    private Mono<ResultStates> executeUpdate(final SimpleDmlStatement statement, final ReactiveStmtOption option) {
         Mono<ResultStates> mono;
         try {
             assertSession(statement);
@@ -402,14 +452,14 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             final Stmt stmt;
             stmt = parseDmlStatement(statement, option);
             if (stmt instanceof SimpleStmt) {
-                mono = this.stmtExecutor.update((SimpleStmt) stmt, option)
+                mono = this.stmtExecutor.update((SimpleStmt) stmt, option, ArmyOption.EMPTY_OPTION_FUNC)
                         .onErrorMap(this::handleExecutionError);
             } else if (stmt instanceof PairStmt) {
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
 
-                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option)
-                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option)
+                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, ArmyOption.EMPTY_OPTION_FUNC)
+                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, ArmyOption.EMPTY_OPTION_FUNC)
                                 .doOnSuccess(childStates -> {
                                     if (childStates.affectedRows() != parentStates.affectedRows()) {
                                         throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());
@@ -420,7 +470,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
             }
         } catch (Throwable e) {
-            mono = Mono.error(_Exceptions.wrapIfNeed(e));
+            mono = Mono.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).close();
@@ -436,19 +486,18 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     private <T> Mono<T> closeSession() {
-        if (!this.sessionClosed.compareAndSet(false, true)) {
+        if (!SESSION_CLOSED.compareAndSet(this, 0, 1)) {
             return Mono.empty();
         }
         return this.stmtExecutor.close();
     }
 
 
-    private ReactiveStmtOption replaceIfNeed(ReactiveStmtOption option) {
-        return option;
-    }
-
     private Throwable handleExecutionError(final Throwable cause) {
-        return _Exceptions.wrapIfNeed(cause);
+        if (cause instanceof SessionClosedException) {
+            SESSION_CLOSED.compareAndSet(this, 0, 1);
+        }
+        return _ArmySession.wrapIfNeed(cause);
     }
 
 
@@ -458,7 +507,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             rollbackOnlyOnError(error);
             return error;
         }
-        return _ArmySession.wrapIfNeed(cause);
+        return handleExecutionError(cause);
     }
 
 

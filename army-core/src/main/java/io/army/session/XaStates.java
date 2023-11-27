@@ -8,12 +8,12 @@ import io.army.util._StringUtils;
  * This enum representing An XA transaction progresses states.
  * <br/>
  * <p>
- * Application developer can get {@link XaStates} by {@link TransactionInfo#valueOf(Option)} <br/>
- * when {@link RmSession} in XA transaction block. see {@link TransactionInfo#valueOf(Option)}
+ * Application developer can get {@link XaStates} by {@link TransactionInfo#valueOf(ArmyOption)} <br/>
+ * when {@link RmSession} in XA transaction block. see {@link TransactionInfo#valueOf(ArmyOption)}
  * <p>
  * <br/>
  *
- * @see Option#XA_STATES
+ * @see ArmyOption#XA_STATES
  * @see RmSession
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-states.html">XA Transaction States</a>
  * @since 1.0

@@ -13,7 +13,7 @@ import io.army.session.record.ResultStates;
  *     <li>{@code io.army.reactive.ReactiveCursor} reactive cursor</li>
  * </ul>
  *
- * @see ResultStates#valueOf(Option)
+ * @see ResultStates#valueOf(ArmyOption)
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
  * @since 1.0

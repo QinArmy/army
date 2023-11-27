@@ -3,7 +3,7 @@ package io.army.jdbd;
 import io.army.mapping.MappingType;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
-import io.army.session.Option;
+import io.army.session.ArmyOption;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.util._Exceptions;
@@ -36,16 +36,16 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
     }
 
     @Nullable
-    static io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option) {
+    static io.jdbd.session.Option<?> mapToJdbdDialectOption(ArmyOption<?> option) {
         return null;
     }
 
     @Nullable
-    static Option<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option) {
+    static ArmyOption<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option) {
         return null;
     }
 
-    private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
+    private static final ArmyOption<Boolean> WITH_CONSISTENT_SNAPSHOT = ArmyOption.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
 
     /**
      * private constructor

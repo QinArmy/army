@@ -1,9 +1,14 @@
 package io.army.session;
 
-public class SessionClosedException extends SessionException {
+public final class SessionClosedException extends SessionException {
 
     public SessionClosedException(String message) {
         super(message);
     }
+
+    public SessionClosedException(Throwable cause) {
+        super(cause);
+    }
+
 
 }

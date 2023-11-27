@@ -278,7 +278,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 isolation = readIsolation(resultSet.getString(1));
                 readOnly = resultSet.getBoolean(2);
 
-                return TransactionInfo.info(false, isolation, readOnly, Option.EMPTY_OPTION_FUNC);
+                return TransactionInfo.info(false, isolation, readOnly, ArmyOption.EMPTY_OPTION_FUNC);
             }
         } catch (Exception e) {
             throw handleException(e);
@@ -315,7 +315,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     private static final class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
 
-        private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
+        private static final ArmyOption<Boolean> WITH_CONSISTENT_SNAPSHOT = ArmyOption.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
 
 
         private TransactionInfo transactionInfo;
@@ -380,11 +380,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             stmtCount++;
 
-            final Function<Option<?>, ?> optionFunc;
+            final Function<ArmyOption<?>, ?> optionFunc;
             if (consistentSnapshot != null && consistentSnapshot) {
-                optionFunc = Option.singleFunc(WITH_CONSISTENT_SNAPSHOT, Boolean.TRUE);
+                optionFunc = ArmyOption.singleFunc(WITH_CONSISTENT_SNAPSHOT, Boolean.TRUE);
             } else {
-                optionFunc = Option.EMPTY_OPTION_FUNC;
+                optionFunc = ArmyOption.EMPTY_OPTION_FUNC;
             }
 
             // execute start transaction statements
@@ -401,7 +401,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          */
         @Nullable
         @Override
-        public TransactionInfo commit(final Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo commit(final Function<ArmyOption<?>, ?> optionFunc) {
             return commitOrRollback(true, optionFunc);
         }
 
@@ -410,7 +410,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          */
         @Nullable
         @Override
-        public TransactionInfo rollback(final Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo rollback(final Function<ArmyOption<?>, ?> optionFunc) {
             return commitOrRollback(false, optionFunc);
         }
 
@@ -422,7 +422,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
         @Nullable
-        private TransactionInfo commitOrRollback(final boolean commit, final Function<Option<?>, ?> optionFunc)
+        private TransactionInfo commitOrRollback(final boolean commit, final Function<ArmyOption<?>, ?> optionFunc)
                 throws DataAccessException {
 
             final StringBuilder builder = new StringBuilder(20);
@@ -443,13 +443,13 @@ abstract class MySQLExecutor extends JdbcExecutor {
             }
 
             final Object release;
-            if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+            if (optionFunc == ArmyOption.EMPTY_OPTION_FUNC) {
                 release = null;
             } else {
-                release = optionFunc.apply(Option.RELEASE);
+                release = optionFunc.apply(ArmyOption.RELEASE);
             }
             if (chain && Boolean.TRUE.equals(release)) {
-                String m = String.format("%s[true] and %s[true] conflict", Option.CHAIN.name(), Option.RELEASE.name());
+                String m = String.format("%s[true] and %s[true] conflict", ArmyOption.CHAIN.name(), ArmyOption.RELEASE.name());
                 throw new IllegalArgumentException(m);
             }
 
@@ -542,11 +542,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(6);
+            final Map<ArmyOption<?>, Object> map = _Collections.hashMap(6);
 
-            map.put(Option.XID, xid);
-            map.put(Option.XA_FLAGS, flags);
-            map.put(Option.XA_STATES, XaStates.ACTIVE);
+            map.put(ArmyOption.XID, xid);
+            map.put(ArmyOption.XA_FLAGS, flags);
+            map.put(ArmyOption.XA_STATES, XaStates.ACTIVE);
 
             final TransactionInfo info;
             this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
@@ -561,15 +561,15 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final TransactionInfo end(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+        public final TransactionInfo end(final Xid xid, final int flags, Function<ArmyOption<?>, ?> optionFunc) {
 
             final TransactionInfo info = this.transactionInfo;
 
             final Xid infoXid;
-            if (info == null || (infoXid = info.valueOf(Option.XID)) == null || !infoXid.equals(xid)) {
+            if (info == null || (infoXid = info.valueOf(ArmyOption.XID)) == null || !infoXid.equals(xid)) {
                 throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
-            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.ACTIVE) {
-                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
+            } else if (info.nonNullOf(ArmyOption.XA_STATES) != XaStates.ACTIVE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(ArmyOption.XA_STATES));
             } else if (((~endSupportFlags()) & flags) != 0) {
                 throw _Exceptions.xaInvalidFlag(flags, "end");
             }
@@ -587,11 +587,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
                 statement.executeUpdate(builder.toString());
 
-                final Map<Option<?>, Object> map = _Collections.hashMap(6);
+                final Map<ArmyOption<?>, Object> map = _Collections.hashMap(6);
 
-                map.put(Option.XID, infoXid); // same instance
-                map.put(Option.XA_FLAGS, flags);
-                map.put(Option.XA_STATES, XaStates.IDLE);
+                map.put(ArmyOption.XID, infoXid); // same instance
+                map.put(ArmyOption.XA_FLAGS, flags);
+                map.put(ArmyOption.XA_STATES, XaStates.IDLE);
 
                 final TransactionInfo newInfo;
                 this.transactionInfo = newInfo = TransactionInfo.info(true, info.isolation(), info.isReadOnly(), map::get);
@@ -609,16 +609,16 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final int prepare(final Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
 
             final TransactionInfo info = this.transactionInfo;
 
             final Xid infoXid;
-            if (info == null || (infoXid = info.valueOf(Option.XID)) == null || !infoXid.equals(xid)) {
+            if (info == null || (infoXid = info.valueOf(ArmyOption.XID)) == null || !infoXid.equals(xid)) {
                 throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
-            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
-            } else if ((info.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
+            } else if (info.nonNullOf(ArmyOption.XA_STATES) != XaStates.IDLE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(ArmyOption.XA_STATES));
+            } else if ((info.nonNullOf(ArmyOption.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
                 throw _Exceptions.xaTransactionRollbackOnly(infoXid);
             }
 
@@ -655,7 +655,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+        public final void commit(final Xid xid, final int flags, Function<ArmyOption<?>, ?> optionFunc) {
 
             if (((~commitSupportFlags()) & flags) != 0) {
                 throw _Exceptions.xaInvalidFlag(flags, "commit");
@@ -670,12 +670,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
             if ((flags & RmSession.TM_ONE_PHASE) == 0) { // two phase commit
                 xidToString(xid, builder);
             } else if ((info = this.transactionInfo) == null
-                    || (infoXid = info.valueOf(Option.XID)) == null
+                    || (infoXid = info.valueOf(ArmyOption.XID)) == null
                     || !infoXid.equals(xid)) {
                 throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
-            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
-            } else if ((info.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
+            } else if (info.nonNullOf(ArmyOption.XA_STATES) != XaStates.IDLE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(ArmyOption.XA_STATES));
+            } else if ((info.nonNullOf(ArmyOption.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
                 throw _Exceptions.xaTransactionRollbackOnly(infoXid);
             } else {
                 xidToString(infoXid, builder);
@@ -702,18 +702,18 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final void rollback(final Xid xid, Function<ArmyOption<?>, ?> optionFunc) {
 
             final TransactionInfo info = this.transactionInfo;
 
             final Xid infoXid, actualXid;
             final boolean onePhaseRollback;
             if (info != null
-                    && (infoXid = info.valueOf(Option.XID)) != null
+                    && (infoXid = info.valueOf(ArmyOption.XID)) != null
                     && infoXid.equals(xid)) {
                 // rollback current transaction
-                if (infoXid.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, infoXid.nonNullOf(Option.XA_STATES));
+                if (infoXid.nonNullOf(ArmyOption.XA_STATES) != XaStates.IDLE) {
+                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, infoXid.nonNullOf(ArmyOption.XA_STATES));
                 }
                 actualXid = infoXid;
                 onePhaseRollback = true;
@@ -741,12 +741,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final void forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException {
             throw _Exceptions.xaDontSupportForget(Database.MySQL);
         }
 
         @Override
-        public final Stream<Xid> recover(final int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
+        public final Stream<Xid> recover(final int flags, Function<ArmyOption<?>, ?> optionFunc, StreamOption option) {
 
             if (((~recoverSupportFlags()) & flags) != 0) {
                 throw _Exceptions.xaInvalidFlag(flags, "recover");

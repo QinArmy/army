@@ -15,12 +15,12 @@ import java.util.function.Function;
 final class ArmyTransactionInfo implements TransactionInfo {
 
     static ArmyTransactionInfo create(boolean inTransaction, @Nullable Isolation isolation, boolean readOnly,
-                                      @Nullable Function<Option<?>, ?> optionFunc) {
+                                      @Nullable Function<ArmyOption<?>, ?> optionFunc) {
         if (isolation == null || optionFunc == null) {
             throw new NullPointerException();
         }
         final XaStates states;
-        states = (XaStates) optionFunc.apply(Option.XA_STATES);
+        states = (XaStates) optionFunc.apply(ArmyOption.XA_STATES);
         if (states != null) {
             switch (states) {
                 case ACTIVE:
@@ -43,11 +43,11 @@ final class ArmyTransactionInfo implements TransactionInfo {
 
     private final boolean readOnly;
 
-    private final Function<Option<?>, ?> optionFunc;
+    private final Function<ArmyOption<?>, ?> optionFunc;
 
 
     private ArmyTransactionInfo(boolean inTransaction, Isolation isolation, boolean readOnly,
-                                Function<Option<?>, ?> optionFunc) {
+                                Function<ArmyOption<?>, ?> optionFunc) {
         this.inTransaction = inTransaction;
         this.isolation = isolation;
         this.readOnly = readOnly;
@@ -62,18 +62,18 @@ final class ArmyTransactionInfo implements TransactionInfo {
 
     @Override
     public boolean isRollbackOnly() {
-        final Function<Option<?>, ?> optionFunc;
+        final Function<ArmyOption<?>, ?> optionFunc;
 
         final boolean rollbackOnly;
         if (!this.inTransaction) {
             rollbackOnly = false;
-        } else if ((optionFunc = this.optionFunc) == Option.EMPTY_OPTION_FUNC) {
+        } else if ((optionFunc = this.optionFunc) == ArmyOption.EMPTY_OPTION_FUNC) {
             rollbackOnly = false;
-        } else if (Boolean.TRUE.equals(optionFunc.apply(Option.ROLLBACK_ONLY))) {
+        } else if (Boolean.TRUE.equals(optionFunc.apply(ArmyOption.ROLLBACK_ONLY))) {
             rollbackOnly = true;
         } else {
             final Object flags;
-            rollbackOnly = (flags = optionFunc.apply(Option.XA_FLAGS)) instanceof Integer
+            rollbackOnly = (flags = optionFunc.apply(ArmyOption.XA_FLAGS)) instanceof Integer
                     && ((Integer) flags & RmSession.TM_FAIL) != 0;
         }
         return rollbackOnly;
@@ -92,17 +92,17 @@ final class ArmyTransactionInfo implements TransactionInfo {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T valueOf(final @Nullable Option<T> option) {
+    public <T> T valueOf(final @Nullable ArmyOption<T> option) {
         final Object value;
         if (option == null) {
             value = null;
-        } else if (option == Option.IN_TRANSACTION) {
+        } else if (option == ArmyOption.IN_TRANSACTION) {
             value = this.inTransaction;
-        } else if (option == Option.ISOLATION) {
+        } else if (option == ArmyOption.ISOLATION) {
             value = this.isolation;
-        } else if (option == Option.READ_ONLY) {
+        } else if (option == ArmyOption.READ_ONLY) {
             value = this.readOnly;
-        } else if (this.optionFunc == Option.EMPTY_OPTION_FUNC) {
+        } else if (this.optionFunc == ArmyOption.EMPTY_OPTION_FUNC) {
             value = null;
         } else {
             value = this.optionFunc.apply(option);

@@ -145,12 +145,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
     @Override
-    public final Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException {
+    public final Object setSavePoint(Function<ArmyOption<?>, ?> optionFunc) throws DataAccessException {
         final Object name;
-        if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+        if (optionFunc == ArmyOption.EMPTY_OPTION_FUNC) {
             name = null;
         } else {
-            name = optionFunc.apply(Option.NAME);
+            name = optionFunc.apply(ArmyOption.NAME);
         }
 
         try {
@@ -167,7 +167,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
     @Override
-    public final void releaseSavePoint(final Object savepoint, final Function<Option<?>, ?> optionFunc)
+    public final void releaseSavePoint(final Object savepoint, final Function<ArmyOption<?>, ?> optionFunc)
             throws DataAccessException {
 
         if (!(savepoint instanceof Savepoint)) {
@@ -183,7 +183,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
     @Override
-    public final void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc)
+    public final void rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc)
             throws DataAccessException {
         if (!(savepoint instanceof Savepoint)) {
             throw _Exceptions.unknownSavePoint(savepoint);
@@ -259,7 +259,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
+    public final <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<ArmyOption<?>, ?> optionFunc)
             throws DataAccessException {
 
         if (resultClass != Long.class && resultClass != ResultStates.class) {
@@ -284,7 +284,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             final R r;
             if (resultClass == Long.class) {
                 r = (R) Long.valueOf(rows);
-            } else if (optionFunc != Option.EMPTY_OPTION_FUNC
+            } else if (optionFunc != ArmyOption.EMPTY_OPTION_FUNC
                     && Boolean.TRUE.equals(optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR))) {
                 r = (R) createNamedCursor(statement, rows, optionFunc);
             } else {
@@ -454,7 +454,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     @Nullable
     @Override
-    public final <T> T valueOf(Option<T> option) {
+    public final <T> T valueOf(ArmyOption<T> option) {
         return null;
     }
 
@@ -537,7 +537,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      */
     @SuppressWarnings("unused")
-    ResultStates createNamedCursor(Statement statement, long rows, Function<Option<?>, ?> optionFunc) {
+    ResultStates createNamedCursor(Statement statement, long rows, Function<ArmyOption<?>, ?> optionFunc) {
         throw new UnsupportedOperationException();
     }
 
@@ -645,14 +645,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     /**
      * @throws DataAccessException throw when chain is true and {@link #obtainTransaction()} is null.
      */
-    final boolean transactionChain(final Function<Option<?>, ?> optionFunc, final StringBuilder builder)
+    final boolean transactionChain(final Function<ArmyOption<?>, ?> optionFunc, final StringBuilder builder)
             throws DataAccessException {
 
         final Object chainValue;
-        if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+        if (optionFunc == ArmyOption.EMPTY_OPTION_FUNC) {
             chainValue = null;
         } else {
-            chainValue = optionFunc.apply(Option.CHAIN);
+            chainValue = optionFunc.apply(ArmyOption.CHAIN);
         }
 
         final boolean chain;

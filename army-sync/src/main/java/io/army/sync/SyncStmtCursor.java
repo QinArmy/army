@@ -1,8 +1,8 @@
 package io.army.sync;
 
 import io.army.criteria.Selection;
+import io.army.session.ArmyOption;
 import io.army.session.Direction;
-import io.army.session.Option;
 import io.army.session.StmtCursor;
 import io.army.session.record.ResultStates;
 
@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 /**
  * <p>This interface representing blocking {@link StmtCursor} that is produced by {@link io.army.criteria.Statement},army know the {@link Selection} list.
  *
- * @see ResultStates#valueOf(Option)
+ * @see ResultStates#valueOf(ArmyOption)
  * @see SyncStmtCursor#SYNC_STMT_CURSOR
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
@@ -30,7 +30,7 @@ public interface SyncStmtCursor extends StmtCursor, SyncCursor {
      *
      * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
      */
-    Option<SyncStmtCursor> SYNC_STMT_CURSOR = Option.from("SYNC STMT CURSOR", SyncStmtCursor.class);
+    ArmyOption<SyncStmtCursor> SYNC_STMT_CURSOR = ArmyOption.from("SYNC STMT CURSOR", SyncStmtCursor.class);
 
 
     @Nullable

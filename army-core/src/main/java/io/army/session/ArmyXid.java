@@ -1,9 +1,8 @@
 package io.army.session;
 
-import javax.annotation.Nullable;
-
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -16,7 +15,7 @@ final class ArmyXid implements Xid {
 
 
     static ArmyXid from(final String gtrid, final @Nullable String bqual, final int formatId,
-                        @Nullable Function<Option<?>, ?> optionFunc) {
+                        @Nullable Function<ArmyOption<?>, ?> optionFunc) {
         if (!_StringUtils.hasText(gtrid)) {
             throw new IllegalArgumentException("gtrid must have text");
         } else if (bqual != null && !_StringUtils.hasText(gtrid)) {
@@ -33,9 +32,9 @@ final class ArmyXid implements Xid {
 
     private final int formatId;
 
-    private final Function<Option<?>, ?> optionFunc;
+    private final Function<ArmyOption<?>, ?> optionFunc;
 
-    private ArmyXid(String gtrid, @Nullable String bqual, int formatId, Function<Option<?>, ?> optionFunc) {
+    private ArmyXid(String gtrid, @Nullable String bqual, int formatId, Function<ArmyOption<?>, ?> optionFunc) {
         this.gtrid = gtrid;
         this.bqual = bqual;
         this.formatId = formatId;
@@ -59,7 +58,7 @@ final class ArmyXid implements Xid {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T valueOf(final @Nullable Option<T> option) {
+    public <T> T valueOf(final @Nullable ArmyOption<T> option) {
         if (option == null) {
             return null;
         }
@@ -72,7 +71,7 @@ final class ArmyXid implements Xid {
     }
 
     @Override
-    public <T> T nonNullOf(Option<T> option) {
+    public <T> T nonNullOf(ArmyOption<T> option) {
         throw new NullPointerException();
     }
 

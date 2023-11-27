@@ -9,9 +9,6 @@ public interface StmtOption {
 
     boolean isPreferServerPrepare();
 
-
-    boolean isSupportTimeout();
-
     /**
      * <p>{@link io.army.dialect.DialectParser} Whether parse batch statement as multi-statement or not .
      * <p>Default : false
@@ -19,6 +16,9 @@ public interface StmtOption {
      * @return true : {@link io.army.dialect.DialectParser} Whether parse batch statement as multi-statement.
      */
     boolean isParseBatchAsMultiStmt();
+
+
+    boolean isSupportTimeout();
 
 
     /**

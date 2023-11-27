@@ -59,17 +59,17 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
     void setTransactionCharacteristics(TransactionOption option) throws DataAccessException;
 
-    Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    Object setSavePoint(Function<ArmyOption<?>, ?> optionFunc) throws DataAccessException;
 
-    void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    void releaseSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc) throws DataAccessException;
 
-    void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    void rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc) throws DataAccessException;
 
 
     <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass) throws DataAccessException;
 
 
-    <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
+    <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<ArmyOption<?>, ?> optionFunc)
             throws DataAccessException;
 
     /**
@@ -129,10 +129,10 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
         TransactionInfo startTransaction(TransactionOption option, HandleMode mode);
 
         @Nullable
-        TransactionInfo commit(Function<Option<?>, ?> optionFunc);
+        TransactionInfo commit(Function<ArmyOption<?>, ?> optionFunc);
 
         @Nullable
-        TransactionInfo rollback(Function<Option<?>, ?> optionFunc);
+        TransactionInfo rollback(Function<ArmyOption<?>, ?> optionFunc);
 
     }
 
@@ -145,7 +145,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
         TransactionInfo start(Xid xid, int flags, TransactionOption option) throws RmSessionException;
 
-        TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        TransactionInfo end(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException;
 
         /**
          * @param xid        target transaction xid
@@ -163,15 +163,15 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
          *                                <li>database server response error message</li>
          *                            </ol>
          */
-        int prepare(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        int prepare(Xid xid, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException;
 
-        void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        void commit(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException;
 
-        void rollback(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        void rollback(Xid xid, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException;
 
-        void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        void forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException;
 
-        Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) throws RmSessionException;
+        Stream<Xid> recover(int flags, Function<ArmyOption<?>, ?> optionFunc, StreamOption option) throws RmSessionException;
 
 
     }

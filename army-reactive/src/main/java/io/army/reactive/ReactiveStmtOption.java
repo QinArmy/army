@@ -10,24 +10,24 @@ public interface ReactiveStmtOption extends StmtOption {
 
 
     static ReactiveStmtOption fetchSize(int value) {
-        return null;
+        return ArmyReactiveStmtOptions.fetchSize(value);
     }
 
 
     static ReactiveStmtOption frequency(int value) {
-        return null;
+        return ArmyReactiveStmtOptions.frequency(value);
     }
 
     static ReactiveStmtOption timeoutMillis(int millis) {
-        return null;
+        return ArmyReactiveStmtOptions.timeoutMillis(millis);
     }
 
     static ReactiveStmtOption multiStmtMode(MultiStmtMode mode) {
-        return null;
+        return ArmyReactiveStmtOptions.multiStmtMode(mode);
     }
 
     static ReactiveStmtOption stateConsumer(Consumer<ResultStates> consumer) {
-        return null;
+        return ArmyReactiveStmtOptions.stateConsumer(consumer);
     }
 
     static Builder builder() {

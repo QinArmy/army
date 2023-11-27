@@ -766,7 +766,7 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
     }
 
-    public static NullPointerException optionValueIsNull(Option<?> option) {
+    public static NullPointerException optionValueIsNull(ArmyOption<?> option) {
         String m = String.format("error %s.nonNullOf(),the value of %s is null", OptionSpec.class.getName(), option);
         return new NullPointerException(m);
     }
@@ -876,17 +876,12 @@ public abstract class _Exceptions {
     }
 
 
-    public static SessionException sessionClosed(Session session) {
+    public static SessionClosedException sessionClosed(Session session) {
         String m;
         m = String.format("%s of %s have closed.", session.sessionFactory(), session);
         return new SessionClosedException(m);
     }
 
-
-    public static SessionException updateToRollbackOnlyError(Session session, TransactionStatus old) {
-        String m = String.format("%s update to rollback only occur error,old status : %s", session, old);
-        return new SessionException(m);
-    }
 
     public static SessionException childDmlNoTransaction(Session session, ChildTableMeta<?> table) {
         String m;
@@ -895,12 +890,6 @@ public abstract class _Exceptions {
         return new ChildDmlNoTractionException(m);
     }
 
-    public static VisibleModeException dontSupportNonVisible(Session session, Visible visible) {
-        String m;
-        m = String.format("%s of %s don't support %s[%s]."
-                , session.sessionFactory(), session, Visible.class.getName(), visible);
-        return new VisibleModeException(m);
-    }
 
 
     public static QueryInsertException dontSupportSubQueryInsert(Session session) {

@@ -31,31 +31,31 @@ public interface ReactiveRmSession extends ReactiveSession, RmSession {
 
     Mono<ReactiveRmSession> end(Xid xid, int flags);
 
-    Mono<ReactiveRmSession> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+    Mono<ReactiveRmSession> end(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
 
 
     Mono<Integer> prepare(Xid xid);
 
-    Mono<Integer> prepare(Xid xid, Function<Option<?>, ?> optionFunc);
+    Mono<Integer> prepare(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
 
 
     Mono<ReactiveRmSession> commit(Xid xid);
 
     Mono<ReactiveRmSession> commit(Xid xid, int flags);
 
-    Mono<ReactiveRmSession> commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+    Mono<ReactiveRmSession> commit(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
 
     Mono<ReactiveRmSession> rollback(Xid xid);
 
-    Mono<ReactiveRmSession> rollback(Xid xid, Function<Option<?>, ?> optionFunc);
+    Mono<ReactiveRmSession> rollback(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
 
     Mono<ReactiveRmSession> forget(Xid xid);
 
-    Mono<ReactiveRmSession> forget(Xid xid, Function<Option<?>, ?> optionFunc);
+    Mono<ReactiveRmSession> forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
 
     Flux<Optional<Xid>> recover(int flags);
 
-    Flux<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
+    Flux<Optional<Xid>> recover(int flags, Function<ArmyOption<?>, ?> optionFunc);
 
 
 }

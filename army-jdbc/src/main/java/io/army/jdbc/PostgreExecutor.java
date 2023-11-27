@@ -66,7 +66,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreExecutor.class);
 
-    private static final Option<Boolean> DEFERRABLE = Option.from("DEFERRABLE", Boolean.class);
+    private static final ArmyOption<Boolean> DEFERRABLE = ArmyOption.from("DEFERRABLE", Boolean.class);
 
     /**
      * private constructor
@@ -434,7 +434,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             readOnly = readBooleanFromMultiResult(statement);
             deferrable = readBooleanFromMultiResult(statement);
 
-            return TransactionInfo.info(false, isolation, readOnly, Option.singleFunc(DEFERRABLE, deferrable));
+            return TransactionInfo.info(false, isolation, readOnly, ArmyOption.singleFunc(DEFERRABLE, deferrable));
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -553,11 +553,11 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
 
-            final Function<Option<?>, ?> optionFunc;
+            final Function<ArmyOption<?>, ?> optionFunc;
             if (deferrable != null) {
-                optionFunc = Option.singleFunc(DEFERRABLE, deferrable);
+                optionFunc = ArmyOption.singleFunc(DEFERRABLE, deferrable);
             } else {
-                optionFunc = Option.EMPTY_OPTION_FUNC;
+                optionFunc = ArmyOption.EMPTY_OPTION_FUNC;
             }
 
             final TransactionInfo info;
@@ -568,13 +568,13 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
         @Nullable
         @Override
-        public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo commit(Function<ArmyOption<?>, ?> optionFunc) {
             return commitOrRollback(true, optionFunc);
         }
 
         @Nullable
         @Override
-        public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo rollback(Function<ArmyOption<?>, ?> optionFunc) {
             return commitOrRollback(false, optionFunc);
         }
 
@@ -590,7 +590,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/sql-rollback.html">ROLLBACK Statement</a>
          */
         @Nullable
-        private TransactionInfo commitOrRollback(final boolean commit, final Function<Option<?>, ?> optionFunc)
+        private TransactionInfo commitOrRollback(final boolean commit, final Function<ArmyOption<?>, ?> optionFunc)
                 throws DataAccessException {
 
             final StringBuilder builder = new StringBuilder(20);
@@ -645,10 +645,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
             if (info == null) {
                 states = null;
                 infoXid = null;
-            } else if ((states = info.valueOf(Option.XA_STATES)) == XaStates.ACTIVE) {
+            } else if ((states = info.valueOf(ArmyOption.XA_STATES)) == XaStates.ACTIVE) {
                 throw _Exceptions.xaBusyOnOtherTransaction();
             } else {
-                infoXid = info.valueOf(Option.XID);
+                infoXid = info.valueOf(ArmyOption.XID);
             }
 
 
@@ -662,10 +662,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
             } else if (flags != RmSession.TM_JOIN) {
                 throw _Exceptions.xaInvalidFlag(flags, "start");
             } else if (states == XaStates.IDLE && infoXid != null && infoXid.equals(xid)) { // It's ok to join an ended transaction. WebLogic does that.
-                final Map<Option<?>, Object> map;
+                final Map<ArmyOption<?>, Object> map;
                 map = cloneOption(info);
-                map.put(Option.XA_STATES, XaStates.ACTIVE); // modify states
-                map.put(Option.XA_FLAGS, flags); // modify flags
+                map.put(ArmyOption.XA_STATES, XaStates.ACTIVE); // modify states
+                map.put(ArmyOption.XA_FLAGS, flags); // modify flags
 
                 newInfo = TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), map::get);
             } else {
@@ -679,25 +679,25 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final TransactionInfo end(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc)
+        public final TransactionInfo end(final Xid xid, final int flags, Function<ArmyOption<?>, ?> optionFunc)
                 throws RmSessionException {
 
             final TransactionInfo info = this.transactionInfo;
             final Xid infoXid;
-            if (info == null || (infoXid = info.valueOf(Option.XID)) == null || !infoXid.equals(xid)) {
+            if (info == null || (infoXid = info.valueOf(ArmyOption.XID)) == null || !infoXid.equals(xid)) {
                 throw _Exceptions.xaNonCurrentTransaction(xid);
-            } else if (info.valueOf(Option.XA_STATES) != XaStates.ACTIVE) {
-                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
+            } else if (info.valueOf(ArmyOption.XA_STATES) != XaStates.ACTIVE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(ArmyOption.XA_STATES));
             } else if ((flags & RmSession.TM_SUSPEND) != 0) {
                 throw new RmSessionException("suspend/resume not implemented", RmSessionException.XAER_RMERR);
             } else if (flags != RmSession.TM_SUCCESS && flags != RmSession.TM_FAIL) {
                 throw _Exceptions.xaInvalidFlag(flags, "end");
             }
 
-            final Map<Option<?>, Object> map;
+            final Map<ArmyOption<?>, Object> map;
             map = cloneOption(info);
-            map.put(Option.XA_STATES, XaStates.IDLE); // modify states
-            map.put(Option.XA_FLAGS, flags); // modify flags
+            map.put(ArmyOption.XA_STATES, XaStates.IDLE); // modify states
+            map.put(ArmyOption.XA_FLAGS, flags); // modify flags
 
             final TransactionInfo newInfo;
             newInfo = TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), map::get);
@@ -710,17 +710,17 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/sql-prepare-transaction.html">PREPARE TRANSACTION</a>
          */
         @Override
-        public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final int prepare(final Xid xid, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException {
 
             final TransactionInfo info = this.transactionInfo;
 
             final Xid infoXid;
-            if (info == null || (infoXid = info.valueOf(Option.XID)) == null || !infoXid.equals(xid)) {
+            if (info == null || (infoXid = info.valueOf(ArmyOption.XID)) == null || !infoXid.equals(xid)) {
                 throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
-            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
-            } else if ((info.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0
-                    || Boolean.TRUE.equals(info.valueOf(Option.ROLLBACK_ONLY))) {
+            } else if (info.nonNullOf(ArmyOption.XA_STATES) != XaStates.IDLE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(ArmyOption.XA_STATES));
+            } else if ((info.nonNullOf(ArmyOption.XA_FLAGS) & RmSession.TM_FAIL) != 0
+                    || Boolean.TRUE.equals(info.valueOf(ArmyOption.ROLLBACK_ONLY))) {
                 throw _Exceptions.xaTransactionRollbackOnly(infoXid);
             }
 
@@ -751,7 +751,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/sql-commit.html">COMMIT</a>
          */
         @Override
-        public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc)
+        public final void commit(final Xid xid, final int flags, Function<ArmyOption<?>, ?> optionFunc)
                 throws RmSessionException {
 
             if (flags != RmSession.TM_ONE_PHASE && flags != RmSession.TM_NO_FLAGS) {
@@ -767,13 +767,13 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 builder.append("COMMIT PREPARED");
                 xidToString(xid, builder);
             } else if ((info = this.transactionInfo) == null
-                    || (infoXid = info.valueOf(Option.XID)) == null
+                    || (infoXid = info.valueOf(ArmyOption.XID)) == null
                     || !infoXid.equals(xid)) {
                 throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
-            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
-            } else if ((info.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0
-                    || Boolean.TRUE.equals(info.valueOf(Option.ROLLBACK_ONLY))) {
+            } else if (info.nonNullOf(ArmyOption.XA_STATES) != XaStates.IDLE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(ArmyOption.XA_STATES));
+            } else if ((info.nonNullOf(ArmyOption.XA_FLAGS) & RmSession.TM_FAIL) != 0
+                    || Boolean.TRUE.equals(info.valueOf(ArmyOption.ROLLBACK_ONLY))) {
                 throw _Exceptions.xaTransactionRollbackOnly(infoXid);
             } else {
                 builder.append(COMMIT);
@@ -796,7 +796,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/sql-rollback.html">ROLLBACK</a>
          */
         @Override
-        public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final void rollback(final Xid xid, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException {
 
             final TransactionInfo info = this.transactionInfo;
 
@@ -805,11 +805,11 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Xid infoXid;
             final boolean onePhaseRollback;
             if (info != null
-                    && (infoXid = info.valueOf(Option.XID)) != null
+                    && (infoXid = info.valueOf(ArmyOption.XID)) != null
                     && infoXid.equals(xid)) {
                 // rollback current transaction
-                if (infoXid.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, infoXid.nonNullOf(Option.XA_STATES));
+                if (infoXid.nonNullOf(ArmyOption.XA_STATES) != XaStates.IDLE) {
+                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, infoXid.nonNullOf(ArmyOption.XA_STATES));
                 }
                 onePhaseRollback = true;
                 builder.append(ROLLBACK);
@@ -833,12 +833,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final void forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc) throws RmSessionException {
             throw _Exceptions.xaDontSupportForget(Database.PostgreSQL);
         }
 
         @Override
-        public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option)
+        public final Stream<Xid> recover(int flags, Function<ArmyOption<?>, ?> optionFunc, StreamOption option)
                 throws RmSessionException {
 
             final Stream<Xid> stream;
@@ -931,30 +931,30 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(7);
+            final Map<ArmyOption<?>, Object> map = _Collections.hashMap(7);
 
-            map.put(Option.XID, xid);
-            map.put(Option.XA_FLAGS, flags);
-            map.put(Option.XA_STATES, XaStates.ACTIVE);
+            map.put(ArmyOption.XID, xid);
+            map.put(ArmyOption.XA_FLAGS, flags);
+            map.put(ArmyOption.XA_STATES, XaStates.ACTIVE);
             if (deferrable != null) {
                 map.put(DEFERRABLE, deferrable);
             }
             return TransactionInfo.info(true, finalIsolation, readOnly, map::get);
         }
 
-        private Map<Option<?>, Object> cloneOption(final TransactionInfo info) {
-            final Map<Option<?>, Object> map = _Collections.hashMap(8);
+        private Map<ArmyOption<?>, Object> cloneOption(final TransactionInfo info) {
+            final Map<ArmyOption<?>, Object> map = _Collections.hashMap(8);
 
-            map.put(Option.XID, info.nonNullOf(Option.XID));
-            map.put(Option.XA_FLAGS, info.nonNullOf(Option.XA_FLAGS));
-            map.put(Option.XA_STATES, info.nonNullOf(Option.XA_STATES));
+            map.put(ArmyOption.XID, info.nonNullOf(ArmyOption.XID));
+            map.put(ArmyOption.XA_FLAGS, info.nonNullOf(ArmyOption.XA_FLAGS));
+            map.put(ArmyOption.XA_STATES, info.nonNullOf(ArmyOption.XA_STATES));
             final Boolean deferrable = info.valueOf(DEFERRABLE);
             if (deferrable != null) {
                 map.put(DEFERRABLE, deferrable);
             }
-            final Boolean rollbackOnly = info.valueOf(Option.ROLLBACK_ONLY);
+            final Boolean rollbackOnly = info.valueOf(ArmyOption.ROLLBACK_ONLY);
             if (rollbackOnly != null) {
-                map.put(Option.ROLLBACK_ONLY, rollbackOnly);
+                map.put(ArmyOption.ROLLBACK_ONLY, rollbackOnly);
             }
 
             return map;

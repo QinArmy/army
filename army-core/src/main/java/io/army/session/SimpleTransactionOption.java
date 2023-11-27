@@ -44,13 +44,13 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <T> T valueOf(Option<T> option) {
+    public final <T> T valueOf(ArmyOption<T> option) {
         final Object value;
-        if (option == Option.IN_TRANSACTION) {
+        if (option == ArmyOption.IN_TRANSACTION) {
             value = Boolean.FALSE;
-        } else if (option == Option.ISOLATION) {
+        } else if (option == ArmyOption.ISOLATION) {
             value = this.isolation;
-        } else if (option == Option.READ_ONLY) {
+        } else if (option == ArmyOption.READ_ONLY) {
             value = this.readOnly;
         } else {
             value = null;
@@ -124,13 +124,13 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final <T> T valueOf(Option<T> option) {
+        public final <T> T valueOf(ArmyOption<T> option) {
             final Object value;
-            if (option == Option.IN_TRANSACTION) {
+            if (option == ArmyOption.IN_TRANSACTION) {
                 value = Boolean.FALSE;
-            } else if (option == Option.ISOLATION) {
+            } else if (option == ArmyOption.ISOLATION) {
                 value = null;
-            } else if (option == Option.READ_ONLY) {
+            } else if (option == ArmyOption.READ_ONLY) {
                 value = this.readOnly;
             } else {
                 value = null;
@@ -162,15 +162,15 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
     private static final class TransactionOptionBuilder implements Builder {
 
-        private Map<Option<?>, Object> optionMap;
+        private Map<ArmyOption<?>, Object> optionMap;
 
         private TransactionOptionBuilder() {
             this.optionMap = _Collections.hashMap();
         }
 
         @Override
-        public <T> Builder option(Option<T> option, @Nullable T value) {
-            Map<Option<?>, Object> map = this.optionMap;
+        public <T> Builder option(ArmyOption<T> option, @Nullable T value) {
+            Map<ArmyOption<?>, Object> map = this.optionMap;
             if (map == null) {
                 this.optionMap = map = _Collections.hashMap();
             }
@@ -184,14 +184,14 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
         @Override
         public TransactionOption build() throws IllegalArgumentException {
-            Map<Option<?>, Object> map = this.optionMap;
+            Map<ArmyOption<?>, Object> map = this.optionMap;
             if (map == null) {
                 this.optionMap = map = _Collections.hashMap();
             }
-            if (map.containsKey(Option.IN_TRANSACTION)) {
+            if (map.containsKey(ArmyOption.IN_TRANSACTION)) {
                 throw new IllegalArgumentException("don't support IN_TRANSACTION option");
             }
-            map.putIfAbsent(Option.READ_ONLY, Boolean.FALSE);
+            map.putIfAbsent(ArmyOption.READ_ONLY, Boolean.FALSE);
             final DialectTransactionOption option;
             option = new DialectTransactionOption(map::get);
 
@@ -204,26 +204,26 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
     private static final class DialectTransactionOption implements TransactionOption {
 
-        private final Function<Option<?>, ?> optionFunc;
+        private final Function<ArmyOption<?>, ?> optionFunc;
 
-        private DialectTransactionOption(Function<Option<?>, ?> optionFunc) {
+        private DialectTransactionOption(Function<ArmyOption<?>, ?> optionFunc) {
             this.optionFunc = optionFunc;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> T valueOf(Option<T> option) {
+        public <T> T valueOf(ArmyOption<T> option) {
             return (T) this.optionFunc.apply(option);
         }
 
         @Override
         public Isolation isolation() {
-            return valueOf(Option.ISOLATION);
+            return valueOf(ArmyOption.ISOLATION);
         }
 
         @Override
         public boolean isReadOnly() {
-            return nonNullOf(Option.READ_ONLY);
+            return nonNullOf(ArmyOption.READ_ONLY);
         }
 
         @Override
@@ -277,27 +277,27 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
     private static final class DialectTransactionInfo implements TransactionOption {
 
-        private final Function<Option<?>, ?> optionFunc;
+        private final Function<ArmyOption<?>, ?> optionFunc;
 
-        private DialectTransactionInfo(Function<Option<?>, ?> optionFunc) {
+        private DialectTransactionInfo(Function<ArmyOption<?>, ?> optionFunc) {
             this.optionFunc = optionFunc;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> T valueOf(Option<T> option) {
+        public <T> T valueOf(ArmyOption<T> option) {
             return (T) this.optionFunc.apply(option);
         }
 
         @Nonnull
         @Override
         public Isolation isolation() {
-            return nonNullOf(Option.ISOLATION);
+            return nonNullOf(ArmyOption.ISOLATION);
         }
 
         @Override
         public boolean isReadOnly() {
-            return nonNullOf(Option.READ_ONLY);
+            return nonNullOf(ArmyOption.READ_ONLY);
         }
 
         @Override

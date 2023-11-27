@@ -1,9 +1,8 @@
 package io.army.sync;
 
-import javax.annotation.Nullable;
-
 import io.army.session.*;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
@@ -28,10 +27,10 @@ public interface SyncLocalSession extends SyncSession, LocalSession {
 
 
     @Nullable
-    TransactionInfo commit(Function<Option<?>, ?> optionFunc);
+    TransactionInfo commit(Function<ArmyOption<?>, ?> optionFunc);
 
     @Nullable
-    TransactionInfo rollback(Function<Option<?>, ?> optionFunc);
+    TransactionInfo rollback(Function<ArmyOption<?>, ?> optionFunc);
 
 
     void rollback();

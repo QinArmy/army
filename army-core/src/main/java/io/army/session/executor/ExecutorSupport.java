@@ -11,9 +11,9 @@ import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.MetaException;
 import io.army.meta.TypeMeta;
+import io.army.session.ArmyOption;
 import io.army.session.DataAccessException;
 import io.army.session.Isolation;
-import io.army.session.Option;
 import io.army.session.record.*;
 import io.army.sqltype.*;
 import io.army.util._ClassUtils;
@@ -774,7 +774,7 @@ public abstract class ExecutorSupport {
         }
 
         @Override
-        public final <T> T getNonNullOf(int indexBasedZero, Option<T> option) throws DataAccessException {
+        public final <T> T getNonNullOf(int indexBasedZero, ArmyOption<T> option) throws DataAccessException {
             final T value;
             value = getOf(indexBasedZero, option);
             if (value == null) {
@@ -817,12 +817,12 @@ public abstract class ExecutorSupport {
 
         @Nullable
         @Override
-        public final <T> T getOf(String columnLabel, Option<T> option) throws DataAccessException {
+        public final <T> T getOf(String columnLabel, ArmyOption<T> option) throws DataAccessException {
             return getOf(getColumnIndex(columnLabel), option);
         }
 
         @Override
-        public final <T> T getNonNullOf(String columnLabel, Option<T> option) throws DataAccessException {
+        public final <T> T getNonNullOf(String columnLabel, ArmyOption<T> option) throws DataAccessException {
             return getNonNullOf(getColumnIndex(columnLabel), option);
         }
 

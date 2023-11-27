@@ -100,7 +100,7 @@ public abstract class _ArmySession implements Session {
     }
 
     @Override
-    public final <T> T nonNullOf(Option<T> option) {
+    public final <T> T nonNullOf(ArmyOption<T> option) {
         return Session.super.nonNullOf(option);
     }
 

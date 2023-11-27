@@ -2,7 +2,6 @@ package io.army.reactive.executor;
 
 
 import io.army.meta.ChildTableMeta;
-import io.army.meta.TableMeta;
 import io.army.reactive.ReactiveCloseable;
 import io.army.reactive.ReactiveStmtOption;
 import io.army.session.*;
@@ -13,7 +12,6 @@ import io.army.stmt.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -40,18 +38,17 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
     Mono<Void> setTransactionCharacteristics(TransactionOption option);
 
-    Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc);
+    Mono<?> setSavePoint(Function<ArmyOption<?>, ?> optionFunc);
 
-    Mono<Void> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+    Mono<Void> releaseSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
 
-    Mono<Void> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+    Mono<Void> rollbackToSavePoint(Object savepoint, Function<ArmyOption<?>, ?> optionFunc);
 
     Mono<ResultStates> insert(SimpleStmt stmt, ReactiveStmtOption option);
 
-    Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
+    Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option, Function<ArmyOption<?>, ?> optionFunc);
 
-    Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option, @Nullable TableMeta<?> domainTable,
-                                   @Nullable List<ResultStates> rowsList);
+    Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option);
 
     <R> Flux<R> query(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
 
@@ -82,9 +79,9 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
         Mono<TransactionInfo> startTransaction(TransactionOption option, HandleMode mode);
 
-        Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc);
+        Mono<Optional<TransactionInfo>> commit(Function<ArmyOption<?>, ?> optionFunc);
 
-        Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc);
+        Mono<Optional<TransactionInfo>> rollback(Function<ArmyOption<?>, ?> optionFunc);
 
     }
 
@@ -98,18 +95,18 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
         Mono<TransactionInfo> start(Xid xid, int flags, TransactionOption option);
 
-        Mono<TransactionInfo> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+        Mono<TransactionInfo> end(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
 
-        Mono<Integer> prepare(Xid xid, Function<Option<?>, ?> optionFunc);
+        Mono<Integer> prepare(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
 
-        Mono<Void> commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+        Mono<Void> commit(Xid xid, int flags, Function<ArmyOption<?>, ?> optionFunc);
 
-        Mono<Void> rollback(Xid xid, Function<Option<?>, ?> optionFunc);
+        Mono<Void> rollback(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
 
 
-        Mono<Void> forget(Xid xid, Function<Option<?>, ?> optionFunc);
+        Mono<Void> forget(Xid xid, Function<ArmyOption<?>, ?> optionFunc);
 
-        Flux<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
+        Flux<Optional<Xid>> recover(int flags, Function<ArmyOption<?>, ?> optionFunc);
 
 
     }

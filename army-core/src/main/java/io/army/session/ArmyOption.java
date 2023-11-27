@@ -13,27 +13,27 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-public final class Option<T> {
+public final class ArmyOption<T> {
 
 
     @SuppressWarnings("unchecked")
-    public static <T> Option<T> from(final String name, final Class<T> javaType) {
+    public static <T> ArmyOption<T> from(final String name, final Class<T> javaType) {
         if (!_StringUtils.hasText(name)) {
             throw new IllegalArgumentException("no text");
         }
         Objects.requireNonNull(javaType);
 
-        final Option<?> option;
-        option = INSTANCE_MAP.computeIfAbsent(name, key -> new Option<>(name, javaType));
+        final ArmyOption<?> option;
+        option = INSTANCE_MAP.computeIfAbsent(name, key -> new ArmyOption<>(name, javaType));
 
         if (option.javaType == javaType) {
-            return (Option<T>) option;
+            return (ArmyOption<T>) option;
         }
         final String newName = name + "#" + javaType.getName();
-        return (Option<T>) INSTANCE_MAP.computeIfAbsent(newName, cacheKey -> new Option<>(name, javaType)); // here , still use name not cacheKey
+        return (ArmyOption<T>) INSTANCE_MAP.computeIfAbsent(newName, cacheKey -> new ArmyOption<>(name, javaType)); // here , still use name not cacheKey
     }
 
-    public static <T> Function<Option<?>, ?> singleFunc(final Option<T> option, final @Nullable T value) {
+    public static <T> Function<ArmyOption<?>, ?> singleFunc(final ArmyOption<T> option, final @Nullable T value) {
         return o -> {
             if (option.equals(o)) {
                 return value;
@@ -42,12 +42,12 @@ public final class Option<T> {
         };
     }
 
-    public static final Function<Option<?>, ?> EMPTY_OPTION_FUNC = option -> null;
+    public static final Function<ArmyOption<?>, ?> EMPTY_OPTION_FUNC = option -> null;
 
     /**
      * private
      */
-    private static final ConcurrentMap<String, Option<?>> INSTANCE_MAP = _Collections.concurrentHashMap();
+    private static final ConcurrentMap<String, ArmyOption<?>> INSTANCE_MAP = _Collections.concurrentHashMap();
 
 
     /**
@@ -55,21 +55,23 @@ public final class Option<T> {
      * Representing a name option. For example : transaction name in firebird database.
      * <br/>
      */
-    public static final Option<String> NAME = Option.from("NAME", String.class);
+    public static final ArmyOption<String> NAME = ArmyOption.from("NAME", String.class);
 
     /**
      * <p>
      * Representing a name option. For example : transaction label that is print only by {@link TransactionInfo#toString()}
      * <br/>
      */
-    public static final Option<String> LABEL = Option.from("LABEL", String.class);
+    public static final ArmyOption<String> LABEL = ArmyOption.from("LABEL", String.class);
 
     /**
      * <p>
      * Representing transaction TIMEOUT milliseconds ,for example transaction timeout.
      * <br/>
      */
-    public static final Option<Integer> TIMEOUT = Option.from("TIMEOUT", Integer.class);
+    public static final ArmyOption<Integer> TIMEOUT = ArmyOption.from("TIMEOUT", Integer.class);
+
+    public static final ArmyOption<Long> START_MILLIS = ArmyOption.from("START MILLIS", Long.class);
 
     /**
      * <p>
@@ -78,7 +80,7 @@ public final class Option<T> {
      *
      * @see <a href="https://firebirdsql.org/file/documentation/html/en/refdocs/fblangref40/firebird-40-language-reference.html#fblangref40-transacs-settransac">firebird : SET TRANSACTION</a>
      */
-    public static final Option<Boolean> WAIT = Option.from("WAIT", Boolean.class);
+    public static final ArmyOption<Boolean> WAIT = ArmyOption.from("WAIT", Boolean.class);
 
     /**
      * <p>
@@ -87,7 +89,7 @@ public final class Option<T> {
      *
      * @see <a href="https://firebirdsql.org/file/documentation/html/en/refdocs/fblangref40/firebird-40-language-reference.html#fblangref40-transacs-settransac">firebird : SET TRANSACTION</a>
      */
-    public static final Option<Integer> LOCK_TIMEOUT = Option.from("LOCK TIMEOUT", Integer.class);
+    public static final ArmyOption<Integer> LOCK_TIMEOUT = ArmyOption.from("LOCK TIMEOUT", Integer.class);
 
 
     /**
@@ -95,26 +97,26 @@ public final class Option<T> {
      * This option representing transaction isolation level.
      * <br/>
      * <p>
-     * This option always is supported by {@link TransactionOption#valueOf(Option)}.
+     * This option always is supported by {@link TransactionOption#valueOf(ArmyOption)}.
      * <br/>
      *
      * @see #READ_ONLY
      */
-    public static final Option<Isolation> ISOLATION = Option.from("ISOLATION", Isolation.class);
+    public static final ArmyOption<Isolation> ISOLATION = ArmyOption.from("ISOLATION", Isolation.class);
 
     /**
      * <p>
      * This option representing read-only transaction.
      * <br/>
      * <p>
-     * This option always is supported by {@link TransactionOption#valueOf(Option)}.
+     * This option always is supported by {@link TransactionOption#valueOf(ArmyOption)}.
      * <br/>
      * <p>
-     * When this option is supported by {@link Session#valueOf(Option)} , this option representing the session in read-only transaction block<br/>
+     * When this option is supported by {@link Session#valueOf(ArmyOption)} , this option representing the session in read-only transaction block<br/>
      * after last statement executing , now the {@link #IN_TRANSACTION} always true.
      * <br/>
      * <p>
-     * When this option is supported by {@link ResultStates#valueOf(Option)} , this option representing the session in read-only transaction block
+     * When this option is supported by {@link ResultStates#valueOf(ArmyOption)} , this option representing the session in read-only transaction block
      * after current statement executing, now the {@link #IN_TRANSACTION} always true. <br/>
      * <strong>NOTE</strong> : the 'current' statement perhaps is a part of multi-statement or is CALL command that execute procedures,<br/>
      * that means the read-only transaction maybe have ended by next statement.
@@ -122,7 +124,7 @@ public final class Option<T> {
      *
      * @see #IN_TRANSACTION
      */
-    public static final Option<Boolean> READ_ONLY = Option.from("READ ONLY", Boolean.class);
+    public static final ArmyOption<Boolean> READ_ONLY = ArmyOption.from("READ ONLY", Boolean.class);
 
 
     /**
@@ -130,14 +132,14 @@ public final class Option<T> {
      * This option representing {@link Session} in transaction block.
      * <br/>
      * <p>
-     * This option always is supported by {@link TransactionInfo#valueOf(Option)}.
+     * This option always is supported by {@link TransactionInfo#valueOf(ArmyOption)}.
      * <br/>
      * <p>
-     * When this option is supported by {@link Session#valueOf(Option)} , this option representing the session in transaction block<br/>
+     * When this option is supported by {@link Session#valueOf(ArmyOption)} , this option representing the session in transaction block<br/>
      * after last statement executing. Now this option is equivalent to {@link Session#inTransaction()}.
      * <br/>
      * <p>
-     * When this option is supported by {@link ResultStates#valueOf(Option)} , this option representing the session in transaction block
+     * When this option is supported by {@link ResultStates#valueOf(ArmyOption)} , this option representing the session in transaction block
      * after current statement executing.<br/>
      * <strong>NOTE</strong> : the 'current' statement perhaps is a part of multi-statement or is CALL command that execute procedures<br/>
      * that means the transaction block maybe have ended by next statement.
@@ -146,17 +148,17 @@ public final class Option<T> {
      * @see #READ_ONLY
      * @see Session#inTransaction()
      */
-    public static final Option<Boolean> IN_TRANSACTION = Option.from("IN TRANSACTION", Boolean.class);
+    public static final ArmyOption<Boolean> IN_TRANSACTION = ArmyOption.from("IN TRANSACTION", Boolean.class);
 
-    public static final Option<Boolean> ROLLBACK_ONLY = Option.from("ROLLBACK ONLY", Boolean.class);
+    public static final ArmyOption<Boolean> ROLLBACK_ONLY = ArmyOption.from("ROLLBACK ONLY", Boolean.class);
 
     /**
      * <p>
-     * When this option is supported by {@link Session#valueOf(Option)} , this option representing the session is auto commit<br/>
+     * When this option is supported by {@link Session#valueOf(ArmyOption)} , this option representing the session is auto commit<br/>
      * after last statement executing.
      * <br/>
      * <p>
-     * When this option is supported by {@link ResultStates#valueOf(Option)} , this option representing the session is auto commit
+     * When this option is supported by {@link ResultStates#valueOf(ArmyOption)} , this option representing the session is auto commit
      * after current statement executing.<br/>
      * <strong>NOTE</strong> : the 'current' statement perhaps is a part of multi-statement or is CALL command that execute procedures<br/>
      * that means the auto commit status maybe have modified by next statement.
@@ -165,32 +167,32 @@ public final class Option<T> {
      * @see #READ_ONLY
      * @see #IN_TRANSACTION
      */
-    public static final Option<Boolean> AUTO_COMMIT = Option.from("AUTO COMMIT", Boolean.class);
+    public static final ArmyOption<Boolean> AUTO_COMMIT = ArmyOption.from("AUTO COMMIT", Boolean.class);
 
     /**
      * <p>
-     * representing the XID option of {@link TransactionInfo#valueOf(Option)} from {@link RmSession}.
+     * representing the XID option of {@link TransactionInfo#valueOf(ArmyOption)} from {@link RmSession}.
      * <br/>
      *
      * @see Xid
      */
-    public static final Option<Xid> XID = Option.from("XID", Xid.class);
+    public static final ArmyOption<Xid> XID = ArmyOption.from("XID", Xid.class);
 
     /**
      * <p>
-     * representing the XA_STATES option of {@link TransactionInfo#valueOf(Option)} from {@link RmSession}.
+     * representing the XA_STATES option of {@link TransactionInfo#valueOf(ArmyOption)} from {@link RmSession}.
      * <br/>
      *
      * @see XaStates
      */
-    public static final Option<XaStates> XA_STATES = Option.from("XA STATES", XaStates.class);
+    public static final ArmyOption<XaStates> XA_STATES = ArmyOption.from("XA STATES", XaStates.class);
 
     /**
      * <p>
-     * representing the xa flags option of {@link TransactionInfo#valueOf(Option)} from {@link RmSession}.
+     * representing the xa flags option of {@link TransactionInfo#valueOf(ArmyOption)} from {@link RmSession}.
      * <br/>
      */
-    public static final Option<Integer> XA_FLAGS = Option.from("XA FLAGS", Integer.class);
+    public static final ArmyOption<Integer> XA_FLAGS = ArmyOption.from("XA FLAGS", Integer.class);
 
     /**
      * <p>
@@ -200,11 +202,11 @@ public final class Option<T> {
      * <p>
      * This option <strong>perhaps</strong> is supported by following :
      *     <ul>
-     *         <li>{@link ResultStates#valueOf(Option)}</li>
+     *         <li>{@link ResultStates#valueOf(ArmyOption)}</li>
      *     </ul>
      * <br/>
      */
-    public static final Option<Boolean> READ_ONLY_SESSION = Option.from("READ ONLY SESSION", Boolean.class);
+    public static final ArmyOption<Boolean> READ_ONLY_SESSION = ArmyOption.from("READ ONLY SESSION", Boolean.class);
 
     /**
      * <p>
@@ -214,7 +216,7 @@ public final class Option<T> {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">MySQL : COMMIT [WORK] [AND [NO] CHAIN]</a>
      * @see <a href="https://www.postgresql.org/docs/current/sql-commit.html">postgre : COMMIT [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]</a>
      */
-    public static final Option<Boolean> CHAIN = Option.from("CHAIN", Boolean.class);
+    public static final ArmyOption<Boolean> CHAIN = ArmyOption.from("CHAIN", Boolean.class);
 
 
     /**
@@ -224,22 +226,22 @@ public final class Option<T> {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">MySQL : ROLLBACK [WORK] [[NO] RELEASE]</a>
      */
-    public static final Option<Boolean> RELEASE = Option.from("RELEASE", Boolean.class);
+    public static final ArmyOption<Boolean> RELEASE = ArmyOption.from("RELEASE", Boolean.class);
 
 
-    public static final Option<String> SQL_STATE = Option.from("SQL STATE", String.class);
+    public static final ArmyOption<String> SQL_STATE = ArmyOption.from("SQL STATE", String.class);
 
 
-    public static final Option<String> MESSAGE = Option.from("MESSAGE", String.class);
+    public static final ArmyOption<String> MESSAGE = ArmyOption.from("MESSAGE", String.class);
 
 
-    public static final Option<Integer> VENDOR_CODE = Option.from("VENDOR CODE", Integer.class);
+    public static final ArmyOption<Integer> VENDOR_CODE = ArmyOption.from("VENDOR CODE", Integer.class);
 
 
-    public static final Option<Integer> WARNING_COUNT = Option.from("WARNING COUNT", Integer.class);
+    public static final ArmyOption<Integer> WARNING_COUNT = ArmyOption.from("WARNING COUNT", Integer.class);
 
 
-    public static final Option<String> USER = Option.from("USER", String.class);
+    public static final ArmyOption<String> USER = ArmyOption.from("USER", String.class);
 
 
     private final String name;
@@ -250,7 +252,7 @@ public final class Option<T> {
     /**
      * private constructor
      */
-    private Option(String name, Class<T> javaType) {
+    private ArmyOption(String name, Class<T> javaType) {
         this.name = name;
         this.javaType = javaType;
     }
@@ -275,8 +277,8 @@ public final class Option<T> {
         final boolean match;
         if (obj == this) {
             match = true;
-        } else if (obj instanceof Option) {
-            final Option<?> o = (Option<?>) obj;
+        } else if (obj instanceof ArmyOption) {
+            final ArmyOption<?> o = (ArmyOption<?>) obj;
             match = o.name.equals(this.name) && o.javaType == this.javaType;
         } else {
             match = false;
@@ -287,7 +289,7 @@ public final class Option<T> {
     @Override
     public String toString() {
         return String.format("%s[ name : %s , javaType : %s , hash : %s]",
-                Option.class.getName(),
+                ArmyOption.class.getName(),
                 this.name,
                 this.javaType.getName(),
                 System.identityHashCode(this)

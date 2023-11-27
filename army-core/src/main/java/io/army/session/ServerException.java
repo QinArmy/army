@@ -12,18 +12,18 @@ import java.util.function.Function;
  */
 public final class ServerException extends DriverException implements OptionSpec {
 
-    private final Function<Option<?>, ?> optionFunc;
+    private final Function<ArmyOption<?>, ?> optionFunc;
 
 
     public ServerException(Throwable cause, @Nullable String sqlState, int vendorCode,
-                           Function<Option<?>, ?> optionFunc) {
+                           Function<ArmyOption<?>, ?> optionFunc) {
         super(cause, sqlState, vendorCode);
         this.optionFunc = optionFunc;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T valueOf(Option<T> option) {
+    public <T> T valueOf(ArmyOption<T> option) {
         final Object value;
         value = this.optionFunc.apply(option);
         if (option.javaType().isInstance(value)) {
