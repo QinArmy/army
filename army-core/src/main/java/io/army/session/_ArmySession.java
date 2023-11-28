@@ -94,9 +94,6 @@ public abstract class _ArmySession implements Session {
 
     @Override
     public final boolean hasTransactionInfo() {
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        }
         return obtainTransactionInfo() != null;
     }
 
@@ -107,7 +104,12 @@ public abstract class _ArmySession implements Session {
         }
         final TransactionInfo info;
         info = obtainTransactionInfo();
-        return info != null && !info.inTransaction();
+
+        final boolean in;
+        in = info != null && !info.inTransaction();
+
+        assert !in || info.isolation() == Isolation.PSEUDO; // fail, bug
+        return in;
     }
 
     @Override

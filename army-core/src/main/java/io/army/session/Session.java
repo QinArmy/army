@@ -63,12 +63,15 @@ public interface Session extends CloseableSpec, OptionSpec {
      *          <ol>
      *              <li>{@link #markRollbackOnly()}</li>
      *              <li>throw {@link ChildUpdateException} when execute dml</li>
+     *              <li>database server command rollback only on error,for example PostgreSQL server</li>
      *          </ol>
      *     </li>
      *     <li>XA transaction :
      *          <ol>
+     *              <li>{@link #markRollbackOnly()}</li>
      *              <li>pass {@link RmSession#TM_FAIL} flag to {@link RmSession}'s end() method</li>
      *              <li>throw {@link ChildUpdateException} when execute dml</li>
+     *              <li>database server command rollback only on error,for example PostgreSQL server</li>
      *          </ol>
      *     </li>
      * </ul>
@@ -82,8 +85,9 @@ public interface Session extends CloseableSpec, OptionSpec {
      *     </li>
      *     <li>XA transaction :
      *          <ol>
-     *              <li>prepare current transaction,but appropriate XA transaction is rollback only.</li>
-     *              <li>start new transaction,but appropriate XA transaction is rollback only.</li>
+     *              <li>prepare current transaction</li>
+     *              <li>one phase rollback transaction</li>
+     *              <li>start new transaction</li>
      *          </ol>
      *     </li>
      * </ul>
@@ -96,10 +100,10 @@ public interface Session extends CloseableSpec, OptionSpec {
     boolean isRollbackOnly();
 
     /**
-     * <p>Mark local session rollback only
+     * <p>Mark session rollback only
      * <p>More info ,see {@link #isRollbackOnly()}
-     * <p><strong>NOTE</strong> : This method don't check session whether closed or not.
      *
+     * @throws SessionException throw when session have closed.
      * @see #isRollbackOnly()
      */
     void markRollbackOnly();
@@ -111,7 +115,7 @@ public interface Session extends CloseableSpec, OptionSpec {
      *     <li>This method don't check whether session closed or not</li>
      *     <li>This method don't invoke {@link TransactionInfo#inTransaction()} method</li>
      * </ol>
-     * <pre>The implementation of this method lke following
+     * <pre>The implementation of this method like following
      *         <code><br/>
      *   &#64;Override
      *   public boolean hasTransactionInfo() {
