@@ -52,7 +52,7 @@
 ,"Beginning a transaction causes any pending transaction to be committed.".这个语法设计可以说是史上最糟糕的设计，
 甚至可以说是愚蠢的，因为一旦开发者在没有提交的情况下开始一个新的事务，这个结果可能是开发者无法承受，安全意识高的开发者是不会选择这个语句的。
 
-14. 为什么要设计  io.army.boot.sync.LocalSessionFactoryBean ?
+14. 为什么要设计  io.army.spring.ArmySessionFactoryBeanSupport ?
 (1) 相要利用 org.springframework.beans.factory.DisposableBean .
 (2) 充分利用 spring 容器特性,简化配置.
 

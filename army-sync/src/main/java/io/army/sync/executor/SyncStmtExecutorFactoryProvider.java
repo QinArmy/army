@@ -6,7 +6,7 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.session.executor.StmtExecutorFactoryProviderSpec;
+import io.army.session.executor.StmtExecutorFactoryProvider;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * <p>This interface representing provider of blocking executor.
  */
-public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProviderSpec {
+public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProvider {
 
     @Override
     ServerMeta createServerMeta(Dialect usedDialect, @Nullable Function<String, Database> func) throws DataAccessException;

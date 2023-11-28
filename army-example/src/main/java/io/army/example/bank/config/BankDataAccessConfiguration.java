@@ -1,13 +1,13 @@
 package io.army.example.bank.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import io.army.boot.sync.LocalSessionFactoryBean;
 import io.army.datasource.DataSourceRole;
 import io.army.datasource.sync.DruidDataSourceUtils;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.tx.sync.ArmySyncLocalTransactionManager;
+import io.army.spring.ArmySessionFactoryBeanSupport;
+import io.army.spring.sync.ArmySyncLocalTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -38,8 +38,8 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean
-    public LocalSessionFactoryBean bankSyncSessionFactory(@Qualifier("bankDataSource") DataSource dataSource) {
-        return new LocalSessionFactoryBean()
+    public ArmySessionFactoryBeanSupport bankSyncSessionFactory(@Qualifier("bankDataSource") DataSource dataSource) {
+        return new ArmySessionFactoryBeanSupport()
                 .setFactoryName("bank")
                 .setDataSource(dataSource)
                 .setPackagesToScan(Collections.singletonList("io.army.example.bank.domain"))

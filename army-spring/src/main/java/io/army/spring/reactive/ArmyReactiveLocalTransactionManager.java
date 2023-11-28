@@ -1,10 +1,10 @@
-package io.army.tx.reactive;
+package io.army.spring.reactive;
 
 
 import io.army.reactive.ReactiveLocalSession;
 import io.army.reactive.ReactiveSessionFactory;
 import io.army.session.*;
-import io.army.tx.sync.SpringUtils;
+import io.army.spring.sync.SpringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionDefinition;
@@ -61,12 +61,12 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
 
 
     @Override
-    protected Object doGetTransaction(final TransactionSynchronizationManager synchronizationManager)
+    protected Object doGetTransaction(final TransactionSynchronizationManager manager)
             throws TransactionException {
         final LocalTransactionObject txObject = new LocalTransactionObject();
 
         final ReactiveLocalSession session;
-        session = (ReactiveLocalSession) synchronizationManager.getResource(this.sessionFactory);
+        session = (ReactiveLocalSession) manager.getResource(this.sessionFactory);
         if (session != null) {
             txObject.reset(session);
         }
@@ -81,7 +81,7 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
     }
 
     @Override
-    protected Mono<Void> doBegin(final TransactionSynchronizationManager synchronizationManager, final Object transaction,
+    protected Mono<Void> doBegin(final TransactionSynchronizationManager manager, final Object transaction,
                                  final TransactionDefinition definition) throws TransactionException {
 
         final LocalTransactionObject txObject = (LocalTransactionObject) transaction;
@@ -101,7 +101,7 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
                     .build()
                     .flatMap(session -> {
                         txObject.reset(session);
-                        synchronizationManager.bindResource(sessionFactory, session);
+                        manager.bindResource(sessionFactory, session);
                         return startTransaction(session, definition);
                     });
         } else {
@@ -113,21 +113,21 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
 
 
     @Override
-    protected Mono<Void> doCommit(final TransactionSynchronizationManager synchronizationManager,
+    protected Mono<Void> doCommit(final TransactionSynchronizationManager manager,
                                   final GenericReactiveTransaction status) throws TransactionException {
 
         return commitOrRollback(status, true);
     }
 
     @Override
-    protected Mono<Void> doRollback(final TransactionSynchronizationManager synchronizationManager,
+    protected Mono<Void> doRollback(final TransactionSynchronizationManager manager,
                                     final GenericReactiveTransaction status) throws TransactionException {
         return commitOrRollback(status, false);
     }
 
 
     @Override
-    protected Mono<Object> doSuspend(final TransactionSynchronizationManager synchronizationManager, final Object transaction)
+    protected Mono<Object> doSuspend(final TransactionSynchronizationManager manager, final Object transaction)
             throws TransactionException {
         final LocalTransactionObject txObject = (LocalTransactionObject) transaction;
 
@@ -138,13 +138,13 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
         return Mono.defer(() -> {
             final ReactiveLocalSession session;
             session = txObject.suspend();
-            synchronizationManager.unbindResource(this.sessionFactory);
+            manager.unbindResource(this.sessionFactory);
             return Mono.just(session);
         });
     }
 
     @Override
-    protected Mono<Void> doResume(final TransactionSynchronizationManager synchronizationManager,
+    protected Mono<Void> doResume(final TransactionSynchronizationManager manager,
                                   final @Nullable Object transaction, final Object suspendedResources)
             throws TransactionException {
 
@@ -155,18 +155,18 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
         }
         return Mono.defer(() -> {
             final ReactiveSessionFactory sessionFactory = this.sessionFactory;
-            if (synchronizationManager.hasResource(sessionFactory)) {
-                synchronizationManager.unbindResource(sessionFactory);
+            if (manager.hasResource(sessionFactory)) {
+                manager.unbindResource(sessionFactory);
             }
             final ReactiveLocalSession session = (ReactiveLocalSession) suspendedResources;
             txObject.reset(session);
-            synchronizationManager.bindResource(session, session);
+            manager.bindResource(session, session);
             return Mono.empty();
         });
     }
 
     @Override
-    protected Mono<Void> doSetRollbackOnly(final TransactionSynchronizationManager synchronizationManager,
+    protected Mono<Void> doSetRollbackOnly(final TransactionSynchronizationManager manager,
                                            final GenericReactiveTransaction status) throws TransactionException {
         final ReactiveLocalSession session;
         session = ((LocalTransactionObject) status.getTransaction()).session;
@@ -232,7 +232,7 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
             final long timeoutMillis;
             timeoutMillis = timeoutSeconds * 1000L;
             if (timeoutMillis > Integer.MAX_VALUE) {
-                throw new TransactionUsageException("timeout milliseconds greater than Integer.MAX_VALUE");
+                return Mono.error(new TransactionUsageException("timeout milliseconds greater than Integer.MAX_VALUE"));
             }
             builder.option(Option.TIMEOUT_MILLIS, (int) timeoutMillis);
         }
@@ -250,10 +250,11 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
             mono = session.startTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS)
                     .doOnSuccess(info -> {
                         assert info.inTransaction();
-                    });
+                    }).onErrorMap(this::wrapErrorIfNeed);
         } else {
             builder.option(Option.ISOLATION, Isolation.PSEUDO);
 
+            // start pseudo transaction
             final TransactionInfo info;
             info = session.pseudoTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
 

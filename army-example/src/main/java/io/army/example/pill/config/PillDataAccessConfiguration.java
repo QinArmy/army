@@ -1,14 +1,14 @@
 package io.army.example.pill.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import io.army.boot.sync.LocalSessionFactoryBean;
 import io.army.datasource.DataSourceRole;
 import io.army.datasource.sync.DruidDataSourceUtils;
 import io.army.example.common.BaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.pill.service.sync.PillSyncBaseService;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.tx.sync.ArmySyncLocalTransactionManager;
+import io.army.spring.ArmySessionFactoryBeanSupport;
+import io.army.spring.sync.ArmySyncLocalTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -42,12 +42,12 @@ public class PillDataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean
-    public LocalSessionFactoryBean pillSyncSessionFactory(@Qualifier("pillDataSource") DataSource dataSource) {
+    public ArmySessionFactoryBeanSupport pillSyncSessionFactory(@Qualifier("pillDataSource") DataSource dataSource) {
         final List<String> packageList = new ArrayList<>(2);
         packageList.add("io.army.example.pill.domain");
         packageList.add("io.army.example.dialect");
 
-        return new LocalSessionFactoryBean()
+        return new ArmySessionFactoryBeanSupport()
                 .setFactoryName("pill")
                 .setDataSource(dataSource)
                 .setPackagesToScan(packageList)

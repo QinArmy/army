@@ -30,7 +30,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-public interface StmtExecutorFactoryProviderSpec {
+public interface StmtExecutorFactoryProvider {
 
     /**
      * Sub interface must override this method return value type.

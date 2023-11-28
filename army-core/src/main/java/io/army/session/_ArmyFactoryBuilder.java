@@ -17,7 +17,7 @@ import io.army.meta.*;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
-import io.army.session.executor.StmtExecutorFactoryProviderSpec;
+import io.army.session.executor.StmtExecutorFactoryProvider;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
@@ -98,14 +98,14 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     }
 
     @Override
-    public final B factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {
+    public final B factoryAdvice(@Nullable Collection<FactoryAdvice> factoryAdvices) {
         this.factoryAdvices = factoryAdvices;
         return (B) this;
     }
 
 
     @Override
-    public final B fieldGeneratorFactory(FieldGeneratorFactory factory) {
+    public final B fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory) {
         this.fieldGeneratorFactory = factory;
         return (B) this;
     }
@@ -117,12 +117,12 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     }
 
     @Override
-    public final B executorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProviderSpec> consumer) {
+    public final B executorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProvider> consumer) {
         return (B) this;
     }
 
     @Override
-    public final B columnConverterMap(@Nullable Map<Class<?>, Function<?, ?>> converterMap) {
+    public final B columnConverterFunc(@Nullable Function<Class<?>, Function<?, ?>> converterMap) {
         return (B) this;
     }
 

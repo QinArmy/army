@@ -1,4 +1,4 @@
-package io.army.tx.sync;
+package io.army.spring.sync;
 
 import io.army.session.Isolation;
 import io.army.session.Session;

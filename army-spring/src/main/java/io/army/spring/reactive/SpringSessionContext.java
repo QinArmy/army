@@ -1,12 +1,12 @@
-package io.army.boot.reactive;
+package io.army.spring.reactive;
 
 
 import io.army.reactive.ReactiveSession;
-import io.army.reactive.SessionContext;
+import io.army.reactive.ReactiveSessionContext;
 import io.army.session.NoCurrentSessionException;
 import reactor.core.publisher.Mono;
 
-final class SpringSessionContext implements SessionContext {
+final class SpringSessionContext implements ReactiveSessionContext {
 
     @Override
     public Mono<Boolean> hasCurrentSession() {

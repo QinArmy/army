@@ -5,12 +5,11 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.session.executor.StmtExecutorFactoryProviderSpec;
+import io.army.session.executor.StmtExecutorFactoryProvider;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -75,7 +74,7 @@ public interface FactoryBuilderSpec<B, R> {
      *
      * @return <strong>this</strong>
      */
-    B factoryAdvice(Collection<FactoryAdvice> factoryAdvices);
+    B factoryAdvice(@Nullable Collection<FactoryAdvice> factoryAdvices);
 
 
     /**
@@ -83,14 +82,14 @@ public interface FactoryBuilderSpec<B, R> {
      *
      * @return <strong>this</strong>
      */
-    B fieldGeneratorFactory(FieldGeneratorFactory factory);
+    B fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory);
 
 
     /**
      * <p>Optional.
      * See
      * <ul>
-     *     <li>{@link io.army.session.executor.StmtExecutorFactoryProviderSpec#createServerMeta(Dialect, Function)}</li>
+     *     <li>{@link StmtExecutorFactoryProvider#createServerMeta(Dialect, Function)}</li>
      *     <li>{@link Database#mapToDatabase(String, Function)}</li>
      * </ul>
      *
@@ -100,12 +99,12 @@ public interface FactoryBuilderSpec<B, R> {
 
     /**
      * <p>Optional.
-     * <p>Set a consumer for validating {@link StmtExecutorFactoryProviderSpec} is the instance which you want.
+     * <p>Set a consumer for validating {@link StmtExecutorFactoryProvider} is the instance which you want.
      * <p>See {@code io.army.env.SyncKey#EXECUTOR_PROVIDER} and  see {@code io.army.env.ReactiveKey#EXECUTOR_PROVIDER}
      *
      * @return <strong>this</strong>
      */
-    B executorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProviderSpec> consumer);
+    B executorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProvider> consumer);
 
     /**
      * <p>Optional.
@@ -113,7 +112,7 @@ public interface FactoryBuilderSpec<B, R> {
      *
      * @return <strong>this</strong>
      */
-    B columnConverterMap(@Nullable Map<Class<?>, Function<?, ?>> converterMap);
+    B columnConverterFunc(@Nullable Function<Class<?>, Function<?, ?>> converterFunc);
 
     /**
      * <p>Create {@link SessionFactory} instance
