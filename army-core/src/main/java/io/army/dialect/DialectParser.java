@@ -6,7 +6,6 @@ import io.army.meta.ServerMeta;
 import io.army.schema._SchemaResult;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
-import io.army.tx.Isolation;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -62,8 +61,6 @@ public interface DialectParser {
         throw new UnsupportedOperationException();
     }
 
-
-    List<String> startTransaction(Isolation isolation, boolean readonly);
 
 
     default List<String> schemaDdl(_SchemaResult schemaResult) {

@@ -2,6 +2,7 @@ package io.army.schema;
 
 
 import io.army.meta.*;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 
@@ -88,7 +89,7 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
         final boolean supportColumnComment = this.supportColumnComment();
 
         ColumnInfo column;
-        SqlType sqlType;
+        DataType sqlType;
         Boolean nullable;
         for (FieldMeta<?> field : table.fieldList()) {
             column = columnMap.get(field.columnName());

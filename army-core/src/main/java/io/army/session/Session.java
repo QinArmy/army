@@ -63,7 +63,6 @@ public interface Session extends CloseableSpec, OptionSpec {
      *          <ol>
      *              <li>{@link #markRollbackOnly()}</li>
      *              <li>throw {@link ChildUpdateException} when execute dml</li>
-     *              <li>database server command rollback only on error,for example PostgreSQL server</li>
      *          </ol>
      *     </li>
      *     <li>XA transaction :
@@ -71,7 +70,6 @@ public interface Session extends CloseableSpec, OptionSpec {
      *              <li>{@link #markRollbackOnly()}</li>
      *              <li>pass {@link RmSession#TM_FAIL} flag to {@link RmSession}'s end() method</li>
      *              <li>throw {@link ChildUpdateException} when execute dml</li>
-     *              <li>database server command rollback only on error,for example PostgreSQL server</li>
      *          </ol>
      *     </li>
      * </ul>

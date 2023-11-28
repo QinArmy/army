@@ -1,7 +1,6 @@
 package io.army.schema;
 
 import io.army.dialect._Constant;
-import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
@@ -250,17 +249,17 @@ final class PostgreComparer extends ArmySchemaComparer {
 
                 notMatch = !typeName.equals(sqlType.name().toLowerCase(Locale.ROOT));
                 break;
-            case USER_DEFINED: {
-                final MappingType mappingType = field.mappingType();
-                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
-                    throw _Exceptions.notUserDefinedType(mappingType, sqlType);
-                }
-                final String userTypeName;
-                userTypeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta)
-                        .toLowerCase(Locale.ROOT);
-                notMatch = !typeName.equals(userTypeName);
-            }
-            break;
+//            case USER_DEFINED: {
+//                final MappingType mappingType = field.mappingType();
+//                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
+//                    throw _Exceptions.notUserDefinedType(mappingType, sqlType);
+//                }
+//                final String userTypeName;
+//                userTypeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta)
+//                        .toLowerCase(Locale.ROOT);
+//                notMatch = !typeName.equals(userTypeName);
+//            }
+//            break;
             case BOOLEAN_ARRAY:
                 switch (typeName) {
                     case "boolean[]":
@@ -465,17 +464,17 @@ final class PostgreComparer extends ArmySchemaComparer {
                 notMatch = !typeName.equals(arrayTypeName);
             }
             break;
-            case USER_DEFINED_ARRAY: {
-                final MappingType mappingType = field.mappingType();
-                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
-                    throw _Exceptions.notUserDefinedType(mappingType, sqlType);
-                }
-                final String userTypeName;
-                userTypeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta)
-                        .toLowerCase(Locale.ROOT) + "[]";
-                notMatch = !typeName.equals(userTypeName);
-            }
-            break;
+//            case USER_DEFINED_ARRAY: {
+//                final MappingType mappingType = field.mappingType();
+//                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
+//                    throw _Exceptions.notUserDefinedType(mappingType, sqlType);
+//                }
+//                final String userTypeName;
+//                userTypeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta)
+//                        .toLowerCase(Locale.ROOT) + "[]";
+//                notMatch = !typeName.equals(userTypeName);
+//            }
+//            break;
             case REF_CURSOR:
             case UNKNOWN:
             default:

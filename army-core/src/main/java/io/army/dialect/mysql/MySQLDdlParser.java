@@ -80,13 +80,14 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
             case LONGBLOB:
             case LONGTEXT:
 
-            case POINT:
-            case LINESTRING:
-            case POLYGON:
-            case MULTIPOINT:
-            case MULTIPOLYGON:
-            case MULTILINESTRING:
-            case GEOMETRYCOLLECTION:
+            case GEOMETRY:
+//            case POINT:
+//            case LINESTRING:
+//            case POLYGON:
+//            case MULTIPOINT:
+//            case MULTIPOLYGON:
+//            case MULTILINESTRING:
+//            case GEOMETRYCOLLECTION:
                 builder.append(type.name());
                 break;
             case DECIMAL_UNSIGNED:

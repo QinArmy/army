@@ -1,1 +1,2 @@
-@io.army.lang.NonNullApi    io.army.codec;
+@io.army.lang.NonNullApi
+package io.army.codec;

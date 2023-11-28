@@ -1,1 +1,2 @@
-@io.army.lang.NonNullApi    io.army.modelgen;
+@io.army.lang.NonNullApi
+package io.army.modelgen;

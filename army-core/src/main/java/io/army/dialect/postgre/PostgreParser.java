@@ -15,15 +15,12 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-import io.army.tx.Isolation;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 abstract class PostgreParser extends _ArmyDialectParser {
@@ -36,24 +33,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         super(environment, dialect);
     }
 
-
-    @Override
-    public final List<String> startTransaction(final Isolation isolation, final boolean readonly) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("START TRANSACTION");
-
-        if (readonly) {
-            builder.append(" READ ONLY");
-        } else {
-            builder.append(" READ WRITE");
-        }
-
-        if (isolation != null) {
-            builder.append(" , ISOLATION LEVEL ")
-                    .append(isolation.name());
-        }
-        return Collections.singletonList(builder.toString());
-    }
 
 
     @Override
@@ -374,22 +353,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 PostgreLiterals.postgreBitString(typeMeta, type, value, sqlBuilder);
             }
             break;
-            case USER_DEFINED: {
-                if (!(value instanceof String)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
-                }
-                final MappingType mappingType;
-                mappingType = typeMeta.mappingType();
-                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
-                    throw _Exceptions.notUserDefinedType(mappingType, type);
-                }
-                final String typeName;
-                typeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta);
-                this.identifier(typeName, sqlBuilder)
-                        .append(_Constant.SPACE);
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
-            }
-            break;
             // below array
             case BOX_ARRAY:
             case BIT_ARRAY:
@@ -403,7 +366,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case LINE_ARRAY:
             case PATH_ARRAY:
             case TEXT_ARRAY:
-            case USER_DEFINED_ARRAY:
                 this.unsafeArray(typeMeta, type, value, sqlBuilder, _Literals::stringArrayElement);
                 break;
             case BOOLEAN_ARRAY:

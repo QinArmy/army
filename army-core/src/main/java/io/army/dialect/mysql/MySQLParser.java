@@ -12,8 +12,6 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
-import io.army.tx.Isolation;
-import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
@@ -24,8 +22,6 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 abstract class MySQLParser extends _ArmyDialectParser {
@@ -45,25 +41,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
         this.asOf80 = ((MySQLDialect) this.dialect).compareWith(MySQLDialect.MySQL80) >= 0;
     }
 
-
-    @Override
-    public final List<String> startTransaction(final Isolation isolation, final boolean readonly) {
-        final String startStmt;
-        if (readonly) {
-            startStmt = "START TRANSACTION READ ONLY";
-        } else {
-            startStmt = "START TRANSACTION READ WRITE";
-        }
-        final List<String> stmtList;
-        if (isolation == null) {
-            stmtList = Collections.singletonList(startStmt);
-        } else {
-            stmtList = ArrayUtils.of(
-                    "SET TRANSACTION ISOLATION LEVEL " + isolation.name(),  // no key word 'SESSION' or 'GLOBAL',so Next transaction only
-                    startStmt);
-        }
-        return stmtList;
-    }
 
     @Override
     public final String sqlElement(SQLElement element) {
