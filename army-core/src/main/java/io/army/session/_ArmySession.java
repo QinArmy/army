@@ -295,7 +295,7 @@ public abstract class _ArmySession implements Session {
         return domainTable;
     }
 
-    protected static Function<Option<?>, ?> wrapStartMillis(final TransactionOption option) {
+    protected static Function<Option<?>, ?> wrapStartMillis(final @Nullable Xid xid, final TransactionOption option) {
         final Integer timeoutMillis;
         timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
 
@@ -303,14 +303,34 @@ public abstract class _ArmySession implements Session {
             return option::valueOf;
         }
 
-        final long startTime;
+        final Object startTime;
         startTime = System.currentTimeMillis();
         return o -> {
+            final Object value;
             if (o == Option.START_MILLIS) {
-                return startTime;
+                value = startTime;
+            } else if (o == Option.XID) {
+                value = xid;
+            } else {
+                value = option.valueOf(o);
             }
-            return option.valueOf(o);
+            return value;
         };
+    }
+
+    protected static TransactionInfo wrapRollbackOnly(final TransactionInfo info) {
+        if (Boolean.TRUE.equals(info.valueOf(Option.ROLLBACK_ONLY))) {
+            return info;
+        }
+        final Function<Option<?>, ?> function;
+        function = o -> {
+            if (o == Option.ROLLBACK_ONLY) {
+                return Boolean.TRUE;
+            }
+            return info.valueOf(o);
+        };
+
+        return TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), function);
     }
 
 

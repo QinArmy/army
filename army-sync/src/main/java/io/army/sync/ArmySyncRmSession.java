@@ -51,7 +51,6 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
 
-
     @Override
     public boolean isRollbackOnly() {
         if (this.rollbackOnly) {
@@ -63,6 +62,31 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
                 && info.valueOf(Option.XA_STATES) == XaStates.IDLE
                 && (flags = info.valueOf(Option.XA_FLAGS)) != null
                 && (flags & TM_FAIL) != 0;
+    }
+
+    @Override
+    public final TransactionInfo pseudoTransaction(final @Nullable Xid xid, final TransactionOption option) {
+
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        } else if (!this.readonly) {
+            throw _Exceptions.writeSessionPseudoTransaction(this);
+        } else if (xid == null) {
+            throw _Exceptions.xidIsNull();
+        } else if (option.isolation() != Isolation.PSEUDO) {
+            throw _Exceptions.pseudoIsolationError(this, option);
+        } else if (!option.isReadOnly()) {
+            throw _Exceptions.pseudoWriteError(this, option);
+        } else if (this.transactionInfo != null) {
+            throw _Exceptions.existsTransaction(this);
+        }
+
+        final TransactionInfo info;
+        info = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(xid, option));
+
+        this.transactionInfo = info;
+        this.rollbackOnly = false;
+        return info;
     }
 
     @Override
@@ -112,18 +136,17 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final TransactionInfo end(final @Nullable Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        } else if (xid == null) {
-            // no bug,never here
-            throw new NullPointerException();
-        }
 
         final TransactionInfo lastInfo = this.transactionInfo, info;
         final XaStates states;
         final Xid infoXid;
 
-        if (lastInfo == null) {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        } else if (xid == null) {
+            // no bug,never here
+            throw new NullPointerException();
+        } else if (lastInfo == null) {
             throw _Exceptions.noTransaction(this);
         } else if (!(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {
             throw _Exceptions.xaNonCurrentTransaction(xid); // use xid
@@ -361,8 +384,16 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     protected void rollbackOnlyOnError(ChildUpdateException cause) {
+        if (this.rollbackOnly) {
+            return;
+        }
         this.rollbackOnly = true;
+        final TransactionInfo info = this.transactionInfo;
+        if (info != null) {
+            this.transactionInfo = wrapRollbackOnly(info);
+        }
     }
+
 
     private static final class OpenDriverSpiSession extends ArmySyncRmSession implements DriverSpiHolder {
 

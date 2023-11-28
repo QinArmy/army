@@ -790,6 +790,19 @@ public abstract class _Exceptions {
     }
 
 
+    public static IllegalArgumentException pseudoIsolationError(Session session, TransactionOption option) {
+        String m;
+        m = String.format("%s isolation isn't %s,reject pseudo transaction %s.", session, Isolation.PSEUDO.name(), option);
+        return new IllegalArgumentException(m);
+    }
+
+    public static IllegalArgumentException pseudoWriteError(Session session, TransactionOption option) {
+        String m;
+        m = String.format("%s isn't readonly,reject pseudo transaction %s.", session, option);
+        return new IllegalArgumentException(m);
+    }
+
+
     public static TransactionException readOnlyTransaction(Session session) {
         String m;
         m = String.format("%s of %s in read only transaction,don't support DML.", session.sessionFactory(), session);

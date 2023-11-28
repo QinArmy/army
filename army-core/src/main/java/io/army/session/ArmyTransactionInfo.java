@@ -14,8 +14,8 @@ import java.util.function.Function;
  */
 final class ArmyTransactionInfo implements TransactionInfo {
 
-    static ArmyTransactionInfo create(boolean inTransaction, @Nullable Isolation isolation, boolean readOnly,
-                                      @Nullable Function<Option<?>, ?> optionFunc) {
+    static ArmyTransactionInfo create(final boolean inTransaction, final @Nullable Isolation isolation,
+                                      final boolean readOnly, final @Nullable Function<Option<?>, ?> optionFunc) {
         if (isolation == null || optionFunc == null) {
             throw new NullPointerException();
         }
@@ -24,14 +24,34 @@ final class ArmyTransactionInfo implements TransactionInfo {
         if (states != null) {
             switch (states) {
                 case ACTIVE:
-                case IDLE:
-                    assert inTransaction;
-                    break;
-                case PREPARED:
-                    assert !inTransaction;
-                    break;
+                case IDLE: {
+                    if (!inTransaction) {
+                        throw new IllegalArgumentException("inTransaction error");
+                    }
+                }
+                break;
+                case PREPARED: {
+                    if (inTransaction) {
+                        throw new IllegalArgumentException("inTransaction error");
+                    }
+                }
+                break;
                 default:
                     throw _Exceptions.unexpectedEnum(states);
+            }
+        }
+
+        if (inTransaction == (isolation == Isolation.PSEUDO)) {
+            String m = String.format("inTransaction[%s] and Isolation[%s] not match.", inTransaction, isolation.name());
+            throw new IllegalArgumentException(m);
+        } else if (readOnly ^ (isolation == Isolation.PSEUDO)) {
+            String m = String.format("readOnly[%s] and Isolation[%s] not match.", readOnly, isolation.name());
+            throw new IllegalArgumentException(m);
+        } else if (optionFunc != Option.EMPTY_OPTION_FUNC) {
+            if (optionFunc.apply(Option.TIMEOUT_MILLIS) != null && optionFunc.apply(Option.START_MILLIS) == null) {
+                String m = String.format("Option[%s] and Option[%s] not match.", Option.TIMEOUT_MILLIS.name(),
+                        Option.START_MILLIS.name());
+                throw new IllegalArgumentException(m);
             }
         }
         return new ArmyTransactionInfo(inTransaction, isolation, readOnly, optionFunc);
@@ -65,7 +85,11 @@ final class ArmyTransactionInfo implements TransactionInfo {
         final Function<Option<?>, ?> optionFunc;
 
         final boolean rollbackOnly;
-        if (!this.inTransaction) {
+        if (this.isolation == Isolation.PSEUDO) {
+            optionFunc = this.optionFunc;
+            rollbackOnly = optionFunc != Option.EMPTY_OPTION_FUNC
+                    && Boolean.TRUE.equals(optionFunc.apply(Option.ROLLBACK_ONLY));
+        } else if (!this.inTransaction) {
             rollbackOnly = false;
         } else if ((optionFunc = this.optionFunc) == Option.EMPTY_OPTION_FUNC) {
             rollbackOnly = false;
@@ -116,9 +140,11 @@ final class ArmyTransactionInfo implements TransactionInfo {
 
     @Override
     public String toString() {
-        return _StringUtils.builder()
+        return _StringUtils.builder(88)
                 .append(getClass().getName())
-                .append("[inTransaction:")
+                .append("[name:")
+                .append(valueOf(Option.NAME))
+                .append(",inTransaction:")
                 .append(this.inTransaction)
                 .append(",isolation")
                 .append(this.isolation.name())
@@ -126,6 +152,8 @@ final class ArmyTransactionInfo implements TransactionInfo {
                 .append(this.readOnly)
                 .append(",hash:")
                 .append(System.identityHashCode(this))
+                .append(",label:")
+                .append(valueOf(Option.LABEL))
                 .append(']')
                 .toString();
     }

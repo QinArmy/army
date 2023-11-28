@@ -34,6 +34,9 @@ final class ArmyXid implements Xid {
 
     private final Function<Option<?>, ?> optionFunc;
 
+    /**
+     * private constructor
+     */
     private ArmyXid(String gtrid, @Nullable String bqual, int formatId, Function<Option<?>, ?> optionFunc) {
         this.gtrid = gtrid;
         this.bqual = bqual;
@@ -60,20 +63,21 @@ final class ArmyXid implements Xid {
     @Override
     public <T> T valueOf(final @Nullable Option<T> option) {
         if (option == null) {
-            return null;
+            throw new NullPointerException("option");
         }
-        final Object value;
-        value = this.optionFunc.apply(option);
-        if (option.javaType().isInstance(value)) {
-            return (T) value;
+        final Function<Option<?>, ?> function = this.optionFunc;
+        Object value;
+        if (function == Option.EMPTY_OPTION_FUNC) {
+            value = null;
+        } else {
+            value = function.apply(option);
+            if (!option.javaType().isInstance(value)) {
+                value = null;
+            }
         }
-        return null;
+        return (T) value;
     }
 
-    @Override
-    public <T> T nonNullOf(Option<T> option) {
-        throw new NullPointerException();
-    }
 
     @Override
     public int hashCode() {
@@ -85,11 +89,11 @@ final class ArmyXid implements Xid {
         final boolean match;
         if (obj == this) {
             match = true;
-        } else if (obj instanceof ArmyXid) {
-            final ArmyXid o = (ArmyXid) obj;
-            match = o.gtrid.equals(this.gtrid)
-                    && Objects.equals(o.bqual, this.bqual)
-                    && o.formatId == this.formatId;
+        } else if (obj instanceof Xid) {
+            final Xid o = (Xid) obj;
+            match = this.gtrid.equals(o.getGtrid())
+                    && Objects.equals(o.getBqual(), this.bqual)
+                    && o.getFormatId() == this.formatId;
         } else {
             match = false;
         }

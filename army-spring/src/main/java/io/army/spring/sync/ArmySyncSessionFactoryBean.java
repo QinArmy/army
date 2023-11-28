@@ -11,6 +11,9 @@ public class ArmySyncSessionFactoryBean extends ArmySessionFactoryBeanSupport
 
     private SyncSessionFactory sessionFactory;
 
+    public ArmySyncSessionFactoryBean() {
+    }
+
     @Override
     public final void afterPropertiesSet() {
 

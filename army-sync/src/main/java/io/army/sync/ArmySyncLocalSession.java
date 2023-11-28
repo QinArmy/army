@@ -49,12 +49,23 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     @Override
     public final boolean isRollbackOnly() {
-        return this.rollbackOnly;
+        if (this.rollbackOnly) {
+            return true;
+        }
+        final TransactionInfo info = this.transactionInfo;
+        return info != null && info.isRollbackOnly();
     }
 
     @Override
     public final void markRollbackOnly() {
+        if (this.rollbackOnly) {
+            return;
+        }
         this.rollbackOnly = true;
+        final TransactionInfo info = this.transactionInfo;
+        if (info != null) {
+            this.transactionInfo = wrapRollbackOnly(info);
+        }
     }
 
 
@@ -64,13 +75,11 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
             throw _Exceptions.sessionClosed(this);
         } else if (!this.readonly) {
             throw _Exceptions.writeSessionPseudoTransaction(this);
+        } else if (option.isolation() != Isolation.PSEUDO) {
+            throw _Exceptions.pseudoIsolationError(this, option);
+        } else if (!option.isReadOnly()) {
+            throw _Exceptions.pseudoWriteError(this, option);
         }
-        final Isolation isolation;
-        isolation = option.isolation();
-        if (isolation == null) {
-            throw new IllegalArgumentException();
-        }
-
 
         final TransactionInfo info = this.transactionInfo;
         if (info != null) {
@@ -89,7 +98,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         }
 
         final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.info(false, isolation, option.isReadOnly(), wrapStartMillis(option));
+        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(null, option));
 
         assert this.transactionInfo == null;
         this.transactionInfo = pseudoInfo;
@@ -243,7 +252,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     @Override
     protected final void rollbackOnlyOnError(ChildUpdateException cause) {
-        this.rollbackOnly = true;
+        markRollbackOnly();
     }
 
     /*-------------------below inner class -------------------*/

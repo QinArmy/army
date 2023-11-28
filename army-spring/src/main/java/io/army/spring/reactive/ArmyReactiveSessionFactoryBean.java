@@ -11,6 +11,8 @@ public class ArmyReactiveSessionFactoryBean extends ArmySessionFactoryBeanSuppor
 
     private ReactiveSessionFactory sessionFactory;
 
+    public ArmyReactiveSessionFactoryBean() {
+    }
 
     @Override
     public final void afterPropertiesSet() throws Exception {
