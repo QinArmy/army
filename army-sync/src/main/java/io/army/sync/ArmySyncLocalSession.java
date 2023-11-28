@@ -7,6 +7,7 @@ import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -81,8 +82,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
             throw _Exceptions.pseudoWriteError(this, option);
         }
 
-        final TransactionInfo info = this.transactionInfo;
-        if (info != null) {
+        if (this.transactionInfo != null) {
             switch (mode) {
                 case ERROR_IF_EXISTS:
                     throw _Exceptions.existsTransaction(this);
@@ -100,7 +100,9 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         final TransactionInfo pseudoInfo;
         pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(null, option));
 
-        assert this.transactionInfo == null;
+        if (this.transactionInfo != null) {
+            throw new ConcurrentModificationException();
+        }
         this.transactionInfo = pseudoInfo;
         this.rollbackOnly = false;
         return pseudoInfo;

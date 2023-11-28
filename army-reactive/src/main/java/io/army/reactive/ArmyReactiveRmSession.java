@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
+import java.util.ConcurrentModificationException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -59,7 +60,54 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final boolean isRollbackOnly() {
-        return ROLLBACK_ONLY.get(this) != 0;
+        if (this.rollbackOnly != 0) {
+            return true;
+        }
+        final TransactionInfo info = this.transactionInfo;
+        final Integer flags;
+        return info != null
+                && info.valueOf(Option.XA_STATES) == XaStates.IDLE
+                && (flags = info.valueOf(Option.XA_FLAGS)) != null
+                && (flags & TM_FAIL) != 0;
+    }
+
+    @Override
+    public final void markRollbackOnly() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        if (ROLLBACK_ONLY.compareAndSet(this, 0, 1)) {
+            final TransactionInfo info = this.transactionInfo;
+            if (info != null) {
+                TRANSACTION_INFO.compareAndSet(this, info, wrapRollbackOnly(info));
+            }
+        }
+    }
+
+    @Override
+    public final TransactionInfo pseudoTransaction(final @Nullable Xid xid, final TransactionOption option) {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        } else if (!this.readonly) {
+            throw _Exceptions.writeSessionPseudoTransaction(this);
+        } else if (xid == null) {
+            throw _Exceptions.xidIsNull();
+        } else if (option.isolation() != Isolation.PSEUDO) {
+            throw _Exceptions.pseudoIsolationError(this, option);
+        } else if (!option.isReadOnly()) {
+            throw _Exceptions.pseudoWriteError(this, option);
+        } else if (this.transactionInfo != null) {
+            throw _Exceptions.existsTransaction(this);
+        }
+
+        final TransactionInfo pseudoInfo;
+        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(xid, option));
+
+        if (!TRANSACTION_INFO.compareAndSet(this, null, pseudoInfo)) {
+            throw new ConcurrentModificationException();
+        }
+        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+        return pseudoInfo;
     }
 
     @Override
@@ -381,15 +429,8 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     protected final void rollbackOnlyOnError(ChildUpdateException cause) {
-        ROLLBACK_ONLY.compareAndSet(this, 0, 1);
+        markRollbackOnly();
     }
-
-
-    @Override
-    final ReactiveStmtOption defaultOption() {
-        throw new UnsupportedOperationException();
-    }
-
 
     private static final class OpenDriverSpiSession extends ArmyReactiveRmSession implements DriverSpiHolder {
 

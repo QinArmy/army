@@ -255,14 +255,13 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
             builder.option(Option.ISOLATION, Isolation.PSEUDO);
 
             // start pseudo transaction
-            final TransactionInfo info;
-            info = session.pseudoTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
 
-            assert !info.inTransaction();
-            assert info.isReadOnly();
-            assert info.isolation() == Isolation.PSEUDO;
-
-            mono = Mono.just(info);
+            mono = session.pseudoTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS)
+                    .doOnSuccess(info -> {
+                        assert !info.inTransaction();
+                        assert info.isReadOnly();
+                        assert info.isolation() == Isolation.PSEUDO;
+                    });
         }
         return mono.then();
 

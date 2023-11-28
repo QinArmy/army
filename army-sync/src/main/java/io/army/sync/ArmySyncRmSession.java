@@ -65,6 +65,21 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
     @Override
+    public final void markRollbackOnly() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        if (this.rollbackOnly) {
+            return;
+        }
+        this.rollbackOnly = true;
+        final TransactionInfo info = this.transactionInfo;
+        if (info != null) {
+            this.transactionInfo = wrapRollbackOnly(info);
+        }
+    }
+
+    @Override
     public final TransactionInfo pseudoTransaction(final @Nullable Xid xid, final TransactionOption option) {
 
         if (isClosed()) {
@@ -81,12 +96,12 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             throw _Exceptions.existsTransaction(this);
         }
 
-        final TransactionInfo info;
-        info = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(xid, option));
+        final TransactionInfo pseudoInfo;
+        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(xid, option));
 
-        this.transactionInfo = info;
+        this.transactionInfo = pseudoInfo;
         this.rollbackOnly = false;
-        return info;
+        return pseudoInfo;
     }
 
     @Override
@@ -384,14 +399,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     protected void rollbackOnlyOnError(ChildUpdateException cause) {
-        if (this.rollbackOnly) {
-            return;
-        }
-        this.rollbackOnly = true;
-        final TransactionInfo info = this.transactionInfo;
-        if (info != null) {
-            this.transactionInfo = wrapRollbackOnly(info);
-        }
+        markRollbackOnly();
     }
 
 

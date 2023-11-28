@@ -61,6 +61,11 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
     }
 
     @Override
+    public boolean isSync() {
+        return false;
+    }
+
+    @Override
     public Mono<ReactiveLocalSession> localSession() {
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionFactoryClosed(this));

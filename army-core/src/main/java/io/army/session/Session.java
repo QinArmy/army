@@ -61,7 +61,7 @@ public interface Session extends CloseableSpec, OptionSpec {
      * <ul>
      *     <li>local transaction  :
      *          <ol>
-     *              <li>{@link LocalSession#markRollbackOnly()}</li>
+     *              <li>{@link #markRollbackOnly()}</li>
      *              <li>throw {@link ChildUpdateException} when execute dml</li>
      *          </ol>
      *     </li>
@@ -90,10 +90,19 @@ public interface Session extends CloseableSpec, OptionSpec {
      * <p><strong>NOTE</strong> : This method don't check session whether closed or not.
      *
      * @return true : session is rollback only.
-     * @see LocalSession#markRollbackOnly()
+     * @see #markRollbackOnly()
      * @see RmSession#TM_FAIL
      */
     boolean isRollbackOnly();
+
+    /**
+     * <p>Mark local session rollback only
+     * <p>More info ,see {@link #isRollbackOnly()}
+     * <p><strong>NOTE</strong> : This method don't check session whether closed or not.
+     *
+     * @see #isRollbackOnly()
+     */
+    void markRollbackOnly();
 
     /**
      * <p>Test session whether hold one  {@link TransactionInfo} instance or not, the instance is current transaction info of this session.

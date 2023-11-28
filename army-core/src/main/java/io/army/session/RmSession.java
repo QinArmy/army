@@ -77,13 +77,21 @@ public interface RmSession extends Session, Session.XaTransactionSupportSpec {
     byte XA_OK = 0;
 
     /**
-     * @throws IllegalArgumentException throw {@link TransactionOption#isolation()} isn't {@link Isolation#PSEUDO}.
-     * @throws SessionException         throw when
-     *                                  <ul>
-     *                                      <li>session have closed</li>
-     *                                      <li>{@link #isReadonlySession()} return false</li>
-     *                                      <li>{@link #inTransaction()} return true</li>
-     *                                  </ul>
+     * <p>Start pseudo transaction that don't start real XA transaction.
+     * <p>Pseudo transaction is designed for some framework in readonly transaction,for example {@code  org.springframework.transaction.TransactionManager}.
+     *
+     * @throws IllegalArgumentException                  throw when
+     *                                                   <ul>
+     *                                                       <li>{@link TransactionOption#isolation()} isn't {@link Isolation#PSEUDO}</li>
+     *                                                       <li>{@link TransactionOption#isReadOnly()} is false</li>
+     *                                                   </ul>
+     * @throws java.util.ConcurrentModificationException throw when concurrent control transaction
+     * @throws SessionException                          throw when
+     *                                                   <ul>
+     *                                                       <li>session have closed</li>
+     *                                                       <li>{@link #isReadonlySession()} is false</li>
+     *                                                       <li>{@link #hasTransactionInfo()} is true</li>
+     *                                                   </ul>
      */
     TransactionInfo pseudoTransaction(Xid xid, TransactionOption option);
 
