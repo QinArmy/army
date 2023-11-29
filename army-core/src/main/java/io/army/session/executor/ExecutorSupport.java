@@ -721,7 +721,7 @@ public abstract class ExecutorSupport {
         return new DataAccessException(m);
     }
 
-    protected static MetaException mapMethodError(MappingType type, DataType dataType) {
+    public static MetaException mapMethodError(MappingType type, DataType dataType) {
         String m = String.format("%s map(ServerMeta) method error,return %s ", type.getClass(), dataType);
         return new MetaException(m);
     }

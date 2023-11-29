@@ -13,6 +13,8 @@ import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.executor.ExecutorSupport;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
@@ -34,9 +36,31 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
 
+    @Override
+    public final void typeName(final MappingType type, final StringBuilder sqlBuilder) {
+        final DataType dataType;
+        dataType = type.map(this.serverMeta);
+
+        if (!(dataType instanceof PostgreType)) { // user defined type or unrecognized type
+            unrecognizedTypeName(type, dataType, true, sqlBuilder);
+        } else if (dataType.isArray()) {
+            final SqlType elementType;
+            elementType = ((PostgreType) dataType).elementType();
+            assert elementType != null;
+            arrayTypeName(elementType.typeName(), ArrayUtils.dimensionOfType(type), sqlBuilder);
+        } else switch ((PostgreType) dataType) {
+            case REF_CURSOR:
+            case UNKNOWN:
+                throw ExecutorSupport.mapMethodError(type, dataType);
+            default:
+                sqlBuilder.append(dataType.typeName());
+
+        } // switch
+
+    }
 
     @Override
-    public final boolean isSupportOnlyDefault() {
+    protected final boolean isSupportOnlyDefault() {
         //Postgre don't support
         return false;
     }
@@ -53,125 +77,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return true;
     }
 
-    @Override
-    protected final boolean isNeedConvert(SqlType type, Object nonNull) {
-        //always need
-        return true;
-    }
-
-    @Override
-    protected final void buildInTypeName(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
-        switch ((PostgreType) sqlType) {
-            case BOOLEAN:
-            case SMALLINT:
-            case INTEGER:
-            case BIGINT:
-            case DECIMAL:
-            case FLOAT8:
-            case REAL:
-            case TIME:
-            case DATE:
-            case TIMESTAMP:
-            case TIMETZ:
-            case TIMESTAMPTZ:
-            case CHAR:
-            case VARCHAR:
-            case TEXT:
-            case JSON:
-            case JSONB:
-            case JSONPATH:
-            case BYTEA:
-            case BIT:
-            case VARBIT:
-            case XML:
-            case CIDR:
-            case INET:
-            case LINE:
-            case PATH:
-            case UUID:
-            case MONEY:
-            case MACADDR8:
-            case POINT:
-            case BOX:
-            case POLYGON:
-            case CIRCLE:
-            case TSQUERY:
-            case TSVECTOR:
-            case LSEG:
-            case TSRANGE:
-            case INTERVAL:
-            case NUMRANGE:
-            case DATERANGE:
-            case INT4RANGE:
-            case INT8RANGE:
-            case TSTZRANGE:
-            case MACADDR:
-                sqlBuilder.append(sqlType.name());
-                break;
-            case NO_CAST_INTEGER:
-                sqlBuilder.append(PostgreType.INTEGER.name());
-                break;
-            case NO_CAST_TEXT:
-                sqlBuilder.append(PostgreType.TEXT.name());
-                break;
-            case BOX_ARRAY:
-            case BIT_ARRAY:
-            case XML_ARRAY:
-            case CHAR_ARRAY:
-            case CIDR_ARRAY:
-            case DATE_ARRAY:
-            case INET_ARRAY:
-            case JSON_ARRAY:
-            case LINE_ARRAY:
-            case PATH_ARRAY:
-            case REAL_ARRAY:
-            case REF_CURSOR:
-            case TEXT_ARRAY:
-            case TIME_ARRAY:
-            case UUID_ARRAY:
-            case BYTEA_ARRAY:
-            case JSONB_ARRAY:
-            case MONEY_ARRAY:
-            case POINT_ARRAY:
-            case BIGINT_ARRAY:
-            case FLOAT8_ARRAY:
-            case TIMETZ_ARRAY:
-            case VARBIT_ARRAY:
-            case BOOLEAN_ARRAY:
-            case CIRCLE_ARRAY:
-            case DECIMAL_ARRAY:
-            case INTEGER_ARRAY:
-            case MACADDR_ARRAY:
-            case POLYGON_ARRAY:
-            case TSQUERY_ARRAY:
-            case TSRANGE_ARRAY:
-            case VARCHAR_ARRAY:
-            case INTERVAL_ARRAY:
-            case MACADDR8_ARRAY:
-            case NUMRANGE_ARRAY:
-            case SMALLINT_ARRAY:
-            case TSVECTOR_ARRAY:
-            case DATERANGE_ARRAY:
-            case INT4RANGE_ARRAY:
-            case INT8RANGE_ARRAY:
-            case TIMESTAMP_ARRAY:
-            case TSTZRANGE_ARRAY:
-            case TIMESTAMPTZ_ARRAY:
-            case LSEG_ARRAY: {
-                final String name, typeName;
-                name = sqlType.name();
-                typeName = name.substring(0, name.indexOf("_ARRAY"));
-                this.arrayTypeName(typeName, ArrayUtils.dimensionOfType(type), sqlBuilder);
-            }
-            break;
-            case UNKNOWN:
-                throw _Exceptions.mapMethodError(type, PostgreType.class);
-            default:
-                // no bug,never here
-                throw _Exceptions.unexpectedEnum((PostgreType) sqlType);
-        }
-
-    }
 
     @Override
     protected final void arrayTypeName(final String safeTypeNme, final int dimension,
@@ -185,17 +90,20 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final void bindLiteralNull(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
-        switch ((PostgreType) sqlType) {
+    protected final void bindLiteralNull(final MappingType type, final DataType dataType, final StringBuilder sqlBuilder) {
+        switch ((PostgreType) dataType) {
             case UNKNOWN:
-                throw _Exceptions.mapMethodError(type, PostgreType.class);
+            case REF_CURSOR:
+                throw ExecutorSupport.mapMethodError(type, dataType);
+            case NO_CAST_INTEGER:
             case NO_CAST_TEXT:
                 sqlBuilder.append(_Constant.NULL);
                 break;
             default: {
                 sqlBuilder.append(_Constant.NULL)
-                        .append("::");
-                this.typeName(type, sqlBuilder);
+                        .append("::")
+                        .append(dataType.typeName());
+
             }
 
         }//switch
@@ -203,19 +111,19 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
+    protected final void bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                      final StringBuilder sqlBuilder) {
-        switch ((PostgreType) type) {
+        switch ((PostgreType) dataType) {
             case BOOLEAN: {
                 if (!(value instanceof Boolean)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(((Boolean) value) ? BooleanType.TRUE : BooleanType.FALSE);
             }
             break;
             case INTEGER: {
                 if (!(value instanceof Integer)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value)
                         .append("::INTEGER");
@@ -223,14 +131,14 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case NO_CAST_INTEGER: {
                 if (!(value instanceof Integer)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value);
             }
             break;
             case BIGINT: {
                 if (!(value instanceof Long)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value)
                         .append("::BIGINT");
@@ -238,7 +146,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case DECIMAL: {
                 if (!(value instanceof BigDecimal)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(((BigDecimal) value).toPlainString())
                         .append("::DECIMAL");
@@ -246,7 +154,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case FLOAT8: {
                 if (!(value instanceof Double)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value)
                         .append("::FLOAT8");
@@ -254,7 +162,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case REAL: {
                 if (!(value instanceof Float)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value)
                         .append("::REAL");
@@ -262,32 +170,32 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case TIME: {
                 sqlBuilder.append("TIME ");
-                _Literals.bindLocalTime(typeMeta, type, value, sqlBuilder);
+                _Literals.bindLocalTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case DATE: {
                 sqlBuilder.append("DATE ");
-                _Literals.bindLocalDate(typeMeta, type, value, sqlBuilder);
+                _Literals.bindLocalDate(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIMETZ: {
                 sqlBuilder.append("TIMETZ ");
-                _Literals.bindOffsetTime(typeMeta, type, value, sqlBuilder);
+                _Literals.bindOffsetTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIMESTAMP: {
                 sqlBuilder.append("TIMESTAMP ");
-                _Literals.bindLocalDateTime(typeMeta, type, value, sqlBuilder);
+                _Literals.bindLocalDateTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIMESTAMPTZ: {
                 sqlBuilder.append("TIMESTAMPTZ ");
-                _Literals.bindOffsetDateTime(typeMeta, type, value, sqlBuilder);
+                _Literals.bindOffsetDateTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case SMALLINT: {
                 if (!(value instanceof Short)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value)
                         .append("::SMALLINT");
@@ -327,17 +235,17 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case DATERANGE:
             case INTERVAL:
             case REF_CURSOR: {
-                sqlBuilder.append(type.name())
-                        .append(_Constant.SPACE); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+                sqlBuilder.append(dataType.name())
+                        .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case NO_CAST_TEXT:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
                 break;
             case BYTEA: {
                 if (!(value instanceof byte[])) {//TODO think long binary
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_Constant.BACK_SLASH)
@@ -348,9 +256,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case VARBIT:
             case BIT: {
-                sqlBuilder.append(type.name())
-                        .append(_Constant.SPACE); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                PostgreLiterals.postgreBitString(typeMeta, type, value, sqlBuilder);
+                sqlBuilder.append(dataType.name())
+                        .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBitString(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             // below array
@@ -366,28 +274,28 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case LINE_ARRAY:
             case PATH_ARRAY:
             case TEXT_ARRAY:
-                this.unsafeArray(typeMeta, type, value, sqlBuilder, _Literals::stringArrayElement);
+                this.unsafeArray(typeMeta, dataType, value, sqlBuilder, _Literals::stringArrayElement);
                 break;
             case BOOLEAN_ARRAY:
-                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::booleanArrayElement);
+                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::booleanArrayElement);
                 break;
             case SMALLINT_ARRAY:
-                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::shortArrayElement);
+                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::shortArrayElement);
                 break;
             case INTEGER_ARRAY:
-                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::integerArrayElement);
+                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::integerArrayElement);
                 break;
             case BIGINT_ARRAY:
-                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::longArrayElement);
+                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::longArrayElement);
                 break;
             case DECIMAL_ARRAY:
-                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::bigDecimalArrayElement);
+                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::bigDecimalArrayElement);
                 break;
             case FLOAT8_ARRAY:
-                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::doubleArrayElement);
+                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::doubleArrayElement);
                 break;
             case REAL_ARRAY:
-                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::floatArrayElement);
+                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::floatArrayElement);
                 break;
             case TIME_ARRAY:
             case TIMETZ_ARRAY:
@@ -419,12 +327,12 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
             case LSEG_ARRAY:
                 //TODO check array syntax
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
                 break;
             case UNKNOWN:
-                throw _Exceptions.literalDontSupport(type);
+                throw _Exceptions.literalDontSupport(dataType);
             default:
-                throw _Exceptions.unexpectedEnum((PostgreType) type);
+                throw _Exceptions.unexpectedEnum((PostgreType) dataType);
 
         }// switch
 
@@ -731,7 +639,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         }
         return mode;
     }
-
 
 
     @Override

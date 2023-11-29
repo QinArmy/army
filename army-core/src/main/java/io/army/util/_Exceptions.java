@@ -636,8 +636,8 @@ public abstract class _Exceptions {
     }
 
     public static CriteriaException outRangeOfSqlType(final SqlType sqlType, final Object nonNull) {
-        String m = String.format("%s[%s] literal don't support java type[%s]"
-                , sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
+        String m = String.format("%s[%s] literal don't support java type[%s]",
+                sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
         return new CriteriaException(m);
     }
 
@@ -1102,9 +1102,21 @@ public abstract class _Exceptions {
         return new MetaException(m);
     }
 
-    public static MetaException notUserDefinedType(MappingType type, SqlType sqlType) {
-        String m = String.format("%s return %s but don't implements %s .", type, sqlType,
+    public static MetaException notUserDefinedType(MappingType type, DataType sqlType) {
+        String m = String.format("%s return %s but don't implements %s .", type.getClass().getName(), sqlType,
                 MappingType.SqlUserDefinedType.class.getName());
+        return new MetaException(m);
+    }
+
+    public static MetaException unrecognizedType(final Database database, DataType dataType) {
+        String m = String.format("%s is unrecognized type for %s and %s is false.", dataType, database.name(),
+                ArmyKey.UNRECOGNIZED_TYPE_ALLOWED.name);
+        return new MetaException(m);
+    }
+
+    public static MetaException unrecognizedTypeLiteral(final Database database, DataType dataType) {
+        String m = String.format("%s is unrecognized type for %s , so couldn't output literal.", dataType,
+                database.name());
         return new MetaException(m);
     }
 

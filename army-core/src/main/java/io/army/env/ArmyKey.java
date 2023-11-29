@@ -52,6 +52,8 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<String> DATASOURCE_CLOSE_METHOD = new ArmyKey<>("datasource.close_method", String.class, "close");
 
+    public static final ArmyKey<Boolean> UNRECOGNIZED_TYPE_ALLOWED = new ArmyKey<>("unrecognized_type_allowed", Boolean.class, Boolean.FALSE);
+
 
     /**
      * @see Column#scale()

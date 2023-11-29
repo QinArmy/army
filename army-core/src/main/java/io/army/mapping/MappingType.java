@@ -623,9 +623,8 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         String sqlTypeName(ServerMeta meta);
     }
 
-    @Deprecated
-    public interface SqlUserDefinedType extends TypeNameSpec {
 
+    public interface SqlUserDefinedType extends TypeNameSpec {
 
     }
 

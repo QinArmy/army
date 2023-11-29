@@ -10,14 +10,14 @@ import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.executor.ExecutorSupport;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -48,6 +48,22 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
+    public final void typeName(final MappingType type, final StringBuilder sqlBuilder) {
+        final DataType dataType;
+        dataType = type.map(this.serverMeta);
+        if (!(dataType instanceof MySQLType)) {
+            unrecognizedTypeName(type, dataType, false, sqlBuilder);
+        } else switch ((MySQLType) dataType) {
+            case UNKNOWN:
+            case NULL:
+                throw ExecutorSupport.mapMethodError(type, dataType);
+            default:
+                sqlBuilder.append(dataType.typeName());
+        }
+
+    }
+
+    @Override
     protected final MySQLDdlParser createDdlDialect() {
         return MySQLDdlParser.create(this);
     }
@@ -66,71 +82,62 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
 
     @Override
-    protected final boolean isNeedConvert(final SqlType type, final Object nonNull) {
-        return !(type == MySQLType.DATETIME
-                && this.asOf80
-                && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime));
-    }
+    protected final void bindLiteralNull(final MappingType type, final DataType dataType, final StringBuilder sqlBuilder) {
+        if (!(dataType instanceof MySQLType)) {
+            if (!this.unrecognizedTypeAllowed) {
+                throw _Exceptions.unrecognizedType(this.database, dataType);
+            }
+        } else switch ((MySQLType) dataType) {
+            case UNKNOWN:
+            case NULL:
+                throw ExecutorSupport.mapMethodError(type, dataType);
+            default:
+                // no-op
+        }
 
-    @Override
-    protected final void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder) {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    protected final void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder) {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    protected final void bindLiteralNull(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
-        //TODO convert
         sqlBuilder.append(_Constant.SPACE_NULL);
     }
 
     @Override
-    protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
+    protected final void bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                      final StringBuilder sqlBuilder) {
 
-        switch ((MySQLType) type) {
-            case INT:
+        if (!(dataType instanceof MySQLType)) {
+            throw _Exceptions.unrecognizedTypeLiteral(this.database, dataType);
+        }
+
+        switch ((MySQLType) dataType) {
+            case BOOLEAN:
+                _Literals.bindBoolean(typeMeta, dataType, value, sqlBuilder);
+                break;
             case SMALLINT_UNSIGNED:
+            case INT:
             case MEDIUMINT:
-            case MEDIUMINT_UNSIGNED:
-            case YEAR: {
+            case MEDIUMINT_UNSIGNED: {
                 if (!(value instanceof Integer)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value);
             }
             break;
-            case BIGINT:
-            case INT_UNSIGNED: {
+            case INT_UNSIGNED:
+            case BIGINT: {
                 if (!(value instanceof Long)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value);
             }
             break;
             case DECIMAL:
-            case DECIMAL_UNSIGNED: {
-                if (!(value instanceof BigDecimal)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
-                }
-                sqlBuilder.append(((BigDecimal) value).toPlainString());
-            }
-            break;
-            case BOOLEAN:
-                _Literals.bindBoolean(typeMeta, type, value, sqlBuilder);
+            case DECIMAL_UNSIGNED:
+                _Literals.bindBigDecimal(typeMeta, dataType, value, sqlBuilder);
                 break;
             case DATETIME: {
                 final String timeText;
                 if (value instanceof LocalDateTime) {
                     timeText = _TimeUtils.format((LocalDateTime) value, typeMeta);
                 } else if (!this.asOf80) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw new CriteriaException("prior to MySQL 8.x,don't support time zone offset to DATETIME type.");
                 } else if (value instanceof OffsetDateTime) {
                     timeText = _TimeUtils.format((OffsetDateTime) value, typeMeta);
                 } else if (value instanceof ZonedDateTime) {
@@ -146,12 +153,19 @@ abstract class MySQLParser extends _ArmyDialectParser {
             break;
             case DATE: {
                 sqlBuilder.append("DATE");
-                _Literals.bindLocalDate(typeMeta, type, value, sqlBuilder);
+                _Literals.bindLocalDate(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIME: {
                 sqlBuilder.append("TIME");
-                _Literals.bindLocalTime(typeMeta, type, value, sqlBuilder);
+                _Literals.bindLocalTime(typeMeta, dataType, value, sqlBuilder);
+            }
+            break;
+            case YEAR: {
+                if (!(value instanceof Short)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(value);
             }
             break;
             case CHAR:
@@ -163,8 +177,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
             case JSON:
             case ENUM:
             case SET: {
-                if (!(value instanceof String)) { //TODO LongString
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                if (!(value instanceof String)) {
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 MySQLLiterals.mysqlEscapes((String) value, sqlBuilder);
             }
@@ -176,7 +190,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
             case MEDIUMBLOB:
             case LONGBLOB: {
                 if (!(value instanceof byte[])) { //TODO LongBinary
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append("0x")
                         .append(_Literals.hexEscapes((byte[]) value));
@@ -184,28 +198,28 @@ abstract class MySQLParser extends _ArmyDialectParser {
             break;
             case BIT: {
                 if (!(value instanceof Long)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(Long.toBinaryString((Long) value));
             }
             break;
             case DOUBLE: {
                 if (!(value instanceof Double)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value);
             }
             break;
             case FLOAT: {
                 if (!(value instanceof Float)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value);
             }
             break;
             case TINYINT: {
                 if (!(value instanceof Byte)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value);
             }
@@ -213,22 +227,22 @@ abstract class MySQLParser extends _ArmyDialectParser {
             case SMALLINT:
             case TINYINT_UNSIGNED: {
                 if (!(value instanceof Short)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value);
             }
             break;
             case BIGINT_UNSIGNED: {
                 if (!(value instanceof BigInteger)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value);
             }
             break;
             case GEOMETRY://TODO
-                throw _Exceptions.outRangeOfSqlType(type, typeMeta.mappingType());
+                throw _Exceptions.outRangeOfSqlType(dataType, typeMeta.mappingType());
             default:
-                throw _Exceptions.unexpectedEnum((MySQLType) type);
+                throw _Exceptions.unexpectedEnum((MySQLType) dataType);
         }
 
     }
@@ -449,6 +463,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
         // MySQL 8.0 add INTERSECT and EXCEPT
         return this.dialect.compareWith(MySQLDialect.MySQL80) < 0;
     }
+
 
     @Override
     protected final void validateUnionType(final _UnionType unionType) {

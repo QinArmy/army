@@ -23,7 +23,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 import io.army.stmt.*;
 import io.army.util.*;
 
@@ -74,6 +74,8 @@ abstract class ArmyParser implements DialectParser {
 
 
     protected final char identifierQuote;
+
+    protected final boolean unrecognizedTypeAllowed;
 
     final boolean supportSingleUpdateAlias;
 
@@ -170,6 +172,8 @@ abstract class ArmyParser implements DialectParser {
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
         this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
         this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
+
+        this.unrecognizedTypeAllowed = env.getOrDefault(ArmyKey.UNRECOGNIZED_TYPE_ALLOWED);
     }
 
 
@@ -679,80 +683,44 @@ abstract class ArmyParser implements DialectParser {
         return builder;
     }
 
-    @Override
-    public final void typeName(final MappingType type, final StringBuilder sqlBuilder) {
-        final SqlType sqlType;
-        sqlType = type.map(this.serverMeta);
-        if (type instanceof MappingType.SqlUserDefinedType) {
-            if (!sqlType.isUserDefined()) {
-                throw _Exceptions.notUserDefinedType(type, sqlType);
-            }
-            final String userDefinedTypeName, safeTypeName;
-            userDefinedTypeName = ((MappingType.SqlUserDefinedType) type).sqlTypeName(this.serverMeta);
-            if (this.keyWordMap.containsKey(userDefinedTypeName.toUpperCase(Locale.ROOT))
-                    || !_DialectUtils.isSimpleIdentifier(userDefinedTypeName)) {
-                safeTypeName = this.identifier(userDefinedTypeName);
-            } else {
-                safeTypeName = userDefinedTypeName;
-            }
-            if (!sqlType.isArray()) {
-                sqlBuilder.append(safeTypeName);
-            } else if (!(type instanceof MappingType.SqlArrayType)) {
-                throw _Exceptions.nonArrayType(type, sqlType);
-            } else {
-                this.arrayTypeName(safeTypeName, ArrayUtils.dimensionOfType(type), sqlBuilder);
-            }
-        } else if (sqlType.isUserDefined()) {
-            throw _Exceptions.notUserDefinedType(type, sqlType);
-        } else {
-            this.buildInTypeName(sqlType, type, sqlBuilder);
-        }
-
-    }
-
 
     /**
      * <p>
      * Append  literal
      * </p>
      */
-    public final void literal(final TypeMeta typeMeta, final @Nullable Object value, final StringBuilder sqlBuilder) {
+    public final void literal(final TypeMeta typeMeta, @Nullable Object value, final StringBuilder sqlBuilder) {
         final MappingType type;
         if (typeMeta instanceof MappingType) {
             type = (MappingType) typeMeta;
         } else {
             type = typeMeta.mappingType();
         }
-        final SqlType sqlType;
-        sqlType = type.map(this.serverMeta);
+        final DataType dataType;
+        dataType = type.map(this.serverMeta);
 
         if (value == null) {
-            this.bindLiteralNull(sqlType, type, sqlBuilder);
+            bindLiteralNull(type, dataType, sqlBuilder);
             return;
         }
-        Object convertedValue;
-        if (this.isNeedConvert(sqlType, value)) {
-            convertedValue = type.beforeBind(sqlType, this.mappingEnv, value);
-        } else {
-            convertedValue = value;
-        }
-        if (convertedValue instanceof Temporal && typeMeta instanceof FieldMeta && this.truncatedTimeType) {
-            convertedValue = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) convertedValue);
+
+        if (value instanceof Temporal && typeMeta instanceof FieldMeta && this.truncatedTimeType) {
+            value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
         }
         //TODO validate non-field codec
-        this.bindLiteral(typeMeta, sqlType, convertedValue, sqlBuilder);
+        bindLiteral(typeMeta, dataType, value, sqlBuilder);
     }
 
-    protected abstract void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder);
 
-    protected abstract void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
+    protected void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder) {
+        String m = String.format("%s don't support array", this.database.name());
+        throw new MetaException(m);
+    }
 
 
-    protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
+    protected abstract void bindLiteralNull(MappingType type, DataType dataType, StringBuilder sqlBuilder);
 
-    protected abstract void bindLiteralNull(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
-
-    protected abstract void bindLiteral(TypeMeta typeMeta, SqlType type, Object value, StringBuilder sqlBuilder);
+    protected abstract void bindLiteral(TypeMeta typeMeta, DataType dataType, Object value, StringBuilder sqlBuilder);
 
     protected abstract DdlParser createDdlDialect();
 
@@ -911,6 +879,45 @@ abstract class ArmyParser implements DialectParser {
 
 
     /*-------------------below final protected method -------------------*/
+
+
+    protected final void unrecognizedTypeName(final MappingType type, final DataType dataType,
+                                              final boolean supportUserDefinedType, final StringBuilder sqlBuilder) {
+
+
+        if (type instanceof MappingType.SqlUserDefinedType) {
+            if (!supportUserDefinedType) {
+                throw _Exceptions.notUserDefinedType(type, dataType);
+            }
+        } else if (!this.unrecognizedTypeAllowed) {
+            throw _Exceptions.unrecognizedType(this.database, dataType);
+        }
+
+        final String typeName;
+        typeName = dataType.typeName();
+
+        if (!this.keyWordMap.containsKey(typeName.toUpperCase(Locale.ROOT))
+                && _DialectUtils.isSimpleIdentifier(typeName)) {
+            sqlBuilder.append(typeName);
+        } else if (!dataType.isArray()) {
+            if (!typeName.equals(identifier(typeName))) {
+                String m = String.format("%s type name[%s] is illegal.", dataType, typeName);
+                throw new MetaException(m);
+            }
+            sqlBuilder.append(typeName);
+        } else if (!typeName.endsWith("[]")) {
+            String m = String.format("%s is array but not end with []", dataType);
+            throw new MetaException(m);
+        } else {
+            final String elementTypeName = typeName.substring(0, typeName.length() - 2);
+            if (!elementTypeName.equals(identifier(elementTypeName))) {
+                String m = String.format("%s is array but type name[%s] is illegal.", dataType, elementTypeName);
+                throw new MetaException(m);
+            }
+            arrayTypeName(elementTypeName, ArrayUtils.dimensionOfType(type), sqlBuilder);
+        }
+
+    }
 
 
     protected final _SingleUpdateContext createSingleUpdateContext(final @Nullable _SqlContext outerContext

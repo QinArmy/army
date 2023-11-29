@@ -57,7 +57,7 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
         manager = ArmySyncLocalTransactionManager.create(sessionFactory);
         manager.setNestedTransactionAllowed(true);
 
-        return manager.setAllowPseudoTransaction(true)
+        return manager.setPseudoTransactionAllowed(true)
                 .setUseTransactionLabel(true)
                 .setUseDataSourceTimeout(true);
 

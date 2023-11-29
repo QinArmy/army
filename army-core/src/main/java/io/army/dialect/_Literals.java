@@ -3,6 +3,8 @@ package io.army.dialect;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.BooleanType;
 import io.army.meta.TypeMeta;
+import io.army.session.executor.ExecutorSupport;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
@@ -37,40 +39,48 @@ public abstract class _Literals {
     }
 
 
-    public static void bindBoolean(final TypeMeta typeMeta, final SqlType type, final Object value,
+    public static void bindBoolean(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                    final StringBuilder sqlBuilder) {
         if (!(value instanceof Boolean)) {
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
         }
         sqlBuilder.append(((Boolean) value) ? BooleanType.TRUE : BooleanType.FALSE);
     }
 
-
-    public static StringBuilder bindLocalTime(final TypeMeta typeMeta, final SqlType type, final Object value,
-                                              final StringBuilder sqlBuilder) {
-        if (!(value instanceof LocalTime)) {
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+    public static void bindBigDecimal(final TypeMeta typeMeta, final DataType dataType, final Object value,
+                                      final StringBuilder sqlBuilder) {
+        if (!(value instanceof BigDecimal)) {
+            throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
         }
-        return sqlBuilder.append(_Constant.QUOTE)
+        sqlBuilder.append(((BigDecimal) value).toPlainString());
+    }
+
+
+    public static void bindLocalTime(final TypeMeta typeMeta, final DataType dataType, final Object value,
+                                     final StringBuilder sqlBuilder) {
+        if (!(value instanceof LocalTime)) {
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+        }
+        sqlBuilder.append(_Constant.QUOTE)
                 .append(_TimeUtils.format((LocalTime) value, typeMeta))
                 .append(_Constant.QUOTE);
     }
 
-    public static StringBuilder bindLocalDate(final TypeMeta typeMeta, final SqlType type, final Object value,
-                                              final StringBuilder sqlBuilder) {
+    public static void bindLocalDate(final TypeMeta typeMeta, final DataType dataType, final Object value,
+                                     final StringBuilder sqlBuilder) {
         if (!(value instanceof LocalDate)) {
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
         }
-        return sqlBuilder.append(_Constant.QUOTE)
+        sqlBuilder.append(_Constant.QUOTE)
                 .append(value)
                 .append(_Constant.QUOTE);
     }
 
 
-    public static StringBuilder bindLocalDateTime(final TypeMeta typeMeta, final SqlType type, final Object value,
+    public static StringBuilder bindLocalDateTime(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                                   final StringBuilder sqlBuilder) {
         if (!(value instanceof LocalDateTime)) {
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
         }
         return sqlBuilder.append(_Constant.QUOTE)
                 .append(_TimeUtils.format((LocalDateTime) value, typeMeta))
@@ -78,17 +88,17 @@ public abstract class _Literals {
 
     }
 
-    public static StringBuilder bindOffsetTime(final TypeMeta typeMeta, final SqlType type, final Object value,
+    public static StringBuilder bindOffsetTime(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                                final StringBuilder sqlBuilder) {
         if (!(value instanceof OffsetTime)) {
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
         }
         return sqlBuilder.append(_Constant.QUOTE)
                 .append(_TimeUtils.format((OffsetTime) value, typeMeta))
                 .append(_Constant.QUOTE);
     }
 
-    public static StringBuilder bindOffsetDateTime(final TypeMeta typeMeta, final SqlType type, final Object value,
+    public static StringBuilder bindOffsetDateTime(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                                    final StringBuilder sqlBuilder) {
         final OffsetDateTime dateTime;
         if (value instanceof OffsetDateTime) {
@@ -96,7 +106,7 @@ public abstract class _Literals {
         } else if (value instanceof ZonedDateTime) {
             dateTime = ((ZonedDateTime) value).toOffsetDateTime();
         } else {
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
         }
 
         return sqlBuilder.append(_Constant.QUOTE)
@@ -105,81 +115,81 @@ public abstract class _Literals {
 
     }
 
-    public static void booleanArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void booleanArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                            final StringBuilder sqlBuilder) {
         if (!(element instanceof Boolean)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
-    public static void byteArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void byteArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                         final StringBuilder sqlBuilder) {
         if (!(element instanceof Byte)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
-    public static void shortArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void shortArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                          final StringBuilder sqlBuilder) {
         if (!(element instanceof Short)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
-    public static void integerArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void integerArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                            final StringBuilder sqlBuilder) {
         if (!(element instanceof Integer)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
-    public static void longArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void longArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                         final StringBuilder sqlBuilder) {
         if (!(element instanceof Long)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
-    public static void bigDecimalArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void bigDecimalArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                               final StringBuilder sqlBuilder) {
         if (!(element instanceof BigDecimal)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(((BigDecimal) element).toPlainString());
     }
 
-    public static void doubleArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void doubleArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                           final StringBuilder sqlBuilder) {
         if (!(element instanceof Double)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
-    public static void floatArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void floatArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                          final StringBuilder sqlBuilder) {
         if (!(element instanceof Float)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
 
-    public static void stringArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+    public static void stringArrayElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                                           final StringBuilder sqlBuilder) {
         if (!(element instanceof String)) {
-            throw arrayElementError(typeMeta, type, element);
+            throw arrayElementError(typeMeta, dataType, element);
         }
         sqlBuilder.append(element);
     }
 
 
-    private static CriteriaException arrayElementError(TypeMeta typeMeta, SqlType type, Object element) {
+    private static CriteriaException arrayElementError(TypeMeta typeMeta, DataType type, Object element) {
         String m = String.format("%s %s don't support %s array.", typeMeta.mappingType(), type
                 , element.getClass().getName());
         return new CriteriaException(m);

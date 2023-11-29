@@ -38,20 +38,20 @@ public abstract class SpringUtils {
     public static Isolation toArmyIsolation(final int springIsolation) {
         final Isolation isolation;
         switch (springIsolation) {
-            case TransactionDefinition.ISOLATION_DEFAULT:
-                isolation = null;
+            case TransactionDefinition.ISOLATION_REPEATABLE_READ:
+                isolation = Isolation.REPEATABLE_READ;
                 break;
             case TransactionDefinition.ISOLATION_READ_COMMITTED:
                 isolation = Isolation.READ_COMMITTED;
-                break;
-            case TransactionDefinition.ISOLATION_REPEATABLE_READ:
-                isolation = Isolation.REPEATABLE_READ;
                 break;
             case TransactionDefinition.ISOLATION_SERIALIZABLE:
                 isolation = Isolation.SERIALIZABLE;
                 break;
             case TransactionDefinition.ISOLATION_READ_UNCOMMITTED:
                 isolation = Isolation.READ_UNCOMMITTED;
+                break;
+            case TransactionDefinition.ISOLATION_DEFAULT:
+                isolation = null;
                 break;
             default:
                 throw new IllegalArgumentException(String.format("unknown springIsolation[%s]", springIsolation));

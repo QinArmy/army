@@ -29,8 +29,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
 
     private final SyncSessionFactory sessionFactory;
 
-
-    private boolean allowPseudoTransaction;
+    private boolean pseudoTransactionAllowed;
 
     private boolean useTransactionName;
 
@@ -55,12 +54,12 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
         //TransactionDefinitionHolder.registerTransactionManager(this.beanName, this.useSavepointForNestedTransaction());
     }
 
-    public boolean isAllowPseudoTransaction() {
-        return this.allowPseudoTransaction;
+    public boolean isPseudoTransactionAllowed() {
+        return this.pseudoTransactionAllowed;
     }
 
-    public ArmySyncLocalTransactionManager setAllowPseudoTransaction(boolean allowPseudoTransaction) {
-        this.allowPseudoTransaction = allowPseudoTransaction;
+    public ArmySyncLocalTransactionManager setPseudoTransactionAllowed(boolean pseudoTransactionAllowed) {
+        this.pseudoTransactionAllowed = pseudoTransactionAllowed;
         return this;
     }
 
@@ -178,7 +177,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
             // 4. start transaction
             if (readOnly
                     && isolationLevel == TransactionDefinition.ISOLATION_DEFAULT
-                    && this.allowPseudoTransaction) {
+                    && this.pseudoTransactionAllowed) {
 
                 txOptionBuilder.option(Option.ISOLATION, Isolation.PSEUDO);
 
