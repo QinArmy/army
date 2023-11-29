@@ -1,14 +1,16 @@
 package io.army.sync;
 
 import io.army.env.SyncKey;
+import io.army.session.Option;
 import io.army.session.SessionException;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
-import io.army.sync.executor.SyncStmtExecutor;
-import io.army.sync.executor.SyncStmtExecutorFactory;
+import io.army.sync.executor.SyncExecutor;
+import io.army.sync.executor.SyncExecutorFactory;
 import io.army.util._Exceptions;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.function.Function;
 
 /**
  * <p>This class is a implementation of {@link SyncSessionFactory}.
@@ -24,7 +26,7 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
     private static final AtomicIntegerFieldUpdater<ArmySyncSessionFactory> FACTORY_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmySyncSessionFactory.class, "factoryClosed");
 
-    final SyncStmtExecutorFactory stmtExecutorFactory;
+    final SyncExecutorFactory stmtExecutorFactory;
 
     final boolean sessionIdentifierEnable;
 
@@ -105,7 +107,7 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
 
     static abstract class SyncBuilder<B, R> extends ArmySessionBuilder<B, R> {
 
-        SyncStmtExecutor stmtExecutor;
+        SyncExecutor stmtExecutor;
 
         SyncBuilder(ArmySyncSessionFactory factory) {
             super(factory);
@@ -130,9 +132,9 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
 
 
         @Override
-        protected SyncLocalSession createSession(String sessionName, boolean readOnly) {
+        protected SyncLocalSession createSession(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) {
             this.stmtExecutor = ((ArmySyncSessionFactory) this.factory)
-                    .stmtExecutorFactory.localExecutor(sessionName, readOnly);
+                    .stmtExecutorFactory.localExecutor(sessionName, readOnly, optionFunc);
             return ArmySyncLocalSession.create(this);
         }
 
@@ -148,9 +150,9 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
 
 
         @Override
-        protected SyncRmSession createSession(String sessionName, boolean readOnly) {
+        protected SyncRmSession createSession(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) {
             this.stmtExecutor = ((ArmySyncSessionFactory) this.factory).stmtExecutorFactory
-                    .rmExecutor(sessionName, readOnly);
+                    .rmExecutor(sessionName, readOnly, optionFunc);
             return ArmySyncRmSession.create(this);
         }
 

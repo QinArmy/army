@@ -22,14 +22,14 @@ import java.util.function.Supplier;
  * <p>This interface representing reactive {@link StmtExecutor}.
  * <p>This interface is base interface of following:
  * <ul>
- *     <li>{@link ReactiveLocalStmtExecutor}</li>
- *     <li>{@link ReactiveRmStmtExecutor}</li>
+ *     <li>{@link ReactiveLocalExecutor}</li>
+ *     <li>{@link ReactiveRmExecutor}</li>
  * </ul>
  * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
  * so all implementation of methods of this interface don't check whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *
- * @see ReactiveStmtExecutorFactory
+ * @see ReactiveExecutorFactory
  * @since 1.0
  */
 public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {

@@ -8,9 +8,9 @@ import io.army.env.ArmyKey;
 import io.army.env.ReactiveKey;
 import io.army.mapping.MappingEnv;
 import io.army.meta.TableMeta;
+import io.army.reactive.executor.ReactiveExecutorFactory;
+import io.army.reactive.executor.ReactiveExecutorFactoryProvider;
 import io.army.reactive.executor.ReactiveMetaExecutor;
-import io.army.reactive.executor.ReactiveStmtExecutorFactory;
-import io.army.reactive.executor.ReactiveStmtExecutorFactoryProvider;
 import io.army.schema.SchemaInfo;
 import io.army.schema._SchemaComparer;
 import io.army.schema._SchemaResult;
@@ -42,7 +42,7 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmyReactiveFactorBuilder.class);
 
-    ReactiveStmtExecutorFactory stmtExecutorFactory;
+    ReactiveExecutorFactory stmtExecutorFactory;
 
     /**
      * private constructor
@@ -54,10 +54,10 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
     protected Mono<ReactiveSessionFactory> buildAfterScanTableMeta(final String name, final Object dataSource,
                                                                    final ArmyEnvironment env) {
 
-        final ReactiveStmtExecutorFactoryProvider executorProvider;
+        final ReactiveExecutorFactoryProvider executorProvider;
         try {
             // 1. create ExecutorProvider
-            executorProvider = createExecutorProvider(name, env, dataSource, ReactiveStmtExecutorFactoryProvider.class,
+            executorProvider = createExecutorProvider(name, env, dataSource, ReactiveExecutorFactoryProvider.class,
                     ReactiveKey.EXECUTOR_PROVIDER, ReactiveKey.EXECUTOR_PROVIDER_MD5);
 
         } catch (Throwable e) {

@@ -10,7 +10,7 @@ import io.army.session.Session;
  *
  * @since 1.0
  */
-public interface ReactiveRmStmtExecutor extends ReactiveStmtExecutor,
+public interface ReactiveRmExecutor extends ReactiveStmtExecutor,
         ReactiveStmtExecutor.XaTransactionSpec,
         Session.XaTransactionSupportSpec {
 

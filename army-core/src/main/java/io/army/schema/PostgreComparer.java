@@ -1,12 +1,11 @@
 package io.army.schema;
 
-import io.army.dialect._Constant;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 
 import java.util.Locale;
@@ -34,11 +33,14 @@ final class PostgreComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareSqlType(final ColumnInfo columnInfo, final FieldMeta<?> field, final SqlType sqlType) {
+    boolean compareSqlType(final ColumnInfo columnInfo, final FieldMeta<?> field, final DataType dataType) {
         final String typeName;
         typeName = columnInfo.typeName().toLowerCase(Locale.ROOT);
+        if (!(dataType instanceof PostgreType)) {
+            return !typeName.equals(dataType.typeName());
+        }
         final boolean notMatch;
-        switch ((PostgreType) sqlType) {
+        switch ((PostgreType) dataType) {
             case BOOLEAN:
                 switch (typeName) {
                     case "boolean":
@@ -200,66 +202,6 @@ final class PostgreComparer extends ArmySchemaComparer {
                         notMatch = true;
                 }
                 break;
-            case DATE:
-            case INTERVAL:
-
-            case BIT:
-            case BYTEA:
-            case JSON:
-            case JSONB:
-            case JSONPATH:
-            case XML:
-
-            case UUID:
-            case MONEY:
-
-            case CIDR:
-            case INET:
-            case MACADDR:
-            case MACADDR8:
-
-            case POINT:
-            case LINE:
-            case PATH:
-            case BOX:
-            case LSEG:
-            case CIRCLE:
-            case POLYGON:
-
-            case TSQUERY:
-            case TSVECTOR:
-
-            case INT4RANGE:
-            case INT8RANGE:
-            case NUMRANGE:
-            case DATERANGE:
-            case TSRANGE:
-            case TSTZRANGE:
-
-            case INT4MULTIRANGE:
-            case INT8MULTIRANGE:
-            case NUMMULTIRANGE:
-            case DATEMULTIRANGE:
-            case TSMULTIRANGE:
-            case TSTZMULTIRANGE:
-
-            case PG_SNAPSHOT:
-            case PG_LSN:
-            case ACLITEM:
-
-                notMatch = !typeName.equals(sqlType.name().toLowerCase(Locale.ROOT));
-                break;
-//            case USER_DEFINED: {
-//                final MappingType mappingType = field.mappingType();
-//                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
-//                    throw _Exceptions.notUserDefinedType(mappingType, sqlType);
-//                }
-//                final String userTypeName;
-//                userTypeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta)
-//                        .toLowerCase(Locale.ROOT);
-//                notMatch = !typeName.equals(userTypeName);
-//            }
-//            break;
             case BOOLEAN_ARRAY:
                 switch (typeName) {
                     case "boolean[]":
@@ -416,75 +358,17 @@ final class PostgreComparer extends ArmySchemaComparer {
                         notMatch = true;
                 }
                 break;
-            case BIT_ARRAY:
-
-            case UUID_ARRAY:
-            case BYTEA_ARRAY:
-            case MONEY_ARRAY:
-
-
-            case DATE_ARRAY:
-            case INTERVAL_ARRAY:
-
-            case JSON_ARRAY:
-            case JSONB_ARRAY:
-            case JSONPATH_ARRAY:
-            case XML_ARRAY:
-
-            case LINE_ARRAY:
-            case PATH_ARRAY:
-
-            case CIDR_ARRAY:
-            case INET_ARRAY:
-            case MACADDR_ARRAY:
-            case MACADDR8_ARRAY:
-
-            case TSQUERY_ARRAY:
-            case TSVECTOR_ARRAY:
-
-            case INT4RANGE_ARRAY:
-            case INT8RANGE_ARRAY:
-            case NUMRANGE_ARRAY:
-            case DATERANGE_ARRAY:
-            case TSRANGE_ARRAY:
-            case TSTZRANGE_ARRAY:
-
-            case POINT_ARRAY:
-            case BOX_ARRAY:
-            case POLYGON_ARRAY:
-            case LSEG_ARRAY:
-            case CIRCLE_ARRAY:
-
-            case PG_SNAPSHOT_ARRAY:
-            case PG_LSN_ARRAY:
-            case ACLITEM_ARRAY: {
-                final String name = sqlType.name(), arrayTypeName;
-                arrayTypeName = name.substring(0, name.lastIndexOf(_Constant.UNDERSCORE_ARRAY))
-                        .toLowerCase(Locale.ROOT) + "[]";
-                notMatch = !typeName.equals(arrayTypeName);
-            }
-            break;
-//            case USER_DEFINED_ARRAY: {
-//                final MappingType mappingType = field.mappingType();
-//                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
-//                    throw _Exceptions.notUserDefinedType(mappingType, sqlType);
-//                }
-//                final String userTypeName;
-//                userTypeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta)
-//                        .toLowerCase(Locale.ROOT) + "[]";
-//                notMatch = !typeName.equals(userTypeName);
-//            }
-//            break;
             case REF_CURSOR:
             case UNKNOWN:
+                throw _Exceptions.unexpectedEnum((Enum<?>) dataType);
             default:
-                throw _Exceptions.unexpectedEnum((Enum<?>) sqlType);
+                notMatch = !typeName.equals(dataType.typeName());
         }
         return notMatch;
     }
 
     @Override
-    boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
+    boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, DataType sqlType) {
         //currently, false
         return false;
     }

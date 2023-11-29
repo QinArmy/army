@@ -5,15 +5,16 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
+
+import java.util.Locale;
 
 final class MySQLComparer extends ArmySchemaComparer {
 
     static MySQLComparer create(ServerMeta serverMeta) {
         return new MySQLComparer(serverMeta);
     }
-
 
     private MySQLComparer(ServerMeta serverMeta) {
         super(serverMeta);
@@ -36,79 +37,68 @@ final class MySQLComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareSqlType(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
+    boolean compareSqlType(final ColumnInfo columnInfo, final FieldMeta<?> field, final DataType dataType) {
+        final String typeName;
+        typeName = columnInfo.typeName().toUpperCase(Locale.ROOT);
+
+        if (!(dataType instanceof MySQLType)) {
+            return true;
+        }
+
         final boolean match;
-        switch ((MySQLType) sqlType) {
-            case INT:
-            case BIGINT:
-            case DECIMAL:
-            case DATETIME:
-            case DATE:
-            case TIME:
-            case YEAR:
-            case CHAR:
-            case VARCHAR:
-            case ENUM:
-            case JSON:
-            case SET:
-            case TINYTEXT:
-            case TEXT:
-            case MEDIUMTEXT:
-            case LONGTEXT:
-            case BINARY:
-            case VARBINARY:
-            case TINYBLOB:
-            case BLOB:
-            case MEDIUMBLOB:
-            case LONGBLOB:
-            case BIT:
-            case FLOAT:
-            case DOUBLE:
-            case TINYINT:
-            case SMALLINT:
-            case MEDIUMINT:
-                match = sqlType.name().equals(columnInfo.typeName());
-                break;
+        switch ((MySQLType) dataType) {
             case BOOLEAN: {
-                final String typeName = columnInfo.typeName();
-                if (sqlType.name().equals(typeName)) {
-                    match = true;
-                } else if (MySQLType.TINYINT.name().equals(typeName) || MySQLType.BIT.name().equals(typeName)) {
-                    match = columnInfo.precision() == 1;
-                } else {
-                    match = false;
+                switch (typeName) {
+                    case "BOOLEAN":
+                    case "TINYINT":
+                        match = true;
+                        break;
+                    default:
+                        match = false;
                 }
             }
             break;
-            case SMALLINT_UNSIGNED:
-            case TINYINT_UNSIGNED:
-            case MEDIUMINT_UNSIGNED:
-            case INT_UNSIGNED:
-            case BIGINT_UNSIGNED:
-            case DECIMAL_UNSIGNED:
-                match = sqlType.name().replace('_', ' ').equals(columnInfo.typeName());
-                break;
-            case POINT:
-            case LINESTRING:
-            case POLYGON:
-            case MULTIPOINT:
-            case MULTIPOLYGON:
-            case MULTILINESTRING:
+            case INT: {
+                switch (typeName) {
+                    case "INT":
+                    case "INTEGER":
+                        match = true;
+                        break;
+                    default:
+                        match = false;
+                }
+            }
+            break;
+            case INT_UNSIGNED: {
+                switch (typeName) {
+                    case "INT UNSIGNED":
+                    case "INTEGER UNSIGNED":
+                        match = true;
+                        break;
+                    default:
+                        match = false;
+                }
+            }
+            break;
             case GEOMETRYCOLLECTION: {
-                final String typeName;
-                typeName = columnInfo.typeName();
-                match = "GEOMETRY".equals(typeName) // JDBC
-                        || sqlType.name().equals(typeName); //JDBD
+                switch (typeName) {
+                    case "GEOMCOLLECTION":
+                    case "GEOMETRYCOLLECTION":
+                        match = true;
+                        break;
+                    default:
+                        match = false;
+                }
             }
             break;
             default:
-                match = true; // default match.
+                match = typeName.equals(dataType.typeName());
         }
         return !match;
     }
 
     @Override
-    boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
+    boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, DataType sqlType) {
 //        switch ((MySqlType) sqlType) {
 //            case INT:
 //            case BIGINT:

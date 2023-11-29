@@ -35,6 +35,8 @@ public interface ServerMeta {
 
     int minor();
 
+    int subMinor();
+
     /**
      * from {@link io.army.env.ArmyKey#DIALECT}
      */
@@ -44,6 +46,11 @@ public interface ServerMeta {
     boolean meetsMinimum(int major, int minor, int subMinor);
 
     boolean isSupportSavePoints();
+
+    /**
+     * @return spi name ,for example java.sql or io.jdbd
+     */
+    String driverSpi();
 
     static Builder builder() {
         return ServerMetaImpl.builder();
@@ -70,6 +77,8 @@ public interface ServerMeta {
         Builder usedDialect(Dialect dialect);
 
         Builder supportSavePoint(boolean support);
+
+        Builder driverSpi(String spi);
 
         ServerMeta build();
 

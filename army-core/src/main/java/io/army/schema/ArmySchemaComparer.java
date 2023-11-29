@@ -3,7 +3,6 @@ package io.army.schema;
 
 import io.army.meta.*;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
@@ -22,11 +21,11 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     }
 
     @Override
-    public final _SchemaResult compare(SchemaInfo schemaInfo, SchemaMeta schemaMeta
-            , Collection<TableMeta<?>> tableMetas) {
+    public final _SchemaResult compare(SchemaInfo schemaInfo, SchemaMeta schemaMeta,
+                                       Collection<TableMeta<?>> tableMetas) {
         if (compareSchema(schemaInfo, schemaMeta)) {
-            String m = String.format("_SchemaInfo[%s,%s] and %s not match,serverMeta[%s]."
-                    , schemaInfo.catalog(), schemaInfo.schema(), schemaMeta, this.serverMeta);
+            String m = String.format("_SchemaInfo[%s,%s] and %s not match,serverMeta[%s].",
+                    schemaInfo.catalog(), schemaInfo.schema(), schemaMeta, this.serverMeta);
             throw new IllegalArgumentException(m);
         }
 
@@ -64,12 +63,12 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     /**
      * @return true : sql type definition is different.
      */
-    abstract boolean compareSqlType(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
+    abstract boolean compareSqlType(ColumnInfo columnInfo, FieldMeta<?> field, DataType dataType);
 
     /**
      * @return true : default expression definition is different.
      */
-    abstract boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
+    abstract boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, DataType sqlType);
 
     /**
      * @return true : support column comment.
@@ -89,7 +88,7 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
         final boolean supportColumnComment = this.supportColumnComment();
 
         ColumnInfo column;
-        DataType sqlType;
+        DataType dataType;
         Boolean nullable;
         for (FieldMeta<?> field : table.fieldList()) {
             column = columnMap.get(field.columnName());
@@ -97,10 +96,10 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
                 tableBuilder.appendNewColumn(field);
                 continue;
             }
-            sqlType = field.mappingType().map(serverMeta);
+            dataType = field.mappingType().map(serverMeta);
             builder.field(field)
-                    .sqlType(this.compareSqlType(column, field, sqlType))
-                    .defaultExp(this.compareDefault(column, field, sqlType));
+                    .sqlType(compareSqlType(column, field, dataType))
+                    .defaultExp(compareDefault(column, field, dataType));
             nullable = column.nullable();
             if (nullable != null) {
                 builder.nullable(nullable != field.nullable());

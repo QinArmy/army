@@ -28,12 +28,12 @@ import java.util.stream.Stream;
  * so all implementation of methods of this interface don't check underlying database session whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *
- * <p>The instance of this interface is created by {@link SyncStmtExecutorFactory}.
+ * <p>The instance of this interface is created by {@link SyncExecutorFactory}.
  *
- * @see SyncStmtExecutorFactory
+ * @see SyncExecutorFactory
  * @since 1.0
  */
-public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
+public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
 
     /**

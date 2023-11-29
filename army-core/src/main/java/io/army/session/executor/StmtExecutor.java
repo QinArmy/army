@@ -15,7 +15,7 @@ import io.army.session.OptionSpec;
  * so all implementation of methods of this interface don't check whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *
- * @see StmtExecutorFactory
+ * @see ExecutorFactory
  * @since 1.0
  */
 public interface StmtExecutor extends OptionSpec, DriverSpiHolder {

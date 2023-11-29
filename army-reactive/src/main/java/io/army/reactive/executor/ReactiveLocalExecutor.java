@@ -9,7 +9,7 @@ package io.army.reactive.executor;
  *
  * @since 1.0
  */
-public interface ReactiveLocalStmtExecutor extends ReactiveStmtExecutor, ReactiveStmtExecutor.LocalTransactionSpec {
+public interface ReactiveLocalExecutor extends ReactiveStmtExecutor, ReactiveStmtExecutor.LocalTransactionSpec {
 
 
 }

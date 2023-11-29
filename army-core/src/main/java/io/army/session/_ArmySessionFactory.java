@@ -13,10 +13,7 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.util._Assert;
-import io.army.util._Collections;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
+import io.army.util.*;
 
 import javax.annotation.Nullable;
 import java.time.ZoneOffset;
@@ -292,6 +289,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         Visible visible = Visible.ONLY_VISIBLE;
 
+        private Map<Option<?>, Object> dataSourceOptionMap;
+
         public ArmySessionBuilder(_ArmySessionFactory factory) {
             this.factory = factory;
             this.readonly = factory.readonly;
@@ -324,6 +323,20 @@ public abstract class _ArmySessionFactory implements SessionFactory {
             return (B) this;
         }
 
+        @Override
+        public final <T> B dataSourceOption(final Option<T> option, final @Nullable T value) {
+            Map<Option<?>, Object> map = this.dataSourceOptionMap;
+            if (map == null) {
+                this.dataSourceOptionMap = map = _Collections.hashMap();
+            }
+
+            if (value == null) {
+                map.remove(option);
+            } else {
+                map.put(option, value);
+            }
+            return (B) this;
+        }
 
         @Override
         public final R build() throws SessionException {
@@ -354,7 +367,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
             } catch (SessionException e) {
                 return handleError(e);
             }
-            return createSession(sessionName, readonly);
+
+            return createSession(sessionName, readonly, _FunctionUtils.mapFunc(this.dataSourceOptionMap));
         }
 
         public final boolean inOpenDriverSpi() {
@@ -379,15 +393,10 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         }
 
 
-        protected abstract R createSession(String sessionName, boolean readonly);
+        protected abstract R createSession(String sessionName, boolean readonly, Function<Option<?>, ?> optionFunc);
 
         protected abstract R handleError(SessionException cause);
 
-
-        protected CreateSessionException createExecutorError(DataAccessException e) {
-            String m = String.format("create executor for session[%s] occur error.", this.name);
-            return new CreateSessionException(m, e);
-        }
 
 
     } //ArmySessionBuilder

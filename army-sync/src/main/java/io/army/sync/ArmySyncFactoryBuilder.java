@@ -17,7 +17,7 @@ import io.army.session.DdlMode;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmyFactoryBuilder;
 import io.army.sync.executor.MetaExecutor;
-import io.army.sync.executor.SyncStmtExecutorFactory;
+import io.army.sync.executor.SyncExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ final class ArmySyncFactoryBuilder
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmySyncFactoryBuilder.class);
 
-    SyncStmtExecutorFactory stmtExecutorFactory;
+    SyncExecutorFactory stmtExecutorFactory;
 
     /**
      * private constructor
@@ -79,7 +79,7 @@ final class ArmySyncFactoryBuilder
             executorEnv = createExecutorEnv(name, serverMeta, env, mappingEnv);
 
             //6. create LocalExecutorFactory
-            final SyncStmtExecutorFactory executorFactory;
+            final SyncExecutorFactory executorFactory;
             executorFactory = executorProvider.createFactory(executorEnv);
 
             final FactoryAdvice factoryAdvice;
@@ -184,10 +184,10 @@ final class ArmySyncFactoryBuilder
         final long startTime;
         startTime = System.currentTimeMillis();
 
-        final SyncStmtExecutorFactory executorFactory;
+        final SyncExecutorFactory executorFactory;
         executorFactory = sessionFactory.stmtExecutorFactory;
 
-        try (MetaExecutor metaExecutor = executorFactory.metaExecutor()) {
+        try (MetaExecutor metaExecutor = executorFactory.metaExecutor(dataSourceFunc())) {
 
             //1.extract schema info.
             final SchemaInfo schemaInfo;

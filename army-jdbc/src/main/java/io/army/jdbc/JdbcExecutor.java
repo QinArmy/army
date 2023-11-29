@@ -24,7 +24,7 @@ import io.army.sync.StreamCommander;
 import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
-import io.army.sync.executor.SyncStmtExecutor;
+import io.army.sync.executor.SyncExecutor;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -57,7 +57,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * <p>This class is a abstract implementation of {@link SyncStmtExecutor} with JDBC spi.
+ * <p>This class is a abstract implementation of {@link SyncExecutor} with JDBC spi.
  * <p>This class is base class of following jdbd executor:
  * <ul>
  *     <li>{@link MySQLExecutor}</li>
@@ -69,7 +69,7 @@ import java.util.stream.StreamSupport;
  * @see JdbcExecutorFactory
  * @see <a href="https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">JDBC</a>
  */
-abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecutor {
+abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor {
 
     private static final AtomicLong EXECUTOR_IDENTIFIER = new AtomicLong(0);
 

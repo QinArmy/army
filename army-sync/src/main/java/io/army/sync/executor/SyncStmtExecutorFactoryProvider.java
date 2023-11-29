@@ -6,7 +6,7 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.session.executor.StmtExecutorFactoryProvider;
+import io.army.session.executor.ExecutorFactoryProvider;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * <p>This interface representing provider of blocking executor.
  */
-public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProvider {
+public interface SyncStmtExecutorFactoryProvider extends ExecutorFactoryProvider {
 
     @Override
     ServerMeta createServerMeta(Dialect usedDialect, @Nullable Function<String, Database> func) throws DataAccessException;
@@ -25,7 +25,7 @@ public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProv
      * @throws IllegalArgumentException throw when {@link  MappingEnv#serverMeta()} not match.
      */
     @Override
-    SyncStmtExecutorFactory createFactory(ExecutorEnv env) throws DataAccessException;
+    SyncExecutorFactory createFactory(ExecutorEnv env) throws DataAccessException;
 
 
 

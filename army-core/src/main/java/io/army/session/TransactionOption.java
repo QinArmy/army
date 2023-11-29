@@ -64,7 +64,7 @@ public interface TransactionOption extends OptionSpec {
          *                    <li>{@code  Option#WITH_CONSISTENT_SNAPSHOT}</li>
          *                    <li>{@code Option#DEFERRABLE}</li>
          *                    <li>{@link Option#WAIT}</li>
-         *                    <li>{@link Option#LOCK_TIMEOUT}</li>
+         *                    <li>{@link Option#LOCK_TIMEOUT_MILLIS}</li>
          *               </ul>
          */
         <T> Builder option(Option<T> option, @Nullable T value);

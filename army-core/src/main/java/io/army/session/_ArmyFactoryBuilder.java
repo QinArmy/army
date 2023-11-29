@@ -17,8 +17,9 @@ import io.army.meta.*;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
-import io.army.session.executor.StmtExecutorFactoryProvider;
+import io.army.session.executor.ExecutorFactoryProvider;
 import io.army.util._Collections;
+import io.army.util._FunctionUtils;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
 
@@ -54,6 +55,8 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     protected DdlMode ddlMode;
 
     protected DialectEnv dialectEnv;
+
+    private Map<Option<?>, Object> dataSourceOptionMap;
 
 
     /*################################## blow non-setter fields ##################################*/
@@ -117,12 +120,26 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     }
 
     @Override
-    public final B executorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProvider> consumer) {
+    public final B executorFactoryProviderValidator(@Nullable Consumer<ExecutorFactoryProvider> consumer) {
         return (B) this;
     }
 
     @Override
     public final B columnConverterFunc(@Nullable Function<Class<?>, Function<?, ?>> converterMap) {
+        return (B) this;
+    }
+
+    @Override
+    public final <T> B dataSourceOption(final Option<T> option, final @Nullable T value) {
+        Map<Option<?>, Object> map = this.dataSourceOptionMap;
+        if (map == null) {
+            this.dataSourceOptionMap = map = _Collections.hashMap();
+        }
+        if (value == null) {
+            map.remove(option);
+        } else {
+            map.put(option, value);
+        }
         return (B) this;
     }
 
@@ -167,6 +184,10 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     protected abstract Logger getLogger();
 
+
+    protected final Function<Option<?>, ?> dataSourceFunc() {
+        return _FunctionUtils.mapFunc(this.dataSourceOptionMap);
+    }
 
     protected final ExecutorEnv createExecutorEnv(String factoryName, ServerMeta serverMeta, ArmyEnvironment env,
                                                   MappingEnv mappingEnv) {

@@ -10,7 +10,7 @@ import io.army.session.executor.DriverSpiHolder;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
-import io.army.sync.executor.SyncStmtExecutor;
+import io.army.sync.executor.SyncExecutor;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
 
-    final SyncStmtExecutor stmtExecutor;
+    final SyncExecutor stmtExecutor;
 
     private boolean sessionClosed;
 

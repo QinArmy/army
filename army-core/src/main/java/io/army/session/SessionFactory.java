@@ -5,7 +5,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.session.executor.StmtExecutorFactory;
+import io.army.session.executor.ExecutorFactory;
 
 import javax.annotation.Nullable;
 import java.time.ZoneOffset;
@@ -42,7 +42,7 @@ public interface SessionFactory extends CloseableSpec {
     AllowMode queryInsertMode();
 
     /**
-     * See {@link StmtExecutorFactory#driverSpiVendor()}
+     * See {@link ExecutorFactory#driverSpiVendor()}
      */
     String driverSpiVendor();
 
@@ -70,6 +70,8 @@ public interface SessionFactory extends CloseableSpec {
         B allowQueryInsert(boolean allow);
 
         B visibleMode(Visible visible);
+
+        <T> B dataSourceOption(Option<T> option, @Nullable T value);
 
         R build();
 

@@ -740,7 +740,7 @@ public abstract class ExecutorSupport {
     }
 
 
-    public static ArmyException executorFactoryClosed(StmtExecutorFactory factory) {
+    public static ArmyException executorFactoryClosed(ExecutorFactory factory) {
         String m = String.format("%s have closed.", factory);
         return new ArmyException(m);
     }

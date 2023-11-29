@@ -6,8 +6,8 @@ import io.army.dialect.Dialect;
 import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorEnv;
 import io.army.meta.ServerMeta;
-import io.army.reactive.executor.ReactiveStmtExecutorFactory;
-import io.army.reactive.executor.ReactiveStmtExecutorFactoryProvider;
+import io.army.reactive.executor.ReactiveExecutorFactory;
+import io.army.reactive.executor.ReactiveExecutorFactoryProvider;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -21,17 +21,17 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * <p>This class is a implementation of {@link ReactiveStmtExecutorFactoryProvider} with jdbd spi.
+ * <p>This class is a implementation of {@link ReactiveExecutorFactoryProvider} with jdbd spi.
  *
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  * @since 10
  */
-public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecutorFactoryProvider {
+public final class JdbdExecutorFactoryProvider implements ReactiveExecutorFactoryProvider {
 
-    public static JdbdStmtExecutorFactoryProvider create(final Object datasource, final String factoryName, ArmyEnvironment env) {
+    public static JdbdExecutorFactoryProvider create(final Object datasource, final String factoryName, ArmyEnvironment env) {
         if (!(datasource instanceof DatabaseSessionFactory)) {
             String m = String.format("%s support only %s,but passing %s",
-                    JdbdStmtExecutorFactoryProvider.class.getName(),
+                    JdbdExecutorFactoryProvider.class.getName(),
                     DatabaseSessionFactory.class.getName(),
                     _ClassUtils.safeClassName(datasource)
             );
@@ -39,7 +39,7 @@ public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecut
         } else if (!_StringUtils.hasText(factoryName)) {
             throw new IllegalArgumentException();
         }
-        return new JdbdStmtExecutorFactoryProvider((DatabaseSessionFactory) datasource, factoryName);
+        return new JdbdExecutorFactoryProvider((DatabaseSessionFactory) datasource, factoryName);
     }
 
 
@@ -48,7 +48,7 @@ public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecut
     final String factoryName;
 
 
-    private JdbdStmtExecutorFactoryProvider(DatabaseSessionFactory sessionFactory, String factoryName) {
+    private JdbdExecutorFactoryProvider(DatabaseSessionFactory sessionFactory, String factoryName) {
         this.sessionFactory = sessionFactory;
         this.factoryName = factoryName;
     }
@@ -65,8 +65,8 @@ public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecut
     }
 
     @Override
-    public Mono<ReactiveStmtExecutorFactory> createFactory(ExecutorEnv env) {
-        Mono<ReactiveStmtExecutorFactory> mono;
+    public Mono<ReactiveExecutorFactory> createFactory(ExecutorEnv env) {
+        Mono<ReactiveExecutorFactory> mono;
         final JdbdStmtExecutorFactory factory;
         try {
             factory = JdbdStmtExecutorFactory.create(this, env);
@@ -100,6 +100,8 @@ public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecut
 
                 .supportSavePoint(metaData.isSupportSavePoints())
                 .usedDialect(usedDialect)
+                .driverSpi("io.jdbd")
+
                 .build();
         return serverMeta;
     }

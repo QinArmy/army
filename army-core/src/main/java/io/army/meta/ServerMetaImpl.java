@@ -36,6 +36,7 @@ final class ServerMetaImpl implements ServerMeta {
 
     private final boolean supportSavePoint;
 
+    private final String driverSpi;
 
     private ServerMetaImpl(ServerMetaBuilder builder) {
         this.name = builder.name;
@@ -51,6 +52,7 @@ final class ServerMetaImpl implements ServerMeta {
         this.usedDialect = builder.usedDialect;
 
         this.supportSavePoint = builder.supportSavePoint;
+        this.driverSpi = builder.driverSpi;
 
         if (_StringUtils.isEmpty(this.name)
                 || this.database == null
@@ -58,7 +60,8 @@ final class ServerMetaImpl implements ServerMeta {
                 || this.major < 0
                 || this.minor < 0
                 || this.subMinor < 0
-                || this.usedDialect == null) {
+                || this.usedDialect == null
+                || !_StringUtils.hasText(this.driverSpi)) {
             throw new IllegalArgumentException(String.format("server meta %s error.", this));
         } else if (!this.database.isCompatible(this.usedDialect)) {
             throw _Exceptions.databaseNotCompatible(this.usedDialect, this.database);
@@ -108,6 +111,11 @@ final class ServerMetaImpl implements ServerMeta {
     }
 
     @Override
+    public int subMinor() {
+        return this.subMinor;
+    }
+
+    @Override
     public Dialect usedDialect() {
         return this.usedDialect;
     }
@@ -117,6 +125,10 @@ final class ServerMetaImpl implements ServerMeta {
         return this.supportSavePoint;
     }
 
+    @Override
+    public String driverSpi() {
+        return this.driverSpi;
+    }
 
     @Override
     public boolean meetsMinimum(final int major, final int minor, final int subMinor) {
@@ -216,6 +228,8 @@ final class ServerMetaImpl implements ServerMeta {
 
         private boolean supportSavePoint;
 
+        private String driverSpi;
+
         @Override
         public Builder name(String name) {
             this.name = name;
@@ -273,6 +287,12 @@ final class ServerMetaImpl implements ServerMeta {
         @Override
         public Builder supportSavePoint(boolean support) {
             this.supportSavePoint = support;
+            return this;
+        }
+
+        @Override
+        public Builder driverSpi(String spi) {
+            this.driverSpi = spi;
             return this;
         }
 

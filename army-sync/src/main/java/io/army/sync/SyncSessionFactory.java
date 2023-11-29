@@ -4,12 +4,12 @@ import io.army.session.Session;
 import io.army.session.SessionException;
 import io.army.session.SessionFactory;
 import io.army.session.SessionFactoryException;
-import io.army.session.executor.StmtExecutorFactory;
+import io.army.session.executor.ExecutorFactory;
 
 /**
  * <p>This interface representing blocking {@link SessionFactory}.
  * <p>The instance of this interface is created by {@link SyncFactoryBuilder}
- * <p>This interface's underlying api is {@link StmtExecutorFactory}.
+ * <p>This interface's underlying api is {@link ExecutorFactory}.
  *
  * @since 1.0
  */

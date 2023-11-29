@@ -1,17 +1,17 @@
 package io.army.jdbd;
 
 import io.army.ArmyException;
-import io.army.datasource.RoutingDataSource;
+import io.army.datasource.ReadWriteSplittingDataSource;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
-import io.army.reactive.executor.ReactiveLocalStmtExecutor;
+import io.army.reactive.executor.ReactiveExecutorFactory;
+import io.army.reactive.executor.ReactiveLocalExecutor;
 import io.army.reactive.executor.ReactiveMetaExecutor;
-import io.army.reactive.executor.ReactiveRmStmtExecutor;
-import io.army.reactive.executor.ReactiveStmtExecutorFactory;
+import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.util._Exceptions;
@@ -27,14 +27,14 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 
 /**
- * <p>This class is a implementation of {@link ReactiveStmtExecutorFactory} with jdbd spi.
+ * <p>This class is a implementation of {@link ReactiveExecutorFactory} with jdbd spi.
  *
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  * @since 1.0
  */
-final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
+final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
 
-    static JdbdStmtExecutorFactory create(JdbdStmtExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
+    static JdbdStmtExecutorFactory create(JdbdExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
         return new JdbdStmtExecutorFactory(provider, executorEnv);
     }
 
@@ -67,7 +67,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
      * private construcotr
      */
     @SuppressWarnings("unchecked")
-    private JdbdStmtExecutorFactory(JdbdStmtExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
+    private JdbdStmtExecutorFactory(JdbdExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
         this.sessionFactoryName = provider.factoryName;
         this.sessionFactory = provider.sessionFactory;
         this.executorEnv = executorEnv;
@@ -106,13 +106,13 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
     @Override
-    public Mono<ReactiveMetaExecutor> metaExecutor() {
+    public Mono<ReactiveMetaExecutor> metaExecutor(Function<Option<?>, ?> func) {
         if (isClosed()) {
             return Mono.error(ExecutorSupport.executorFactoryClosed(this));
         }
         DatabaseSessionFactory factory = this.sessionFactory;
-        if (factory instanceof RoutingDataSource) {
-            factory = (DatabaseSessionFactory) ((RoutingDataSource<?>) factory).writableDataSource();
+        if (factory instanceof ReadWriteSplittingDataSource) {
+            factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).writableDataSource(func);
         }
         return Mono.from(factory.localSession())
                 .map(session -> JdbdMetaExecutor.create(this.sessionFactoryName, this, session))
@@ -121,8 +121,9 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
 
 
     @Override
-    public Mono<ReactiveLocalStmtExecutor> localExecutor(final @Nullable String sessionName, final boolean readOnly) {
-        final Mono<ReactiveLocalStmtExecutor> mono;
+    public Mono<ReactiveLocalExecutor> localExecutor(final @Nullable String sessionName, final boolean readOnly,
+                                                     final Function<Option<?>, ?> func) {
+        final Mono<ReactiveLocalExecutor> mono;
         if (isClosed()) {
             mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
         } else if (sessionName == null) {
@@ -130,8 +131,8 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
             mono = Mono.error(new NullPointerException());
         } else {
             DatabaseSessionFactory factory = this.sessionFactory;
-            if (readOnly && factory instanceof RoutingDataSource) {
-                factory = (DatabaseSessionFactory) ((RoutingDataSource<?>) factory).readOnlyDataSource();
+            if (readOnly && factory instanceof ReadWriteSplittingDataSource) {
+                factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).readOnlyDataSource(func);
             }
             mono = Mono.from(factory.localSession())
                     .map(session -> this.localFunc.apply(this, session, sessionName))
@@ -141,8 +142,9 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
     @Override
-    public Mono<ReactiveRmStmtExecutor> rmExecutor(final @Nullable String sessionName, final boolean readOnly) {
-        final Mono<ReactiveRmStmtExecutor> mono;
+    public Mono<ReactiveRmExecutor> rmExecutor(final @Nullable String sessionName, final boolean readOnly,
+                                               final Function<Option<?>, ?> func) {
+        final Mono<ReactiveRmExecutor> mono;
         if (isClosed()) {
             mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
         } else if (sessionName == null) {
@@ -150,8 +152,8 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
             mono = Mono.error(new NullPointerException());
         } else {
             DatabaseSessionFactory factory = this.sessionFactory;
-            if (readOnly && factory instanceof RoutingDataSource) {
-                factory = (DatabaseSessionFactory) ((RoutingDataSource<?>) factory).readOnlyDataSource();
+            if (readOnly && factory instanceof ReadWriteSplittingDataSource) {
+                factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).readOnlyDataSource(func);
             }
             mono = Mono.from(factory.rmSession())
                     .map(session -> this.rmFunc.apply(this, session, sessionName))
@@ -270,7 +272,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
             jdbdOption = io.jdbd.session.Option.AUTO_COMMIT;
         } else if (option == Option.WAIT) {
             jdbdOption = io.jdbd.session.Option.WAIT;
-        } else if (option == Option.LOCK_TIMEOUT) {
+        } else if (option == Option.LOCK_TIMEOUT_MILLIS) {
             jdbdOption = io.jdbd.session.Option.LOCK_TIMEOUT;
         } else if (option == Option.READ_ONLY_SESSION) {
             jdbdOption = io.jdbd.session.Option.READ_ONLY_SESSION;
@@ -308,7 +310,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         } else if (option == io.jdbd.session.Option.WAIT) {
             armyOption = Option.WAIT;
         } else if (option == io.jdbd.session.Option.LOCK_TIMEOUT) {
-            armyOption = Option.LOCK_TIMEOUT;
+            armyOption = Option.LOCK_TIMEOUT_MILLIS;
         } else if (option == io.jdbd.session.Option.READ_ONLY_SESSION) {
             armyOption = Option.READ_ONLY_SESSION;
         } else {
@@ -384,13 +386,13 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
 
     @FunctionalInterface
     private interface LocalExecutorFunction {
-        ReactiveLocalStmtExecutor apply(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name);
+        ReactiveLocalExecutor apply(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name);
 
     }
 
     @FunctionalInterface
     private interface RmExecutorFunction {
-        ReactiveRmStmtExecutor apply(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name);
+        ReactiveRmExecutor apply(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name);
     }
 
 

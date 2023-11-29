@@ -5,7 +5,7 @@ import io.army.advice.FactoryAdvice;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.session.executor.StmtExecutorFactoryProvider;
+import io.army.session.executor.ExecutorFactoryProvider;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -58,7 +58,7 @@ public abstract class ArmySessionFactoryBeanSupport implements InitializingBean,
 
     private Function<String, Database> nameToDatabaseFunc;
 
-    private Consumer<StmtExecutorFactoryProvider> executorFactoryProviderValidator;
+    private Consumer<ExecutorFactoryProvider> executorFactoryProviderValidator;
 
     private Function<Class<?>, Function<?, ?>> columnConverterFunc;
 
@@ -135,7 +135,7 @@ public abstract class ArmySessionFactoryBeanSupport implements InitializingBean,
         return this;
     }
 
-    public final ArmySessionFactoryBeanSupport setExecutorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProvider> executorFactoryProviderValidator) {
+    public final ArmySessionFactoryBeanSupport setExecutorFactoryProviderValidator(@Nullable Consumer<ExecutorFactoryProvider> executorFactoryProviderValidator) {
         this.executorFactoryProviderValidator = executorFactoryProviderValidator;
         return this;
     }
@@ -216,7 +216,7 @@ public abstract class ArmySessionFactoryBeanSupport implements InitializingBean,
     }
 
     @Nullable
-    protected final Consumer<StmtExecutorFactoryProvider> getExecutorFactoryProviderValidator() {
+    protected final Consumer<ExecutorFactoryProvider> getExecutorFactoryProviderValidator() {
         return this.executorFactoryProviderValidator;
     }
 

@@ -65,7 +65,18 @@ public enum MySQLType implements SqlType {
     SET("SET", ArmyType.DIALECT_TYPE, String.class),
     JSON("JSON", ArmyType.JSON, String.class),
 
+
+    // https://dev.mysql.com/doc/refman/8.0/en/gis-geometry-class-hierarchy.html
+    POINT("POINT", ArmyType.GEOMETRY, byte[].class),
+    LINESTRING("LINESTRING", ArmyType.GEOMETRY, byte[].class),
     GEOMETRY("GEOMETRY", ArmyType.GEOMETRY, byte[].class),
+    POLYGON("POLYGON", ArmyType.GEOMETRY, byte[].class),
+    MULTIPOINT("MULTIPOINT", ArmyType.GEOMETRY, byte[].class),
+    MULTIPOLYGON("MULTIPOLYGON", ArmyType.GEOMETRY, byte[].class),
+    MULTILINESTRING("MULTILINESTRING", ArmyType.GEOMETRY, byte[].class),
+
+    GEOMETRYCOLLECTION("GEOMETRYCOLLECTION", ArmyType.GEOMETRY, byte[].class),
+
 
     UNKNOWN("UNKNOWN", ArmyType.UNKNOWN, Object.class);
 

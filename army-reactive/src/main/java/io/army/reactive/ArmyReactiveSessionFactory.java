@@ -1,18 +1,16 @@
 package io.army.reactive;
 
 import io.army.env.ArmyEnvironment;
-import io.army.reactive.executor.ReactiveLocalStmtExecutor;
-import io.army.reactive.executor.ReactiveRmStmtExecutor;
+import io.army.reactive.executor.ReactiveExecutorFactory;
+import io.army.reactive.executor.ReactiveLocalExecutor;
+import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.reactive.executor.ReactiveStmtExecutor;
-import io.army.reactive.executor.ReactiveStmtExecutorFactory;
-import io.army.session.SessionException;
-import io.army.session.SessionFactoryException;
-import io.army.session._ArmySession;
-import io.army.session._ArmySessionFactory;
+import io.army.session.*;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.function.Function;
 
 /**
  * This class is a implementation of {@link ReactiveSessionFactory}
@@ -35,7 +33,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
     private static final AtomicIntegerFieldUpdater<ArmyReactiveSessionFactory> FACTORY_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmyReactiveSessionFactory.class, "factoryClosed");
 
-    final ReactiveStmtExecutorFactory stmtExecutorFactory;
+    final ReactiveExecutorFactory stmtExecutorFactory;
 
 
     private volatile int factoryClosed;
@@ -139,10 +137,11 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         }
 
         @Override
-        protected Mono<ReactiveLocalSession> createSession(final String sessionName, final boolean readonly) {
+        protected Mono<ReactiveLocalSession> createSession(final String sessionName, final boolean readonly,
+                                                           final Function<Option<?>, ?> optionFunc) {
             return Mono.defer(() ->
                     ((ArmyReactiveSessionFactory) this.factory).stmtExecutorFactory
-                            .localExecutor(sessionName, readonly)
+                            .localExecutor(sessionName, readonly, optionFunc)
                             .map(this::createLocalSession)
                             .onErrorMap(_ArmySession::wrapIfNeed)
             );
@@ -154,7 +153,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
             return Mono.error(cause);
         }
 
-        private ReactiveLocalSession createLocalSession(final ReactiveLocalStmtExecutor stmtExecutor) {
+        private ReactiveLocalSession createLocalSession(final ReactiveLocalExecutor stmtExecutor) {
             this.stmtExecutor = stmtExecutor;
             return ArmyReactiveLocalSession.create(this);
         }
@@ -174,10 +173,11 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
 
 
         @Override
-        protected Mono<ReactiveRmSession> createSession(final String sessionName, final boolean readonly) {
+        protected Mono<ReactiveRmSession> createSession(final String sessionName, final boolean readonly,
+                                                        final Function<Option<?>, ?> optionFunc) {
             return Mono.defer(() ->
                     ((ArmyReactiveSessionFactory) this.factory).stmtExecutorFactory
-                            .rmExecutor(sessionName, readonly)
+                            .rmExecutor(sessionName, readonly, optionFunc)
                             .map(this::createRmSession)
                             .onErrorMap(_ArmySession::wrapIfNeed)
             );
@@ -188,7 +188,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
             return Mono.error(cause);
         }
 
-        private ReactiveRmSession createRmSession(final ReactiveRmStmtExecutor stmtExecutor) {
+        private ReactiveRmSession createRmSession(final ReactiveRmExecutor stmtExecutor) {
             this.stmtExecutor = stmtExecutor;
             return ArmyReactiveRmSession.create(this);
         }

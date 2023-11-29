@@ -1,7 +1,7 @@
 package io.army.jdbc;
 
 import io.army.ArmyException;
-import io.army.datasource.RoutingDataSource;
+import io.army.datasource.ReadWriteSplittingDataSource;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
@@ -12,9 +12,9 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.Option;
 import io.army.sync.executor.MetaExecutor;
+import io.army.sync.executor.SyncExecutorFactory;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
-import io.army.sync.executor.SyncStmtExecutorFactory;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -25,12 +25,13 @@ import javax.sql.XADataSource;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.function.Function;
 
 /**
  * @see JdbcExecutorFactoryProvider
  * @since 1.0
  */
-final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
+final class JdbcExecutorFactory implements SyncExecutorFactory {
 
     static JdbcExecutorFactory create(JdbcExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
         return new JdbcExecutorFactory(provider, executorEnv);
@@ -142,13 +143,13 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     }
 
     @Override
-    public MetaExecutor metaExecutor() throws DataAccessException {
+    public MetaExecutor metaExecutor(Function<Option<?>, ?> optionFunc) throws DataAccessException {
         assertFactoryOpen();
 
         try {
             CommonDataSource dataSource = this.dataSource;
-            if (dataSource instanceof RoutingDataSource) {
-                dataSource = (CommonDataSource) ((RoutingDataSource<?>) dataSource).writableDataSource();
+            if (dataSource instanceof ReadWriteSplittingDataSource) {
+                dataSource = (CommonDataSource) ((ReadWriteSplittingDataSource<?>) dataSource).writableDataSource(optionFunc);
             }
             final JdbcMetaExecutor executor;
             if (dataSource instanceof DataSource) {
@@ -164,7 +165,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     }
 
     @Override
-    public SyncLocalStmtExecutor localExecutor(final @Nullable String sessionName, final boolean readOnly)
+    public SyncLocalStmtExecutor localExecutor(final @Nullable String sessionName, final boolean readOnly,
+                                               final Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         assertFactoryOpen();
 
@@ -176,8 +178,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         Connection conn = null;
         try {
             CommonDataSource dataSource = this.dataSource;
-            if (readOnly && dataSource instanceof RoutingDataSource) {
-                dataSource = (CommonDataSource) ((RoutingDataSource<?>) dataSource).readOnlyDataSource();
+            if (readOnly && dataSource instanceof ReadWriteSplittingDataSource) {
+                dataSource = (CommonDataSource) ((ReadWriteSplittingDataSource<?>) dataSource).readOnlyDataSource(optionFunc);
             }
             if (!(dataSource instanceof DataSource)) {
                 String m = String.format("%s isn't %s ,couldn't create local executor.", dataSource,
@@ -200,7 +202,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     }
 
     @Override
-    public SyncRmStmtExecutor rmExecutor(final @Nullable String sessionName, final boolean readOnly)
+    public SyncRmStmtExecutor rmExecutor(final @Nullable String sessionName, final boolean readOnly,
+                                         final Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         assertFactoryOpen();
 
@@ -211,8 +214,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         Object conn = null;
         try {
             CommonDataSource dataSource = this.dataSource;
-            if (readOnly && dataSource instanceof RoutingDataSource) {
-                dataSource = (CommonDataSource) ((RoutingDataSource<?>) dataSource).readOnlyDataSource();
+            if (readOnly && dataSource instanceof ReadWriteSplittingDataSource) {
+                dataSource = (CommonDataSource) ((ReadWriteSplittingDataSource<?>) dataSource).readOnlyDataSource(optionFunc);
             }
             if (dataSource instanceof DataSource) {
                 conn = ((DataSource) dataSource).getConnection();

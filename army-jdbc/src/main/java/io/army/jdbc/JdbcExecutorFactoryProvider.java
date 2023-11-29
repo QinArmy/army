@@ -8,7 +8,7 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.SyncStmtExecutorFactory;
+import io.army.sync.executor.SyncExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -86,7 +86,7 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
     }
 
     @Override
-    public SyncStmtExecutorFactory createFactory(final ExecutorEnv env) throws DataAccessException {
+    public SyncExecutorFactory createFactory(final ExecutorEnv env) throws DataAccessException {
         validateServerMeta(env.mappingEnv());
         return JdbcExecutorFactory.create(this, env);
     }
@@ -131,16 +131,21 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
         family = metaData.getDatabaseProductName();
 
         return ServerMeta.builder()
+
                 .name(family)
                 .database(Database.mapToDatabase(family, func))
                 .catalog(conn.getCatalog())
                 .schema(conn.getSchema())
+
                 .version(metaData.getDatabaseProductVersion())
                 .major(metaData.getDatabaseMajorVersion())
                 .minor(metaData.getDatabaseMinorVersion())
                 .subMinor(0) // TODO parse version
+
                 .usedDialect(usedDialect)
                 .supportSavePoint(metaData.supportsSavepoints())
+                .driverSpi("java.sql")
+
                 .build();
     }
 

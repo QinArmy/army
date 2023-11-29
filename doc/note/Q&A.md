@@ -9,7 +9,8 @@
 3. 为什么 batch update / delete 不支持 Collection 全名参数?
     * 因为 集合的的元素不确定,无法生成固定数量的 占位符 '?'
 
-4. 为什么所有 非 batch update 都只有 ifSet(List&lt; FieldMeta&lt; ?,?> fieldList,List&lt; Expression> valueList); 而没有 ifSet(
+4. 为什么所有 非 batch update 都只有 ifSet(List&lt; FieldMeta&lt; ?,?> fieldList,List&lt; Expression> valueList); 而没有
+   ifSet(
    Function&lt; List&lt;
    FieldMeta&lt; ?,?>> fieldList,Function&lt; List&lt; Expression>> valueList)?
     * 因为 set 子句必须一一对应而,而 有 Function 的 ifSet 方法对 field 和 value 放在两方法中 很难一一对应.
@@ -30,7 +31,8 @@
     * equalLiteral(Object ) 输出的是 字面量,equal(Object ) 输出的占位符 '?' ,army 不认为在任何场景下 application
       开发者都想输出占位符.
     * 从 sql style 的视角,既能输出 '?' 也能输出字面量才够 sql style.
-    * 从 driver 的角度 没有字符串这个能产生 sql 注入的类型的场景中,没有 '?' 执行的是 database 的文本协议而不是 prepare 协议,在一部分场景来说是更快的, 尤其是网络效率高.
+    * 从 driver 的角度 没有字符串这个能产生 sql 注入的类型的场景中,没有 '?' 执行的是 database 的文本协议而不是 prepare
+      协议,在一部分场景来说是更快的, 尤其是网络效率高.
     * 从jdbc 多语句的角度考虑,没有 '?' 你才能使用多语句的 jdbc api,当然如果使用的是 jdbd 则不关心这个问题.
 
 
@@ -65,16 +67,21 @@
     * with clause 实现需要 CriteriaContext
     * NestedItems 没有 CriteriaContext
 
-13. 为什么 io.army.criteria.Expression 要设计 ifEqual(Supplier&lt; Object>) 和 ifEqual(Function&lt; String, Object> function,
+13. 为什么 io.army.criteria.Expression 要设计 ifEqual(Supplier&lt; Object>) 和 ifEqual(Function&lt; String, Object>
+    function,
     String
     keyName) 方法, 而放弃 ifEqual(@Nullable Object) 方法?
-    * 首先在一部分场景 ifEqual(@Nullable Object) 确实能替换两者,似乎理方便,但 ifEqual(@Nullable Object) 参数是 Object, 而我们总是得设计 一个 ifEqual(
+    * 首先在一部分场景 ifEqual(@Nullable Object) 确实能替换两者,似乎理方便,但 ifEqual(@Nullable Object) 参数是 Object,
+      而我们总是得设计 一个 ifEqual(
       Function&lt; C,Object>) 方法,大多数情况下java 都能识别这两个方法,但谨慎的原则考虑还是要避免重载 Object 参数的方法.
-    * 在别一部分场景里 我们不能直接使用 java bean 的 getXxx() 方法和 Map.get(String) 方法得到条件,而是需要一些简单的计算,在这个场景里 ifEqual(@Nullable Object)通过 在
-      语句的 之前准备好条件或者定义一个新方法,可 Supplier 可依赖于 lambda 和方法引用, 两者虽可替换,但从 sql style 和 代码相关性而言,lambda 和 方法引用 更胜一筹.
+    * 在别一部分场景里 我们不能直接使用 java bean 的 getXxx() 方法和 Map.get(String) 方法得到条件,而是需要一些简单的计算,在这个场景里
+      ifEqual(@Nullable Object)通过 在
+      语句的 之前准备好条件或者定义一个新方法,可 Supplier 可依赖于 lambda 和方法引用, 两者虽可替换,但从 sql style 和
+      代码相关性而言,lambda 和 方法引用 更胜一筹.
     * equalExp(Function&lt; C, Expression>) 和 equalExp(Supplier) 方法其实也是为避免重载 equal(Object) 方法.其它操作符同理.
 
-14. 为什么 Criteria api 不再提供 List&lt;T>, Supplier&lt;List&lt;T>> 和 Function&lt;List&lt;T>> 而是提供 Consumer&lt;Consumer&lt;
+14. 为什么 Criteria api 不再提供 List&lt;T>, Supplier&lt;List&lt;T>> 和 Function&lt;List&lt;T>> 而是提供
+    Consumer&lt;Consumer&lt;
     T>>
     和 BiConsumer&lt;C,Consumer&lt; T>> ?
     * 保证运行时 ThreadLocal 的 CriteriaContext 是当前的
@@ -194,4 +201,5 @@
 44. 为什么 sub query 不用 leftParen 开始 rightParen 结束?
     * 因为要和 primary query 使用同一套 接口,这是由于 java 不能支持像 go 一样的组合造成的
 
-
+45. 为什么 MySQLType 要保留 MULTIPOINT 等而不以 GEOMETRY 代替?
+    * ddl 时 MySQL 能返回精确的 typeName

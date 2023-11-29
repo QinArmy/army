@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * <p>This interface representing provider of {@link StmtExecutorFactory} spec.
+ * <p>This interface representing provider of {@link ExecutorFactory} spec.
  * This implementation of this interface must declared :
  * <pre>
  *      <code>
@@ -30,7 +30,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-public interface StmtExecutorFactoryProvider {
+public interface ExecutorFactoryProvider {
 
     /**
      * Sub interface must override this method return value type.

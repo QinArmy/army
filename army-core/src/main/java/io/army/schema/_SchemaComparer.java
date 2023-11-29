@@ -13,7 +13,7 @@ public interface _SchemaComparer {
 
     static _SchemaComparer create(final ServerMeta serverMeta) {
         final _SchemaComparer comparer;
-        switch (serverMeta.dialectDatabase()) {
+        switch (serverMeta.serverDatabase()) {
             case MySQL:
                 comparer = MySQLComparer.create(serverMeta);
                 break;

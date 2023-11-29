@@ -1,8 +1,8 @@
 package io.army.jdbd;
 
 import io.army.mapping.MappingType;
-import io.army.reactive.executor.ReactiveLocalStmtExecutor;
-import io.army.reactive.executor.ReactiveRmStmtExecutor;
+import io.army.reactive.executor.ReactiveLocalExecutor;
+import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.session.Option;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
@@ -20,11 +20,11 @@ import java.util.UUID;
 
 abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtExecutor {
 
-    static ReactiveLocalStmtExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
+    static ReactiveLocalExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
         throw new UnsupportedOperationException();
     }
 
-    static ReactiveRmStmtExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
+    static ReactiveRmExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
         throw new UnsupportedOperationException();
     }
 

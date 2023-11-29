@@ -1,7 +1,10 @@
 package io.army.session.executor;
 
 import io.army.session.CloseableSpec;
+import io.army.session.Option;
 import io.army.session.OptionSpec;
+
+import java.util.function.Function;
 
 /**
  * <p>This interface representing {@link StmtExecutor} factory spec .
@@ -12,14 +15,14 @@ import io.army.session.OptionSpec;
  * </ul>
  * The sub interface must override following methods :
  * <ul>
- *     <li>{@link #metaExecutor()}</li>
- *     <li>{@link #localExecutor(String, boolean)}</li>
- *     <li>{@link #rmExecutor(String, boolean)}</li>
+ *     <li>{@link #metaExecutor(Function)}</li>
+ *     <li>{@link #localExecutor(String, boolean, Function)}</li>
+ *     <li>{@link #rmExecutor(String, boolean, Function)}</li>
  * </ul>
  *
  * @since 1.0
  */
-public interface StmtExecutorFactory extends CloseableSpec, OptionSpec {
+public interface ExecutorFactory extends CloseableSpec, OptionSpec {
 
 
     /**
@@ -50,7 +53,7 @@ public interface StmtExecutorFactory extends CloseableSpec, OptionSpec {
     /**
      * Sub interface must override this method return value type.
      */
-    Object metaExecutor();
+    Object metaExecutor(Function<Option<?>, ?> optionFunc);
 
 
     /**
@@ -58,7 +61,7 @@ public interface StmtExecutorFactory extends CloseableSpec, OptionSpec {
      *
      * @param sessionName {@link io.army.session.Session}'s name.
      */
-    Object localExecutor(String sessionName, boolean readOnly);
+    Object localExecutor(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc);
 
 
     /**
@@ -66,7 +69,7 @@ public interface StmtExecutorFactory extends CloseableSpec, OptionSpec {
      *
      * @param sessionName {@link io.army.session.Session}'s name.
      */
-    Object rmExecutor(String sessionName, boolean readOnly);
+    Object rmExecutor(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc);
 
     /**
      * override {@link Object#toString()}

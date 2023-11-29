@@ -9,9 +9,9 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.sync.StreamOption;
+import io.army.sync.executor.SyncExecutor;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
-import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 
 /**
  * <p>
- * This class is a implementation of {@link SyncStmtExecutor} with postgre JDBC driver.
+ * This class is a implementation of {@link SyncExecutor} with postgre JDBC driver.
  * </p>
  *
  * @since 1.0

@@ -1,8 +1,8 @@
 package io.army.jdbd;
 
 import io.army.mapping.MappingType;
-import io.army.reactive.executor.ReactiveLocalStmtExecutor;
-import io.army.reactive.executor.ReactiveRmStmtExecutor;
+import io.army.reactive.executor.ReactiveLocalExecutor;
+import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.session.Option;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -27,11 +27,11 @@ import java.time.*;
  */
 abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
-    static ReactiveLocalStmtExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
+    static ReactiveLocalExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
         return new LocalExecutor(factory, session, name);
     }
 
-    static ReactiveRmStmtExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
+    static ReactiveRmExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
         return new RmExecutor(factory, session, name);
     }
 
@@ -363,7 +363,7 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
         return value;
     }
 
-    private static final class LocalExecutor extends MySQLStmtExecutor implements ReactiveLocalStmtExecutor {
+    private static final class LocalExecutor extends MySQLStmtExecutor implements ReactiveLocalExecutor {
 
         private LocalExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
             super(factory, session, name);
@@ -372,7 +372,7 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
     } // LocalExecutor
 
-    private static final class RmExecutor extends MySQLStmtExecutor implements ReactiveRmStmtExecutor {
+    private static final class RmExecutor extends MySQLStmtExecutor implements ReactiveRmExecutor {
 
         private RmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
             super(factory, session, name);
