@@ -30,9 +30,16 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
     private final SyncSessionFactory sessionFactory;
 
 
-    private boolean useReadOnlyTransaction = true;
+    private boolean allowPseudoTransaction;
 
     private boolean useTransactionName;
+
+    private boolean useTransactionLabel;
+
+    private boolean useDataSourceTimeout;
+
+    private boolean useDataSourceLabel;
+
 
     /**
      * private constructor
@@ -48,12 +55,13 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
         //TransactionDefinitionHolder.registerTransactionManager(this.beanName, this.useSavepointForNestedTransaction());
     }
 
-    public boolean isUseReadOnlyTransaction() {
-        return this.useReadOnlyTransaction;
+    public boolean isAllowPseudoTransaction() {
+        return this.allowPseudoTransaction;
     }
 
-    public void setUseReadOnlyTransaction(boolean useReadOnlyTransaction) {
-        this.useReadOnlyTransaction = useReadOnlyTransaction;
+    public ArmySyncLocalTransactionManager setAllowPseudoTransaction(boolean allowPseudoTransaction) {
+        this.allowPseudoTransaction = allowPseudoTransaction;
+        return this;
     }
 
 
@@ -61,8 +69,36 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
         return this.useTransactionName;
     }
 
-    public void setUseTransactionName(boolean useTransactionName) {
+    public ArmySyncLocalTransactionManager setUseTransactionName(boolean useTransactionName) {
         this.useTransactionName = useTransactionName;
+        return this;
+    }
+
+    public boolean isUseTransactionLabel() {
+        return this.useTransactionLabel;
+    }
+
+    public ArmySyncLocalTransactionManager setUseTransactionLabel(boolean useTransactionLabel) {
+        this.useTransactionLabel = useTransactionLabel;
+        return this;
+    }
+
+    public boolean isUseDataSourceTimeout() {
+        return this.useDataSourceTimeout;
+    }
+
+    public ArmySyncLocalTransactionManager setUseDataSourceTimeout(boolean useDataSourceTimeout) {
+        this.useDataSourceTimeout = useDataSourceTimeout;
+        return this;
+    }
+
+    public boolean isUseDataSourceLabel() {
+        return this.useDataSourceLabel;
+    }
+
+    public ArmySyncLocalTransactionManager setUseDataSourceLabel(boolean useDataSourceLabel) {
+        this.useDataSourceLabel = useDataSourceLabel;
+        return this;
     }
 
 
@@ -91,84 +127,75 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
             throws TransactionException {
         final LocalTransactionObject txObject = (LocalTransactionObject) transaction;
 
-
         try {
-            //1.get transaction name
+            // 1. get transaction options
             final String txLabel;
             txLabel = definition.getName();
 
-            //2. create session
             final boolean readOnly;
             readOnly = definition.isReadOnly();
 
+            final int timeoutMillis;
+            timeoutMillis = timeoutMillis(definition.getTimeout());
+
+            // 2. create session
             final SyncLocalSession session;
             session = this.sessionFactory.localBuilder()
+
                     .name(txLabel)
                     .readonly(readOnly)
+                    .dataSourceOption(Option.LABEL, this.useDataSourceLabel ? txLabel : null)
+                    .dataSourceOption(Option.TIMEOUT_MILLIS, (timeoutMillis > 0 && this.useDataSourceTimeout) ? timeoutMillis : null)
+
                     .build();
 
             // immediately  bind to txObject
             txObject.setSession(session);
 
-            final int isolationLevel;
-            isolationLevel = definition.getIsolationLevel();
+            // 3. create transaction option
 
-            final int timeoutSeconds;
-            timeoutSeconds = definition.getTimeout();
-
-            //3 . create TransactionOption
-            final TransactionOption.Builder builder;
-            builder = TransactionOption.builder()
+            final TransactionOption.Builder txOptionBuilder;
+            txOptionBuilder = TransactionOption.builder()
                     .option(Option.READ_ONLY, readOnly);
 
-
             if (txLabel != null) {
-                builder.option(Option.LABEL, txLabel);
-                if (this.useTransactionName) {
-                    builder.option(Option.NAME, txLabel);
+                if (this.useTransactionLabel) {
+                    txOptionBuilder.option(Option.LABEL, txLabel);
                 }
-            }
-
-
-            final long timeoutMillis;
-            if (timeoutSeconds == TransactionDefinition.TIMEOUT_DEFAULT) {
-                timeoutMillis = getDefaultTimeout() * 1000L;
-            } else if (timeoutSeconds > 0) {
-                timeoutMillis = timeoutSeconds * 1000L;
-            } else {
-                timeoutMillis = 0L;
+                if (this.useTransactionName) {
+                    txOptionBuilder.option(Option.NAME, txLabel);
+                }
             }
 
             if (timeoutMillis > 0L) {
-                if (timeoutMillis > Integer.MAX_VALUE) {
-                    throw new TransactionUsageException("timeout milliseconds greater than Integer.MAX_VALUE");
-                }
-                builder.option(Option.TIMEOUT_MILLIS, (int) timeoutMillis);
+                txOptionBuilder.option(Option.TIMEOUT_MILLIS, timeoutMillis);
             }
 
+            final int isolationLevel;
+            isolationLevel = definition.getIsolationLevel();
+
             final TransactionInfo info;
+            // 4. start transaction
+            if (readOnly
+                    && isolationLevel == TransactionDefinition.ISOLATION_DEFAULT
+                    && this.allowPseudoTransaction) {
 
-            // 5. start transaction
-            if (!readOnly
-                    || isolationLevel != TransactionDefinition.ISOLATION_DEFAULT
-                    || this.useReadOnlyTransaction) {
-
-                if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
-                    builder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
-                }
-                // start real transaction
-                info = session.startTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
-
-                assert info.inTransaction();
-            } else {
-                builder.option(Option.ISOLATION, Isolation.PSEUDO);
+                txOptionBuilder.option(Option.ISOLATION, Isolation.PSEUDO);
 
                 // start pseudo transaction
-                info = session.pseudoTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS);
+                info = session.pseudoTransaction(txOptionBuilder.build(), HandleMode.ERROR_IF_EXISTS);
 
                 assert !info.inTransaction();
                 assert info.isReadOnly();
                 assert info.isolation() == Isolation.PSEUDO;
+            } else {
+                if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
+                    txOptionBuilder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
+                }
+                // start real transaction
+                info = session.startTransaction(txOptionBuilder.build(), HandleMode.ERROR_IF_EXISTS);
+
+                assert info.inTransaction();
             }
 
             // 6. bind current session
@@ -289,19 +316,24 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
     }
 
 
-    @Override
-    protected boolean useSavepointForNestedTransaction() {
-        return true;
+    /*-------------------below private methods -------------------*/
+
+    private int timeoutMillis(final int timeoutSeconds) {
+
+        final long timeoutMillis;
+        if (timeoutSeconds == TransactionDefinition.TIMEOUT_DEFAULT) {
+            timeoutMillis = getDefaultTimeout() * 1000L;
+        } else if (timeoutSeconds > 0) {
+            timeoutMillis = timeoutSeconds * 1000L;
+        } else {
+            timeoutMillis = 0L;
+        }
+
+        if (timeoutMillis > Integer.MAX_VALUE) {
+            throw new TransactionUsageException("timeout milliseconds greater than Integer.MAX_VALUE");
+        }
+        return (int) timeoutMillis;
     }
-
-
-
-
-    /*################################## blow setter method ##################################*/
-
-
-
-    /*################################## blow static inner class ##################################*/
 
     private static final class LocalTransactionObject implements SavepointManager, SmartTransactionObject {
 

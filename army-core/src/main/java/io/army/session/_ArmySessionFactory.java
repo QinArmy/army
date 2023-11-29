@@ -326,10 +326,13 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         @Override
         public final <T> B dataSourceOption(final Option<T> option, final @Nullable T value) {
             Map<Option<?>, Object> map = this.dataSourceOptionMap;
+            if (value == null && map == null) {
+                return (B) this;
+            }
+
             if (map == null) {
                 this.dataSourceOptionMap = map = _Collections.hashMap();
             }
-
             if (value == null) {
                 map.remove(option);
             } else {
@@ -396,7 +399,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         protected abstract R createSession(String sessionName, boolean readonly, Function<Option<?>, ?> optionFunc);
 
         protected abstract R handleError(SessionException cause);
-
 
 
     } //ArmySessionBuilder

@@ -132,6 +132,10 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     @Override
     public final <T> B dataSourceOption(final Option<T> option, final @Nullable T value) {
         Map<Option<?>, Object> map = this.dataSourceOptionMap;
+        if (value == null && map == null) {
+            return (B) this;
+        }
+
         if (map == null) {
             this.dataSourceOptionMap = map = _Collections.hashMap();
         }

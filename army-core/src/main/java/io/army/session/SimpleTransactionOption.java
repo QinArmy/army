@@ -5,6 +5,7 @@ import io.army.util._StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -169,15 +170,19 @@ abstract class SimpleTransactionOption implements TransactionOption {
         }
 
         @Override
-        public <T> Builder option(Option<T> option, @Nullable T value) {
+        public <T> Builder option(final Option<T> option, final @Nullable T value) {
             Map<Option<?>, Object> map = this.optionMap;
+            if (value == null && map == null) {
+                return this;
+            }
+
             if (map == null) {
                 this.optionMap = map = _Collections.hashMap();
             }
             if (value == null) {
-                this.optionMap.remove(option);
+                map.remove(option);
             } else {
-                this.optionMap.put(option, value);
+                map.put(option, value);
             }
             return this;
         }
@@ -186,12 +191,12 @@ abstract class SimpleTransactionOption implements TransactionOption {
         public TransactionOption build() throws IllegalArgumentException {
             Map<Option<?>, Object> map = this.optionMap;
             if (map == null) {
-                this.optionMap = map = _Collections.hashMap();
-            }
-            if (map.containsKey(Option.IN_TRANSACTION)) {
+                map = Collections.singletonMap(Option.READ_ONLY, Boolean.FALSE);
+            } else if (map.containsKey(Option.IN_TRANSACTION)) {
                 throw new IllegalArgumentException("don't support IN_TRANSACTION option");
+            } else {
+                map.putIfAbsent(Option.READ_ONLY, Boolean.FALSE);
             }
-            map.putIfAbsent(Option.READ_ONLY, Boolean.FALSE);
             final DialectTransactionOption option;
             option = new DialectTransactionOption(map::get);
 

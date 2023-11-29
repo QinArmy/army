@@ -1,14 +1,13 @@
 package io.army.example.bank.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import io.army.datasource.DataSourceRole;
-import io.army.datasource.sync.DruidDataSourceUtils;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
+import io.army.example.util.DataSourceUtils;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.spring.ArmySessionFactoryBeanSupport;
 import io.army.spring.sync.ArmySyncLocalTransactionManager;
 import io.army.spring.sync.ArmySyncSessionFactoryBean;
+import io.army.sync.SyncSessionFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +29,7 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
 
     @Bean(destroyMethod = "close")
     public DruidDataSource bankDataSource() {
-        return DruidDataSourceUtils.createDataSource(this.env, "bank", DataSourceRole.PRIMARY);
+        return DataSourceUtils.createDataSource(this.env, "bank", "primary");
     }
 
     @Bean
@@ -39,7 +38,7 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean
-    public ArmySessionFactoryBeanSupport bankSyncSessionFactory(@Qualifier("bankDataSource") DataSource dataSource) {
+    public ArmySyncSessionFactoryBean bankSyncSessionFactory(@Qualifier("bankDataSource") DataSource dataSource) {
         final ArmySyncSessionFactoryBean factoryBean;
         factoryBean = new ArmySyncSessionFactoryBean();
 
@@ -53,11 +52,15 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
 
     @Bean(BankSyncBaseService.TX_MANAGER)
     public ArmySyncLocalTransactionManager bankSyncTransactionManager(
-            @Qualifier("bankSyncSessionFactory") SyncLocalSessionFactory sessionFactory) {
-        ArmySyncLocalTransactionManager manager = new ArmySyncLocalTransactionManager(sessionFactory);
-        manager.setWrapSession(false);
+            @Qualifier("bankSyncSessionFactory") SyncSessionFactory sessionFactory) {
+        final ArmySyncLocalTransactionManager manager;
+        manager = ArmySyncLocalTransactionManager.create(sessionFactory);
         manager.setNestedTransactionAllowed(true);
-        return manager;
+
+        return manager.setAllowPseudoTransaction(true)
+                .setUseTransactionLabel(true)
+                .setUseDataSourceTimeout(true);
+
 
     }
 
