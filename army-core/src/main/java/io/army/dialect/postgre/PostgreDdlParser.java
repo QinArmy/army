@@ -9,8 +9,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -50,12 +50,12 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                     .append(safeColumnName)
                     .append(" SET DATA TYPE ");
 
-            final SqlType sqlType;
-            sqlType = field.mappingType().map(this.serverMeta);
+            final DataType dataType;
+            dataType = field.mappingType().map(this.serverMeta);
             if (field.generatorType() == GeneratorType.POST) {
-                postDataType(field, sqlType, builder);
+                postDataType(field, dataType, builder);
             } else {
-                dataType(field, sqlType, builder);
+                dataType(field, dataType, builder);
             }
 
             count++;
@@ -97,13 +97,13 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     @Override
-    protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
-        switch ((PostgreType) type) {
+    protected void dataType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
+        switch ((PostgreType) dataType) {
             case UNKNOWN:
-                throw _Exceptions.unexpectedEnum((Enum<?>) type);
+                throw _Exceptions.unexpectedEnum((Enum<?>) dataType);
             case DECIMAL:
             case DECIMAL_ARRAY:
-                this.appendDecimalDateType(field, type, builder);
+                this.appendDecimalDateType(field, dataType, builder);
                 break;
             case TIME:
             case TIMETZ:
@@ -113,7 +113,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
             case TIMETZ_ARRAY:
             case TIMESTAMP_ARRAY:
             case TIMESTAMPTZ_ARRAY:
-                this.appendTimeDateType(field, type, builder);
+                this.appendTimeDateType(field, dataType, builder);
                 break;
             default:
                 this.parser.typeName(field.mappingType(), builder);
@@ -125,8 +125,8 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     @Override
-    protected void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder) {
-        switch ((PostgreType) type) {
+    protected void postDataType(FieldMeta<?> field, DataType dataType, StringBuilder builder) {
+        switch ((PostgreType) dataType) {
             case SMALLINT:
                 builder.append("SMALLSERIAL");
                 break;
@@ -137,7 +137,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                 builder.append("BIGSERIAL");
                 break;
             default:
-                this.errorMsgList.add(String.format("%s %s don't support %s", field, type, GeneratorType.POST));
+                this.errorMsgList.add(String.format("%s %s don't support %s", field, dataType, GeneratorType.POST));
         }
 
     }
@@ -205,11 +205,11 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     /**
-     * @see #dataType(FieldMeta, SqlType, StringBuilder)
+     * @see #dataType(FieldMeta, DataType, StringBuilder)
      */
-    private void appendTimeDateType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
+    private void appendTimeDateType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
         String safeTypeName;
-        safeTypeName = type.name();
+        safeTypeName = dataType.name();
         final int index;
         if ((index = safeTypeName.lastIndexOf("_ARRAY")) > 0) {
             safeTypeName = safeTypeName.substring(0, index);
@@ -224,9 +224,9 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
     /**
-     * @see #dataType(FieldMeta, SqlType, StringBuilder)
+     * @see #dataType(FieldMeta, DataType, StringBuilder)
      */
-    private void appendDecimalDateType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
+    private void appendDecimalDateType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
         int precision, scale;
         precision = field.precision();
         scale = field.scale();
@@ -241,7 +241,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
             scale = 2;
         }
         String safeTypeName;
-        safeTypeName = type.name();
+        safeTypeName = dataType.name();
         final int index;
         if ((index = safeTypeName.lastIndexOf(_Constant.UNDERSCORE_ARRAY)) > 0) {
             safeTypeName = safeTypeName.substring(0, index);

@@ -961,17 +961,6 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(m);
     }
 
-    public static SessionException dontSupportUniqueCache(SessionFactory sessionFactory) {
-        String m = String.format("%s don't support unique cache,because config %s is %s."
-                , sessionFactory, ArmyKey.DDL_MODE.name, DdlMode.NONE);
-        return new SessionUsageException(m);
-    }
-
-
-    public static NotMatchRowException notMatchRow(Session session, TableMeta<?> table, Object id) {
-        String m = String.format("%s update failure,not found match row for %s and id %s.", session, table, id);
-        return new NotMatchRowException(m);
-    }
 
     public static NonUniqueException nonUnique(List<?> list) {
         String m = String.format("select result[%s] more than 1.", list.size());

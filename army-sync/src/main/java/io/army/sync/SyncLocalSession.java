@@ -17,7 +17,7 @@ public interface SyncLocalSession extends SyncSession, LocalSession {
 
     /**
      * <p>Start pseudo transaction that don't start real local transaction.
-     * <p>Pseudo transaction is designed for some framework in readonly transaction,for example {@code org.springframework.transaction.TransactionManager}.
+     * <p>Pseudo transaction is designed for some framework in readonly transaction,for example {@code org.springframework.transaction.PlatformTransactionManager}.
      *
      * @throws IllegalArgumentException                  throw when
      *                                                   <ul>

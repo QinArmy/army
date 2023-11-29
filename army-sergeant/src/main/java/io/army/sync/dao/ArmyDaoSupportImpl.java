@@ -1,15 +1,15 @@
 package io.army.sync.dao;
 
-import io.army.sync.SessionContext;
+import io.army.sync.SyncSessionContext;
 
 import java.util.List;
 import java.util.Map;
 
 public abstract class ArmyDaoSupportImpl implements ArmyDaoSupport {
 
-    protected final SessionContext sessionContext;
+    protected final SyncSessionContext sessionContext;
 
-    protected ArmyDaoSupportImpl(SessionContext sessionContext) {
+    protected ArmyDaoSupportImpl(SyncSessionContext sessionContext) {
         this.sessionContext = sessionContext;
     }
 

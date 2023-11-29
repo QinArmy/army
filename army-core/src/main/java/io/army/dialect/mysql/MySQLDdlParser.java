@@ -6,8 +6,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -59,8 +59,8 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     }
 
     @Override
-    protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
-        switch ((MySQLType) type) {
+    protected void dataType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
+        switch ((MySQLType) dataType) {
             case TINYINT:
             case SMALLINT:
             case INT:
@@ -88,41 +88,41 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
 //            case MULTIPOLYGON:
 //            case MULTILINESTRING:
 //            case GEOMETRYCOLLECTION:
-                builder.append(type.name());
+                builder.append(dataType.name());
                 break;
             case DECIMAL_UNSIGNED:
             case DECIMAL: {
                 builder.append("DECIMAL");
                 decimalType(field, builder);
-                if (type == MySQLType.DECIMAL_UNSIGNED) {
+                if (dataType == MySQLType.DECIMAL_UNSIGNED) {
                     builder.append(SPACE_UNSIGNED);
                 }
             }
             break;
             case TIME:
             case DATETIME: {
-                builder.append(type.name());
-                timeTypeScale(field, type, builder);
+                builder.append(dataType.name());
+                timeTypeScale(field, dataType, builder);
             }
             break;
             case BINARY:
             case CHAR: {
-                builder.append(type.name());
-                precision(field, type, 0xFF, 1, builder);
+                builder.append(dataType.name());
+                precision(field, dataType, 0xFF, 1, builder);
             }
             break;
             case VARBINARY:
             case VARCHAR: {
-                builder.append(type.name());
-                precision(field, type, 0xFFFF, 0xFF, builder);
+                builder.append(dataType.name());
+                precision(field, dataType, 0xFFFF, 0xFF, builder);
             }
             break;
             case SET:
                 setType(field, builder);
                 break;
             case BIT: {
-                builder.append(type.name());
-                precision(field, type, 64, 1, builder);
+                builder.append(dataType.name());
+                precision(field, dataType, 64, 1, builder);
             }
             break;
             case ENUM:
@@ -130,9 +130,9 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
                 break;
             case BLOB:
             case TEXT: {
-                builder.append(type.name());
+                builder.append(dataType.name());
                 if (field.precision() > 0) {
-                    precision(field, type, 0xFFFF, 0xFFFF, builder);
+                    precision(field, dataType, 0xFFFF, 0xFFFF, builder);
                 }
             }
             break;
@@ -152,14 +152,14 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
                 builder.append("BIGINT UNSIGNED");
                 break;
             default:
-                throw _Exceptions.unexpectedEnum((MySQLType) type);
+                throw _Exceptions.unexpectedEnum((MySQLType) dataType);
         }
 
 
     }
 
     @Override
-    protected void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder) {
+    protected void postDataType(FieldMeta<?> field, DataType dataType, StringBuilder builder) {
         // no-op
     }
 

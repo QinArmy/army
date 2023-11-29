@@ -8,9 +8,6 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.IntegerType;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
@@ -23,6 +20,7 @@ import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -1107,13 +1105,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             this.path = (ArmyExpression) path;
         }
 
-        private JsonTablePathColumn(String name, MySQLType type
-                , Expression n, SQLElement charset
-                , @Nullable SQLIdentifier collate, SQLWords pathWord
-                , Expression path) {
+        private JsonTablePathColumn(String name, MySQLType type, Expression n, SQLElement charset,
+                                    @Nullable SQLIdentifier collate, SQLWords pathWord, Expression path) {
             this.name = name;
             this.type = type;
-            this.typeMeta = type.mappingType();
+            this.typeMeta = type.mappingType(); // TODO fix me
             this.n = (ArmyExpression) n;
 
             this.d = null;
@@ -1155,7 +1151,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
             sqlBuilder.append(_Constant.SPACE);
             context.parser().identifier(this.name, sqlBuilder)
-                    .append(this.type.spaceRender());
+                    .append(_Constant.SPACE)
+                    .append(this.type.typeName());
 
             if (this.n != null) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
@@ -1211,7 +1208,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             sqlBuilder = new StringBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(this.type.spaceRender());
+                    .append(_Constant.SPACE)
+                    .append(this.type.typeName());
 
             if (this.n != null) {
                 sqlBuilder.append(_Constant.LEFT_PAREN)

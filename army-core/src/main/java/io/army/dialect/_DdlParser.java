@@ -4,7 +4,7 @@ import io.army.annotation.GeneratorType;
 import io.army.mapping.NoCastTextType;
 import io.army.meta.*;
 import io.army.schema._FieldResult;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -334,13 +334,13 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         }
         this.parser.safeObjectName(field, builder)
                 .append(_Constant.SPACE);
-        final SqlType sqlType;
-        sqlType = field.mappingType().map(this.serverMeta);
+        final DataType dataType;
+        dataType = field.mappingType().map(this.serverMeta);
 
         if (field.generatorType() == GeneratorType.POST) {
-            this.postDataType(field, sqlType, builder);
+            this.postDataType(field, dataType, builder);
         } else {
-            this.dataType(field, sqlType, builder);
+            this.dataType(field, dataType, builder);
         }
 
         if (field.nullable()) {
@@ -385,9 +385,9 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
 
-    protected abstract void dataType(FieldMeta<?> field, SqlType type, StringBuilder builder);
+    protected abstract void dataType(FieldMeta<?> field, DataType dataType, StringBuilder builder);
 
-    protected abstract void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder);
+    protected abstract void postDataType(FieldMeta<?> field, DataType dataType, StringBuilder builder);
 
     protected abstract void appendTableOption(final TableMeta<?> table, final StringBuilder builder);
 
@@ -516,14 +516,14 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
 
-    protected final void precision(final FieldMeta<?> field, SqlType type
-            , final long max, final long defaultValue, final StringBuilder builder) {
+    protected final void precision(final FieldMeta<?> field, DataType dataType,
+                                   final long max, final long defaultValue, final StringBuilder builder) {
         final int precision = field.precision();
         if (precision > -1) {
             if (precision > max) {
                 String m;
                 m = String.format("%s precision[%s] out of [1,%s] error for %s.%s"
-                        , field, field.scale(), max, type.getClass().getSimpleName(), type.name());
+                        , field, field.scale(), max, dataType.getClass().getSimpleName(), dataType.name());
                 this.errorMsgList.add(m);
                 return;
             }
@@ -542,11 +542,11 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         this.errorMsgList.add(String.format("%s no precision.", field));
     }
 
-    protected final void timeTypeScale(final FieldMeta<?> field, SqlType type, final StringBuilder builder) {
+    protected final void timeTypeScale(final FieldMeta<?> field, DataType dataType, final StringBuilder builder) {
         final int scale = field.scale();
         if (scale > -1) {
             if (scale > 6) {
-                timeScaleError(field, type);
+                timeScaleError(field, dataType);
                 return;
             }
             builder.append(_Constant.LEFT_PAREN)
@@ -621,10 +621,10 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
 
-    private void timeScaleError(FieldMeta<?> field, SqlType sqlType) {
+    private void timeScaleError(FieldMeta<?> field, DataType dataType) {
         String m;
         m = String.format("%s scale[%s] error for %s.%s"
-                , field, field.scale(), sqlType.getClass().getSimpleName(), sqlType.name());
+                , field, field.scale(), dataType.getClass().getSimpleName(), dataType.name());
         this.errorMsgList.add(m);
 
     }

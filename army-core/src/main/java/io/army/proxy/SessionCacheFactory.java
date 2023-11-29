@@ -15,6 +15,7 @@ import net.bytebuddy.matcher.ElementMatchers;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@Deprecated
 final class SessionCacheFactory implements _SessionCacheFactory {
 
     static SessionCacheFactory create(SessionFactory sessionFactory) {
@@ -37,7 +38,7 @@ final class SessionCacheFactory implements _SessionCacheFactory {
     private SessionCacheFactory(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
         this.byteBuddy = new ByteBuddy();
-        this.uniqueCache = sessionFactory.uniqueCache();
+        this.uniqueCache = false;
     }
 
     @SuppressWarnings("unchecked")

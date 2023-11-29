@@ -27,12 +27,12 @@ final class JdbdMetaExecutor implements ReactiveMetaExecutor {
 
     @Override
     public Mono<SchemaInfo> extractInfo() {
-        return null;
+        return Mono.empty();
     }
 
     @Override
-    public Mono<ReactiveMetaExecutor> executeDdl(List<String> ddlList) {
-        return null;
+    public Mono<Void> executeDdl(List<String> ddlList) {
+        return Mono.empty();
     }
 
     @Override

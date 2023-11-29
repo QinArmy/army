@@ -174,7 +174,7 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
         final long startTime;
         startTime = System.currentTimeMillis();
 
-        return sessionFactory.stmtExecutorFactory.metaExecutor()
+        return sessionFactory.stmtExecutorFactory.metaExecutor(dataSourceFunc())
                 .flatMap(executor -> executor.extractInfo() // 1. extract schema info.
                         .flatMap(info -> updateSchemaIfNeed(sessionFactory, executor, info, ddlMode)) // 2. update schema
                         .then(Mono.defer(executor::close))  // normally close executor

@@ -9,8 +9,8 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.sync.SessionContext;
 import io.army.sync.SyncSession;
+import io.army.sync.SyncSessionContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +23,7 @@ import static io.army.criteria.impl.SQLs.PERIOD;
 
 public abstract class ArmySyncBaseDao implements SyncBaseDao {
 
-    protected SessionContext sessionContext;
+    protected SyncSessionContext sessionContext;
 
 
     @Override

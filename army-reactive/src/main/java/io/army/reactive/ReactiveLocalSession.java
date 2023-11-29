@@ -17,7 +17,7 @@ public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 
     /**
      * <p>Start pseudo transaction that don't start real local transaction.
-     * <p>Pseudo transaction is designed for some framework in readonly transaction,for example {@code org.springframework.transaction.TransactionManager}.
+     * <p>Pseudo transaction is designed for some framework in readonly transaction,for example {@code org.springframework.transaction.ReactiveTransactionManager}.
      *
      * @throws IllegalArgumentException                  emit when
      *                                                   <ul>
