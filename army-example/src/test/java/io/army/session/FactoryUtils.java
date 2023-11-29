@@ -9,7 +9,8 @@ import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
 import io.army.env.StandardEnvironment;
 import io.army.example.common.SimpleFieldGeneratorFactory;
-import io.army.sync.LocalFactoryBuilder;
+import io.army.sync.SyncFactoryBuilder;
+import io.army.sync.SyncSessionFactory;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -21,11 +22,11 @@ public abstract class FactoryUtils {
     private FactoryUtils() {
     }
 
-    public static SyncLocalSessionFactory createArmyBankSyncFactory(final Database database) {
+    public static SyncSessionFactory createArmyBankSyncFactory(final Database database) {
         final DruidDataSource dataSource;
         dataSource = new DruidDataSource();
         DataSourceUtils.druidDataSourceProps(dataSource, mapDatabaseToUrl(database));
-        return LocalFactoryBuilder.builder()
+        return SyncFactoryBuilder.builder()
                 .name(mapDatabaseToFactoryName(database))
                 .packagesToScan(Collections.singletonList("io.army.example.bank.domain"))
                 .datasource(dataSource)

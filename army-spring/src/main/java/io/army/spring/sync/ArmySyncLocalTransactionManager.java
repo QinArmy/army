@@ -2,6 +2,7 @@ package io.army.spring.sync;
 
 import io.army.session.*;
 import io.army.sync.SyncLocalSession;
+import io.army.sync.SyncSessionContext;
 import io.army.sync.SyncSessionFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
@@ -29,6 +30,8 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
 
     private final SyncSessionFactory sessionFactory;
 
+    private final SyncSessionContext sessionContext;
+
     private boolean pseudoTransactionAllowed;
 
     private boolean useTransactionName;
@@ -45,6 +48,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
      */
     private ArmySyncLocalTransactionManager(SyncSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
+        this.sessionContext = SpringSyncSessionContext.create(sessionFactory);
     }
 
 
@@ -52,6 +56,11 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
     public void afterPropertiesSet() {
         // register transaction manager for read-write splitting
         //TransactionDefinitionHolder.registerTransactionManager(this.beanName, this.useSavepointForNestedTransaction());
+    }
+
+
+    public SyncSessionContext getSessionContext() {
+        return this.sessionContext;
     }
 
     public boolean isPseudoTransactionAllowed() {

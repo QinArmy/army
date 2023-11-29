@@ -5,6 +5,7 @@ import io.army.example.common.ArmySyncBaseDao;
 import io.army.example.common.BaseService;
 import io.army.example.common.Pair;
 import io.army.sync.SyncSession;
+import io.army.sync.SyncSessionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -15,8 +16,8 @@ import org.springframework.stereotype.Repository;
 public class BankSyncBaseDao extends ArmySyncBaseDao {
 
     @Autowired
-    public void setSessionFactory(@Qualifier("bankSyncSessionFactory") SyncLocalSessionFactory sessionFactory) {
-        this.sessionContext = sessionFactory.currentSessionContext();
+    public void setSessionContext(@Qualifier("bankSyncSessionContext") SyncSessionContext sessionContext) {
+        this.sessionContext = sessionContext;
     }
 
     @SuppressWarnings("unchecked")

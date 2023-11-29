@@ -4,6 +4,7 @@ import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
 import io.army.session.FactoryUtils;
 import io.army.sync.SyncLocalSession;
+import io.army.sync.SyncSessionFactory;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -13,7 +14,7 @@ import org.testng.annotations.Test;
 @Test
 public abstract class PostgreSuiteTests extends ArmyTestDataSupport {
 
-    protected static SyncLocalSessionFactory syncSessionFactory;
+    protected static SyncSessionFactory syncSessionFactory;
 
     @BeforeClass
     public void beforeClass() {

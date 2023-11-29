@@ -8,10 +8,14 @@ import org.springframework.beans.factory.FactoryBean;
 public class ArmySyncSessionFactoryBean extends ArmySessionFactoryBeanSupport
         implements FactoryBean<SyncSessionFactory> {
 
+    public static ArmySyncSessionFactoryBean create() {
+        return new ArmySyncSessionFactoryBean();
+    }
+
 
     private SyncSessionFactory sessionFactory;
 
-    public ArmySyncSessionFactoryBean() {
+    private ArmySyncSessionFactoryBean() {
     }
 
     @Override

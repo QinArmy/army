@@ -12,7 +12,6 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
 import io.army.sync.SyncLocalSession;
-import io.army.tx.Isolation;
 import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
 import io.army.util.ImmutableHashMap;
