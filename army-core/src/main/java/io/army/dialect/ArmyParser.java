@@ -704,9 +704,12 @@ abstract class ArmyParser implements DialectParser {
             return;
         }
 
+        value = type.beforeBind(dataType, this.mappingEnv, value);
+
         if (value instanceof Temporal && typeMeta instanceof FieldMeta && this.truncatedTimeType) {
             value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
         }
+
         //TODO validate non-field codec
         bindLiteral(typeMeta, dataType, value, sqlBuilder);
     }

@@ -5,7 +5,6 @@ import io.army.mapping.BooleanType;
 import io.army.meta.TypeMeta;
 import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
@@ -197,7 +196,7 @@ public abstract class _Literals {
 
     public interface ArrayElementHandler {
 
-        void appendElement(final TypeMeta typeMeta, final SqlType type, final Object element,
+        void appendElement(final TypeMeta typeMeta, final DataType dataType, final Object element,
                            final StringBuilder sqlBuilder);
 
     }

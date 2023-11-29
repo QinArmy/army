@@ -7,7 +7,6 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
-import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -113,17 +112,34 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final void bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                      final StringBuilder sqlBuilder) {
-        switch ((PostgreType) dataType) {
-            case BOOLEAN: {
-                if (!(value instanceof Boolean)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
-                }
-                sqlBuilder.append(((Boolean) value) ? BooleanType.TRUE : BooleanType.FALSE);
+
+        if (!(dataType instanceof PostgreType)) {
+            if (!(value instanceof String)) {
+                throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
             }
-            break;
+            sqlBuilder.append(_Constant.QUOTE)
+                    .append(value)
+                    .append(_Constant.QUOTE)
+                    .append("::");
+            unrecognizedTypeName(typeMeta.mappingType(), dataType, true, sqlBuilder);
+        } else if (dataType.isArray()) {
+            if (!(value instanceof String)) {
+                throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+            }
+            final SqlType elementType = ((PostgreType) dataType).elementType();
+            assert elementType != null;
+            sqlBuilder.append(_Constant.QUOTE)
+                    .append(value)
+                    .append(_Constant.QUOTE)
+                    .append("::");
+            arrayTypeName(elementType.typeName(), ArrayUtils.dimensionOfType(typeMeta.mappingType()), sqlBuilder);
+        } else switch ((PostgreType) dataType) {
+            case BOOLEAN:
+                _Literals.bindBoolean(typeMeta, dataType, value, sqlBuilder);
+                break;
             case INTEGER: {
                 if (!(value instanceof Integer)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value)
                         .append("::INTEGER");
@@ -131,14 +147,14 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case NO_CAST_INTEGER: {
                 if (!(value instanceof Integer)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value);
             }
             break;
             case BIGINT: {
                 if (!(value instanceof Long)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value)
                         .append("::BIGINT");
@@ -146,7 +162,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case DECIMAL: {
                 if (!(value instanceof BigDecimal)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(((BigDecimal) value).toPlainString())
                         .append("::DECIMAL");
@@ -154,7 +170,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case FLOAT8: {
                 if (!(value instanceof Double)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value)
                         .append("::FLOAT8");
@@ -162,7 +178,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case REAL: {
                 if (!(value instanceof Float)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value)
                         .append("::REAL");
@@ -233,9 +249,20 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case TSRANGE:
             case TSTZRANGE:
             case DATERANGE:
+                // multi range Types
+            case INT4MULTIRANGE:
+            case INT8MULTIRANGE:
+            case NUMMULTIRANGE:
+            case DATEMULTIRANGE:
+            case TSMULTIRANGE:
+            case TSTZMULTIRANGE:
+
             case INTERVAL:
-            case REF_CURSOR: {
-                sqlBuilder.append(dataType.name())
+
+            case ACLITEM:
+            case PG_LSN:
+            case PG_SNAPSHOT: {
+                sqlBuilder.append(dataType.typeName())
                         .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
             }
@@ -244,10 +271,12 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
                 break;
             case BYTEA: {
-                if (!(value instanceof byte[])) {//TODO think long binary
+                if (!(value instanceof byte[])) {
                     throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(_Constant.QUOTE)
+                sqlBuilder.append(dataType.typeName())
+                        .append(_Constant.SPACE)
+                        .append(_Constant.QUOTE)
                         .append(_Constant.BACK_SLASH)
                         .append('x')
                         .append(_Literals.hexEscapes((byte[]) value))
@@ -256,81 +285,14 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case VARBIT:
             case BIT: {
-                sqlBuilder.append(dataType.name())
+                sqlBuilder.append(dataType.typeName())
                         .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
                 PostgreLiterals.postgreBitString(typeMeta, dataType, value, sqlBuilder);
             }
             break;
-            // below array
-            case BOX_ARRAY:
-            case BIT_ARRAY:
-            case XML_ARRAY:
-            case CHAR_ARRAY:
-            case CIDR_ARRAY:
-            case DATE_ARRAY:
-            case INET_ARRAY:
-            case JSON_ARRAY:
-            case JSONB_ARRAY:
-            case LINE_ARRAY:
-            case PATH_ARRAY:
-            case TEXT_ARRAY:
-                this.unsafeArray(typeMeta, dataType, value, sqlBuilder, _Literals::stringArrayElement);
-                break;
-            case BOOLEAN_ARRAY:
-                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::booleanArrayElement);
-                break;
-            case SMALLINT_ARRAY:
-                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::shortArrayElement);
-                break;
-            case INTEGER_ARRAY:
-                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::integerArrayElement);
-                break;
-            case BIGINT_ARRAY:
-                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::longArrayElement);
-                break;
-            case DECIMAL_ARRAY:
-                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::bigDecimalArrayElement);
-                break;
-            case FLOAT8_ARRAY:
-                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::doubleArrayElement);
-                break;
-            case REAL_ARRAY:
-                this.safeArray(typeMeta, dataType, value, sqlBuilder, _Literals::floatArrayElement);
-                break;
-            case TIME_ARRAY:
-            case TIMETZ_ARRAY:
-            case TIMESTAMP_ARRAY:
-            case TIMESTAMPTZ_ARRAY:
-
-
-            case UUID_ARRAY:
-            case BYTEA_ARRAY:
-            case MONEY_ARRAY:
-            case POINT_ARRAY:
-
-            case VARBIT_ARRAY:
-            case CIRCLE_ARRAY:
-            case MACADDR_ARRAY:
-            case POLYGON_ARRAY:
-            case TSQUERY_ARRAY:
-            case TSRANGE_ARRAY:
-            case VARCHAR_ARRAY:
-            case INTERVAL_ARRAY:
-            case MACADDR8_ARRAY:
-
-            case TSVECTOR_ARRAY:
-            case DATERANGE_ARRAY:
-            case NUMRANGE_ARRAY:
-            case INT4RANGE_ARRAY:
-            case INT8RANGE_ARRAY:
-            case TSTZRANGE_ARRAY:
-
-            case LSEG_ARRAY:
-                //TODO check array syntax
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
-                break;
             case UNKNOWN:
-                throw _Exceptions.literalDontSupport(dataType);
+            case REF_CURSOR:
+                throw ExecutorSupport.mapMethodError(typeMeta.mappingType(), dataType);
             default:
                 throw _Exceptions.unexpectedEnum((PostgreType) dataType);
 
@@ -928,9 +890,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
+     * @see #bindLiteral(TypeMeta, DataType, Object, StringBuilder)
      */
-    private void safeArray(final TypeMeta typeMeta, final SqlType type, final Object value,
+    private void safeArray(final TypeMeta typeMeta, final DataType dataType, final Object value,
                            final StringBuilder sqlBuilder,
                            final _Literals.ArrayElementHandler handler) {
         final MappingType mappingType;
@@ -942,22 +904,22 @@ abstract class PostgreParser extends _ArmyDialectParser {
         assert !(mappingType instanceof _ArmyBuildInMapping) || mappingType instanceof _ArmyNoInjectionMapping;
 
         if (value instanceof String) {
-            arrayForStringValue(typeMeta, type, (String) value, sqlBuilder);
+            arrayForStringValue(typeMeta, dataType, (String) value, sqlBuilder);
         } else if (value.getClass().isArray()) {
             sqlBuilder.append(_Constant.QUOTE);
-            PostgreLiterals.appendSimpleTypeArray(mappingType, type, value, sqlBuilder, handler);
+            PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, sqlBuilder, handler);
             sqlBuilder.append(_Constant.QUOTE);
         } else {
-            throw _Exceptions.valueOutRange(type, value);
+            throw _Exceptions.valueOutRange(dataType, value);
         }
         sqlBuilder.append("::");
         this.typeName(mappingType, sqlBuilder);
     }
 
     /**
-     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
+     * @see #bindLiteral(TypeMeta, DataType, Object, StringBuilder)
      */
-    private void unsafeArray(final TypeMeta typeMeta, final SqlType type, final Object value,
+    private void unsafeArray(final TypeMeta typeMeta, final DataType dataType, final Object value,
                              final StringBuilder sqlBuilder,
                              final _Literals.ArrayElementHandler handler) {
         final MappingType mappingType;
@@ -968,34 +930,34 @@ abstract class PostgreParser extends _ArmyDialectParser {
         }
         assert !(mappingType instanceof _ArmyNoInjectionMapping);
         if (value instanceof String) {
-            arrayForStringValue(typeMeta, type, (String) value, sqlBuilder);
+            arrayForStringValue(typeMeta, dataType, (String) value, sqlBuilder);
         } else if (value.getClass().isArray()) {
 
             final StringBuilder tempBuilder = new StringBuilder();
-            PostgreLiterals.appendSimpleTypeArray(mappingType, type, value, tempBuilder, handler);
+            PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, tempBuilder, handler);
 
-            PostgreLiterals.postgreBackslashEscapes(typeMeta, type, tempBuilder.toString(), sqlBuilder);
+            PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, tempBuilder.toString(), sqlBuilder);
         } else {
-            throw _Exceptions.valueOutRange(type, value);
+            throw _Exceptions.valueOutRange(dataType, value);
         }
         sqlBuilder.append("::");
         this.typeName(mappingType, sqlBuilder);
     }
 
     /**
-     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
-     * @see #safeArray(TypeMeta, SqlType, Object, StringBuilder, _Literals.ArrayElementHandler)
+     * @see #bindLiteral(TypeMeta, DataType, Object, StringBuilder)
+     * @see #safeArray(TypeMeta, DataType, Object, StringBuilder, _Literals.ArrayElementHandler)
      */
-    private void arrayForStringValue(final TypeMeta typeMeta, final SqlType type, final String value,
+    private void arrayForStringValue(final TypeMeta typeMeta, final DataType dataType, final String value,
                                      final StringBuilder sqlBuilder) {
         final int length;
         length = value.length();
         if (length < 2
                 || value.charAt(0) != _Constant.LEFT_BRACE
                 || value.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw _Exceptions.valueOutRange(type, value);
+            throw _Exceptions.valueOutRange(dataType, value);
         }
-        PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+        PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
     }
 
 

@@ -635,14 +635,14 @@ public abstract class _Exceptions {
         return new ArmyException(m);
     }
 
-    public static CriteriaException outRangeOfSqlType(final SqlType sqlType, final Object nonNull) {
+    public static CriteriaException outRangeOfSqlType(final DataType sqlType, final Object nonNull) {
         String m = String.format("%s[%s] literal don't support java type[%s]",
                 sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
         return new CriteriaException(m);
     }
 
-    public static CriteriaException outRangeOfSqlType(final SqlType sqlType, final Object nonNull
-            , @Nullable Throwable cause) {
+    public static CriteriaException outRangeOfSqlType(final DataType sqlType, final Object nonNull,
+                                                      @Nullable Throwable cause) {
         String m = String.format("%s[%s] literal don't support java type[%s]"
                 , sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
         final CriteriaException e;
@@ -654,11 +654,11 @@ public abstract class _Exceptions {
         return e;
     }
 
-    public static CriteriaException valueOutRange(final SqlType sqlType, final Object nonNull) {
+    public static CriteriaException valueOutRange(final DataType sqlType, final Object nonNull) {
         return valueOutRange(sqlType, nonNull, null);
     }
 
-    public static CriteriaException valueOutRange(final SqlType sqlType, final Object nonNull
+    public static CriteriaException valueOutRange(final DataType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         String m = String.format("Value[%s] out of %s.", nonNull, sqlType);
         final CriteriaException exception;

@@ -5,6 +5,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.session.*;
+import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.DataRecord;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -117,8 +118,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case SMALLINT_UNSIGNED:
             case MEDIUMINT:
             case MEDIUMINT_UNSIGNED:
-            case INT:
-            case YEAR: {
+            case INT: {
                 if (!(nonNull instanceof Integer)) {
                     throw beforeBindMethodError(type, dataType, nonNull);
                 }
@@ -135,11 +135,17 @@ abstract class MySQLExecutor extends JdbcExecutor {
             }
             break;
             case TIME: {
-                if (nonNull instanceof LocalTime || nonNull instanceof Duration || nonNull instanceof OffsetTime) {
-                    stmt.setObject(indexBasedOne, nonNull);
-                } else {
+                if (!(nonNull instanceof LocalTime || nonNull instanceof Duration || nonNull instanceof OffsetTime)) {
                     throw beforeBindMethodError(type, dataType, nonNull);
                 }
+                stmt.setObject(indexBasedOne, nonNull);
+            }
+            break;
+            case YEAR: {
+                if (!(nonNull instanceof Short)) {
+                    throw ExecutorSupport.beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setShort(indexBasedOne, (Short) nonNull);
             }
             break;
             default:

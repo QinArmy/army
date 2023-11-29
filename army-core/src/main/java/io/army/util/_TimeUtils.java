@@ -28,6 +28,11 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
 
     private static final String NO_OFFSET_TEXT = "+00:00";
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/time.html">The TIME Type</a>
+     */
+    private static final int MYSQL_DURATION_MAX_SECOND = 838 * 3600 + 59 * 60 + 59;
+
 
     public static final DateTimeFormatter TIME_FORMATTER_0 = new DateTimeFormatterBuilder()
             .appendValue(HOUR_OF_DAY, 2)
@@ -313,6 +318,143 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
             value = temporal;
         }
         return (T) value;
+    }
+
+
+    /**
+     * @return true: timeText representing {@link Duration}.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/time.html">The TIME Type</a>
+     */
+    public static boolean isDuration(final String timeText) {
+        int index = timeText.indexOf(':');
+        final boolean duration;
+        if (index < 0) {
+            duration = false;
+        } else {
+            final int hours;
+            hours = Integer.parseInt(timeText.substring(0, index));
+            duration = hours < 0 || hours > 23;
+        }
+        return duration;
+    }
+
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/time.html">The TIME Type</a>
+     * @see #convertToDuration(LocalTime)
+     */
+    public static Duration parseTimeAsDuration(final String timeText) throws DateTimeException {
+
+        try {
+            final String[] itemArray = timeText.trim().split(":");
+            if (itemArray.length != 3) {
+                throw new DateTimeException(mySqlTimeFormatErrorMessage(timeText));
+            }
+            final int hours, minutes, seconds, micros;
+            hours = Integer.parseInt(itemArray[0]);
+            minutes = Integer.parseInt(itemArray[1]);
+
+            if (itemArray[2].contains(".")) {
+                String[] secondPartArray = itemArray[2].split("\\.");
+                if (secondPartArray.length != 2) {
+                    throw new DateTimeException(mySqlTimeFormatErrorMessage(timeText));
+                }
+                seconds = Integer.parseInt(secondPartArray[0]);
+                micros = Integer.parseInt(secondPartArray[1]);
+            } else {
+                seconds = Integer.parseInt(itemArray[2]);
+                micros = 0;
+            }
+            if (hours < -838 || hours > 838
+                    || minutes < 0 || minutes > 59
+                    || seconds < 0 || seconds > 59
+                    || micros < 0 || micros > 999_999) {
+                throw new DateTimeException(mySqlTimeFormatErrorMessage(timeText));
+            } else if (Math.abs(hours) == 838 && minutes == 59 && seconds == 59 && micros != 0) {
+                throw new DateTimeException(mySqlTimeFormatErrorMessage(timeText));
+            }
+            final long totalSecond;
+            if (hours < 0) {
+                totalSecond = (hours * 3600L) - (minutes * 60L) - seconds;
+            } else {
+                totalSecond = (hours * 3600L) + (minutes * 60L) + seconds;
+            }
+            //nanoAdjustment must be positive ,java.time.Duration.ofSeconds(long, long) method invoke java.lang.Math.floorDiv(long, long) cause bug.
+            return Duration.ofSeconds(totalSecond, micros * 1000L);
+        } catch (Throwable e) {
+            throw new DateTimeException(mySqlTimeFormatErrorMessage(timeText), e);
+        }
+
+
+    }
+
+
+    public static boolean isOverflowDuration(final Duration duration) {
+        final long abs = Math.abs(duration.getSeconds());
+        return (abs > MYSQL_DURATION_MAX_SECOND) || (abs == MYSQL_DURATION_MAX_SECOND && duration.getNano() > 0L);
+    }
+
+    public static String durationToTimeText(final Duration duration) {
+        if (isOverflowDuration(duration)) {
+            throw new DateTimeException("duration too big,can't convert to MySQL TIME type.");
+        }
+        int restSecond = (int) Math.abs(duration.getSeconds());
+        final int hours, minutes, seconds;
+        hours = restSecond / 3600;
+        restSecond %= 3600;
+        minutes = restSecond / 60;
+        seconds = restSecond % 60;
+
+        StringBuilder builder = new StringBuilder(17);
+        if (duration.isNegative()) {
+            builder.append("-");
+        }
+        if (hours < 10) {
+            builder.append("0");
+        }
+        builder.append(hours)
+                .append(":");
+        if (minutes < 10) {
+            builder.append("0");
+        }
+        builder.append(minutes)
+                .append(":");
+        if (seconds < 10) {
+            builder.append("0");
+        }
+        builder.append(seconds);
+
+        final long micro = duration.getNano() / 1000L;
+        if (micro > 999_999L) {
+            throw new IllegalArgumentException(String.format("duration nano[%s] too big", duration.getNano()));
+        }
+        if (micro > 0L) {
+            builder.append(".");
+            String microText = Long.toString(micro);
+            for (int i = 0, count = 6 - microText.length(); i < count; i++) {
+                builder.append('0');
+            }
+            builder.append(microText);
+        }
+        return builder.toString();
+    }
+
+    /**
+     * @param time {@link LocalTime} that underlying {@link java.time.ZoneOffset} match with database.
+     * @see #parseTimeAsDuration(String)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/time.html">The TIME Type</a>
+     */
+    public static Duration convertToDuration(LocalTime time) throws IllegalArgumentException {
+        final long totalSecond;
+        totalSecond = time.getHour() * 3600L + time.getMinute() * 60L + time.getSecond();
+        return Duration.ofSeconds(totalSecond, time.getNano());
+    }
+
+
+    /*-------------------below private methods -------------------*/
+
+    private static String mySqlTimeFormatErrorMessage(final String timeText) {
+        return String.format("MySQL TIME[%s] format error.", timeText);
     }
 
 

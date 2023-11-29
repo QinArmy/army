@@ -101,8 +101,7 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
             case SMALLINT_UNSIGNED:
             case MEDIUMINT:
             case MEDIUMINT_UNSIGNED:
-            case INT:
-            case YEAR: {
+            case INT: {
                 if (!(value == null || value instanceof Integer)) {
                     throw beforeBindMethodError(type, dataType, value);
                 }
@@ -154,6 +153,26 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
                 bindValue = value;
             }
             break;
+            case CHAR:
+            case VARCHAR:
+            case ENUM:
+            case SET:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT: {
+                if (!(value == null || value instanceof String)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                jdbdType = JdbdType.valueOf(dataType.name());
+                bindValue = value;
+            }
+            break;
+            case JSON:
+            case LONGTEXT: {
+                jdbdType = JdbdType.valueOf(dataType.name());
+                bindValue = toJdbdLongTextValue(type, dataType, value);
+            }
+            break;
             case DATETIME: {
                 if (!(value == null || value instanceof LocalDateTime || value instanceof OffsetDateTime)) {
                     throw beforeBindMethodError(type, dataType, value);
@@ -181,24 +200,12 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
                 bindValue = value;
             }
             break;
-            case CHAR:
-            case VARCHAR:
-            case ENUM:
-            case SET:
-            case TINYTEXT:
-            case TEXT:
-            case MEDIUMTEXT: {
-                if (!(value == null || value instanceof String)) {
+            case YEAR: {
+                if (!(value instanceof Short)) {
                     throw beforeBindMethodError(type, dataType, value);
                 }
-                jdbdType = JdbdType.valueOf(dataType.name());
+                jdbdType = JdbdType.YEAR;
                 bindValue = value;
-            }
-            break;
-            case JSON:
-            case LONGTEXT: {
-                jdbdType = JdbdType.valueOf(dataType.name());
-                bindValue = toJdbdLongTextValue(type, dataType, value);
             }
             break;
             case FLOAT: {
@@ -255,6 +262,7 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
                 bindValue = null;
             }
             break;
+
             case UNKNOWN:
             default:
                 throw beforeBindMethodError(type, dataType, value);

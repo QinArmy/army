@@ -4,7 +4,8 @@ import io.army.dialect._Constant;
 import io.army.dialect._Literals;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
-import io.army.sqltype.SqlType;
+import io.army.session.executor.ExecutorSupport;
+import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -17,10 +18,10 @@ abstract class PostgreLiterals extends _Literals {
     }
 
 
-    static StringBuilder postgreBackslashEscapes(final TypeMeta typeMeta, final SqlType type, final Object value,
-                                                 final StringBuilder sqlBuilder) {
+    static void postgreBackslashEscapes(final TypeMeta typeMeta, final DataType dataType, final Object value,
+                                        final StringBuilder sqlBuilder) {
         if (!(value instanceof String)) {//TODO think long string
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+            throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
         }
 
         final char[] charArray = ((String) value).toCharArray();
@@ -81,20 +82,20 @@ abstract class PostgreLiterals extends _Literals {
         if (followChar != _Constant.NUL_CHAR) {
             sqlBuilder.insert(startIndex, 'E');
         }
-        return sqlBuilder.append(_Constant.QUOTE);
+        sqlBuilder.append(_Constant.QUOTE);
 
     }
 
 
-    static StringBuilder postgreBitString(final TypeMeta typeMeta, final SqlType type, final Object value,
-                                          final StringBuilder sqlBuilder) {
+    static void postgreBitString(final TypeMeta typeMeta, final DataType dataType, final Object value,
+                                 final StringBuilder sqlBuilder) {
         if (!(value instanceof String)) {
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
         } else if (!_StringUtils.isBinary((String) value)) {
-            throw _Exceptions.valueOutRange(type, value);
+            throw _Exceptions.valueOutRange(dataType, value);
         }
 
-        return sqlBuilder.append('B')
+        sqlBuilder.append('B')
                 .append(_Constant.QUOTE)
                 .append(value)
                 .append(_Constant.QUOTE);
@@ -102,7 +103,7 @@ abstract class PostgreLiterals extends _Literals {
     }
 
 
-    static void appendSimpleTypeArray(final MappingType mappingType, final SqlType type, final Object array,
+    static void appendSimpleTypeArray(final MappingType mappingType, final DataType dataType, final Object array,
                                       final StringBuilder sqlBuilder,
                                       final ArrayElementHandler handler) {
 
@@ -121,9 +122,9 @@ abstract class PostgreLiterals extends _Literals {
             if (component == null) {
                 sqlBuilder.append(_Constant.NULL);
             } else if (dimension > 1) {
-                appendSimpleTypeArray(mappingType, type, component, sqlBuilder, handler);
+                appendSimpleTypeArray(mappingType, dataType, component, sqlBuilder, handler);
             } else {
-                handler.appendElement(mappingType, type, component, sqlBuilder);
+                handler.appendElement(mappingType, dataType, component, sqlBuilder);
             }
         }
         sqlBuilder.append(_Constant.RIGHT_BRACE);
