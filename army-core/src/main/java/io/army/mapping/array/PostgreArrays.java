@@ -5,6 +5,7 @@ import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;
 import io.army.sqltype.DataType;
+import io.army.sqltype.PostgreType;
 import io.army.type.ImmutableSpec;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -31,23 +32,80 @@ public abstract class PostgreArrays extends ArrayMappings {
                                          final DataType dataType, final MappingType type,
                                          final ErrorHandler handler) {
 
-        final String text, value;
-        final int length;
-        if (!(nonNull instanceof String)) {
-            if (!type.javaType().isInstance(nonNull)) {
+        if (nonNull instanceof String) {
+            final String text;
+            final int length;
+            if ((length = (text = ((String) nonNull).trim()).length()) < 2) {
+                throw handler.apply(type, dataType, nonNull, null);
+            } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
+                throw handler.apply(type, dataType, nonNull, null);
+            } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
                 throw handler.apply(type, dataType, nonNull, null);
             }
-            value = PostgreArrays.toArrayText(nonNull, consumer, new StringBuilder())
-                    .toString();
+            return (String) nonNull;
+        }
 
-        } else if ((length = (text = ((String) nonNull).trim()).length()) < 2) {
+        final Class<?> javaType = type.javaType(), sourceType = nonNull.getClass();
+        if (!sourceType.isArray()) {
             throw handler.apply(type, dataType, nonNull, null);
-        } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
+        }
+
+        final Class<?> sourceComponentType;
+        sourceComponentType = ArrayUtils.underlyingComponent(sourceType);
+        if (javaType == Object.class) { // unlimited dimension array
+            if (sourceComponentType != String.class
+                    && sourceComponentType != ((MappingType.SqlArrayType) type).underlyingComponentType()) {
+                throw handler.apply(type, dataType, nonNull, null);
+            }
+        } else if (sourceComponentType == String.class) {
+            if (ArrayUtils.dimensionOf(sourceType) != ArrayUtils.dimensionOf(javaType)) {
+                throw handler.apply(type, dataType, nonNull, null);
+            }
+        } else if (!javaType.isInstance(nonNull)) {
             throw handler.apply(type, dataType, nonNull, null);
-        } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw handler.apply(type, dataType, nonNull, null);
+        }
+
+        try {
+            final BiConsumer<Object, Consumer<String>> actualConsumer;
+            if (sourceComponentType == String.class) {
+                actualConsumer = StringArrayType::appendToText;
+            } else {
+                actualConsumer = consumer;
+            }
+            return PostgreArrays.toArrayText(nonNull, actualConsumer, new StringBuilder())
+                    .toString();
+        } catch (Exception e) {
+            throw handler.apply(type, dataType, nonNull, e);
+        }
+    }
+
+    public static Object arrayAfterGet(MappingType type, DataType dataType, final Object source,
+                                       final boolean nonNull, final TextFunction<?> elementFunc, ErrorHandler errorHandler) {
+        final Object value;
+        final Class<?> javaType = type.javaType(), sourceType = source.getClass();
+        if (source instanceof String) {
+            final char delimiter;
+            if (dataType == PostgreType.BOX_ARRAY) {
+                delimiter = ';';
+            } else {
+                delimiter = _Constant.COMMA;
+            }
+            try {
+                value = PostgreArrays.parseArray((String) source, nonNull, elementFunc, delimiter,
+                        dataType, type, errorHandler);
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (javaType == Object.class) { // unlimited dimension array
+            if (!sourceType.isArray()
+                    || ArrayUtils.underlyingComponent(sourceType) != ((MappingType.SqlArrayType) type).underlyingComponentType()) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+            value = source;
+        } else if (javaType.isInstance(source)) {
+            value = source;
         } else {
-            value = text;
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }
@@ -67,6 +125,8 @@ public abstract class PostgreArrays extends ArrayMappings {
 
 
     /**
+     * TODO handle UNLIMITED array
+     *
      * @param nonNull     true : element of one dimension array non-null
      * @param elementFunc <ul>
      *                    <li>offset is non-whitespace,non-whitespace before end</li>

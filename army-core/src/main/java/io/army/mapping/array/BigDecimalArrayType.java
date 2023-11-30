@@ -2,7 +2,6 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -12,7 +11,6 @@ import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.math.BigDecimal;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -58,20 +56,13 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
+    public final Class<?> underlyingComponentType() {
+        return BigDecimal.class;
+    }
+
+    @Override
     public final DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.DECIMAL_ARRAY;
-                break;
-            case MySQL:
-            case SQLite:
-            case H2:
-            case Oracle:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return dataType;
+        return mapToSqlType(this, meta);
     }
 
     @Override
@@ -102,44 +93,13 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public final Object convert(MappingEnv env, final Object nonNull) throws CriteriaException {
-        final Object value;
-        if (this.javaType.isInstance(nonNull)) {
-            value = nonNull;
-        } else {
-            value = toBigDecimalArray(map(env.serverMeta()), env, nonNull, PARAM_ERROR_HANDLER);
-        }
-        return value;
+        return toBigDecimalArray(map(env.serverMeta()), env, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public final String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) throws CriteriaException {
-        if (nonNull instanceof String) {
-            return (String) nonNull;
-        }
-
-        final Class<?> sourceType = nonNull.getClass(), componentType;
-        if (!sourceType.isArray()
-                || (this.javaType != Object.class
-                && ArrayUtils.dimensionOf(sourceType) != ArrayUtils.dimensionOf(this.javaType))) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
-        }
-
-        final BiConsumer<Object, Consumer<String>> consumer;
-        if ((componentType = ArrayUtils.underlyingComponent(sourceType)) == BigDecimal.class) {
-            consumer = BigDecimalArrayType::appendToText;
-        } else if (componentType == String.class) {
-            consumer = StringArrayType::appendToText;
-        } else {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
-        }
-
-        final StringBuilder builder = new StringBuilder();
-        try {
-            PostgreArrays.toArrayText(nonNull, consumer, builder);
-        } catch (Exception e) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, e);
-        }
-        return builder.toString();
+        return PostgreArrays.arrayBeforeBind(nonNull, BigDecimalArrayType::appendToText, dataType, this,
+                PARAM_ERROR_HANDLER);
     }
 
     @Override
@@ -149,29 +109,29 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
 
 
     private Object toBigDecimalArray(DataType dataType, MappingEnv env, final Object nonNull, ErrorHandler errorHandler) {
-        final Object value;
-        if (dataType == PostgreType.MONEY_ARRAY) {
-            // TODO handle postgre money array
-            throw new UnsupportedOperationException();
-        } else if (nonNull instanceof String) {
-            try {
-                value = PostgreArrays.parseArray((String) nonNull, false, BigDecimalArrayType::parseDecimal, _Constant.COMMA,
-                        dataType, this, errorHandler);
-            } catch (Exception e) {
-                throw errorHandler.apply(this, dataType, nonNull, e);
-            }
-        } else if (this.javaType.isInstance(nonNull)) {
-            value = nonNull;
-        } else {
-            throw errorHandler.apply(this, dataType, nonNull, null);
-        }
-        return value;
+        return PostgreArrays.arrayAfterGet(this, dataType, nonNull, false, BigDecimalArrayType::parseBigDecimal, errorHandler);
     }
 
 
     /*-------------------below static methods -------------------*/
 
-    public static BigDecimal parseDecimal(String text, int offset, int end) {
+    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType dataType;
+        switch (meta.serverDatabase()) {
+            case PostgreSQL:
+                dataType = PostgreType.DECIMAL_ARRAY;
+                break;
+            case MySQL:
+            case SQLite:
+            case H2:
+            case Oracle:
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return dataType;
+    }
+
+    public static BigDecimal parseBigDecimal(String text, int offset, int end) {
         return new BigDecimal(text.substring(offset, end));
     }
 

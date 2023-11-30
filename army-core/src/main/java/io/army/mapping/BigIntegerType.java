@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.BigIntegerArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 
@@ -29,9 +30,9 @@ import java.math.BigInteger;
 public final class BigIntegerType extends _NumericType._IntegerType {
 
 
-    public static BigIntegerType from(Class<?> fieldType) {
-        if (fieldType != BigInteger.class) {
-            throw errorJavaType(BigIntegerType.class, fieldType);
+    public static BigIntegerType from(final Class<?> javaType) {
+        if (javaType != BigInteger.class) {
+            throw errorJavaType(BigIntegerType.class, javaType);
         }
         return INSTANCE;
     }
@@ -60,6 +61,10 @@ public final class BigIntegerType extends _NumericType._IntegerType {
         return BigDecimalType.mapToSqlType(this, meta);
     }
 
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return BigIntegerArrayType.LINEAR;
+    }
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
@@ -72,7 +77,7 @@ public final class BigIntegerType extends _NumericType._IntegerType {
         value = BigDecimalType.toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER)
                 .stripTrailingZeros();
         if (value.scale() != 0) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return value;
     }
@@ -81,6 +86,7 @@ public final class BigIntegerType extends _NumericType._IntegerType {
     public BigInteger afterGet(final DataType dataType, MappingEnv env, final Object nonNull) {
         return toBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
+
 
     public static BigInteger toBigInteger(final MappingType type, final DataType dataType, final Object nonNull,
                                           final ErrorHandler errorHandler) {

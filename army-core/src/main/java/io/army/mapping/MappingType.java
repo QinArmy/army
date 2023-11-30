@@ -28,8 +28,10 @@ import java.util.function.BiFunction;
 
 public abstract class MappingType extends MappingSupport implements TypeMeta, TypeInfer {
 
+    @Deprecated
     protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER_0 = MappingType::paramError0;
 
+    @Deprecated
     protected static final BiFunction<MappingType, Object, ArmyException> DATA_ACCESS_ERROR_HANDLER_0 = MappingType::dataAccessError0;
 
     protected static final BiFunction<MappingType, ServerMeta, UnsupportedDialectException> MAP_ERROR_HANDLER = MappingType::mapError;
@@ -550,6 +552,8 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     public interface SqlArrayType {
 
         MappingType elementType();
+
+        Class<?> underlyingComponentType();
 
     }
 
