@@ -2,14 +2,11 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 public final class NoCastIntegerType extends _NumericType._IntegerType {
-
-
-    public static final NoCastIntegerType INSTANCE = new NoCastIntegerType();
-
 
     public static NoCastIntegerType from(final Class<?> fieldType) {
         if (fieldType != Integer.class) {
@@ -18,7 +15,11 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
         return INSTANCE;
     }
 
+    public static final NoCastIntegerType INSTANCE = new NoCastIntegerType();
 
+    /**
+     * private constructor
+     */
     private NoCastIntegerType() {
     }
 
@@ -33,7 +34,7 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
@@ -50,17 +51,17 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType._convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+        return IntegerType.toInt(this, map(env.serverMeta()), nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+    public Integer beforeBind(DataType dataType, final MappingEnv env, final Object nonNull) {
+        return IntegerType.toInt(this, dataType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer afterGet(SqlType type, final MappingEnv env, Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
+    public Integer afterGet(DataType dataType, final MappingEnv env, Object nonNull) {
+        return IntegerType.toInt(this, dataType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 

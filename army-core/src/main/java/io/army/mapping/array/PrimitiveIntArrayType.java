@@ -1,7 +1,7 @@
 package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -69,7 +69,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
         return IntegerArrayType.mapSqlType(this, meta);
     }
 

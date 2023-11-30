@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
@@ -9,11 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public final class JsonbType extends _ArmyBuildInMapping implements MappingType.SqlJsonbType {
-
-
-    public static final JsonbType TEXT = new JsonbType(String.class);
-
-    private static final ConcurrentMap<Class<?>, JsonbType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static JsonbType from(final Class<?> javaType) {
         final JsonbType instance;
@@ -25,8 +21,15 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
         return instance;
     }
 
+    public static final JsonbType TEXT = new JsonbType(String.class);
+
+    private static final ConcurrentMap<Class<?>, JsonbType> INSTANCE_MAP = new ConcurrentHashMap<>();
+
     private final Class<?> javaType;
 
+    /**
+     * private constructor
+     */
     private JsonbType(Class<?> javaType) {
         this.javaType = javaType;
     }
@@ -37,7 +40,7 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType sqlDataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
@@ -64,7 +67,7 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(DataType type, MappingEnv env, Object nonNull) {
         if (nonNull instanceof String) {
             return (String) nonNull;
         }
@@ -73,10 +76,12 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public String afterGet(DataType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (String) nonNull;
     }
+
+
 }

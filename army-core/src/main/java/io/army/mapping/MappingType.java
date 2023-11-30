@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
@@ -32,7 +32,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     protected static final BiFunction<MappingType, Object, ArmyException> DATA_ACCESS_ERROR_HANDLER_0 = MappingType::dataAccessError0;
 
-    protected static final BiFunction<MappingType, ServerMeta, NotSupportDialectException> MAP_ERROR_HANDLER = MappingType::mapError;
+    protected static final BiFunction<MappingType, ServerMeta, UnsupportedDialectException> MAP_ERROR_HANDLER = MappingType::mapError;
 
     protected static final MappingSupport.ErrorHandler PARAM_ERROR_HANDLER = MappingType::paramError;
 
@@ -55,7 +55,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     public abstract Class<?> javaType();
 
 
-    public abstract DataType map(ServerMeta meta) throws NotSupportDialectException;
+    public abstract DataType map(ServerMeta meta) throws UnsupportedDialectException;
 
     /**
      * @throws CriteriaException when this instance don't support array type.
@@ -190,10 +190,15 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         throw new InvalidObjectException(String.format("can't deserialize %s", MappingType.class.getName()));
     }
 
+    /**
+     * prevent default deserialization
+     */
     private void readObjectNoData() throws ObjectStreamException {
         throw new InvalidObjectException(String.format("can't deserialize %s", MappingType.class.getName()));
     }
 
+
+    /*-------------------below private methods -------------------*/
 
     @Deprecated
     protected final ParamException notSupportConvertAfterGet(final Object nonNull) {
@@ -209,14 +214,15 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return cause == null ? new ParamException(m) : new ParamException(m, cause);
     }
 
-    protected static DataAccessException errorJavaTypeForSqlType(SqlType sqlType, final Object nonNull) {
+    @Deprecated
+    protected static DataAccessException errorJavaTypeForSqlType(DataType sqlType, final Object nonNull) {
         String m = String.format("Statement executor passing error java type[%s] for %s.%s ."
                 , nonNull.getClass().getName(), sqlType.getClass().getSimpleName(), sqlType.name());
         return new DataAccessException(m);
     }
 
 
-    protected static DataAccessException errorValueForSqlType(SqlType sqlType, final Object nonNull
+    protected static DataAccessException errorValueForSqlType(DataType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         final String m = String.format("Statement executor passing error java type[%s] value for %s.%s ."
                 , nonNull.getClass().getName(), sqlType.getClass().getSimpleName(), sqlType.name());
@@ -230,15 +236,15 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     }
 
 
-    protected static CriteriaException valueOutRange(SqlType sqlType, final Object nonNull, @Nullable Throwable cause) {
+    protected static CriteriaException valueOutRange(DataType sqlType, final Object nonNull, @Nullable Throwable cause) {
         return _Exceptions.valueOutRange(sqlType, nonNull, cause);
     }
 
-    protected static CriteriaException outRangeOfSqlType(SqlType sqlType, final Object nonNull) {
+    protected static CriteriaException outRangeOfSqlType(DataType sqlType, final Object nonNull) {
         return _Exceptions.outRangeOfSqlType(sqlType, nonNull);
     }
 
-    protected static CriteriaException outRangeOfSqlType(SqlType sqlType, final Object nonNull
+    protected static CriteriaException outRangeOfSqlType(DataType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         return _Exceptions.outRangeOfSqlType(sqlType, nonNull, cause);
     }
@@ -256,9 +262,9 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
 
     @Deprecated
-    protected final NotSupportDialectException noMappingError(ServerMeta serverMeta) {
+    protected final UnsupportedDialectException noMappingError(ServerMeta serverMeta) {
         String m = String.format("No mapping from java type[%s] to Server[%s]", javaType(), serverMeta);
-        return new NotSupportDialectException(m);
+        return new UnsupportedDialectException(m);
     }
 
     protected static IllegalArgumentException errorJavaType(
@@ -304,9 +310,9 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return new DataAccessException(createConvertErrorMessage(type, nonNull));
     }
 
-    private static NotSupportDialectException mapError(final MappingType type, final ServerMeta meta) {
+    private static UnsupportedDialectException mapError(final MappingType type, final ServerMeta meta) {
         String m = String.format("%s don't support %s", type, meta);
-        return new NotSupportDialectException(m);
+        return new UnsupportedDialectException(m);
     }
 
     private static String createConvertErrorMessage(final MappingType type, final Object nonNull) {

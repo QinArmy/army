@@ -2,7 +2,7 @@ package io.army.mapping.postgre.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -46,7 +46,7 @@ public final class PostgreAclItemArrayType extends _ArmyBuildInMapping implement
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }

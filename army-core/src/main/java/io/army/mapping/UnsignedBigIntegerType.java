@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -16,7 +16,6 @@ import java.math.BigInteger;
  */
 public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerType {
 
-    public static final UnsignedBigIntegerType INSTANCE = new UnsignedBigIntegerType();
 
     public static UnsignedBigIntegerType from(final Class<?> fieldType) {
         if (fieldType != BigInteger.class) {
@@ -25,7 +24,11 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
         return INSTANCE;
     }
 
+    public static final UnsignedBigIntegerType INSTANCE = new UnsignedBigIntegerType();
 
+    /**
+     * private constructor
+     */
     private UnsignedBigIntegerType() {
     }
 
@@ -41,7 +44,7 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         return UnsignedBigDecimalType.mapToSqlType(this, meta);
     }
 
@@ -49,34 +52,33 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
         final BigInteger value;
-        value = BigIntegerType._convertToBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
+        value = BigIntegerType.toBigInteger(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
         if (value.compareTo(BigInteger.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull, null);
         }
         return value;
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public BigDecimal beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
         final BigDecimal value;
-        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0)
+        value = BigDecimalType.toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER)
                 .stripTrailingZeros();
         if (value.scale() != 0 || value.compareTo(BigDecimal.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return value;
     }
 
     @Override
-    public BigInteger afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public BigInteger afterGet(DataType dataType, MappingEnv env, Object nonNull) {
         final BigInteger value;
-        value = BigIntegerType._convertToBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+        value = BigIntegerType.toBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
         if (value.compareTo(BigInteger.ZERO) < 0) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return value;
     }
-
 
 
 }

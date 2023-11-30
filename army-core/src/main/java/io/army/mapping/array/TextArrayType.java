@@ -2,7 +2,7 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -114,7 +114,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }

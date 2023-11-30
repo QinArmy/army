@@ -1,16 +1,14 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
 import java.time.*;
-import java.time.format.DateTimeParseException;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -32,8 +30,6 @@ import java.util.function.BiFunction;
 public final class LocalTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalTimeType {
 
 
-    public static final LocalTimeType INSTANCE = new LocalTimeType();
-
     public static LocalTimeType from(final Class<?> fieldType) {
         if (fieldType != LocalTime.class) {
             throw errorJavaType(LocalTimeType.class, fieldType);
@@ -41,7 +37,11 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
         return INSTANCE;
     }
 
+    public static final LocalTimeType INSTANCE = new LocalTimeType();
 
+    /**
+     * private constructor
+     */
     private LocalTimeType() {
     }
 
@@ -52,7 +52,7 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
 
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -75,21 +75,21 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public LocalTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toLocalTime(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalTime beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public LocalTime beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return toLocalTime(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalTime afterGet(final SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToLocalTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public LocalTime afterGet(final DataType dataType, MappingEnv env, final Object nonNull) {
+        return toLocalTime(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-    private static LocalTime convertToLocalTime(final MappingType type, final Object nonNull,
-                                                final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static LocalTime toLocalTime(final MappingType type, final DataType dataType, final Object nonNull,
+                                        final ErrorHandler errorHandler) {
         final LocalTime value;
         if (nonNull instanceof LocalTime) {
             value = (LocalTime) nonNull;
@@ -104,11 +104,11 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
         } else if (nonNull instanceof String) {
             try {
                 value = LocalTime.parse((String) nonNull, _TimeUtils.TIME_FORMATTER_6);
-            } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
+            } catch (DateTimeException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

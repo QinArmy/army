@@ -1,15 +1,13 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -30,8 +28,6 @@ import java.util.function.BiFunction;
  */
 public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 
-    public static final DayOfWeekType INSTANCE = new DayOfWeekType();
-
 
     public static DayOfWeekType from(final Class<?> javaType) {
         if (javaType != DayOfWeek.class) {
@@ -40,7 +36,12 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
         return INSTANCE;
     }
 
+    public static final DayOfWeekType INSTANCE = new DayOfWeekType();
 
+
+    /**
+     * private constructor
+     */
     private DayOfWeekType() {
     }
 
@@ -50,8 +51,8 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        return NameEnumType.mapToSqlEnumType(this, meta);
+    public DataType map(final ServerMeta meta) {
+        return NameEnumType.mapToSqlType(this, meta);
     }
 
     @Override
@@ -61,23 +62,23 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 
     @Override
     public DayOfWeek convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return convertToDayOfWeek(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull)
+    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull)
             throws CriteriaException {
-        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER_0)
+        return convertToDayOfWeek(this, dataType, nonNull, PARAM_ERROR_HANDLER)
                 .name();
     }
 
     @Override
-    public DayOfWeek afterGet(SqlType type, MappingEnv env, final Object nonNull) throws DataAccessException {
-        return convertToDayOfWeek(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public DayOfWeek afterGet(DataType dataType, MappingEnv env, final Object nonNull) throws DataAccessException {
+        return convertToDayOfWeek(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-    private static DayOfWeek convertToDayOfWeek(final MappingType type, final Object nonNull,
-                                                final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    private static DayOfWeek convertToDayOfWeek(final MappingType type, final DataType dataType, final Object nonNull,
+                                                final ErrorHandler errorHandler) {
         final DayOfWeek value;
         if (nonNull instanceof DayOfWeek) {
             value = (DayOfWeek) nonNull;
@@ -89,18 +90,18 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof ZonedDateTime) {
             value = DayOfWeek.from(((ZonedDateTime) nonNull));
         } else if (!(nonNull instanceof String) || ((String) nonNull).length() == 0) {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         } else if (((String) nonNull).indexOf('-') < 0) {
             try {
                 value = DayOfWeek.valueOf((String) nonNull);
             } catch (IllegalArgumentException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else {
             try {
                 value = DayOfWeek.from(LocalDate.parse((String) nonNull));
             } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         }
         return value;

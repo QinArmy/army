@@ -1,17 +1,14 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -41,7 +38,9 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
         return INSTANCE;
     }
 
-
+    /**
+     * private constructor
+     */
     private LocalDateTimeType() {
     }
 
@@ -74,21 +73,21 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
 
     @Override
     public LocalDateTime convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toLocalDateTime(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDateTime beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
-        return convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public LocalDateTime beforeBind(DataType dataType, final MappingEnv env, final Object nonNull) {
+        return toLocalDateTime(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDateTime afterGet(SqlType type, final MappingEnv env, Object nonNull) {
-        return convertToLocalDateTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public LocalDateTime afterGet(DataType dataType, final MappingEnv env, Object nonNull) {
+        return toLocalDateTime(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-    private static LocalDateTime convertToLocalDateTime(final MappingType type, final Object nonNull,
-                                                        final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static LocalDateTime toLocalDateTime(final MappingType type, final DataType dataType, final Object nonNull,
+                                                final ErrorHandler errorHandler) {
         final LocalDateTime value;
         if (nonNull instanceof LocalDateTime) {
             value = (LocalDateTime) nonNull;
@@ -96,7 +95,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
             try {
                 value = LocalDateTime.parse((String) nonNull, _TimeUtils.DATETIME_FORMATTER_6);
             } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof LocalDate) {
             value = LocalDateTime.of((LocalDate) nonNull, LocalTime.MIDNIGHT);
@@ -107,7 +106,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
             value = ((ZonedDateTime) nonNull).withZoneSameInstant(ZoneId.systemDefault())
                     .toLocalDateTime();
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

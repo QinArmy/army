@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
@@ -27,7 +28,6 @@ import io.army.sqltype.SqlType;
  */
 public final class ByteType extends _NumericType._IntegerType {
 
-    public static final ByteType INSTANCE = new ByteType();
 
     public static ByteType from(final Class<?> javaType) {
         if (javaType != Byte.class) {
@@ -36,6 +36,11 @@ public final class ByteType extends _NumericType._IntegerType {
         return INSTANCE;
     }
 
+    public static final ByteType INSTANCE = new ByteType();
+
+    /**
+     * private constructor
+     */
     private ByteType() {
     }
 
@@ -50,7 +55,7 @@ public final class ByteType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -71,15 +76,15 @@ public final class ByteType extends _NumericType._IntegerType {
 
     @Override
     public Byte convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return (byte) IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+        return (byte) IntegerType.toInt(this, map(env.serverMeta()), nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Number beforeBind(final SqlType type, MappingEnv env, final Object nonNull) {
+    public Number beforeBind(final DataType dataType, MappingEnv env, final Object nonNull) {
         final int intValue;
-        intValue = IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+        intValue = IntegerType.toInt(this, dataType, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER);
         final Number value;
-        switch (type.database()) {
+        switch (((SqlType) dataType).database()) {
             case MySQL:
                 value = (byte) intValue;
                 break;
@@ -94,8 +99,8 @@ public final class ByteType extends _NumericType._IntegerType {
 
 
     @Override
-    public Byte afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return (byte) IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
+    public Byte afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return (byte) IntegerType.toInt(this, dataType, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 

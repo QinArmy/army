@@ -3,7 +3,7 @@ package io.army.criteria.postgre.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.postgre.type.TwoInt;
 import io.army.dialect.Database;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingEnv;
@@ -46,7 +46,7 @@ public final class TwoIntType extends MappingType
     }
 
     @Override
-    public DataType map(final ServerMeta meta) throws NotSupportDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }

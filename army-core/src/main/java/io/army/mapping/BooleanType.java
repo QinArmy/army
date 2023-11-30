@@ -1,16 +1,15 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -33,8 +32,6 @@ import java.util.function.BiFunction;
 public final class BooleanType extends _ArmyNoInjectionMapping {
 
 
-    public static final BooleanType INSTANCE = new BooleanType();
-
     public static BooleanType from(Class<?> fieldType) {
         if (fieldType != Boolean.class) {
             throw errorJavaType(BooleanType.class, fieldType);
@@ -42,11 +39,15 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
         return INSTANCE;
     }
 
+    public static final BooleanType INSTANCE = new BooleanType();
+
     public static final String TRUE = "TRUE";
 
     public static final String FALSE = "FALSE";
 
-
+    /**
+     * private constructor
+     */
     private BooleanType() {
     }
 
@@ -56,7 +57,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -78,22 +79,22 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
     @Override
     public Boolean convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return convertToBoolean(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Boolean beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public Boolean beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return convertToBoolean(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Boolean afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToBoolean(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public Boolean afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
+        return convertToBoolean(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
-    private static boolean convertToBoolean(final MappingType type, final Object nonNull,
-                                            final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    private static boolean convertToBoolean(final MappingType type, final DataType dataType, final Object nonNull,
+                                            final ErrorHandler errorHandler) {
         final boolean value;
         if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull;
@@ -109,7 +110,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
             } else if (FALSE.equalsIgnoreCase((String) nonNull)) {
                 value = false;
             } else {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, null);
             }
         } else if (nonNull instanceof BigDecimal) {
             value = BigDecimal.ZERO.compareTo((BigDecimal) nonNull) != 0;
@@ -118,7 +119,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof Double || nonNull instanceof Float) {
             value = Double.compare(((Number) nonNull).doubleValue(), 0.0D) != 0;
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

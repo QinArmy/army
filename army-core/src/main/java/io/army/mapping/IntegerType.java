@@ -1,16 +1,15 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.array.IntegerArrayType;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -34,9 +33,6 @@ import java.util.function.BiFunction;
 public final class IntegerType extends _NumericType._IntegerType {
 
 
-    public static final IntegerType INTEGER = new IntegerType();
-
-
     public static IntegerType from(final Class<?> fieldType) {
         if (fieldType != Integer.class) {
             throw errorJavaType(IntegerType.class, fieldType);
@@ -44,7 +40,11 @@ public final class IntegerType extends _NumericType._IntegerType {
         return INTEGER;
     }
 
+    public static final IntegerType INTEGER = new IntegerType();
 
+    /**
+     * private constructor
+     */
     private IntegerType() {
     }
 
@@ -64,77 +64,78 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         return mapToInteger(this, meta);
     }
 
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+        return toInt(this, map(env.serverMeta()), nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
-        return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+    public Integer beforeBind(DataType dataType, final MappingEnv env, final Object nonNull) {
+        return toInt(this, dataType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer afterGet(SqlType type, final MappingEnv env, Object nonNull) {
-        return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
+    public Integer afterGet(DataType dataType, final MappingEnv env, Object nonNull) {
+        return toInt(this, dataType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 
-     static int _convertToInt(final MappingType type, final Object nonNull, final int min, final int max,
-                              final BiFunction<MappingType, Object, ArmyException> errorHandler) {
-         final int value;
-         if (nonNull instanceof Integer) {
-             value = (Integer) nonNull;
-         } else if (nonNull instanceof Short || nonNull instanceof Byte) {
-             value = ((Number) nonNull).intValue();
-         } else if (nonNull instanceof Long) {
-             final long v = (Long) nonNull;
-             if (v < min || v > max) {
-                 throw errorHandler.apply(type, nonNull);
+    public static int toInt(final MappingType type, DataType dataType, final Object nonNull,
+                            final int min, final int max,
+                            final ErrorHandler errorHandler) {
+        final int value;
+        if (nonNull instanceof Integer) {
+            value = (Integer) nonNull;
+        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
+            value = ((Number) nonNull).intValue();
+        } else if (nonNull instanceof Long) {
+            final long v = (Long) nonNull;
+            if (v < min || v > max) {
+                throw errorHandler.apply(type, dataType, nonNull, null);
             }
             value = (byte) v;
         } else if (nonNull instanceof BigDecimal) {
             try {
                 value = ((BigDecimal) nonNull).intValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof BigInteger) {
             try {
                 value = ((BigInteger) nonNull).intValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof String) {
-             try {
-                 value = Integer.parseInt((String) nonNull);
-             } catch (NumberFormatException e) {
-                 throw errorHandler.apply(type, nonNull);
-             }
-         } else if (nonNull instanceof Double || nonNull instanceof Float) {
-             try {
-                 value = new BigDecimal(nonNull.toString()).intValueExact();
-             } catch (ArithmeticException e) {
-                 throw errorHandler.apply(type, nonNull);
-             }
-         } else if (nonNull instanceof Boolean) {
-             value = ((Boolean) nonNull) ? 1 : 0;
-         } else {
-             throw errorHandler.apply(type, nonNull);
-         }
-         if (value < min || value > max) {
-             throw errorHandler.apply(type, nonNull);
-         }
-         return value;
+            try {
+                value = Integer.parseInt((String) nonNull);
+            } catch (NumberFormatException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
+            }
+        } else if (nonNull instanceof Double || nonNull instanceof Float) {
+            try {
+                value = new BigDecimal(nonNull.toString()).intValueExact();
+            } catch (ArithmeticException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
+            }
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? 1 : 0;
+        } else {
+            throw errorHandler.apply(type, dataType, nonNull, null);
+        }
+        if (value < min || value > max) {
+            throw errorHandler.apply(type, dataType, nonNull, null);
+        }
+        return value;
 
-     }
+    }
 
-    static SqlType mapToInteger(final MappingType type, final ServerMeta meta) {
+    public static SqlType mapToInteger(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:

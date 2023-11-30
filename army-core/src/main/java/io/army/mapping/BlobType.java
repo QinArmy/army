@@ -15,7 +15,6 @@ import io.army.sqltype.*;
  */
 public final class BlobType extends _ArmyBuildInMapping {
 
-    public static final BlobType INSTANCE = new BlobType();
 
     public static BlobType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
@@ -24,7 +23,11 @@ public final class BlobType extends _ArmyBuildInMapping {
         return INSTANCE;
     }
 
+    public static final BlobType INSTANCE = new BlobType();
 
+    /**
+     * private constructor
+     */
     private BlobType() {
     }
 
@@ -35,7 +38,7 @@ public final class BlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -71,7 +74,7 @@ public final class BlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -79,7 +82,7 @@ public final class BlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }

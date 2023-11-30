@@ -16,9 +16,6 @@ import io.army.sqltype.*;
  */
 public final class MediumBlobType extends _ArmyBuildInMapping {
 
-
-    public static final MediumBlobType INSTANCE = new MediumBlobType();
-
     public static MediumBlobType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
             throw errorJavaType(MediumBlobType.class, fieldType);
@@ -26,7 +23,11 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
         return INSTANCE;
     }
 
+    public static final MediumBlobType INSTANCE = new MediumBlobType();
 
+    /**
+     * private constructor
+     */
     private MediumBlobType() {
     }
 
@@ -37,7 +38,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -67,23 +68,23 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     @Override
     public byte[] convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull, null);
         }
         return (byte[]) nonNull;
     }
 
     @Override
-    public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return (byte[]) nonNull;
     }
 
     @Override
-    public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return (byte[]) nonNull;
     }

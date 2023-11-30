@@ -1,13 +1,11 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -29,8 +27,6 @@ import java.util.function.BiFunction;
 public final class DoubleType extends _NumericType._FloatNumericType {
 
 
-    public static final DoubleType INSTANCE = new DoubleType();
-
     public static DoubleType from(final Class<?> fieldType) {
         if (fieldType != Double.class) {
             throw errorJavaType(DoubleType.class, fieldType);
@@ -38,6 +34,11 @@ public final class DoubleType extends _NumericType._FloatNumericType {
         return INSTANCE;
     }
 
+    public static final DoubleType INSTANCE = new DoubleType();
+
+    /**
+     * private constructor
+     */
     private DoubleType() {
     }
 
@@ -47,7 +48,7 @@ public final class DoubleType extends _NumericType._FloatNumericType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public DataType map(ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -64,23 +65,23 @@ public final class DoubleType extends _NumericType._FloatNumericType {
 
     @Override
     public Object convert(MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToDouble(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return convertToDouble(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
 
     @Override
-    public Double beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToDouble(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public Double beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return convertToDouble(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Double afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return convertToDouble(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public Double afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return convertToDouble(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
-    private static double convertToDouble(final MappingType type, final Object nonNull,
-                                          final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    private static double convertToDouble(final MappingType type, final DataType dataType, final Object nonNull,
+                                          final ErrorHandler errorHandler) {
         final double value;
         if (nonNull instanceof Double) {
             value = (Double) nonNull;
@@ -93,12 +94,12 @@ public final class DoubleType extends _NumericType._FloatNumericType {
             try {
                 value = Double.parseDouble((String) nonNull);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof Boolean) {
             value = ((Boolean) nonNull) ? 1d : 0d;
         } else {//TODO consider Long
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
 
         return value;

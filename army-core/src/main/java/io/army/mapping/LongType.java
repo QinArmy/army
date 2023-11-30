@@ -1,15 +1,14 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -32,8 +31,6 @@ import java.util.function.BiFunction;
  */
 public final class LongType extends _NumericType._IntegerType {
 
-    public static final LongType BIGINT = new LongType();
-
 
     public static LongType from(final Class<?> fieldType) {
         if (fieldType != Long.class) {
@@ -42,6 +39,11 @@ public final class LongType extends _NumericType._IntegerType {
         return BIGINT;
     }
 
+    public static final LongType BIGINT = new LongType();
+
+    /**
+     * private constructor
+     */
     private LongType() {
     }
 
@@ -56,7 +58,7 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -75,22 +77,22 @@ public final class LongType extends _NumericType._IntegerType {
 
     @Override
     public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+        return toLong(this, map(env.serverMeta()), nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER_0);
+    public Long beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+        return toLong(this, dataType, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
+    public Long afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return toLong(this, dataType, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 
-    static long _convertToLong(final MappingType type, final Object nonNull, final long min, final long max,
-                               final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static long toLong(final MappingType type, final DataType dataType, final Object nonNull,
+                              final long min, final long max, final ErrorHandler errorHandler) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;
@@ -102,34 +104,34 @@ public final class LongType extends _NumericType._IntegerType {
             try {
                 value = Long.parseLong((String) nonNull);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof BigDecimal) {
             try {
                 value = ((BigDecimal) nonNull).longValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof BigInteger) {
             try {
                 value = ((BigInteger) nonNull).longValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof Double || nonNull instanceof Float) {
             try {
                 value = new BigDecimal(nonNull.toString()).longValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof Boolean) {
             value = ((Boolean) nonNull) ? 1L : 0L;
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
 
         if (value < min || value > max) {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

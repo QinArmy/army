@@ -1,14 +1,9 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
-import io.army.dialect.Database;
 import io.army.mapping.array.StringArrayType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util._TimeUtils;
@@ -17,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -52,8 +46,6 @@ import java.util.function.BiFunction;
 public final class StringType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
 
 
-    public static final StringType INSTANCE = new StringType();
-
     public static StringType from(final Class<?> fieldType) {
         if (fieldType != String.class) {
             throw errorJavaType(StringType.class, fieldType);
@@ -61,6 +53,11 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
         return INSTANCE;
     }
 
+    public static final StringType INSTANCE = new StringType();
+
+    /**
+     * private constructor
+     */
     private StringType() {
     }
 
@@ -81,7 +78,7 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         return mapToSqlType(this, meta);
     }
 
@@ -93,25 +90,21 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
 
     @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
+        return toString(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
+    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return toString(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
-        return _convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public String afterGet(final DataType dataType, final MappingEnv env, final Object nonNull) {
+        return toString(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-    @Deprecated
-    public static String beforeBind(SqlType sqlType, final Object nonNull) {
-        throw new UnsupportedOperationException();
-    }
 
-    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -123,7 +116,6 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
             case Oracle:
                 sqlType = OracleDataType.VARCHAR2;
                 break;
-
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
@@ -132,8 +124,8 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
         return sqlType;
     }
 
-    static String _convertToString(final MappingType type, final SqlType sqlType, final Object nonNull,
-                                   final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static String toString(final MappingType type, final DataType dataType, final Object nonNull,
+                                  final ErrorHandler errorHandler) {
         final String value;
         if (nonNull instanceof String) {
             value = (String) nonNull;
@@ -153,43 +145,32 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
             }
         } else if (nonNull instanceof Character) {
             value = nonNull.toString();
+        } else if (nonNull instanceof TemporalAccessor) {
+            if (nonNull instanceof LocalDate) {
+                // TODO postgre format ?
+                value = nonNull.toString();
+            } else if (nonNull instanceof LocalDateTime) {
+                value = ((LocalDateTime) nonNull).format(_TimeUtils.DATETIME_FORMATTER_6);
+            } else if (nonNull instanceof LocalTime) {
+                value = ((LocalTime) nonNull).format(_TimeUtils.TIME_FORMATTER_6);
+            } else if (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime) {
+                value = _TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) nonNull);
+            } else if (nonNull instanceof OffsetTime) {
+                value = ((OffsetTime) nonNull).format(_TimeUtils.OFFSET_TIME_FORMATTER_6);
+            } else if (nonNull instanceof Instant) {
+                value = Long.toString(((Instant) nonNull).getEpochSecond());
+            } else {
+                value = nonNull.toString();
+            }
         } else if (nonNull instanceof TemporalAmount) {
 //            if (nonNull instanceof Period) {
 //
 //            } else if (!(nonNull instanceof Duration)) {
 //                throw errorHandler.apply(type, nonNull);
 //            } //TODO handle
-            throw errorHandler.apply(type, nonNull);
-        } else if (!(nonNull instanceof TemporalAccessor)) {
-            throw errorHandler.apply(type, nonNull);
-        } else if (nonNull instanceof LocalDate) {
-            value = nonNull.toString();
-        } else if (nonNull instanceof LocalDateTime) {
-            value = ((LocalDateTime) nonNull).format(_TimeUtils.getDatetimeFormatter(6));
-        } else if (nonNull instanceof LocalTime) {
-            value = ((LocalTime) nonNull).format(_TimeUtils.getTimeFormatter(6));
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).format(_TimeUtils.getDatetimeOffsetFormatter(6));
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).format(_TimeUtils.getDatetimeOffsetFormatter(6));
-        } else if (nonNull instanceof OffsetTime) {
-            value = ((OffsetTime) nonNull).format(_TimeUtils.getOffsetTimeFormatter(6));
-        } else if (nonNull instanceof Year) {
-            if (sqlType.database() == Database.MySQL) {
-                value = nonNull.toString();
-            } else {
-                value = LocalDate.of(((Year) nonNull).getValue(), 1, 1).toString();
-            }
-        } else if (nonNull instanceof YearMonth) {
-            final YearMonth v = (YearMonth) nonNull;
-            value = LocalDate.of(v.getYear(), v.getMonth(), 1).toString();
-        } else if (nonNull instanceof MonthDay) {
-            final MonthDay v = (MonthDay) nonNull;
-            value = LocalDate.of(1970, v.getMonth(), v.getDayOfMonth()).toString();
-        } else if (nonNull instanceof Instant) {
-            value = Long.toString(((Instant) nonNull).getEpochSecond());
+            throw errorHandler.apply(type, dataType, nonNull, null);
         } else {
-            throw errorHandler.apply(type, nonNull);
+            value = nonNull.toString();
         }
         return value;
     }

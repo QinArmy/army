@@ -13,8 +13,6 @@ import io.army.sqltype.*;
  */
 public final class BinaryType extends _ArmyBuildInMapping implements MappingType.SqlBinaryType {
 
-    public static final BinaryType INSTANCE = new BinaryType();
-
     public static BinaryType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
             throw errorJavaType(BinaryType.class, fieldType);
@@ -22,6 +20,12 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
         return INSTANCE;
     }
 
+    public static final BinaryType INSTANCE = new BinaryType();
+
+
+    /**
+     * private constructor
+     */
     private BinaryType() {
     }
 
@@ -36,7 +40,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -72,7 +76,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -80,7 +84,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }

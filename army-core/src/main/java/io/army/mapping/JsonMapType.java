@@ -6,6 +6,7 @@ import io.army.sqltype.SqlType;
 
 import java.util.Map;
 
+@Deprecated
 public final class JsonMapType extends MappingType {
 
 
@@ -13,6 +14,9 @@ public final class JsonMapType extends MappingType {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * private constructor
+     */
     private JsonMapType() {
     }
 

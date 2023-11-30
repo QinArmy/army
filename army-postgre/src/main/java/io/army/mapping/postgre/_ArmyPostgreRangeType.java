@@ -2,7 +2,7 @@ package io.army.mapping.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
@@ -85,7 +85,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public final SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public final SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }

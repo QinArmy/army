@@ -2,23 +2,23 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 
-public final class SQLCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
+public final class SqlCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
 
-    public static final SQLCharType INSTANCE = new SQLCharType();
-
-    public static SQLCharType from(Class<?> javaType) {
+    public static SqlCharType from(Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(SQLCharType.class, javaType);
+            throw errorJavaType(SqlCharType.class, javaType);
         }
         return INSTANCE;
     }
 
-    private SQLCharType() {
+    public static final SqlCharType INSTANCE = new SqlCharType();
+
+    /**
+     * private constructor
+     */
+    private SqlCharType() {
     }
 
     @Override
@@ -32,7 +32,7 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -44,7 +44,6 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
             case Oracle:
                 type = OracleDataType.CHAR;
                 break;
-
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
@@ -61,18 +60,21 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
 
     @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return StringType._convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
+        return StringType.toString(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+        return StringType.toString(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public String afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return StringType.toString(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
+
+
+
 
 
 }

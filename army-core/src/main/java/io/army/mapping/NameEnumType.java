@@ -2,14 +2,11 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.H2DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
+import io.army.util._Collections;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -17,8 +14,6 @@ import java.util.concurrent.ConcurrentMap;
  * @see TextEnumType
  */
 public final class NameEnumType extends _ArmyNoInjectionMapping {
-
-    private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static NameEnumType from(final Class<?> fieldType) {
         if (!Enum.class.isAssignableFrom(fieldType)) {
@@ -43,8 +38,13 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
         return INSTANCE_MAP.computeIfAbsent(actualType, NameEnumType::new);
     }
 
+    private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
     private final Class<?> enumClass;
 
+    /**
+     * private constructor
+     */
     private NameEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
     }
@@ -55,8 +55,8 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        return mapToSqlEnumType(this, meta);
+    public DataType map(final ServerMeta meta) {
+        return mapToSqlType(this, meta);
     }
 
 
@@ -67,49 +67,50 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     @Override
     public Enum<?> convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return this.convertToEnum(nonNull);
+        return toNameEnum(map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return this.convertToEnum(nonNull).name();
+    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return toNameEnum(dataType, nonNull, PARAM_ERROR_HANDLER).name();
     }
 
     @Override
-    public Enum<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Enum<?> afterGet(DataType dataType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
-        try {
-            return valueOf(this.enumClass, (String) nonNull);
-        } catch (IllegalArgumentException e) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
-        }
+        return toNameEnum(dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
-    private Enum<?> convertToEnum(final Object nonNull) {
+    private Enum<?> toNameEnum(final DataType dataType, final Object nonNull, final ErrorHandler errorHandler) {
         final Enum<?> value;
         if (nonNull instanceof String) {
-            value = valueOf(this.enumClass, (String) nonNull);
+            try {
+                value = valueOf(this.enumClass, (String) nonNull);
+            } catch (IllegalArgumentException e) {
+                throw errorHandler.apply(this, dataType, nonNull, e);
+            }
         } else if (this.enumClass.isInstance(nonNull)) {
             value = (Enum<?>) nonNull;
         } else {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+            throw errorHandler.apply(this, dataType, nonNull, null);
         }
         return value;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Enum<T>> T valueOf(Class<?> javaType, String name) {
-        if (!javaType.isEnum()) {
+    public static <T extends Enum<T>> T valueOf(final Class<?> javaType, final String name)
+            throws IllegalArgumentException {
+        if (!Enum.class.isAssignableFrom(javaType)) {
             throw new IllegalArgumentException("not enum type.");
         }
         return Enum.valueOf((Class<T>) javaType, name);
     }
 
 
-    static SqlType mapToSqlEnumType(final MappingType type, final ServerMeta meta) {
+    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:

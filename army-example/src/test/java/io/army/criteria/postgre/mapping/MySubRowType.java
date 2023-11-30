@@ -3,7 +3,7 @@ package io.army.criteria.postgre.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.postgre.type.MySubRow;
 import io.army.dialect.Database;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.mapping.optional.CompositeTypeField;
@@ -44,7 +44,7 @@ public final class MySubRowType extends MappingType
     }
 
     @Override
-    public DataType map(final ServerMeta meta) throws NotSupportDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }

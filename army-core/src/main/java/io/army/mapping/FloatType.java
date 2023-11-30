@@ -1,13 +1,11 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -27,7 +25,6 @@ import java.util.function.BiFunction;
  */
 public final class FloatType extends _NumericType._FloatNumericType {
 
-    public static final FloatType INSTANCE = new FloatType();
 
     public static FloatType from(final Class<?> fieldType) {
         if (fieldType != Float.class) {
@@ -36,6 +33,11 @@ public final class FloatType extends _NumericType._FloatNumericType {
         return INSTANCE;
     }
 
+    public static final FloatType INSTANCE = new FloatType();
+
+    /**
+     * private constructor
+     */
     private FloatType() {
     }
 
@@ -46,7 +48,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
 
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -64,21 +66,21 @@ public final class FloatType extends _NumericType._FloatNumericType {
 
     @Override
     public Float convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return convertToFloat(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Float beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public Float beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return convertToFloat(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Float afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return convertToFloat(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public Float afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return convertToFloat(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-    private static float convertToFloat(final MappingType type, final Object nonNull,
-                                        final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    private static float convertToFloat(final MappingType type, final DataType dataType, final Object nonNull,
+                                        final ErrorHandler errorHandler) {
         final float value;
         if (nonNull instanceof Float) {
             value = (Float) nonNull;
@@ -89,12 +91,12 @@ public final class FloatType extends _NumericType._FloatNumericType {
             try {
                 value = Float.parseFloat((String) nonNull);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof Boolean) {
             value = ((Boolean) nonNull) ? 1f : 0f;
-        } else {//TODO consider int,long,double
-            throw errorHandler.apply(type, nonNull);
+        } else {
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

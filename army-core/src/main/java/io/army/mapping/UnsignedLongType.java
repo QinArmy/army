@@ -3,6 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
@@ -20,8 +21,6 @@ import java.util.function.BiFunction;
  */
 public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
 
-    public static final UnsignedLongType INSTANCE = new UnsignedLongType();
-
     public static UnsignedLongType from(final Class<?> fieldType) {
         if (fieldType != BigInteger.class) {
             throw errorJavaType(UnsignedLongType.class, fieldType);
@@ -31,7 +30,11 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
 
     public static final BigInteger MAX_VALUE = new BigInteger(Long.toUnsignedString(-1L));
 
+    public static final UnsignedLongType INSTANCE = new UnsignedLongType();
 
+    /**
+     * private constructor
+     */
     private UnsignedLongType() {
     }
 
@@ -46,7 +49,7 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -65,13 +68,13 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Number beforeBind(final SqlType type, MappingEnv env, final Object nonNull) {
         final BigInteger integerValue;
-        integerValue = _convertToUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
+        integerValue = toUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
         final Number value;
         switch (type.database()) {
             case MySQL:
@@ -88,14 +91,14 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public BigInteger afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToUnsignedBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+        return toUnsignedBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 
-    private static BigInteger _convertToUnsignedBigInteger(final MappingType type, final Object nonNull,
-                                                           final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    private static BigInteger toUnsignedBigInteger(final MappingType type, final Object nonNull,
+                                                   final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final BigInteger value;
-        value = BigIntegerType._convertToBigInteger(type, nonNull, errorHandler);
+        value = BigIntegerType.toBigInteger(type, nonNull, errorHandler);
         if (value.compareTo(BigInteger.ZERO) < 0 || value.compareTo(MAX_VALUE) > 0) {
             throw errorHandler.apply(type, nonNull);
         }

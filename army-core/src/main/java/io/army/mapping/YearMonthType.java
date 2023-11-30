@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
@@ -48,7 +48,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(ServerMeta meta) throws UnsupportedDialectException {
         return LocalDateType.mapToSqlType(this, meta);
     }
 

@@ -1,9 +1,10 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
@@ -38,7 +39,7 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -67,14 +68,14 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public String beforeBind(final SqlType type, final MappingEnv env, final Object nonNull)
+    public String beforeBind(final DataType dataType, final MappingEnv env, final Object nonNull)
             throws CriteriaException {
         final String value;
         if (nonNull instanceof Character) {
             value = nonNull.toString();
         } else if (nonNull instanceof String) {
             if (((String) nonNull).length() != 1) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
             }
             value = ((String) nonNull).substring(0, 1);
         } else if (nonNull instanceof Number) {
@@ -85,13 +86,13 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
                 v = nonNull.toString();
             }
             if (v.length() != 1) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
             }
             value = v.substring(0, 1);
         } else if (nonNull instanceof BitSet) {
             final BitSet v = (BitSet) nonNull;
             if (v.length() != 1) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
             }
             if (v.get(0)) {
                 value = "1";
@@ -99,13 +100,13 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
                 value = "0";
             }
         } else {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return value;
     }
 
     @Override
-    public Character afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Character afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

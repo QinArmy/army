@@ -1,11 +1,10 @@
 package io.army.mapping;
 
 import io.army.codec.JsonCodec;
+import io.army.meta.ServerMeta;
+import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
-
-import io.army.meta.ServerMeta;
-
 import java.time.Clock;
 import java.time.ZoneOffset;
 
@@ -60,7 +59,8 @@ final class MappingEnvImpl implements MappingEnv {
 
     @Override
     public String toString() {
-        return createBuilder()
+        return _StringUtils.builder(60)
+                .append(getClass().getName())
                 .append("[reactive:")
                 .append(this.reactive)
                 .append(",serverMeta:")
@@ -72,9 +72,6 @@ final class MappingEnvImpl implements MappingEnv {
                 .toString();
     }
 
-    private static StringBuilder createBuilder() {
-        return new StringBuilder(MappingEnvImpl.class.getSimpleName());
-    }
 
 
 }

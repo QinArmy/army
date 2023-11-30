@@ -1,13 +1,11 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 import java.time.*;
 import java.time.temporal.TemporalAccessor;
-import java.util.function.BiFunction;
 
 
 /**
@@ -31,7 +29,6 @@ import java.util.function.BiFunction;
  */
 public final class MonthType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalFieldType {
 
-    public static final MonthType INSTANCE = new MonthType();
 
     public static MonthType form(final Class<?> javaType) {
         if (javaType != Month.class) {
@@ -40,6 +37,11 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
         return INSTANCE;
     }
 
+    public static final MonthType INSTANCE = new MonthType();
+
+    /**
+     * private constructor
+     */
     private MonthType() {
     }
 
@@ -49,8 +51,8 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        return NameEnumType.mapToSqlEnumType(this, meta);
+    public DataType map(final ServerMeta meta) {
+        return NameEnumType.mapToSqlType(this, meta);
     }
 
     @Override
@@ -60,23 +62,23 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
 
     @Override
     public Month convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toMoth(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER_0)
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+        return toMoth(this, dataType, nonNull, PARAM_ERROR_HANDLER)
                 .name();
     }
 
     @Override
-    public Month afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return convertToMoth(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public Month afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return toMoth(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
-    private static Month convertToMoth(final MappingType type, final Object nonNull,
-                                       final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static Month toMoth(final MappingType type, final DataType dataType, final Object nonNull,
+                               final ErrorHandler errorHandler) {
         final Month value;
         if (nonNull instanceof Month) {
             value = (Month) nonNull;
@@ -90,15 +92,15 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
         } else if (nonNull instanceof ZonedDateTime) {
             value = Month.from(((ZonedDateTime) nonNull));
         } else if (!(nonNull instanceof String) || ((String) nonNull).length() == 0) {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         } else if (Character.isLetter(((String) nonNull).charAt(0))) {
             try {
                 value = Month.valueOf((String) nonNull);
             } catch (IllegalArgumentException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

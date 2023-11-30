@@ -1,16 +1,15 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
 
-
-    public static final NoCastTextType INSTANCE = new NoCastTextType();
 
     public static NoCastTextType from(final Class<?> javaType) {
         if (javaType != String.class) {
@@ -19,6 +18,11 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
         return INSTANCE;
     }
 
+    public static final NoCastTextType INSTANCE = new NoCastTextType();
+
+    /**
+     * private constructor
+     */
     private NoCastTextType() {
     }
 
@@ -34,7 +38,7 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
@@ -44,7 +48,7 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
             case Oracle:
             case H2:
             default:
-                type = TextType.mapSqlType(this, meta);
+                type = TextType.mapToSqlType(this, meta);
         }
         return type;
     }
@@ -56,17 +60,17 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
 
     @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return StringType._convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
+        return StringType.toString(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
+        return StringType.toString(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public String afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+        return StringType.toString(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 

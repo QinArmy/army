@@ -1,13 +1,11 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -31,7 +29,6 @@ import java.util.function.BiFunction;
  */
 public final class BigDecimalType extends _NumericType implements MappingType.SqlDecimalType {
 
-    public static final BigDecimalType INSTANCE = new BigDecimalType();
 
     public static BigDecimalType from(Class<?> fieldType) {
         if (fieldType != BigDecimal.class) {
@@ -41,6 +38,11 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
     }
 
 
+    public static final BigDecimalType INSTANCE = new BigDecimalType();
+
+    /**
+     * private constructor
+     */
     private BigDecimalType() {
     }
 
@@ -52,29 +54,29 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
 
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        return mapToDecimal(this, meta);
+    public DataType map(final ServerMeta meta) {
+        return mapToSqlType(this, meta);
     }
 
 
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toBigDecimal(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public BigDecimal beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigDecimal afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public BigDecimal afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
+        return toBigDecimal(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
     @Deprecated
-    public static BigDecimal convertToBigDecimal(final SqlType type, final Object nonNull) {
+    public static BigDecimal convertToBigDecimal(final DataType dataType, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
@@ -93,16 +95,16 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
             try {
                 value = new BigDecimal((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(type, nonNull, e);
+                throw valueOutRange(dataType, nonNull, e);
             }
         } else {
-            throw outRangeOfSqlType(type, nonNull);
+            throw outRangeOfSqlType(dataType, nonNull);
         }
         return value;
     }
 
-    static BigDecimal _convertToBigDecimal(final MappingType type, final Object nonNull,
-                                           final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static BigDecimal toBigDecimal(final MappingType type, final DataType dataType, final Object nonNull,
+                                          final ErrorHandler errorHandler) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
@@ -121,15 +123,15 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
             try {
                 value = new BigDecimal((String) nonNull);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }
 
-    static SqlType mapToDecimal(final MappingType type, final ServerMeta meta) {
+    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:

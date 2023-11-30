@@ -1,7 +1,6 @@
 package io.army.struct;
 
 import javax.annotation.Nullable;
-
 import java.util.Map;
 
 /**
@@ -48,6 +47,14 @@ public interface TextEnum {
      */
     static <T extends Enum<T> & TextEnum> Map<String, T> getInstanceMap(Class<T> javaType)
             throws IllegalArgumentException {
+        return EnumHelper.getTextMap(javaType);
+    }
+
+    static Map<String, ? extends TextEnum> getTextToEnumMap(final Class<?> javaType) {
+        if (!(Enum.class.isAssignableFrom(javaType) && TextEnum.class.isAssignableFrom(javaType))) {
+            String m = String.format("%s not %s type", javaType.getName(), TextEnum.class.getName());
+            throw new IllegalArgumentException(m);
+        }
         return EnumHelper.getTextMap(javaType);
     }
 

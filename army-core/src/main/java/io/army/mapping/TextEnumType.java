@@ -2,12 +2,12 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
+import io.army.util._Collections;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -20,8 +20,6 @@ import java.util.concurrent.ConcurrentMap;
  * @see CodeEnumType
  */
 public final class TextEnumType extends MappingType {
-
-    private static final ConcurrentMap<Class<?>, TextEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static TextEnumType from(final Class<?> fieldType) {
         if (!Enum.class.isAssignableFrom(fieldType) || !TextEnum.class.isAssignableFrom(fieldType)) {
@@ -36,14 +34,19 @@ public final class TextEnumType extends MappingType {
         return INSTANCE_MAP.computeIfAbsent(actualType, TextEnumType::new);
     }
 
+    private static final ConcurrentMap<Class<?>, TextEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
 
     private final Class<?> javaType;
 
     private final Map<String, ? extends TextEnum> textMap;
 
+    /**
+     * private constructor
+     */
     private TextEnumType(final Class<?> javaType) {
         this.javaType = javaType;
-        this.textMap = getTextMap(javaType);
+        this.textMap = TextEnum.getTextToEnumMap(javaType);
     }
 
     @Override
@@ -52,8 +55,8 @@ public final class TextEnumType extends MappingType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        return NameEnumType.mapToSqlEnumType(this, meta);
+    public DataType map(final ServerMeta meta) {
+        return NameEnumType.mapToSqlType(this, meta);
     }
 
 
@@ -64,38 +67,29 @@ public final class TextEnumType extends MappingType {
 
     @Override
     public TextEnum convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!this.javaType.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
-        }
-        return (TextEnum) nonNull;
+        return toTextEnum(map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        if (!this.javaType.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
-        }
-        return ((TextEnum) nonNull).text();
+    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return toTextEnum(dataType, nonNull, PARAM_ERROR_HANDLER).text();
     }
 
     @Override
-    public TextEnum afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
-        }
+    public TextEnum afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return toTextEnum(dataType, nonNull, ACCESS_ERROR_HANDLER);
+    }
+
+    private TextEnum toTextEnum(final DataType dataType, final Object nonNull, final ErrorHandler errorHandler) {
         final TextEnum value;
-        value = this.textMap.get(nonNull);
-        if (value == null) {
-            String m = String.format("%s don't contain text[%s]", this.javaType.getName(), nonNull);
-            throw new DataAccessException(m);
+        if (this.javaType.isInstance(nonNull)) {
+            value = ((TextEnum) nonNull);
+        } else if (!(nonNull instanceof String)) {
+            throw errorHandler.apply(this, dataType, nonNull, null);
+        } else if ((value = this.textMap.get(nonNull)) == null) {
+            throw errorHandler.apply(this, dataType, nonNull, null);
         }
         return value;
     }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Enum<T> & TextEnum> Map<String, T> getTextMap(Class<?> javaType) {
-        return TextEnum.getInstanceMap((Class<T>) javaType);
-    }
-
 
 }

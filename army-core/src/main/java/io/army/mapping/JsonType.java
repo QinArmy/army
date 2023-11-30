@@ -2,19 +2,16 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+import io.army.util._Collections;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
 public final class JsonType extends _ArmyBuildInMapping implements MappingType.SqlJsonType {
-
-    public static final JsonType TEXT = new JsonType(String.class);
-
-    private static final ConcurrentMap<Class<?>, JsonType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static JsonType from(final Class<?> javaType) {
         final JsonType instance;
@@ -26,8 +23,15 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
         return instance;
     }
 
+    public static final JsonType TEXT = new JsonType(String.class);
+
+    private static final ConcurrentMap<Class<?>, JsonType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
     private final Class<?> javaType;
 
+    /**
+     * private constructor
+     */
     private JsonType(Class<?> javaType) {
         this.javaType = javaType;
     }
@@ -38,7 +42,7 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType sqlDataType;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -51,7 +55,7 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
 
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
         return sqlDataType;
@@ -69,7 +73,7 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
         if (nonNull instanceof String) {
             return (String) nonNull;
         }
@@ -78,10 +82,8 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
+    public String afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+
         return (String) nonNull;
     }
 

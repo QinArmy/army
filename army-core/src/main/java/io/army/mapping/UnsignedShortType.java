@@ -71,17 +71,17 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
+        return IntegerType.toInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
+        return IntegerType.toInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, DATA_ACCESS_ERROR_HANDLER_0);
+        return IntegerType.toInt(this, nonNull, 0, 0xFFFF, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

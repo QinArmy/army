@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 import io.army.struct.CodeEnum;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
@@ -25,8 +25,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
-    private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
-
 
     public static CodeEnumType from(final Class<?> javaType) {
         if (!(Enum.class.isAssignableFrom(javaType) && CodeEnum.class.isAssignableFrom(javaType))) {
@@ -41,10 +39,15 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         return INSTANCE_MAP.computeIfAbsent(_ClassUtils.getEnumClass(actualType), CodeEnumType::new);
     }
 
+    private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
     private final Class<?> enumClass;
 
     private final Map<Integer, ? extends CodeEnum> codeMap;
 
+    /**
+     * private constructor
+     */
     private CodeEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
         this.codeMap = getInstanceMap(enumClass);
@@ -57,7 +60,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         return IntegerType.mapToInteger(this, meta);
     }
 
@@ -75,7 +78,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public Integer beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
         if (!this.enumClass.isInstance(nonNull)) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -83,7 +86,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public CodeEnum afterGet(SqlType type, MappingEnv env, final Object nonNull) {
+    public CodeEnum afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
         final int code;
         if (nonNull instanceof Integer) {
             code = (Integer) nonNull;

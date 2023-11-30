@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
@@ -15,8 +16,6 @@ import io.army.sqltype.SqlType;
  */
 public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
 
-    public static final UnsignedByteType INSTANCE = new UnsignedByteType();
-
     public static UnsignedByteType from(final Class<?> fieldType) {
         if (fieldType != Short.class) {
             throw errorJavaType(UnsignedByteType.class, fieldType);
@@ -24,7 +23,11 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
         return INSTANCE;
     }
 
+    public static final UnsignedByteType INSTANCE = new UnsignedByteType();
 
+    /**
+     * private constructor
+     */
     private UnsignedByteType() {
     }
 
@@ -40,7 +43,7 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -58,25 +61,20 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
     }
 
 
+
     @Override
     public Short convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        final int value;
-        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER_0);
-        return (short) value;
+        return (short) IntegerType.toInt(this, map(env.serverMeta()), nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Short beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        final int value;
-        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER_0);
-        return (short) value;
+    public Short beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+        return (short) IntegerType.toInt(this, dataType, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Short afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        final int value;
-        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, DATA_ACCESS_ERROR_HANDLER_0);
-        return (short) value;
+    public Short afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return (short) IntegerType.toInt(this, dataType, nonNull, 0, 0xFF, ACCESS_ERROR_HANDLER);
     }
 
 

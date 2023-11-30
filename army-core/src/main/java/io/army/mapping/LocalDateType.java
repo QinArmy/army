@@ -1,15 +1,13 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.time.*;
-import java.time.format.DateTimeParseException;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -33,8 +31,6 @@ import java.util.function.BiFunction;
 public final class LocalDateType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 
 
-    public static final LocalDateType INSTANCE = new LocalDateType();
-
     public static LocalDateType from(final Class<?> javaType) {
         if (javaType != LocalDate.class) {
             throw errorJavaType(LocalDateType.class, javaType);
@@ -42,7 +38,11 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
         return INSTANCE;
     }
 
+    public static final LocalDateType INSTANCE = new LocalDateType();
 
+    /**
+     * private constructor
+     */
     private LocalDateType() {
     }
 
@@ -52,7 +52,7 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         return mapToSqlType(this, meta);
     }
 
@@ -63,17 +63,17 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public LocalDate convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toLocalDateTime(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDate beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public LocalDate beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+        return toLocalDateTime(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDate afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLocalDateTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public LocalDate afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return toLocalDateTime(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
@@ -93,16 +93,16 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
         return sqlType;
     }
 
-    static LocalDate _convertToLocalDateTime(final MappingType type, final Object nonNull,
-                                             final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static LocalDate toLocalDateTime(final MappingType type, final DataType dataType, final Object nonNull,
+                                            final ErrorHandler errorHandler) {
         final LocalDate value;
         if (nonNull instanceof LocalDate) {
             value = (LocalDate) nonNull;
         } else if (nonNull instanceof String) {
             try {
                 value = LocalDate.parse((String) nonNull);
-            } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
+            } catch (DateTimeException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalDate();
@@ -119,7 +119,7 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
             final MonthDay v = (MonthDay) nonNull;
             value = LocalDate.of(1970, v.getMonth(), v.getDayOfMonth());
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

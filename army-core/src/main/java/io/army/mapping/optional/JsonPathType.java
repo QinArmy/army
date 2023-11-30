@@ -1,7 +1,7 @@
 package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
@@ -31,7 +31,7 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case PostgreSQL:

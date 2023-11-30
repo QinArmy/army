@@ -1,13 +1,11 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -30,7 +28,6 @@ import java.util.function.BiFunction;
  */
 public final class BigIntegerType extends _NumericType._IntegerType {
 
-    public static final BigIntegerType INSTANCE = new BigIntegerType();
 
     public static BigIntegerType from(Class<?> fieldType) {
         if (fieldType != BigInteger.class) {
@@ -39,7 +36,11 @@ public final class BigIntegerType extends _NumericType._IntegerType {
         return INSTANCE;
     }
 
+    public static final BigIntegerType INSTANCE = new BigIntegerType();
 
+    /**
+     * private constructor
+     */
     private BigIntegerType() {
     }
 
@@ -55,20 +56,20 @@ public final class BigIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        return BigDecimalType.mapToDecimal(this, meta);
+    public DataType map(ServerMeta meta) {
+        return BigDecimalType.mapToSqlType(this, meta);
     }
 
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toBigInteger(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public BigDecimal beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
         final BigDecimal value;
-        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0)
+        value = BigDecimalType.toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER)
                 .stripTrailingZeros();
         if (value.scale() != 0) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
@@ -77,36 +78,36 @@ public final class BigIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public BigInteger afterGet(final SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public BigInteger afterGet(final DataType dataType, MappingEnv env, final Object nonNull) {
+        return toBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-     static BigInteger _convertToBigInteger(final MappingType type, final Object nonNull,
-                                            final BiFunction<MappingType, Object, ArmyException> errorHandler) {
-         final BigInteger value;
-         if (nonNull instanceof BigInteger) {
-             value = (BigInteger) nonNull;
-         } else if (nonNull instanceof Integer
-                 || nonNull instanceof Long
-                 || nonNull instanceof Short
-                 || nonNull instanceof Byte) {
-             value = BigInteger.valueOf(((Number) nonNull).longValue());
-         } else if (nonNull instanceof Boolean) {
+    public static BigInteger toBigInteger(final MappingType type, final DataType dataType, final Object nonNull,
+                                          final ErrorHandler errorHandler) {
+        final BigInteger value;
+        if (nonNull instanceof BigInteger) {
+            value = (BigInteger) nonNull;
+        } else if (nonNull instanceof Integer
+                || nonNull instanceof Long
+                || nonNull instanceof Short
+                || nonNull instanceof Byte) {
+            value = BigInteger.valueOf(((Number) nonNull).longValue());
+        } else if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull ? BigInteger.ONE : BigInteger.ZERO;
         } else if (nonNull instanceof BigDecimal) {
             try {
                 value = ((BigDecimal) nonNull).toBigIntegerExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, null);
             }
         } else if (nonNull instanceof String) {
             try {
                 value = new BigInteger((String) nonNull);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, null);
             }
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

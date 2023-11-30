@@ -1,7 +1,7 @@
 package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.NotSupportDialectException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
@@ -29,7 +29,7 @@ public final class PrimitiveBooleanArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(ServerMeta meta) throws UnsupportedDialectException {
         return null;
     }
 
