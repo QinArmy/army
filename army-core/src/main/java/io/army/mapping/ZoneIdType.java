@@ -1,12 +1,11 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 
 import java.time.*;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -49,13 +48,13 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
 
     @Override
     public ZoneId convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toZoneId(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
         ZoneId zoneId;
-        zoneId = convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER_0);
+        zoneId = toZoneId(this, dataType, nonNull, PARAM_ERROR_HANDLER);
         if (!(zoneId instanceof ZoneOffset)) {
             zoneId = zoneId.getRules().getOffset(Instant.EPOCH);
         }
@@ -63,13 +62,13 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public ZoneId afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
-        return convertToZoneId(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public ZoneId afterGet(final DataType dataType, final MappingEnv env, final Object nonNull) {
+        return toZoneId(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
-    private static ZoneId convertToZoneId(final MappingType type, final Object nonNull,
-                                          final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static ZoneId toZoneId(final MappingType type, final DataType dataType, final Object nonNull,
+                                  final ErrorHandler errorHandler) {
         final ZoneId value;
         if (nonNull instanceof ZoneId) {
             value = (ZoneId) nonNull;
@@ -77,7 +76,7 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
             try {
                 value = ZoneId.of((String) nonNull, ZoneOffset.SHORT_IDS);
             } catch (DateTimeException e) {
-                throw errorHandler.apply(type, nonNull);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof OffsetDateTime) {
             value = ((OffsetDateTime) nonNull).getOffset();
@@ -86,7 +85,7 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof OffsetTime) {
             value = ((OffsetTime) nonNull).getOffset();
         } else {
-            throw errorHandler.apply(type, nonNull);
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

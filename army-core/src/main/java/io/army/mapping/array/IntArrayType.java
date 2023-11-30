@@ -8,9 +8,10 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 
+@Deprecated
 public final class IntArrayType extends _ArmyNoInjectionMapping
         implements MappingType.SqlIntegerType, MappingType.SqlArrayType {
 
@@ -53,7 +54,7 @@ public final class IntArrayType extends _ArmyNoInjectionMapping
 
 
     @Override
-    public SqlType map(ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         return null;
     }
 
@@ -68,12 +69,12 @@ public final class IntArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return null;
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return null;
     }
 

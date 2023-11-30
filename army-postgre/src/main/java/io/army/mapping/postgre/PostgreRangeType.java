@@ -2,7 +2,6 @@ package io.army.mapping.postgre;
 
 import io.army.dialect._Constant;
 import io.army.mapping.*;
-import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.meta.MetaException;
 import io.army.sqltype.PostgreType;
 import io.army.util._Exceptions;

@@ -2,10 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.mapping.*;
-import io.army.mapping.array.PrimitiveBooleanArrayType;
+import io.army.mapping.array.BooleanArrayType;
 import io.army.mapping.array.StringArrayType;
 import io.army.mapping.array.TextArrayType;
-import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.postgre.PostgreCidrType;
 import io.army.mapping.postgre.PostgreInetType;
 import io.army.mapping.postgre.PostgrePgLsnType;
@@ -1391,7 +1390,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <ul>
      *     <li>index : {@link IntegerType#INTEGER}</li>
      *     <li>values : {@link TextArrayType#LINEAR}</li>
-     *     <li>nulls : {@link PrimitiveBooleanArrayType#LINEAR}</li>
+     *     <li>nulls : {@link BooleanArrayType#PRIMITIVE_LINEAR}</li>
      *     <li>frequency : {@link DoubleType#INSTANCE}</li>
      *     <br/>
      *     <li>base_frequency : {@link DoubleType#INSTANCE}</li>
@@ -1408,7 +1407,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 
         fieldList.add(ArmySelections.forName("index", IntegerType.INTEGER));
         fieldList.add(ArmySelections.forName("values", TextArrayType.LINEAR));
-        fieldList.add(ArmySelections.forName("nulls", PrimitiveBooleanArrayType.LINEAR));
+        fieldList.add(ArmySelections.forName("nulls", BooleanArrayType.PRIMITIVE_LINEAR));
         fieldList.add(ArmySelections.forName("frequency", DoubleType.INSTANCE));
 
         fieldList.add(ArmySelections.forName("base_frequency", DoubleType.INSTANCE));

@@ -6,8 +6,6 @@ import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.postgre.*;
 import io.army.mapping.*;
-import io.army.mapping.optional.OffsetDateTimeType;
-import io.army.mapping.optional.OffsetTimeType;
 
 import java.util.function.BiFunction;
 import java.util.function.Consumer;

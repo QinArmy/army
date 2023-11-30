@@ -3,7 +3,7 @@ package io.army.jdbc;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
-import io.army.mapping.optional.OffsetTimeType;
+import io.army.mapping.OffsetTimeType;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.FieldType;

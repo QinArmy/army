@@ -9,8 +9,8 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,7 +56,7 @@ public final class StringArrayType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -75,13 +75,13 @@ public final class StringArrayType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         // TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
     }

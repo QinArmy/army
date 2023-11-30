@@ -8,18 +8,18 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
-public final class PrimitiveBooleanArrayType extends _ArmyNoInjectionMapping
+public final class BooleanArrayType extends _ArmyNoInjectionMapping
         implements MappingType.SqlArrayType, MappingType.SqlBooleanType {
 
 
-    public static final PrimitiveBooleanArrayType LINEAR = new PrimitiveBooleanArrayType(boolean[].class);
+    public static final BooleanArrayType PRIMITIVE_LINEAR = new BooleanArrayType(boolean[].class);
 
 
     private final Class<?> javaType;
 
-    private PrimitiveBooleanArrayType(Class<?> javaType) {
+    private BooleanArrayType(Class<?> javaType) {
         this.javaType = javaType;
     }
 
@@ -29,7 +29,7 @@ public final class PrimitiveBooleanArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         return null;
     }
 
@@ -44,12 +44,12 @@ public final class PrimitiveBooleanArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         return null;
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         return null;
     }
 

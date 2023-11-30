@@ -1,15 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.mapping.array.IntArrayType;
 import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.array.ShortArrayType;
 import io.army.mapping.array.TextArrayType;
-import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.postgre.PostgreAclItemType;
 import io.army.mapping.postgre.PostgreInetType;
 import io.army.mapping.postgre.PostgreRangeType;
@@ -18,6 +14,7 @@ import io.army.mapping.postgre.array.PostgreAclItemArrayType;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;

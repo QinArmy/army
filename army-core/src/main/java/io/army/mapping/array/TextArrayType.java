@@ -152,13 +152,6 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    protected void finalize() {
-        if (this.source instanceof Class) {
-            INSTANCE_MAP.remove(this.source);
-        }
-
-    }
 
     private String[] listToArray(final SqlType type, final List<?> list) {
         final String[] array = new String[list.size()];

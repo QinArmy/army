@@ -2,31 +2,35 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.*;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-public final class IntegerArrayType extends _ArmyNoInjectionMapping
-        implements MappingType.SqlIntegerType,
-        MappingType.SqlArrayType {
+public class IntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static IntegerArrayType from(final Class<?> javaType) {
         final IntegerArrayType instance;
-        if (List.class.isAssignableFrom(javaType)) {
-            instance = LIST;
-        } else if (javaType == Integer[].class) {
+        final Class<?> componentType;
+        if (javaType == Integer[].class) {
             instance = LINEAR;
+        } else if (javaType == int[].class) {
+            instance = PRIMITIVE_LINEAR;
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
-        } else if (javaType.isArray()) {
-            instance = INSTANCE_MAP.computeIfAbsent(javaType, IntegerArrayType::new);
+        } else if (!javaType.isArray()) {
+            throw errorJavaType(IntegerArrayType.class, javaType);
+        } else if ((componentType = ArrayUtils.underlyingComponent(javaType)) == int.class
+                || componentType == Integer.class) {
+            instance = new IntegerArrayType(javaType);
         } else {
             throw errorJavaType(IntegerArrayType.class, javaType);
         }
@@ -34,11 +38,10 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     public static final IntegerArrayType UNLIMITED = new IntegerArrayType(Object.class);
+
     public static final IntegerArrayType LINEAR = new IntegerArrayType(Integer[].class);
 
-    public static final IntegerArrayType LIST = new IntegerArrayType(List.class);
-
-    private static final ConcurrentMap<Class<?>, IntegerArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    public static final IntegerArrayType PRIMITIVE_LINEAR = new IntegerArrayType(int[].class);
 
 
     private final Class<?> javaType;
@@ -60,17 +63,13 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public MappingType elementType() {
-        return IntegerType.INTEGER;
+    public final MappingType elementType() {
+        return null;
     }
 
-    @Override
-    public LengthType lengthType() {
-        return LengthType.DEFAULT;
-    }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         return mapSqlType(this, meta);
     }
 
@@ -86,7 +85,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         if (nonNull instanceof String || nonNull instanceof int[] || nonNull instanceof Integer[]) {
             return nonNull;
         }
@@ -95,7 +94,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
     }

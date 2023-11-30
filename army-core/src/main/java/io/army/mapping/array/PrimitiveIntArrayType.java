@@ -5,6 +5,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@Deprecated
 public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
         implements MappingType.SqlIntegerType,
         MappingType.SqlArrayType {
@@ -85,7 +87,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (nonNull instanceof String
                 || nonNull instanceof int[]
                 || ArrayUtils.underlyingComponent(nonNull.getClass()) == int.class) {
@@ -96,7 +98,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType type, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
     }

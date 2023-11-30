@@ -149,12 +149,12 @@ final class ArmyTransactionOption implements TransactionOption {
                 .toString();
     }
 
+
     private static final class TransactionOptionBuilder implements Builder {
 
         private Map<Option<?>, Object> optionMap;
 
         private TransactionOptionBuilder() {
-            this.optionMap = _Collections.hashMap();
         }
 
         @Override
