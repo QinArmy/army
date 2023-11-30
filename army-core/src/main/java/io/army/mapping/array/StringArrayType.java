@@ -15,6 +15,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 
 public final class StringArrayType extends _ArmyBuildInMapping {
 
@@ -84,6 +85,19 @@ public final class StringArrayType extends _ArmyBuildInMapping {
     public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
+    }
+
+
+    public static String parseDecimal(String text, int offset, int end) {
+        return text.substring(offset, end);
+    }
+
+    public static void appendToText(final Object element, final Consumer<String> appender) {
+        if (!(element instanceof String)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        appender.accept((String) element);
     }
 
 

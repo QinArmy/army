@@ -53,23 +53,6 @@ public class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingT
     }
 
     @Override
-    public final MappingType elementType() {
-        final MappingType instance;
-        final Class<?> javaType = this.javaType;
-        if (javaType == double[].class || javaType == Double[].class) {
-            instance = DoubleType.INSTANCE;
-        } else {
-            instance = from(this.javaType.getComponentType());
-        }
-        return instance;
-    }
-
-    @Override
-    public final MappingType arrayTypeOfThis() throws CriteriaException {
-        return from(ArrayUtils.arrayClassOf(this.javaType));
-    }
-
-    @Override
     public final DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final DataType dataType;
         switch (meta.serverDatabase()) {
@@ -84,6 +67,23 @@ public class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingT
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return dataType;
+    }
+
+    @Override
+    public final MappingType elementType() {
+        final MappingType instance;
+        final Class<?> javaType = this.javaType;
+        if (javaType == double[].class || javaType == Double[].class) {
+            instance = DoubleType.INSTANCE;
+        } else {
+            instance = from(javaType.getComponentType());
+        }
+        return instance;
+    }
+
+    @Override
+    public final MappingType arrayTypeOfThis() throws CriteriaException {
+        return from(ArrayUtils.arrayClassOf(this.javaType));
     }
 
     @Override

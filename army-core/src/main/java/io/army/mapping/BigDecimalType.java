@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.BigDecimalArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
@@ -30,9 +31,9 @@ import java.math.BigInteger;
 public final class BigDecimalType extends _NumericType implements MappingType.SqlDecimalType {
 
 
-    public static BigDecimalType from(Class<?> fieldType) {
-        if (fieldType != BigDecimal.class) {
-            throw errorJavaType(BigDecimalType.class, fieldType);
+    public static BigDecimalType from(Class<?> javaType) {
+        if (javaType != BigDecimal.class) {
+            throw errorJavaType(BigDecimalType.class, javaType);
         }
         return INSTANCE;
     }
@@ -58,6 +59,10 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
         return mapToSqlType(this, meta);
     }
 
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return BigDecimalArrayType.LINEAR;
+    }
 
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
@@ -74,34 +79,7 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
         return toBigDecimal(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-
-    @Deprecated
-    public static BigDecimal convertToBigDecimal(final DataType dataType, final Object nonNull) {
-        final BigDecimal value;
-        if (nonNull instanceof BigDecimal) {
-            value = (BigDecimal) nonNull;
-        } else if (nonNull instanceof Integer
-                || nonNull instanceof Long
-                || nonNull instanceof Short
-                || nonNull instanceof Byte) {
-            value = BigDecimal.valueOf(((Number) nonNull).longValue());
-        } else if (nonNull instanceof BigInteger) {
-            value = new BigDecimal((BigInteger) nonNull);
-        } else if (nonNull instanceof Boolean) {
-            value = (Boolean) nonNull ? BigDecimal.ONE : BigDecimal.ZERO;
-        } else if (nonNull instanceof Double || nonNull instanceof Float) {
-            value = new BigDecimal(nonNull.toString());
-        } else if (nonNull instanceof String) {
-            try {
-                value = new BigDecimal((String) nonNull);
-            } catch (NumberFormatException e) {
-                throw valueOutRange(dataType, nonNull, e);
-            }
-        } else {
-            throw outRangeOfSqlType(dataType, nonNull);
-        }
-        return value;
-    }
+    /*-------------------below static methods -------------------*/
 
     public static BigDecimal toBigDecimal(final MappingType type, final DataType dataType, final Object nonNull,
                                           final ErrorHandler errorHandler) {
@@ -120,6 +98,7 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
         } else if (nonNull instanceof Double || nonNull instanceof Float) {
             value = new BigDecimal(nonNull.toString()); // must use double string.
         } else if (nonNull instanceof String) {
+            // TODO handle postgre money
             try {
                 value = new BigDecimal((String) nonNull);
             } catch (NumberFormatException e) {

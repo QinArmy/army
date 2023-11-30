@@ -77,16 +77,16 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
 
     /**
-     * @param type from {@link #map(ServerMeta)}
+     * @param dataType from {@link #map(ServerMeta)}
      * @return non-null, the instance of the type that {@link SqlType} allow.
      */
-    public abstract Object beforeBind(DataType type, MappingEnv env, Object nonNull) throws CriteriaException;
+    public abstract Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException;
 
     /**
-     * @param type from {@code io.army.sync.executor.StmtExecutor} or {@code io.army.reactive.executor.StmtExecutor}
+     * @param dataType from {@code io.army.sync.executor.StmtExecutor} or {@code io.army.reactive.executor.StmtExecutor}
      * @return non-null, the instance of {@link #javaType()}.
      */
-    public abstract Object afterGet(DataType type, MappingEnv env, Object nonNull) throws DataAccessException;
+    public abstract Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException;
 
 
     @Override
