@@ -9,8 +9,8 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 
 import java.util.UUID;
 
@@ -35,7 +35,7 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -54,7 +54,7 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public UUID beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public UUID beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         final UUID value;
         if (nonNull instanceof UUID) {
             value = (UUID) nonNull;
@@ -68,7 +68,7 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public UUID afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public UUID afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

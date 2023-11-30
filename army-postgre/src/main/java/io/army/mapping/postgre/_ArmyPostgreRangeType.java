@@ -11,8 +11,8 @@ import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -85,7 +85,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public final SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public final DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -302,14 +302,14 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
     protected static <T> TextFunction<?> multiRangeParseFunc(final Object nonNull, final RangeFunction<T, ?> rangeFunc,
-                                                             final Function<String, T> parseFunc, final SqlType sqlType,
+                                                             final Function<String, T> parseFunc, final DataType dataType,
                                                              final MappingType type, final ErrorHandler handler) {
         return (str, offset, end) -> {
             char ch;
             if (offset + 5 == end && ((ch = str.charAt(offset)) == 'e' || ch == 'E')
                     && str.regionMatches(true, offset, PostgreRangeType.EMPTY, 0, 5)) {
                 String m = "multi-range must be non-empty and non-null";
-                throw handler.apply(type, sqlType, nonNull, new IllegalArgumentException(m));
+                throw handler.apply(type, dataType, nonNull, new IllegalArgumentException(m));
             }
             return PostgreRangeType.parseNonEmptyRange(str, offset, end, rangeFunc, parseFunc);
         };
@@ -323,7 +323,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
      */
     @SuppressWarnings("unchecked")
     static <T, R> R parseRange(final String text, final @Nullable RangeFunction<T, R> rangeFunc,
-                               final Function<String, T> parseFunc, final SqlType sqlType,
+                               final Function<String, T> parseFunc, final DataType dataType,
                                final MappingType type, final ErrorHandler handler) {
         final Class<?> javaType;
         javaType = type.javaType();
@@ -341,7 +341,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
             try {
                 value = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), rangeFunc, parseFunc);
             } catch (Throwable e) {
-                throw handler.apply(type, sqlType, text, e);
+                throw handler.apply(type, dataType, text, e);
             }
         }
         return (R) value;

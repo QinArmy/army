@@ -2,11 +2,9 @@ package io.army.mapping.mysql;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping.*;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 
@@ -15,18 +13,21 @@ import java.util.BitSet;
 /**
  * @see Long
  */
-public final class MySQLBitType extends _ArmyNoInjectionMapping {
+public final class MySqlBitType extends _ArmyNoInjectionMapping {
 
-    public static final MySQLBitType INSTANCE = new MySQLBitType();
-
-    public static MySQLBitType from(Class<?> javaType) {
+    public static MySqlBitType from(Class<?> javaType) {
         if (javaType != Long.class) {
-            throw errorJavaType(MySQLBitType.class, javaType);
+            throw errorJavaType(MySqlBitType.class, javaType);
         }
         return INSTANCE;
     }
 
-    private MySQLBitType() {
+    public static final MySqlBitType INSTANCE = new MySqlBitType();
+
+    /**
+     * private constructor
+     */
+    private MySqlBitType() {
     }
 
 
@@ -36,16 +37,26 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         if (meta.serverDatabase() != Database.MySQL) {
-            throw noMappingError(meta);
+            throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return MySQLType.BIT;
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+    public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+        final MappingType instance;
+        if (targetType == String.class) {
+            instance = StringType.INSTANCE;
+        } else if (targetType == BitSet.class) {
+            instance = BitSetType.INSTANCE;
+        } else if (targetType == byte[].class) {
+            instance = BinaryType.INSTANCE;
+        } else {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        return instance;
     }
 
     @Override
@@ -55,16 +66,13 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return beforeBind(type, nonNull);
+    public Long beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof Long)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        return (Long) nonNull;
+    public Long afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        throw new UnsupportedOperationException();
     }
 
     public static long beforeBind(SqlType sqlType, final Object nonNull) {

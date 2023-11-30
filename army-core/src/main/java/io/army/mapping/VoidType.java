@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 /**
  * <p>
@@ -29,7 +29,7 @@ public final class VoidType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public DataType map(ServerMeta meta) {
         throw new UnsupportedOperationException();
     }
 
@@ -44,12 +44,12 @@ public final class VoidType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 

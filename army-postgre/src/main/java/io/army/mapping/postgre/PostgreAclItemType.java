@@ -10,8 +10,8 @@ import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping.postgre.array.PostgreAclItemArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 
 
 /**
@@ -43,7 +43,7 @@ public final class PostgreAclItemType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -69,17 +69,17 @@ public final class PostgreAclItemType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof String)) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return nonNull;
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         if (!(nonNull instanceof String)) {
-            throw ACCESS_ERROR_HANDLER.apply(this, type, nonNull, null);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return nonNull;
     }

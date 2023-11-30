@@ -3,39 +3,34 @@ package io.army.mapping.mysql;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
-import io.army.mapping.*;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.MultiGenericsMappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
-import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySQLTextEnumSetType extends MappingType implements MultiGenericsMappingType {
+public final class MySqlTextEnumSetType extends MappingType implements MultiGenericsMappingType {
 
-    private static final ConcurrentMap<Class<?>, MySQLTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, MySqlTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static MySQLTextEnumSetType forElements(final Class<?> fieldType, final Class<?>[] elementTypes) {
-        if (!Set.class.isAssignableFrom(fieldType)
-                || elementTypes.length != 1
-                || !elementTypes[0].isEnum()
-                || !TextEnum.class.isAssignableFrom(elementTypes[0])
-                || CodeEnum.class.isAssignableFrom(elementTypes[0])) {
-            throw errorJavaType(MySQLTextEnumSetType.class, elementTypes[0]);
-        }
-        return INSTANCE_MAP.computeIfAbsent(elementTypes[0], MySQLTextEnumSetType::new);
+    public static MySqlTextEnumSetType fromSet(final Class<?> fieldType, final Class<?> elementTypes) {
+        throw new UnsupportedOperationException();
     }
 
     private final List<Class<?>> elementTypes;
 
     private final Map<String, ? extends TextEnum> textEnumMap;
 
-    private MySQLTextEnumSetType(Class<?> elementJavaType) {
+    private MySqlTextEnumSetType(Class<?> elementJavaType) {
         this.elementTypes = Collections.singletonList(elementJavaType);
-        this.textEnumMap = TextEnumType.getTextMap(elementJavaType);
+        this.textEnumMap = TextEnum.getTextToEnumMap(elementJavaType);
     }
 
 
@@ -50,7 +45,7 @@ public final class MySQLTextEnumSetType extends MappingType implements MultiGene
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         if (meta.serverDatabase() != Database.MySQL) {
             throw noMappingError(meta);
         }
@@ -68,16 +63,16 @@ public final class MySQLTextEnumSetType extends MappingType implements MultiGene
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Set)) {
-            throw outRangeOfSqlType(type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         final StringBuilder builder = new StringBuilder();
         final Class<?> elementJavaType = this.elementTypes.get(0);
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
             if (!elementJavaType.isInstance(e)) {
-                throw valueOutRange(type, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
             }
             if (index > 0) {
                 builder.append(_Constant.COMMA);
@@ -89,9 +84,9 @@ public final class MySQLTextEnumSetType extends MappingType implements MultiGene
     }
 
     @Override
-    public Set<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Set<?> afterGet(DataType dataType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         final String[] array = ((String) nonNull).split(",");
         final Set<TextEnum> set = new HashSet<>((int) (array.length / 0.75F));
@@ -101,7 +96,7 @@ public final class MySQLTextEnumSetType extends MappingType implements MultiGene
             textEnum = textEnumMap.get(text);
             if (textEnum == null) {
                 String m = String.format("%s unknown text[%s] instance.", elementTypes.get(0).getName(), text);
-                throw errorValueForSqlType(type, nonNull, new IllegalArgumentException(m));
+                throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, new IllegalArgumentException(m));
             }
             set.add(textEnum);
         }

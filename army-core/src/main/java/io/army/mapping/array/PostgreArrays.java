@@ -4,7 +4,7 @@ import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 import io.army.type.ImmutableSpec;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -28,24 +28,24 @@ public abstract class PostgreArrays extends ArrayMappings {
 
 
     public static String arrayBeforeBind(final Object nonNull, final BiConsumer<Object, Consumer<String>> consumer,
-                                         final SqlType sqlType, final MappingType type,
+                                         final DataType dataType, final MappingType type,
                                          final ErrorHandler handler) {
 
         final String text, value;
         final int length;
         if (!(nonNull instanceof String)) {
             if (!type.javaType().isInstance(nonNull)) {
-                throw handler.apply(type, sqlType, nonNull, null);
+                throw handler.apply(type, dataType, nonNull, null);
             }
             value = PostgreArrays.toArrayText(nonNull, consumer, new StringBuilder())
                     .toString();
 
         } else if ((length = (text = ((String) nonNull).trim()).length()) < 2) {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else {
             value = text;
         }
@@ -74,7 +74,7 @@ public abstract class PostgreArrays extends ArrayMappings {
      *                    </ul>
      */
     public static Object parseArray(final String text, final boolean nonNull, final TextFunction<?> elementFunc,
-                                    final char delimiter, final SqlType sqlType, final MappingType type,
+                                    final char delimiter, final DataType dataType, final MappingType type,
                                     final ErrorHandler handler) throws IllegalArgumentException {
 
         if (!(type instanceof MappingType.SqlArrayType)) {
@@ -97,7 +97,7 @@ public abstract class PostgreArrays extends ArrayMappings {
         try {
             array = PostgreArrays.parseArrayText(arrayJavaType, text, nonNull, delimiter, elementFunc);
         } catch (Throwable e) {
-            throw handler.apply(type, sqlType, text, e);
+            throw handler.apply(type, dataType, text, e);
         }
         if (type instanceof UnaryGenericsMapping.ListMapping) {
             value = PostgreArrays.linearToList(array,
@@ -107,12 +107,12 @@ public abstract class PostgreArrays extends ArrayMappings {
             value = array;
         } else {
             String m = String.format("%s return value and %s not match.", TextFunction.class.getName(), type);
-            throw handler.apply(type, sqlType, text, new IllegalArgumentException(m));
+            throw handler.apply(type, dataType, text, new IllegalArgumentException(m));
         }
         return value;
     }
 
-    public static Object parseMultiRange(final String text, final TextFunction<?> elementFunc, final SqlType sqlType,
+    public static Object parseMultiRange(final String text, final TextFunction<?> elementFunc, final DataType dataType,
                                          final MappingType type, final ErrorHandler handler)
             throws IllegalArgumentException {
         final Class<?> arrayJavaType;
@@ -131,7 +131,7 @@ public abstract class PostgreArrays extends ArrayMappings {
             array = PostgreArrays._parseArray(arrayJavaType, text, true, 0, text.length(),
                     _Constant.COMMA, EMPTY_LENGTHS, true, elementFunc);
         } catch (Throwable e) {
-            throw handler.apply(type, sqlType, text, e);
+            throw handler.apply(type, dataType, text, e);
         }
         if (type instanceof UnaryGenericsMapping.ListMapping) {
             value = PostgreArrays.linearToList(array,
@@ -141,7 +141,7 @@ public abstract class PostgreArrays extends ArrayMappings {
             value = array;
         } else {
             String m = String.format("%s return value and %s not match.", TextFunction.class.getName(), type);
-            throw handler.apply(type, sqlType, text, new IllegalArgumentException(m));
+            throw handler.apply(type, dataType, text, new IllegalArgumentException(m));
         }
         return value;
     }

@@ -9,8 +9,8 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
@@ -240,14 +240,14 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
-        return rangeBeforeBind(this::serialize, nonNull, type, this, PARAM_ERROR_HANDLER);
+    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) throws CriteriaException {
+        return rangeBeforeBind(this::serialize, nonNull, dataType, this, PARAM_ERROR_HANDLER);
     }
 
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, type, this, ACCESS_ERROR_HANDLER);
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+        return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
     }
 
 
@@ -338,29 +338,29 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      */
     @SuppressWarnings("unchecked")
     public static <T, R> R rangeConvert(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
-                                        final Function<String, T> parseFunc, final SqlType sqlType,
+                                        final Function<String, T> parseFunc, final DataType dataType,
                                         final MappingType type, final ErrorHandler handler) {
 
         final R value;
         if (nonNull instanceof String) {
-            value = parseRange((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
+            value = parseRange((String) nonNull, rangeFunc, parseFunc, dataType, type, handler);
         } else if (type.javaType().isInstance(nonNull)) {
             value = (R) nonNull;
         } else {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         }
         return value;
     }
 
     public static <T> String rangeBeforeBind(final BiConsumer<T, Consumer<String>> boundSerializer, final Object nonNull,
-                                             final SqlType sqlType, final MappingType type, final ErrorHandler handler)
+                                             final DataType dataType, final MappingType type, final ErrorHandler handler)
             throws CriteriaException {
 
         final String value, text;
         char boundChar;
         if (!(nonNull instanceof String)) {
             if (!type.javaType().isInstance(nonNull)) {
-                throw handler.apply(type, sqlType, nonNull, null);
+                throw handler.apply(type, dataType, nonNull, null);
             }
             final StringBuilder builder = new StringBuilder();
             rangeToText(nonNull, boundSerializer, type, builder::append);
@@ -368,11 +368,11 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
         } else if (EMPTY.equalsIgnoreCase((text = (String) nonNull).trim())) {
             value = EMPTY;
         } else if (text.length() < 3) {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else if ((boundChar = text.charAt(0)) != '[' && boundChar != '(') {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else if ((boundChar = text.charAt(text.length() - 1)) != ']' && boundChar != ')') {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else {
             value = text;
         }
@@ -389,12 +389,12 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      * @throws io.army.session.DataAccessException when text error and handler throw this type.
      */
     public static <T, R> R rangeAfterGet(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
-                                         final Function<String, T> parseFunc, final SqlType sqlType,
+                                         final Function<String, T> parseFunc, final DataType dataType,
                                          final MappingType type, final MappingSupport.ErrorHandler handler) {
         if (!(nonNull instanceof String)) {
-            throw ACCESS_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+            throw ACCESS_ERROR_HANDLER.apply(type, dataType, nonNull, null);
         }
-        return parseRange((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
+        return parseRange((String) nonNull, rangeFunc, parseFunc, dataType, type, handler);
     }
 
 

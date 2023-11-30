@@ -6,6 +6,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
@@ -133,21 +134,22 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        final Object value;
-        if (nonNull instanceof String || nonNull.getClass().isArray()) {
-            value = nonNull;
-        } else if (nonNull instanceof List) {
-            value = listToArray(type, (List<?>) nonNull);
-        } else {
-            // TODO
-            throw new UnsupportedOperationException();
-        }
-        return value;
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
+//        final Object value;
+//        if (nonNull instanceof String || nonNull.getClass().isArray()) {
+//            value = nonNull;
+//        } else if (nonNull instanceof List) {
+//            value = listToArray(type, (List<?>) nonNull);
+//        } else {
+//            // TODO
+//
+//        }
+//        return value;
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
     }

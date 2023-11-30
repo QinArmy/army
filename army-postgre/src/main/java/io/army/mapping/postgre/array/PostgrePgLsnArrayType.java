@@ -8,7 +8,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 
 /**
@@ -30,7 +30,7 @@ public final class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping impleme
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         return null;
     }
 
@@ -45,12 +45,12 @@ public final class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping impleme
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         return null;
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         return null;
     }
 

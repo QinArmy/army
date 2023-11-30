@@ -12,8 +12,8 @@ import io.army.mapping.array.PostgreArrays;
 import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
@@ -256,13 +256,13 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        return rangeBeforeBind(nonNull, this::serialize, type, this, PARAM_ERROR_HANDLER);
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
+        return rangeBeforeBind(nonNull, this::serialize, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, type, this, ACCESS_ERROR_HANDLER);
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+        return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
     }
 
 
@@ -346,38 +346,38 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     public static <T> Object rangeConvert(Object nonNull, @Nullable RangeFunction<T, ?> rangeFunc,
-                                          Function<String, T> parseFunc, SqlType sqlType,
+                                          Function<String, T> parseFunc, DataType dataType,
                                           MappingType type, ErrorHandler handler) {
         final Object value;
         final String text;
         final int length;
         if (!(nonNull instanceof String)) {
             if (!type.javaType().isInstance(nonNull)) {
-                throw PARAM_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(type, dataType, nonNull, null);
             }
             value = nonNull;
         } else if ((length = (text = ((String) nonNull).trim()).length()) < 5) { // non-empty,non-null
-            throw PARAM_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(type, dataType, nonNull, null);
         } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
-            throw PARAM_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(type, dataType, nonNull, null);
         } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw PARAM_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(type, dataType, nonNull, null);
         } else {
-            value = parseMultiRange((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
+            value = parseMultiRange((String) nonNull, rangeFunc, parseFunc, dataType, type, handler);
         }
         return value;
     }
 
 
     public static <T> String rangeBeforeBind(final Object nonNull, final BiConsumer<T, Consumer<String>> boundSerializer,
-                                             final SqlType sqlType, final MappingType type, final ErrorHandler handler)
+                                             final DataType dataType, final MappingType type, final ErrorHandler handler)
             throws CriteriaException {
 
         final String value, text;
         final int length;
         if (!(nonNull instanceof String)) {
             if (!type.javaType().isInstance(nonNull)) {
-                throw handler.apply(type, sqlType, nonNull, null);
+                throw handler.apply(type, dataType, nonNull, null);
             }
             final BiConsumer<Object, Consumer<String>> rangeSerializer;
             rangeSerializer = (range, appender) -> rangeToText(range, boundSerializer, type, appender);
@@ -386,11 +386,11 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
             PostgreArrays.toArrayText(nonNull, rangeSerializer, builder);
             value = builder.toString();
         } else if ((length = (text = ((String) nonNull).trim()).length()) < 5) { //non-empty
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         } else {
             value = text;
         }
@@ -398,34 +398,34 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     public static <T> Object rangeAfterGet(Object nonNull, @Nullable RangeFunction<T, ?> rangeFunc,
-                                           Function<String, T> parseFunc, SqlType sqlType,
+                                           Function<String, T> parseFunc, DataType dataType,
                                            MappingType type, ErrorHandler handler) {
         if (!(nonNull instanceof String)) {
-            throw handler.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, dataType, nonNull, null);
         }
-        return parseMultiRange((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
+        return parseMultiRange((String) nonNull, rangeFunc, parseFunc, dataType, type, handler);
     }
 
 
     private static <T> Object parseMultiRange(final String text, final @Nullable RangeFunction<T, ?> rangeFunc,
-                                              final Function<String, T> parseFunc, final SqlType sqlType,
+                                              final Function<String, T> parseFunc, final DataType dataType,
                                               final MappingType type, final ErrorHandler handler) {
 
         final TextFunction<?> elementFunc;
         if (rangeFunc == null) {
             if (type.javaType() != String.class) {
                 String m = String.format("%s java type isn't %s", type, String.class.getName());
-                throw handler.apply(type, sqlType, text, new IllegalArgumentException(m));
+                throw handler.apply(type, dataType, text, new IllegalArgumentException(m));
             }
             elementFunc = String::substring;
         } else {
-            elementFunc = multiRangeParseFunc(text, rangeFunc, parseFunc, sqlType, type, handler);
+            elementFunc = multiRangeParseFunc(text, rangeFunc, parseFunc, dataType, type, handler);
         }
         final Object array;
-        array = PostgreArrays.parseMultiRange(text, elementFunc, sqlType, type, handler);
+        array = PostgreArrays.parseMultiRange(text, elementFunc, dataType, type, handler);
 
         if (!(array instanceof List || ArrayUtils.dimensionOf(array.getClass()) == 1)) {
-            throw handler.apply(type, sqlType, text, null);
+            throw handler.apply(type, dataType, text, null);
         }
         return array;
     }

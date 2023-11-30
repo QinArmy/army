@@ -13,7 +13,6 @@ import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.List;
@@ -70,9 +69,9 @@ public final class TwoIntType extends MappingType
      * @see <a href="https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6">Constructing Composite Values</a>
      */
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
+    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof TwoInt)) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         final TwoInt row = (TwoInt) nonNull;
         final StringBuilder builder;
@@ -95,7 +94,7 @@ public final class TwoIntType extends MappingType
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         throw new UnsupportedOperationException();
     }
 

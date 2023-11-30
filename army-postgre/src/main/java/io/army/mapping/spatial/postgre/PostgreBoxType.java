@@ -7,7 +7,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 public final class PostgreBoxType extends PostgreGeometricType {
 
@@ -30,7 +30,7 @@ public final class PostgreBoxType extends PostgreGeometricType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -47,13 +47,13 @@ public final class PostgreBoxType extends PostgreGeometricType {
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

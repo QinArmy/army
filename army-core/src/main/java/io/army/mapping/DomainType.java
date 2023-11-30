@@ -1,7 +1,5 @@
-package io.army.mapping.postgre;
+package io.army.mapping;
 
-
-import io.army.mapping.MappingType;
 
 /**
  * <p>
@@ -10,7 +8,7 @@ import io.army.mapping.MappingType;
  *
  * @see <a href="https://www.postgresql.org/docs/current/domains.html">Domain Types</a>
  */
-public interface PostgreDomainType {
+public interface DomainType {
 
 
 }

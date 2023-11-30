@@ -5,8 +5,8 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -16,23 +16,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implements MultiGenericsMappingType {
+public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implements MultiGenericsMappingType {
 
-    private static final ConcurrentMap<Class<?>, MySQLNameEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, MySqlNameEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static MySQLNameEnumSetType forElements(Class<?> fieldType, Class<?>[] elementTypes) {
+    public static MySqlNameEnumSetType forElements(Class<?> fieldType, Class<?>[] elementTypes) {
         if (fieldType != Set.class) {
-            throw errorJavaType(MySQLNameEnumSetType.class, fieldType);
+            throw errorJavaType(MySqlNameEnumSetType.class, fieldType);
         } else if (elementTypes.length != 1 || !elementTypes[0].isEnum()) {
-            throw errorJavaType(MySQLNameEnumSetType.class, elementTypes[0]);
+            throw errorJavaType(MySqlNameEnumSetType.class, elementTypes[0]);
         }
-        return INSTANCE_MAP.computeIfAbsent(elementTypes[0], MySQLNameEnumSetType::new);
+        return INSTANCE_MAP.computeIfAbsent(elementTypes[0], MySqlNameEnumSetType::new);
     }
 
 
     private final List<Class<?>> elementTypes;
 
-    private MySQLNameEnumSetType(Class<?> elementJavaType) {
+    private MySqlNameEnumSetType(Class<?> elementJavaType) {
         this.elementTypes = Collections.singletonList(elementJavaType);
     }
 
@@ -47,7 +47,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         if (meta.serverDatabase() != Database.MySQL) {
             throw noMappingError(meta);
         }
@@ -65,16 +65,16 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Set)) {
-            throw outRangeOfSqlType(type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         final StringBuilder builder = new StringBuilder();
         final Class<?> elementJavaType = this.elementTypes.get(0);
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
             if (!elementJavaType.isInstance(e)) {
-                throw valueOutRange(type, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
             }
             if (index > 0) {
                 builder.append(_Constant.COMMA);
@@ -86,14 +86,14 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public Set<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Set<?> afterGet(DataType dataType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         try {
             return parseToSet(this.elementTypes.get(0), (String) nonNull);
         } catch (IllegalArgumentException e) {
-            throw errorValueForSqlType(type, nonNull, e);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, e);
         }
     }
 

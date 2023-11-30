@@ -891,12 +891,12 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) {
             throw new UnsupportedOperationException();
         }
 
