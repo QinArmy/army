@@ -43,20 +43,24 @@ public interface TransactionOption extends OptionSpec {
     String toString();
 
     static TransactionOption option() {
-        return SimpleTransactionOption.option(null, false);
+        return ArmyTransactionOption.option(null, false);
     }
 
     static TransactionOption option(@Nullable Isolation isolation) {
-        return SimpleTransactionOption.option(isolation, false);
+        return ArmyTransactionOption.option(isolation, false);
     }
 
     static TransactionOption option(@Nullable Isolation isolation, boolean readOnly) {
-        return SimpleTransactionOption.option(isolation, readOnly);
+        return ArmyTransactionOption.option(isolation, readOnly);
+    }
+
+    static TransactionOption pseudo() {
+        return ArmyTransactionOption.option(Isolation.PSEUDO, true);
     }
 
 
     static Builder builder() {
-        return SimpleTransactionOption.builder();
+        return ArmyTransactionOption.builder();
     }
 
     interface Builder {

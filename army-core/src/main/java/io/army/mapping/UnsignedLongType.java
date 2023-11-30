@@ -1,6 +1,5 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
@@ -8,9 +7,7 @@ import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -68,42 +65,30 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return UnsignedBigIntegerType.toUnsignedBigInteger(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Number beforeBind(final SqlType type, MappingEnv env, final Object nonNull) {
-        final BigInteger integerValue;
-        integerValue = toUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
+    public Number beforeBind(final DataType dataType, MappingEnv env, final Object nonNull) {
         final Number value;
-        switch (type.database()) {
+        switch (((SqlType) dataType).database()) {
             case MySQL:
-                value = integerValue;
+                value = UnsignedBigIntegerType.toUnsignedBigInteger(this, dataType, nonNull, PARAM_ERROR_HANDLER);
                 break;
             case PostgreSQL:
-                value = new BigDecimal(integerValue);
+                value = UnsignedBigIntegerType.toUnsignedBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER);
                 break;
             default:
-                throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return value;
     }
 
     @Override
-    public BigInteger afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return toUnsignedBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public BigInteger afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
+        return UnsignedBigIntegerType.toUnsignedBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-
-    private static BigInteger toUnsignedBigInteger(final MappingType type, final Object nonNull,
-                                                   final BiFunction<MappingType, Object, ArmyException> errorHandler) {
-        final BigInteger value;
-        value = BigIntegerType.toBigInteger(type, nonNull, errorHandler);
-        if (value.compareTo(BigInteger.ZERO) < 0 || value.compareTo(MAX_VALUE) > 0) {
-            throw errorHandler.apply(type, nonNull);
-        }
-        return value;
-    }
 
 
 }

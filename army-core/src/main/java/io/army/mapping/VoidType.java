@@ -16,7 +16,9 @@ public final class VoidType extends _ArmyBuildInMapping {
 
     public static final VoidType VOID = new VoidType();
 
-
+    /**
+     * private constructor
+     */
     private VoidType() {
     }
 

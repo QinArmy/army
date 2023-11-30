@@ -1,14 +1,14 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
-import java.time.*;
-import java.time.format.DateTimeParseException;
-import java.util.function.BiFunction;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 
 /**
  * <p>
@@ -29,8 +29,6 @@ import java.util.function.BiFunction;
  */
 public final class YearMonthType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 
-    public static final YearMonthType INSTANCE = new YearMonthType();
-
     public static YearMonthType from(final Class<?> fieldType) {
         if (fieldType != YearMonth.class) {
             throw errorJavaType(YearMonthType.class, fieldType);
@@ -38,7 +36,11 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
         return INSTANCE;
     }
 
+    public static final YearMonthType INSTANCE = new YearMonthType();
 
+    /**
+     * private constructor
+     */
     private YearMonthType() {
     }
 
@@ -48,7 +50,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         return LocalDateType.mapToSqlType(this, meta);
     }
 
@@ -59,32 +61,35 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public YearMonth convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER_0);
+        return toYearMonth(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDate beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
+    public LocalDate beforeBind(DataType dataType, final MappingEnv env, final Object nonNull) {
         final LocalDate value;
-        if (nonNull instanceof LocalDate) {
+        if (nonNull instanceof YearMonth) {
+            final YearMonth v = (YearMonth) nonNull;
+            value = LocalDate.of(v.getYear(), v.getMonth(), 1);
+        } else if (nonNull instanceof LocalDate) {
             value = (LocalDate) nonNull;
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalDate();
         } else {
             final YearMonth v;
-            v = _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER_0);
+            v = toYearMonth(this, dataType, nonNull, PARAM_ERROR_HANDLER);
             value = LocalDate.of(v.getYear(), v.getMonth(), 1);
         }
         return value;
     }
 
     @Override
-    public YearMonth afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToYearMonth(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public YearMonth afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return toYearMonth(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
 
-    private static YearMonth _convertToYearMonth(final MappingType type, final Object nonNull,
-                                                 final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static YearMonth toYearMonth(final MappingType type, final DataType dataType, final Object nonNull,
+                                        final ErrorHandler errorHandler) {
         final YearMonth value;
         if (nonNull instanceof YearMonth) {
             value = (YearMonth) nonNull;
@@ -92,13 +97,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
             value = YearMonth.from((LocalDate) nonNull);
         } else if (nonNull instanceof LocalDateTime) {
             value = YearMonth.from((LocalDateTime) nonNull);
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = YearMonth.from(((OffsetDateTime) nonNull));
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = YearMonth.from(((ZonedDateTime) nonNull));
-        } else if (!(nonNull instanceof String)) {
-            throw errorHandler.apply(type, nonNull);
-        } else {
+        } else if (nonNull instanceof String) {
             final String text = (String) nonNull;
             try {
                 if (text.indexOf('-') == text.lastIndexOf('-')) {
@@ -106,10 +105,12 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
                 } else {
                     value = YearMonth.from(LocalDate.parse((String) nonNull));
                 }
-            } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
+            } catch (DateTimeException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
 
+        } else {
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

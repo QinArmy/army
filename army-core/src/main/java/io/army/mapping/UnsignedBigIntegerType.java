@@ -51,31 +51,37 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        final BigInteger value;
-        value = BigIntegerType.toBigInteger(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
-        if (value.compareTo(BigInteger.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull, null);
-        }
-        return value;
+        return toUnsignedBigInteger(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public BigDecimal beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        final BigDecimal value;
-        value = BigDecimalType.toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER)
-                .stripTrailingZeros();
-        if (value.scale() != 0 || value.compareTo(BigDecimal.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
-        }
-        return value;
+        return toUnsignedBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public BigInteger afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return toUnsignedBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    }
+
+
+    public static BigInteger toUnsignedBigInteger(MappingType type, DataType dataType, final Object nonNull,
+                                                  ErrorHandler errorHandler) {
         final BigInteger value;
-        value = BigIntegerType.toBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+        value = BigIntegerType.toBigInteger(type, dataType, nonNull, errorHandler);
         if (value.compareTo(BigInteger.ZERO) < 0) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, nonNull, null);
+        }
+        return value;
+    }
+
+    public static BigDecimal toUnsignedBigDecimal(MappingType type, DataType dataType, final Object nonNull,
+                                                  ErrorHandler errorHandler) {
+        final BigDecimal value;
+        value = BigDecimalType.toBigDecimal(type, dataType, nonNull, PARAM_ERROR_HANDLER)
+                .stripTrailingZeros();
+        if (value.scale() != 0 || value.compareTo(BigDecimal.ZERO) < 0) {
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

@@ -1,16 +1,13 @@
 package io.army.mapping;
 
-import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.time.*;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.Temporal;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -33,8 +30,6 @@ import java.util.function.BiFunction;
 public final class YearType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalType,
         MappingType.SqlTemporalFieldType {
 
-    public static final YearType INSTANCE = new YearType();
-
     public static YearType from(final Class<?> fieldType) {
         if (fieldType != Year.class) {
             throw errorJavaType(YearType.class, fieldType);
@@ -42,6 +37,11 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
         return INSTANCE;
     }
 
+    public static final YearType INSTANCE = new YearType();
+
+    /**
+     * private constructor
+     */
     private YearType() {
     }
 
@@ -51,7 +51,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -74,57 +74,64 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
 
     @Override
     public Year convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
+        return toYear(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Temporal beforeBind(final SqlType type, final MappingEnv env, final Object nonNull) {
-        final Temporal value;
-        switch (type.database()) {
-            case MySQL:
-                value = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
-                break;
+    public Object beforeBind(final DataType dataType, final MappingEnv env, final Object nonNull) {
+        final Object value;
+        switch (((SqlType) dataType).database()) {
+            case MySQL: {
+                if (nonNull instanceof Short) {
+                    value = nonNull;
+                } else if (nonNull instanceof Integer) {
+                    final int v = (Integer) nonNull;
+                    if (v < Short.MIN_VALUE || v > Short.MAX_VALUE) {
+                        throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+                    }
+                    value = (short) v;
+                } else {
+                    value = toYear(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+                }
+            }
+            break;
             case PostgreSQL: {
                 if (nonNull instanceof LocalDate) {
-                    value = (LocalDate) nonNull;
+                    value = nonNull;
                 } else if (nonNull instanceof LocalDateTime) {
                     value = ((LocalDateTime) nonNull).toLocalDate();
                 } else {
                     final Year year;
-                    year = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
+                    year = toYear(this, dataType, nonNull, PARAM_ERROR_HANDLER);
                     value = LocalDate.of(year.getValue(), Month.JANUARY, 1);
                 }
             }
             break;
             default:
-                throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
         }
         return value;
     }
 
     @Override
-    public Year afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToYear(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    public Year afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return toYear(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
     }
 
-    private static Year _convertToYear(final MappingType type, final MappingEnv env, final Object nonNull,
-                                       final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    public static Year toYear(final MappingType type, DataType dataType, final Object nonNull,
+                              final ErrorHandler errorHandler) {
         final Year value;
         if (nonNull instanceof Year) {
             value = (Year) nonNull;
+        } else if (nonNull instanceof Integer || nonNull instanceof Short) {
+            value = Year.of(((Number) nonNull).intValue());
         } else if (nonNull instanceof LocalDate) {
             value = Year.from((LocalDate) nonNull);
         } else if (nonNull instanceof LocalDateTime) {
             value = Year.from((LocalDateTime) nonNull);
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = Year.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneOffset()));
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = Year.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneOffset()));
         } else if (nonNull instanceof YearMonth) {
             value = Year.from((YearMonth) nonNull);
-        } else if (!(nonNull instanceof String)) {
-            throw errorHandler.apply(type, nonNull);
-        } else {
+        } else if (nonNull instanceof String) {
             final String text = (String) nonNull;
             final int index = text.indexOf('-');
 
@@ -136,10 +143,11 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
                 } else {
                     value = Year.from(LocalDate.parse((String) nonNull));
                 }
-            } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
+            } catch (DateTimeException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
-
+        } else {
+            throw errorHandler.apply(type, dataType, nonNull, null);
         }
         return value;
     }

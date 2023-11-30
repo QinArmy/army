@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
@@ -27,7 +28,6 @@ import io.army.sqltype.SqlType;
  */
 public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
 
-    public static final UnsignedShortType INSTANCE = new UnsignedShortType();
 
     public static UnsignedShortType from(final Class<?> fieldType) {
         if (fieldType != Integer.class) {
@@ -36,7 +36,11 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
         return INSTANCE;
     }
 
+    public static final UnsignedShortType INSTANCE = new UnsignedShortType();
 
+    /**
+     * private constructor
+     */
     private UnsignedShortType() {
     }
 
@@ -51,7 +55,7 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -71,19 +75,18 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType.toInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
+        return IntegerType.toInt(this, map(env.serverMeta()), nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return IntegerType.toInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
+    public Integer beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+        return IntegerType.toInt(this, dataType, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType.toInt(this, nonNull, 0, 0xFFFF, DATA_ACCESS_ERROR_HANDLER_0);
+    public Integer afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        return IntegerType.toInt(this, dataType, nonNull, 0, 0xFFFF, ACCESS_ERROR_HANDLER);
     }
-
 
 
 }

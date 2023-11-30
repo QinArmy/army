@@ -17,8 +17,6 @@ import java.util.function.BiFunction;
  */
 public final class ZoneIdType extends _ArmyNoInjectionMapping {
 
-    public static final ZoneIdType INSTANCE = new ZoneIdType();
-
     public static ZoneIdType from(final Class<?> javaType) {
         if (!ZoneId.class.isAssignableFrom(javaType)) {
             throw errorJavaType(ZoneIdType.class, javaType);
@@ -26,6 +24,11 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
         return INSTANCE;
     }
 
+    public static final ZoneIdType INSTANCE = new ZoneIdType();
+
+    /**
+     * private constructor
+     */
     private ZoneIdType() {
     }
 

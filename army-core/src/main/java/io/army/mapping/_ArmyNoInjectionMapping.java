@@ -9,7 +9,6 @@ public abstract class _ArmyNoInjectionMapping extends _ArmyBuildInMapping {
                 thisClass == BinaryType.class) {
             throw new IllegalStateException("sub class error.");
         }
-
     }
 
 

@@ -2,19 +2,16 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+import io.army.util._Collections;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public final class XmlType extends _ArmyBuildInMapping {
 
-
-    public static final XmlType TEXT = new XmlType(String.class);
-
-    private static final ConcurrentMap<Class<?>, XmlType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static XmlType from(final Class<?> javaType) {
         final XmlType instance;
@@ -26,8 +23,15 @@ public final class XmlType extends _ArmyBuildInMapping {
         return instance;
     }
 
+    public static final XmlType TEXT = new XmlType(String.class);
+
+    private static final ConcurrentMap<Class<?>, XmlType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
     private final Class<?> javaType;
 
+    /**
+     * private constructor
+     */
     private XmlType(Class<?> javaType) {
         this.javaType = javaType;
     }
@@ -38,7 +42,7 @@ public final class XmlType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         final SqlType sqlDataType;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -69,19 +73,18 @@ public final class XmlType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
         //TODO
         if (nonNull instanceof String) {
             return (String) nonNull;
         }
-        return StringType.beforeBind(type, nonNull);
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
+    public String afterGet(DataType dataType, MappingEnv env, Object nonNull) {
         return (String) nonNull;
     }
+
+
 }

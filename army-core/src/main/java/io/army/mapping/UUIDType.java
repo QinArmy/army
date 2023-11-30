@@ -4,13 +4,12 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.DataType;
 
 import java.util.UUID;
 
 public final class UUIDType extends _ArmyNoInjectionMapping {
 
-    public static final UUIDType INSTANCE = new UUIDType();
 
     public static UUIDType from(final Class<?> javaType) {
         if (javaType != UUID.class) {
@@ -19,7 +18,11 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
         return INSTANCE;
     }
 
+    public static final UUIDType INSTANCE = new UUIDType();
 
+    /**
+     * private constructor
+     */
     private UUIDType() {
 
     }
@@ -30,7 +33,7 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -47,13 +50,13 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }
