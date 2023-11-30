@@ -60,31 +60,31 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public YearMonth convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toYearMonth(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public YearMonth convert(MappingEnv env, Object source) throws CriteriaException {
+        return toYearMonth(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDate beforeBind(DataType dataType, final MappingEnv env, final Object nonNull) {
+    public LocalDate beforeBind(DataType dataType, final MappingEnv env, final Object source) {
         final LocalDate value;
-        if (nonNull instanceof YearMonth) {
-            final YearMonth v = (YearMonth) nonNull;
+        if (source instanceof YearMonth) {
+            final YearMonth v = (YearMonth) source;
             value = LocalDate.of(v.getYear(), v.getMonth(), 1);
-        } else if (nonNull instanceof LocalDate) {
-            value = (LocalDate) nonNull;
-        } else if (nonNull instanceof LocalDateTime) {
-            value = ((LocalDateTime) nonNull).toLocalDate();
+        } else if (source instanceof LocalDate) {
+            value = (LocalDate) source;
+        } else if (source instanceof LocalDateTime) {
+            value = ((LocalDateTime) source).toLocalDate();
         } else {
             final YearMonth v;
-            v = toYearMonth(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+            v = toYearMonth(this, dataType, source, PARAM_ERROR_HANDLER);
             value = LocalDate.of(v.getYear(), v.getMonth(), 1);
         }
         return value;
     }
 
     @Override
-    public YearMonth afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return toYearMonth(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public YearMonth afterGet(DataType dataType, MappingEnv env, Object source) {
+        return toYearMonth(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

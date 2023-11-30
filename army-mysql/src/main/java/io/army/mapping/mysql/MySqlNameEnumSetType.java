@@ -60,21 +60,21 @@ public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         return null;
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof Set)) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public String beforeBind(DataType dataType, MappingEnv env, Object source) {
+        if (!(source instanceof Set)) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         final StringBuilder builder = new StringBuilder();
         final Class<?> elementJavaType = this.elementTypes.get(0);
         int index = 0;
-        for (Object e : (Set<?>) nonNull) {
+        for (Object e : (Set<?>) source) {
             if (!elementJavaType.isInstance(e)) {
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
             }
             if (index > 0) {
                 builder.append(_Constant.COMMA);
@@ -86,14 +86,14 @@ public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public Set<?> afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public Set<?> afterGet(DataType dataType, MappingEnv env, Object source) {
+        if (!(source instanceof String)) {
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         try {
-            return parseToSet(this.elementTypes.get(0), (String) nonNull);
+            return parseToSet(this.elementTypes.get(0), (String) source);
         } catch (IllegalArgumentException e) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, e);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, e);
         }
     }
 

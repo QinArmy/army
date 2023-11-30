@@ -61,27 +61,27 @@ public final class PostgreAclItemType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof String)) {
-            throw PARAM_ERROR_HANDLER.apply(this, PostgreType.ACLITEM, nonNull, null);
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof String)) {
+            throw PARAM_ERROR_HANDLER.apply(this, PostgreType.ACLITEM, source, null);
         }
-        return nonNull;
+        return source;
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof String)) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof String)) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return nonNull;
+        return source;
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
-        if (!(nonNull instanceof String)) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        if (!(source instanceof String)) {
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return nonNull;
+        return source;
     }
 
 

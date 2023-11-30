@@ -76,20 +76,20 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
     @Override
-    public ZonedDateTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toZonedDateTime(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public ZonedDateTime convert(MappingEnv env, Object source) throws CriteriaException {
+        return toZonedDateTime(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public OffsetDateTime beforeBind(final DataType dataType, final MappingEnv env, final Object nonNull)
+    public OffsetDateTime beforeBind(final DataType dataType, final MappingEnv env, final Object source)
             throws CriteriaException {
-        return OffsetDateTimeType.toOffsetDateTime(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+        return OffsetDateTimeType.toOffsetDateTime(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public ZonedDateTime afterGet(final DataType dataType, final MappingEnv env, final Object nonNull)
+    public ZonedDateTime afterGet(final DataType dataType, final MappingEnv env, final Object source)
             throws DataAccessException {
-        return toZonedDateTime(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+        return toZonedDateTime(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
     public static ZonedDateTime toZonedDateTime(MappingType type, DataType dataType, final Object nonNull,

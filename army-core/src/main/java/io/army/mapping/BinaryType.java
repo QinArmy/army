@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.BinaryArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
@@ -63,32 +64,40 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return BinaryArrayType.LINEAR;
+    }
+
+    @Override
     public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+        if (targetType != String.class) {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        return StringType.INSTANCE;
     }
 
     @Override
-    public byte[] convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+    public byte[] convert(MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof byte[])) {
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
     @Override
-    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        if (!(source instanceof byte[])) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
     @Override
-    public byte[] afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
-        if (!(nonNull instanceof byte[])) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+    public byte[] afterGet(DataType dataType, MappingEnv env, final Object source) {
+        if (!(source instanceof byte[])) {
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
 

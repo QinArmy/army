@@ -63,18 +63,18 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
 
 
     @Override
-    public Short convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return (short) IntegerType.toInt(this, map(env.serverMeta()), nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
+    public Short convert(MappingEnv env, Object source) throws CriteriaException {
+        return (short) IntegerType.toInt(this, map(env.serverMeta()), source, 0, 0xFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Short beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        return (short) IntegerType.toInt(this, dataType, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
+    public Short beforeBind(DataType dataType, MappingEnv env, Object source) {
+        return (short) IntegerType.toInt(this, dataType, source, 0, 0xFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Short afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return (short) IntegerType.toInt(this, dataType, nonNull, 0, 0xFF, ACCESS_ERROR_HANDLER);
+    public Short afterGet(DataType dataType, MappingEnv env, Object source) {
+        return (short) IntegerType.toInt(this, dataType, source, 0, 0xFF, ACCESS_ERROR_HANDLER);
     }
 
 

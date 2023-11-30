@@ -64,17 +64,17 @@ public final class IntArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         return null;
     }
 
     @Override
-    public Object beforeBind(DataType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType type, MappingEnv env, Object source) throws CriteriaException {
         return null;
     }
 
     @Override
-    public Object afterGet(DataType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType type, MappingEnv env, Object source) throws DataAccessException {
         return null;
     }
 

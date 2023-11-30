@@ -66,27 +66,27 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public byte[] convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull, null);
+    public byte[] convert(MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof byte[])) {
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
     @Override
-    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        if (!(source instanceof byte[])) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
     @Override
-    public byte[] afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
-        if (!(nonNull instanceof byte[])) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public byte[] afterGet(DataType dataType, MappingEnv env, final Object source) {
+        if (!(source instanceof byte[])) {
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
 

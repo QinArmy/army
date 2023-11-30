@@ -67,24 +67,24 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        if (nonNull instanceof String) {
-            return (String) nonNull;
+    public String beforeBind(DataType dataType, MappingEnv env, Object source) {
+        if (source instanceof String) {
+            return (String) source;
         }
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+    public String afterGet(DataType dataType, MappingEnv env, Object source) {
 
-        return (String) nonNull;
+        return (String) source;
     }
 
 

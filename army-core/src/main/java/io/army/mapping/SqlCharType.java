@@ -59,18 +59,18 @@ public final class SqlCharType extends _ArmyBuildInMapping implements MappingTyp
     }
 
     @Override
-    public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return StringType.toString(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public String convert(MappingEnv env, Object source) throws CriteriaException {
+        return StringType.toString(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        return StringType.toString(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public String beforeBind(DataType dataType, MappingEnv env, Object source) {
+        return StringType.toString(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return StringType.toString(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public String afterGet(DataType dataType, MappingEnv env, Object source) {
+        return StringType.toString(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

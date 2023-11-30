@@ -72,18 +72,18 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
     @Override
-    public OffsetDateTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toOffsetDateTime(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public OffsetDateTime convert(MappingEnv env, Object source) throws CriteriaException {
+        return toOffsetDateTime(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public OffsetDateTime beforeBind(final DataType dataType, MappingEnv env, final Object nonNull) {
-        return toOffsetDateTime(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public OffsetDateTime beforeBind(final DataType dataType, MappingEnv env, final Object source) {
+        return toOffsetDateTime(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public OffsetDateTime afterGet(final DataType dataType, final MappingEnv env, final Object nonNull) {
-        return toOffsetDateTime(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public OffsetDateTime afterGet(final DataType dataType, final MappingEnv env, final Object source) {
+        return toOffsetDateTime(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

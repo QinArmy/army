@@ -74,18 +74,18 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
 
 
     @Override
-    public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType.toInt(this, map(env.serverMeta()), nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER);
+    public Integer convert(MappingEnv env, Object source) throws CriteriaException {
+        return IntegerType.toInt(this, map(env.serverMeta()), source, 0, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER);
+    public Integer beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return IntegerType.toInt(this, dataType, source, 0, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, 0, 0xFFFF, ACCESS_ERROR_HANDLER);
+    public Integer afterGet(DataType dataType, MappingEnv env, Object source) {
+        return IntegerType.toInt(this, dataType, source, 0, 0xFFFF, ACCESS_ERROR_HANDLER);
     }
 
 

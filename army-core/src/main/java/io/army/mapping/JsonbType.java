@@ -61,26 +61,26 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String beforeBind(DataType type, MappingEnv env, Object nonNull) {
-        if (nonNull instanceof String) {
-            return (String) nonNull;
+    public String beforeBind(DataType type, MappingEnv env, Object source) {
+        if (source instanceof String) {
+            return (String) source;
         }
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String afterGet(DataType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+    public String afterGet(DataType type, MappingEnv env, Object source) {
+        if (!(source instanceof String)) {
+            throw errorJavaTypeForSqlType(type, source);
         }
-        return (String) nonNull;
+        return (String) source;
     }
 
 

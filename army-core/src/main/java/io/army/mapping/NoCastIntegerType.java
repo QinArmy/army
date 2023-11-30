@@ -50,18 +50,18 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType.toInt(this, map(env.serverMeta()), nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Integer convert(MappingEnv env, Object source) throws CriteriaException {
+        return IntegerType.toInt(this, map(env.serverMeta()), source, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer beforeBind(DataType dataType, final MappingEnv env, final Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Integer beforeBind(DataType dataType, final MappingEnv env, final Object source) {
+        return IntegerType.toInt(this, dataType, source, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer afterGet(DataType dataType, final MappingEnv env, Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, ACCESS_ERROR_HANDLER);
+    public Integer afterGet(DataType dataType, final MappingEnv env, Object source) {
+        return IntegerType.toInt(this, dataType, source, Integer.MIN_VALUE, Integer.MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 

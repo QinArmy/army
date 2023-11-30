@@ -66,21 +66,21 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Enum<?> convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toNameEnum(map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public Enum<?> convert(MappingEnv env, Object source) throws CriteriaException {
+        return toNameEnum(map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return toNameEnum(dataType, nonNull, PARAM_ERROR_HANDLER).name();
+    public String beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return toNameEnum(dataType, source, PARAM_ERROR_HANDLER).name();
     }
 
     @Override
-    public Enum<?> afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public Enum<?> afterGet(DataType dataType, MappingEnv env, Object source) {
+        if (!(source instanceof String)) {
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return toNameEnum(dataType, nonNull, ACCESS_ERROR_HANDLER);
+        return toNameEnum(dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

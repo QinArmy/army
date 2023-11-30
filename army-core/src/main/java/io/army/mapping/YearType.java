@@ -73,49 +73,49 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     }
 
     @Override
-    public Year convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toYear(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public Year convert(MappingEnv env, Object source) throws CriteriaException {
+        return toYear(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(final DataType dataType, final MappingEnv env, final Object nonNull) {
+    public Object beforeBind(final DataType dataType, final MappingEnv env, final Object source) {
         final Object value;
         switch (((SqlType) dataType).database()) {
             case MySQL: {
-                if (nonNull instanceof Short) {
-                    value = nonNull;
-                } else if (nonNull instanceof Integer) {
-                    final int v = (Integer) nonNull;
+                if (source instanceof Short) {
+                    value = source;
+                } else if (source instanceof Integer) {
+                    final int v = (Integer) source;
                     if (v < Short.MIN_VALUE || v > Short.MAX_VALUE) {
-                        throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+                        throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
                     }
                     value = (short) v;
                 } else {
-                    value = toYear(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+                    value = toYear(this, dataType, source, PARAM_ERROR_HANDLER);
                 }
             }
             break;
             case PostgreSQL: {
-                if (nonNull instanceof LocalDate) {
-                    value = nonNull;
-                } else if (nonNull instanceof LocalDateTime) {
-                    value = ((LocalDateTime) nonNull).toLocalDate();
+                if (source instanceof LocalDate) {
+                    value = source;
+                } else if (source instanceof LocalDateTime) {
+                    value = ((LocalDateTime) source).toLocalDate();
                 } else {
                     final Year year;
-                    year = toYear(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+                    year = toYear(this, dataType, source, PARAM_ERROR_HANDLER);
                     value = LocalDate.of(year.getValue(), Month.JANUARY, 1);
                 }
             }
             break;
             default:
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
     }
 
     @Override
-    public Year afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return toYear(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public Year afterGet(DataType dataType, MappingEnv env, Object source) {
+        return toYear(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
     public static Year toYear(final MappingType type, DataType dataType, final Object nonNull,

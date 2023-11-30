@@ -75,18 +75,18 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
     }
 
     @Override
-    public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType.toInt(this, map(env.serverMeta()), nonNull, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Integer convert(MappingEnv env, Object source) throws CriteriaException {
+        return IntegerType.toInt(this, map(env.serverMeta()), source, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Integer beforeBind(DataType dataType, MappingEnv env, Object source) {
+        return IntegerType.toInt(this, dataType, source, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, 0, MAX_VALUE, ACCESS_ERROR_HANDLER);
+    public Integer afterGet(DataType dataType, MappingEnv env, Object source) {
+        return IntegerType.toInt(this, dataType, source, 0, MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 

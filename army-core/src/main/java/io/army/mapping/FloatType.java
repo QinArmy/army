@@ -65,18 +65,18 @@ public final class FloatType extends _NumericType._FloatNumericType {
 
 
     @Override
-    public Float convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToFloat(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public Float convert(MappingEnv env, Object source) throws CriteriaException {
+        return convertToFloat(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Float beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return convertToFloat(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public Float beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return convertToFloat(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Float afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return convertToFloat(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public Float afterGet(DataType dataType, MappingEnv env, Object source) {
+        return convertToFloat(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
     private static float convertToFloat(final MappingType type, final DataType dataType, final Object nonNull,

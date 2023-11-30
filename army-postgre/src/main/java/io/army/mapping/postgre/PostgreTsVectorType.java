@@ -55,22 +55,22 @@ public final class PostgreTsVectorType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
         //TODO
-        if (nonNull instanceof String) {
-            return nonNull;
+        if (source instanceof String) {
+            return source;
         }
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

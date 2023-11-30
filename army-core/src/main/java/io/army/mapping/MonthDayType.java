@@ -70,32 +70,32 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
-    public MonthDay convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toMonthDay(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public MonthDay convert(MappingEnv env, Object source) throws CriteriaException {
+        return toMonthDay(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDate beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+    public LocalDate beforeBind(DataType dataType, MappingEnv env, final Object source) {
         final LocalDate value;
-        if (nonNull instanceof LocalDate) {
-            value = (LocalDate) nonNull;
-        } else if (nonNull instanceof LocalDateTime) {
-            value = ((LocalDateTime) nonNull).toLocalDate();
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).toLocalDate();
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).toLocalDate();
+        if (source instanceof LocalDate) {
+            value = (LocalDate) source;
+        } else if (source instanceof LocalDateTime) {
+            value = ((LocalDateTime) source).toLocalDate();
+        } else if (source instanceof OffsetDateTime) {
+            value = ((OffsetDateTime) source).toLocalDate();
+        } else if (source instanceof ZonedDateTime) {
+            value = ((ZonedDateTime) source).toLocalDate();
         } else {
             final MonthDay monthDay;
-            monthDay = toMonthDay(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+            monthDay = toMonthDay(this, dataType, source, PARAM_ERROR_HANDLER);
             value = LocalDate.of(1970, monthDay.getMonth(), monthDay.getDayOfMonth());
         }
         return value;
     }
 
     @Override
-    public MonthDay afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
-        return toMonthDay(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public MonthDay afterGet(DataType dataType, MappingEnv env, final Object source) {
+        return toMonthDay(this, dataType, source, ACCESS_ERROR_HANDLER);
 
     }
 

@@ -78,18 +78,18 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Boolean convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToBoolean(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public Boolean convert(MappingEnv env, Object source) throws CriteriaException {
+        return convertToBoolean(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Boolean beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return convertToBoolean(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public Boolean beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return convertToBoolean(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Boolean afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
-        return convertToBoolean(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public Boolean afterGet(DataType dataType, MappingEnv env, final Object source) {
+        return convertToBoolean(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

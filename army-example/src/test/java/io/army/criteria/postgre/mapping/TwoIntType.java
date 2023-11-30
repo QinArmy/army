@@ -58,22 +58,22 @@ public final class TwoIntType extends MappingType
     }
 
     @Override
-    public TwoInt convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof TwoInt)) {
-            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull, null);
+    public TwoInt convert(MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof TwoInt)) {
+            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), source, null);
         }
-        return (TwoInt) nonNull;
+        return (TwoInt) source;
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6">Constructing Composite Values</a>
      */
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof TwoInt)) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+    public String beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
+        if (!(source instanceof TwoInt)) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        final TwoInt row = (TwoInt) nonNull;
+        final TwoInt row = (TwoInt) source;
         final StringBuilder builder;
         builder = new StringBuilder()
                 .append(_Constant.LEFT_PAREN);
@@ -94,7 +94,7 @@ public final class TwoIntType extends MappingType
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         throw new UnsupportedOperationException();
     }
 

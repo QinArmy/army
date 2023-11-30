@@ -96,18 +96,18 @@ public class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingT
 
 
     @Override
-    public final Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public final Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public final Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
+    public final Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public final Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+    public final Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         throw new UnsupportedOperationException();
     }
 

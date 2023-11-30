@@ -73,18 +73,18 @@ public final class MediumIntType extends _NumericType {
     }
 
     @Override
-    public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType.toInt(this, map(env.serverMeta()), nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Integer convert(MappingEnv env, Object source) throws CriteriaException {
+        return IntegerType.toInt(this, map(env.serverMeta()), source, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Integer beforeBind(DataType dataType, MappingEnv env, Object source) {
+        return IntegerType.toInt(this, dataType, source, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Integer afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return IntegerType.toInt(this, dataType, nonNull, MIN_VALUE, MAX_VALUE, ACCESS_ERROR_HANDLER);
+    public Integer afterGet(DataType dataType, MappingEnv env, Object source) {
+        return IntegerType.toInt(this, dataType, source, MIN_VALUE, MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 

@@ -62,37 +62,37 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String beforeBind(final DataType dataType, final MappingEnv env, final Object nonNull)
+    public String beforeBind(final DataType dataType, final MappingEnv env, final Object source)
             throws CriteriaException {
         final String value;
-        if (nonNull instanceof Character) {
-            value = nonNull.toString();
-        } else if (nonNull instanceof String) {
-            if (((String) nonNull).length() != 1) {
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+        if (source instanceof Character) {
+            value = source.toString();
+        } else if (source instanceof String) {
+            if (((String) source).length() != 1) {
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
             }
-            value = ((String) nonNull).substring(0, 1);
-        } else if (nonNull instanceof Number) {
+            value = ((String) source).substring(0, 1);
+        } else if (source instanceof Number) {
             final String v;
-            if (nonNull instanceof BigDecimal) {
-                v = ((BigDecimal) nonNull).toPlainString();
+            if (source instanceof BigDecimal) {
+                v = ((BigDecimal) source).toPlainString();
             } else {
-                v = nonNull.toString();
+                v = source.toString();
             }
             if (v.length() != 1) {
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
             }
             value = v.substring(0, 1);
-        } else if (nonNull instanceof BitSet) {
-            final BitSet v = (BitSet) nonNull;
+        } else if (source instanceof BitSet) {
+            final BitSet v = (BitSet) source;
             if (v.length() != 1) {
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
             }
             if (v.get(0)) {
                 value = "1";
@@ -100,13 +100,13 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
                 value = "0";
             }
         } else {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
     }
 
     @Override
-    public Character afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Character afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

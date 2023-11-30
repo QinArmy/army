@@ -251,18 +251,18 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
 
 
     @Override
-    public Object convert(MappingEnv env, final Object nonNull) throws CriteriaException {
-        return rangeConvert(nonNull, this.rangeFunc, this::deserialize, map(env.serverMeta()), this, PARAM_ERROR_HANDLER);
+    public Object convert(MappingEnv env, final Object source) throws CriteriaException {
+        return rangeConvert(source, this.rangeFunc, this::deserialize, map(env.serverMeta()), this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
-        return rangeBeforeBind(nonNull, this::serialize, dataType, this, PARAM_ERROR_HANDLER);
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return rangeBeforeBind(source, this::serialize, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
-        return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        return rangeAfterGet(source, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
     }
 
 

@@ -74,18 +74,18 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public LocalTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toLocalTime(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public LocalTime convert(MappingEnv env, Object source) throws CriteriaException {
+        return toLocalTime(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalTime beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return toLocalTime(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public LocalTime beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return toLocalTime(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalTime afterGet(final DataType dataType, MappingEnv env, final Object nonNull) {
-        return toLocalTime(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public LocalTime afterGet(final DataType dataType, MappingEnv env, final Object source) {
+        return toLocalTime(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
     public static LocalTime toLocalTime(final MappingType type, final DataType dataType, final Object nonNull,

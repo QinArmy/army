@@ -47,31 +47,31 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
     @Override
-    public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public BigDecimal convert(MappingEnv env, Object source) throws CriteriaException {
         final BigDecimal value;
-        value = BigDecimalType.toBigDecimal(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+        value = BigDecimalType.toBigDecimal(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
         }
         return value;
     }
 
     @Override
-    public BigDecimal beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+    public BigDecimal beforeBind(DataType dataType, MappingEnv env, Object source) {
         final BigDecimal value;
-        value = BigDecimalType.toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+        value = BigDecimalType.toBigDecimal(this, dataType, source, PARAM_ERROR_HANDLER);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
     }
 
     @Override
-    public BigDecimal afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+    public BigDecimal afterGet(DataType dataType, MappingEnv env, Object source) {
         final BigDecimal value;
-        value = BigDecimalType.toBigDecimal(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+        value = BigDecimalType.toBigDecimal(this, dataType, source, ACCESS_ERROR_HANDLER);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
     }

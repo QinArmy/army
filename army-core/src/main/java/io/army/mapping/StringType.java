@@ -89,18 +89,18 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toString(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public String convert(MappingEnv env, Object source) throws CriteriaException {
+        return toString(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return toString(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public String beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return toString(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String afterGet(final DataType dataType, final MappingEnv env, final Object nonNull) {
-        return toString(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public String afterGet(final DataType dataType, final MappingEnv env, final Object source) {
+        return toString(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

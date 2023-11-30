@@ -886,17 +886,17 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        public Object convert(MappingEnv env, Object source) throws CriteriaException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+        public Object beforeBind(DataType dataType, MappingEnv env, Object source) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+        public Object afterGet(DataType dataType, MappingEnv env, Object source) {
             throw new UnsupportedOperationException();
         }
 

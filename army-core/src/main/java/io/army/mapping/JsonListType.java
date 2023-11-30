@@ -38,19 +38,19 @@ public final class JsonListType extends MappingType {
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) {
         //TODO
         throw new UnsupportedOperationException();
     }

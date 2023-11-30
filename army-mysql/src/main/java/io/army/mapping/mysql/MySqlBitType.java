@@ -60,18 +60,18 @@ public final class MySqlBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Long beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+    public Long beforeBind(DataType dataType, MappingEnv env, final Object source) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Long afterGet(DataType dataType, MappingEnv env, Object nonNull) {
+    public Long afterGet(DataType dataType, MappingEnv env, Object source) {
         throw new UnsupportedOperationException();
     }
 

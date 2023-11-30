@@ -50,18 +50,18 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
 
 
     @Override
-    public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toUnsignedBigInteger(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public BigInteger convert(MappingEnv env, Object source) throws CriteriaException {
+        return toUnsignedBigInteger(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigDecimal beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        return toUnsignedBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public BigDecimal beforeBind(DataType dataType, MappingEnv env, Object source) {
+        return toUnsignedBigDecimal(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigInteger afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return toUnsignedBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public BigInteger afterGet(DataType dataType, MappingEnv env, Object source) {
+        return toUnsignedBigInteger(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

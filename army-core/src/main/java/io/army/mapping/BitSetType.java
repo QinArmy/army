@@ -80,29 +80,29 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
 
 
     @Override
-    public BitSet convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToBitSet(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public BitSet convert(final MappingEnv env, final Object source) throws CriteriaException {
+        return convertToBitSet(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(final DataType dataType, final MappingEnv env, final Object nonNull) {
+    public Object beforeBind(final DataType dataType, final MappingEnv env, final Object source) {
         final Object value;
         switch ((((SqlType) dataType).database())) {
             case MySQL:
-                value = bitwiseToLong(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+                value = bitwiseToLong(this, dataType, source, PARAM_ERROR_HANDLER);
                 break;
             case PostgreSQL:
-                value = bitwiseToString(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+                value = bitwiseToString(this, dataType, source, PARAM_ERROR_HANDLER);
                 break;
             default:
-                throw outRangeOfSqlType(dataType, nonNull);
+                throw outRangeOfSqlType(dataType, source);
         }
         return value;
     }
 
     @Override
-    public BitSet afterGet(final DataType dataType, final MappingEnv env, final Object nonNull) {
-        return convertToBitSet(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public BitSet afterGet(final DataType dataType, final MappingEnv env, final Object source) {
+        return convertToBitSet(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

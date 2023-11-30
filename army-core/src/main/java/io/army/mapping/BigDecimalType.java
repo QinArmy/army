@@ -65,18 +65,18 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
     }
 
     @Override
-    public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toBigDecimal(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public BigDecimal convert(MappingEnv env, Object source) throws CriteriaException {
+        return toBigDecimal(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigDecimal beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public BigDecimal beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return toBigDecimal(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigDecimal afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
-        return toBigDecimal(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public BigDecimal afterGet(DataType dataType, MappingEnv env, final Object source) {
+        return toBigDecimal(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
     /*-------------------below static methods -------------------*/

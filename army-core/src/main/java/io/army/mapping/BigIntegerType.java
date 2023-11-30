@@ -67,24 +67,24 @@ public final class BigIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toBigInteger(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public BigInteger convert(MappingEnv env, Object source) throws CriteriaException {
+        return toBigInteger(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public BigDecimal beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
+    public BigDecimal beforeBind(DataType dataType, MappingEnv env, final Object source) {
         final BigDecimal value;
-        value = BigDecimalType.toBigDecimal(this, dataType, nonNull, PARAM_ERROR_HANDLER)
+        value = BigDecimalType.toBigDecimal(this, dataType, source, PARAM_ERROR_HANDLER)
                 .stripTrailingZeros();
         if (value.scale() != 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
     }
 
     @Override
-    public BigInteger afterGet(final DataType dataType, MappingEnv env, final Object nonNull) {
-        return toBigInteger(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public BigInteger afterGet(final DataType dataType, MappingEnv env, final Object source) {
+        return toBigInteger(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

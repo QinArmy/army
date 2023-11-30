@@ -67,23 +67,23 @@ public final class XmlType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
+    public String beforeBind(DataType dataType, MappingEnv env, Object source) {
         //TODO
-        if (nonNull instanceof String) {
-            return (String) nonNull;
+        if (source instanceof String) {
+            return (String) source;
         }
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return (String) nonNull;
+    public String afterGet(DataType dataType, MappingEnv env, Object source) {
+        return (String) source;
     }
 
 

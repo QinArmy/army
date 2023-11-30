@@ -70,54 +70,54 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public CodeEnum convert(MappingEnv env, final Object nonNull) throws CriteriaException {
-        if (!this.enumClass.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+    public CodeEnum convert(MappingEnv env, final Object source) throws CriteriaException {
+        if (!this.enumClass.isInstance(source)) {
+            throw PARAM_ERROR_HANDLER_0.apply(this, source);
         }
-        return (CodeEnum) nonNull;
+        return (CodeEnum) source;
     }
 
     @Override
-    public Integer beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        if (!this.enumClass.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+    public Integer beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        if (!this.enumClass.isInstance(source)) {
+            throw PARAM_ERROR_HANDLER_0.apply(this, source);
         }
-        return ((CodeEnum) nonNull).code();
+        return ((CodeEnum) source).code();
     }
 
     @Override
-    public CodeEnum afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
+    public CodeEnum afterGet(DataType dataType, MappingEnv env, final Object source) {
         final int code;
-        if (nonNull instanceof Integer) {
-            code = (Integer) nonNull;
-        } else if (nonNull instanceof Long) {
-            final long v = (Long) nonNull;
+        if (source instanceof Integer) {
+            code = (Integer) source;
+        } else if (source instanceof Long) {
+            final long v = (Long) source;
             if (v < Integer.MIN_VALUE || v > Integer.MAX_VALUE) {
-                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
             }
             code = (int) v;
-        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
-            code = ((Number) nonNull).intValue();
-        } else if (nonNull instanceof BigInteger) {
+        } else if (source instanceof Short || source instanceof Byte) {
+            code = ((Number) source).intValue();
+        } else if (source instanceof BigInteger) {
             try {
-                code = ((BigInteger) nonNull).intValueExact();
+                code = ((BigInteger) source).intValueExact();
             } catch (ArithmeticException e) {
-                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
             }
-        } else if (nonNull instanceof String) {
+        } else if (source instanceof String) {
             try {
-                code = Integer.parseInt((String) nonNull);
+                code = Integer.parseInt((String) source);
             } catch (NumberFormatException e) {
-                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
             }
         } else {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
         }
         final CodeEnum codeEnum;
         codeEnum = this.codeMap.get(code);
         if (codeEnum == null) {
             String m = String.format("Not found enum instance for code[%s] in enum[%s].",
-                    nonNull, this.enumClass.getName());
+                    source, this.enumClass.getName());
             throw new DataAccessException(m);
         }
         return codeEnum;

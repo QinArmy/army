@@ -66,27 +66,27 @@ public final class BlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public byte[] convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+    public byte[] convert(MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof byte[])) {
+            throw PARAM_ERROR_HANDLER_0.apply(this, source);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
     @Override
-    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+    public byte[] beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        if (!(source instanceof byte[])) {
+            throw PARAM_ERROR_HANDLER_0.apply(this, source);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
     @Override
-    public byte[] afterGet(DataType dataType, MappingEnv env, final Object nonNull) {
-        if (!(nonNull instanceof byte[])) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
+    public byte[] afterGet(DataType dataType, MappingEnv env, final Object source) {
+        if (!(source instanceof byte[])) {
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
         }
-        return (byte[]) nonNull;
+        return (byte[]) source;
     }
 
 

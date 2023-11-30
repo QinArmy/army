@@ -74,18 +74,18 @@ public final class ShortType extends _NumericType._IntegerType {
 
 
     @Override
-    public Short convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return (short) IntegerType.toInt(this, map(env.serverMeta()), nonNull, Short.MIN_VALUE, Short.MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Short convert(MappingEnv env, Object source) throws CriteriaException {
+        return (short) IntegerType.toInt(this, map(env.serverMeta()), source, Short.MIN_VALUE, Short.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Short beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return (short) IntegerType.toInt(this, dataType, nonNull, Short.MIN_VALUE, Short.MAX_VALUE, PARAM_ERROR_HANDLER);
+    public Short beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return (short) IntegerType.toInt(this, dataType, source, Short.MIN_VALUE, Short.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Short afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return (short) IntegerType.toInt(this, dataType, nonNull, Short.MIN_VALUE, Short.MAX_VALUE, ACCESS_ERROR_HANDLER);
+    public Short afterGet(DataType dataType, MappingEnv env, Object source) {
+        return (short) IntegerType.toInt(this, dataType, source, Short.MIN_VALUE, Short.MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 

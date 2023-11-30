@@ -60,11 +60,11 @@ public final class MyRowType extends MappingType
     }
 
     @Override
-    public MyRow convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof MyRow)) {
-            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull, null);
+    public MyRow convert(MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof MyRow)) {
+            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), source, null);
         }
-        return (MyRow) nonNull;
+        return (MyRow) source;
     }
 
 
@@ -72,11 +72,11 @@ public final class MyRowType extends MappingType
      * @see <a href="https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6">Constructing Composite Values</a>
      */
     @Override
-    public String beforeBind(DataType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        if (!(nonNull instanceof MyRow)) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+    public String beforeBind(DataType type, MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof MyRow)) {
+            throw PARAM_ERROR_HANDLER.apply(this, type, source, null);
         }
-        final MyRow row = (MyRow) nonNull;
+        final MyRow row = (MyRow) source;
         final StringBuilder builder;
         builder = new StringBuilder()
                 .append(_Constant.LEFT_PAREN);
@@ -106,7 +106,7 @@ public final class MyRowType extends MappingType
     }
 
     @Override
-    public Object afterGet(DataType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType type, MappingEnv env, Object source) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

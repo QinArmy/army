@@ -38,17 +38,17 @@ public final class JsonMapType extends MappingType {
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         return null;
     }
 
     @Override
-    public Object beforeBind(DataType type, MappingEnv env, Object nonNull) {
+    public Object beforeBind(DataType type, MappingEnv env, Object source) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(DataType type, MappingEnv env, Object nonNull) {
+    public Object afterGet(DataType type, MappingEnv env, Object source) {
         throw new UnsupportedOperationException();
     }
 

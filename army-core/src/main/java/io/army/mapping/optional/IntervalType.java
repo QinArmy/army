@@ -41,19 +41,19 @@ public final class IntervalType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object beforeBind(DataType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType type, MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(DataType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType type, MappingEnv env, Object source) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

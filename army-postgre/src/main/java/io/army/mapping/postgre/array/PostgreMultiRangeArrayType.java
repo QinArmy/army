@@ -243,18 +243,18 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
 
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return arrayConvert(nonNull, this.rangeFunc, this::deserialize, map(env.serverMeta()), this, PARAM_ERROR_HANDLER);
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
+        return arrayConvert(source, this.rangeFunc, this::deserialize, map(env.serverMeta()), this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
-        return arrayBeforeBind(nonNull, this::serialize, dataType, this, PARAM_ERROR_HANDLER);
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return arrayBeforeBind(source, this::serialize, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
-        return arrayAfterGet(nonNull, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        return arrayAfterGet(source, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
     }
 
 

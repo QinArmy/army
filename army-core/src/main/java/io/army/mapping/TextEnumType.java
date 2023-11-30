@@ -66,18 +66,18 @@ public final class TextEnumType extends MappingType {
     }
 
     @Override
-    public TextEnum convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toTextEnum(map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public TextEnum convert(MappingEnv env, Object source) throws CriteriaException {
+        return toTextEnum(map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return toTextEnum(dataType, nonNull, PARAM_ERROR_HANDLER).text();
+    public String beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return toTextEnum(dataType, source, PARAM_ERROR_HANDLER).text();
     }
 
     @Override
-    public TextEnum afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return toTextEnum(dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public TextEnum afterGet(DataType dataType, MappingEnv env, Object source) {
+        return toTextEnum(dataType, source, ACCESS_ERROR_HANDLER);
     }
 
     private TextEnum toTextEnum(final DataType dataType, final Object nonNull, final ErrorHandler errorHandler) {

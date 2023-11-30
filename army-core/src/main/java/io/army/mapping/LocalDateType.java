@@ -62,18 +62,18 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public LocalDate convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return toLocalDateTime(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public LocalDate convert(MappingEnv env, Object source) throws CriteriaException {
+        return toLocalDateTime(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDate beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        return toLocalDateTime(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public LocalDate beforeBind(DataType dataType, MappingEnv env, Object source) {
+        return toLocalDateTime(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalDate afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return toLocalDateTime(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public LocalDate afterGet(DataType dataType, MappingEnv env, Object source) {
+        return toLocalDateTime(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

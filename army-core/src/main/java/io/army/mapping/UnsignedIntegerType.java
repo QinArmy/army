@@ -75,18 +75,18 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
 
 
     @Override
-    public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return LongType.toLong(this, map(env.serverMeta()), nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+    public Long convert(MappingEnv env, Object source) throws CriteriaException {
+        return LongType.toLong(this, map(env.serverMeta()), source, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Long beforeBind(DataType dataType, MappingEnv env, Object nonNull) {
-        return LongType.toLong(this, dataType, nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+    public Long beforeBind(DataType dataType, MappingEnv env, Object source) {
+        return LongType.toLong(this, dataType, source, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Long afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return LongType.toLong(this, dataType, nonNull, 0L, 0xFFFF_FFFFL, ACCESS_ERROR_HANDLER);
+    public Long afterGet(DataType dataType, MappingEnv env, Object source) {
+        return LongType.toLong(this, dataType, source, 0L, 0xFFFF_FFFFL, ACCESS_ERROR_HANDLER);
     }
 
 

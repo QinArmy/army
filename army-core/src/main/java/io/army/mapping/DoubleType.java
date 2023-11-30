@@ -64,19 +64,19 @@ public final class DoubleType extends _NumericType._FloatNumericType {
     }
 
     @Override
-    public Object convert(MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToDouble(this, map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    public Object convert(MappingEnv env, final Object source) throws CriteriaException {
+        return convertToDouble(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
 
     @Override
-    public Double beforeBind(DataType dataType, MappingEnv env, final Object nonNull) {
-        return convertToDouble(this, dataType, nonNull, PARAM_ERROR_HANDLER);
+    public Double beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        return convertToDouble(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Double afterGet(DataType dataType, MappingEnv env, Object nonNull) {
-        return convertToDouble(this, dataType, nonNull, ACCESS_ERROR_HANDLER);
+    public Double afterGet(DataType dataType, MappingEnv env, Object source) {
+        return convertToDouble(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 

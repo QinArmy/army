@@ -128,18 +128,18 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
         // TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
 //        final Object value;
-//        if (nonNull instanceof String || nonNull.getClass().isArray()) {
-//            value = nonNull;
-//        } else if (nonNull instanceof List) {
-//            value = listToArray(type, (List<?>) nonNull);
+//        if (source instanceof String || source.getClass().isArray()) {
+//            value = source;
+//        } else if (source instanceof List) {
+//            value = listToArray(type, (List<?>) source);
 //        } else {
 //            // TODO
 //
@@ -149,7 +149,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
     }

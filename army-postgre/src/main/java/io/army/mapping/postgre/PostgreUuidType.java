@@ -48,27 +48,27 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public UUID convert(MappingEnv env, Object nonNull) throws CriteriaException {
+    public UUID convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public UUID beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
+    public UUID beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
         final UUID value;
-        if (nonNull instanceof UUID) {
-            value = (UUID) nonNull;
-        } else if (nonNull instanceof String) {
+        if (source instanceof UUID) {
+            value = (UUID) source;
+        } else if (source instanceof String) {
 
         } else {
-            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, source);
         }
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public UUID afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
+    public UUID afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

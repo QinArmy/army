@@ -72,7 +72,9 @@ public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements Mapp
     public final MappingType elementType() {
         final MappingType instance;
         final Class<?> javaType = this.javaType;
-        if (javaType == BigInteger[].class) {
+        if (javaType == Object.class) { // unlimited dimension array
+            instance = this;
+        } else if (javaType == BigInteger[].class) {
             instance = BigIntegerType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
@@ -82,24 +84,28 @@ public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public final MappingType arrayTypeOfThis() throws CriteriaException {
-        return from(ArrayUtils.arrayClassOf(this.javaType));
+        final Class<?> javaType = this.javaType;
+        if (javaType == Object.class) { // unlimited dimension array
+            return this;
+        }
+        return from(ArrayUtils.arrayClassOf(javaType));
     }
 
     @Override
-    public final Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), nonNull, false,
+    public final Object convert(MappingEnv env, Object source) throws CriteriaException {
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false,
                 BigIntegerArrayType::parseBigInteger, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final String beforeBind(DataType dataType, MappingEnv env, Object nonNull) throws CriteriaException {
-        return PostgreArrays.arrayBeforeBind(nonNull, BigIntegerArrayType::appendToText, dataType, this,
+    public final String beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return PostgreArrays.arrayBeforeBind(source, BigIntegerArrayType::appendToText, dataType, this,
                 PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
-        return PostgreArrays.arrayAfterGet(this, dataType, nonNull, false,
+    public final Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false,
                 BigIntegerArrayType::parseBigInteger, ACCESS_ERROR_HANDLER);
     }
 

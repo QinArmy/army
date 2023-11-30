@@ -233,21 +233,21 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     }
 
     @Override
-    public Object convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return rangeConvert(nonNull, this.rangeFunc, this::deserialize, this.map(env.serverMeta()), this,
+    public Object convert(final MappingEnv env, final Object source) throws CriteriaException {
+        return rangeConvert(source, this.rangeFunc, this::deserialize, this.map(env.serverMeta()), this,
                 PARAM_ERROR_HANDLER
         );
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, final Object nonNull) throws CriteriaException {
-        return rangeBeforeBind(this::serialize, nonNull, dataType, this, PARAM_ERROR_HANDLER);
+    public String beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
+        return rangeBeforeBind(this::serialize, source, dataType, this, PARAM_ERROR_HANDLER);
     }
 
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object nonNull) throws DataAccessException {
-        return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        return rangeAfterGet(source, this.rangeFunc, this::deserialize, dataType, this, ACCESS_ERROR_HANDLER);
     }
 
 
