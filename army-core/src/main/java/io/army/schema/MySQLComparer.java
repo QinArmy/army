@@ -18,7 +18,7 @@ final class MySQLComparer extends ArmySchemaComparer {
 
     private MySQLComparer(ServerMeta serverMeta) {
         super(serverMeta);
-        if (serverMeta.dialectDatabase() != Database.MySQL) {
+        if (serverMeta.serverDatabase() != Database.MySQL) {
             throw new IllegalArgumentException("serverMeta error.");
         }
     }

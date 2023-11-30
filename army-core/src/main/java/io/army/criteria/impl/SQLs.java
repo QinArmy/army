@@ -15,6 +15,7 @@ import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.util._Collections;
@@ -864,9 +865,9 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public SqlType map(final ServerMeta meta) {
+        public DataType map(final ServerMeta meta) {
             final SqlType sqlType;
-            switch (meta.dialectDatabase()) {
+            switch (meta.serverDatabase()) {
                 case MySQL:
                     sqlType = MySQLType.NULL;
                     break;

@@ -3,6 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
@@ -50,9 +51,9 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.dialectDatabase()) {
+    public DataType map(final ServerMeta meta) {
+        final DataType type;
+        switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.DATETIME;
                 break;

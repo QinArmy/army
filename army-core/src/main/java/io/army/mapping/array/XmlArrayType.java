@@ -58,7 +58,7 @@ public final class XmlArrayType extends _ArmyBuildInMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
+        if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return PostgreType.VARCHAR_ARRAY;

@@ -33,7 +33,7 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType type;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case PostgreSQL:
                 type = PostgreType.JSONPATH;
                 break;

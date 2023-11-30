@@ -24,7 +24,7 @@ public interface _SchemaComparer {
             case H2:
 
             default:
-                throw _Exceptions.unexpectedEnum(serverMeta.dialectDatabase());
+                throw _Exceptions.unexpectedEnum(serverMeta.serverDatabase());
         }
         return comparer;
     }

@@ -103,7 +103,7 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
 
     static SqlType mapSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 sqlType = MySQLType.TEXT;
                 break;

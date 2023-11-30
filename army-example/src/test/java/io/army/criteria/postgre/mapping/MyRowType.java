@@ -13,7 +13,7 @@ import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
@@ -31,6 +31,8 @@ public final class MyRowType extends MappingType
         return INSTANCE;
     }
 
+    private static final DataType DATA_TYPE = DataType.from("MYROWTYPE");
+
     private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.of(
             CompositeTypeField.from("a", IntegerType.INTEGER),
             CompositeTypeField.from("b", TextArrayType.LIST),
@@ -46,11 +48,11 @@ public final class MyRowType extends MappingType
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
+    public DataType map(final ServerMeta meta) throws NotSupportDialectException {
+        if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreType.USER_DEFINED;
+        return DATA_TYPE;
     }
 
     @Override
@@ -110,13 +112,6 @@ public final class MyRowType extends MappingType
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public String sqlTypeName(final ServerMeta meta) {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
-            throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return "MYROWTYPE";
-    }
 
     @Override
     public List<CompositeTypeField> fieldList() {

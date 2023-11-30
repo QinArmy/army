@@ -278,7 +278,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return new CriteriaException(createConvertErrorMessage(type, nonNull));
     }
 
-    private static CriteriaException paramError(final MappingType type, SqlType sqlType,
+    private static CriteriaException paramError(final MappingType type, DataType sqlType,
                                                 final Object nonNull, final @Nullable Throwable cause) {
         final CriteriaException e;
         if (cause == null) {
@@ -289,7 +289,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return e;
     }
 
-    private static DataAccessException dataAccessError(final MappingType type, SqlType sqlType,
+    private static DataAccessException dataAccessError(final MappingType type, DataType sqlType,
                                                        final Object nonNull, final @Nullable Throwable cause) {
         final DataAccessException e;
         if (cause == null) {
@@ -615,20 +615,11 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     }
 
 
-    /**
-     * private interface
-     */
-    private interface TypeNameSpec {
-
-        String sqlTypeName(ServerMeta meta);
-    }
-
-
-    public interface SqlUserDefinedType extends TypeNameSpec {
+    public interface SqlUserDefinedType {
 
     }
 
-    public interface SqlCompositeType extends TypeNameSpec {
+    public interface SqlCompositeType {
 
         List<CompositeTypeField> fieldList();
 

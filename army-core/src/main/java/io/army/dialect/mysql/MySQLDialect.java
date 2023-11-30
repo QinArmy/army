@@ -54,7 +54,7 @@ public enum MySQLDialect implements Dialect {
 
 
     public static MySQLDialect from(final ServerMeta meta) {
-        assert meta.dialectDatabase() == Database.MySQL;
+        assert meta.serverDatabase() == Database.MySQL;
 
         final MySQLDialect dialect;
         switch (meta.major()) {

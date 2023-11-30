@@ -131,7 +131,7 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
 
     static SqlType mapToDecimal(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 sqlType = MySQLType.DECIMAL;
                 break;

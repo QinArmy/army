@@ -56,7 +56,7 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.MEDIUMINT_UNSIGNED;
                 break;

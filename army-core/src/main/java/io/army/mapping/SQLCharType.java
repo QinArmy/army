@@ -34,7 +34,7 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.CHAR;
                 break;

@@ -54,7 +54,7 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.TIME;
                 break;

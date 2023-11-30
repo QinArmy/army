@@ -36,7 +36,7 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType type;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case PostgreSQL:
                 type = PostgreType.NO_CAST_TEXT;
                 break;

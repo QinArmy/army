@@ -55,7 +55,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case PostgreSQL:
                 type = PostgreType.TIMETZ;
                 break;

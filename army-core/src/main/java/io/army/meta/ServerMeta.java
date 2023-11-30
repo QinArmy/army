@@ -9,18 +9,6 @@ public interface ServerMeta {
 
     String name();
 
-    /**
-     * <p>
-     * This method is equivalent to {@link Dialect#database()} of {@link #usedDialect()}
-     * </p>
-     *
-     * @see #serverDatabase()
-     */
-    Database dialectDatabase();
-
-    /**
-     * @see #dialectDatabase()
-     */
     Database serverDatabase();
 
     @Nullable

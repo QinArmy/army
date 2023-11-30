@@ -52,7 +52,7 @@ public final class MediumIntType extends _NumericType {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 sqlType = MySQLType.MEDIUMINT;
                 break;

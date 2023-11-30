@@ -39,7 +39,7 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType sqlDataType;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case PostgreSQL:
                 sqlDataType = PostgreType.JSONB;
                 break;

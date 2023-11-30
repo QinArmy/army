@@ -40,7 +40,7 @@ public final class XmlType extends _ArmyBuildInMapping {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType sqlDataType;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 sqlDataType = MySQLType.TEXT;
                 break;

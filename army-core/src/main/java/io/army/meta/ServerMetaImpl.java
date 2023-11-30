@@ -18,8 +18,6 @@ final class ServerMetaImpl implements ServerMeta {
 
     private final Database database;
 
-    private final Database dialectDatabase;
-
     private final String catalogName;
 
     private final String schemaName;
@@ -66,18 +64,12 @@ final class ServerMetaImpl implements ServerMeta {
         } else if (!this.database.isCompatible(this.usedDialect)) {
             throw _Exceptions.databaseNotCompatible(this.usedDialect, this.database);
         }
-        this.dialectDatabase = this.usedDialect.database();
 
     }
 
     @Override
     public String name() {
         return this.name;
-    }
-
-    @Override
-    public Database dialectDatabase() {
-        return this.dialectDatabase;
     }
 
     @Override

@@ -52,7 +52,7 @@ public final class ByteType extends _NumericType._IntegerType {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.TINYINT;
                 break;

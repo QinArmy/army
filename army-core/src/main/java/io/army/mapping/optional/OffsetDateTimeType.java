@@ -132,7 +132,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
 
     static SqlType mapToSqlType(final ServerMeta meta, final MappingType type) {
         final SqlType sqlType;
-        switch (meta.dialectDatabase()) {
+        switch (meta.serverDatabase()) {
             case PostgreSQL:
                 sqlType = PostgreType.TIMESTAMPTZ;
                 break;

@@ -37,7 +37,7 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(ServerMeta meta) {
-        if (meta.dialectDatabase() != Database.MySQL) {
+        if (meta.serverDatabase() != Database.MySQL) {
             throw noMappingError(meta);
         }
         return MySQLType.BIT;
