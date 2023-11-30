@@ -40,7 +40,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
 
     private boolean useDataSourceTimeout;
 
-    private boolean useDataSourceLabel;
+    private boolean useDatabaseSessionName;
 
 
     /**
@@ -100,12 +100,12 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
         return this;
     }
 
-    public boolean isUseDataSourceLabel() {
-        return this.useDataSourceLabel;
+    public boolean isUseDatabaseSessionName() {
+        return this.useDatabaseSessionName;
     }
 
-    public ArmySyncLocalTransactionManager setUseDataSourceLabel(boolean useDataSourceLabel) {
-        this.useDataSourceLabel = useDataSourceLabel;
+    public ArmySyncLocalTransactionManager setUseDatabaseSessionName(boolean useDatabaseSessionName) {
+        this.useDatabaseSessionName = useDatabaseSessionName;
         return this;
     }
 
@@ -152,7 +152,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
 
                     .name(txLabel)
                     .readonly(readOnly)
-                    .dataSourceOption(Option.LABEL, this.useDataSourceLabel ? txLabel : null)
+                    .dataSourceOption(Option.NAME, this.useDatabaseSessionName ? txLabel : null)
                     .dataSourceOption(Option.TIMEOUT_MILLIS, (timeoutMillis > 0 && this.useDataSourceTimeout) ? timeoutMillis : null)
 
                     .build();
