@@ -67,7 +67,7 @@ final class ArmyXid implements Xid {
         }
         final Function<Option<?>, ?> function = this.optionFunc;
         Object value;
-        if (function == Option.EMPTY_OPTION_FUNC) {
+        if (function == Option.EMPTY_FUNC) {
             value = null;
         } else {
             value = function.apply(option);

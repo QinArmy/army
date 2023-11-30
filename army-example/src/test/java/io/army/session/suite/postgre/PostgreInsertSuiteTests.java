@@ -11,6 +11,8 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
+import io.army.session.Isolation;
+import io.army.session.TransactionOption;
 import io.army.sync.SyncLocalSession;
 import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
@@ -192,24 +194,19 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertFalse(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
-
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             Assert.assertEquals(session.update(stmt), provinceList.size());
             for (ChinaProvince province : provinceList) {
                 Assert.assertNotNull(province.getId()); // database generated key
             }
-            tx.commit();
+            session.commitIfExists();
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         }
-
         releaseSyncSession(session);
 
     }
@@ -237,13 +234,10 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
 
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             final List<ChinaProvince> resultList;
             resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
@@ -264,11 +258,11 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 Assert.assertNotNull(province.getGovernor());
                 Assert.assertNotNull(province.getProvincialCapital());
             }
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -298,13 +292,9 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
 
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
             final List<ChinaProvince> resultList;
             resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
@@ -327,11 +317,11 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
             }
 
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -363,13 +353,10 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
-
         try {
-            tx.start();
+
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             final List<Map<String, Object>> resultList;
             resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
@@ -392,11 +379,11 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
                 Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
             }
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -427,13 +414,10 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
 
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             final List<Map<String, Object>> resultList;
             resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
@@ -456,11 +440,13 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
                 Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
             }
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+
+            session.rollbackIfExists();
+
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -679,18 +665,15 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertFalse(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
 
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             Assert.assertEquals(session.update(stmt), 2);
-            tx.commit();
+            session.commitIfExists();
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         }
 
@@ -736,13 +719,10 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
 
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             final List<ChinaProvince> resultList;
             resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
@@ -761,11 +741,13 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 Assert.assertNotNull(province.getGovernor());
                 Assert.assertNotNull(province.getProvincialCapital());
             }
-            tx.commit();
+
+            session.commitIfExists();
+
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -809,13 +791,9 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
-
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             final List<ChinaProvince> resultList;
             resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
@@ -835,11 +813,11 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
             }
 
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -885,13 +863,9 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
 
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
 
             final List<Map<String, Object>> resultList;
             resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
@@ -913,11 +887,11 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
                 Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
             }
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -962,14 +936,10 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .name(session.name())
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
 
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+
             final List<Map<String, Object>> resultList;
             resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
@@ -991,11 +961,11 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
             }
 
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);
@@ -1118,14 +1088,8 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .returningAll()
                 .asReturningInsert();
 
-        final LocalTransaction tx;
-        tx = session.builder()
-                .name(session.name())
-                .isolation(Isolation.READ_COMMITTED)
-                .build();
-
         try {
-            tx.start();
+            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
 
             final List<ChinaProvince> resultList;
             resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
@@ -1135,10 +1099,10 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             final int resultRows = resultList.size();
             Assert.assertTrue(resultRows > 0 && resultRows <= maxRowCount);
 
-            tx.commit();
+            session.commitIfExists();
             LOG.debug("query insert rows : {}\n resultList : {}", resultList.size(), JSON.toJSONString(resultList));
         } catch (Exception e) {
-            tx.rollback();
+            session.rollbackIfExists();
             throw e;
         } finally {
             releaseSyncSession(session);

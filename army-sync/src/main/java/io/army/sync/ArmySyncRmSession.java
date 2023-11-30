@@ -141,12 +141,12 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final TransactionInfo end(Xid xid) {
-        return this.end(xid, TM_NO_FLAGS, Option.EMPTY_OPTION_FUNC);
+        return this.end(xid, TM_NO_FLAGS, Option.EMPTY_FUNC);
     }
 
     @Override
     public final TransactionInfo end(Xid xid, int flags) {
-        return this.end(xid, flags, Option.EMPTY_OPTION_FUNC);
+        return this.end(xid, flags, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -186,7 +186,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final int prepare(Xid xid) {
-        return this.prepare(xid, Option.EMPTY_OPTION_FUNC);
+        return this.prepare(xid, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -229,12 +229,12 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final void commit(Xid xid) {
-        this.commit(xid, TM_NO_FLAGS, Option.EMPTY_OPTION_FUNC);
+        this.commit(xid, TM_NO_FLAGS, Option.EMPTY_FUNC);
     }
 
     @Override
     public final void commit(Xid xid, int flags) {
-        this.commit(xid, flags, Option.EMPTY_OPTION_FUNC);
+        this.commit(xid, flags, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -282,7 +282,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final void rollback(Xid xid) {
-        this.rollback(xid, Option.EMPTY_OPTION_FUNC);
+        this.rollback(xid, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -301,7 +301,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final void forget(Xid xid) {
-        this.forget(xid, Option.EMPTY_OPTION_FUNC);
+        this.forget(xid, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -321,7 +321,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final List<Xid> recoverList(int flags) {
-        return this.recoverList(flags, Option.EMPTY_OPTION_FUNC);
+        return this.recoverList(flags, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -332,7 +332,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final Stream<Xid> recover(int flags) {
-        return this.recover(flags, Option.EMPTY_OPTION_FUNC, ArmyStreamOptions.DEFAULT);
+        return this.recover(flags, Option.EMPTY_FUNC, ArmyStreamOptions.DEFAULT);
     }
 
     @Override

@@ -49,11 +49,21 @@ public interface SyncLocalSession extends SyncSession, LocalSession {
     @Nullable
     TransactionInfo commit(Function<Option<?>, ?> optionFunc);
 
+    void commitIfExists();
+
+
+    @Nullable
+    TransactionInfo commitIfExists(Function<Option<?>, ?> optionFunc);
+
+    void rollback();
+
     @Nullable
     TransactionInfo rollback(Function<Option<?>, ?> optionFunc);
 
+    void rollbackIfExists();
 
-    void rollback();
+    @Nullable
+    TransactionInfo rollbackIfExists(Function<Option<?>, ?> optionFunc);
 
 
 }

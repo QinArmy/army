@@ -557,7 +557,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             if (deferrable != null) {
                 optionFunc = Option.singleFunc(DEFERRABLE, deferrable);
             } else {
-                optionFunc = Option.EMPTY_OPTION_FUNC;
+                optionFunc = Option.EMPTY_FUNC;
             }
 
             final TransactionInfo info;

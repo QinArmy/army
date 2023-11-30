@@ -105,7 +105,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final Object setSavePoint() {
-        return setSavePoint(Option.EMPTY_OPTION_FUNC);
+        return setSavePoint(Option.EMPTY_FUNC);
     }
 
     @Override
@@ -119,7 +119,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final void releaseSavePoint(Object savepoint) {
-        releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+        releaseSavePoint(savepoint, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -133,7 +133,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final void rollbackToSavePoint(Object savepoint) {
-        rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+        rollbackToSavePoint(savepoint, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -689,7 +689,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
         final R result;
         if (stmt instanceof SimpleStmt) {
-            result = this.stmtExecutor.update((SimpleStmt) stmt, option, resultClass, Option.EMPTY_OPTION_FUNC);
+            result = this.stmtExecutor.update((SimpleStmt) stmt, option, resultClass, Option.EMPTY_FUNC);
 
             if (stmt.hasOptimistic() && obtainAffectedRows(result) == 0) {
                 throw _Exceptions.optimisticLock();
@@ -701,13 +701,13 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             final PairStmt pairStmt = (PairStmt) stmt;
 
             final R childResult;
-            childResult = this.stmtExecutor.update(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_OPTION_FUNC);
+            childResult = this.stmtExecutor.update(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_FUNC);
 
             if (stmt.hasOptimistic() && obtainAffectedRows(childResult) == 0) {
                 throw _Exceptions.optimisticLock();
             }
             try {
-                result = this.stmtExecutor.update(pairStmt.secondStmt(), option, resultClass, Option.EMPTY_OPTION_FUNC);
+                result = this.stmtExecutor.update(pairStmt.secondStmt(), option, resultClass, Option.EMPTY_FUNC);
             } catch (Throwable e) {
                 throw _Exceptions.childUpdateError(this, domainTable, e);
             }

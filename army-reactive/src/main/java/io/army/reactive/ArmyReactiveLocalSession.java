@@ -161,7 +161,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
 
     @Override
     public final Mono<ReactiveLocalSession> commit() {
-        return this.commit(Option.EMPTY_OPTION_FUNC)
+        return this.commit(Option.EMPTY_FUNC)
                 .thenReturn(this);
     }
 
@@ -181,8 +181,25 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     }
 
     @Override
+    public final Mono<ReactiveLocalSession> commitIfExists() {
+        return commitIfExists(Option.EMPTY_FUNC)
+                .thenReturn(this);
+    }
+
+    @Override
+    public final Mono<Optional<TransactionInfo>> commitIfExists(final Function<Option<?>, ?> optionFunc) {
+        return Mono.defer(() -> {
+            final TransactionInfo info = this.transactionInfo;
+            if ((info != null && info.isolation() == Isolation.PSEUDO) || inTransaction()) {
+                return commit(optionFunc);
+            }
+            return Mono.empty();
+        });
+    }
+
+    @Override
     public final Mono<ReactiveLocalSession> rollback() {
-        return rollback(Option.EMPTY_OPTION_FUNC)
+        return rollback(Option.EMPTY_FUNC)
                 .thenReturn(this);
     }
 
@@ -196,10 +213,26 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
                 .onErrorMap(_ArmySession::wrapIfNeed);
     }
 
+    @Override
+    public final Mono<ReactiveLocalSession> rollbackIfExists() {
+        return rollbackIfExists(Option.EMPTY_FUNC)
+                .thenReturn(this);
+    }
+
+    @Override
+    public final Mono<Optional<TransactionInfo>> rollbackIfExists(final Function<Option<?>, ?> optionFunc) {
+        return Mono.defer(() -> {
+            final TransactionInfo info = this.transactionInfo;
+            if ((info != null && info.isolation() == Isolation.PSEUDO) || inTransaction()) {
+                return rollback(optionFunc);
+            }
+            return Mono.empty();
+        });
+    }
 
     @Override
     public final Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint) {
-        return releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+        return releaseSavePoint(savepoint, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -214,7 +247,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
 
     @Override
     public final Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint) {
-        return rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+        return rollbackToSavePoint(savepoint, Option.EMPTY_FUNC);
     }
 
     @Override

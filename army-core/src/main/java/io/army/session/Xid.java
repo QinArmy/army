@@ -155,7 +155,7 @@ public interface Xid extends OptionSpec {
      * @throws IllegalArgumentException throw when gtrid or bqual error.
      */
     static Xid from(String gtrid, @Nullable String bqual, int formatId) {
-        return ArmyXid.from(gtrid, bqual, formatId, Option.EMPTY_OPTION_FUNC);
+        return ArmyXid.from(gtrid, bqual, formatId, Option.EMPTY_FUNC);
     }
 
     /**

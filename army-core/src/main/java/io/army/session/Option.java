@@ -42,7 +42,7 @@ public final class Option<T> {
         };
     }
 
-    public static final Function<Option<?>, ?> EMPTY_OPTION_FUNC = option -> null;
+    public static final Function<Option<?>, ?> EMPTY_FUNC = option -> null;
 
     /**
      * private

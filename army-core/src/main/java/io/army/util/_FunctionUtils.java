@@ -16,7 +16,7 @@ public abstract class _FunctionUtils {
     public static Function<Option<?>, ?> mapFunc(final @Nullable Map<Option<?>, ?> optionMap) {
         final Function<Option<?>, ?> optionFunc;
         if (optionMap == null || optionMap.size() == 0) {
-            optionFunc = Option.EMPTY_OPTION_FUNC;
+            optionFunc = Option.EMPTY_FUNC;
         } else {
             optionFunc = optionMap::get;
         }

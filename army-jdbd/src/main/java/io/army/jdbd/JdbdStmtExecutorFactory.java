@@ -216,7 +216,7 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
 
 
     Function<io.jdbd.session.Option<?>, ?> mapToJdbdOptionFunc(final @Nullable Function<Option<?>, ?> optionFunc) {
-        if (optionFunc == Option.EMPTY_OPTION_FUNC || optionFunc == null) {
+        if (optionFunc == Option.EMPTY_FUNC || optionFunc == null) {
             return io.jdbd.session.Option.EMPTY_OPTION_FUNC;
         }
         return jdbdOption -> {
@@ -232,7 +232,7 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
 
     Function<Option<?>, ?> mapToArmyOptionFunc(final @Nullable Function<io.jdbd.session.Option<?>, ?> optionFunc) {
         if (optionFunc == io.jdbd.session.Option.EMPTY_OPTION_FUNC || optionFunc == null) {
-            return Option.EMPTY_OPTION_FUNC;
+            return Option.EMPTY_FUNC;
         }
         return armyOption -> {
             final io.jdbd.session.Option<?> jdbdOption;

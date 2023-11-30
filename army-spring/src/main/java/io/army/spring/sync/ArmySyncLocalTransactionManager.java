@@ -223,7 +223,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
             throw SpringUtils.transactionNoSession();
         } else if (session.hasTransactionInfo()) {
             try {
-                session.commit(Option.EMPTY_OPTION_FUNC);
+                session.commit(Option.EMPTY_FUNC);
             } catch (SessionException e) {
                 throw SpringUtils.wrapSessionError(e);
             }
@@ -244,7 +244,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
             throw SpringUtils.transactionNoSession();
         } else if (session.hasTransactionInfo()) {
             try {
-                session.rollback(Option.EMPTY_OPTION_FUNC);
+                session.rollback(Option.EMPTY_FUNC);
             } catch (SessionException e) {
                 throw SpringUtils.wrapSessionError(e);
             }
@@ -377,7 +377,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
                 throw SpringUtils.transactionNoSession();
             }
             try {
-                return session.setSavePoint(Option.EMPTY_OPTION_FUNC);
+                return session.setSavePoint(Option.EMPTY_FUNC);
             } catch (SessionException e) {
                 throw SpringUtils.wrapSessionError(e);
             }
@@ -390,7 +390,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
                 throw SpringUtils.transactionNoSession();
             }
             try {
-                session.rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+                session.rollbackToSavePoint(savepoint, Option.EMPTY_FUNC);
             } catch (SessionException e) {
                 throw SpringUtils.wrapSessionError(e);
             }
@@ -403,7 +403,7 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
                 throw SpringUtils.transactionNoSession();
             }
             try {
-                session.releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+                session.releaseSavePoint(savepoint, Option.EMPTY_FUNC);
             } catch (SessionException e) {
                 throw SpringUtils.wrapSessionError(e);
             }

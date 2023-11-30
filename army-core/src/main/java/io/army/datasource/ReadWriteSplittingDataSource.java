@@ -29,7 +29,7 @@ public interface ReadWriteSplittingDataSource<R> {
      *     <li>{@link io.army.session.FactoryBuilderSpec#dataSourceOption(Option, Object)}</li>
      * </ul>
      *
-     * @param func option function, default {@link Option#EMPTY_OPTION_FUNC}
+     * @param func option function, default {@link Option#EMPTY_FUNC}
      * @return a DataSource that can support read/write
      */
     R writableDataSource(final Function<Option<?>, ?> func);
@@ -50,7 +50,7 @@ public interface ReadWriteSplittingDataSource<R> {
      *     <li>{@link io.army.session.FactoryBuilderSpec#dataSourceOption(Option, Object)}</li>
      * </ul>l
      *
-     * @param func option function, default {@link Option#EMPTY_OPTION_FUNC}
+     * @param func option function, default {@link Option#EMPTY_FUNC}
      * @return a readonly DataSource
      */
     R readOnlyDataSource(final Function<Option<?>, ?> func);

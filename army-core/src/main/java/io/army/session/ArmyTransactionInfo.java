@@ -47,7 +47,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
         } else if (readOnly ^ (isolation == Isolation.PSEUDO)) {
             String m = String.format("readOnly[%s] and Isolation[%s] not match.", readOnly, isolation.name());
             throw new IllegalArgumentException(m);
-        } else if (optionFunc != Option.EMPTY_OPTION_FUNC) {
+        } else if (optionFunc != Option.EMPTY_FUNC) {
             if (optionFunc.apply(Option.TIMEOUT_MILLIS) != null && optionFunc.apply(Option.START_MILLIS) == null) {
                 String m = String.format("Option[%s] and Option[%s] not match.", Option.TIMEOUT_MILLIS.name(),
                         Option.START_MILLIS.name());
@@ -87,11 +87,11 @@ final class ArmyTransactionInfo implements TransactionInfo {
         final boolean rollbackOnly;
         if (this.isolation == Isolation.PSEUDO) {
             optionFunc = this.optionFunc;
-            rollbackOnly = optionFunc != Option.EMPTY_OPTION_FUNC
+            rollbackOnly = optionFunc != Option.EMPTY_FUNC
                     && Boolean.TRUE.equals(optionFunc.apply(Option.ROLLBACK_ONLY));
         } else if (!this.inTransaction) {
             rollbackOnly = false;
-        } else if ((optionFunc = this.optionFunc) == Option.EMPTY_OPTION_FUNC) {
+        } else if ((optionFunc = this.optionFunc) == Option.EMPTY_FUNC) {
             rollbackOnly = false;
         } else if (Boolean.TRUE.equals(optionFunc.apply(Option.ROLLBACK_ONLY))) {
             rollbackOnly = true;
@@ -126,7 +126,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
             value = this.isolation;
         } else if (option == Option.READ_ONLY) {
             value = this.readOnly;
-        } else if (this.optionFunc == Option.EMPTY_OPTION_FUNC) {
+        } else if (this.optionFunc == Option.EMPTY_FUNC) {
             value = null;
         } else {
             value = this.optionFunc.apply(option);

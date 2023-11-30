@@ -7,6 +7,7 @@ import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.function.Function;
@@ -19,7 +20,7 @@ import java.util.function.Function;
 class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     /**
-     * @see ArmySyncSessionFactory.LocalBuilder#createSession(String, boolean)
+     * @see ArmySyncSessionFactory.LocalBuilder#createSession(String, boolean, Function)
      */
     static ArmySyncLocalSession create(ArmySyncSessionFactory.LocalBuilder builder) {
         final ArmySyncLocalSession session;
@@ -189,7 +190,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     @Override
     public final void commit() {
-        this.commit(Option.EMPTY_OPTION_FUNC);
+        this.commit(Option.EMPTY_FUNC);
     }
 
     @Override
@@ -203,7 +204,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         final TransactionInfo info;
         info = ((SyncLocalStmtExecutor) this.stmtExecutor).commit(optionFunc);
 
-        if (optionFunc != Option.EMPTY_OPTION_FUNC
+        if (optionFunc != Option.EMPTY_FUNC
                 && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
             assert info != null && info.inTransaction(); // fail,executor bug
         } else {
@@ -214,8 +215,23 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     }
 
     @Override
+    public final void commitIfExists() {
+        commitIfExists(Option.EMPTY_FUNC);
+    }
+
+    @Nullable
+    @Override
+    public final TransactionInfo commitIfExists(final Function<Option<?>, ?> optionFunc) {
+        final TransactionInfo info = this.transactionInfo;
+        if (!(info != null && info.isolation() == Isolation.PSEUDO) || inTransaction()) {
+            return commit(optionFunc);
+        }
+        return null;
+    }
+
+    @Override
     public final void rollback() {
-        this.rollback(Option.EMPTY_OPTION_FUNC);
+        rollback(Option.EMPTY_FUNC);
     }
 
     @Override
@@ -227,7 +243,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         final TransactionInfo info;
         info = ((SyncLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc);
 
-        if (optionFunc != Option.EMPTY_OPTION_FUNC
+        if (optionFunc != Option.EMPTY_FUNC
                 && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
             assert info != null && info.inTransaction();
         } else {
@@ -238,6 +254,20 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         return info;
     }
 
+    @Override
+    public final void rollbackIfExists() {
+        rollbackIfExists(Option.EMPTY_FUNC);
+    }
+
+    @Nullable
+    @Override
+    public final TransactionInfo rollbackIfExists(final Function<Option<?>, ?> optionFunc) {
+        final TransactionInfo info = this.transactionInfo;
+        if (!(info != null && info.isolation() == Isolation.PSEUDO) || inTransaction()) {
+            return rollback(optionFunc);
+        }
+        return null;
+    }
 
     /*-------------------below protected template methods -------------------*/
 

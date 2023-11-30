@@ -42,6 +42,14 @@ public interface TransactionOption extends OptionSpec {
     @Override
     String toString();
 
+    static TransactionOption option() {
+        return SimpleTransactionOption.option(null, false);
+    }
+
+    static TransactionOption option(@Nullable Isolation isolation) {
+        return SimpleTransactionOption.option(isolation, false);
+    }
+
     static TransactionOption option(@Nullable Isolation isolation, boolean readOnly) {
         return SimpleTransactionOption.option(isolation, readOnly);
     }

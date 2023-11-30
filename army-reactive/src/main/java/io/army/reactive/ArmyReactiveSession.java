@@ -237,7 +237,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     @Override
     public final Mono<?> setSavePoint() {
-        return this.setSavePoint(Option.EMPTY_OPTION_FUNC);
+        return this.setSavePoint(Option.EMPTY_FUNC);
     }
 
 
@@ -452,7 +452,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             final Stmt stmt;
             stmt = parseDmlStatement(statement, option);
             if (stmt instanceof SimpleStmt) {
-                mono = this.stmtExecutor.update((SimpleStmt) stmt, option, Option.EMPTY_OPTION_FUNC)
+                mono = this.stmtExecutor.update((SimpleStmt) stmt, option, Option.EMPTY_FUNC)
                         .onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairStmt)) {
                 mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
@@ -460,8 +460,8 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
 
-                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, Option.EMPTY_OPTION_FUNC)
-                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.EMPTY_OPTION_FUNC)
+                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, Option.EMPTY_FUNC)
+                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.EMPTY_FUNC)
                                 .doOnSuccess(childStates -> {
                                     if (childStates.affectedRows() != parentStates.affectedRows()) {
                                         throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());

@@ -147,7 +147,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     @Override
     public final Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException {
         final Object name;
-        if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+        if (optionFunc == Option.EMPTY_FUNC) {
             name = null;
         } else {
             name = optionFunc.apply(Option.NAME);
@@ -284,7 +284,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final R r;
             if (resultClass == Long.class) {
                 r = (R) Long.valueOf(rows);
-            } else if (optionFunc != Option.EMPTY_OPTION_FUNC
+            } else if (optionFunc != Option.EMPTY_FUNC
                     && Boolean.TRUE.equals(optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR))) {
                 r = (R) createNamedCursor(statement, rows, optionFunc);
             } else {
@@ -649,7 +649,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             throws DataAccessException {
 
         final Object chainValue;
-        if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+        if (optionFunc == Option.EMPTY_FUNC) {
             chainValue = null;
         } else {
             chainValue = optionFunc.apply(Option.CHAIN);

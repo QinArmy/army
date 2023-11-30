@@ -30,12 +30,13 @@ public abstract class PostgreSuiteTests extends ArmyTestDataSupport {
     @DataProvider(parallel = true)
     public static Object[][] getSession(final ITestNGMethod method) {
 
-        return new Object[][]{{
-                syncSessionFactory.builder()
-                        .name(method.getMethodName())
-                        .allowQueryInsert(true)
-                        .build()
-        }};
+        final SyncLocalSession session;
+        session = syncSessionFactory.localBuilder()
+                .name(method.getMethodName())
+                .allowQueryInsert(true)
+                .build();
+
+        return new Object[][]{{session}};
     }
 
     public void releaseSyncSession(SyncLocalSession session) {

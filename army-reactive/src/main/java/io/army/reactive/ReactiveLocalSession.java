@@ -48,10 +48,17 @@ public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 
     Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc);
 
+    Mono<ReactiveLocalSession> commitIfExists();
+
+    Mono<Optional<TransactionInfo>> commitIfExists(Function<Option<?>, ?> optionFunc);
+
     Mono<ReactiveLocalSession> rollback();
 
     Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc);
 
+    Mono<ReactiveLocalSession> rollbackIfExists();
+
+    Mono<Optional<TransactionInfo>> rollbackIfExists(Function<Option<?>, ?> optionFunc);
 
     @Override
     Mono<ReactiveLocalSession> setTransactionCharacteristics(TransactionOption option);

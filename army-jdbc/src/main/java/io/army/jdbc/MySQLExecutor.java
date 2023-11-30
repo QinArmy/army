@@ -284,7 +284,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 isolation = readIsolation(resultSet.getString(1));
                 readOnly = resultSet.getBoolean(2);
 
-                return TransactionInfo.info(false, isolation, readOnly, Option.EMPTY_OPTION_FUNC);
+                return TransactionInfo.info(false, isolation, readOnly, Option.EMPTY_FUNC);
             }
         } catch (Exception e) {
             throw handleException(e);
@@ -390,7 +390,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             if (consistentSnapshot != null && consistentSnapshot) {
                 optionFunc = Option.singleFunc(WITH_CONSISTENT_SNAPSHOT, Boolean.TRUE);
             } else {
-                optionFunc = Option.EMPTY_OPTION_FUNC;
+                optionFunc = Option.EMPTY_FUNC;
             }
 
             // execute start transaction statements
@@ -449,7 +449,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             }
 
             final Object release;
-            if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+            if (optionFunc == Option.EMPTY_FUNC) {
                 release = null;
             } else {
                 release = optionFunc.apply(Option.RELEASE);

@@ -122,7 +122,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> releaseSavePoint(Object savepoint) {
-        return releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+        return releaseSavePoint(savepoint, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -137,7 +137,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> rollbackToSavePoint(Object savepoint) {
-        return rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+        return rollbackToSavePoint(savepoint, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -191,12 +191,12 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> end(Xid xid) {
-        return end(xid, TM_NO_FLAGS, Option.EMPTY_OPTION_FUNC);
+        return end(xid, TM_NO_FLAGS, Option.EMPTY_FUNC);
     }
 
     @Override
     public final Mono<ReactiveRmSession> end(Xid xid, int flags) {
-        return end(xid, flags, Option.EMPTY_OPTION_FUNC);
+        return end(xid, flags, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -234,7 +234,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<Integer> prepare(Xid xid) {
-        return prepare(xid, Option.EMPTY_OPTION_FUNC);
+        return prepare(xid, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -266,12 +266,12 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> commit(Xid xid) {
-        return commit(xid, TM_NO_FLAGS, Option.EMPTY_OPTION_FUNC);
+        return commit(xid, TM_NO_FLAGS, Option.EMPTY_FUNC);
     }
 
     @Override
     public final Mono<ReactiveRmSession> commit(Xid xid, int flags) {
-        return commit(xid, flags, Option.EMPTY_OPTION_FUNC);
+        return commit(xid, flags, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -308,7 +308,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> rollback(Xid xid) {
-        return rollback(xid, Option.EMPTY_OPTION_FUNC);
+        return rollback(xid, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -342,7 +342,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<ReactiveRmSession> forget(Xid xid) {
-        return forget(xid, Option.EMPTY_OPTION_FUNC);
+        return forget(xid, Option.EMPTY_FUNC);
     }
 
     @Override
@@ -363,7 +363,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Flux<Optional<Xid>> recover(int flags) {
-        return recover(flags, Option.EMPTY_OPTION_FUNC);
+        return recover(flags, Option.EMPTY_FUNC);
     }
 
     @Override
