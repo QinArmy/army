@@ -193,7 +193,7 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
 
 
     @Override
-    public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
 
         final int targetDimension;
         final Class<?> componentType;

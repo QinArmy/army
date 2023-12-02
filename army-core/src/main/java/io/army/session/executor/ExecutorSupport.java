@@ -52,7 +52,8 @@ public abstract class ExecutorSupport {
     }
 
 
-    protected static MappingType compatibleTypeFrom(final TypeInfer infer, final @Nullable Class<?> resultClass,
+    protected static MappingType compatibleTypeFrom(final TypeInfer infer, final DataType dataType,
+                                                    final @Nullable Class<?> resultClass,
                                                     final ObjectAccessor accessor, final String fieldName)
             throws NoMatchMappingException {
         final MappingType type;
@@ -75,12 +76,14 @@ public abstract class ExecutorSupport {
             if (resultClass.isAssignableFrom(type.javaType())) {
                 compatibleType = type;
             } else {
-                compatibleType = type.compatibleFor(resultClass);
+                compatibleType = type.compatibleFor(dataType, resultClass);
             }
+        } else if (accessor == RECORD_PSEUDO_ACCESSOR) {
+            compatibleType = type;
         } else if (accessor.isWritable(fieldName, type.javaType())) {
             compatibleType = type;
         } else {
-            compatibleType = type.compatibleFor(accessor.getJavaType(fieldName));
+            compatibleType = type.compatibleFor(dataType, accessor.getJavaType(fieldName));
         }
         return compatibleType;
     }

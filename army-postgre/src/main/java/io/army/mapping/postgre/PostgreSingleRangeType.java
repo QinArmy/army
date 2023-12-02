@@ -217,7 +217,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
 
 
     @Override
-    public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         final RangeFunction<?, ?> rangeFunc;
         final PostgreSingleRangeType instance;
         if (targetType == String.class) {

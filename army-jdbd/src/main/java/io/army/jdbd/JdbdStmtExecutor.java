@@ -1457,9 +1457,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 selection = selectionList.get(i);
                 fieldName = selection.label();
 
+                dataType = dataTypeArray[i];
+
                 if ((type = compatibleTypeArray[i]) == null) {
                     if (!(this instanceof CurrentRecordRowReader)) {
-                        type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
+                        type = compatibleTypeFrom(selection, dataType, this.resultClass, accessor, fieldName);
                     } else if ((typeMeta = selection.typeMeta()) instanceof MappingType) {
                         type = (MappingType) typeMeta;
                     } else {
@@ -1468,7 +1470,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                     compatibleTypeArray[i] = type;
                 }
 
-                dataType = dataTypeArray[i];
+
                 columnValue = executor.get(dataRow, i, type, dataType);
 
                 if (columnValue == null) {

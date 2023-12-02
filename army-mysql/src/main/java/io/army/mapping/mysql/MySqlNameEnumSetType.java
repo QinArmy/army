@@ -55,7 +55,7 @@ public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

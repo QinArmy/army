@@ -71,7 +71,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         if (targetType != String.class) {
             throw noMatchCompatibleMapping(this, targetType);
         }

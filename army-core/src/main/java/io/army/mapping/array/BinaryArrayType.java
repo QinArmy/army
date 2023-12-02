@@ -10,7 +10,6 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-import java.math.BigInteger;
 import java.util.function.Consumer;
 
 
@@ -98,17 +97,10 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     }
 
     @Override
-    public Class<?> underlyingComponentType() {
+    public Class<?> underlyingElementJavaType() {
         return byte[].class;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        if (targetType != String.class) {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return StringType.INSTANCE;
-    }
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
@@ -137,11 +129,11 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     }
 
     public static void appendToText(final Object element, final Consumer<String> appender) {
-        if (!(element instanceof BigInteger)) {
+        if (!(element instanceof byte[])) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.accept(new String((byte[]) element));
     }
 
 

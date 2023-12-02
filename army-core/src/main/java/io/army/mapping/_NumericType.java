@@ -25,7 +25,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public final <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         final MappingType type;
         if (targetType == String.class) {
             type = StringType.INSTANCE;

@@ -87,7 +87,7 @@ public class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingT
     }
 
     @Override
-    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public final <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         if (targetType != String.class) {
             throw noMatchCompatibleMapping(this, targetType);
         }

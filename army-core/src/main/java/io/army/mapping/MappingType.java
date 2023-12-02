@@ -66,15 +66,26 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         throw dontSupportArrayType(this);
     }
 
-    /**
-     * @param targetType never {@code  String.class}
-     */
-    public abstract <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException;
 
+    /**
+     * <p>Find compatible {@link MappingType} for targetType.
+     *
+     * @param dataType   from {@link io.army.session.executor.StmtExecutor}, underlying api is one of following :
+     *                   <ul>
+     *                        <li>{@code  java.sql.ResultSetMetaData#getTableName(int)}</li>
+     *                        <li>{@code io.jdbd.result.ResultRowMeta#getDataType(int)}</li>
+     *                   </ul>
+     *                   if dataType is {@link SqlType} instance,then dataType representing appropriate database build-in data type.
+     * @param targetType the target type for application developer
+     * @throws NoMatchMappingException throw when not found compatible {@link MappingType}
+     */
+    public <Z> MappingType compatibleFor(DataType dataType, Class<Z> targetType) throws NoMatchMappingException {
+        throw noMatchCompatibleMapping(this, targetType);
+    }
 
     /**
      * @param source never null
-     * @return the instance of {@link #javaType()}.
+     * @return non-null, the instance of {@link #javaType()}.
      */
     public abstract Object convert(MappingEnv env, Object source) throws CriteriaException;
 
@@ -99,6 +110,9 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return System.identityHashCode(this);
     }
 
+    /**
+     * @see #isSameType(MappingType)
+     */
     @Override
     public final boolean equals(Object obj) {
         return this == obj;
@@ -556,7 +570,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
         MappingType elementType();
 
-        Class<?> underlyingComponentType();
+        Class<?> underlyingElementJavaType();
 
     }
 

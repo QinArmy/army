@@ -50,7 +50,7 @@ public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public Class<?> underlyingComponentType() {
+    public Class<?> underlyingElementJavaType() {
         return BigInteger.class;
     }
 
@@ -60,7 +60,7 @@ public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public final <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         if (targetType != String.class) {
             throw noMatchCompatibleMapping(this, targetType);
         }

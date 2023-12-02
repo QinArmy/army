@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.util.function.Consumer;
 
 /**
+ * <p>This class representing the mapping that map the array of {@link BigDecimal} to database decimal array,for example {@link PostgreType#DECIMAL_ARRAY}.
+ *
  * @see io.army.mapping.BigDecimalType
  * @since 1.0
  */
@@ -56,21 +58,13 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public final Class<?> underlyingComponentType() {
+    public final Class<?> underlyingElementJavaType() {
         return BigDecimal.class;
     }
 
     @Override
     public final DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         return mapToSqlType(this, meta);
-    }
-
-    @Override
-    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
-        if (targetType != String.class) {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return StringType.INSTANCE;
     }
 
 
@@ -87,6 +81,7 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
         }
         return instance;
     }
+
 
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {

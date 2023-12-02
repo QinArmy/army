@@ -228,7 +228,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         final Class<?> targetComponentType;
 
         final RangeFunction<?, ?> rangeFunc;

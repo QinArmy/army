@@ -185,7 +185,7 @@ public final class PostgreSingleRangeArrayType extends _ArmyPostgreRangeType imp
 
 
     @Override
-    public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         final Class<?> targetComponentType;
         final RangeFunction<?, ?> rangeFunc;
 

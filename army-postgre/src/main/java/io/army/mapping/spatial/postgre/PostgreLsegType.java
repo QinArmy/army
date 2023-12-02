@@ -44,7 +44,7 @@ public final class PostgreLsegType extends PostgreGeometricType implements Mappi
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

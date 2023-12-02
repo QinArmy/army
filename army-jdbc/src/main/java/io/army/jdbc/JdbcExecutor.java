@@ -1964,16 +1964,18 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 selection = selectionList.get(i);
                 fieldName = selection.label();
 
+                dataType = dataTypeArray[i];
+
                 if ((type = compatibleTypeArray[i]) == null) {
                     if (this instanceof RecordRowReader) {
                         type = selection.typeMeta().mappingType();
                     } else {
-                        type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
+                        type = compatibleTypeFrom(selection, dataType, this.resultClass, accessor, fieldName);
                     }
                     compatibleTypeArray[i] = type;
                 }
 
-                dataType = dataTypeArray[i];
+
 
                 // dialect executor read one column
                 columnValue = executor.get(resultSet, i + 1, type, dataType);
@@ -2842,7 +2844,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final Selection idSelection = rowReader.selectionList.get(idSelectionIndex);
             final DataType idSqlType = rowReader.dataTypeArray[idSelectionIndex];
             final String idLabel = idSelection.label();
-            final MappingType type = compatibleTypeFrom(idSelection, this.resultClass, accessor, idLabel);
+            final MappingType type = compatibleTypeFrom(idSelection, idSqlType, this.resultClass, accessor, idLabel);
 
             final int idColumnIndexBasedOne = idSelectionIndex + 1;
 

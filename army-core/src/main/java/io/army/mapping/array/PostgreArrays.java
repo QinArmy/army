@@ -54,7 +54,7 @@ public abstract class PostgreArrays extends ArrayMappings {
         sourceComponentType = ArrayUtils.underlyingComponent(sourceType);
         if (javaType == Object.class) { // unlimited dimension array
             if (sourceComponentType != String.class
-                    && sourceComponentType != ((MappingType.SqlArrayType) type).underlyingComponentType()) {
+                    && sourceComponentType != ((MappingType.SqlArrayType) type).underlyingElementJavaType()) {
                 throw handler.apply(type, dataType, nonNull, null);
             }
         } else if (sourceComponentType == String.class) {
@@ -98,7 +98,7 @@ public abstract class PostgreArrays extends ArrayMappings {
             }
         } else if (javaType == Object.class) { // unlimited dimension array
             if (!sourceType.isArray()
-                    || ArrayUtils.underlyingComponent(sourceType) != ((MappingType.SqlArrayType) type).underlyingComponentType()) {
+                    || ArrayUtils.underlyingComponent(sourceType) != ((MappingType.SqlArrayType) type).underlyingElementJavaType()) {
                 throw errorHandler.apply(type, dataType, source, null);
             }
             value = source;

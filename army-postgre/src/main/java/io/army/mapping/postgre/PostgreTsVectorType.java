@@ -50,7 +50,7 @@ public final class PostgreTsVectorType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

@@ -69,7 +69,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         if (targetType != String.class) {
             throw noMatchCompatibleMapping(this, targetType);
         }

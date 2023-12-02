@@ -41,6 +41,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
     public static final BooleanType INSTANCE = new BooleanType();
 
+
     public static final String TRUE = "TRUE";
 
     public static final String FALSE = "FALSE";
@@ -73,7 +74,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

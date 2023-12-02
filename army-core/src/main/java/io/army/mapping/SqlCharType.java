@@ -54,7 +54,7 @@ public final class SqlCharType extends _ArmyBuildInMapping implements MappingTyp
 
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

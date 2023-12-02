@@ -56,7 +56,7 @@ public final class PostgreAclItemType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
         throw noMatchCompatibleMapping(this, targetType);
     }
 
