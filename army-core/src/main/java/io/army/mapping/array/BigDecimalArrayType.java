@@ -2,7 +2,10 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.*;
+import io.army.mapping.BigDecimalType;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -58,7 +61,7 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public final Class<?> underlyingElementJavaType() {
+    public final Class<?> underlyingJavaType() {
         return BigDecimal.class;
     }
 

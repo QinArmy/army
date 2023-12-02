@@ -54,7 +54,7 @@ public abstract class PostgreArrays extends ArrayMappings {
         sourceComponentType = ArrayUtils.underlyingComponent(sourceType);
         if (javaType == Object.class) { // unlimited dimension array
             if (sourceComponentType != String.class
-                    && sourceComponentType != ((MappingType.SqlArrayType) type).underlyingElementJavaType()) {
+                    && sourceComponentType != ((MappingType.SqlArrayType) type).underlyingJavaType()) {
                 throw handler.apply(type, dataType, nonNull, null);
             }
         } else if (sourceComponentType == String.class) {
@@ -98,7 +98,7 @@ public abstract class PostgreArrays extends ArrayMappings {
             }
         } else if (javaType == Object.class) { // unlimited dimension array
             if (!sourceType.isArray()
-                    || ArrayUtils.underlyingComponent(sourceType) != ((MappingType.SqlArrayType) type).underlyingElementJavaType()) {
+                    || ArrayUtils.underlyingComponent(sourceType) != ((MappingType.SqlArrayType) type).underlyingJavaType()) {
                 throw errorHandler.apply(type, dataType, source, null);
             }
             value = source;
@@ -121,6 +121,43 @@ public abstract class PostgreArrays extends ArrayMappings {
             arrayToArrayText(array, consumer, builder);
         }
         return builder;
+    }
+
+    public static StringBuilder byteaArrayToText(final MappingType type, final DataType dataType, final Object source,
+                                                 final StringBuilder builder, final ErrorHandler errorHandler) {
+        final Class<?> sourceClass = source.getClass();
+        final int dimension;
+        if (!sourceClass.isArray()
+                || ArrayUtils.underlyingComponent(sourceClass) != byte.class
+                || (dimension = ArrayUtils.dimensionOf(sourceClass) - 1) < 1) {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+
+        _byteaArrayToText(type, dataType, source, dimension, builder, errorHandler);
+        return builder;
+    }
+
+    /**
+     * @see #byteaArrayToText(MappingType, DataType, Object, StringBuilder, ErrorHandler)
+     */
+    private static void _byteaArrayToText(final MappingType type, final DataType dataType, final Object source,
+                                          final int dimension, final StringBuilder builder,
+                                          final ErrorHandler errorHandler) {
+
+
+        final int length;
+        length = Array.getLength(source);
+
+        Object element;
+        for (int i = 0; i < length; i++) {
+            element = Array.get(source, i);
+
+            if (dimension > 1) {
+                _byteaArrayToText(type, dataType, element, dimension - 1, builder, errorHandler);
+            }
+
+        }
+
     }
 
 

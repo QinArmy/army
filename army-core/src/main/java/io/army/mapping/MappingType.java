@@ -570,7 +570,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
         MappingType elementType();
 
-        Class<?> underlyingElementJavaType();
+        Class<?> underlyingJavaType();
 
     }
 

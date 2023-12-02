@@ -2,7 +2,10 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.*;
+import io.army.mapping.BinaryType;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -57,6 +60,12 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     }
 
     @Override
+    public Class<?> underlyingJavaType() {
+        return byte[].class;
+    }
+
+
+    @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType dataType;
         switch (meta.serverDatabase()) {
@@ -96,11 +105,6 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
         return from(ArrayUtils.arrayClassOf(javaType));
     }
 
-    @Override
-    public Class<?> underlyingElementJavaType() {
-        return byte[].class;
-    }
-
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
@@ -108,7 +112,8 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
+
         return null;
     }
 

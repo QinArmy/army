@@ -2,15 +2,16 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.*;
+import io.army.mapping.BooleanType;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
-
-import java.math.BigDecimal;
 
 public final class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
@@ -75,7 +76,7 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     }
 
     @Override
-    public Class<?> underlyingElementJavaType() {
+    public Class<?> underlyingJavaType() {
         return this.underlyingJavaType;
     }
 

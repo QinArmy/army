@@ -50,7 +50,7 @@ public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public Class<?> underlyingElementJavaType() {
+    public Class<?> underlyingJavaType() {
         return BigInteger.class;
     }
 
