@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.mapping.array.CharacterArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -41,6 +42,11 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return CharacterArrayType.LINEAR;
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType type;
         switch (meta.serverDatabase()) {
@@ -58,15 +64,10 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
         return type;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        //TODO
-        throw new UnsupportedOperationException();
+        return toCharacter(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
@@ -109,8 +110,24 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
 
     @Override
     public Character afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        //TODO
-        throw new UnsupportedOperationException();
+        return toCharacter(this, dataType, source, ACCESS_ERROR_HANDLER);
+    }
+
+
+    public static Character toCharacter(MappingType type, DataType dataType, Object source, ErrorHandler errorHandler) {
+        final Character value;
+        if (source instanceof Character) {
+            value = (Character) source;
+        } else if (!(source instanceof String)) {
+            throw errorHandler.apply(type, dataType, source, null);
+        } else if (((String) source).length() == 1) {
+            value = ((String) source).charAt(0);
+        } else {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+
+        return value;
+
     }
 
 

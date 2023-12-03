@@ -93,18 +93,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.INTEGER_ARRAY;
-                break;
-            case Oracle:
-            case H2:
-            case MySQL:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return dataType;
+        return mapToSqlType(this, meta);
     }
 
 
@@ -127,6 +116,22 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
+    }
+
+
+    static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType dataType;
+        switch (meta.serverDatabase()) {
+            case PostgreSQL:
+                dataType = PostgreType.INTEGER_ARRAY;
+                break;
+            case Oracle:
+            case H2:
+            case MySQL:
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return dataType;
     }
 
 

@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.DayOfWeekArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -10,8 +11,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 
 /**
- * <p>
- * This class is mapping class of {@link DayOfWeek}.
+ * <p>This class is mapping class of {@link DayOfWeek}.
  * This mapping type can convert below java type:
  * <ul>
  *     <li>{@link LocalDate}</li>
@@ -50,15 +50,17 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
         return DayOfWeekType.class;
     }
 
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return DayOfWeekArrayType.LINEAR;
+    }
+
     @Override
     public DataType map(final ServerMeta meta) {
         return NameEnumType.mapToSqlType(this, meta);
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public DayOfWeek convert(final MappingEnv env, final Object source) throws CriteriaException {

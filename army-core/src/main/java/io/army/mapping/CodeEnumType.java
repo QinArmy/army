@@ -1,16 +1,19 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.CodeEnumArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.struct.CodeEnum;
+import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
 
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -26,20 +29,16 @@ import java.util.concurrent.ConcurrentMap;
 public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
-    public static CodeEnumType from(final Class<?> javaType) {
-        if (!(Enum.class.isAssignableFrom(javaType) && CodeEnum.class.isAssignableFrom(javaType))) {
-            throw errorJavaType(CodeEnumType.class, javaType);
+    public static CodeEnumType from(final Class<?> enumClass) {
+        if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
+            throw errorJavaType(CodeEnumType.class, enumClass);
         }
-        final Class<?> actualType;
-        if (javaType.isAnonymousClass()) {
-            actualType = javaType.getSuperclass();
-        } else {
-            actualType = javaType;
-        }
-        return INSTANCE_MAP.computeIfAbsent(_ClassUtils.getEnumClass(actualType), CodeEnumType::new);
+        return INSTANCE_MAP.computeIfAbsent(_ClassUtils.getEnumClass(enumClass), CONSTRUCTOR);
     }
 
     private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
+    private static final Function<Class<?>, CodeEnumType> CONSTRUCTOR = CodeEnumType::new;
 
     private final Class<?> enumClass;
 
@@ -50,7 +49,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
      */
     private CodeEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
-        this.codeMap = getInstanceMap(enumClass);
+        this.codeMap = CodeEnum.getCodeToEnumMap(enumClass);
     }
 
     @Override
@@ -58,6 +57,10 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         return this.enumClass;
     }
 
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return CodeEnumArrayType.from(ArrayUtils.arrayClassOf(this.enumClass));
+    }
 
     @Override
     public DataType map(final ServerMeta meta) {
@@ -65,14 +68,9 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        throw noMatchCompatibleMapping(this, targetType);
-    }
-
-    @Override
     public CodeEnum convert(MappingEnv env, final Object source) throws CriteriaException {
         if (!this.enumClass.isInstance(source)) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, source);
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
         }
         return (CodeEnum) source;
     }
@@ -80,7 +78,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     @Override
     public Integer beforeBind(DataType dataType, MappingEnv env, final Object source) {
         if (!this.enumClass.isInstance(source)) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, source);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return ((CodeEnum) source).code();
     }
@@ -93,7 +91,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         } else if (source instanceof Long) {
             final long v = (Long) source;
             if (v < Integer.MIN_VALUE || v > Integer.MAX_VALUE) {
-                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
+                throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
             }
             code = (int) v;
         } else if (source instanceof Short || source instanceof Byte) {
@@ -102,16 +100,16 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
             try {
                 code = ((BigInteger) source).intValueExact();
             } catch (ArithmeticException e) {
-                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
+                throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, e);
             }
         } else if (source instanceof String) {
             try {
                 code = Integer.parseInt((String) source);
             } catch (NumberFormatException e) {
-                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
+                throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, e);
             }
         } else {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         final CodeEnum codeEnum;
         codeEnum = this.codeMap.get(code);
@@ -123,11 +121,6 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         return codeEnum;
     }
 
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<?> enumClass) {
-        return CodeEnum.getInstanceMap((Class<T>) enumClass);
-    }
 
 
     /*################################## blow private method ##################################*/

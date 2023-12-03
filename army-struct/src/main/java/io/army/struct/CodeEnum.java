@@ -2,7 +2,6 @@ package io.army.struct;
 
 
 import javax.annotation.Nullable;
-
 import java.util.Map;
 
 /**
@@ -61,6 +60,14 @@ public interface CodeEnum {
      */
     static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<T> clazz) throws IllegalArgumentException {
         return EnumHelper.getCodeMap(clazz);
+    }
+
+    static Map<Integer, ? extends CodeEnum> getCodeToEnumMap(final Class<?> javaType) {
+        if (!(Enum.class.isAssignableFrom(javaType) && CodeEnum.class.isAssignableFrom(javaType))) {
+            String m = String.format("%s not %s type", javaType.getName(), CodeEnum.class.getName());
+            throw new IllegalArgumentException(m);
+        }
+        return EnumHelper.getCodeMap(javaType);
     }
 
 

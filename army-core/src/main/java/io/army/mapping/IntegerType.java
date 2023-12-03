@@ -12,8 +12,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * <p>
- * This class is mapping class of {@link Integer}.
+ * <p>This class is mapping class of {@link Integer}.
  * This mapping type can convert below java type:
  * <ul>
  *     <li>{@link Byte}</li>

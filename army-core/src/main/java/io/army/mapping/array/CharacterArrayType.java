@@ -2,10 +2,10 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.BooleanType;
+import io.army.mapping.CharacterType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -15,48 +15,51 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+/**
+ * @see CharacterType
+ */
+public final class CharacterArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
-    public static BooleanArrayType from(final Class<?> javaType) {
-        final BooleanArrayType instance;
+    public static CharacterArrayType from(final Class<?> javaType) {
+        final CharacterArrayType instance;
 
         final Class<?> underlyingJavaType;
-        if (javaType == Boolean[].class) {
+        if (javaType == Character[].class) {
             instance = LINEAR;
-        } else if (javaType == boolean[].class) {
+        } else if (javaType == char[].class) {
             instance = PRIMITIVE_UNLIMITED;
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
         } else if (!javaType.isArray()) {
-            throw errorJavaType(BooleanArrayType.class, javaType);
-        } else if ((underlyingJavaType = ArrayUtils.underlyingComponent(javaType)) == Boolean.class
-                || underlyingJavaType == boolean.class) {
-            instance = new BooleanArrayType(javaType, underlyingJavaType);
+            throw errorJavaType(CharacterArrayType.class, javaType);
+        } else if ((underlyingJavaType = ArrayUtils.underlyingComponent(javaType)) == Character.class
+                || underlyingJavaType == char.class) {
+            instance = new CharacterArrayType(javaType, underlyingJavaType);
         } else {
-            throw errorJavaType(BooleanArrayType.class, javaType);
+            throw errorJavaType(CharacterArrayType.class, javaType);
         }
         return instance;
     }
 
     /**
-     * unlimited dimension array of {@code boolean}
+     * unlimited dimension array of {@code char}
      */
-    public static final BooleanArrayType PRIMITIVE_UNLIMITED = new BooleanArrayType(Object.class, boolean.class);
+    public static final CharacterArrayType PRIMITIVE_UNLIMITED = new CharacterArrayType(Object.class, char.class);
 
     /**
-     * one dimension array of {@code  boolean}
+     * one dimension array of {@code  char}
      */
-    public static final BooleanArrayType PRIMITIVE_LINEAR = new BooleanArrayType(boolean[].class, boolean.class);
+    public static final CharacterArrayType PRIMITIVE_LINEAR = new CharacterArrayType(char[].class, char.class);
 
     /**
-     * one dimension array of {@link Boolean}
+     * one dimension array of {@link Character}
      */
-    public static final BooleanArrayType LINEAR = new BooleanArrayType(Boolean[].class, Boolean.class);
+    public static final CharacterArrayType LINEAR = new CharacterArrayType(Character[].class, Character.class);
 
     /**
-     * unlimited dimension array of {@link Boolean}
+     * unlimited dimension array of {@link Character}
      */
-    public static final BooleanArrayType UNLIMITED = new BooleanArrayType(Object.class, Boolean.class);
+    public static final CharacterArrayType UNLIMITED = new CharacterArrayType(Object.class, Character.class);
 
 
     private final Class<?> javaType;
@@ -66,7 +69,7 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     /**
      * private constructor
      */
-    private BooleanArrayType(Class<?> javaType, Class<?> underlyingJavaType) {
+    private CharacterArrayType(Class<?> javaType, Class<?> underlyingJavaType) {
         this.javaType = javaType;
         this.underlyingJavaType = underlyingJavaType;
     }
@@ -87,8 +90,8 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
         final MappingType instance;
         if (javaType == Object.class) {
             instance = this;
-        } else if (javaType == Boolean[].class || javaType == boolean[].class) {
-            instance = BooleanType.INSTANCE;
+        } else if (javaType == Character[].class || javaType == char[].class) {
+            instance = CharacterType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -105,11 +108,11 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     }
 
     @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                dataType = PostgreType.BOOLEAN_ARRAY;
+                dataType = PostgreType.CHAR_ARRAY;
                 break;
             case MySQL:
             case SQLite:
@@ -124,44 +127,32 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
         final boolean nonNull = this.underlyingJavaType == boolean.class;
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, nonNull, BooleanArrayType::parseText, PARAM_ERROR_HANDLER);
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, nonNull, CharacterArrayType::parseText, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayBeforeBind(source, BooleanArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
+        return PostgreArrays.arrayBeforeBind(source, CharacterArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         final boolean nonNull = this.underlyingJavaType == boolean.class;
-        return PostgreArrays.arrayAfterGet(this, dataType, source, nonNull, BooleanArrayType::parseText, ACCESS_ERROR_HANDLER);
+        return PostgreArrays.arrayAfterGet(this, dataType, source, nonNull, CharacterArrayType::parseText, ACCESS_ERROR_HANDLER);
     }
 
 
     /*-------------------below static methods -------------------*/
 
-    private static Boolean parseText(final String text, final int offset, final int end) {
-
-        final Boolean value;
-        if (text.regionMatches(true, offset, "true", 0, 4)) {
-            if (offset + 4 != end) {
-                throw new IllegalArgumentException("not boolean");
-            }
-            value = Boolean.TRUE;
-        } else if (text.regionMatches(true, offset, "false", 0, 5)) {
-            if (offset + 5 != end) {
-                throw new IllegalArgumentException("not boolean");
-            }
-            value = Boolean.FALSE;
-        } else {
-            throw new IllegalArgumentException("not boolean");
+    private static char parseText(final String text, final int offset, final int end) {
+        if (end - offset != 1) {
+            throw new IllegalArgumentException("not char");
         }
-        return value;
+        return text.charAt(offset);
     }
 
     private static void appendToText(final Object element, final Consumer<String> appender) {
-        if (!(element instanceof Boolean)) {
+        if (!(element instanceof Character)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }

@@ -11,7 +11,6 @@ import io.army.criteria.postgre.mapping.TwoIntType;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.*;
 import io.army.mapping.array.IntegerArrayType;
-import io.army.mapping.array.PrimitiveIntArrayType;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TableMeta;
@@ -68,9 +67,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         final int[][] intArray = {{1, 5}, {99, 100}};
         final Select stmt;
         stmt = Postgres.query()
-                .select(arrayToJson(SQLs.literal(PrimitiveIntArrayType.LINEAR, intArray))::as, "json1")
-                .comma(arrayToJson(SQLs.literal(PrimitiveIntArrayType.LINEAR, arrayLiteral))::as, "json2")
-                .comma(arrayToJson(SQLs.literal(PrimitiveIntArrayType.LINEAR, arrayLiteral), TRUE)::as, "json3")
+                .select(arrayToJson(SQLs.literal(IntegerArrayType.PRIMITIVE_LINEAR, intArray))::as, "json1")
+                .comma(arrayToJson(SQLs.literal(IntegerArrayType.PRIMITIVE_LINEAR, arrayLiteral))::as, "json2")
+                .comma(arrayToJson(SQLs.literal(IntegerArrayType.PRIMITIVE_LINEAR, arrayLiteral), TRUE)::as, "json3")
                 .asQuery();
 
         printStmt(LOG, stmt);
