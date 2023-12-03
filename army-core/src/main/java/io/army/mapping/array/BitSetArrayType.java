@@ -2,7 +2,7 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.IntegerType;
+import io.army.mapping.BitSetType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -12,51 +12,53 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
+import io.army.util._StringUtils;
 
-public class IntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+import java.util.BitSet;
+import java.util.function.Consumer;
 
-    public static IntegerArrayType from(final Class<?> javaType) {
-        final IntegerArrayType instance;
-        final Class<?> componentType;
-        if (javaType == Integer[].class) {
+/**
+ * @see BitSetType
+ */
+public final class BitSetArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+
+    public static BitSetArrayType from(final Class<?> javaType) {
+        final BitSetArrayType instance;
+
+        if (javaType == BitSet[].class) {
             instance = LINEAR;
-        } else if (javaType == int[].class) {
-            instance = PRIMITIVE_LINEAR;
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
         } else if (!javaType.isArray()) {
-            throw errorJavaType(IntegerArrayType.class, javaType);
-        } else if ((componentType = ArrayUtils.underlyingComponent(javaType)) == int.class
-                || componentType == Integer.class) {
-            instance = new IntegerArrayType(javaType, componentType);
+            throw errorJavaType(BitSetArrayType.class, javaType);
+        } else if (ArrayUtils.underlyingComponent(javaType) == BitSet.class) {
+            instance = new BitSetArrayType(javaType);
         } else {
-            throw errorJavaType(IntegerArrayType.class, javaType);
+            throw errorJavaType(BitSetArrayType.class, javaType);
         }
         return instance;
     }
 
-    public static final IntegerArrayType UNLIMITED = new IntegerArrayType(Object.class, Integer.class);
 
-    public static final IntegerArrayType LINEAR = new IntegerArrayType(Integer[].class, Integer.class);
+    /**
+     * one dimension array of {@link BitSet}
+     */
+    public static final BitSetArrayType LINEAR = new BitSetArrayType(BitSet[].class);
 
-    public static final IntegerArrayType PRIMITIVE_UNLIMITED = new IntegerArrayType(Object.class, int.class);
-
-    public static final IntegerArrayType PRIMITIVE_LINEAR = new IntegerArrayType(int[].class, int.class);
+    /**
+     * unlimited dimension array of {@link BitSet}
+     */
+    public static final BitSetArrayType UNLIMITED = new BitSetArrayType(Object.class);
 
 
     private final Class<?> javaType;
 
-    private final Class<?> underlyingJavaType;
-
-
     /**
      * private constructor
      */
-    private IntegerArrayType(final Class<?> javaType, Class<?> underlyingJavaType) {
+    private BitSetArrayType(Class<?> javaType) {
         this.javaType = javaType;
-        this.underlyingJavaType = underlyingJavaType;
     }
-
 
     @Override
     public Class<?> javaType() {
@@ -65,7 +67,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public Class<?> underlyingJavaType() {
-        return this.underlyingJavaType;
+        return BitSet.class;
     }
 
     @Override
@@ -74,8 +76,8 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         final MappingType instance;
         if (javaType == Object.class) {
             instance = this;
-        } else if (javaType == Integer[].class || javaType == int[].class) {
-            instance = IntegerType.INSTANCE;
+        } else if (javaType == BitSet[].class) {
+            instance = BitSetType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -96,37 +98,42 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                dataType = PostgreType.INTEGER_ARRAY;
+                dataType = PostgreType.VARBIT_ARRAY;
                 break;
-            case Oracle:
-            case H2:
             case MySQL:
+            case SQLite:
+            case H2:
+            case Oracle:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return dataType;
     }
 
-
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        // TODO
-        throw new UnsupportedOperationException();
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, _StringUtils::bitStringToBitSet,
+                PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        if (source instanceof String || source instanceof int[] || source instanceof Integer[]) {
-            return source;
-        }
-        // TODO
-        throw new UnsupportedOperationException();
+    public String beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return PostgreArrays.arrayBeforeBind(source, BitSetArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        // TODO
-        throw new UnsupportedOperationException();
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false, _StringUtils::bitStringToBitSet,
+                ACCESS_ERROR_HANDLER);
+    }
+
+
+    private static void appendToText(final Object element, final Consumer<String> appender) {
+        if (!(element instanceof BitSet)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        appender.accept(_StringUtils.bitSetToBitString((BitSet) element, true));
     }
 
 

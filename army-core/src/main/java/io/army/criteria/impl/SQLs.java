@@ -117,7 +117,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
 
-    public static final ParamExpression BATCH_NO_PARAM = SQLs.namedParam(IntegerType.INTEGER, "$ARMY_BATCH_NO$");
+    public static final ParamExpression BATCH_NO_PARAM = SQLs.namedParam(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
 
     public static final LiteralExpression BATCH_NO_LITERAL = SQLs.namedLiteral(NoCastIntegerType.INSTANCE, "$ARMY_BATCH_NO$");
 

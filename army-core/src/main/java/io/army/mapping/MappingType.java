@@ -568,9 +568,9 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     public interface SqlArrayType {
 
-        MappingType elementType();
-
         Class<?> underlyingJavaType();
+
+        MappingType elementType();
 
     }
 

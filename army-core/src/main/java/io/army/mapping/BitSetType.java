@@ -1,12 +1,12 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.BitSetArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-import io.army.util._MappingUtils;
 import io.army.util._StringUtils;
 
 import java.math.BigInteger;
@@ -55,6 +55,12 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
         return BitSet.class;
     }
 
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return BitSetArrayType.LINEAR;
+    }
+
     @Override
     public DataType map(final ServerMeta meta) {
         final SqlType type;
@@ -74,14 +80,8 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
 
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-
-    @Override
     public BitSet convert(final MappingEnv env, final Object source) throws CriteriaException {
-        return convertToBitSet(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
+        return toBitSet(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
@@ -102,47 +102,47 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public BitSet afterGet(final DataType dataType, final MappingEnv env, final Object source) {
-        return convertToBitSet(this, dataType, source, ACCESS_ERROR_HANDLER);
+        return toBitSet(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 
-    public static long bitwiseToLong(final MappingType type, final DataType dataType, final Object nonNull,
+    public static long bitwiseToLong(final MappingType type, final DataType dataType, final Object source,
                                      final ErrorHandler errorHandler) {
         final long value;
-        if (nonNull instanceof Long) {
-            value = (Long) nonNull;
-        } else if (nonNull instanceof Integer) {
-            value = ((Integer) nonNull) & 0xffff_ffffL;
-        } else if (nonNull instanceof BitSet) {
-            final BitSet v = (BitSet) nonNull;
+        if (source instanceof Long) {
+            value = (Long) source;
+        } else if (source instanceof Integer) {
+            value = ((Integer) source) & 0xffff_ffffL;
+        } else if (source instanceof BitSet) {
+            final BitSet v = (BitSet) source;
             if (v.length() > 64) {
-                throw errorHandler.apply(type, dataType, nonNull, null);
+                throw errorHandler.apply(type, dataType, source, null);
             } else if (v.length() == 0) {
                 value = 0L;
             } else {
                 value = v.toLongArray()[0];
             }
-        } else if (nonNull instanceof Short) {
-            value = ((Short) nonNull) & 0xffffL;
-        } else if (nonNull instanceof Byte) {
-            value = ((Byte) nonNull) & 0xffL;
-        } else if (nonNull instanceof Boolean) {
-            value = ((Boolean) nonNull) ? 1L : 0L;
-        } else if (nonNull instanceof BigInteger) {
-            final BigInteger v = (BigInteger) nonNull;
+        } else if (source instanceof Short) {
+            value = ((Short) source) & 0xffffL;
+        } else if (source instanceof Byte) {
+            value = ((Byte) source) & 0xffL;
+        } else if (source instanceof Boolean) {
+            value = ((Boolean) source) ? 1L : 0L;
+        } else if (source instanceof BigInteger) {
+            final BigInteger v = (BigInteger) source;
             try {
                 value = v.longValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof String) {
+        } else if (source instanceof String) {
             try {
-                value = Long.parseUnsignedLong((String) nonNull, 2);
+                value = Long.parseUnsignedLong((String) source, 2);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof long[]) {
-            final long[] v = (long[]) nonNull;
+        } else if (source instanceof long[]) {
+            final long[] v = (long[]) source;
             switch (v.length) {
                 case 0:
                     value = 0L;
@@ -151,10 +151,10 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
                     value = v[0];
                     break;
                 default:
-                    throw errorHandler.apply(type, dataType, nonNull, null);
+                    throw errorHandler.apply(type, dataType, source, null);
             }
-        } else if (nonNull instanceof byte[]) {
-            final byte[] v = (byte[]) nonNull;
+        } else if (source instanceof byte[]) {
+            final byte[] v = (byte[]) source;
             if (v.length == 0) {
                 value = 0L;
             } else if (v.length < 9) {
@@ -164,79 +164,85 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
                 }
                 value = bits;
             } else {
-                throw errorHandler.apply(type, dataType, nonNull, null);
+                throw errorHandler.apply(type, dataType, source, null);
             }
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }
 
-    public static String bitwiseToString(final MappingType type, final DataType dataType, final Object nonNull,
+    public static String bitwiseToString(final MappingType type, final DataType dataType, final Object source,
                                          final ErrorHandler errorHandler) {
         final String value;
-        if (nonNull instanceof String) {
-            value = (String) nonNull;
+        if (source instanceof String) {
+            value = (String) source;
             if (!_StringUtils.isBinary(value)) {
-                throw errorHandler.apply(type, dataType, nonNull, null);
+                throw errorHandler.apply(type, dataType, source, null);
             }
-        } else if (nonNull instanceof Long) {
-            value = Long.toBinaryString((Long) nonNull);
-        } else if (nonNull instanceof Integer) {
-            value = Integer.toBinaryString((Integer) nonNull);
-        } else if (nonNull instanceof BitSet) {
-            value = littleEndianToBitString(((BitSet) nonNull).toLongArray());
-        } else if (nonNull instanceof Short) {
-            value = Integer.toBinaryString(((Short) nonNull) & 0xffff);
-        } else if (nonNull instanceof Byte) {
-            value = Integer.toBinaryString(((Byte) nonNull) & 0xff);
-        } else if (nonNull instanceof Boolean) {
-            value = ((Boolean) nonNull) ? "1" : "0";
-        } else if (nonNull instanceof BigInteger) {
-            value = ((BigInteger) nonNull).toString(2);
-        } else if (nonNull instanceof long[]) {
-            value = littleEndianToBitString((long[]) nonNull);
-        } else if (nonNull instanceof byte[]) {
-            value = littleEndianToBitString(BitSet.valueOf((byte[]) nonNull).toLongArray());
+        } else if (source instanceof Long) {
+            value = Long.toBinaryString((Long) source);
+        } else if (source instanceof Integer) {
+            value = Integer.toBinaryString((Integer) source);
+        } else if (source instanceof BitSet) {
+            value = littleEndianToBitString(((BitSet) source).toLongArray());
+        } else if (source instanceof Short) {
+            value = Integer.toBinaryString(((Short) source) & 0xffff);
+        } else if (source instanceof Byte) {
+            value = Integer.toBinaryString(((Byte) source) & 0xff);
+        } else if (source instanceof Boolean) {
+            value = ((Boolean) source) ? "1" : "0";
+        } else if (source instanceof BigInteger) {
+            value = ((BigInteger) source).toString(2);
+        } else if (source instanceof long[]) {
+            value = littleEndianToBitString((long[]) source);
+        } else if (source instanceof byte[]) {
+            value = littleEndianToBitString(BitSet.valueOf((byte[]) source).toLongArray());
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }
 
 
-    private static BitSet convertToBitSet(final MappingType type, final DataType dataType, final Object nonNull,
-                                          final ErrorHandler errorHandler) {
+    public static BitSet toBitSet(final MappingType type, final DataType dataType, final Object source,
+                                  final ErrorHandler errorHandler) {
         final BitSet value;
-        if (nonNull instanceof BitSet) {
-            value = (BitSet) nonNull;
-        } else if (nonNull instanceof Long) {
-            value = BitSet.valueOf(new long[]{(Long) nonNull});
-        } else if (nonNull instanceof Integer) {
-            final int v = (Integer) nonNull;
+        if (source instanceof BitSet) {
+            value = (BitSet) source;
+        } else if (source instanceof Long) {
+            value = BitSet.valueOf(new long[]{(Long) source});
+        } else if (source instanceof Integer) {
+            final int v = (Integer) source;
             value = BitSet.valueOf(new long[]{v & 0xffff_ffffL});
-        } else if (nonNull instanceof Short) {
-            final short v = (Short) nonNull;
+        } else if (source instanceof Short) {
+            final short v = (Short) source;
             value = BitSet.valueOf(new long[]{v & 0xffffL});
-        } else if (nonNull instanceof Byte) {
-            value = BitSet.valueOf(new byte[]{(Byte) nonNull});
-        } else if (nonNull instanceof Boolean) {
+        } else if (source instanceof Byte) {
+            value = BitSet.valueOf(new byte[]{(Byte) source});
+        } else if (source instanceof Boolean) {
             value = new BitSet(1);
-            value.set(0, (Boolean) nonNull);
-        } else if (nonNull instanceof BigInteger) {
-            value = _MappingUtils.bitStringToBitSet(((BigInteger) nonNull).toString(2));
-        } else if (nonNull instanceof long[]) {
-            value = BitSet.valueOf((long[]) nonNull);
-        } else if (nonNull instanceof byte[]) {
-            value = BitSet.valueOf((byte[]) nonNull);
-        } else if (nonNull instanceof String) {
+            value.set(0, (Boolean) source);
+        } else if (source instanceof BigInteger) {
             try {
-                value = _MappingUtils.bitStringToBitSet((String) nonNull);
+                final String v = ((BigInteger) source).toString(2);
+                value = _StringUtils.bitStringToBitSet(v, 0, v.length());
             } catch (IllegalArgumentException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof long[]) {
+            value = BitSet.valueOf((long[]) source);
+        } else if (source instanceof byte[]) {
+            value = BitSet.valueOf((byte[]) source);
+        } else if (source instanceof String) {
+            try {
+                String v = (String) source;
+                value = _StringUtils.bitStringToBitSet(v, 0, v.length());
+            } catch (IllegalArgumentException e) {
+                throw errorHandler.apply(type, dataType, source, e);
             }
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }

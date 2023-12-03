@@ -24,7 +24,9 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
         return INSTANCE;
     }
 
-
+    /**
+     * private constructor
+     */
     private CharacterType() {
     }
 

@@ -2,9 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.dialect._DialectUtils;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.array.XmlArrayType;
@@ -15,6 +12,7 @@ import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -3064,7 +3062,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonArrayLength(Expression json) {
-        return FunctionUtils.oneArgFunc("JSON_ARRAY_LENGTH", json, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("JSON_ARRAY_LENGTH", json, IntegerType.INSTANCE);
     }
 
     /**
@@ -3077,7 +3075,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonbArrayLength(Expression jsonb) {
-        return FunctionUtils.oneArgFunc("JSONB_ARRAY_LENGTH", jsonb, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("JSONB_ARRAY_LENGTH", jsonb, IntegerType.INSTANCE);
     }
 
 

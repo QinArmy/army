@@ -2,7 +2,7 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.IntegerType;
+import io.army.mapping.ByteType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -13,35 +13,38 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-public class IntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+import java.util.function.Consumer;
 
-    public static IntegerArrayType from(final Class<?> javaType) {
-        final IntegerArrayType instance;
+public final class ByteArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+
+
+    public static ByteArrayType from(final Class<?> javaType) {
+        final ByteArrayType instance;
         final Class<?> componentType;
-        if (javaType == Integer[].class) {
+        if (javaType == Byte[].class) {
             instance = LINEAR;
-        } else if (javaType == int[].class) {
+        } else if (javaType == byte[].class) {
             instance = PRIMITIVE_LINEAR;
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
         } else if (!javaType.isArray()) {
-            throw errorJavaType(IntegerArrayType.class, javaType);
-        } else if ((componentType = ArrayUtils.underlyingComponent(javaType)) == int.class
-                || componentType == Integer.class) {
-            instance = new IntegerArrayType(javaType, componentType);
+            throw errorJavaType(ByteArrayType.class, javaType);
+        } else if ((componentType = ArrayUtils.underlyingComponent(javaType)) == byte.class
+                || componentType == Byte.class) {
+            instance = new ByteArrayType(javaType, componentType);
         } else {
-            throw errorJavaType(IntegerArrayType.class, javaType);
+            throw errorJavaType(ByteArrayType.class, javaType);
         }
         return instance;
     }
 
-    public static final IntegerArrayType UNLIMITED = new IntegerArrayType(Object.class, Integer.class);
+    public static final ByteArrayType UNLIMITED = new ByteArrayType(Object.class, Byte.class);
 
-    public static final IntegerArrayType LINEAR = new IntegerArrayType(Integer[].class, Integer.class);
+    public static final ByteArrayType LINEAR = new ByteArrayType(Byte[].class, Byte.class);
 
-    public static final IntegerArrayType PRIMITIVE_UNLIMITED = new IntegerArrayType(Object.class, int.class);
+    public static final ByteArrayType PRIMITIVE_UNLIMITED = new ByteArrayType(Object.class, byte.class);
 
-    public static final IntegerArrayType PRIMITIVE_LINEAR = new IntegerArrayType(int[].class, int.class);
+    public static final ByteArrayType PRIMITIVE_LINEAR = new ByteArrayType(byte[].class, byte.class);
 
 
     private final Class<?> javaType;
@@ -52,7 +55,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
     /**
      * private constructor
      */
-    private IntegerArrayType(final Class<?> javaType, Class<?> underlyingJavaType) {
+    private ByteArrayType(final Class<?> javaType, Class<?> underlyingJavaType) {
         this.javaType = javaType;
         this.underlyingJavaType = underlyingJavaType;
     }
@@ -74,8 +77,8 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         final MappingType instance;
         if (javaType == Object.class) {
             instance = this;
-        } else if (javaType == Integer[].class || javaType == int[].class) {
-            instance = IntegerType.INSTANCE;
+        } else if (javaType == Byte[].class || javaType == byte[].class) {
+            instance = ByteType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -92,11 +95,11 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
     }
 
     @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                dataType = PostgreType.INTEGER_ARRAY;
+                dataType = PostgreType.SMALLINT_ARRAY;
                 break;
             case Oracle:
             case H2:
@@ -107,26 +110,36 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         return dataType;
     }
 
-
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        // TODO
-        throw new UnsupportedOperationException();
+        final boolean nonNull = this.underlyingJavaType == boolean.class;
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, nonNull, ByteArrayType::parseText,
+                PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        if (source instanceof String || source instanceof int[] || source instanceof Integer[]) {
-            return source;
-        }
-        // TODO
-        throw new UnsupportedOperationException();
+        return PostgreArrays.arrayBeforeBind(source, ByteArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        // TODO
-        throw new UnsupportedOperationException();
+        final boolean nonNull = this.underlyingJavaType == boolean.class;
+        return PostgreArrays.arrayAfterGet(this, dataType, source, nonNull, ByteArrayType::parseText,
+                ACCESS_ERROR_HANDLER);
+    }
+
+
+    private static byte parseText(final String text, final int offset, final int end) {
+        return Byte.parseByte(text.substring(offset, end));
+    }
+
+    private static void appendToText(final Object element, final Consumer<String> appender) {
+        if (!(element instanceof Byte)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        appender.accept(element.toString());
     }
 
 

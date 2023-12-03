@@ -65,7 +65,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_get-lock">GET_LOCK(str,timeout)</a>
      */
     public static SimpleExpression getLock(final Expression str, final Expression timeout) {
-        return FunctionUtils.twoArgFunc("GET_LOCK", str, timeout, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("GET_LOCK", str, timeout, IntegerType.INSTANCE);
     }
 
     /**
@@ -103,7 +103,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_release-all-locks">RELEASE_ALL_LOCKS()</a>
      */
     public static SimpleExpression releaseAllLocks() {
-        return FunctionUtils.zeroArgFunc("RELEASE_ALL_LOCKS()", IntegerType.INTEGER);
+        return FunctionUtils.zeroArgFunc("RELEASE_ALL_LOCKS()", IntegerType.INSTANCE);
     }
 
     /**
@@ -116,7 +116,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_release-lock">RELEASE_LOCK(str)</a>
      */
     public static SimpleExpression releaseLock(final Expression str) {
-        return FunctionUtils.oneArgFunc("RELEASE_LOCK", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("RELEASE_LOCK", str, IntegerType.INSTANCE);
     }
 
 
@@ -134,7 +134,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_benchmark">BENCHMARK(count,expr)</a>
      */
     public static SimpleExpression benchmark(final Expression count, final Expression expr) {
-        return FunctionUtils.twoArgFunc("BENCHMARK", count, expr, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("BENCHMARK", count, expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -160,7 +160,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_coercibility">COERCIBILITY(str)</a>
      */
     public static SimpleExpression coercibility(final Expression str) {
-        return FunctionUtils.oneArgFunc("COERCIBILITY", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("COERCIBILITY", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -505,7 +505,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_uncompressed-length">UNCOMPRESSED_LENGTH(compressed_string)</a>
      */
     public static SimpleExpression unCompressedLength(final Expression compressedString) {
-        return FunctionUtils.oneArgFunc("UNCOMPRESSED_LENGTH", compressedString, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("UNCOMPRESSED_LENGTH", compressedString, IntegerType.INSTANCE);
     }
 
 
@@ -519,7 +519,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_validate-password-strength">VALIDATE_PASSWORD_STRENGTH(str)</a>
      */
     public static SimpleExpression validatePasswordStrength(final Expression str) {
-        return FunctionUtils.oneArgFunc("VALIDATE_PASSWORD_STRENGTH", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("VALIDATE_PASSWORD_STRENGTH", str, IntegerType.INSTANCE);
     }
 
 
@@ -612,7 +612,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet-aton">INET_ATON(expr)</a>
      */
     public static SimpleExpression inetAton(final Expression expr) {
-        return FunctionUtils.oneArgFunc("INET_ATON", expr, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("INET_ATON", expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -800,7 +800,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_sleep">SLEEP(duration)</a>
      */
     public static SimpleExpression sleep(final Expression duration) {
-        return FunctionUtils.oneArgFunc("SLEEP", duration, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("SLEEP", duration, IntegerType.INSTANCE);
     }
 
 
@@ -1004,7 +1004,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
      */
     public static SimpleExpression waitForExecutedGtidSet(final Expression gtidSet) {
-        return FunctionUtils.oneArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, IntegerType.INSTANCE);
     }
 
     /**
@@ -1018,7 +1018,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
      */
     public static SimpleExpression waitForExecutedGtidSet(final Expression gtidSet, final Expression timeout) {
-        return FunctionUtils.twoArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, timeout, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, timeout, IntegerType.INSTANCE);
     }
 
     /**
@@ -1031,7 +1031,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
      */
     static Expression waitUntilSqlThreadAfterGtids(final Expression gtidSet) {
-        return FunctionUtils.oneArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, IntegerType.INSTANCE);
     }
 
     /**
@@ -1044,7 +1044,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
      */
     static Expression waitUntilSqlThreadAfterGtids(Expression gtidSet, Expression timeout) {
-        return FunctionUtils.twoArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, timeout, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, timeout, IntegerType.INSTANCE);
     }
 
 

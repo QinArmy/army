@@ -5,15 +5,13 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.SQLFunction;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.mapping.array.DoubleArrayType;
 import io.army.mapping.array.IntervalArrayType;
 import io.army.mapping.optional.IntervalType;
 import io.army.meta.TypeMeta;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -190,7 +188,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  IntegerType#INTEGER}
+     * The {@link MappingType} of function return type: {@link  IntegerType#INSTANCE}
      * </p>
      *
      * @param func  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -201,7 +199,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      *                  <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                  <li>developer custom method</li>
      *              </ul>.
-     *              The first argument of func always is {@link IntegerType#INTEGER}.
+     *              The first argument of func always is {@link IntegerType#INSTANCE}.
      * @param value non-null,it will be passed to func as the second argument of func
      * @see #ntile(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">ntile ( num_buckets integer ) → integer<br/>
@@ -209,12 +207,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static <T> _OverSpec ntile(BiFunction<IntegerType, T, Expression> func, T value) {
-        return ntile(func.apply(IntegerType.INTEGER, value));
+        return ntile(func.apply(IntegerType.INSTANCE, value));
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  IntegerType#INTEGER}
+     * The {@link MappingType} of function return type: {@link  IntegerType#INSTANCE}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">ntile ( num_buckets integer ) → integer<br/>
@@ -222,7 +220,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _OverSpec ntile(Expression numBuckets) {
-        return PostgreFunctionUtils.oneArgWindowFunc("ntile", numBuckets, IntegerType.INTEGER);
+        return PostgreFunctionUtils.oneArgWindowFunc("ntile", numBuckets, IntegerType.INSTANCE);
     }
 
     /**
@@ -358,7 +356,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      *                 <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                 <li>developer custom method</li>
      *             </ul>.
-     *             The first argument of func always is {@link IntegerType#INTEGER}.
+     *             The first argument of func always is {@link IntegerType#INSTANCE}.
      * @param n    non-null,it will be passed to func as the second argument of func
      * @see #nthValue(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">nth_value ( value anyelement, n integer ) → anyelement<br/>
@@ -366,7 +364,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static <T> _OverSpec nthValue(Expression value, BiFunction<IntegerType, T, Expression> func, T n) {
-        return nthValue(value, func.apply(IntegerType.INTEGER, n));
+        return nthValue(value, func.apply(IntegerType.INSTANCE, n));
     }
 
     /**

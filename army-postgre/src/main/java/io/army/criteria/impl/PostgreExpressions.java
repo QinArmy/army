@@ -3,9 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
 import io.army.mapping.postgre.PostgreInetType;
@@ -17,6 +14,7 @@ import io.army.type.Interval;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
@@ -77,7 +75,7 @@ abstract class PostgreExpressions {
         if (operandType instanceof PostgreGeometricType || operandType instanceof MappingType.SqlGeometryType) {
             returnType = DoubleType.INSTANCE;
         } else {
-            returnType = IntegerType.INTEGER;
+            returnType = IntegerType.INSTANCE;
         }
         return returnType;
     }
@@ -147,7 +145,7 @@ abstract class PostgreExpressions {
         final MappingType returnType;
         if (left instanceof MappingType.SqlLocalDateType) {
             if (right instanceof MappingType.SqlLocalDateType) { // date - date → integer
-                returnType = IntegerType.INTEGER;
+                returnType = IntegerType.INSTANCE;
             } else if (right instanceof MappingType.SqlIntegerType) { // date - integer → date
                 returnType = left;
             } else if (right instanceof MappingType.SqlIntervalType) { // date - interval → timestamp
@@ -388,7 +386,7 @@ abstract class PostgreExpressions {
     static MappingType unaryPoundType(final MappingType operandType) {
         final MappingType returnType;
         if (operandType instanceof MappingType.SqlGeometryType) {
-            returnType = IntegerType.INTEGER;
+            returnType = IntegerType.INSTANCE;
         } else { // error or unknown
             returnType = StringType.INSTANCE;
         }

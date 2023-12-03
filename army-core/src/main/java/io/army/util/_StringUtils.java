@@ -165,6 +165,29 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
         return bitSet;
     }
 
+    public static BitSet bitStringToBitSet(final String bitStr, final int offset, final int end) throws IllegalArgumentException {
+        final int bitLength;
+        bitLength = end - offset;
+        if (bitLength < 1 || bitStr.length() < end) {
+            throw new IllegalArgumentException("bit string must non-empty.");
+        }
+        final BitSet bitSet = new BitSet(bitLength);
+        final int maxIndex = end - 1;
+        for (int i = offset; i < end; i++) {
+            switch (bitStr.charAt(maxIndex - i)) {
+                case '0':
+                    bitSet.set(i, false);
+                    break;
+                case '1':
+                    bitSet.set(i, true);
+                    break;
+                default:
+                    throw new IllegalArgumentException("non-bit string");
+            }
+        }
+        return bitSet;
+    }
+
 
 
     /*################################## private method #############################################*/

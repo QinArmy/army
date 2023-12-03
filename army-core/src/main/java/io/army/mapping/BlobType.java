@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.BlobArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
@@ -38,37 +39,38 @@ public final class BlobType extends _ArmyBuildInMapping {
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return BlobArrayType.LINEAR;
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final SqlType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.BLOB;
+                dataType = MySQLType.BLOB;
                 break;
             case PostgreSQL:
-                type = PostgreType.BYTEA;
+                dataType = PostgreType.BYTEA;
                 break;
             case Oracle:
-                type = OracleDataType.BLOB;
+                dataType = OracleDataType.BLOB;
                 break;
             case H2:
-                type = H2DataType.VARBINARY;
+                dataType = H2DataType.VARBINARY;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return type;
+        return dataType;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public byte[] convert(MappingEnv env, Object source) throws CriteriaException {
         if (!(source instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, source);
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
         }
         return (byte[]) source;
     }
@@ -76,7 +78,7 @@ public final class BlobType extends _ArmyBuildInMapping {
     @Override
     public byte[] beforeBind(DataType dataType, MappingEnv env, final Object source) {
         if (!(source instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER_0.apply(this, source);
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return (byte[]) source;
     }
@@ -84,7 +86,7 @@ public final class BlobType extends _ArmyBuildInMapping {
     @Override
     public byte[] afterGet(DataType dataType, MappingEnv env, final Object source) {
         if (!(source instanceof byte[])) {
-            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, source);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return (byte[]) source;
     }

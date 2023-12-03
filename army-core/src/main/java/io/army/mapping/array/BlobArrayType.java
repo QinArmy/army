@@ -2,7 +2,7 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.BinaryType;
+import io.army.mapping.BlobType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
@@ -13,34 +13,32 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-
 /**
- * @see BinaryType
- * @since 1.0
+ * @see BlobType
  */
-public final class BinaryArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public final class BlobArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
-    public static BinaryArrayType from(final Class<?> javaType) {
-        final BinaryArrayType instance;
+    public static BlobArrayType from(final Class<?> javaType) {
+        final BlobArrayType instance;
 
         if (javaType == byte[][].class) {
             instance = LINEAR;
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
         } else if (!javaType.isArray() || ArrayUtils.dimensionOf(javaType) < 2) {
-            throw errorJavaType(BinaryArrayType.class, javaType);
+            throw errorJavaType(BlobArrayType.class, javaType);
         } else if (ArrayUtils.underlyingComponent(javaType) == byte.class) {
-            instance = new BinaryArrayType(javaType);
+            instance = new BlobArrayType(javaType);
         } else {
-            throw errorJavaType(BinaryArrayType.class, javaType);
+            throw errorJavaType(BlobArrayType.class, javaType);
         }
         return instance;
     }
 
 
-    public static final BinaryArrayType UNLIMITED = new BinaryArrayType(Object.class);
+    public static final BlobArrayType UNLIMITED = new BlobArrayType(Object.class);
 
-    public static final BinaryArrayType LINEAR = new BinaryArrayType(byte[][].class);
+    public static final BlobArrayType LINEAR = new BlobArrayType(byte[][].class);
 
 
     private final Class<?> javaType;
@@ -48,7 +46,7 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     /**
      * private constructor
      */
-    private BinaryArrayType(Class<?> javaType) {
+    private BlobArrayType(Class<?> javaType) {
         this.javaType = javaType;
     }
 
@@ -69,7 +67,7 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
         if (javaType == Object.class) { // unlimited dimension array
             instance = this;
         } else if (javaType == byte[][].class) {
-            instance = BinaryType.INSTANCE;
+            instance = BlobType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -85,23 +83,11 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
         return from(ArrayUtils.arrayClassOf(javaType));
     }
 
-    @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.BYTEA_ARRAY;
-                break;
-            case MySQL:
-            case SQLite:
-            case H2:
-            case Oracle:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return dataType;
-    }
 
+    @Override
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
+        return mapToSqlType(this, meta);
+    }
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
@@ -110,7 +96,7 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
         return PostgreArrays.byteaArrayToText(this, dataType, source, new StringBuilder(), PARAM_ERROR_HANDLER)
                 .toString();
     }
@@ -118,13 +104,26 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         return PostgreArrays.arrayAfterGet(this, dataType, source, false, PostgreArrays::parseBytea,
-                ACCESS_ERROR_HANDLER);
+                PARAM_ERROR_HANDLER);
     }
-
-
 
 
     /*-------------------below static methods -------------------*/
 
+    static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType dataType;
+        switch (meta.serverDatabase()) {
+            case PostgreSQL:
+                dataType = PostgreType.TEXT_ARRAY;
+                break;
+            case MySQL:
+            case SQLite:
+            case H2:
+            case Oracle:
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return dataType;
+    }
 
 }

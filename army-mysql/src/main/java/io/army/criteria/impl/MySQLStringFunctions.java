@@ -8,13 +8,11 @@ import io.army.criteria.SimpleExpression;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLocale;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -45,7 +43,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ascii">ASCII(str)</a>
      */
     public static SimpleExpression ascii(final Expression str) {
-        return FunctionUtils.oneArgFunc("ASCII", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -69,7 +67,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
      */
     public static SimpleExpression binLength(final Expression str) {
-        return FunctionUtils.oneArgFunc("BIT_LENGTH", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -163,7 +161,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR_LENGTH(str)</a>
      */
     public static SimpleExpression charLength(final Expression str) {
-        return FunctionUtils.oneArgFunc("CHAR_LENGTH", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("CHAR_LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -300,7 +298,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
      */
     public static SimpleExpression field(final Expression str, final Expression strList) {
-        return FunctionUtils.twoOrMultiArgFunc("FIELD", str, strList, IntegerType.INTEGER);
+        return FunctionUtils.twoOrMultiArgFunc("FIELD", str, strList, IntegerType.INSTANCE);
     }
 
     /**
@@ -314,7 +312,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
      */
     public static SimpleExpression field(final Expression str, final List<Expression> strList) {
-        return FunctionUtils.oneAndMultiArgFunc("FIELD", str, strList, IntegerType.INTEGER);
+        return FunctionUtils.oneAndMultiArgFunc("FIELD", str, strList, IntegerType.INSTANCE);
     }
 
     /**
@@ -328,7 +326,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
      */
     public static SimpleExpression fieldInSet(final Expression str, final Expression strList) {
-        return FunctionUtils.twoOrMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INTEGER);
+        return FunctionUtils.twoOrMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INSTANCE);
     }
 
 
@@ -343,7 +341,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
      */
     public static SimpleExpression fieldInSet(final Expression str, final List<Expression> strList) {
-        return FunctionUtils.oneAndMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INTEGER);
+        return FunctionUtils.oneAndMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INSTANCE);
     }
 
     /**
@@ -462,7 +460,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_instr">INSTR(str,substr)</a>
      */
     public static SimpleExpression instr(final Expression str, final Expression substr) {
-        return FunctionUtils.twoArgFunc("INSTR", str, substr, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("INSTR", str, substr, IntegerType.INSTANCE);
     }
 
     /**
@@ -516,7 +514,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
      */
     public static SimpleExpression length(final Expression str) {
-        return FunctionUtils.oneArgFunc("LENGTH", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -545,7 +543,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str)</a>
      */
     public static SimpleExpression locate(final Expression substr, final Expression str) {
-        return FunctionUtils.twoArgFunc("LOCATE", substr, str, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("LOCATE", substr, str, IntegerType.INSTANCE);
     }
 
     /**
@@ -561,7 +559,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str,pos)</a>
      */
     public static SimpleExpression locate(final Expression substr, final Expression str, final Expression pos) {
-        return FunctionUtils.threeArgFunc("LOCATE", substr, str, pos, IntegerType.INTEGER);
+        return FunctionUtils.threeArgFunc("LOCATE", substr, str, pos, IntegerType.INSTANCE);
     }
 
     /**
@@ -705,7 +703,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
      */
     public static SimpleExpression ord(final Expression str) {
-        return FunctionUtils.oneArgFunc("ORD", str, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("ORD", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -720,7 +718,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_position">POSITION(substr IN str)</a>
      */
     public static SimpleExpression position(final Expression substr, final Expression str) {
-        return FunctionUtils.twoArgFunc("POSITION", substr, str, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("POSITION", substr, str, IntegerType.INSTANCE);
     }
 
 

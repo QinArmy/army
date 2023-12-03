@@ -1,7 +1,6 @@
 package io.army.mapping;
 
 import io.army.sqltype.MySQLType;
-import io.army.util._MappingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -9,12 +8,9 @@ import org.testng.annotations.Test;
 
 import java.util.BitSet;
 
-/**
- * <p>
- * This class is test class of {@link  _MappingUtils}。
- * </p>
- */
+
 public class MappingUtilsTests {
+
 
     private static final Logger LOG = LoggerFactory.getLogger(MappingUtilsTests.class);
 

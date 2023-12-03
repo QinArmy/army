@@ -257,7 +257,7 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_crc32">CRC32(expr)</a>
      */
     public static SimpleExpression crc32(final Expression expr) {
-        return FunctionUtils.oneArgFunc("CRC32", expr, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("CRC32", expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -487,7 +487,7 @@ abstract class Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sign ( numeric ) → numeric</a>
      */
     public static SimpleExpression sign(final Expression x) {
-        return FunctionUtils.oneArgFunc("SIGN", x, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("SIGN", x, IntegerType.INSTANCE);
     }
 
     /**
@@ -565,7 +565,7 @@ abstract class Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">length ( text ) → integer</a>
      */
     public static SimpleExpression length(Expression exp) {
-        return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INSTANCE);
     }
 
     public static SimpleExpression countAsterisk() {
@@ -948,7 +948,7 @@ abstract class Functions {
                     break;
                 case SMALL:
                 case MEDIUM:
-                    returnType = IntegerType.INTEGER;
+                    returnType = IntegerType.INSTANCE;
                     break;
                 default:
                     throw _Exceptions.unexpectedEnum(length);

@@ -959,7 +959,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
      */
     public static SimpleExpression jsonDepth(final Expression jsonDoc) {
-        return FunctionUtils.oneArgFunc("JSON_DEPTH", jsonDoc, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("JSON_DEPTH", jsonDoc, IntegerType.INSTANCE);
     }
 
 
@@ -973,7 +973,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
     public static SimpleExpression jsonLength(final Expression jsonDoc) {
-        return FunctionUtils.oneArgFunc("JSON_LENGTH", jsonDoc, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("JSON_LENGTH", jsonDoc, IntegerType.INSTANCE);
     }
 
 
@@ -988,7 +988,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
     public static SimpleExpression jsonLength(final Expression jsonDoc, final Expression path) {
-        return FunctionUtils.twoArgFunc("JSON_LENGTH", jsonDoc, path, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("JSON_LENGTH", jsonDoc, path, IntegerType.INSTANCE);
     }
 
     /**

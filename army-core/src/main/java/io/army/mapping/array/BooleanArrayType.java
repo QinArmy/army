@@ -13,7 +13,9 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-public final class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+import java.util.function.Consumer;
+
+public class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static BooleanArrayType from(final Class<?> javaType) {
         final BooleanArrayType instance;
@@ -71,17 +73,17 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     }
 
     @Override
-    public Class<?> javaType() {
+    public final Class<?> javaType() {
         return this.javaType;
     }
 
     @Override
-    public Class<?> underlyingJavaType() {
+    public final Class<?> underlyingJavaType() {
         return this.underlyingJavaType;
     }
 
     @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public final DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
@@ -98,7 +100,7 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     }
 
     @Override
-    public MappingType elementType() {
+    public final MappingType elementType() {
         final Class<?> javaType = this.javaType;
         final MappingType instance;
         if (javaType == Object.class) {
@@ -112,7 +114,7 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     }
 
     @Override
-    public MappingType arrayTypeOfThis() throws CriteriaException {
+    public final MappingType arrayTypeOfThis() throws CriteriaException {
         final Class<?> javaType = this.javaType;
         if (javaType == Object.class) { // unlimited dimension array
             return this;
@@ -121,18 +123,50 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
     }
 
     @Override
-    public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return null;
+    public final Object convert(MappingEnv env, Object source) throws CriteriaException {
+        final boolean nonNull = this.underlyingJavaType == boolean.class;
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, nonNull, BooleanArrayType::parseBoolean, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return null;
+    public final Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return PostgreArrays.arrayBeforeBind(source, BooleanArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return null;
+    public final Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        final boolean nonNull = this.underlyingJavaType == boolean.class;
+        return PostgreArrays.arrayAfterGet(this, dataType, source, nonNull, BooleanArrayType::parseBoolean, ACCESS_ERROR_HANDLER);
+    }
+
+
+    /*-------------------below static methods -------------------*/
+
+    private static Boolean parseBoolean(final String text, final int offset, final int end) {
+
+        final Boolean value;
+        if (text.regionMatches(true, offset, "true", 0, 4)) {
+            if (offset + 4 != end) {
+                throw new IllegalArgumentException("not boolean");
+            }
+            value = Boolean.TRUE;
+        } else if (text.regionMatches(true, offset, "false", 0, 5)) {
+            if (offset + 5 != end) {
+                throw new IllegalArgumentException("not boolean");
+            }
+            value = Boolean.FALSE;
+        } else {
+            throw new IllegalArgumentException("not boolean");
+        }
+        return value;
+    }
+
+    private static void appendToText(final Object element, final Consumer<String> appender) {
+        if (!(element instanceof Boolean)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        appender.accept(element.toString());
     }
 
 

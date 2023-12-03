@@ -212,7 +212,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_datediff">DATEDIFF(expr1,expr2)</a>
      */
     public static SimpleExpression dateDiff(final Expression expr1, final Expression expr2) {
-        return FunctionUtils.twoArgFunc("DATEDIFF", expr1, expr2, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("DATEDIFF", expr1, expr2, IntegerType.INSTANCE);
     }
 
     /**
@@ -281,7 +281,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofmonth">DAYOFMONTH(date)</a>
      */
     public static SimpleExpression dayOfMonth(final Expression date) {
-        return FunctionUtils.oneArgFunc("DAYOFMONTH", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("DAYOFMONTH", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -317,7 +317,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofyear">DAYOFYEAR(date)</a>
      */
     public static SimpleExpression dayOfYear(final Expression date) {
-        return FunctionUtils.oneArgFunc("DAYOFYEAR", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("DAYOFYEAR", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -373,7 +373,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             case MINUTE_MICROSECOND:
             case SECOND_MICROSECOND:
             case MICROSECOND:
-                returnType = IntegerType.INTEGER;
+                returnType = IntegerType.INSTANCE;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(unit);
@@ -460,7 +460,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_hour">HOUR(time)</a>
      */
     public static SimpleExpression hour(final Expression time) {
-        return FunctionUtils.oneArgFunc("HOUR", time, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("HOUR", time, IntegerType.INSTANCE);
     }
 
     /**
@@ -472,7 +472,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_last-day">LAST_DAY(date)</a>
      */
     public static SimpleExpression lastDay(final Expression date) {
-        return FunctionUtils.oneArgFunc("LAST_DAY", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("LAST_DAY", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -659,7 +659,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             case MONTH:
             case WEEK:
             case DAY:
-                returnType = IntegerType.INTEGER;
+                returnType = IntegerType.INSTANCE;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(unit);
@@ -691,7 +691,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-days">TO_DAYS(date)</a>
      */
     public static SimpleExpression toDays(final Expression date) {
-        return FunctionUtils.oneArgFunc("TO_DAYS", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("TO_DAYS", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -794,7 +794,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
     public static SimpleExpression week(final Expression date) {
-        return FunctionUtils.oneArgFunc("WEEK", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("WEEK", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -807,7 +807,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
     public static SimpleExpression week(final Expression date, final Expression mode) {
-        return FunctionUtils.twoArgFunc("WEEK", date, mode, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("WEEK", date, mode, IntegerType.INSTANCE);
     }
 
     /**
@@ -831,7 +831,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekofyear">WEEKOFYEAR(date)</a>
      */
     public static SimpleExpression weekOfYear(final Expression date) {
-        return FunctionUtils.oneArgFunc("WEEKOFYEAR", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("WEEKOFYEAR", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -855,7 +855,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date)</a>
      */
     public static SimpleExpression yearWeek(final Expression date) {
-        return FunctionUtils.oneArgFunc("YEARWEEK", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("YEARWEEK", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -867,7 +867,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date,mode)</a>
      */
     public static SimpleExpression yearWeek(final Expression date, final Expression mode) {
-        return FunctionUtils.twoArgFunc("YEARWEEK", date, mode, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("YEARWEEK", date, mode, IntegerType.INSTANCE);
     }
 
 
@@ -907,7 +907,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_microsecond">MICROSECOND(expr)</a>
      */
     public static SimpleExpression microSecond(final Expression expr) {
-        return FunctionUtils.oneArgFunc("MICROSECOND", expr, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("MICROSECOND", expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -919,7 +919,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_minute">MINUTE(expr)</a>
      */
     public static SimpleExpression minute(final Expression time) {
-        return FunctionUtils.oneArgFunc("MINUTE", time, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("MINUTE", time, IntegerType.INSTANCE);
     }
 
     /**
@@ -969,7 +969,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-diff">PERIOD_DIFF(P1,P2)</a>
      */
     public static SimpleExpression periodDiff(final Expression p1, final Expression p2) {
-        return FunctionUtils.twoArgFunc("PERIOD_DIFF", p1, p2, IntegerType.INTEGER);
+        return FunctionUtils.twoArgFunc("PERIOD_DIFF", p1, p2, IntegerType.INSTANCE);
     }
 
     /**
@@ -981,7 +981,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_quarter">QUARTER(date)</a>
      */
     public static SimpleExpression quarter(final Expression date) {
-        return FunctionUtils.oneArgFunc("QUARTER", date, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("QUARTER", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -1019,7 +1019,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_second">SECOND(time)</a>
      */
     public static SimpleExpression second(final Expression time) {
-        return FunctionUtils.oneArgFunc("SECOND", time, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("SECOND", time, IntegerType.INSTANCE);
     }
 
     /**

@@ -33,7 +33,7 @@ public final class MyRowType extends MappingType
     private static final DataType DATA_TYPE = DataType.from("MYROWTYPE");
 
     private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.of(
-            CompositeTypeField.from("a", IntegerType.INTEGER),
+            CompositeTypeField.from("a", IntegerType.INSTANCE),
             CompositeTypeField.from("b", TextArrayType.LIST),
             CompositeTypeField.from("c", MySubRowType.INSTANCE)
     );

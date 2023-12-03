@@ -3,12 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -165,7 +163,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
     public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , final int n, MySQLs.WordsCharacterSet characterSet, SQLElement charset) {
-        return _castToChar(exp, as, charType, SQLs.literal(IntegerType.INTEGER, n), characterSet, charset);
+        return _castToChar(exp, as, charType, SQLs.literal(IntegerType.INSTANCE, n), characterSet, charset);
     }
 
     public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
@@ -220,7 +218,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
     public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
             , final int m, final int d) {
-        return cast(exp, as, type, SQLs.literal(IntegerType.INTEGER, m), SQLs.literal(IntegerType.INTEGER, d));
+        return cast(exp, as, type, SQLs.literal(IntegerType.INSTANCE, m), SQLs.literal(IntegerType.INSTANCE, d));
     }
 
     /**
@@ -274,7 +272,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     public static SimpleExpression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime, int precision) {
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime
-                , SQLs.literal(IntegerType.INTEGER, precision));
+                , SQLs.literal(IntegerType.INSTANCE, precision));
     }
 
     /**
@@ -338,7 +336,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count">BIT_COUNT(N)</a>
      */
     public static SimpleExpression bitCount(final Expression n) {
-        return FunctionUtils.oneArgFunc("BIT_COUNT", n, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("BIT_COUNT", n, IntegerType.INSTANCE);
     }
 
 

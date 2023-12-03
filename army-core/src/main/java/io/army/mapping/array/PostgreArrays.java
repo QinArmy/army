@@ -7,15 +7,11 @@ import io.army.mapping.UnaryGenericsMapping;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.type.ImmutableSpec;
-import io.army.util.ArrayUtils;
-import io.army.util._Collections;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
+import io.army.util.*;
 
 import java.lang.reflect.Array;
-import java.util.Collections;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -25,29 +21,39 @@ public abstract class PostgreArrays extends ArrayMappings {
     private PostgreArrays() {
     }
 
-    private static final Map<Class<?>, Integer> EMPTY_LENGTHS = Collections.emptyMap();
+
+    public static byte[] parseBytea(final String text, int offset, final int end) {
+        if (!text.startsWith("0x", offset)) {
+            throw new IllegalArgumentException("not start with 0x");
+        }
+        offset += 2;
+
+        final byte[] bytea;
+        bytea = text.substring(offset, end).getBytes(StandardCharsets.UTF_8);
+        return HexUtils.decodeHex(bytea, 0, bytea.length);
+    }
 
 
-    public static String arrayBeforeBind(final Object nonNull, final BiConsumer<Object, Consumer<String>> consumer,
+    public static String arrayBeforeBind(final Object source, final BiConsumer<Object, Consumer<String>> consumer,
                                          final DataType dataType, final MappingType type,
                                          final ErrorHandler handler) {
 
-        if (nonNull instanceof String) {
+        if (source instanceof String) {
             final String text;
             final int length;
-            if ((length = (text = ((String) nonNull).trim()).length()) < 2) {
-                throw handler.apply(type, dataType, nonNull, null);
+            if ((length = (text = ((String) source).trim()).length()) < 2) {
+                throw handler.apply(type, dataType, source, null);
             } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
-                throw handler.apply(type, dataType, nonNull, null);
+                throw handler.apply(type, dataType, source, null);
             } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-                throw handler.apply(type, dataType, nonNull, null);
+                throw handler.apply(type, dataType, source, null);
             }
-            return (String) nonNull;
+            return (String) source;
         }
 
-        final Class<?> javaType = type.javaType(), sourceType = nonNull.getClass();
+        final Class<?> javaType = type.javaType(), sourceType = source.getClass();
         if (!sourceType.isArray()) {
-            throw handler.apply(type, dataType, nonNull, null);
+            throw handler.apply(type, dataType, source, null);
         }
 
         final Class<?> sourceComponentType;
@@ -55,14 +61,14 @@ public abstract class PostgreArrays extends ArrayMappings {
         if (javaType == Object.class) { // unlimited dimension array
             if (sourceComponentType != String.class
                     && sourceComponentType != ((MappingType.SqlArrayType) type).underlyingJavaType()) {
-                throw handler.apply(type, dataType, nonNull, null);
+                throw handler.apply(type, dataType, source, null);
             }
         } else if (sourceComponentType == String.class) {
             if (ArrayUtils.dimensionOf(sourceType) != ArrayUtils.dimensionOf(javaType)) {
-                throw handler.apply(type, dataType, nonNull, null);
+                throw handler.apply(type, dataType, source, null);
             }
-        } else if (!javaType.isInstance(nonNull)) {
-            throw handler.apply(type, dataType, nonNull, null);
+        } else if (!javaType.isInstance(source)) {
+            throw handler.apply(type, dataType, source, null);
         }
 
         try {
@@ -72,10 +78,10 @@ public abstract class PostgreArrays extends ArrayMappings {
             } else {
                 actualConsumer = consumer;
             }
-            return PostgreArrays.toArrayText(nonNull, actualConsumer, new StringBuilder())
+            return PostgreArrays.toArrayText(source, actualConsumer, new StringBuilder())
                     .toString();
         } catch (Exception e) {
-            throw handler.apply(type, dataType, nonNull, e);
+            throw handler.apply(type, dataType, source, e);
         }
     }
 
@@ -96,9 +102,20 @@ public abstract class PostgreArrays extends ArrayMappings {
             } catch (Exception e) {
                 throw errorHandler.apply(type, dataType, source, e);
             }
+        } else if (!sourceType.isArray()) {
+            throw errorHandler.apply(type, dataType, source, null);
         } else if (javaType == Object.class) { // unlimited dimension array
-            if (!sourceType.isArray()
-                    || ArrayUtils.underlyingComponent(sourceType) != ((MappingType.SqlArrayType) type).underlyingJavaType()) {
+            final Class<?> underlyingJavaType, temp;
+            underlyingJavaType = ((MappingType.SqlArrayType) type).underlyingJavaType();
+
+            if (underlyingJavaType.isArray()) {
+                temp = ArrayUtils.underlyingComponent(underlyingJavaType);
+            } else {
+                temp = underlyingJavaType;
+            }
+            if (ArrayUtils.underlyingComponent(sourceType) != temp) {
+                throw errorHandler.apply(type, dataType, source, null);
+            } else if (ArrayUtils.dimensionOf(sourceType) <= ArrayUtils.dimensionOf(underlyingJavaType)) {
                 throw errorHandler.apply(type, dataType, source, null);
             }
             value = source;
@@ -137,29 +154,6 @@ public abstract class PostgreArrays extends ArrayMappings {
         return builder;
     }
 
-    /**
-     * @see #byteaArrayToText(MappingType, DataType, Object, StringBuilder, ErrorHandler)
-     */
-    private static void _byteaArrayToText(final MappingType type, final DataType dataType, final Object source,
-                                          final int dimension, final StringBuilder builder,
-                                          final ErrorHandler errorHandler) {
-
-
-        final int length;
-        length = Array.getLength(source);
-
-        Object element;
-        for (int i = 0; i < length; i++) {
-            element = Array.get(source, i);
-
-            if (dimension > 1) {
-                _byteaArrayToText(type, dataType, element, dimension - 1, builder, errorHandler);
-            }
-
-        }
-
-    }
-
 
     /**
      * TODO handle UNLIMITED array
@@ -178,20 +172,12 @@ public abstract class PostgreArrays extends ArrayMappings {
             throw _Exceptions.notArrayMappingType(type);
         }
 
-        final Class<?> arrayJavaType;
-        if (type instanceof UnaryGenericsMapping.ListMapping) {
-            final Class<?> elementType;
-            elementType = ((UnaryGenericsMapping.ListMapping<?>) type).genericsType();
-            arrayJavaType = ArrayUtils.arrayClassOf(elementType);
-        } else {
-            arrayJavaType = type.javaType();
-            if (!arrayJavaType.isArray()) {
-                throw notArrayJavaType(type);
-            }
-        }
 
         final Object array, value;
         try {
+            final Class<?> arrayJavaType;
+            arrayJavaType = javaTypeOfArray(type, text, 0, text.length());
+
             array = PostgreArrays.parseArrayText(arrayJavaType, text, nonNull, delimiter, elementFunc);
         } catch (Throwable e) {
             throw handler.apply(type, dataType, text, e);
@@ -225,8 +211,11 @@ public abstract class PostgreArrays extends ArrayMappings {
         }
         final Object array, value;
         try {
+            final int dimension;
+            dimension = dimensionOfArray(text, 0, text.length());
+
             array = PostgreArrays._parseArray(arrayJavaType, text, true, 0, text.length(),
-                    _Constant.COMMA, EMPTY_LENGTHS, true, elementFunc);
+                    _Constant.COMMA, dimension, 1, true, elementFunc);
         } catch (Throwable e) {
             throw handler.apply(type, dataType, text, e);
         }
@@ -295,82 +284,6 @@ public abstract class PostgreArrays extends ArrayMappings {
         return length;
     }
 
-    public static Map<Class<?>, Integer> parseArrayLengthMap(final Class<?> javaType, final String text, final int offset,
-                                                             final int end) {
-        final char colon = ':';
-        final Map<Class<?>, Integer> map = _Collections.hashMap();
-
-        Class<?> componentType;
-        componentType = javaType;
-
-        boolean inBracket = false, afterColon = false;
-        char ch;
-        for (int i = offset, lowerIndex = -1, upperIndex = -1, lower = 0, length; i < end; i++) {
-            ch = text.charAt(i);
-            if (!inBracket) {
-                if (ch == _Constant.LEFT_SQUARE_BRACKET) {
-                    inBracket = true;
-                } else if (!Character.isWhitespace(ch)) {
-                    throw isNotWhitespaceError(i);
-                }
-            } else if (lowerIndex < 0) {
-                if (!Character.isWhitespace(ch)) {
-                    lowerIndex = i;
-                }
-            } else if (lowerIndex > 0) {
-                if (ch == colon || Character.isWhitespace(ch)) {
-                    lower = Integer.parseInt(text.substring(lowerIndex, i));
-                    lowerIndex = 0;
-                }
-                if (ch == colon) {
-                    afterColon = true;
-                }
-            } else if (!afterColon) {
-                if (ch == colon) {
-                    afterColon = true;
-                } else if (!Character.isWhitespace(ch)) {
-                    throw lengthOfDimensionError(text.substring(offset, end));
-                }
-            } else if (upperIndex < 0) {
-                if (!Character.isWhitespace(ch)) {
-                    upperIndex = i;
-                }
-            } else if (upperIndex == 0) {
-                if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
-                    inBracket = false;
-                    lowerIndex = upperIndex = -1;
-                } else if (!Character.isWhitespace(ch)) {
-                    throw lengthOfDimensionError(text.substring(offset, end));
-                }
-            } else if (ch == _Constant.RIGHT_SQUARE_BRACKET || Character.isWhitespace(ch)) {
-                length = Integer.parseInt(text.substring(upperIndex, i)) - lower + 1;
-                if (length < 0) {
-                    throw lengthOfDimensionError(text.substring(offset, end));
-                }
-                upperIndex = 0;
-                if (map.putIfAbsent(componentType, length) != null) {
-                    throw boundDecorationNotMatch(javaType, text.substring(offset, end));
-                }
-                if (componentType.isArray()) {
-                    componentType = componentType.getComponentType();
-                }
-                if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
-                    inBracket = false;
-                    lowerIndex = upperIndex = -1;
-                }
-            }
-
-
-        }//for
-
-        if (inBracket) {
-            throw lengthOfDimensionError(text.substring(offset, end));
-        } else if (map.size() != ArrayUtils.dimensionOf(javaType)) {
-            throw boundDecorationNotMatch(javaType, text.substring(offset, end));
-        }
-        return _Collections.unmodifiableMap(map);
-    }
-
 
     /**
      * <p>
@@ -393,19 +306,17 @@ public abstract class PostgreArrays extends ArrayMappings {
             throw new IllegalArgumentException("no text");
         }
 
-        final Map<Class<?>, Integer> lengthMap;
         if (text.charAt(offset) == _Constant.LEFT_SQUARE_BRACKET) {
-            final int index;
-            index = text.indexOf('=', offset);
-            if (index < offset || index >= length) {
-                throw new IllegalArgumentException("postgre array format error.");
+            offset = text.indexOf('=', offset);
+            if (offset < 0) {
+                throw new IllegalArgumentException("postgre array meta error");
             }
-            lengthMap = parseArrayLengthMap(javaType, text, offset, index);
-            offset = index + 1;
-        } else {
-            lengthMap = EMPTY_LENGTHS;
+            offset++;
         }
-        return _parseArray(javaType, text, nonNull, offset, length, delimiter, lengthMap, false, function);
+
+        final int dimension;
+        dimension = dimensionOfArray(text, offset, length);
+        return _parseArray(javaType, text, nonNull, offset, length, delimiter, dimension, 1, false, function);
     }
 
 
@@ -440,31 +351,33 @@ public abstract class PostgreArrays extends ArrayMappings {
      * parse postgre array text.
      * </p>
      *
-     * @param function before end index possibly with trailing whitespace.
+     * @param function       before end index possibly with trailing whitespace.
+     * @param dimensionIndex based one
      * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
     private static Object _parseArray(final Class<?> javaType, final String text, final boolean nonNull,
-                                      final int offset, final int end, final char delimiter,
-                                      final Map<Class<?>, Integer> lengthMap,
-                                      final boolean doubleQuoteEscapes,
-                                      final TextFunction<?> function) {
+                                      final int offset, final int end, final char delimiter, final int dimension,
+                                      final int dimensionIndex, final boolean doubleQuoteEscapes, final TextFunction<?> function) {
         assert offset >= 0 && offset < end;
 
         final int arrayLength;
-        if (lengthMap == EMPTY_LENGTHS) {
-            arrayLength = parseArrayLength(text, offset, end);
-        } else {
-            arrayLength = lengthMap.get(javaType);
-        }
+        arrayLength = parseArrayLength(text, offset, end);
+
         final Class<?> componentType;
-        componentType = javaType.getComponentType();
+        final boolean oneDimension;
+        if (dimensionIndex < dimension) {
+            componentType = javaType.getComponentType();
+            oneDimension = false;
+        } else {
+            componentType = javaType;
+            oneDimension = true;
+        }
         final Object array;
         array = Array.newInstance(componentType, arrayLength);
         if (arrayLength == 0) {
             return array;
         }
 
-        final boolean oneDimension = !componentType.isArray();
 
         Object elementValue;
         boolean leftBrace = true, inBrace = false, inQuote = false, inElementBrace = false, arrayEnd = false;
@@ -504,7 +417,7 @@ public abstract class PostgreArrays extends ArrayMappings {
                     } else {
                         inBrace = false;
                         elementValue = _parseArray(componentType, text, nonNull, startIndex, i + 1, delimiter,
-                                lengthMap, doubleQuoteEscapes, function);
+                                dimension, dimensionIndex + 1, doubleQuoteEscapes, function);
                         Array.set(array, arrayIndex++, elementValue);
                         startIndex = -1;
                     }
@@ -633,6 +546,195 @@ public abstract class PostgreArrays extends ArrayMappings {
             }
         }
         builder.append(_Constant.RIGHT_BRACE);
+    }
+
+    private static int dimensionOfArray(final String text, int offset, final int end) {
+
+        char ch;
+        for (; offset < end; offset++) {
+            ch = text.charAt(offset);
+            if (Character.isWhitespace(ch)) {
+                continue;
+            }
+            if (ch != _Constant.LEFT_SQUARE_BRACKET) {
+                break;
+            }
+            offset = text.indexOf('=');
+            if (offset < 0) {
+                throw new IllegalArgumentException("postgre array meta error");
+            }
+
+            offset++;
+
+            break;
+        }
+        if (offset == end) {
+            throw new IllegalArgumentException("no text");
+        }
+
+
+        int dimension = 0;
+        for (int i = offset; i < end; i++) {
+            ch = text.charAt(i);
+            if (ch == _Constant.LEFT_BRACE) {
+                dimension++;
+            } else if (!Character.isWhitespace(ch)) {
+                break;
+            }
+        }
+
+        if (dimension == 0) {
+            throw new IllegalArgumentException("postgre array dimension is zero");
+        }
+        return dimension;
+    }
+
+
+    /**
+     * @see #byteaArrayToText(MappingType, DataType, Object, StringBuilder, ErrorHandler)
+     */
+    private static void _byteaArrayToText(final MappingType type, final DataType dataType, final Object source,
+                                          final int dimension, final StringBuilder builder,
+                                          final ErrorHandler errorHandler) {
+
+
+        final int length;
+        length = Array.getLength(source);
+
+        builder.append(_Constant.LEFT_BRACE);
+
+        Object element;
+        for (int i = 0; i < length; i++) {
+            element = Array.get(source, i);
+
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            }
+
+            if (element == null) {
+                if (dimension > 1) {
+                    final IllegalArgumentException e;
+                    e = new IllegalArgumentException("multi-dimension must not null");
+                    throw errorHandler.apply(type, dataType, source, e);
+                }
+                builder.append("null");
+            } else if (dimension > 1) {
+                _byteaArrayToText(type, dataType, element, dimension - 1, builder, errorHandler);
+            } else {
+                builder.append("0x")
+                        .append(HexUtils.hexEscapesText(false, (byte[]) element));
+            }
+
+        } // for loop
+
+        builder.append(_Constant.RIGHT_BRACE);
+
+    }
+
+
+    private static int[] parseArrayLengthMap(final Class<?> javaType, final String text, final int offset,
+                                             final int equalIndex) {
+        final char colon = ':';
+        final int dimension;
+        dimension = dimensionOfArray(text, equalIndex + 1, text.length());
+
+        if (javaType != Object.class && dimension != ArrayUtils.dimensionOf(javaType)) {
+            throw boundDecorationNotMatch(javaType, text.substring(offset, equalIndex));
+        }
+
+        final int[] meta = new int[dimension];
+
+
+        boolean inBracket = false, afterColon = false;
+        char ch;
+        for (int i = offset, lowerIndex = -1, upperIndex = -1, dimensionIndex = 0, lower = 0, length; i < equalIndex; i++) {
+            ch = text.charAt(i);
+            if (!inBracket) {
+                if (ch == _Constant.LEFT_SQUARE_BRACKET) {
+                    inBracket = true;
+                } else if (!Character.isWhitespace(ch)) {
+                    throw isNotWhitespaceError(i);
+                }
+            } else if (lowerIndex < 0) {
+                if (!Character.isWhitespace(ch)) {
+                    lowerIndex = i;
+                }
+            } else if (lowerIndex > 0) {
+                if (ch == colon || Character.isWhitespace(ch)) {
+                    lower = Integer.parseInt(text.substring(lowerIndex, i));
+                    lowerIndex = 0;
+                }
+                if (ch == colon) {
+                    afterColon = true;
+                }
+            } else if (!afterColon) {
+                if (ch == colon) {
+                    afterColon = true;
+                } else if (!Character.isWhitespace(ch)) {
+                    throw lengthOfDimensionError(text.substring(offset, equalIndex));
+                }
+            } else if (upperIndex < 0) {
+                if (!Character.isWhitespace(ch)) {
+                    upperIndex = i;
+                }
+            } else if (upperIndex == 0) {
+                if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
+                    inBracket = false;
+                    lowerIndex = upperIndex = -1;
+                } else if (!Character.isWhitespace(ch)) {
+                    throw lengthOfDimensionError(text.substring(offset, equalIndex));
+                }
+            } else if (ch == _Constant.RIGHT_SQUARE_BRACKET || Character.isWhitespace(ch)) {
+                length = Integer.parseInt(text.substring(upperIndex, i)) - lower + 1;
+                if (length < 0) {
+                    throw lengthOfDimensionError(text.substring(offset, equalIndex));
+                }
+                upperIndex = 0;
+                if (dimensionIndex == dimension) {
+                    throw boundDecorationNotMatch(javaType, text.substring(offset, equalIndex));
+                }
+                meta[dimensionIndex++] = length;
+                if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
+                    inBracket = false;
+                    lowerIndex = upperIndex = -1;
+                }
+            }
+
+
+        }//for
+
+        if (inBracket) {
+            throw lengthOfDimensionError(text.substring(offset, equalIndex));
+        }
+
+        return meta;
+    }
+
+
+    private static Class<?> javaTypeOfArray(final MappingType type, final String text, final int offset, final int end) {
+        if (!(type instanceof MappingType.SqlArrayType)) {
+            throw new IllegalArgumentException("not array");
+        }
+
+        if (type instanceof UnaryGenericsMapping.ListMapping) {
+            final Class<?> elementType;
+            elementType = ((UnaryGenericsMapping.ListMapping<?>) type).genericsType();
+            return ArrayUtils.arrayClassOf(elementType);
+        }
+
+        final Class<?> arrayJavaType, underlyingJavaType, javaType;
+        javaType = type.javaType();
+        if (javaType == Object.class) {
+            underlyingJavaType = ((MappingType.SqlArrayType) type).underlyingJavaType();
+            final int dimension;
+            dimension = dimensionOfArray(text, offset, end);
+            arrayJavaType = ArrayUtils.arrayClassOf(underlyingJavaType, dimension);
+        } else if (javaType.isArray()) {
+            arrayJavaType = javaType;
+        } else {
+            throw notArrayJavaType(type);
+        }
+        return arrayJavaType;
     }
 
 

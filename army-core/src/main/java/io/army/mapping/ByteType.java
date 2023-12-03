@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.ByteArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -54,6 +55,12 @@ public final class ByteType extends _NumericType._IntegerType {
         return LengthType.TINY;
     }
 
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return ByteArrayType.LINEAR;
+    }
+
     @Override
     public DataType map(final ServerMeta meta) {
         final SqlType type;
@@ -64,7 +71,6 @@ public final class ByteType extends _NumericType._IntegerType {
             case PostgreSQL:
                 type = PostgreType.SMALLINT;
                 break;
-
             case Oracle:
             case H2:
             default:
@@ -92,7 +98,7 @@ public final class ByteType extends _NumericType._IntegerType {
                 value = (short) intValue;
                 break;
             default:
-                throw PARAM_ERROR_HANDLER_0.apply(this, source);
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
     }

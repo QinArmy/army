@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.mapping.array.BooleanArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -57,6 +58,12 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
         return Boolean.class;
     }
 
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return BooleanArrayType.LINEAR;
+    }
+
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         final SqlType sqlType;
@@ -73,29 +80,25 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
         return sqlType;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public Boolean convert(MappingEnv env, Object source) throws CriteriaException {
-        return convertToBoolean(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
+        return toBoolean(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Boolean beforeBind(DataType dataType, MappingEnv env, final Object source) {
-        return convertToBoolean(this, dataType, source, PARAM_ERROR_HANDLER);
+        return toBoolean(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Boolean afterGet(DataType dataType, MappingEnv env, final Object source) {
-        return convertToBoolean(this, dataType, source, ACCESS_ERROR_HANDLER);
+        return toBoolean(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 
-    private static boolean convertToBoolean(final MappingType type, final DataType dataType, final Object nonNull,
-                                            final ErrorHandler errorHandler) {
+    public static boolean toBoolean(final MappingType type, final DataType dataType, final Object nonNull,
+                                    final ErrorHandler errorHandler) {
         final boolean value;
         if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull;

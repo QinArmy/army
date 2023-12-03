@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 
+import io.army.sqltype.DataType;
 import io.army.struct.CodeEnum;
 
 import java.math.BigDecimal;
@@ -30,7 +31,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
         if (targetType == String.class) {
             type = StringType.INSTANCE;
         } else if (targetType == Integer.class) {
-            type = IntegerType.INTEGER;
+            type = IntegerType.INSTANCE;
         } else if (targetType == Long.class) {
             type = LongType.BIGINT;
         } else if (targetType == BigDecimal.class) {

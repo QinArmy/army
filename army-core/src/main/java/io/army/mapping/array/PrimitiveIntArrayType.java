@@ -62,7 +62,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
 
     @Override
     public MappingType elementType() {
-        return IntegerType.INTEGER;
+        return IntegerType.INSTANCE;
     }
 
     @Override
@@ -72,7 +72,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
 
     @Override
     public SqlType map(final ServerMeta meta) throws UnsupportedDialectException {
-        return IntegerArrayType.mapSqlType(this, meta);
+        return null;
     }
 
     @Override

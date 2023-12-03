@@ -132,7 +132,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * </a>
      */
     public static SimpleExpression npoints(Expression geometricType) {
-        return FunctionUtils.oneArgFunc("NPOINTS", geometricType, IntegerType.INTEGER);
+        return FunctionUtils.oneArgFunc("NPOINTS", geometricType, IntegerType.INSTANCE);
     }
 
     /**

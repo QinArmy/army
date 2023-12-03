@@ -37,10 +37,10 @@ public final class IntegerType extends _NumericType._IntegerType {
         if (fieldType != Integer.class) {
             throw errorJavaType(IntegerType.class, fieldType);
         }
-        return INTEGER;
+        return INSTANCE;
     }
 
-    public static final IntegerType INTEGER = new IntegerType();
+    public static final IntegerType INSTANCE = new IntegerType();
 
     /**
      * private constructor
