@@ -5,9 +5,11 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+import io.army.util._Collections;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public final class JsonbType extends _ArmyBuildInMapping implements MappingType.SqlJsonbType {
 
@@ -16,14 +18,17 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
         if (javaType == String.class) {
             instance = TEXT;
         } else {
-            instance = INSTANCE_MAP.computeIfAbsent(javaType, JsonbType::new);
+            instance = INSTANCE_MAP.computeIfAbsent(javaType, CONSTRUCTOR);
         }
         return instance;
     }
 
     public static final JsonbType TEXT = new JsonbType(String.class);
 
-    private static final ConcurrentMap<Class<?>, JsonbType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, JsonbType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
+    private static final Function<Class<?>, JsonbType> CONSTRUCTOR = JsonbType::new;
+    ;
 
     private final Class<?> javaType;
 
@@ -41,10 +46,10 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType sqlDataType;
+        final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                sqlDataType = PostgreType.JSONB;
+                dataType = PostgreType.JSONB;
                 break;
             case MySQL:
             case Oracle:
@@ -52,35 +57,51 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return sqlDataType;
-    }
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+        return dataType;
     }
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        //TODO
-        throw new UnsupportedOperationException();
+        return decodeJson(map(env.serverMeta()), env, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public String beforeBind(DataType type, MappingEnv env, Object source) {
+    public String beforeBind(DataType dataType, MappingEnv env, final Object source) {
+        final String value;
         if (source instanceof String) {
-            return (String) source;
+            value = (String) source;
+        } else if (this.javaType.isInstance(source)) {
+            try {
+                value = env.jsonCodec().encode(source);
+            } catch (Exception e) {
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, e);
+            }
+        } else {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        //TODO
-        throw new UnsupportedOperationException();
+        return value;
     }
 
     @Override
-    public String afterGet(DataType type, MappingEnv env, Object source) {
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) {
+        return decodeJson(dataType, env, source, ACCESS_ERROR_HANDLER);
+    }
+
+
+    private Object decodeJson(DataType dataType, MappingEnv env, final Object source, ErrorHandler errorHandler) {
         if (!(source instanceof String)) {
-            throw errorJavaTypeForSqlType(type, source);
+            throw errorHandler.apply(this, dataType, source, null);
         }
-        return (String) source;
+        return env.jsonCodec().decode((String) source, this.javaType);
+    }
+
+
+    private void appendToText(final Object element, final Consumer<String> appender) {
+        if (!(element instanceof Double)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        appender.accept(element.toString());
     }
 
 

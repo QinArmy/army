@@ -13,24 +13,36 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
+import java.util.function.Consumer;
+
 public class IntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
-    public static IntegerArrayType from(final Class<?> javaType) {
+    public static IntegerArrayType from(final Class<?> arrayClass) {
         final IntegerArrayType instance;
         final Class<?> componentType;
-        if (javaType == Integer[].class) {
+        if (arrayClass == Integer[].class) {
             instance = LINEAR;
-        } else if (javaType == int[].class) {
+        } else if (arrayClass == int[].class) {
             instance = PRIMITIVE_LINEAR;
-        } else if (javaType == Object.class) {
-            instance = UNLIMITED;
-        } else if (!javaType.isArray()) {
-            throw errorJavaType(IntegerArrayType.class, javaType);
-        } else if ((componentType = ArrayUtils.underlyingComponent(javaType)) == int.class
+        } else if (!arrayClass.isArray()) {
+            throw errorJavaType(IntegerArrayType.class, arrayClass);
+        } else if ((componentType = ArrayUtils.underlyingComponent(arrayClass)) == int.class
                 || componentType == Integer.class) {
-            instance = new IntegerArrayType(javaType, componentType);
+            instance = new IntegerArrayType(arrayClass, componentType);
         } else {
-            throw errorJavaType(IntegerArrayType.class, javaType);
+            throw errorJavaType(IntegerArrayType.class, arrayClass);
+        }
+        return instance;
+    }
+
+    public static IntegerArrayType fromUnlimited(final Class<?> intClass) {
+        final IntegerArrayType instance;
+        if (intClass == Integer.class) {
+            instance = UNLIMITED;
+        } else if (intClass == int.class) {
+            instance = PRIMITIVE_UNLIMITED;
+        } else {
+            throw errorJavaType(IntegerArrayType.class, intClass);
         }
         return instance;
     }
@@ -99,25 +111,21 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        // TODO
-        throw new UnsupportedOperationException();
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, IntegerArrayType::parseText,
+                PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        if (source instanceof String || source instanceof int[] || source instanceof Integer[]) {
-            return source;
-        }
-        // TODO
-        throw new UnsupportedOperationException();
+        return PostgreArrays.arrayBeforeBind(source, IntegerArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        // TODO
-        throw new UnsupportedOperationException();
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false, IntegerArrayType::parseText, ACCESS_ERROR_HANDLER);
     }
 
+    /*-------------------below static methods -------------------*/
 
     static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType dataType;
@@ -132,6 +140,19 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
                 throw MAP_ERROR_HANDLER.apply(type, meta);
         }
         return dataType;
+    }
+
+
+    private static int parseText(final String text, final int offset, final int end) {
+        return Integer.parseInt(text.substring(offset, end));
+    }
+
+    private static void appendToText(final Object element, final Consumer<String> appender) {
+        if (!(element instanceof Integer)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        appender.accept(element.toString());
     }
 
 

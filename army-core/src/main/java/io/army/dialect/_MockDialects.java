@@ -13,9 +13,12 @@ import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 public abstract class _MockDialects implements DialectEnv {
 
@@ -78,10 +81,19 @@ public abstract class _MockDialects implements DialectEnv {
         }
 
         @Override
-        public Object decode(String json) {
+        public Object decode(String json, Class<?> objectClass) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public <T> List<T> decodeList(String json, Class<T> elementClass, Supplier<List<T>> listConstructor) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> Set<T> decodeSet(String json, Class<T> elementClass, Supplier<Set<T>> setConstructor) {
+            throw new UnsupportedOperationException();
+        }
 
     }//MockJsonCodec
 

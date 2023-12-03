@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.DoubleArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -27,9 +28,9 @@ import io.army.sqltype.SqlType;
 public final class DoubleType extends _NumericType._FloatNumericType {
 
 
-    public static DoubleType from(final Class<?> fieldType) {
-        if (fieldType != Double.class) {
-            throw errorJavaType(DoubleType.class, fieldType);
+    public static DoubleType from(final Class<?> javaType) {
+        if (javaType != Double.class) {
+            throw errorJavaType(DoubleType.class, javaType);
         }
         return INSTANCE;
     }
@@ -45,6 +46,11 @@ public final class DoubleType extends _NumericType._FloatNumericType {
     @Override
     public Class<?> javaType() {
         return Double.class;
+    }
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return DoubleArrayType.LINEAR;
     }
 
     @Override
@@ -65,23 +71,23 @@ public final class DoubleType extends _NumericType._FloatNumericType {
 
     @Override
     public Object convert(MappingEnv env, final Object source) throws CriteriaException {
-        return convertToDouble(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
+        return toDouble(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
 
     @Override
     public Double beforeBind(DataType dataType, MappingEnv env, final Object source) {
-        return convertToDouble(this, dataType, source, PARAM_ERROR_HANDLER);
+        return toDouble(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Double afterGet(DataType dataType, MappingEnv env, Object source) {
-        return convertToDouble(this, dataType, source, ACCESS_ERROR_HANDLER);
+        return toDouble(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
 
-    private static double convertToDouble(final MappingType type, final DataType dataType, final Object nonNull,
-                                          final ErrorHandler errorHandler) {
+    private static double toDouble(final MappingType type, final DataType dataType, final Object nonNull,
+                                   final ErrorHandler errorHandler) {
         final double value;
         if (nonNull instanceof Double) {
             value = (Double) nonNull;

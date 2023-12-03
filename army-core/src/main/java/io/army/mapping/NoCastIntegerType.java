@@ -44,7 +44,7 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
             case Oracle:
             case H2:
             default:
-                type = IntegerType.mapToInteger(this, meta);
+                type = IntegerType.mapToSqlType(this, meta);
         }
         return type;
     }

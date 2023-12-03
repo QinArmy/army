@@ -2,10 +2,10 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping.NameEnumType;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -15,60 +15,56 @@ import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
+
 /**
- * <p>This class is mapping class of {@link CodeEnum}.
- *
- * @see CodeEnumType
+ * @see Enum
+ * @see NameEnumType
  */
-public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public final class NameEnumArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
-
-    public static CodeEnumArrayType from(final Class<?> javaType) {
-        if (!javaType.isArray()) {
-            throw errorJavaType(CodeEnumArrayType.class, javaType);
+    public static NameEnumArrayType from(final Class<?> arrayClass) {
+        if (!arrayClass.isArray()) {
+            throw errorJavaType(NameEnumArrayType.class, arrayClass);
         }
         final Class<?> enumClass;
-        enumClass = ArrayUtils.underlyingComponent(javaType);
+        enumClass = ArrayUtils.underlyingComponent(arrayClass);
 
-        if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
-            throw errorJavaType(CodeEnumArrayType.class, javaType);
-        } else if (TextEnum.class.isAssignableFrom(enumClass)) {
-            throw errorJavaType(CodeEnumArrayType.class, enumClass);
+        if (!Enum.class.isAssignableFrom(enumClass)
+                || CodeEnum.class.isAssignableFrom(enumClass)
+                || TextEnum.class.isAssignableFrom(enumClass)) {
+            throw errorJavaType(NameEnumArrayType.class, arrayClass);
         }
-        return INSTANCE_MAP.computeIfAbsent(javaType, key -> new CodeEnumArrayType(javaType, enumClass));
+        return INSTANCE_MAP.computeIfAbsent(arrayClass, key -> new NameEnumArrayType(arrayClass, enumClass));
     }
 
-    public static CodeEnumArrayType fromUnlimited(final Class<?> enumClass) {
-        if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
-            throw errorJavaType(CodeEnumArrayType.class, enumClass);
-        } else if (TextEnum.class.isAssignableFrom(enumClass)) {
-            throw errorJavaType(CodeEnumArrayType.class, enumClass);
+    public static NameEnumArrayType fromUnlimited(final Class<?> enumClass) {
+        if (!Enum.class.isAssignableFrom(enumClass)
+                || CodeEnum.class.isAssignableFrom(enumClass)
+                || TextEnum.class.isAssignableFrom(enumClass)) {
+            throw errorJavaType(NameEnumArrayType.class, enumClass);
         }
         final Class<?> actualClass;
         actualClass = _ClassUtils.getEnumClass(enumClass);
-        return INSTANCE_MAP.computeIfAbsent(actualClass, key -> new CodeEnumArrayType(Object.class, actualClass));
+        return INSTANCE_MAP.computeIfAbsent(actualClass, key -> new NameEnumArrayType(Object.class, actualClass));
     }
 
 
-    private static final ConcurrentMap<Class<?>, CodeEnumArrayType> INSTANCE_MAP = _Collections.concurrentHashMap();
+    private static final ConcurrentMap<Class<?>, NameEnumArrayType> INSTANCE_MAP = _Collections.concurrentHashMap();
+
 
     private final Class<?> javaType;
 
     private final Class<?> enumClass;
 
-    private final Map<Integer, ? extends CodeEnum> codeMap;
-
     /**
      * private constructor
      */
-    private CodeEnumArrayType(Class<?> javaType, Class<?> enumClass) {
+    private NameEnumArrayType(Class<?> javaType, Class<?> enumClass) {
         this.javaType = javaType;
         this.enumClass = enumClass;
-        this.codeMap = CodeEnum.getCodeToEnumMap(enumClass);
     }
 
     @Override
@@ -91,7 +87,7 @@ public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements 
         } else if ((componentType = javaType.getComponentType()).isArray()) {
             instance = from(componentType);
         } else {
-            instance = CodeEnumType.from(componentType);
+            instance = NameEnumType.from(componentType);
         }
         return instance;
     }
@@ -107,7 +103,7 @@ public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements 
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return IntegerArrayType.mapToSqlType(this, meta);
+        return StringArrayType.mapToSqlType(this, meta);
     }
 
     @Override
@@ -125,17 +121,8 @@ public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements 
         return PostgreArrays.arrayAfterGet(this, dataType, source, false, this::parseText, ACCESS_ERROR_HANDLER);
     }
 
-
-    private CodeEnum parseText(final String text, final int offset, final int end) {
-        final int code;
-        code = Integer.parseInt(text.substring(offset, end));
-        final CodeEnum value;
-        value = this.codeMap.get(code);
-        if (value == null) {
-            String m = String.format("code[%s] no appropriate instance of %s", code, this.enumClass.getName());
-            throw new IllegalArgumentException(m);
-        }
-        return value;
+    private Enum<?> parseText(final String text, final int offset, final int end) {
+        return NameEnumType.valueOf(this.enumClass, text.substring(offset, end));
     }
 
     private void appendToText(final Object element, final Consumer<String> appender) {
@@ -143,7 +130,7 @@ public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements 
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(Integer.toString(((CodeEnum) element).code()));
+        appender.accept(((Enum<?>) element).name());
     }
 
 

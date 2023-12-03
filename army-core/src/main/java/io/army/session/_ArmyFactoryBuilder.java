@@ -30,6 +30,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B, R> {
 
@@ -454,7 +455,17 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         }
 
         @Override
-        public Object decode(String json) {
+        public Object decode(String json, Class<?> objectClass) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> List<T> decodeList(String json, Class<T> elementClass, Supplier<List<T>> listConstructor) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> Set<T> decodeSet(String json, Class<T> elementClass, Supplier<Set<T>> setConstructor) {
             throw new UnsupportedOperationException();
         }
 

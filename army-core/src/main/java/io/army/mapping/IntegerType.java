@@ -64,7 +64,7 @@ public final class IntegerType extends _NumericType._IntegerType {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return mapToInteger(this, meta);
+        return mapToSqlType(this, meta);
     }
 
 
@@ -134,7 +134,7 @@ public final class IntegerType extends _NumericType._IntegerType {
 
     }
 
-    public static SqlType mapToInteger(final MappingType type, final ServerMeta meta) {
+    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:

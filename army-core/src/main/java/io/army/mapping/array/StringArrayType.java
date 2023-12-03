@@ -1,7 +1,6 @@
 package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -11,6 +10,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,10 +58,7 @@ public final class StringArrayType extends _ArmyBuildInMapping {
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        if (meta.serverDatabase() != Database.PostgreSQL) {
-            throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return PostgreType.VARCHAR_ARRAY;
+        return mapToSqlType(this, meta);
     }
 
     @Override
@@ -88,16 +85,33 @@ public final class StringArrayType extends _ArmyBuildInMapping {
     }
 
 
-    public static String parseDecimal(String text, int offset, int end) {
-        return text.substring(offset, end);
-    }
-
     public static void appendToText(final Object element, final Consumer<String> appender) {
         if (!(element instanceof String)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
         appender.accept((String) element);
+    }
+
+
+    static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType dataType;
+        switch (meta.serverDatabase()) {
+            case PostgreSQL:
+                dataType = PostgreType.VARCHAR_ARRAY;
+                break;
+            case Oracle:
+            case H2:
+            case MySQL:
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return dataType;
+    }
+
+
+    private static String parseDecimal(String text, int offset, int end) {
+        return text.substring(offset, end);
     }
 
 

@@ -25,8 +25,6 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
             instance = LINEAR;
         } else if (javaType == boolean[].class) {
             instance = PRIMITIVE_UNLIMITED;
-        } else if (javaType == Object.class) {
-            instance = UNLIMITED;
         } else if (!javaType.isArray()) {
             throw errorJavaType(BooleanArrayType.class, javaType);
         } else if ((underlyingJavaType = ArrayUtils.underlyingComponent(javaType)) == Boolean.class
@@ -34,6 +32,18 @@ public final class BooleanArrayType extends _ArmyNoInjectionMapping implements M
             instance = new BooleanArrayType(javaType, underlyingJavaType);
         } else {
             throw errorJavaType(BooleanArrayType.class, javaType);
+        }
+        return instance;
+    }
+
+    public static BooleanArrayType fromUnlimited(final Class<?> booleanClass) {
+        final BooleanArrayType instance;
+        if (booleanClass == Boolean.class) {
+            instance = UNLIMITED;
+        } else if (booleanClass == boolean.class) {
+            instance = PRIMITIVE_UNLIMITED;
+        } else {
+            throw errorJavaType(BooleanArrayType.class, booleanClass);
         }
         return instance;
     }

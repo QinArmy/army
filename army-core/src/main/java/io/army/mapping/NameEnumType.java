@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.NameEnumArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 import io.army.struct.CodeEnum;
@@ -55,15 +56,15 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return NameEnumArrayType.from(this.enumClass);
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) {
         return mapToSqlType(this, meta);
     }
 
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public Enum<?> convert(MappingEnv env, Object source) throws CriteriaException {

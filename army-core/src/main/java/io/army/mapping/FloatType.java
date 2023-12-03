@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.FloatArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -46,6 +47,10 @@ public final class FloatType extends _NumericType._FloatNumericType {
         return Float.class;
     }
 
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return FloatArrayType.LINEAR;
+    }
 
     @Override
     public DataType map(final ServerMeta meta) {
