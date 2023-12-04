@@ -166,7 +166,7 @@ public abstract class PostgreArrays extends ArrayMappings {
         try {
             final BiConsumer<Object, Consumer<String>> actualConsumer;
             if (sourceComponentType == String.class) {
-                actualConsumer = StringArrayType::appendToText;
+                actualConsumer = TextArrayType::appendToText;
             } else {
                 actualConsumer = consumer;
             }

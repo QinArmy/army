@@ -38,7 +38,7 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        return StringType.mapToSqlType(this, meta);
+        return StringType.mapToDataType(this, meta);
     }
 
     @Override

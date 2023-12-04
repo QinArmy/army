@@ -13,14 +13,14 @@ import java.util.function.Consumer;
 public final class TextArrayType extends ArmyTextArrayType implements MappingType.SqlArrayType {
 
 
-    public static TextArrayType from(final Class<?> javaType) {
+    public static TextArrayType from(final Class<?> arrayType) {
         final TextArrayType instance;
-        if (javaType == String[].class) {
+        if (arrayType == String[].class) {
             instance = LINEAR;
-        } else if (javaType.isArray() && ArrayUtils.underlyingComponent(javaType) == String.class) {
-            instance = new TextArrayType(javaType);
+        } else if (arrayType.isArray() && ArrayUtils.underlyingComponent(arrayType) == String.class) {
+            instance = new TextArrayType(arrayType);
         } else {
-            throw errorJavaType(TextArrayType.class, javaType);
+            throw errorJavaType(TextArrayType.class, arrayType);
         }
         return instance;
     }

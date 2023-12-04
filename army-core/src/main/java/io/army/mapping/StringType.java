@@ -79,14 +79,9 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return mapToSqlType(this, meta);
+        return mapToDataType(this, meta);
     }
 
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public String convert(MappingEnv env, Object source) throws CriteriaException {
@@ -104,7 +99,7 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
     }
 
 
-    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:

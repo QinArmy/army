@@ -107,7 +107,7 @@ public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements 
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return IntegerArrayType.mapToSqlType(this, meta);
+        return IntegerArrayType.mapToDataType(this, meta);
     }
 
     @Override

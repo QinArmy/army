@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
+import io.army.mapping.SqlCharType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -13,36 +13,35 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-public final class StringArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public final class SqlCharArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
-
-    public static StringArrayType from(final Class<?> arrayType) {
-        final StringArrayType instance;
+    public static SqlCharArrayType from(final Class<?> arrayType) {
+        final SqlCharArrayType instance;
         if (arrayType == String[].class) {
             instance = LINEAR;
         } else if (arrayType.isArray() && ArrayUtils.underlyingComponent(arrayType) == String.class) {
-            instance = new StringArrayType(arrayType);
+            instance = new SqlCharArrayType(arrayType);
         } else {
-            throw errorJavaType(StringArrayType.class, arrayType);
+            throw errorJavaType(SqlCharArrayType.class, arrayType);
         }
         return instance;
     }
 
-    public static StringArrayType fromUnlimited() {
+    public static SqlCharArrayType fromUnlimited() {
         return UNLIMITED;
     }
 
 
-    public static final StringArrayType UNLIMITED = new StringArrayType(Object.class);
+    public static final SqlCharArrayType UNLIMITED = new SqlCharArrayType(Object.class);
 
-    public static final StringArrayType LINEAR = new StringArrayType(String[].class);
+    public static final SqlCharArrayType LINEAR = new SqlCharArrayType(String[].class);
 
     private final Class<?> javaType;
 
     /**
      * private constructor
      */
-    private StringArrayType(Class<?> javaType) {
+    private SqlCharArrayType(Class<?> javaType) {
         this.javaType = javaType;
     }
 
@@ -63,7 +62,7 @@ public final class StringArrayType extends _ArmyBuildInMapping implements Mappin
         if (javaType == Object.class) {
             instance = this;
         } else if (javaType == String[].class) {
-            instance = StringType.INSTANCE;
+            instance = SqlCharType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -81,8 +80,20 @@ public final class StringArrayType extends _ArmyBuildInMapping implements Mappin
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return mapToSqlType(this, meta);
+        final SqlType dataType;
+        switch (meta.serverDatabase()) {
+            case PostgreSQL:
+                dataType = PostgreType.CHAR_ARRAY;
+                break;
+            case Oracle:
+            case H2:
+            case MySQL:
+            default:
+                throw MAP_ERROR_HANDLER.apply(this, meta);
+        }
+        return dataType;
     }
+
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
@@ -102,22 +113,6 @@ public final class StringArrayType extends _ArmyBuildInMapping implements Mappin
         return PostgreArrays.arrayAfterGet(this, dataType, source, false,
                 PostgreArrays::decodeElement, ACCESS_ERROR_HANDLER
         );
-    }
-
-
-    static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.VARCHAR_ARRAY;
-                break;
-            case Oracle:
-            case H2:
-            case MySQL:
-            default:
-                throw MAP_ERROR_HANDLER.apply(type, meta);
-        }
-        return dataType;
     }
 
 

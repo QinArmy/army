@@ -106,7 +106,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        return mapToSqlType(this, meta);
+        return mapToDataType(this, meta);
     }
 
 
@@ -130,7 +130,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
 
     /*-------------------below static methods -------------------*/
 
-    static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:

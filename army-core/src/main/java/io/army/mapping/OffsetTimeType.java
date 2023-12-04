@@ -7,7 +7,9 @@ import io.army.sqltype.*;
 import io.army.util._TimeUtils;
 
 import java.time.DateTimeException;
+import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 
 /**
  * <p>
@@ -88,19 +90,23 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     }
 
 
-    static OffsetTime toOffsetTime(MappingType type, DataType dataType, final Object nonNull,
+    static OffsetTime toOffsetTime(MappingType type, DataType dataType, final Object source,
                                    ErrorHandler errorHandler) {
         final OffsetTime value;
-        if (nonNull instanceof OffsetTime) {
-            value = (OffsetTime) nonNull;
-        } else if (nonNull instanceof String) {
+        if (source instanceof OffsetTime) {
+            value = (OffsetTime) source;
+        } else if (source instanceof OffsetDateTime) {
+            value = ((OffsetDateTime) source).toOffsetTime();
+        } else if (source instanceof ZonedDateTime) {
+            value = ((ZonedDateTime) source).toOffsetDateTime().toOffsetTime();
+        } else if (source instanceof String) {
             try {
-                value = OffsetTime.parse((String) nonNull, _TimeUtils.OFFSET_TIME_FORMATTER_6);
+                value = OffsetTime.parse((String) source, _TimeUtils.OFFSET_TIME_FORMATTER_6);
             } catch (DateTimeException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }

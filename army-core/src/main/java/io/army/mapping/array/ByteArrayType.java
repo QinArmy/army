@@ -9,8 +9,6 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
@@ -96,18 +94,8 @@ public final class ByteArrayType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.SMALLINT_ARRAY;
-                break;
-            case Oracle:
-            case H2:
-            case MySQL:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return dataType;
+        // currently,same
+        return ShortArrayType.mapToDataType(this, meta);
     }
 
     @Override

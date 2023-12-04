@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.SqlCharArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
@@ -32,6 +33,11 @@ public final class SqlCharType extends _ArmyBuildInMapping implements MappingTyp
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return SqlCharArrayType.LINEAR;
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
@@ -52,11 +58,6 @@ public final class SqlCharType extends _ArmyBuildInMapping implements MappingTyp
         return type;
     }
 
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public String convert(MappingEnv env, Object source) throws CriteriaException {

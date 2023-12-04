@@ -8,14 +8,14 @@ import io.army.util.ArrayUtils;
 public final class TinyTextArrayType extends ArmyTextArrayType {
 
 
-    public static TinyTextArrayType from(final Class<?> javaType) {
+    public static TinyTextArrayType from(final Class<?> arrayType) {
         final TinyTextArrayType instance;
-        if (javaType == String[].class) {
+        if (arrayType == String[].class) {
             instance = LINEAR;
-        } else if (javaType.isArray() && ArrayUtils.underlyingComponent(javaType) == String.class) {
-            instance = new TinyTextArrayType(javaType);
+        } else if (arrayType.isArray() && ArrayUtils.underlyingComponent(arrayType) == String.class) {
+            instance = new TinyTextArrayType(arrayType);
         } else {
-            throw errorJavaType(TinyTextArrayType.class, javaType);
+            throw errorJavaType(TinyTextArrayType.class, arrayType);
         }
         return instance;
     }

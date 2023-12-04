@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.ShortArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -51,6 +52,11 @@ public final class ShortType extends _NumericType._IntegerType {
     @Override
     public LengthType lengthType() {
         return LengthType.SMALL;
+    }
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return ShortArrayType.LINEAR;
     }
 
     @Override
