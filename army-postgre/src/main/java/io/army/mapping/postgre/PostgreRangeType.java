@@ -37,7 +37,7 @@ public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
 
     public final MappingType subtype() {
         final MappingType type;
-        switch (this.sqlType) {
+        switch (this.dataType) {
             case INT4RANGE:
             case INT4MULTIRANGE:
                 type = IntegerType.INSTANCE;
@@ -63,7 +63,7 @@ public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
                 type = OffsetDateTimeType.INSTANCE;
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(this.sqlType);
+                throw _Exceptions.unexpectedEnum(this.dataType);
         }
         return type;
     }

@@ -183,6 +183,10 @@ public final class PostgreSingleRangeArrayType extends _ArmyPostgreRangeType imp
         super(sqlType, javaType, rangeFunc);
     }
 
+    @Override
+    public Class<?> underlyingJavaType() {
+        return this.underlyingJavaType;
+    }
 
     @Override
     public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
@@ -193,15 +197,15 @@ public final class PostgreSingleRangeArrayType extends _ArmyPostgreRangeType imp
         if (targetType == String.class) {
             instance = TextType.INSTANCE;
         } else if (targetType == String[].class) {
-            instance = linearInstance(this.sqlType);
+            instance = linearInstance(this.dataType);
         } else if (!targetType.isArray()) {
             throw noMatchCompatibleMapping(this, targetType);
         } else if ((targetComponentType = ArrayUtils.underlyingComponent(targetType)) == String.class) {
-            instance = new PostgreSingleRangeArrayType(this.sqlType, targetType, null);
-        } else if ((rangeFunc = tryCreateDefaultRangeFunc(targetComponentType, boundJavaType(this.sqlType))) == null) {
+            instance = new PostgreSingleRangeArrayType(this.dataType, targetType, null);
+        } else if ((rangeFunc = tryCreateDefaultRangeFunc(targetComponentType, boundJavaType(this.dataType))) == null) {
             throw noMatchCompatibleMapping(this, targetType);
         } else {
-            instance = new PostgreSingleRangeArrayType(this.sqlType, targetType, rangeFunc);
+            instance = new PostgreSingleRangeArrayType(this.dataType, targetType, rangeFunc);
         }
         return instance;
     }
@@ -224,7 +228,7 @@ public final class PostgreSingleRangeArrayType extends _ArmyPostgreRangeType imp
 
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {
-        return new PostgreSingleRangeArrayType(this.sqlType, ArrayUtils.arrayClassOf(this.javaType), this.rangeFunc);
+        return new PostgreSingleRangeArrayType(this.dataType, ArrayUtils.arrayClassOf(this.javaType), this.rangeFunc);
     }
 
     @Override
@@ -232,13 +236,13 @@ public final class PostgreSingleRangeArrayType extends _ArmyPostgreRangeType imp
         final MappingType instance;
         if (this.javaType == String[][].class) {
             assert this.rangeFunc == null;
-            instance = linearInstance(this.sqlType);
+            instance = linearInstance(this.dataType);
         } else if (ArrayUtils.dimensionOf(this.javaType) > 1) {
-            instance = new PostgreSingleRangeArrayType(this.sqlType, this.javaType.getComponentType(), this.rangeFunc);
+            instance = new PostgreSingleRangeArrayType(this.dataType, this.javaType.getComponentType(), this.rangeFunc);
         } else {
             final PostgreSingleRangeType rangeType;
             rangeType = PostgreSingleRangeType.INT4_RANGE_TEXT._fromSingleArray(this);
-            assert rangeType.sqlType == this.sqlType;
+            assert rangeType.dataType == this.dataType;
             instance = rangeType;
         }
         return instance;

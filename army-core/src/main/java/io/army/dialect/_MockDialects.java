@@ -80,8 +80,9 @@ public abstract class _MockDialects implements DialectEnv {
             throw new UnsupportedOperationException();
         }
 
+
         @Override
-        public Object decode(String json, Class<?> objectClass) {
+        public <T> T decode(String json, Class<T> objectClass) {
             throw new UnsupportedOperationException();
         }
 

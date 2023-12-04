@@ -46,9 +46,11 @@ import java.util.function.Function;
 public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
 
 
-    public final PostgreType sqlType;
+    public final PostgreType dataType;
 
     protected final Class<?> javaType;
+
+    protected final Class<?> underlyingJavaType;
 
     protected final RangeFunction<Object, ?> rangeFunc;
 
@@ -60,22 +62,22 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
      * </p>
      */
     @SuppressWarnings("unchecked")
-    protected _ArmyPostgreRangeType(final PostgreType sqlType, final Class<?> javaType,
+    protected _ArmyPostgreRangeType(final PostgreType dataType, final Class<?> javaType,
                                     final @Nullable RangeFunction<?, ?> rangeFunc) {
-        final Class<?> underlyingType;
+
         if (javaType == String.class) {
-            underlyingType = javaType;
+            this.underlyingJavaType = javaType;
         } else {
-            underlyingType = ArrayUtils.underlyingComponent(javaType);
+            this.underlyingJavaType = ArrayUtils.underlyingComponent(javaType);
         }
-        assert rangeFunc != null || underlyingType == String.class;
-        this.sqlType = sqlType;
+        assert rangeFunc != null || this.underlyingJavaType == String.class;
+        this.dataType = dataType;
         this.javaType = javaType;
         this.rangeFunc = (RangeFunction<Object, ?>) rangeFunc;
-        if (underlyingType == String.class || ArmyPostgreRange.class.isAssignableFrom(javaType)) {
+        if (this.underlyingJavaType == String.class || ArmyPostgreRange.class.isAssignableFrom(javaType)) {
             this.mockFunction = null;
         } else {
-            this.mockFunction = PostgreRangeType.createMockFunction(javaType, boundJavaType(sqlType));
+            this.mockFunction = PostgreRangeType.createMockFunction(javaType, boundJavaType(dataType));
         }
     }
 
@@ -89,7 +91,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return this.sqlType;
+        return this.dataType;
     }
 
     @Override
@@ -98,7 +100,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
         if (type == this) {
             match = true;
         } else if (this.getClass().isInstance(type)) {
-            match = ((_ArmyPostgreRangeType) type).sqlType == this.sqlType;
+            match = ((_ArmyPostgreRangeType) type).dataType == this.dataType;
         } else {
             match = false;
         }
@@ -107,7 +109,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
 
 
     protected final void serialize(final Object bound, final Consumer<String> appender) {
-        switch (this.sqlType) {
+        switch (this.dataType) {
             case INT4RANGE:
             case INT4MULTIRANGE:
             case INT4RANGE_ARRAY:
@@ -173,14 +175,14 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
             }
             break;
             default:
-                throw _Exceptions.unexpectedEnum(this.sqlType);
+                throw _Exceptions.unexpectedEnum(this.dataType);
         }
 
     }
 
     protected final Object deserialize(final String text) {
         final Object value;
-        switch (this.sqlType) {
+        switch (this.dataType) {
             case INT4RANGE:
             case INT4MULTIRANGE:
             case INT4RANGE_ARRAY:
@@ -219,7 +221,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 value = OffsetDateTime.parse(text, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(this.sqlType);
+                throw _Exceptions.unexpectedEnum(this.dataType);
         }
         return value;
     }

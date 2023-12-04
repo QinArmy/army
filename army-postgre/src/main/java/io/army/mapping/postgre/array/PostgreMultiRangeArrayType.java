@@ -191,6 +191,10 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
         super(sqlType, javaType, rangeFunc);
     }
 
+    @Override
+    public Class<?> underlyingJavaType() {
+        return this.underlyingJavaType;
+    }
 
     @Override
     public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
@@ -207,14 +211,14 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
             throw noMatchCompatibleMapping(this, targetType);
         } else if ((componentType = ArrayUtils.underlyingComponent(targetType)) != String.class) {
             final RangeFunction<?, ?> rangeFunc;
-            if ((rangeFunc = tryCreateDefaultRangeFunc(componentType, boundJavaType(this.sqlType))) == null) {
+            if ((rangeFunc = tryCreateDefaultRangeFunc(componentType, boundJavaType(this.dataType))) == null) {
                 throw noMatchCompatibleMapping(this, targetType);
             }
-            instance = new PostgreMultiRangeArrayType(this.sqlType, targetType, rangeFunc);
+            instance = new PostgreMultiRangeArrayType(this.dataType, targetType, rangeFunc);
         } else if (targetDimension > 2) {
-            instance = new PostgreMultiRangeArrayType(this.sqlType, targetType, null);
+            instance = new PostgreMultiRangeArrayType(this.dataType, targetType, null);
         } else {
-            instance = linearInstance(this.sqlType);
+            instance = linearInstance(this.dataType);
         }
         return instance;
     }
@@ -222,20 +226,20 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
 
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {
-        return new PostgreMultiRangeArrayType(this.sqlType, ArrayUtils.arrayClassOf(this.javaType), this.rangeFunc);
+        return new PostgreMultiRangeArrayType(this.dataType, ArrayUtils.arrayClassOf(this.javaType), this.rangeFunc);
     }
 
     @Override
     public MappingType elementType() {
         final MappingType instance;
         if (this.javaType == String[][][].class) {
-            instance = linearInstance(this.sqlType);
+            instance = linearInstance(this.dataType);
         } else if (ArrayUtils.dimensionOf(this.javaType) > 2) {
-            instance = new PostgreMultiRangeArrayType(this.sqlType, this.javaType.getComponentType(), this.rangeFunc);
+            instance = new PostgreMultiRangeArrayType(this.dataType, this.javaType.getComponentType(), this.rangeFunc);
         } else {
             final PostgreMultiRangeType rangeType;
             rangeType = PostgreMultiRangeType.INT4_MULTI_RANGE_TEXT._fromMultiArray(this);
-            assert rangeType.sqlType == this.sqlType;
+            assert rangeType.dataType == this.dataType;
             instance = rangeType;
         }
         return instance;

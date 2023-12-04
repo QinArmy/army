@@ -46,6 +46,11 @@ public final class PostgreAclItemArrayType extends _ArmyBuildInMapping implement
     }
 
     @Override
+    public Class<?> underlyingJavaType() {
+        return null;
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);

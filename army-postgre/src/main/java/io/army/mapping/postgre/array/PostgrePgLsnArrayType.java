@@ -30,6 +30,11 @@ public final class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping impleme
     }
 
     @Override
+    public Class<?> underlyingJavaType() {
+        return null;
+    }
+
+    @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         return null;
     }

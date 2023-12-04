@@ -8,7 +8,7 @@ public interface JsonCodec {
 
     String encode(Object obj);
 
-    Object decode(String json, Class<?> objectClass);
+    <T> T decode(String json, Class<T> objectClass);
 
     <T> List<T> decodeList(String json, Class<T> elementClass, Supplier<List<T>> listConstructor);
 

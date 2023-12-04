@@ -51,7 +51,7 @@ import io.army.meta.GeneratorMeta;
 public interface FieldGenerator {
 
     /**
-     * @see GeneratorMeta#dependFieldName()
+     * @see GeneratorMeta#params()
      */
     String DEPEND_FIELD_NAME = "dependFieldName";
 

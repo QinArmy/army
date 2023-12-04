@@ -56,16 +56,12 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     public abstract Class<?> javaType();
 
-
-    public abstract DataType map(ServerMeta meta) throws UnsupportedDialectException;
-
     /**
      * @throws CriteriaException when this instance don't support array type.
      */
     public MappingType arrayTypeOfThis() throws CriteriaException {
         throw dontSupportArrayType(this);
     }
-
 
     /**
      * <p>Find compatible {@link MappingType} for targetType.
@@ -82,6 +78,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     public <Z> MappingType compatibleFor(DataType dataType, Class<Z> targetType) throws NoMatchMappingException {
         throw noMatchCompatibleMapping(this, targetType);
     }
+
+
+    public abstract DataType map(ServerMeta meta) throws UnsupportedDialectException;
+
 
     /**
      * @param source never null
@@ -130,7 +130,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         final StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getName())
                 .append("[javaType:")

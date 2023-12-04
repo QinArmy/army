@@ -455,7 +455,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         }
 
         @Override
-        public Object decode(String json, Class<?> objectClass) {
+        public <T> T decode(String json, Class<T> objectClass) {
             throw new UnsupportedOperationException();
         }
 

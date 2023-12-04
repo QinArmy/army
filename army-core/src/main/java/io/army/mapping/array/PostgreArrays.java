@@ -33,6 +33,40 @@ public abstract class PostgreArrays extends ArrayMappings {
         return HexUtils.decodeHex(bytea, 0, bytea.length);
     }
 
+    /**
+     * escape array element
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
+     */
+    public static void escapeElement(final String element, final Consumer<String> appender) {
+        final String doubleQuote, backSlash;
+        doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
+        backSlash = String.valueOf(_Constant.BACK_SLASH);
+
+        appender.accept(doubleQuote); // left doubleQuote
+
+        final int length = element.length();
+        int lastWritten = 0;
+        char ch;
+        for (int i = 0; i < length; i++) {
+            ch = element.charAt(i);
+
+            if (ch == _Constant.BACK_SLASH || ch == _Constant.DOUBLE_QUOTE) {
+                if (i > lastWritten) {
+                    appender.accept(element.substring(lastWritten, i));
+                }
+                appender.accept(backSlash);
+                lastWritten = i; //not i + 1 as current char wasn't written
+            }
+        }
+
+        if (lastWritten < length) {
+            appender.accept(element.substring(lastWritten, length));
+        }
+
+        appender.accept(doubleQuote); // right doubleQuote
+    }
+
 
     public static String arrayBeforeBind(final Object source, final BiConsumer<Object, Consumer<String>> consumer,
                                          final DataType dataType, final MappingType type,
@@ -632,8 +666,8 @@ public abstract class PostgreArrays extends ArrayMappings {
     }
 
 
-    private static int[] parseArrayLengthMap(final Class<?> javaType, final String text, final int offset,
-                                             final int equalIndex) {
+    static int[] parseArrayLengthMap(final Class<?> javaType, final String text, final int offset,
+                                     final int equalIndex) {
         final char colon = ':';
         final int dimension;
         dimension = dimensionOfArray(text, equalIndex + 1, text.length());

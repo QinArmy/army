@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.mapping.*;
-import io.army.mapping.array.IntArrayType;
 import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.array.ShortArrayType;
 import io.army.mapping.array.TextArrayType;
@@ -1299,14 +1298,14 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link IntArrayType#LINEAR}
+     * The {@link MappingType} of function return type:  {@link IntegerArrayType#PRIMITIVE_LINEAR}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_blocking_pids ( integer ) → integer[]<br/>
      * </a>
      */
     public static SimpleExpression pgBlockingPids(Expression exp) {
-        return FunctionUtils.oneArgFunc("pg_blocking_pids", exp, IntArrayType.LINEAR);
+        return FunctionUtils.oneArgFunc("pg_blocking_pids", exp, IntegerArrayType.PRIMITIVE_LINEAR);
     }
 
     /**
@@ -1421,14 +1420,14 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link IntArrayType#LINEAR}
+     * The {@link MappingType} of function return type:  {@link IntegerArrayType#PRIMITIVE_LINEAR}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_safe_snapshot_blocking_pids ( integer ) → integer[]<br/>
      * </a>
      */
     public static SimpleExpression pgSafeSnapshotBlockingPids(Expression exp) {
-        return FunctionUtils.oneArgFunc("pg_safe_snapshot_blocking_pids", exp, IntArrayType.LINEAR);
+        return FunctionUtils.oneArgFunc("pg_safe_snapshot_blocking_pids", exp, IntegerArrayType.PRIMITIVE_LINEAR);
     }
 
     /**

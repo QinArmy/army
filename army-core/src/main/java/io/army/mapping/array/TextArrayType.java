@@ -105,6 +105,11 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
+    public Class<?> underlyingJavaType() {
+        return null;
+    }
+
+    @Override
     public MappingType elementType() {
         return TextType.INSTANCE;
     }
