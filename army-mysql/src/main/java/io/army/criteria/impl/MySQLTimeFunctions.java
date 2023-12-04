@@ -293,7 +293,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayname">DAYNAME(date)</a>
      */
     public static SimpleExpression dayName(final Expression date) {
-        return FunctionUtils.oneArgFunc("DAYNAME", date, DayOfWeekType.INSTANCE);
+        return FunctionUtils.oneArgFunc("DAYNAME", date, DayOfWeekType.DEFAULT);
     }
 
     /**
@@ -305,7 +305,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofweek">DAYOFYEAR(date)</a>
      */
     public static SimpleExpression dayOfWeek(final Expression date) {
-        return FunctionUtils.oneArgFunc("DAYOFWEEK", date, DayOfWeekType.INSTANCE);
+        return FunctionUtils.oneArgFunc("DAYOFWEEK", date, DayOfWeekType.DEFAULT);
     }
 
     /**
@@ -349,10 +349,10 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
                 returnType = YearType.INSTANCE;
                 break;
             case MONTH:
-                returnType = MonthType.INSTANCE;
+                returnType = MonthType.DEFAULT;
                 break;
             case WEEK:
-                returnType = DayOfWeekType.INSTANCE;
+                returnType = DayOfWeekType.DEFAULT;
                 break;
             case YEAR_MONTH:
                 returnType = YearMonthType.INSTANCE;
@@ -819,7 +819,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekday">WEEKDAY(date)</a>
      */
     public static SimpleExpression weekDay(final Expression date) {
-        return FunctionUtils.oneArgFunc("WEEKDAY", date, DayOfWeekType.INSTANCE);
+        return FunctionUtils.oneArgFunc("WEEKDAY", date, DayOfWeekType.DEFAULT);
     }
 
     /**
@@ -931,7 +931,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month">MONTH(date)</a>
      */
     public static SimpleExpression month(final Expression date) {
-        return FunctionUtils.oneArgFunc("MONTH", date, MonthType.INSTANCE);
+        return FunctionUtils.oneArgFunc("MONTH", date, MonthType.DEFAULT);
     }
 
     /**
@@ -943,7 +943,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_monthname">MONTHNAME(date)</a>
      */
     public static SimpleExpression monthName(final Expression date) {
-        return FunctionUtils.oneArgFunc("MONTHNAME", date, MonthType.INSTANCE);
+        return FunctionUtils.oneArgFunc("MONTHNAME", date, MonthType.DEFAULT);
     }
 
     /**

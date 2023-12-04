@@ -74,18 +74,22 @@ public final class TextType extends ArmyTextType {
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType sqlType;
+        return mapToDataType(this, meta);
+    }
+
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final SqlType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.TEXT;
+                dataType = MySQLType.TEXT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.TEXT;
+                dataType = PostgreType.TEXT;
                 break;
             default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
+                throw MAP_ERROR_HANDLER.apply(type, meta);
         }
-        return sqlType;
+        return dataType;
     }
 
 

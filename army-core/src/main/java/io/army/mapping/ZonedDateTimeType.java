@@ -59,7 +59,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return OffsetDateTimeType.mapToSqlType(this, meta);
+        return OffsetDateTimeType.mapToDataType(this, meta);
     }
 
     @Override

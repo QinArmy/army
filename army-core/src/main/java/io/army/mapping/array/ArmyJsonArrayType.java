@@ -65,7 +65,7 @@ abstract class ArmyJsonArrayType extends _ArmyBuildInMapping implements MappingT
             if (!this.underlyingJavaType.isInstance(element)) {
                 throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
             }
-            PostgreArrays.escapeElement(codec.encode(element), appender);
+            PostgreArrays.encodeElement(codec.encode(element), appender);
         };
 
         return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this, PARAM_ERROR_HANDLER);

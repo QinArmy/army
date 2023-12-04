@@ -64,9 +64,9 @@ public abstract class _MappingFactory {
         } else if (TextEnumType.class.isAssignableFrom(javaType)) {
             type = TextEnumType.from(javaType);
         } else if (Month.class.isAssignableFrom(javaType)) {
-            type = MonthType.INSTANCE;
+            type = MonthType.DEFAULT;
         } else if (DayOfWeek.class.isAssignableFrom(javaType)) {
-            type = DayOfWeekType.INSTANCE;
+            type = DayOfWeekType.DEFAULT;
         } else {
             type = NameEnumType.from(javaType);
         }

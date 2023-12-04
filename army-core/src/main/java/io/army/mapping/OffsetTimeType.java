@@ -1,12 +1,12 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.OffsetTimeArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 import io.army.util._TimeUtils;
 
 import java.time.DateTimeException;
-import java.time.LocalDateTime;
 import java.time.OffsetTime;
 
 /**
@@ -14,9 +14,7 @@ import java.time.OffsetTime;
  * This class is mapping class of {@link OffsetTime}.
  * This mapping type can convert below java type:
  * <ul>
- *     <li>{@link java.time.LocalTime}</li>
- *     <li>{@link LocalDateTime}</li>
- *     <li>{@link java.time.LocalDate}</li>
+ *     <li>{@link java.time.OffsetTime}</li>
  *     <li>{@link java.time.OffsetDateTime}</li>
  *     <li>{@link java.time.ZonedDateTime}</li>
  *     <li>{@link String} </li>
@@ -49,6 +47,10 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
         return OffsetTime.class;
     }
 
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return OffsetTimeArrayType.LINEAR;
+    }
 
     @Override
     public DataType map(final ServerMeta meta) {
@@ -71,14 +73,6 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        if (targetType != String.class) {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return StringType.INSTANCE;
-    }
-
-    @Override
     public OffsetTime convert(MappingEnv env, Object source) throws CriteriaException {
         return toOffsetTime(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
@@ -94,8 +88,8 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     }
 
 
-    public static OffsetTime toOffsetTime(MappingType type, DataType dataType, final Object nonNull,
-                                          ErrorHandler errorHandler) {
+    static OffsetTime toOffsetTime(MappingType type, DataType dataType, final Object nonNull,
+                                   ErrorHandler errorHandler) {
         final OffsetTime value;
         if (nonNull instanceof OffsetTime) {
             value = (OffsetTime) nonNull;

@@ -36,19 +36,20 @@ public abstract class PostgreArrays extends ArrayMappings {
     /**
      * decode array element
      *
+     * @see #encodeElement(String, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
     public static String decodeElement(final String text, int offset, int end) {
-        final String elementText;
+        final boolean enclose;
         if (text.charAt(offset) == _Constant.DOUBLE_QUOTE) {
             if (text.charAt(end - 1) != _Constant.DOUBLE_QUOTE) {
                 throw new IllegalArgumentException("postgre array format error");
             }
             offset++;
             end--;
-            elementText = text.substring(offset, end);
+            enclose = true;
         } else {
-            elementText = text;
+            enclose = false;
         }
 
         char ch;
@@ -78,15 +79,24 @@ public abstract class PostgreArrays extends ArrayMappings {
             builder.append(text, lastWritten, end);
         }
 
-        return builder == null ? elementText : builder.toString();
+        final String elementText;
+        if (builder != null) {
+            elementText = builder.toString();
+        } else if (enclose) {
+            elementText = text.substring(offset, end);
+        } else {
+            elementText = text;
+        }
+        return elementText;
     }
 
     /**
      * escape array element
      *
+     * @see #decodeElement(String, int, int)
      * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
-    public static void escapeElement(final String element, final Consumer<String> appender) {
+    public static void encodeElement(final String element, final Consumer<String> appender) {
         final String doubleQuote, backSlash;
         doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
         backSlash = String.valueOf(_Constant.BACK_SLASH);

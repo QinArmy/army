@@ -88,7 +88,7 @@ public final class TextArrayType extends ArmyTextArrayType implements MappingTyp
             throw new IllegalArgumentException();
         }
 
-        PostgreArrays.escapeElement((String) element, appender);
+        PostgreArrays.encodeElement((String) element, appender);
 
     }
 

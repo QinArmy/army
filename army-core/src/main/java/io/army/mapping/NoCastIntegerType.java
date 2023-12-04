@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.IntegerArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
@@ -34,6 +35,11 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return IntegerArrayType.LINEAR;
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.serverDatabase()) {
@@ -44,7 +50,7 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
             case Oracle:
             case H2:
             default:
-                type = IntegerType.mapToSqlType(this, meta);
+                type = IntegerType.mapToDataType(this, meta);
         }
         return type;
     }

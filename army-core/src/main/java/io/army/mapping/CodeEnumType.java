@@ -33,7 +33,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
             throw errorJavaType(CodeEnumType.class, enumClass);
         }
-        return INSTANCE_MAP.computeIfAbsent(_ClassUtils.getEnumClass(enumClass), CONSTRUCTOR);
+        return INSTANCE_MAP.computeIfAbsent(_ClassUtils.enumClass(enumClass), CONSTRUCTOR);
     }
 
     private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
@@ -64,7 +64,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return IntegerType.mapToSqlType(this, meta);
+        return IntegerType.mapToDataType(this, meta);
     }
 
     @Override

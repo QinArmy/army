@@ -64,7 +64,7 @@ public final class DayOfWeekArrayType extends _ArmyNoInjectionMapping implements
         if (javaType == Object.class) {
             instance = this;
         } else if (javaType == DayOfWeek[].class) {
-            instance = DayOfWeekType.INSTANCE;
+            instance = DayOfWeekType.DEFAULT;
         } else {
             instance = from(javaType.getComponentType());
         }

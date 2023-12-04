@@ -16,6 +16,11 @@ public @interface Mapping {
      */
     String value();
 
+    /**
+     * <ul>
+     *     <li>'enum' : enum name ,for example : postgre enum</li>
+     * </ul>
+     */
     String[] params() default {};
 
     String func() default "";

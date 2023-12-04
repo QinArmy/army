@@ -9,12 +9,15 @@ import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PostgreType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
@@ -47,7 +50,7 @@ public final class NameEnumArrayType extends _ArmyBuildInMapping implements Mapp
             throw errorJavaType(NameEnumArrayType.class, enumClass);
         }
         final Class<?> actualClass;
-        actualClass = _ClassUtils.getEnumClass(enumClass);
+        actualClass = _ClassUtils.enumClass(enumClass);
         return INSTANCE_MAP.computeIfAbsent(actualClass, key -> new NameEnumArrayType(Object.class, actualClass));
     }
 
@@ -131,6 +134,26 @@ public final class NameEnumArrayType extends _ArmyBuildInMapping implements Mapp
             throw new IllegalArgumentException();
         }
         appender.accept(((Enum<?>) element).name());
+    }
+
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta, final @Nullable String enumName) {
+        final DataType dataType;
+        switch (meta.serverDatabase()) {
+            case MySQL:
+                dataType = MySQLType.ENUM;
+                break;
+            case PostgreSQL: {
+                if (enumName == null) {
+                    dataType = PostgreType.VARCHAR;
+                } else {
+                    dataType = DataType.from(enumName);
+                }
+            }
+            break;
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return dataType;
     }
 
 

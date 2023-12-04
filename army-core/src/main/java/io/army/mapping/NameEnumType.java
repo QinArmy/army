@@ -3,11 +3,18 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.array.NameEnumArrayType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.*;
+import io.army.sqltype.DataType;
+import io.army.sqltype.H2DataType;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PostgreType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
+import io.army.util._ClassUtils;
 import io.army.util._Collections;
+import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -16,39 +23,55 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class NameEnumType extends _ArmyNoInjectionMapping {
 
-    public static NameEnumType from(final Class<?> fieldType) {
-        if (!Enum.class.isAssignableFrom(fieldType)) {
-            throw errorJavaType(NameEnumType.class, fieldType);
-        }
-        if (CodeEnum.class.isAssignableFrom(fieldType)) {
-            String m = String.format("enum %s implements %s,please use %s."
-                    , fieldType.getName(), CodeEnum.class.getName(), CodeEnumType.class.getName());
-            throw new IllegalArgumentException(m);
-        }
-        if (TextEnum.class.isAssignableFrom(fieldType)) {
-            String m = String.format("enum %s implements %s,please use %s."
-                    , fieldType.getName(), TextEnum.class.getName(), TextEnumType.class.getName());
-            throw new IllegalArgumentException(m);
-        }
-        final Class<?> actualType;
-        if (fieldType.isAnonymousClass()) {
-            actualType = fieldType.getSuperclass();
-        } else {
-            actualType = fieldType;
-        }
-        return INSTANCE_MAP.computeIfAbsent(actualType, NameEnumType::new);
+    public static NameEnumType from(final Class<?> enumType) {
+        final Class<?> actualEnumType;
+        actualEnumType = checkEnumClass(enumType);
+        return INSTANCE_MAP.computeIfAbsent(actualEnumType, k -> new NameEnumType(actualEnumType, null));
     }
 
-    private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
+    public static NameEnumType fromParam(final Class<?> enumType, final String enumName) {
+        if (!_StringUtils.hasText(enumName)) {
+            throw new IllegalArgumentException("no text");
+        }
+        final Class<?> actualEnumType;
+        actualEnumType = checkEnumClass(enumType);
+
+        final String key;
+        key = actualEnumType.getName() + '#' + enumName;
+        return INSTANCE_MAP.computeIfAbsent(key, k -> new NameEnumType(actualEnumType, enumName));
+    }
+
+    private static Class<?> checkEnumClass(final Class<?> javaType) {
+        if (!Enum.class.isAssignableFrom(javaType)) {
+            throw errorJavaType(NameEnumType.class, javaType);
+        }
+        if (CodeEnum.class.isAssignableFrom(javaType)) {
+            String m = String.format("enum %s implements %s,please use %s.", javaType.getName(),
+                    CodeEnum.class.getName(), CodeEnumType.class.getName());
+            throw new IllegalArgumentException(m);
+        }
+        if (TextEnum.class.isAssignableFrom(javaType)) {
+            String m = String.format("enum %s implements %s,please use %s.", javaType.getName(),
+                    TextEnum.class.getName(), TextEnumType.class.getName());
+            throw new IllegalArgumentException(m);
+        }
+        return _ClassUtils.enumClass(javaType);
+    }
+
+    private static final ConcurrentMap<Object, NameEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
 
     private final Class<?> enumClass;
+
+    private final String enumName;
 
     /**
      * private constructor
      */
-    private NameEnumType(Class<?> enumClass) {
+    private NameEnumType(Class<?> enumClass, @Nullable String enumName) {
         this.enumClass = enumClass;
+        this.enumName = enumName;
     }
+
 
     @Override
     public Class<?> javaType() {
@@ -61,8 +84,22 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public boolean isSameType(final MappingType type) {
+        final boolean match;
+        if (type == this) {
+            match = true;
+        } else if (type instanceof NameEnumType) {
+            final NameEnumType o = (NameEnumType) type;
+            match = o.enumClass == this.enumClass && Objects.equals(o.enumName, this.enumName);
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) {
-        return mapToSqlType(this, meta);
+        return mapToDataType(this, meta, this.enumName);
     }
 
 
@@ -78,9 +115,6 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     @Override
     public Enum<?> afterGet(DataType dataType, MappingEnv env, Object source) {
-        if (!(source instanceof String)) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
-        }
         return toNameEnum(dataType, source, ACCESS_ERROR_HANDLER);
     }
 
@@ -111,23 +145,28 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
 
-    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta, final @Nullable String enumName) {
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.ENUM;
+                dataType = MySQLType.ENUM;
                 break;
-            case PostgreSQL:
-                sqlType = PostgreType.VARCHAR;
-                break;
+            case PostgreSQL: {
+                if (enumName == null) {
+                    dataType = PostgreType.VARCHAR;
+                } else {
+                    dataType = DataType.from(enumName);
+                }
+            }
+            break;
             case H2:
-                sqlType = H2DataType.ENUM;
+                dataType = H2DataType.ENUM;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
 
         }
-        return sqlType;
+        return dataType;
     }
 
 

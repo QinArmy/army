@@ -49,7 +49,7 @@ public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements 
             throw errorJavaType(CodeEnumArrayType.class, enumClass);
         }
         final Class<?> actualClass;
-        actualClass = _ClassUtils.getEnumClass(enumClass);
+        actualClass = _ClassUtils.enumClass(enumClass);
         return INSTANCE_MAP.computeIfAbsent(actualClass, key -> new CodeEnumArrayType(Object.class, actualClass));
     }
 

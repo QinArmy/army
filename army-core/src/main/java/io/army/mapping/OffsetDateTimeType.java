@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.OffsetDateTimeArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 import io.army.util._TimeUtils;
@@ -50,12 +51,12 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return mapToSqlType(this, meta);
+        return mapToDataType(this, meta);
     }
 
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {
-        return super.arrayTypeOfThis();
+        return OffsetDateTimeArrayType.LINEAR;
     }
 
     @Override
@@ -87,7 +88,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
 
-    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+    static SqlType mapToDataType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -106,8 +107,8 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
 
-    public static OffsetDateTime toOffsetDateTime(MappingType type, DataType dataType, final Object nonNull,
-                                                  ErrorHandler errorHandler) {
+    static OffsetDateTime toOffsetDateTime(MappingType type, DataType dataType, final Object nonNull,
+                                           ErrorHandler errorHandler) {
         final OffsetDateTime value;
         if (nonNull instanceof OffsetDateTime) {
             value = (OffsetDateTime) nonNull;

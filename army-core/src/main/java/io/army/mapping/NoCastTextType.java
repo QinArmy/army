@@ -2,11 +2,11 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.mapping.array.TextArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 
 public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
 
@@ -38,24 +38,24 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return TextArrayType.LINEAR;
+    }
+
+    @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                type = PostgreType.NO_CAST_TEXT;
+                dataType = PostgreType.NO_CAST_TEXT;
                 break;
             case MySQL:
             case Oracle:
             case H2:
             default:
-                type = TextType.mapToSqlType(this, meta);
+                dataType = TextType.mapToDataType(this, meta);
         }
-        return type;
-    }
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+        return dataType;
     }
 
     @Override
