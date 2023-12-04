@@ -8,7 +8,6 @@ import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class JsonbType extends _ArmyBuildInMapping implements MappingType.SqlJsonbType {
@@ -93,15 +92,6 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
             throw errorHandler.apply(this, dataType, source, null);
         }
         return env.jsonCodec().decode((String) source, this.javaType);
-    }
-
-
-    private void appendToText(final Object element, final Consumer<String> appender) {
-        if (!(element instanceof Double)) {
-            // no bug,never here
-            throw new IllegalArgumentException();
-        }
-        appender.accept(element.toString());
     }
 
 

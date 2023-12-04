@@ -1,7 +1,10 @@
 package io.army.mapping.array;
 
+import io.army.codec.JsonCodec;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.dialect._Constant;
+import io.army.function.TextFunction;
 import io.army.mapping.JsonbType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -9,7 +12,11 @@ import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
+import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
+
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public final class JsonbArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
@@ -72,34 +79,73 @@ public final class JsonbArrayType extends _ArmyBuildInMapping implements Mapping
         } else if (ArrayUtils.dimensionOf(javaType) == 1) {
             instance = JsonbType.from(this.underlyingJavaType);
         } else {
-            instance = from(this.underlyingJavaType);
+            instance = from(javaType.getComponentType());
         }
         return instance;
     }
 
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {
-        return super.arrayTypeOfThis();
+        final Class<?> javaType = this.javaType;
+        if (javaType == Object.class) { // unlimited dimension array
+            return this;
+        }
+        return from(ArrayUtils.arrayClassOf(javaType));
     }
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return null;
+        final DataType dataType;
+        switch (meta.serverDatabase()) {
+            case PostgreSQL:
+                dataType = PostgreType.JSONB_ARRAY;
+                break;
+            case MySQL:
+            case SQLite:
+            case H2:
+            case Oracle:
+            default:
+                throw MAP_ERROR_HANDLER.apply(this, meta);
+        }
+        return dataType;
     }
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return null;
+        return decodeJson(map(env.serverMeta()), env, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return null;
+    public String beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
+        final JsonCodec codec;
+        codec = env.jsonCodec();
+
+        final BiConsumer<Object, Consumer<String>> consumer;
+        consumer = (element, appender) -> {
+            if (!this.underlyingJavaType.isInstance(element)) {
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
+            }
+            appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
+            appender.accept(codec.encode(element)); // TODO escapes json
+            appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
+        };
+
+        return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return null;
+        return decodeJson(dataType, env, source, ACCESS_ERROR_HANDLER);
+    }
+
+    private Object decodeJson(DataType dataType, MappingEnv env, final Object source, ErrorHandler errorHandler) {
+        final JsonCodec codec;
+        codec = env.jsonCodec();
+
+        final TextFunction<?> function;
+        function = (text, offset, end) -> codec.decode(text.substring(offset, end), this.underlyingJavaType);
+
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false, function, errorHandler);
     }
 
 
