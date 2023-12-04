@@ -1,21 +1,16 @@
 package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.TextType;
-import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
-import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class TextArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public final class TextArrayType extends ArmyTextArrayType implements MappingType.SqlArrayType {
 
 
     public static TextArrayType from(final Class<?> javaType) {
@@ -39,23 +34,11 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
 
     public static final TextArrayType LINEAR = new TextArrayType(String[].class);
 
-    private final Class<?> javaType;
-
     /**
      * private constructor
      */
     private TextArrayType(Class<?> javaType) {
-        this.javaType = javaType;
-    }
-
-    @Override
-    public Class<?> javaType() {
-        return this.javaType;
-    }
-
-    @Override
-    public Class<?> underlyingJavaType() {
-        return String.class;
+        super(javaType);
     }
 
     @Override
@@ -79,33 +62,6 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
             return this;
         }
         return from(ArrayUtils.arrayClassOf(javaType));
-    }
-
-
-    @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        return mapToSqlType(this, meta);
-    }
-
-
-    @Override
-    public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, PostgreArrays::decodeElement,
-                PARAM_ERROR_HANDLER);
-    }
-
-    @Override
-    public String beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayBeforeBind(source, TextArrayType::appendToText, dataType, this,
-                PARAM_ERROR_HANDLER
-        );
-    }
-
-    @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return PostgreArrays.arrayAfterGet(this, dataType, source, false,
-                PostgreArrays::decodeElement, ACCESS_ERROR_HANDLER
-        );
     }
 
 

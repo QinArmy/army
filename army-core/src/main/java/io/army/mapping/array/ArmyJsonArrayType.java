@@ -18,8 +18,8 @@ import java.util.function.Consumer;
  * <p>Package class
  * <p>This class is base class of following :
  * <ul>
- *     <li>{@link JsonbArrayType}</li>
  *     <li>{@link JsonArrayType}</li>
+ *     <li>{@link JsonbArrayType}</li>
  * </ul>
  *
  * @since 1.0
@@ -81,7 +81,11 @@ abstract class ArmyJsonArrayType extends _ArmyBuildInMapping implements MappingT
         codec = env.jsonCodec();
 
         final TextFunction<?> function;
-        function = (text, offset, end) -> codec.decode(text.substring(offset, end), this.underlyingJavaType);
+        function = (text, offset, end) -> {
+            final String json;
+            json = PostgreArrays.decodeElement(text, offset, end);
+            return codec.decode(json, this.underlyingJavaType);
+        };
 
         return PostgreArrays.arrayAfterGet(this, dataType, source, false, function, errorHandler);
     }

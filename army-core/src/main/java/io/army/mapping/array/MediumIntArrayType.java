@@ -109,7 +109,8 @@ public final class MediumIntArrayType extends _ArmyNoInjectionMapping implements
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, MediumIntArrayType::parseText,
+        final boolean nonNull = this.underlyingJavaType == int.class;
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, nonNull, MediumIntArrayType::parseText,
                 PARAM_ERROR_HANDLER);
     }
 
@@ -120,7 +121,8 @@ public final class MediumIntArrayType extends _ArmyNoInjectionMapping implements
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return PostgreArrays.arrayAfterGet(this, dataType, source, false, MediumIntArrayType::parseText, ACCESS_ERROR_HANDLER);
+        final boolean nonNull = this.underlyingJavaType == int.class;
+        return PostgreArrays.arrayAfterGet(this, dataType, source, nonNull, MediumIntArrayType::parseText, ACCESS_ERROR_HANDLER);
     }
 
     private static int parseText(final String text, final int offset, final int end) {

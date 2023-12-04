@@ -38,14 +38,47 @@ public abstract class PostgreArrays extends ArrayMappings {
      *
      * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
-    public static String decodeElement(final String text, final int offset, final int end) {
-        final String str;
+    public static String decodeElement(final String text, int offset, int end) {
+        final String elementText;
         if (text.charAt(offset) == _Constant.DOUBLE_QUOTE) {
-            str = text.substring(offset + 1, end - 1);
+            if (text.charAt(end - 1) != _Constant.DOUBLE_QUOTE) {
+                throw new IllegalArgumentException("postgre array format error");
+            }
+            offset++;
+            end--;
+            elementText = text.substring(offset, end);
         } else {
-            str = text.substring(offset, end);
+            elementText = text;
         }
-        return str;
+
+        char ch;
+        StringBuilder builder = null;
+        int lastWritten = offset;
+        for (int i = offset; i < end; i++) {
+            ch = text.charAt(i);
+
+            if (ch != _Constant.BACK_SLASH) {
+                continue;
+            }
+
+            if (builder == null) {
+                builder = new StringBuilder((end - offset) + 10);
+            }
+
+            if (i > lastWritten) {
+                builder.append(text, lastWritten, i);
+            }
+
+            i++;  // skip current char
+            lastWritten = i;
+
+        }
+
+        if (builder != null && lastWritten < end) {
+            builder.append(text, lastWritten, end);
+        }
+
+        return builder == null ? elementText : builder.toString();
     }
 
     /**

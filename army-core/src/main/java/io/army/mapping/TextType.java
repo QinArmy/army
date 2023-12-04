@@ -1,10 +1,8 @@
 package io.army.mapping;
 
-import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.array.TextArrayType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
@@ -45,7 +43,7 @@ import java.time.*;
  * @see MediumTextType
  * @since 1.0
  */
-public final class TextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
+public final class TextType extends ArmyTextType {
 
     public static TextType from(final Class<?> javaType) {
         if (javaType != String.class) {
@@ -64,11 +62,6 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
 
 
     @Override
-    public Class<?> javaType() {
-        return String.class;
-    }
-
-    @Override
     public LengthType lengthType() {
         return LengthType.DEFAULT;
     }
@@ -78,28 +71,9 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
         return TextArrayType.LINEAR;
     }
 
-    @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        return mapToSqlType(this, meta);
-    }
 
     @Override
-    public String convert(MappingEnv env, Object source) throws CriteriaException {
-        return StringType.toString(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
-    }
-
-    @Override
-    public String beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return StringType.toString(this, dataType, source, PARAM_ERROR_HANDLER);
-    }
-
-    @Override
-    public String afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return StringType.toString(this, dataType, source, ACCESS_ERROR_HANDLER);
-    }
-
-
-    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -109,7 +83,7 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
                 sqlType = PostgreType.TEXT;
                 break;
             default:
-                throw MAP_ERROR_HANDLER.apply(type, meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return sqlType;
     }

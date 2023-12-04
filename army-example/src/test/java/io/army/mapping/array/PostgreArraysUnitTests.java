@@ -1,10 +1,13 @@
 package io.army.mapping.array;
 
 import io.army.dialect._Constant;
+import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -318,6 +321,25 @@ public class PostgreArraysUnitTests {
         } catch (IllegalArgumentException e) {
             LOG.debug(e.getMessage());
         }
+    }
+
+    /**
+     * @see PostgreArrays#decodeElement(String, int, int)
+     */
+    @Test
+    public void decodeElement() {
+        String element, temp;
+
+        element = "\"{\\\"bar\\\": \\\"baz\\\", \\\"balance\\\": 7.77, \\\"active\\\": false}\"";
+        element = PostgreArrays.decodeElement(element, 0, element.length());
+        Assert.assertEquals(element, "{\"bar\": \"baz\", \"balance\": 7.77, \"active\": false}");
+
+
+        element = LocalDateTime.now().format(_TimeUtils.DATETIME_FORMATTER_6);
+        temp = element;
+        element = PostgreArrays.decodeElement(element, 0, element.length());
+        Assert.assertEquals(element, temp);
+
     }
 
 

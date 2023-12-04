@@ -2,41 +2,39 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.mapping.MappingType;
-import io.army.mapping.MediumTextType;
+import io.army.mapping.TinyTextType;
 import io.army.util.ArrayUtils;
 
-public final class MediumTextArrayType extends ArmyTextArrayType {
+public final class TinyTextArrayType extends ArmyTextArrayType {
 
-    public static MediumTextArrayType from(final Class<?> javaType) {
-        final MediumTextArrayType instance;
+
+    public static TinyTextArrayType from(final Class<?> javaType) {
+        final TinyTextArrayType instance;
         if (javaType == String[].class) {
             instance = LINEAR;
         } else if (javaType.isArray() && ArrayUtils.underlyingComponent(javaType) == String.class) {
-            instance = new MediumTextArrayType(javaType);
+            instance = new TinyTextArrayType(javaType);
         } else {
-            throw errorJavaType(MediumTextArrayType.class, javaType);
+            throw errorJavaType(TinyTextArrayType.class, javaType);
         }
         return instance;
     }
 
-    public static MediumTextArrayType fromUnlimited() {
+    public static TinyTextArrayType fromUnlimited() {
         return UNLIMITED;
     }
 
 
-    public static final MediumTextArrayType UNLIMITED = new MediumTextArrayType(Object.class);
+    public static final TinyTextArrayType UNLIMITED = new TinyTextArrayType(Object.class);
 
-    public static final MediumTextArrayType LINEAR = new MediumTextArrayType(String[].class);
-
+    public static final TinyTextArrayType LINEAR = new TinyTextArrayType(String[].class);
 
     /**
      * private constructor
      */
-    private MediumTextArrayType(Class<?> javaType) {
+    private TinyTextArrayType(Class<?> javaType) {
         super(javaType);
     }
-
-
 
     @Override
     public MappingType elementType() {
@@ -45,7 +43,7 @@ public final class MediumTextArrayType extends ArmyTextArrayType {
         if (javaType == Object.class) {
             instance = this;
         } else if (javaType == String[].class) {
-            instance = MediumTextType.INSTANCE;
+            instance = TinyTextType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }

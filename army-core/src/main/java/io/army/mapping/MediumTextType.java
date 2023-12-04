@@ -4,7 +4,6 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.array.MediumTextArrayType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
@@ -44,7 +43,7 @@ import java.time.*;
  * @see TextType
  * @since 1.0
  */
-public final class MediumTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
+public final class MediumTextType extends ArmyTextType {
 
     public static MediumTextType from(final Class<?> javaType) {
         if (javaType != String.class) {
@@ -61,20 +60,14 @@ public final class MediumTextType extends _ArmyBuildInMapping implements Mapping
     private MediumTextType() {
     }
 
-
     @Override
-    public Class<?> javaType() {
-        return String.class;
+    public LengthType lengthType() {
+        return LengthType.MEDIUM;
     }
 
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {
         return MediumTextArrayType.LINEAR;
-    }
-
-    @Override
-    public LengthType lengthType() {
-        return LengthType.MEDIUM;
     }
 
     @Override
@@ -94,20 +87,6 @@ public final class MediumTextType extends _ArmyBuildInMapping implements Mapping
     }
 
 
-    @Override
-    public String convert(MappingEnv env, Object source) throws CriteriaException {
-        return StringType.toString(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
-    }
-
-    @Override
-    public String beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return StringType.toString(this, dataType, source, PARAM_ERROR_HANDLER);
-    }
-
-    @Override
-    public String afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return StringType.toString(this, dataType, source, ACCESS_ERROR_HANDLER);
-    }
 
 
 }

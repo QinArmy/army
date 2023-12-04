@@ -1,10 +1,14 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.MonthDayArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 
-import java.time.*;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
@@ -20,8 +24,6 @@ import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
  *     <li>{@link LocalDate}</li>
  *     <li>{@link LocalDateTime}</li>
  *     <li>{@link java.time.LocalDate}</li>
- *     <li>{@link java.time.OffsetDateTime}</li>
- *     <li>{@link java.time.ZonedDateTime}</li>
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link MonthDay},if error,throw {@link io.army.ArmyException}
@@ -30,7 +32,6 @@ import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
  * @since 1.0
  */
 public final class MonthDayType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
-
 
     public static MonthDayType from(final Class<?> fieldType) {
         if (fieldType != MonthDay.class) {
@@ -59,15 +60,15 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return MonthDayArrayType.LINEAR;
+    }
+
+    @Override
     public DataType map(ServerMeta meta) {
         return LocalDateType.mapToSqlType(this, meta);
     }
 
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public MonthDay convert(MappingEnv env, Object source) throws CriteriaException {
@@ -81,10 +82,6 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
             value = (LocalDate) source;
         } else if (source instanceof LocalDateTime) {
             value = ((LocalDateTime) source).toLocalDate();
-        } else if (source instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) source).toLocalDate();
-        } else if (source instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) source).toLocalDate();
         } else {
             final MonthDay monthDay;
             monthDay = toMonthDay(this, dataType, source, PARAM_ERROR_HANDLER);
@@ -100,8 +97,8 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
     }
 
 
-    public static MonthDay toMonthDay(final MappingType type, final DataType dataType, final Object nonNull,
-                                      final ErrorHandler errorHandler) {
+    static MonthDay toMonthDay(final MappingType type, final DataType dataType, final Object nonNull,
+                               final ErrorHandler errorHandler) {
         final MonthDay value;
         if (nonNull instanceof MonthDay) {
             value = (MonthDay) nonNull;
@@ -109,10 +106,6 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
             value = MonthDay.from((LocalDate) nonNull);
         } else if (nonNull instanceof LocalDateTime) {
             value = MonthDay.from((LocalDateTime) nonNull);
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = MonthDay.from(((OffsetDateTime) nonNull));
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = MonthDay.from(((ZonedDateTime) nonNull));
         } else if (!(nonNull instanceof String)) {
             throw errorHandler.apply(type, dataType, nonNull, null);
         } else if (((String) nonNull).contains("--")) {

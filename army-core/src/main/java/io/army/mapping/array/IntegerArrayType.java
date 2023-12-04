@@ -112,7 +112,8 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, IntegerArrayType::parseText,
+        final boolean nonNull = this.underlyingJavaType == int.class;
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, nonNull, IntegerArrayType::parseText,
                 PARAM_ERROR_HANDLER);
     }
 
@@ -123,7 +124,8 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return PostgreArrays.arrayAfterGet(this, dataType, source, false, IntegerArrayType::parseText, ACCESS_ERROR_HANDLER);
+        final boolean nonNull = this.underlyingJavaType == int.class;
+        return PostgreArrays.arrayAfterGet(this, dataType, source, nonNull, IntegerArrayType::parseText, ACCESS_ERROR_HANDLER);
     }
 
     /*-------------------below static methods -------------------*/
