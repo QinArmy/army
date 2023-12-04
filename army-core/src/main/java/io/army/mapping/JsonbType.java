@@ -27,7 +27,6 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     private static final ConcurrentMap<Class<?>, JsonbType> INSTANCE_MAP = _Collections.concurrentHashMap();
 
     private static final Function<Class<?>, JsonbType> CONSTRUCTOR = JsonbType::new;
-    ;
 
     private final Class<?> javaType;
 
