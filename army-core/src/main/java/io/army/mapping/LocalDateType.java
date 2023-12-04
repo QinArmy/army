@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.LocalDateArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -17,8 +18,6 @@ import java.time.*;
  *     <li>{@link LocalDate}</li>
  *     <li>{@link LocalDateTime}</li>
  *     <li>{@link java.time.LocalDate}</li>
- *     <li>{@link java.time.OffsetDateTime}</li>
- *     <li>{@link java.time.ZonedDateTime}</li>
  *     <li>{@link YearMonth}</li>
  *     <li>{@link MonthDay}</li>
  *     <li>{@link String} </li>
@@ -52,13 +51,13 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public DataType map(final ServerMeta meta) {
-        return mapToSqlType(this, meta);
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return LocalDateArrayType.LINEAR;
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+    public DataType map(final ServerMeta meta) {
+        return mapToSqlType(this, meta);
     }
 
     @Override
@@ -93,8 +92,8 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
         return sqlType;
     }
 
-    public static LocalDate toLocalDateTime(final MappingType type, final DataType dataType, final Object nonNull,
-                                            final ErrorHandler errorHandler) {
+    static LocalDate toLocalDateTime(final MappingType type, final DataType dataType, final Object nonNull,
+                                     final ErrorHandler errorHandler) {
         final LocalDate value;
         if (nonNull instanceof LocalDate) {
             value = (LocalDate) nonNull;
@@ -106,12 +105,6 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
             }
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalDate();
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).atZoneSameInstant(ZoneId.systemDefault())
-                    .toLocalDate();
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).withZoneSameInstant(ZoneId.systemDefault())
-                    .toLocalDate();
         } else if (nonNull instanceof YearMonth) {
             final YearMonth v = (YearMonth) nonNull;
             value = LocalDate.of(v.getYear(), v.getMonth(), 1);

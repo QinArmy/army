@@ -223,7 +223,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">nextval ( regclass ) → bigint</a>
      */
     public static SimpleExpression nextVal(Expression exp) {
-        return FunctionUtils.oneArgFunc("NEXTVAL", exp, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("NEXTVAL", exp, LongType.INSTANCE);
     }
 
     /**
@@ -235,7 +235,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">setval ( regclass, bigint [, boolean ] ) → bigint/a>
      */
     public static SimpleExpression setVal(Expression regClass, Expression value) {
-        return FunctionUtils.twoArgFunc("SETVAL", regClass, value, LongType.BIGINT);
+        return FunctionUtils.twoArgFunc("SETVAL", regClass, value, LongType.INSTANCE);
     }
 
     /**
@@ -248,7 +248,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">setval ( regclass, bigint [, boolean ] ) → bigint</a>
      */
     public static SimpleExpression setVal(Expression regClass, Expression value, Expression isCalled) {
-        return FunctionUtils.threeArgFunc("SETVAL", regClass, value, isCalled, LongType.BIGINT);
+        return FunctionUtils.threeArgFunc("SETVAL", regClass, value, isCalled, LongType.INSTANCE);
     }
 
 
@@ -260,7 +260,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">currval ( regclass ) → bigint</a>
      */
     public static SimpleExpression currVal(Expression exp) {
-        return FunctionUtils.oneArgFunc("CURRVAL", exp, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("CURRVAL", exp, LongType.INSTANCE);
     }
 
     /**
@@ -271,7 +271,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">lastval ( regclass ) → bigint</a>
      */
     public static SimpleExpression lastVal(Expression exp) {
-        return FunctionUtils.oneArgFunc("LASTVAL", exp, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("LASTVAL", exp, LongType.INSTANCE);
     }
 
     /*-------------------below Conditional Expressions-------------------*/
@@ -1347,14 +1347,14 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_my_temp_schema () → oid<br/>
      * </a>
      */
     public static SimpleExpression pgMyTempSchema() {
-        return FunctionUtils.zeroArgFunc("pg_my_temp_schema", LongType.BIGINT);
+        return FunctionUtils.zeroArgFunc("pg_my_temp_schema", LongType.INSTANCE);
     }
 
 
@@ -1825,8 +1825,8 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: <ul>
-     * <li>grantor : {@link LongType#BIGINT}</li>
-     * <li>grantee : {@link LongType#BIGINT}</li>
+     * <li>grantor : {@link LongType#INSTANCE}</li>
+     * <li>grantee : {@link LongType#INSTANCE}</li>
      * <li>privilege_type : {@link TextType#INSTANCE}</li>
      * <li>is_grantable : {@link BooleanType#INSTANCE}</li>
      * </ul>
@@ -1838,8 +1838,8 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     public static _TabularWithOrdinalityFunction aclExplode(Expression exp) {
         final List<Selection> fieldList = _Collections.arrayList(4);
 
-        fieldList.add(ArmySelections.forName("grantor", LongType.BIGINT));
-        fieldList.add(ArmySelections.forName("grantee", LongType.BIGINT));
+        fieldList.add(ArmySelections.forName("grantor", LongType.INSTANCE));
+        fieldList.add(ArmySelections.forName("grantee", LongType.INSTANCE));
         fieldList.add(ArmySelections.forName("privilege_type", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("is_grantable", BooleanType.INSTANCE));
 
@@ -2072,7 +2072,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>pkcols : {@link TextArrayType#LINEAR}</li>
      * <li>is_array : {@link BooleanType#INSTANCE}</li>
      * <li>is_opt : {@link BooleanType#INSTANCE}</li>
-     * <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -2216,7 +2216,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>barelabel : {@link BooleanType#INSTANCE}</li>
      * <li>catdesc : {@link TextType#INSTANCE}</li>
      * <li>baredesc : {@link TextType#INSTANCE}</li>
-     * <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -2396,7 +2396,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * The {@link MappingType} of function return type: <ul>
      * <li>option_name : {@link TextType#INSTANCE}</li>
      * <li>option_value : {@link TextType#INSTANCE}</li>
-     * <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -2428,8 +2428,8 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: <ul>
-     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#BIGINT}</li>
-     * <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -2437,7 +2437,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static _ColumnWithOrdinalityFunction pgTablespaceDatabases(Expression tablespace) {
-        return DialectFunctionUtils.oneArgColumnFunction("pg_tablespace_databases", tablespace, null, LongType.BIGINT);
+        return DialectFunctionUtils.oneArgColumnFunction("pg_tablespace_databases", tablespace, null, LongType.INSTANCE);
     }
 
     /**
@@ -2609,7 +2609,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *     <li>schema : {@link TextType#INSTANCE}</li>
      *     <li>name : {@link TextType#INSTANCE}</li>
      *     <li>identity : {@link TextType#INSTANCE}</li>
-     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -2634,7 +2634,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *     <li>type : {@link TextType#INSTANCE}</li>
      *     <li>object_names : {@link TextArrayType#LINEAR}</li>
      *     <li>object_args : {@link TextArrayType#LINEAR}</li>
-     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -2656,10 +2656,10 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:
      * <ul>
-     *     <li>classid : {@link LongType#BIGINT}</li>
-     *     <li>objid : {@link LongType#BIGINT}</li>
+     *     <li>classid : {@link LongType#INSTANCE}</li>
+     *     <li>objid : {@link LongType#INSTANCE}</li>
      *     <li>objsubid : {@link IntegerType#INSTANCE}</li>
-     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -2669,8 +2669,8 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     public static _TabularWithOrdinalityFunction pgGetObjectAddress(Expression type, Expression objectNames, Expression objectArgs) {
         final List<Selection> fieldList;
         fieldList = ArrayUtils.of(
-                ArmySelections.forName("classid", LongType.BIGINT),
-                ArmySelections.forName("objid", LongType.BIGINT),
+                ArmySelections.forName("classid", LongType.INSTANCE),
+                ArmySelections.forName("objid", LongType.INSTANCE),
                 ArmySelections.forName("objsubid", IntegerType.INSTANCE)
         );
         return DialectFunctionUtils.threeArgTabularFunc("pg_get_object_address", type, objectNames, objectArgs, fieldList);

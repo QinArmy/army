@@ -34,6 +34,21 @@ public abstract class PostgreArrays extends ArrayMappings {
     }
 
     /**
+     * decode array element
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
+     */
+    public static String decodeElement(final String text, final int offset, final int end) {
+        final String str;
+        if (text.charAt(offset) == _Constant.DOUBLE_QUOTE) {
+            str = text.substring(offset + 1, end - 1);
+        } else {
+            str = text.substring(offset, end);
+        }
+        return str;
+    }
+
+    /**
      * escape array element
      *
      * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>

@@ -14,7 +14,7 @@ import io.army.sqltype.*;
  * @see MediumBlobType
  * @since 1.0
  */
-public final class BlobType extends _ArmyBuildInMapping {
+public final class BlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
 
 
     public static BlobType from(final Class<?> fieldType) {
@@ -36,6 +36,11 @@ public final class BlobType extends _ArmyBuildInMapping {
     @Override
     public Class<?> javaType() {
         return byte[].class;
+    }
+
+    @Override
+    public LengthType lengthType() {
+        return LengthType.DEFAULT;
     }
 
     @Override

@@ -296,7 +296,7 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_floor">FLOOR(x)</a>
      */
     public static SimpleExpression floor(final Expression expr) {
-        return FunctionUtils.oneArgFunc("FLOOR", expr, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("FLOOR", expr, LongType.INSTANCE);
     }
 
     /**
@@ -580,7 +580,7 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static SimpleExpression count(Expression expr) {
-        return FunctionUtils.oneArgFunc("COUNT", expr, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("COUNT", expr, LongType.INSTANCE);
     }
 
 
@@ -937,7 +937,7 @@ abstract class Functions {
             length = ((MappingType.SqlIntegerType) type).lengthType();
             switch (length) {
                 case DEFAULT:
-                    returnType = LongType.BIGINT;
+                    returnType = LongType.INSTANCE;
                     break;
                 case LONG:
                 case BIG_LONG:
@@ -992,7 +992,7 @@ abstract class Functions {
         private static final CountAsteriskFunction INSTANCE = new CountAsteriskFunction();
 
         private CountAsteriskFunction() {
-            super("count", true, LongType.BIGINT);
+            super("count", true, LongType.INSTANCE);
         }
 
 

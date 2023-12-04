@@ -2,7 +2,7 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.IntegerType;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -15,46 +15,46 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public class IntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public final class LongArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
-    public static IntegerArrayType from(final Class<?> arrayClass) {
-        final IntegerArrayType instance;
+    public static LongArrayType from(final Class<?> arrayClass) {
+        final LongArrayType instance;
         final Class<?> componentType;
-        if (arrayClass == Integer[].class) {
+        if (arrayClass == Long[].class) {
             instance = LINEAR;
-        } else if (arrayClass == int[].class) {
+        } else if (arrayClass == long[].class) {
             instance = PRIMITIVE_LINEAR;
         } else if (!arrayClass.isArray()) {
-            throw errorJavaType(IntegerArrayType.class, arrayClass);
-        } else if ((componentType = ArrayUtils.underlyingComponent(arrayClass)) == int.class
-                || componentType == Integer.class) {
-            instance = new IntegerArrayType(arrayClass, componentType);
+            throw errorJavaType(LongArrayType.class, arrayClass);
+        } else if ((componentType = ArrayUtils.underlyingComponent(arrayClass)) == long.class
+                || componentType == Long.class) {
+            instance = new LongArrayType(arrayClass, componentType);
         } else {
-            throw errorJavaType(IntegerArrayType.class, arrayClass);
+            throw errorJavaType(LongArrayType.class, arrayClass);
         }
         return instance;
     }
 
-    public static IntegerArrayType fromUnlimited(final Class<?> intClass) {
-        final IntegerArrayType instance;
-        if (intClass == Integer.class) {
+    public static LongArrayType fromUnlimited(final Class<?> longClass) {
+        final LongArrayType instance;
+        if (longClass == Long.class) {
             instance = UNLIMITED;
-        } else if (intClass == int.class) {
+        } else if (longClass == long.class) {
             instance = PRIMITIVE_UNLIMITED;
         } else {
-            throw errorJavaType(IntegerArrayType.class, intClass);
+            throw errorJavaType(LongArrayType.class, longClass);
         }
         return instance;
     }
 
-    public static final IntegerArrayType UNLIMITED = new IntegerArrayType(Object.class, Integer.class);
+    public static final LongArrayType UNLIMITED = new LongArrayType(Object.class, Long.class);
 
-    public static final IntegerArrayType LINEAR = new IntegerArrayType(Integer[].class, Integer.class);
+    public static final LongArrayType LINEAR = new LongArrayType(Long[].class, Long.class);
 
-    public static final IntegerArrayType PRIMITIVE_UNLIMITED = new IntegerArrayType(Object.class, int.class);
+    public static final LongArrayType PRIMITIVE_UNLIMITED = new LongArrayType(Object.class, long.class);
 
-    public static final IntegerArrayType PRIMITIVE_LINEAR = new IntegerArrayType(int[].class, int.class);
+    public static final LongArrayType PRIMITIVE_LINEAR = new LongArrayType(long[].class, long.class);
 
 
     private final Class<?> javaType;
@@ -65,7 +65,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
     /**
      * private constructor
      */
-    private IntegerArrayType(final Class<?> javaType, Class<?> underlyingJavaType) {
+    private LongArrayType(final Class<?> javaType, Class<?> underlyingJavaType) {
         this.javaType = javaType;
         this.underlyingJavaType = underlyingJavaType;
     }
@@ -87,8 +87,8 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         final MappingType instance;
         if (javaType == Object.class) {
             instance = this;
-        } else if (javaType == Integer[].class || javaType == int[].class) {
-            instance = IntegerType.INSTANCE;
+        } else if (javaType == Long[].class || javaType == long[].class) {
+            instance = LongType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -104,27 +104,28 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         return from(ArrayUtils.arrayClassOf(javaType));
     }
 
+
     @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         return mapToSqlType(this, meta);
     }
 
-
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, IntegerArrayType::parseText,
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, LongArrayType::parseText,
                 PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayBeforeBind(source, IntegerArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
+        return PostgreArrays.arrayBeforeBind(source, LongArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return PostgreArrays.arrayAfterGet(this, dataType, source, false, IntegerArrayType::parseText, ACCESS_ERROR_HANDLER);
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false, LongArrayType::parseText, ACCESS_ERROR_HANDLER);
     }
+
 
     /*-------------------below static methods -------------------*/
 
@@ -132,7 +133,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                dataType = PostgreType.INTEGER_ARRAY;
+                dataType = PostgreType.BIGINT_ARRAY;
                 break;
             case Oracle:
             case H2:
@@ -144,12 +145,12 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
     }
 
 
-    private static int parseText(final String text, final int offset, final int end) {
-        return Integer.parseInt(text.substring(offset, end));
+    private static long parseText(final String text, final int offset, final int end) {
+        return Long.parseLong(text.substring(offset, end));
     }
 
     private static void appendToText(final Object element, final Consumer<String> appender) {
-        if (!(element instanceof Integer)) {
+        if (!(element instanceof Long)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }

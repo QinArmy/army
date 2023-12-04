@@ -83,12 +83,6 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
         return mapToSqlType(this, meta);
     }
 
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
     @Override
     public String convert(MappingEnv env, Object source) throws CriteriaException {
         return StringType.toString(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
@@ -105,7 +99,7 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
     }
 
 
-    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.serverDatabase()) {
             case MySQL:

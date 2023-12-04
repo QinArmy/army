@@ -18,13 +18,12 @@ import io.army.util.ArrayUtils;
  */
 public final class BlobArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
+
     public static BlobArrayType from(final Class<?> javaType) {
         final BlobArrayType instance;
 
         if (javaType == byte[][].class) {
             instance = LINEAR;
-        } else if (javaType == Object.class) {
-            instance = UNLIMITED;
         } else if (!javaType.isArray() || ArrayUtils.dimensionOf(javaType) < 2) {
             throw errorJavaType(BlobArrayType.class, javaType);
         } else if (ArrayUtils.underlyingComponent(javaType) == byte.class) {
@@ -33,6 +32,10 @@ public final class BlobArrayType extends _ArmyBuildInMapping implements MappingT
             throw errorJavaType(BlobArrayType.class, javaType);
         }
         return instance;
+    }
+
+    public static BlobArrayType fromUnlimited() {
+        return UNLIMITED;
     }
 
 
@@ -114,7 +117,7 @@ public final class BlobArrayType extends _ArmyBuildInMapping implements MappingT
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                dataType = PostgreType.TEXT_ARRAY;
+                dataType = PostgreType.BYTEA_ARRAY;
                 break;
             case MySQL:
             case SQLite:

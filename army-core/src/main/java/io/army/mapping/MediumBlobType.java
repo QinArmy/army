@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.MediumBlobArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
@@ -14,7 +15,7 @@ import io.army.sqltype.*;
  * @see BlobType
  * @since 1.0
  */
-public final class MediumBlobType extends _ArmyBuildInMapping {
+public final class MediumBlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
 
     public static MediumBlobType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
@@ -35,6 +36,16 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     @Override
     public Class<?> javaType() {
         return byte[].class;
+    }
+
+    @Override
+    public LengthType lengthType() {
+        return LengthType.MEDIUM;
+    }
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return MediumBlobArrayType.LINEAR;
     }
 
     @Override
@@ -60,10 +71,6 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
         return type;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public byte[] convert(MappingEnv env, Object source) throws CriteriaException {

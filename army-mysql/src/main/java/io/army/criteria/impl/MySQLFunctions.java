@@ -487,7 +487,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
                 returnType = LocalDateTimeType.INSTANCE;
                 break;
             case SIGNED_INTEGER:
-                returnType = LongType.BIGINT;
+                returnType = LongType.INSTANCE;
                 break;
             case UNSIGNED_INTEGER:
                 returnType = UnsignedBigIntegerType.INSTANCE;

@@ -640,7 +640,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             case MINUTE:
             case SECOND:
             case MICROSECOND:
-                returnType = LongType.BIGINT;
+                returnType = LongType.INSTANCE;
                 break;
             case HOUR:
             case DAY_HOUR:
@@ -703,7 +703,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-seconds">TO_SECONDS(expr)</a>
      */
     public static SimpleExpression toSeconds(final Expression expr) {
-        return FunctionUtils.oneArgFunc("TO_SECONDS", expr, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("TO_SECONDS", expr, LongType.INSTANCE);
     }
 
     /**
@@ -714,7 +714,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP()</a>
      */
     public static SimpleExpression unixTimestamp() {
-        return FunctionUtils.zeroArgFunc("UNIX_TIMESTAMP", LongType.BIGINT);
+        return FunctionUtils.zeroArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
     }
 
     /**
@@ -725,7 +725,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP(date)</a>
      */
     public static SimpleExpression unixTimestamp(final Expression date) {
-        return FunctionUtils.oneArgFunc("UNIX_TIMESTAMP", date, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("UNIX_TIMESTAMP", date, LongType.INSTANCE);
     }
 
     /**

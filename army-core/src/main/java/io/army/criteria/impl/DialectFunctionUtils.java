@@ -8,9 +8,6 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoCastTextType;
@@ -22,6 +19,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -252,7 +250,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
          static final String ORDINALITY = "ordinality";
 
-         static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.BIGINT);
+         static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
 
          private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
 

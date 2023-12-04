@@ -44,7 +44,7 @@ public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
                 break;
             case INT8RANGE:
             case INT8MULTIRANGE:
-                type = LongType.BIGINT;
+                type = LongType.INSTANCE;
                 break;
             case NUMRANGE:
             case NUMMULTIRANGE:

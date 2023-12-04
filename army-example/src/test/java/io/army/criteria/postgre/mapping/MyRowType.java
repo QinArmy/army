@@ -34,7 +34,7 @@ public final class MyRowType extends MappingType
 
     private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.of(
             CompositeTypeField.from("a", IntegerType.INSTANCE),
-            CompositeTypeField.from("b", TextArrayType.LIST),
+            CompositeTypeField.from("b", TextArrayType.LINEAR),
             CompositeTypeField.from("c", MySubRowType.INSTANCE)
     );
 
@@ -89,9 +89,9 @@ public final class MyRowType extends MappingType
         }
         builder.append(_Constant.COMMA);
 
-        value = row.getTextList();
+        value = row.getTextArray();
         if (value != null) {
-            mappingType = TextArrayType.LIST;
+            mappingType = TextArrayType.LINEAR;
             builder.append(mappingType.beforeBind(mappingType.map(env.serverMeta()), env, value));
         }
         builder.append(_Constant.COMMA);

@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.mapping.array.MediumTextArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -45,7 +46,6 @@ import java.time.*;
  */
 public final class MediumTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
 
-
     public static MediumTextType from(final Class<?> javaType) {
         if (javaType != String.class) {
             throw errorJavaType(MediumTextType.class, javaType);
@@ -67,6 +67,10 @@ public final class MediumTextType extends _ArmyBuildInMapping implements Mapping
         return String.class;
     }
 
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return MediumTextArrayType.LINEAR;
+    }
 
     @Override
     public LengthType lengthType() {
@@ -89,10 +93,6 @@ public final class MediumTextType extends _ArmyBuildInMapping implements Mapping
         return type;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public String convert(MappingEnv env, Object source) throws CriteriaException {

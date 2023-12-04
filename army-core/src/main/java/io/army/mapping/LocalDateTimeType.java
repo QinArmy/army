@@ -1,13 +1,16 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.LocalDateTimeArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.util._TimeUtils;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 
 /**
@@ -29,14 +32,14 @@ import java.time.format.DateTimeParseException;
 public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateTimeType {
 
 
-    public static final LocalDateTimeType INSTANCE = new LocalDateTimeType();
-
-    public static LocalDateTimeType from(final Class<?> fieldType) {
-        if (fieldType != LocalDateTime.class) {
-            throw errorJavaType(LocalDateTimeType.class, fieldType);
+    public static LocalDateTimeType from(final Class<?> javaType) {
+        if (javaType != LocalDateTime.class) {
+            throw errorJavaType(LocalDateTimeType.class, javaType);
         }
         return INSTANCE;
     }
+
+    public static final LocalDateTimeType INSTANCE = new LocalDateTimeType();
 
     /**
      * private constructor
@@ -47,6 +50,11 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
     @Override
     public Class<?> javaType() {
         return LocalDateTime.class;
+    }
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return LocalDateTimeArrayType.LINEAR;
     }
 
     @Override
@@ -66,10 +74,6 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
         return type;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public LocalDateTime convert(final MappingEnv env, final Object source) throws CriteriaException {
@@ -86,8 +90,8 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
         return toLocalDateTime(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
-    public static LocalDateTime toLocalDateTime(final MappingType type, final DataType dataType, final Object nonNull,
-                                                final ErrorHandler errorHandler) {
+    static LocalDateTime toLocalDateTime(final MappingType type, final DataType dataType, final Object nonNull,
+                                         final ErrorHandler errorHandler) {
         final LocalDateTime value;
         if (nonNull instanceof LocalDateTime) {
             value = (LocalDateTime) nonNull;
@@ -99,12 +103,6 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
             }
         } else if (nonNull instanceof LocalDate) {
             value = LocalDateTime.of((LocalDate) nonNull, LocalTime.MIDNIGHT);
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).atZoneSameInstant(ZoneId.systemDefault())
-                    .toLocalDateTime();
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).withZoneSameInstant(ZoneId.systemDefault())
-                    .toLocalDateTime();
         } else {
             throw errorHandler.apply(type, dataType, nonNull, null);
         }

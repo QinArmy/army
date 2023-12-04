@@ -1432,7 +1432,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">bit_count ( bytes bytea ) → bigint</a>
      */
     public static SimpleExpression bitCount(Expression bit) {
-        return FunctionUtils.oneArgFunc("BIT_COUNT", bit, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("BIT_COUNT", bit, LongType.INSTANCE);
     }
 
     /**

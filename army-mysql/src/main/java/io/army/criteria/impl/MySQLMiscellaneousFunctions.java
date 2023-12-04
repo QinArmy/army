@@ -91,7 +91,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_is-used-lock">IS_USED_LOCK(str)</a>
      */
     public static SimpleExpression isUsedLock(final Expression str) {
-        return FunctionUtils.oneArgFunc("IS_USED_LOCK", str, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("IS_USED_LOCK", str, LongType.INSTANCE);
     }
 
     /**
@@ -185,7 +185,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_connection-id">CONNECTION_ID()</a>
      */
     public static SimpleExpression connectionId() {
-        return FunctionUtils.zeroArgFunc("CONNECTION_ID", LongType.BIGINT);
+        return FunctionUtils.zeroArgFunc("CONNECTION_ID", LongType.INSTANCE);
     }
 
     /**
@@ -245,7 +245,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
     public static SimpleExpression lastInsertId() {
-        return FunctionUtils.zeroArgFunc("LAST_INSERT_ID", LongType.BIGINT);
+        return FunctionUtils.zeroArgFunc("LAST_INSERT_ID", LongType.INSTANCE);
     }
 
     /**
@@ -258,7 +258,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
     public static SimpleExpression lastInsertId(final Expression expr) {
-        return FunctionUtils.oneArgFunc("LAST_INSERT_ID", expr, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("LAST_INSERT_ID", expr, LongType.INSTANCE);
     }
 
     /**
@@ -282,7 +282,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_row-count">ROW_COUNT()</a>
      */
     public static SimpleExpression rowCount() {
-        return FunctionUtils.zeroArgFunc("ROW_COUNT", LongType.BIGINT);
+        return FunctionUtils.zeroArgFunc("ROW_COUNT", LongType.INSTANCE);
     }
 
     /**
@@ -868,7 +868,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-short">UUID_SHORT()</a>
      */
     public static SimpleExpression uuidShort() {
-        return FunctionUtils.zeroArgFunc("UUID_SHORT", LongType.BIGINT);
+        return FunctionUtils.zeroArgFunc("UUID_SHORT", LongType.INSTANCE);
     }
 
     /**
@@ -947,7 +947,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_ps-current-thread-id">PS_CURRENT_THREAD_ID()</a>
      */
     public static SimpleExpression psCurrentThreadId() {
-        return FunctionUtils.zeroArgFunc("PS_CURRENT_THREAD_ID", LongType.BIGINT);
+        return FunctionUtils.zeroArgFunc("PS_CURRENT_THREAD_ID", LongType.INSTANCE);
     }
 
     /**
@@ -960,7 +960,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_ps-thread-id">PS_THREAD_ID(connection_id)</a>
      */
     public static SimpleExpression psThreadId(final Expression connectionId) {
-        return FunctionUtils.oneArgFunc("PS_THREAD_ID", connectionId, LongType.BIGINT);
+        return FunctionUtils.oneArgFunc("PS_THREAD_ID", connectionId, LongType.INSTANCE);
     }
 
 

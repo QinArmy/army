@@ -293,7 +293,7 @@ abstract class CriteriaUtils {
             throw limitParamError(context, rowCountValue);
         }
 
-        consumer.accept(operator.apply(LongType.BIGINT, offset), operator.apply(LongType.BIGINT, rowCount));
+        consumer.accept(operator.apply(LongType.INSTANCE, offset), operator.apply(LongType.INSTANCE, rowCount));
     }
 
     static void ifLimitPair(final BiFunction<MappingType, Number, Expression> operator
@@ -322,7 +322,7 @@ abstract class CriteriaUtils {
         }
 
         if (offset >= 0 && rowCount >= 0) {
-            consumer.accept(operator.apply(LongType.BIGINT, offset), operator.apply(LongType.BIGINT, rowCount));
+            consumer.accept(operator.apply(LongType.INSTANCE, offset), operator.apply(LongType.INSTANCE, rowCount));
         }
 
     }

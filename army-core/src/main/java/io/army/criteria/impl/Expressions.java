@@ -7,9 +7,6 @@ import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.JsonPathType;
@@ -19,6 +16,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -599,7 +597,7 @@ abstract class Expressions {
         } else if (!(left instanceof MappingType.SqlIntegerType || right instanceof MappingType.SqlIntegerType)) {
             returnType = StringType.INSTANCE;
         } else if (!(left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType)) {
-            returnType = LongType.BIGINT;
+            returnType = LongType.INSTANCE;
         } else if (((MappingType.SqlIntegerType) left).lengthType()
                 .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
             returnType = left;

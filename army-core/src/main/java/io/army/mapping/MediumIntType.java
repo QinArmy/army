@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.MediumIntArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -28,10 +29,9 @@ import io.army.sqltype.SqlType;
  */
 public final class MediumIntType extends _NumericType {
 
-
-    public static MediumIntType from(final Class<?> fieldType) {
-        if (fieldType != Integer.class) {
-            throw errorJavaType(MediumIntType.class, fieldType);
+    public static MediumIntType from(final Class<?> javaType) {
+        if (javaType != Integer.class) {
+            throw errorJavaType(MediumIntType.class, javaType);
         }
         return INSTANCE;
     }
@@ -51,6 +51,11 @@ public final class MediumIntType extends _NumericType {
     @Override
     public Class<?> javaType() {
         return Integer.class;
+    }
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return MediumIntArrayType.LINEAR;
     }
 
     @Override

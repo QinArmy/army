@@ -176,7 +176,7 @@ abstract class PostgreExpressions {
         } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type - point → geometric_type
             returnType = left;
         } else if (left instanceof PostgreInetType && right instanceof PostgreInetType) {
-            returnType = LongType.BIGINT;
+            returnType = LongType.INSTANCE;
         } else if (left.getClass() == right.getClass()) { // numeric_type - numeric_type → numeric_type ;  date - date → integer ; time - time → interval
             returnType = left;
         } else if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) { // date - integer → date

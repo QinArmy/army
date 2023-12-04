@@ -1,13 +1,11 @@
 package io.army.criteria.postgre.type;
 
 
-import java.util.List;
-
 public final class MyRow {
 
     private Integer level;
 
-    private List<String> textList;
+    private String[] textArray;
 
     private MySubRow subRow;
 
@@ -20,12 +18,12 @@ public final class MyRow {
         return this;
     }
 
-    public List<String> getTextList() {
-        return textList;
+    public String[] getTextArray() {
+        return textArray;
     }
 
-    public MyRow setTextList(List<String> textList) {
-        this.textList = textList;
+    public MyRow setTextArray(String[] textArray) {
+        this.textArray = textArray;
         return this;
     }
 

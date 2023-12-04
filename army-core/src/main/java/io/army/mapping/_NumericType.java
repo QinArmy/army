@@ -33,7 +33,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
         } else if (targetType == Integer.class) {
             type = IntegerType.INSTANCE;
         } else if (targetType == Long.class) {
-            type = LongType.BIGINT;
+            type = LongType.INSTANCE;
         } else if (targetType == BigDecimal.class) {
             type = BigDecimalType.INSTANCE;
         } else if (targetType == BigInteger.class) {

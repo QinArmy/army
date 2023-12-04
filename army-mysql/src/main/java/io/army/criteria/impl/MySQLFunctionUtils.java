@@ -1034,7 +1034,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         public TypeMeta typeMeta() {
-            return LongType.BIGINT;
+            return LongType.INSTANCE;
         }
 
 

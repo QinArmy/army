@@ -4,47 +4,42 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping.TextType;
+import io.army.mapping.MediumTextType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
+public final class MediumTextArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
-public final class TextArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
-
-
-    public static TextArrayType from(final Class<?> javaType) {
-        final TextArrayType instance;
+    public static MediumTextArrayType from(final Class<?> javaType) {
+        final MediumTextArrayType instance;
         if (javaType == String[].class) {
             instance = LINEAR;
         } else if (javaType.isArray() && ArrayUtils.underlyingComponent(javaType) == String.class) {
-            instance = new TextArrayType(javaType);
+            instance = new MediumTextArrayType(javaType);
         } else {
-            throw errorJavaType(TextArrayType.class, javaType);
+            throw errorJavaType(MediumTextArrayType.class, javaType);
         }
         return instance;
     }
 
-    public static TextArrayType fromUnlimited() {
+    public static MediumTextArrayType fromUnlimited() {
         return UNLIMITED;
     }
 
 
-    public static final TextArrayType UNLIMITED = new TextArrayType(Object.class);
+    public static final MediumTextArrayType UNLIMITED = new MediumTextArrayType(Object.class);
 
-    public static final TextArrayType LINEAR = new TextArrayType(String[].class);
+    public static final MediumTextArrayType LINEAR = new MediumTextArrayType(String[].class);
 
     private final Class<?> javaType;
 
     /**
      * private constructor
      */
-    private TextArrayType(Class<?> javaType) {
+    private MediumTextArrayType(Class<?> javaType) {
         this.javaType = javaType;
     }
 
@@ -58,6 +53,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
         return String.class;
     }
 
+
     @Override
     public MappingType elementType() {
         final Class<?> javaType = this.javaType;
@@ -65,7 +61,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
         if (javaType == Object.class) {
             instance = this;
         } else if (javaType == String[].class) {
-            instance = TextType.INSTANCE;
+            instance = MediumTextType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -84,9 +80,8 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        return mapToSqlType(this, meta);
+        return TextArrayType.mapToSqlType(this, meta);
     }
-
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
@@ -106,34 +101,6 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
         return PostgreArrays.arrayAfterGet(this, dataType, source, false,
                 PostgreArrays::decodeElement, ACCESS_ERROR_HANDLER
         );
-    }
-
-
-    /*-------------------below static methods -------------------*/
-
-    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.TEXT_ARRAY;
-                break;
-            case Oracle:
-            case H2:
-            case MySQL:
-            default:
-                throw MAP_ERROR_HANDLER.apply(type, meta);
-        }
-        return dataType;
-    }
-
-    static void appendToText(final Object element, final Consumer<String> appender) {
-        if (!(element instanceof String)) {
-            // no bug,never here
-            throw new IllegalArgumentException();
-        }
-
-        PostgreArrays.escapeElement((String) element, appender);
-
     }
 
 

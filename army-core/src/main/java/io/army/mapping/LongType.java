@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.array.LongArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -31,15 +32,14 @@ import java.math.BigInteger;
  */
 public final class LongType extends _NumericType._IntegerType {
 
-
     public static LongType from(final Class<?> fieldType) {
         if (fieldType != Long.class) {
             throw errorJavaType(LongType.class, fieldType);
         }
-        return BIGINT;
+        return INSTANCE;
     }
 
-    public static final LongType BIGINT = new LongType();
+    public static final LongType INSTANCE = new LongType();
 
     /**
      * private constructor
@@ -55,6 +55,11 @@ public final class LongType extends _NumericType._IntegerType {
     @Override
     public LengthType lengthType() {
         return LengthType.LONG;
+    }
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return LongArrayType.LINEAR;
     }
 
     @Override
@@ -91,8 +96,8 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
 
-    public static long toLong(final MappingType type, final DataType dataType, final Object nonNull,
-                              final long min, final long max, final ErrorHandler errorHandler) {
+    static long toLong(final MappingType type, final DataType dataType, final Object nonNull,
+                       final long min, final long max, final ErrorHandler errorHandler) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;

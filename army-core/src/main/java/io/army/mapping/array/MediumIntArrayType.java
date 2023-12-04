@@ -2,59 +2,57 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.IntegerType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.MediumIntType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public class IntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public final class MediumIntArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
-    public static IntegerArrayType from(final Class<?> arrayClass) {
-        final IntegerArrayType instance;
+    public static MediumIntArrayType from(final Class<?> arrayClass) {
+        final MediumIntArrayType instance;
         final Class<?> componentType;
         if (arrayClass == Integer[].class) {
             instance = LINEAR;
         } else if (arrayClass == int[].class) {
             instance = PRIMITIVE_LINEAR;
         } else if (!arrayClass.isArray()) {
-            throw errorJavaType(IntegerArrayType.class, arrayClass);
+            throw errorJavaType(MediumIntArrayType.class, arrayClass);
         } else if ((componentType = ArrayUtils.underlyingComponent(arrayClass)) == int.class
                 || componentType == Integer.class) {
-            instance = new IntegerArrayType(arrayClass, componentType);
+            instance = new MediumIntArrayType(arrayClass, componentType);
         } else {
-            throw errorJavaType(IntegerArrayType.class, arrayClass);
+            throw errorJavaType(MediumIntArrayType.class, arrayClass);
         }
         return instance;
     }
 
-    public static IntegerArrayType fromUnlimited(final Class<?> intClass) {
-        final IntegerArrayType instance;
+    public static MediumIntArrayType fromUnlimited(final Class<?> intClass) {
+        final MediumIntArrayType instance;
         if (intClass == Integer.class) {
             instance = UNLIMITED;
         } else if (intClass == int.class) {
             instance = PRIMITIVE_UNLIMITED;
         } else {
-            throw errorJavaType(IntegerArrayType.class, intClass);
+            throw errorJavaType(MediumIntArrayType.class, intClass);
         }
         return instance;
     }
 
-    public static final IntegerArrayType UNLIMITED = new IntegerArrayType(Object.class, Integer.class);
+    public static final MediumIntArrayType UNLIMITED = new MediumIntArrayType(Object.class, Integer.class);
 
-    public static final IntegerArrayType LINEAR = new IntegerArrayType(Integer[].class, Integer.class);
+    public static final MediumIntArrayType LINEAR = new MediumIntArrayType(Integer[].class, Integer.class);
 
-    public static final IntegerArrayType PRIMITIVE_UNLIMITED = new IntegerArrayType(Object.class, int.class);
+    public static final MediumIntArrayType PRIMITIVE_UNLIMITED = new MediumIntArrayType(Object.class, int.class);
 
-    public static final IntegerArrayType PRIMITIVE_LINEAR = new IntegerArrayType(int[].class, int.class);
+    public static final MediumIntArrayType PRIMITIVE_LINEAR = new MediumIntArrayType(int[].class, int.class);
 
 
     private final Class<?> javaType;
@@ -65,7 +63,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
     /**
      * private constructor
      */
-    private IntegerArrayType(final Class<?> javaType, Class<?> underlyingJavaType) {
+    private MediumIntArrayType(final Class<?> javaType, Class<?> underlyingJavaType) {
         this.javaType = javaType;
         this.underlyingJavaType = underlyingJavaType;
     }
@@ -88,7 +86,7 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         if (javaType == Object.class) {
             instance = this;
         } else if (javaType == Integer[].class || javaType == int[].class) {
-            instance = IntegerType.INSTANCE;
+            instance = MediumIntType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -105,47 +103,33 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
     }
 
     @Override
-    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        return mapToSqlType(this, meta);
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
+        return IntegerArrayType.mapToSqlType(this, meta);
     }
-
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, IntegerArrayType::parseText,
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, MediumIntArrayType::parseText,
                 PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayBeforeBind(source, IntegerArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
+        return PostgreArrays.arrayBeforeBind(source, MediumIntArrayType::appendToText, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return PostgreArrays.arrayAfterGet(this, dataType, source, false, IntegerArrayType::parseText, ACCESS_ERROR_HANDLER);
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false, MediumIntArrayType::parseText, ACCESS_ERROR_HANDLER);
     }
-
-    /*-------------------below static methods -------------------*/
-
-    static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.INTEGER_ARRAY;
-                break;
-            case Oracle:
-            case H2:
-            case MySQL:
-            default:
-                throw MAP_ERROR_HANDLER.apply(type, meta);
-        }
-        return dataType;
-    }
-
 
     private static int parseText(final String text, final int offset, final int end) {
-        return Integer.parseInt(text.substring(offset, end));
+        final int value;
+        value = Integer.parseInt(text.substring(offset, end));
+        if (value < MediumIntType.MIN_VALUE || value > MediumIntType.MAX_VALUE) {
+            throw outRange(value);
+        }
+        return value;
     }
 
     private static void appendToText(final Object element, final Consumer<String> appender) {
@@ -153,7 +137,16 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
             // no bug,never here
             throw new IllegalArgumentException();
         }
+        final int value = (Integer) element;
+        if (value < MediumIntType.MIN_VALUE || value > MediumIntType.MAX_VALUE) {
+            throw outRange(value);
+        }
         appender.accept(element.toString());
+    }
+
+    private static IllegalArgumentException outRange(int value) {
+        String m = String.format("%s not in medium int range.", value);
+        return new IllegalArgumentException(m);
     }
 
 
