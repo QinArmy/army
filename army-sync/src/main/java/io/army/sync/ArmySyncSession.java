@@ -644,7 +644,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         final R states;
 
         if (stmt instanceof SimpleStmt) {
-            states = this.stmtExecutor.insert((SimpleStmt) statement, option, resultClass);
+            states = this.stmtExecutor.insert((SimpleStmt) stmt, option, resultClass);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
         } else if (inTransaction()) {

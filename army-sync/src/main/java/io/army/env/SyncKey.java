@@ -11,7 +11,7 @@ public final class SyncKey<T> extends ArmyKey<T> {
     /**
      * @see #EXECUTOR_PROVIDER_MD5
      */
-    public static final SyncKey<String> EXECUTOR_PROVIDER = new SyncKey<>("sync.executor.provider", String.class, "io.army.jdbc.JdbcExecutorProvider");
+    public static final SyncKey<String> EXECUTOR_PROVIDER = new SyncKey<>("sync.executor.provider", String.class, "io.army.jdbc.JdbcExecutorFactoryProvider");
 
     /**
      * @see #EXECUTOR_PROVIDER
