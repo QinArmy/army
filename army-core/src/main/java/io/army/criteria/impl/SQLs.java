@@ -295,6 +295,22 @@ public abstract class SQLs extends SQLsSyntax {
         return SQLs.paramValue(value);
     }
 
+    static Expression _nullableExp(final @Nullable Object value) {
+        final Expression exp;
+        if (value == null) {
+            exp = SQLs.NULL;
+        } else if (value instanceof Expression) {
+            exp = (Expression) value;
+        } else if (value instanceof RightOperand) {
+            String m = String.format("appropriate operator don't allow that operand is %s",
+                    value.getClass().getName());
+            throw new CriteriaException(m);
+        } else {
+            exp = SQLs.paramValue(value);
+        }
+        return exp;
+    }
+
 
     /**
      * <p>

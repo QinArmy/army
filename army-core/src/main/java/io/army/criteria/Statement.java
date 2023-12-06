@@ -99,20 +99,20 @@ public interface Statement extends Item {
 
     }
 
-    interface _ExpressionCommaClause {
+    interface _ObjectCommaClause {
 
-        _ExpressionCommaClause comma(Expression exp);
+        _ObjectCommaClause comma(@Nullable Object exp);
 
     }
 
-    interface _ExpressionSpaceClause {
+    interface _ObjectSpaceClause {
 
-        _ExpressionCommaClause space(Expression exp);
+        _ObjectCommaClause space(@Nullable Object exp);
     }
 
-    interface _ExpressionConsumer {
+    interface _VariadicConsumer {
 
-        _ExpressionConsumer accept(Expression exp);
+        _VariadicConsumer accept(@Nullable Object exp);
 
     }
 

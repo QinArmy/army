@@ -8,9 +8,6 @@ import io.army.dialect.*;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
@@ -18,6 +15,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.*;
 
@@ -589,6 +587,15 @@ abstract class FunctionUtils {
             }
         }
         return multiArgFunc(name, returnType, firstArg, restExp);
+    }
+
+
+    static SimpleExpression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
+        return new JsonMapFunc(name, map, returnType);
+    }
+
+    static SimpleExpression simpleJsonObjectFunc(String name, List<?> argList, TypeMeta returnType) {
+        return new SimpleJsonObjectFunc(name, argList, returnType);
     }
 
 
@@ -2464,6 +2471,181 @@ abstract class FunctionUtils {
 
 
     }//JsonObjectFunction
+
+
+    /**
+     * only accept {@link Expression} not {@link RowExpression} ,for example : MySQL
+     */
+    private static final class JsonMapFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final Map<String, ?> map;
+
+        /**
+         * @see #jsonMapFunc(String, Map, TypeMeta)
+         */
+        private JsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
+            super(name, returnType);
+            this.map = Collections.unmodifiableMap(_Collections.hashMap(map));
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            String key;
+            Object value;
+            int count = 0;
+            for (Map.Entry<String, ?> entry : this.map.entrySet()) {
+                if (count > 0) {
+                    sqlBuilder.append(_Constant.COMMA);
+                }
+                key = entry.getKey();
+                if (key == null) {
+                    throw new CriteriaException("json object key must non-null");
+                }
+                context.appendLiteral(StringType.INSTANCE, key);
+                sqlBuilder.append(_Constant.COMMA);
+
+                value = entry.getValue();
+                if (value == null) {
+                    sqlBuilder.append(_Constant.NULL);
+                } else if (value instanceof Expression) {
+                    ((ArmyExpression) value).appendSql(sqlBuilder, context);
+                } else if (value instanceof RightOperand) {
+                    throw new CriteriaException("value must be Expression or parameter");
+                } else {
+                    context.appendParam(SQLs.paramValue(value));
+                }
+
+                count++;
+
+            } // for loop
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            String key;
+            Object value;
+            int count = 0;
+            for (Map.Entry<String, ?> entry : this.map.entrySet()) {
+                if (count > 0) {
+                    builder.append(_Constant.COMMA);
+                }
+                key = entry.getKey();
+                if (key == null) {
+                    throw new CriteriaException("json object key must non-null");
+                }
+
+                builder.append(_Constant.QUOTE)
+                        .append(key)
+                        .append(_Constant.QUOTE)
+                        .append(_Constant.COMMA);
+
+                value = entry.getValue();
+                if (value == null) {
+                    builder.append(_Constant.NULL);
+                } else if (value instanceof Expression) {
+                    builder.append(value);
+                } else if (value instanceof RightOperand) {
+                    throw new CriteriaException("value must be Expression or parameter");
+                } else {
+                    builder.append('?');
+                }
+
+                count++;
+
+            } // for loop
+        }
+
+
+    } // JsonMapFunc
+
+
+    /**
+     * key  accept {@link Expression} or {@link String} only, not {@link RowExpression} ,for example : MySQL
+     */
+    private static final class SimpleJsonObjectFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final List<?> argList;
+
+        /**
+         * @see #simpleJsonObjectFunc(String, List, TypeMeta)
+         */
+        private SimpleJsonObjectFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            int index = 0;
+            for (final Object arg : this.argList) {
+
+                if ((index & 1) == 0) { // key
+                    if (index > 0) {
+                        sqlBuilder.append(_Constant.COMMA);
+                    }
+                    if (arg instanceof String) {
+                        context.appendLiteral(StringType.INSTANCE, arg);
+                    } else {
+                        ((ArmyExpression) arg).appendSql(sqlBuilder, context);
+                    }
+                } else if (arg instanceof Expression) {
+                    sqlBuilder.append(_Constant.COMMA);
+                    ((ArmyExpression) arg).appendSql(sqlBuilder, context);
+                } else if (arg instanceof RightOperand) {
+                    String m = String.format("function[%s] support only %s and parameter", this.name, Expression.class.getName());
+                    throw new CriteriaException(m);
+                } else {
+                    sqlBuilder.append(_Constant.COMMA);
+                    context.appendParam(SQLs.paramValue(arg));
+                }
+
+                index++;
+            } // for loop
+
+            if ((index & 1) != 0) {
+                // no bug,never here
+                throw _Exceptions.castCriteriaApi();
+            }
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            int index = 0;
+            for (final Object arg : this.argList) {
+
+                if ((index & 1) == 0) { // key
+                    if (index > 0) {
+                        builder.append(_Constant.COMMA);
+                    }
+                    if (arg instanceof String) {
+                        builder.append(_Constant.QUOTE)
+                                .append(arg)
+                                .append(_Constant.QUOTE);
+                    } else {
+                        builder.append(arg);
+                    }
+                } else if (arg instanceof Expression) {
+                    builder.append(_Constant.COMMA)
+                            .append(arg);
+                } else if (arg instanceof RightOperand) {
+                    String m = String.format("function[%s] support only %s and parameter", this.name, Expression.class.getName());
+                    throw new CriteriaException(m);
+                } else {
+                    builder.append(_Constant.COMMA)
+                            .append(arg);
+                }
+
+                index++;
+            } // for loop
+
+            if ((index & 1) != 0) {
+                // no bug,never here
+                throw _Exceptions.castCriteriaApi();
+            }
+        }
+
+    } // SimpleJsonObjectFunc
 
 
 }

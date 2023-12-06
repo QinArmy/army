@@ -75,7 +75,12 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
 
                     // 3. create MappingEnv
                     final MappingEnv mappingEnv;
-                    mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_OFFSET), new MockJsonCodec());
+                    mappingEnv = MappingEnv.builder()
+                            .serverMeta(serverMeta)
+                            .zoneOffset(env.get(ArmyKey.ZONE_OFFSET))
+                            .jsonCodec(this.jsonCodec)
+                            .xmlCodec(this.xmlCodec)
+                            .build();
 
                     return executorProvider.createFactory(createExecutorEnv(name, serverMeta, env, mappingEnv)) // 4.  create executor factory
                             .flatMap(executorFactory -> {

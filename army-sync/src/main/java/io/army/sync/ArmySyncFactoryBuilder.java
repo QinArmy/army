@@ -70,9 +70,15 @@ final class ArmySyncFactoryBuilder
             final ServerMeta serverMeta;
             serverMeta = executorProvider.createServerMeta(useDialect, this.nameToDatabaseFunc);
             assert serverMeta.usedDialect() == useDialect;
+
             //4. create MappingEnv
             final MappingEnv mappingEnv;
-            mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_OFFSET), new MockJsonCodec());
+            mappingEnv = MappingEnv.builder()
+                    .serverMeta(serverMeta)
+                    .zoneOffset(env.get(ArmyKey.ZONE_OFFSET))
+                    .jsonCodec(this.jsonCodec)
+                    .xmlCodec(this.xmlCodec)
+                    .build();
 
             //5. create ExecutorEnv
             final ExecutorEnv executorEnv;

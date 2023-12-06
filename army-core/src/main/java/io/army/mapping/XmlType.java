@@ -62,11 +62,6 @@ public final class XmlType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();

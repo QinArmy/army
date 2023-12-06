@@ -1,6 +1,8 @@
 package io.army.session;
 
 import io.army.advice.FactoryAdvice;
+import io.army.codec.JsonCodec;
+import io.army.codec.XmlCodec;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.env.ArmyEnvironment;
@@ -68,6 +70,20 @@ public interface FactoryBuilderSpec<B, R> {
      * </p>
      */
     //   B fieldCodecs(Collection<FieldCodec> fieldCodecs);
+
+    /**
+     * <p>Optional.
+     *
+     * @return <strong>this</strong>
+     */
+    B jsonCodec(@Nullable JsonCodec codec);
+
+    /**
+     * <p>Optional.
+     *
+     * @return <strong>this</strong>
+     */
+    B xmlCodec(@Nullable XmlCodec codec);
 
     /**
      * <p>Optional.

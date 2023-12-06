@@ -92,17 +92,17 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
         return toZonedDateTime(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
-    public static ZonedDateTime toZonedDateTime(MappingType type, DataType dataType, final Object nonNull,
-                                                ErrorHandler errorHandler) {
-        final ZonedDateTime value;
-        if (nonNull instanceof ZonedDateTime) {
-            value = (ZonedDateTime) nonNull;
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).toZonedDateTime();
-        } else if (nonNull instanceof String) {
-            try {
-                value = ZonedDateTime.parse((String) nonNull, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
-            } catch (DateTimeException e) {
+     static ZonedDateTime toZonedDateTime(MappingType type, DataType dataType, final Object nonNull,
+                                          ErrorHandler errorHandler) {
+         final ZonedDateTime value;
+         if (nonNull instanceof ZonedDateTime) {
+             value = (ZonedDateTime) nonNull;
+         } else if (nonNull instanceof OffsetDateTime) {
+             value = ((OffsetDateTime) nonNull).toZonedDateTime();
+         } else if (nonNull instanceof String) {
+             try {
+                 value = ZonedDateTime.parse((String) nonNull, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
+             } catch (DateTimeException e) {
                 throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else {

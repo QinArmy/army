@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.mapping.*;
-import io.army.meta.TypeMeta;
+import io.army.util._Collections;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -24,85 +24,90 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /*-------------------below Functions That Create JSON Values-------------------*/
 
+
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonListType}
-     * ;the {@link MappingType} of element:the {@link MappingType} val.
-     * </p>
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
-     * @param val non-null,multi parameter or literal {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static SimpleExpression jsonArray(final Expression val) {
-        final TypeMeta returnType;
-        returnType = _returnType((ArmyExpression) val, JsonListType::from);
-        return FunctionUtils.oneOrMultiArgFunc("JSON_ARRAY", val, returnType);
+    public static SimpleExpression jsonArray(Consumer<Statement._ObjectSpaceClause> consumer) {
+        final CriteriaSupports.ObjectVariadic variadic;
+        variadic = CriteriaSupports.objectVariadicClause();
+        consumer.accept(variadic);
+
+        return FunctionUtils.safeMultiArgFunc("JSON_ARRAY", variadic.endClause(), JsonType.TEXT);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonListType}
-     * ;the {@link MappingType} of element:the {@link MappingType} of first element.
-     * </p>
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
-     * @param expList non-null
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static SimpleExpression jsonArray(final List<Expression> expList) {
-        final TypeMeta returnType;
-        if (expList.size() == 0) {
-            returnType = SQLs.NULL.typeMeta();
-        } else {
-            returnType = _returnType((ArmyExpression) expList.get(0), JsonListType::from);
-        }
-        return FunctionUtils.complexArgFunc("JSON_ARRAY", _createSimpleMultiArgList(expList), returnType);
+    public static SimpleExpression jsonArray(SQLs.SymbolSpace space, Consumer<Consumer<Object>> consumer) {
+        final List<ArmyExpression> list = _Collections.arrayList();
+
+        final Consumer<Object> variadic;
+        variadic = val -> list.add((ArmyExpression) SQLs._nullableExp(val));
+
+        consumer.accept(variadic);
+
+        return FunctionUtils.safeMultiArgFunc("JSON_ARRAY", list, JsonType.TEXT);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonMapType}
-     * ;the {@link MappingType} of element:the {@link MappingType} of first element.
-     * </p>
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
      * @param expMap non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    @Deprecated
-    public static SimpleExpression jsonObject(final Map<String, Expression> expMap) {
-       throw new UnsupportedOperationException();
+    public static SimpleExpression jsonObject(final Map<String, ?> expMap) {
+        return FunctionUtils.jsonMapFunc("JSON_OBJECT", expMap, JsonType.TEXT);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonMapType}
-     * ;the {@link MappingType} of element:the {@link MappingType} of first element.
-     * </p>
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
-     * @param expList non-null,empty or size even
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    public static SimpleExpression jsonObject(final List<Expression> expList) {
-        final String name = "JSON_OBJECT";
-        final int expSize = expList.size();
-        final SimpleExpression func;
-        if (expSize == 0) {
-            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(SQLs._NullType.INSTANCE, SQLs._NullType.INSTANCE));
-        } else if ((expSize & 1) != 0) {
-            throw CriteriaUtils.funcArgError(name, expList);
-        } else {
-            final ArmyExpression keyExp, valueExp;
-            keyExp = (ArmyExpression) expList.get(0);
-            valueExp = (ArmyExpression) expList.get(1);
-            final TypeMeta returnType;
-            returnType = _returnType(keyExp, valueExp, JsonMapType::from);
-            func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
-        }
-        return func;
+    public static SimpleExpression jsonObject(final Consumer<Statement._StaticObjectSpaceClause> consumer) {
+        final List<Object> argList = _Collections.arrayList();
+
+        final CriteriaSupports.StaticObjectConsumer objectConsumer;
+        objectConsumer = CriteriaSupports.staticObjectConsumer(false, argList::add);
+
+        consumer.accept(objectConsumer);
+        objectConsumer.endConsumer();
+
+        assert (argList.size() & 1) == 0; // even
+
+        return FunctionUtils.simpleJsonObjectFunc("JSON_OBJECT", argList, JsonType.TEXT);
+    }
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
+     */
+    public static SimpleExpression jsonObject(SQLs.SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
+        final List<Object> argList = _Collections.arrayList();
+
+        final CriteriaSupports.DynamicObjectConsumer clause;
+        clause = CriteriaSupports.dynamicObjectConsumer(false, argList::add);
+
+        consumer.accept(clause);
+        clause.endConsumer();
+
+        assert (argList.size() & 1) == 0; // even
+
+        return FunctionUtils.simpleJsonObjectFunc("JSON_OBJECT", argList, JsonType.TEXT);
     }
 
 

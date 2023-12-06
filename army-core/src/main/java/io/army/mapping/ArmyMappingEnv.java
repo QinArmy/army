@@ -1,0 +1,149 @@
+package io.army.mapping;
+
+import io.army.codec.JsonCodec;
+import io.army.codec.XmlCodec;
+import io.army.meta.ServerMeta;
+import io.army.util._StringUtils;
+
+import javax.annotation.Nullable;
+import java.time.Clock;
+import java.time.ZoneOffset;
+
+final class ArmyMappingEnv implements MappingEnv {
+
+    static Builder builder() {
+        return new EnvBuilder();
+    }
+
+    private final boolean reactive;
+
+    private final ServerMeta serverMeta;
+
+    private final ZoneOffset zoneOffset;
+
+    private final JsonCodec jsonCodec;
+
+    private final XmlCodec xmlCodec;
+
+
+    private ArmyMappingEnv(EnvBuilder builder) {
+        this.reactive = builder.reactive;
+        this.serverMeta = builder.serverMeta;
+        this.zoneOffset = builder.zoneOffset;
+        this.jsonCodec = builder.jsonCodec;
+        this.xmlCodec = builder.xmlCodec;
+        if (this.serverMeta == null) {
+            throw new IllegalArgumentException("serverMeta must non-null");
+        }
+    }
+
+    @Override
+    public boolean isReactive() {
+        return this.reactive;
+    }
+
+    @Override
+    public ServerMeta serverMeta() {
+        return this.serverMeta;
+    }
+
+    @Override
+    public ZoneOffset zoneOffset() {
+        ZoneOffset zoneId = this.zoneOffset;
+        if (zoneId == null) {
+            final Clock clock;
+            clock = Clock.systemDefaultZone();
+            zoneId = clock.getZone().getRules().getOffset(clock.instant());
+        }
+        return zoneId;
+    }
+
+    @Override
+    public JsonCodec jsonCodec() {
+        final JsonCodec codec = this.jsonCodec;
+        if (codec == null) {
+            throw new IllegalStateException("don't support JsonCodec");
+        }
+        return codec;
+    }
+
+    @Override
+    public XmlCodec xmlCodec() {
+        final XmlCodec codec = this.xmlCodec;
+        if (codec == null) {
+            throw new IllegalStateException("don't support XmlCodec");
+        }
+        return codec;
+    }
+
+    @Override
+    public String toString() {
+        return _StringUtils.builder(60)
+                .append(getClass().getName())
+                .append("[reactive:")
+                .append(this.reactive)
+                .append(",serverMeta:")
+                .append(this.serverMeta)
+                .append(",zoneId:")
+                .append(this.zoneOffset)
+                .append(",jsonCodec:")
+                .append(this.jsonCodec)
+                .append(",xmlCodec:")
+                .append(this.xmlCodec)
+                .append(",hash:")
+                .append(System.identityHashCode(this))
+                .append(']')
+                .toString();
+    }
+
+    private static final class EnvBuilder implements Builder {
+
+        private boolean reactive;
+
+        private ServerMeta serverMeta;
+
+        private ZoneOffset zoneOffset;
+
+        private JsonCodec jsonCodec;
+
+        private XmlCodec xmlCodec;
+
+        @Override
+        public Builder reactive(boolean yes) {
+            this.reactive = yes;
+            return this;
+        }
+
+        @Override
+        public Builder serverMeta(ServerMeta meta) {
+            this.serverMeta = meta;
+            return this;
+        }
+
+        @Override
+        public Builder zoneOffset(@Nullable ZoneOffset zoneOffset) {
+            this.zoneOffset = zoneOffset;
+            return this;
+        }
+
+        @Override
+        public Builder jsonCodec(@Nullable JsonCodec codec) {
+            this.jsonCodec = codec;
+            return this;
+        }
+
+        @Override
+        public Builder xmlCodec(@Nullable XmlCodec codec) {
+            this.xmlCodec = codec;
+            return this;
+        }
+
+        @Override
+        public MappingEnv build() {
+            return new ArmyMappingEnv(this);
+        }
+
+    } // BuilderImpl
+
+
+}

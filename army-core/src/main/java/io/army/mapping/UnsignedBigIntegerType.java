@@ -65,18 +65,18 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
 
-    public static BigInteger toUnsignedBigInteger(MappingType type, DataType dataType, final Object nonNull,
-                                                  ErrorHandler errorHandler) {
-        final BigInteger value;
-        value = BigIntegerType.toBigInteger(type, dataType, nonNull, errorHandler);
-        if (value.compareTo(BigInteger.ZERO) < 0) {
-            throw errorHandler.apply(type, dataType, nonNull, null);
-        }
-        return value;
-    }
+     static BigInteger toUnsignedBigInteger(MappingType type, DataType dataType, final Object nonNull,
+                                            ErrorHandler errorHandler) {
+         final BigInteger value;
+         value = BigIntegerType.toBigInteger(type, dataType, nonNull, errorHandler);
+         if (value.compareTo(BigInteger.ZERO) < 0) {
+             throw errorHandler.apply(type, dataType, nonNull, null);
+         }
+         return value;
+     }
 
-    public static BigDecimal toUnsignedBigDecimal(MappingType type, DataType dataType, final Object nonNull,
-                                                  ErrorHandler errorHandler) {
+    static BigDecimal toUnsignedBigDecimal(MappingType type, DataType dataType, final Object nonNull,
+                                           ErrorHandler errorHandler) {
         final BigDecimal value;
         value = BigDecimalType.toBigDecimal(type, dataType, nonNull, PARAM_ERROR_HANDLER)
                 .stripTrailingZeros();

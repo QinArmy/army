@@ -3,7 +3,6 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
 
 import java.time.*;
 
@@ -37,13 +36,8 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         return StringType.mapToDataType(this, meta);
-    }
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
     }
 
     @Override
@@ -67,8 +61,8 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     }
 
 
-    public static ZoneId toZoneId(final MappingType type, final DataType dataType, final Object nonNull,
-                                  final ErrorHandler errorHandler) {
+    static ZoneId toZoneId(final MappingType type, final DataType dataType, final Object nonNull,
+                           final ErrorHandler errorHandler) {
         final ZoneId value;
         if (nonNull instanceof ZoneId) {
             value = (ZoneId) nonNull;

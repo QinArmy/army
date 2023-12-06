@@ -55,11 +55,6 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
     public YearMonth convert(MappingEnv env, Object source) throws CriteriaException {
         return toYearMonth(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }

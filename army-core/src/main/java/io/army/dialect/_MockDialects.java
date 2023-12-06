@@ -113,7 +113,10 @@ public abstract class _MockDialects implements DialectEnv {
                 throw _Exceptions.unexpectedEnum(dialect.database());
         }
         final MappingEnv mappingEnv;
-        mappingEnv = MappingEnv.create(false, meta, null, new MockJsonCodec());
+        mappingEnv = MappingEnv.builder()
+                .serverMeta(meta)
+                .jsonCodec(new MockJsonCodec())
+                .build();
         return DialectParserFactory.createDialect(new MockDialectEnv(mappingEnv));
     }
 

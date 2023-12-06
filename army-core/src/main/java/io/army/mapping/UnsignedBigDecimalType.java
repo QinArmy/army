@@ -77,17 +77,17 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
 
-    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
-        switch (meta.serverDatabase()) {
-            case MySQL:
-                sqlType = MySQLType.DECIMAL_UNSIGNED;
-                break;
-            case PostgreSQL:
-                sqlType = PostgreType.DECIMAL;
-                break;
-            case Oracle:
-            case H2:
+     static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+         final SqlType sqlType;
+         switch (meta.serverDatabase()) {
+             case MySQL:
+                 sqlType = MySQLType.DECIMAL_UNSIGNED;
+                 break;
+             case PostgreSQL:
+                 sqlType = PostgreType.DECIMAL;
+                 break;
+             case Oracle:
+             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
         }

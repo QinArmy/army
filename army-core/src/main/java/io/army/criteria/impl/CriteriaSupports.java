@@ -83,6 +83,11 @@ abstract class CriteriaSupports {
     }
 
 
+    static ObjectVariadic objectVariadicClause() {
+        return new ObjectVariadic();
+    }
+
+
     /**
      * This interface is base interface of All implementation of {@link CteBuilderSpec}
      */
@@ -1087,7 +1092,43 @@ abstract class CriteriaSupports {
     }//DynamicObjectConsumer
 
 
+    static final class ObjectVariadic implements Statement._ObjectSpaceClause, Statement._ObjectCommaClause {
 
+        private List<ArmyExpression> list;
+
+        private ObjectVariadic() {
+        }
+
+        @Override
+        public Statement._ObjectCommaClause comma(final @Nullable Object exp) {
+            List<ArmyExpression> list = this.list;
+            if (list == null) {
+                this.list = list = _Collections.arrayList();
+            } else if (!(list instanceof ArrayList)) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            list.add((ArmyExpression) SQLs._nullableExp(exp));
+            return this;
+        }
+
+        @Override
+        public Statement._ObjectCommaClause space(@Nullable Object exp) {
+            return this.comma(exp);
+        }
+
+        List<ArmyExpression> endClause() {
+            List<ArmyExpression> list = this.list;
+            if (list == null) {
+                this.list = list = Collections.emptyList();
+            } else if (list instanceof ArrayList) {
+                this.list = list = _Collections.unmodifiableList(list);
+            } else {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            return list;
+        }
+
+    } // ObjectVariadic
 
 
 }

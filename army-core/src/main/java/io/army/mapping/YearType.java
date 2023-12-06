@@ -68,11 +68,6 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
     public Year convert(MappingEnv env, Object source) throws CriteriaException {
         return toYear(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
@@ -118,17 +113,17 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
         return toYear(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
-    public static Year toYear(final MappingType type, DataType dataType, final Object nonNull,
-                              final ErrorHandler errorHandler) {
-        final Year value;
-        if (nonNull instanceof Year) {
-            value = (Year) nonNull;
-        } else if (nonNull instanceof Integer || nonNull instanceof Short) {
-            value = Year.of(((Number) nonNull).intValue());
-        } else if (nonNull instanceof LocalDate) {
-            value = Year.from((LocalDate) nonNull);
-        } else if (nonNull instanceof LocalDateTime) {
-            value = Year.from((LocalDateTime) nonNull);
+     static Year toYear(final MappingType type, DataType dataType, final Object nonNull,
+                        final ErrorHandler errorHandler) {
+         final Year value;
+         if (nonNull instanceof Year) {
+             value = (Year) nonNull;
+         } else if (nonNull instanceof Integer || nonNull instanceof Short) {
+             value = Year.of(((Number) nonNull).intValue());
+         } else if (nonNull instanceof LocalDate) {
+             value = Year.from((LocalDate) nonNull);
+         } else if (nonNull instanceof LocalDateTime) {
+             value = Year.from((LocalDateTime) nonNull);
         } else if (nonNull instanceof YearMonth) {
             value = Year.from((YearMonth) nonNull);
         } else if (nonNull instanceof String) {

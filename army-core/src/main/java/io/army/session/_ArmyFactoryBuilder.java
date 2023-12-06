@@ -3,6 +3,7 @@ package io.army.session;
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.codec.JsonCodec;
+import io.army.codec.XmlCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.Database;
@@ -46,6 +47,10 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     protected Map<FieldMeta<?>, FieldGenerator> generatorMap = Collections.emptyMap();
 
     protected FieldGeneratorFactory fieldGeneratorFactory;
+
+    protected JsonCodec jsonCodec;
+
+    protected XmlCodec xmlCodec;
 
     protected Collection<FactoryAdvice> factoryAdvices;
 
@@ -102,11 +107,22 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     }
 
     @Override
+    public final B jsonCodec(@Nullable JsonCodec codec) {
+        this.jsonCodec = codec;
+        return (B) this;
+    }
+
+    @Override
+    public final B xmlCodec(@Nullable XmlCodec codec) {
+        this.xmlCodec = codec;
+        return (B) this;
+    }
+
+    @Override
     public final B factoryAdvice(@Nullable Collection<FactoryAdvice> factoryAdvices) {
         this.factoryAdvices = factoryAdvices;
         return (B) this;
     }
-
 
     @Override
     public final B fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory) {
