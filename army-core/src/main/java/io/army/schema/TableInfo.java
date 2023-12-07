@@ -31,7 +31,7 @@ public interface TableInfo {
 
         String name();
 
-        Builder type(_TableType type);
+        Builder type(TableType type);
 
         Builder comment(@Nullable String comment);
 

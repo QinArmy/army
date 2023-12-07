@@ -2,6 +2,7 @@ package io.army.schema;
 
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -14,7 +15,7 @@ final class TableInfoImpl implements TableInfo {
 
     private final String name;
 
-    private final _TableType tableType;
+    private final TableType tableType;
 
     private final String comment;
 
@@ -74,11 +75,11 @@ final class TableInfoImpl implements TableInfo {
 
         private final String name;
 
-        private _TableType tableType;
+        private TableType tableType;
 
         private String comment;
 
-        private Map<String, ColumnInfo> columnMap = _Collections.hashMap();
+        private Map<String, ColumnInfo> columnMap;
 
         private Map<String, IndexInfo> indexMap;
 
@@ -92,20 +93,24 @@ final class TableInfoImpl implements TableInfo {
         }
 
         @Override
-        public Builder type(_TableType type) {
+        public Builder type(TableType type) {
             this.tableType = type;
             return this;
         }
 
         @Override
-        public Builder comment(String comment) {
+        public Builder comment(@Nullable String comment) {
             this.comment = comment;
             return this;
         }
 
         @Override
         public Builder appendColumn(ColumnInfo column) {
-            this.columnMap.put(column.columnName().toLowerCase(), column);
+            Map<String, ColumnInfo> columnMap = this.columnMap;
+            if (columnMap == null) {
+                this.columnMap = columnMap = _Collections.hashMap();
+            }
+            columnMap.put(column.columnName().toLowerCase(), column);
             return this;
         }
 
@@ -113,8 +118,7 @@ final class TableInfoImpl implements TableInfo {
         public Builder appendIndex(IndexInfo indexInfo) {
             Map<String, IndexInfo> indexMap = this.indexMap;
             if (indexMap == null) {
-                indexMap = _Collections.hashMap();
-                this.indexMap = indexMap;
+                this.indexMap = indexMap = _Collections.hashMap();
             }
             indexMap.put(indexInfo.indexName().toLowerCase(Locale.ROOT), indexInfo);
             return this;

@@ -1,6 +1,5 @@
 package io.army.jdbc;
 
-import io.army.dialect._Constant;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
@@ -90,20 +89,11 @@ class JdbcMetaExecutor implements MetaExecutor {
         try (Statement stmt = this.conn.createStatement()) {
 
             // execute ddl
-
-            final StringBuilder builder = new StringBuilder(size * 40);
             String ddl;
             for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append("\n\n");
-                }
                 ddl = ddlList.get(i);
                 stmt.addBatch(ddl);
-
-                builder.append(ddl)
-                        .append(_Constant.SPACE_SEMICOLON);
             }
-            LOG.info(builder.toString());
             stmt.executeBatch();
         } catch (SQLException e) {
             throw JdbcExecutor.wrapError(e);
@@ -137,8 +127,8 @@ class JdbcMetaExecutor implements MetaExecutor {
     }
 
 
-    private Map<String, TableInfo.Builder> getTableBuilder(final String catalog, final String schema
-            , final DatabaseMetaData metaData) throws SQLException {
+    private Map<String, TableInfo.Builder> getTableBuilder(final String catalog, final String schema,
+                                                           final DatabaseMetaData metaData) throws SQLException {
 
         try (ResultSet resultSet = metaData.getTables(catalog, schema, "%", new String[]{"TABLE", "VIEW"})) {
             final Map<String, TableInfo.Builder> builderMap = _Collections.hashMap();
@@ -151,10 +141,10 @@ class JdbcMetaExecutor implements MetaExecutor {
                         .comment(resultSet.getString("REMARKS"));
                 switch (type) {
                     case "TABLE":
-                        builder.type(_TableType.TABLE);
+                        builder.type(TableType.TABLE);
                         break;
                     case "VIEW":
-                        builder.type(_TableType.VIEW);
+                        builder.type(TableType.VIEW);
                         break;
                     default: {
                         String m = String.format("%s table type[%s] unexpected.", tableName, type);

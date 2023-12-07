@@ -182,27 +182,27 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
             final int isolationLevel;
             isolationLevel = definition.getIsolationLevel();
 
-            final TransactionInfo info;
-            // 4. start transaction
-            if (readOnly
+
+            final boolean pseudoTransaction;
+            pseudoTransaction = readOnly
                     && isolationLevel == TransactionDefinition.ISOLATION_DEFAULT
-                    && this.pseudoTransactionAllowed) {
+                    && this.pseudoTransactionAllowed;
 
+            if (pseudoTransaction) {
                 txOptionBuilder.option(Option.ISOLATION, Isolation.PSEUDO);
+            } else if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
+                txOptionBuilder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
+            }
 
-                // start pseudo transaction
-                info = session.pseudoTransaction(txOptionBuilder.build(), HandleMode.ERROR_IF_EXISTS);
+            // 4. start transaction
+            final TransactionInfo info;
+            info = session.startTransaction(txOptionBuilder.build(), HandleMode.ERROR_IF_EXISTS);
 
+            if (pseudoTransaction) {
                 assert !info.inTransaction();
                 assert info.isReadOnly();
                 assert info.isolation() == Isolation.PSEUDO;
             } else {
-                if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
-                    txOptionBuilder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
-                }
-                // start real transaction
-                info = session.startTransaction(txOptionBuilder.build(), HandleMode.ERROR_IF_EXISTS);
-
                 assert info.inTransaction();
             }
 

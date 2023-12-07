@@ -1,8 +1,9 @@
 package io.army.schema;
 
+import io.army.util._Collections;
+
 import javax.annotation.Nullable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ final class _SchemaInfoImpl implements SchemaInfo {
     static _SchemaInfoImpl create(@Nullable String catalog, @Nullable String schema
             , Map<String, TableInfo.Builder> builderMap) {
 
-        final Map<String, TableInfo> tableMap = new HashMap<>(builderMap.size());
+        final Map<String, TableInfo> tableMap = _Collections.hashMap(builderMap.size());
         for (TableInfo.Builder builder : builderMap.values()) {
             //table name must lower case
             if (tableMap.putIfAbsent(builder.name().toLowerCase(Locale.ROOT), builder.build()) != null) {

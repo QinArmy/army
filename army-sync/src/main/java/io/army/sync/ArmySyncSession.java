@@ -475,6 +475,10 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     }
 
+    final void releaseSession() {
+        this.sessionClosed = true;
+    }
+
 
 
     /*-------------------below private methods -------------------*/

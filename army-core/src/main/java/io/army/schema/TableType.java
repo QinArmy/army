@@ -1,6 +1,6 @@
 package io.army.schema;
 
-public enum _TableType {
+public enum TableType {
 
     TABLE,
     VIEW

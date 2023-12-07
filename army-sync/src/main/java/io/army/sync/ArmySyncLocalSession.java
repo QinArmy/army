@@ -70,55 +70,14 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         }
     }
 
-
-    @Override
-    public final TransactionInfo pseudoTransaction(final TransactionOption option, final HandleMode mode) {
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        } else if (!this.readonly) {
-            throw _Exceptions.writeSessionPseudoTransaction(this);
-        } else if (option.isolation() != Isolation.PSEUDO) {
-            throw _Exceptions.pseudoIsolationError(this, option);
-        } else if (!option.isReadOnly()) {
-            throw _Exceptions.pseudoWriteError(this, option);
-        }
-
-        if (this.transactionInfo != null) {
-            switch (mode) {
-                case ERROR_IF_EXISTS:
-                    throw _Exceptions.existsTransaction(this);
-                case COMMIT_IF_EXISTS:
-                    commit();
-                    break;
-                case ROLLBACK_IF_EXISTS:
-                    rollback();
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-        }
-
-        final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(null, option));
-
-        if (this.transactionInfo != null) {
-            throw new ConcurrentModificationException();
-        }
-        this.transactionInfo = pseudoInfo;
-        this.rollbackOnly = false;
-        return pseudoInfo;
-
-    }
-
-
     @Override
     public final TransactionInfo startTransaction() {
-        return this.startTransaction(TransactionOption.option(null, false), HandleMode.ERROR_IF_EXISTS);
+        return startTransaction(TransactionOption.option(), HandleMode.ERROR_IF_EXISTS);
     }
 
     @Override
     public final TransactionInfo startTransaction(TransactionOption option) {
-        return this.startTransaction(option, HandleMode.ERROR_IF_EXISTS);
+        return startTransaction(option, HandleMode.ERROR_IF_EXISTS);
     }
 
 
@@ -127,62 +86,63 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        final TransactionInfo existTransaction = this.transactionInfo;
-        final boolean pseudoTransaction;
 
-        if (existTransaction == null) {
-            pseudoTransaction = false;
-        } else switch (mode) {
-            case ERROR_IF_EXISTS:
-                throw _Exceptions.existsTransaction(this);
-            case COMMIT_IF_EXISTS: {
-                if (isRollbackOnly()) {
-                    throw _Exceptions.rollbackOnlyTransaction(this);
-                } else if (existTransaction.inTransaction()) {
-                    pseudoTransaction = false;
-                } else {
-                    pseudoTransaction = true;
-                    commit();
-                }
+        final boolean startPseudo;
+        startPseudo = option.isolation() == Isolation.PSEUDO;
+        if (startPseudo) {
+            if (!this.readonly) {
+                throw _Exceptions.writeSessionPseudoTransaction(this);
+            } else if (!option.isReadOnly()) {
+                throw _Exceptions.pseudoWriteError(this, option);
             }
-            break;
-            case ROLLBACK_IF_EXISTS: {
-                if (existTransaction.inTransaction()) {
-                    pseudoTransaction = false;
-                } else {
-                    pseudoTransaction = true;
-                    rollback();
-                }
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-
-        } // else switch
-
-        final HandleMode actualMode;
-        if (pseudoTransaction) {
-            assert this.transactionInfo == null;
-            actualMode = HandleMode.ERROR_IF_EXISTS;
-        } else {
-            actualMode = mode;
         }
+
+        final TransactionInfo existTransaction = this.transactionInfo;
+        if (existTransaction != null) {
+            switch (mode) {
+                case ERROR_IF_EXISTS:
+                    throw _Exceptions.existsTransaction(this);
+                case COMMIT_IF_EXISTS: {
+                    if (isRollbackOnly()) {
+                        throw _Exceptions.rollbackOnlyTransaction(this);
+                    } else if (existTransaction.isolation() == Isolation.PSEUDO) {
+                        this.transactionInfo = null; // clear pseudo transaction
+                    }
+                }
+                break;
+                case ROLLBACK_IF_EXISTS: {
+                    if (existTransaction.isolation() == Isolation.PSEUDO) {
+                        this.transactionInfo = null; // clear pseudo transaction
+                    }
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(mode);
+
+            } //  switch
+
+        } //    if (existTransaction != null)
 
         final TransactionInfo info;
-        info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, actualMode);
+        if (startPseudo) {
+            info = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(null, option));
+        } else {
+            info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
 
-        Objects.requireNonNull(info); // fail,executor bug
+            Objects.requireNonNull(info); // fail,executor bug
 
-        assert info.inTransaction(); // fail,executor bug
-        assert info.isReadOnly() == option.isReadOnly();
-        assert info.isolation().equals(option.isolation());
+            assert info.inTransaction(); // fail,executor bug
+            assert info.isReadOnly() == option.isReadOnly();
+            assert info.isolation().equals(option.isolation());
 
-        final Integer timeoutMillis;
-        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-        if (timeoutMillis != null && timeoutMillis > 0) {
-            assert info.valueOf(Option.START_MILLIS) != null;
+            final Integer timeoutMillis;
+            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+            assert timeoutMillis == null || timeoutMillis <= 0 || info.valueOf(Option.START_MILLIS) != null;
         }
 
+        if (this.transactionInfo != null) {
+            throw new ConcurrentModificationException();
+        }
         this.transactionInfo = info;
         this.rollbackOnly = false;
         return info;
@@ -194,25 +154,26 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     }
 
     @Override
-    public final TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+    public final TransactionInfo commit(final Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         } else if (isRollbackOnly()) {
             throw _Exceptions.rollbackOnlyTransaction(this);
         }
 
-        final TransactionInfo info;
-        info = ((SyncLocalStmtExecutor) this.stmtExecutor).commit(optionFunc);
+        final TransactionInfo existsTransaction = this.transactionInfo;
 
-        if (optionFunc != Option.EMPTY_FUNC
-                && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
-            assert info != null && info.inTransaction(); // fail,executor bug
+        final TransactionInfo info;
+        if (existsTransaction != null && existsTransaction.isolation() == Isolation.PSEUDO) {
+            info = null; // clear pseudo transaction
         } else {
-            assert info == null; // fail,executor bug
+            info = ((SyncLocalStmtExecutor) this.stmtExecutor).commit(optionFunc);
+            assertTransactionInfoAfterEnd(optionFunc, info);
         }
         this.transactionInfo = info;
         return info;
     }
+
 
     @Override
     public final void commitIfExists() {
@@ -235,20 +196,21 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     }
 
     @Override
-    public final TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+    public final TransactionInfo rollback(final Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
 
-        final TransactionInfo info;
-        info = ((SyncLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc);
+        final TransactionInfo existsTransaction = this.transactionInfo;
 
-        if (optionFunc != Option.EMPTY_FUNC
-                && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
-            assert info != null && info.inTransaction();
+        final TransactionInfo info;
+        if (existsTransaction != null && existsTransaction.isolation() == Isolation.PSEUDO) {
+            info = null; // clear pseudo transaction
         } else {
-            assert info == null;
+            info = ((SyncLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc);
+            assertTransactionInfoAfterEnd(optionFunc, info);
         }
+
         this.transactionInfo = info;
         this.rollbackOnly = false;
         return info;
@@ -285,6 +247,37 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     @Override
     protected final void rollbackOnlyOnError(ChildUpdateException cause) {
         markRollbackOnly();
+    }
+
+    /*-------------------below private methods-------------------*/
+
+    private void assertTransactionInfoAfterEnd(final Function<Option<?>, ?> optionFunc, final @Nullable TransactionInfo info) {
+
+        switch (this.factory.serverDatabase) {
+            case MySQL: {
+                if (optionFunc == Option.EMPTY_FUNC) {
+                    assert info == null; // fail,executor bug
+                } else if (Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
+                    assert info != null && info.inTransaction(); // fail,executor bug
+                } else if (Boolean.TRUE.equals(optionFunc.apply(Option.RELEASE))) {
+                    assert info == null; // fail,executor bug
+                    releaseSession();
+                }
+            }
+            break;
+            case PostgreSQL: {
+                if (optionFunc == Option.EMPTY_FUNC) {
+                    assert info == null; // fail,executor bug
+                } else {
+                    assert !Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))
+                            || (info != null && info.inTransaction()); // fail,executor bug
+                }
+            }
+            break;
+            default:
+                assert info == null; // fail,executor bug
+        }
+
     }
 
     /*-------------------below inner class -------------------*/

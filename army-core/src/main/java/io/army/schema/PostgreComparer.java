@@ -362,7 +362,7 @@ final class PostgreComparer extends ArmySchemaComparer {
             case UNKNOWN:
                 throw _Exceptions.unexpectedEnum((Enum<?>) dataType);
             default:
-                notMatch = !typeName.equals(dataType.typeName());
+                notMatch = !typeName.equalsIgnoreCase(dataType.typeName());
         }
         return notMatch;
     }
