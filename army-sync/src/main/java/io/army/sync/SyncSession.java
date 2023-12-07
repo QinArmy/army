@@ -7,6 +7,7 @@ import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -214,6 +215,8 @@ public interface SyncSession extends Session, AutoCloseable {
     /**
      * <p>Execute a simple(non-batch) statement to query one row.
      * <p>This method don't support {@link java.util.Map},but you can use {@link #queryOneObject(SimpleDqlStatement, Supplier, SyncStmtOption)} instead of this method.
+     * <p>statement will be parsed as {@link io.army.stmt.Stmt} by {@link io.army.dialect.DialectParser} and {@link io.army.stmt.Stmt} will be executed by {@link io.army.sync.executor.SyncExecutor}.
+     *
      * <pre>
      *     This method is equivalent to following :
      *     <code><br/>
@@ -234,22 +237,27 @@ public interface SyncSession extends Session, AutoCloseable {
      *     </code>
      * </pre>
      *
-     * @param statement   simple(non-batch) query statement.
+     * @param statement   simple(non-batch) query statement
      * @param resultClass result class is one of
      *                    <ul>
      *                        <li>simple value class ,for example : {@link Integer},{@link String},{@link java.util.BitSet},byte[],{@link java.time.LocalDateTime}</li>
-     *                        <li>POJO</li>
+     *                        <li>POJO class that have public default constructor</li>
      *                    </ul>
      *                    ,couldn't be {@link java.util.Map} or it's sub class/interface
      * @param option      statement option for more control,see {@link SyncStmtOption#timeoutMillis(int)} ,{@link SyncStmtOption#builder()} etc.
-     * @param <R>         representing select result Java Type.
+     * @param <R>         representing row Java Type.
+     * @return <ul>
+     *     <li>nullable : resultClass is simple value class</li>
+     *     <li>non-null : resultClass is pojo class</li>
+     * </ul>
      * @throws CriteriaException throw when
      * @throws SessionException  throw when
      *                           <ul>
      *                               <li>session have closed</li>
      *                               <li>statement is dml statement,but {@link #isReadonlySession()} is true,see {@link ReadOnlySessionException}</li>
      *                               <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
-     *                               <li>update/delete child table (eg : firebird ),but no real(non-pseudo) transaction,see {@link ChildDmlNoTractionException}</li>
+     *                               <li>update/delete child table (eg : firebird update statement),but no real(non-pseudo) transaction,see {@link ChildDmlNoTractionException}</li>
+     *                               <li>statement is query insert statement,but {@link #isAllowQueryInsert()} is false , see {@link QueryInsertException}</li>
      *                               <li>result row count more than one,see {@link NonUniqueException}</li>
      *                               <li>server response error message</li>
      *                           </ul>
@@ -338,6 +346,39 @@ public interface SyncSession extends Session, AutoCloseable {
 
     <R> Stream<R> query(DqlStatement statement, Class<R> resultClass);
 
+    /**
+     * <p>Execute a simple/batch statement to query row stream.
+     * <p>This method don't support {@link java.util.Map},but you can use {@link #queryObject(DqlStatement, Supplier, SyncStmtOption)} instead of this method.
+     * <p>statement will be parsed as {@link io.army.stmt.Stmt} by {@link io.army.dialect.DialectParser} and {@link io.army.stmt.Stmt} will be executed by {@link io.army.sync.executor.SyncExecutor}.
+     *
+     * @param statement   simple/batch query statement
+     * @param resultClass result class is one of
+     *                    <ul>
+     *                        <li>simple value class ,for example : {@link Integer},{@link String},{@link java.util.BitSet},byte[],{@link java.time.LocalDateTime}</li>
+     *                        <li>POJO class that have public default constructor</li>
+     *                    </ul>
+     *                    ,couldn't be {@link java.util.Map} or it's sub class/interface
+     * @param option      statement option for more control,see {@link SyncStmtOption#timeoutMillis(int)} ,{@link SyncStmtOption#commanderConsumer(Consumer)} ,{@link SyncStmtOption#builder()} etc.
+     * @param <R>         representing row Java Type.
+     * @return non-null row stream. The underlying resource (eg : {@code java.sql.ResultSet}) of the stream will be close in following situation :
+     * <ul>
+     *     <li>stream normally end</li>
+     *     <li>the downstream of stream throw {@link Throwable}</li>
+     *     <li>{@link io.army.sync.executor.SyncExecutor} invoke consumer of {@link ResultStates} occur error, see {@link SyncStmtOption#stateConsumer()}</li>
+     *     <li>you invoke {@link StreamCommander#cancel()} , see {@link SyncStmtOption#commanderConsumer()}</li>
+     *     <li>You invoke {@link Stream#close()}</li>
+     * </ul>
+     * @throws CriteriaException throw when
+     * @throws SessionException  throw when
+     *                           <ul>
+     *                               <li>session have closed</li>
+     *                               <li>statement is dml statement,but {@link #isReadonlySession()} is true,see {@link ReadOnlySessionException}</li>
+     *                               <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
+     *                               <li>update/delete child table (eg : firebird update statement),but no real(non-pseudo) transaction,see {@link ChildDmlNoTractionException}</li>
+     *                               <li>statement is query insert statement,but {@link #isAllowQueryInsert()} is false , see {@link QueryInsertException}</li>
+     *                               <li>server response error message</li>
+     *                           </ul>
+     */
     <R> Stream<R> query(DqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
     <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor);
