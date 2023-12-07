@@ -6,8 +6,14 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * <p>This interface representing local {@link SyncLocalSession} that support database local transaction.
+ * <p>This interface representing local {@link SyncSession} that support database local transaction.
  * <p>The instance of this interface is created by {@link SyncSessionFactory.LocalSessionBuilder}.
+ * <p>This interface's directly underlying api is {@link io.army.session.executor.StmtExecutor}.
+ * <p>This interface representing high-level database session. This interface's underlying database session is one of
+ * <ul>
+ *     <li>{@code java.sql.Connection}</li>
+ *     <li>other database driver spi</li>
+ * </ul>
  *
  * @see SyncSessionFactory
  * @since 1.0
@@ -15,16 +21,59 @@ import java.util.function.Function;
 public interface SyncLocalSession extends SyncSession, LocalSession {
 
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             session.startTransaction(TransactionOption.option(),HandleMode.ERROR_IF_EXISTS) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #startTransaction(TransactionOption, HandleMode)
+     */
     TransactionInfo startTransaction();
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             session.startTransaction(option,HandleMode.ERROR_IF_EXISTS) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #startTransaction(TransactionOption, HandleMode)
+     */
     TransactionInfo startTransaction(TransactionOption option);
 
     /**
      * <p>Start local/pseudo transaction.
      * <ul>
      *     <li>Local transaction is supported by database server.</li>
-     *     <li>Pseudo transaction({@link TransactionOption#isolation()} is {@link Isolation#PSEUDO}) is supported only by army readonly session. Pseudo transaction is designed for some framework in readonly transaction,for example {@code org.springframework.transaction.PlatformTransactionManager}</li>
+     *     <li>Pseudo transaction({@link TransactionOption#isolation()} is {@link Isolation#PSEUDO}) is supported only by army readonly session.
+     *     Pseudo transaction is designed for some framework in readonly transaction,for example
+     *     {@code org.springframework.transaction.PlatformTransactionManager}
+     *     </li>
      * </ul>
+     * <strong>NOTE</strong>: if option representing pseudo transaction,then this method don't access database server.
+     *
+     * <p>Army prefer to start local transaction with one sql statement or multi-statement( if driver support),because transaction starting should keep atomicity and reduce network overhead.
+     * <pre>For example: {@code TransactionOption.option(Isolation.READ_COMMITTED)},MySQL database will execute following sql :
+     *     <code><br/>
+     *             SET TRANSACTION ISOLATION LEVEL READ COMMITTED ; START TRANSACTION READ WRITE
+     *     </code>
+     *     {@code TransactionOption.option()},MySQL database will execute following sql :
+     *     <code><br/>
+     *             SET @@transaction_isolation = @@SESSION.transaction_isolation ; SELECT @@SESSION.transaction_isolation AS txIsolationLevel ; START TRANSACTION READ WRITE
+     *             // SET @@transaction_isolation = @@SESSION.transaction_isolation to  guarantee isolation is session isolation
+     *     </code>
+     * </pre>
+     * <pre>For example : {@code TransactionOption.option(Isolation.READ_COMMITTED)},PostgreSQL database will execute following sql :
+     *     <code><br/>
+     *             START TRANSACTION ISOLATION LEVEL READ COMMITTED , READ WRITE
+     *     </code>
+     * </pre>
      *
      * @param option non-null,if {@link TransactionOption#isolation()} is {@link Isolation#PSEUDO},then start pseudo transaction.
      * @param mode   non-null,
@@ -46,25 +95,155 @@ public interface SyncLocalSession extends SyncSession, LocalSession {
      */
     TransactionInfo startTransaction(TransactionOption option, HandleMode mode);
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             session.commit(Option.EMPTY_FUNC) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #commit(Function)
+     */
     void commit();
 
 
+    /**
+     * <p>Execute COMMIT command with dialect option or clear pseudo transaction
+     * <p>The implementation of this method <strong>perhaps</strong> support some of following :
+     * <ul>
+     *    <li>{@link Option#CHAIN}</li>
+     *    <li>{@link Option#RELEASE}</li>
+     * </ul>
+     * <ul>
+     *     <li>If session exist pseudo transaction ,then this method clear pseudo transaction only and don't access database server.</li>
+     *     <li>Else this method always execute COMMIT command with dialect option,even if no transaction,because army is high-level database driver.</li>
+     * </ul>
+     * <p>You can use {@link #commitIfExists(Function)} instead of this method.
+     *
+     * @param optionFunc non-null, dialect option function. see {@link Option#EMPTY_FUNC}
+     * @return <ul>
+     *     <li>new transaction info :  {@link Option#CHAIN} is {@link Boolean#TRUE},new transaction info contain new {@link Option#START_MILLIS} value.</li>
+     *     <li>null : {@link Option#CHAIN} isn't {@link Boolean#TRUE}</li>
+     * </ul>
+     * @throws IllegalArgumentException throw when
+     *                                  <ul>
+     *                                      <li>{@link Option#CHAIN} is {@link Boolean#TRUE} and {@link Option#RELEASE} is {@link Boolean#TRUE}</li>
+     *                                      <li>{@link Option#CHAIN} isn't null and database server don't support that.</li>
+     *                                      <li>{@link Option#RELEASE} isn't null and database server don't support that.</li>
+     *                                  </ul>
+     * @throws SessionException         throw when
+     *                                  <ul>
+     *                                      <li>session have closed</li>
+     *                                      <li>{@link #isRollbackOnly()} is true</li>
+     *                                      <li>commit failure</li>
+     *                                  </ul>
+     */
     @Nullable
     TransactionInfo commit(Function<Option<?>, ?> optionFunc);
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             session.commitIfExists(Option.EMPTY_FUNC) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #commitIfExists(Function)
+     */
     void commitIfExists();
 
-
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             if(session.hasTransactionInfo()){
+     *                  session.commit(Option.EMPTY_FUNC) ;
+     *             }
+     *         </code>
+     * </pre>
+     *
+     * @see #commit(Function)
+     */
     @Nullable
     TransactionInfo commitIfExists(Function<Option<?>, ?> optionFunc);
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             session.rollback(Option.EMPTY_FUNC) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #rollback(Function)
+     */
     void rollback();
 
+    /**
+     * <p>Execute ROLLBACK command with dialect option or clear pseudo transaction
+     * <p>The implementation of this method <strong>perhaps</strong> support some of following :
+     * <ul>
+     *    <li>{@link Option#CHAIN}</li>
+     *    <li>{@link Option#RELEASE}</li>
+     * </ul>
+     * <ul>
+     *     <li>If session exist pseudo transaction ,then this method clear pseudo transaction only and don't access database server.</li>
+     *     <li>Else this method always execute ROLLBACK command with dialect option,even if no transaction,because army is high-level database driver.</li>
+     * </ul>
+     * <p>You can use {@link #rollbackIfExists(Function)} instead of this method.
+     *
+     * @param optionFunc non-null, dialect option function. see {@link Option#EMPTY_FUNC}
+     * @return <ul>
+     *     <li>new transaction info :  {@link Option#CHAIN} is {@link Boolean#TRUE},new transaction info contain new {@link Option#START_MILLIS} value.</li>
+     *     <li>null : {@link Option#CHAIN} isn't {@link Boolean#TRUE}</li>
+     * </ul>
+     * @throws IllegalArgumentException throw when
+     *                                  <ul>
+     *                                      <li>{@link Option#CHAIN} is {@link Boolean#TRUE} and {@link Option#RELEASE} is {@link Boolean#TRUE}</li>
+     *                                      <li>{@link Option#CHAIN} isn't null and database server don't support that.</li>
+     *                                      <li>{@link Option#RELEASE} isn't null and database server don't support that.</li>
+     *                                  </ul>
+     * @throws SessionException         throw when
+     *                                  <ul>
+     *                                      <li>session have closed</li>
+     *                                      <li>rollback failure</li>
+     *                                  </ul>
+     */
     @Nullable
     TransactionInfo rollback(Function<Option<?>, ?> optionFunc);
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             session.rollbackIfExists(Option.EMPTY_FUNC) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #rollbackIfExists(Function)
+     */
     void rollbackIfExists();
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncLocalSession}
+     *             if(session.hasTransactionInfo()){
+     *                  session.rollback(Option.EMPTY_FUNC) ;
+     *             }
+     *         </code>
+     * </pre>
+     *
+     * @see #rollback(Function)
+     */
     @Nullable
     TransactionInfo rollbackIfExists(Function<Option<?>, ?> optionFunc);
 

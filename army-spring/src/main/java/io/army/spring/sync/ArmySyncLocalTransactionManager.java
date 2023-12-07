@@ -135,6 +135,10 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
             throws TransactionException {
         final LocalTransactionObject txObject = (LocalTransactionObject) transaction;
 
+        if (txObject.session != null) {
+            throw new IllegalTransactionStateException("army support only nested transaction with save points");
+        }
+
         try {
             // 1. get transaction options
             final String txLabel;

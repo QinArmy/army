@@ -607,6 +607,16 @@ public abstract class _Exceptions {
         return e;
     }
 
+    public static IllegalArgumentException chainAndReleaseConflict() {
+        String m = String.format("%s[true] and %s[true] conflict", Option.CHAIN.name(), Option.RELEASE.name());
+        return new IllegalArgumentException(m);
+    }
+
+    public static IllegalArgumentException dontSupportRelease(Database database) {
+        String m = String.format("%s don't support %s", database.name(), Option.RELEASE);
+        return new IllegalArgumentException(m);
+    }
+
     public static CriteriaException standardDontSupportHint() {
         return new CriteriaException("Standard api don't support Hint");
     }

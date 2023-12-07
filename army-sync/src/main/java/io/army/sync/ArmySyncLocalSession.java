@@ -1,5 +1,6 @@
 package io.army.sync;
 
+import io.army.dialect.Database;
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
 import io.army.sync.executor.SyncLocalStmtExecutor;
@@ -161,14 +162,13 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
             throw _Exceptions.rollbackOnlyTransaction(this);
         }
 
-        final TransactionInfo existsTransaction = this.transactionInfo;
+        final TransactionInfo existingInfo = this.transactionInfo;
 
         final TransactionInfo info;
-        if (existsTransaction != null && existsTransaction.isolation() == Isolation.PSEUDO) {
+        if (existingInfo != null && existingInfo.isolation() == Isolation.PSEUDO) {
             info = null; // clear pseudo transaction
         } else {
-            info = ((SyncLocalStmtExecutor) this.stmtExecutor).commit(optionFunc);
-            assertTransactionInfoAfterEnd(optionFunc, info);
+            info = commitOrRollback(true, optionFunc);
         }
         this.transactionInfo = info;
         return info;
@@ -183,8 +183,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     @Nullable
     @Override
     public final TransactionInfo commitIfExists(final Function<Option<?>, ?> optionFunc) {
-        final TransactionInfo info = this.transactionInfo;
-        if (!(info != null && info.isolation() == Isolation.PSEUDO) || inTransaction()) {
+        if (this.transactionInfo != null) {
             return commit(optionFunc);
         }
         return null;
@@ -201,19 +200,18 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
             throw _Exceptions.sessionClosed(this);
         }
 
-        final TransactionInfo existsTransaction = this.transactionInfo;
+        final TransactionInfo existingInfo = this.transactionInfo;
 
-        final TransactionInfo info;
-        if (existsTransaction != null && existsTransaction.isolation() == Isolation.PSEUDO) {
-            info = null; // clear pseudo transaction
+        final TransactionInfo newInfo;
+        if (existingInfo != null && existingInfo.isolation() == Isolation.PSEUDO) {
+            newInfo = null; // clear pseudo transaction
         } else {
-            info = ((SyncLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc);
-            assertTransactionInfoAfterEnd(optionFunc, info);
+            newInfo = commitOrRollback(false, optionFunc);
         }
 
-        this.transactionInfo = info;
+        this.transactionInfo = newInfo;
         this.rollbackOnly = false;
-        return info;
+        return newInfo;
     }
 
     @Override
@@ -224,8 +222,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     @Nullable
     @Override
     public final TransactionInfo rollbackIfExists(final Function<Option<?>, ?> optionFunc) {
-        final TransactionInfo info = this.transactionInfo;
-        if (!(info != null && info.isolation() == Isolation.PSEUDO) || inTransaction()) {
+        if (this.transactionInfo != null) {
             return rollback(optionFunc);
         }
         return null;
@@ -251,33 +248,73 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     /*-------------------below private methods-------------------*/
 
-    private void assertTransactionInfoAfterEnd(final Function<Option<?>, ?> optionFunc, final @Nullable TransactionInfo info) {
+    /**
+     * @see #commit(Function)
+     * @see #rollback(Function)
+     */
+    @Nullable
+    private TransactionInfo commitOrRollback(final boolean commit, final Function<Option<?>, ?> optionFunc) {
+        final Boolean chain, release;
+        if (optionFunc == Option.EMPTY_FUNC) {
+            chain = release = null;
+        } else {
+            chain = Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN));
+            release = Boolean.TRUE.equals(optionFunc.apply(Option.RELEASE));
+            if (Boolean.TRUE.equals(chain) && Boolean.TRUE.equals(release)) {
+                throw _Exceptions.chainAndReleaseConflict();
+            }
+        }
 
-        switch (this.factory.serverDatabase) {
+        final Database database = this.factory.serverDatabase;
+        switch (database) {
+            case PostgreSQL: {
+                if (release != null && release) {
+                    throw _Exceptions.dontSupportRelease(database);
+                }
+            }
+            break;
+            case MySQL:
+            default: // no-op
+        }
+
+        final TransactionInfo existingInfo = this.transactionInfo;
+
+        final TransactionInfo newInfo;
+        if (commit) {
+            newInfo = ((SyncLocalStmtExecutor) this.stmtExecutor).commit(optionFunc);
+        } else {
+            newInfo = ((SyncLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc);
+        }
+
+        switch (database) {
             case MySQL: {
-                if (optionFunc == Option.EMPTY_FUNC) {
-                    assert info == null; // fail,executor bug
-                } else if (Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
-                    assert info != null && info.inTransaction(); // fail,executor bug
-                } else if (Boolean.TRUE.equals(optionFunc.apply(Option.RELEASE))) {
-                    assert info == null; // fail,executor bug
+                if (chain == null) {
+                    assert newInfo == null; // fail,executor bug
+                } else if (chain) {
+                    assert newInfo != null && newInfo.inTransaction(); // fail,executor bug
+                    assert newInfo != existingInfo;
+                    assert newInfo.valueOf(Option.START_MILLIS) != null;
+                } else if (release) {
+                    assert newInfo == null; // fail,executor bug
                     releaseSession();
                 }
             }
             break;
             case PostgreSQL: {
-                if (optionFunc == Option.EMPTY_FUNC) {
-                    assert info == null; // fail,executor bug
+                if (chain == null) {
+                    assert newInfo == null; // fail,executor bug
                 } else {
-                    assert !Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))
-                            || (info != null && info.inTransaction()); // fail,executor bug
+                    assert newInfo != null && newInfo.inTransaction(); // fail,executor bug
+                    assert newInfo != existingInfo;
+                    assert newInfo.valueOf(Option.START_MILLIS) != null;
                 }
             }
             break;
             default:
-                assert info == null; // fail,executor bug
+                assert newInfo == null; // fail,executor bug
         }
 
+        return newInfo;
     }
 
     /*-------------------below inner class -------------------*/

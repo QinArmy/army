@@ -71,6 +71,9 @@ public final class Option<T> {
      */
     public static final Option<Integer> TIMEOUT_MILLIS = Option.from("TIMEOUT MILLIS", Integer.class);
 
+    /**
+     * <p>Representing start time millis ,for example transaction start time millis.
+     */
     public static final Option<Long> START_MILLIS = Option.from("START MILLIS", Long.class);
 
     /**
