@@ -3,7 +3,7 @@ package io.army.session;
 
 /**
  * <p>
- * Throw when {@link Session#isAllowQueryInsert()} is false and try execute query insert.
+ * Throw when {@link Session#isQueryInsertAllowed()} is false and try execute query insert.
  * </p>
  *
  * @see io.army.env.ArmyKey#QUERY_INSERT_MODE

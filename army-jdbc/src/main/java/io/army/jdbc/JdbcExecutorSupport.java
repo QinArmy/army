@@ -49,6 +49,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     protected static final String READ_WRITE = "READ WRITE";
 
+    protected static final String ISOLATION_LEVEL_SPACE = "ISOLATION LEVEL ";
+
 
     JdbcExecutorSupport() {
     }

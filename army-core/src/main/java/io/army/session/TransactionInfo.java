@@ -61,5 +61,9 @@ public interface TransactionInfo extends TransactionOption {
         return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
     }
 
+    static TransactionInfo pseudo(Function<Option<?>, ?> optionFunc) {
+        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, optionFunc);
+    }
+
 
 }

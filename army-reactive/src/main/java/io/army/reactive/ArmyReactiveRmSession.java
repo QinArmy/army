@@ -101,7 +101,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         }
 
         final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(xid, option));
+        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillisIfNeed(xid, option));
 
         if (!TRANSACTION_INFO.compareAndSet(this, null, pseudoInfo)) {
             throw new ConcurrentModificationException();

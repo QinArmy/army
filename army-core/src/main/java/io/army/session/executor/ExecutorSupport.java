@@ -7,6 +7,8 @@ import io.army.bean.ReadAccessor;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
+import io.army.env.ArmyKey;
+import io.army.env.SqlLogMode;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.MetaException;
@@ -18,6 +20,8 @@ import io.army.session.record.*;
 import io.army.sqltype.*;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -32,6 +36,7 @@ public abstract class ExecutorSupport {
 
     protected static final ObjectAccessor RECORD_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
 
+
     protected ExecutorSupport() {
 
     }
@@ -45,6 +50,37 @@ public abstract class ExecutorSupport {
     @Override
     public final boolean equals(Object obj) {
         return super.equals(obj);
+    }
+
+
+    protected final void printSqlIfNeed(final ExecutorFactorySupport factory, final String sessionName, final Logger log,
+                                        final String sql) {
+        final SqlLogMode mode;
+        if (factory.sqlLogDynamic) {
+            mode = factory.armyEnv.getOrDefault(ArmyKey.SQL_LOG_MODE);
+        } else {
+            mode = factory.sqlLogMode;
+        }
+
+        final String format = "session[name : {}]\n{}";
+        switch (mode) {
+            case OFF:
+                break;
+            case SIMPLE:
+            case BEAUTIFY:
+                log.info(format, sessionName, sql);
+                break;
+            case DEBUG:
+            case BEAUTIFY_DEBUG: {
+                if (log.isDebugEnabled()) {
+                    log.debug(format, sessionName, sql);
+                }
+            }
+            break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+
     }
 
     protected final ArmyException unsupportedIsolation(Isolation isolation) {

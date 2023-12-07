@@ -11,6 +11,7 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.Option;
+import io.army.session.executor.ExecutorFactorySupport;
 import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.SyncExecutorFactory;
 import io.army.sync.executor.SyncLocalStmtExecutor;
@@ -31,7 +32,7 @@ import java.util.function.Function;
  * @see JdbcExecutorFactoryProvider
  * @since 1.0
  */
-final class JdbcExecutorFactory implements SyncExecutorFactory {
+final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncExecutorFactory {
 
     static JdbcExecutorFactory create(JdbcExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
         return new JdbcExecutorFactory(provider, executorEnv);
@@ -86,6 +87,7 @@ final class JdbcExecutorFactory implements SyncExecutorFactory {
      * private constructor
      */
     private JdbcExecutorFactory(JdbcExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
+        super(executorEnv.environment());
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();

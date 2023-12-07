@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  *     <li>{@link SyncLocalSession}</li>
  *     <li>{@link SyncRmSession}</li>
  * </ul>
- * <p>This interface's directly underlying api is {@link io.army.session.executor.StmtExecutor}.
+ * <p>This interface's directly underlying api is {@link io.army.sync.executor.SyncExecutor}.
  * <p>This interface representing high-level database session. This interface's underlying database session is one of
  * <ul>
  *     <li>{@code java.sql.Connection}</li>
@@ -256,8 +256,8 @@ public interface SyncSession extends Session, AutoCloseable {
      *                               <li>session have closed</li>
      *                               <li>statement is dml statement,but {@link #isReadonlySession()} is true,see {@link ReadOnlySessionException}</li>
      *                               <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
-     *                               <li>update/delete child table (eg : firebird update statement),but no real(non-pseudo) transaction,see {@link ChildDmlNoTractionException}</li>
-     *                               <li>statement is query insert statement,but {@link #isAllowQueryInsert()} is false , see {@link QueryInsertException}</li>
+     *                               <li>update/delete child table (eg : firebird update statement),but {@link #inTransaction()} is false,see {@link ChildDmlNoTractionException}</li>
+     *                               <li>statement is query insert statement,but {@link #isQueryInsertAllowed()} is false , see {@link QueryInsertException}</li>
      *                               <li>result row count more than one,see {@link NonUniqueException}</li>
      *                               <li>server response error message</li>
      *                           </ul>
@@ -348,14 +348,14 @@ public interface SyncSession extends Session, AutoCloseable {
 
     /**
      * <p>Execute a simple/batch statement to query row stream.
-     * <p>This method don't support {@link java.util.Map},but you can use {@link #queryObject(DqlStatement, Supplier, SyncStmtOption)} instead of this method.
+     * <p>This method don't support {@link java.util.Map} and the pojo that have generic,but you can use {@link #queryObject(DqlStatement, Supplier, SyncStmtOption)} instead of this method.
      * <p>statement will be parsed as {@link io.army.stmt.Stmt} by {@link io.army.dialect.DialectParser} and {@link io.army.stmt.Stmt} will be executed by {@link io.army.sync.executor.SyncExecutor}.
      *
      * @param statement   simple/batch query statement
      * @param resultClass result class is one of
      *                    <ul>
-     *                        <li>simple value class ,for example : {@link Integer},{@link String},{@link java.util.BitSet},byte[],{@link java.time.LocalDateTime}</li>
-     *                        <li>POJO class that have public default constructor</li>
+     *                        <li>simple value class ony when single {@link Selection},for example : {@link Integer},{@link String},{@link java.util.BitSet},byte[],{@link java.time.LocalDateTime}</li>
+     *                        <li>POJO class that have public default constructor and have no generic</li>
      *                    </ul>
      *                    ,couldn't be {@link java.util.Map} or it's sub class/interface
      * @param option      statement option for more control,see {@link SyncStmtOption#timeoutMillis(int)} ,{@link SyncStmtOption#commanderConsumer(Consumer)} ,{@link SyncStmtOption#builder()} etc.
@@ -374,8 +374,8 @@ public interface SyncSession extends Session, AutoCloseable {
      *                               <li>session have closed</li>
      *                               <li>statement is dml statement,but {@link #isReadonlySession()} is true,see {@link ReadOnlySessionException}</li>
      *                               <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
-     *                               <li>update/delete child table (eg : firebird update statement),but no real(non-pseudo) transaction,see {@link ChildDmlNoTractionException}</li>
-     *                               <li>statement is query insert statement,but {@link #isAllowQueryInsert()} is false , see {@link QueryInsertException}</li>
+     *                               <li>update/delete child table (eg : firebird update statement),but {@link #inTransaction()} is false,see {@link ChildDmlNoTractionException}</li>
+     *                               <li>statement is query-insert statement,but {@link #isQueryInsertAllowed()} is false , see {@link QueryInsertException}</li>
      *                               <li>server response error message</li>
      *                           </ul>
      */

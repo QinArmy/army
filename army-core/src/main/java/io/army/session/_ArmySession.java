@@ -90,7 +90,7 @@ public abstract class _ArmySession implements Session {
     }
 
     @Override
-    public final boolean isAllowQueryInsert() {
+    public final boolean isQueryInsertAllowed() {
         return this.allowQueryInsert;
     }
 
@@ -216,7 +216,7 @@ public abstract class _ArmySession implements Session {
                 throw _Exceptions.readOnlySession(this);
             } else if (isReadOnlyStatus()) {
                 throw _Exceptions.readOnlyTransaction(this);
-            } else if (statement instanceof _Statement._ChildStatement && !hasTransactionInfo()) {
+            } else if (statement instanceof _Statement._ChildStatement && !inTransaction()) {
                 final TableMeta<?> domainTable;
                 domainTable = ((_Statement._ChildStatement) statement).table();
                 throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) domainTable);
@@ -294,7 +294,7 @@ public abstract class _ArmySession implements Session {
         return domainTable;
     }
 
-    protected static Function<Option<?>, ?> wrapStartMillis(final @Nullable Xid xid, final TransactionOption option) {
+    protected static Function<Option<?>, ?> wrapStartMillisIfNeed(final @Nullable Xid xid, final TransactionOption option) {
         final Integer timeoutMillis;
         timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
 

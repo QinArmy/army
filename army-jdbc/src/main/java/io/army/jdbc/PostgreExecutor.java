@@ -532,7 +532,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 stmtCount++;
             }
 
-            builder.append("START TRANSACTION ");
+            builder.append(START_TRANSACTION_SPACE);
             final boolean readOnly = option.isReadOnly();
             if (readOnly) {
                 builder.append(READ_ONLY);
@@ -541,7 +541,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
 
             if (isolation != null) {
-                builder.append(_Constant.SPACE_COMMA_SPACE);
+                builder.append(_Constant.SPACE_COMMA_SPACE)
+                        .append(ISOLATION_LEVEL_SPACE);
                 standardIsolation(isolation, builder);
             }
 
@@ -551,7 +552,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             // execute start transaction statements
             final Isolation finalIsolation;
-            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final Function<Option<?>, ?> optionFunc;
             if (deferrable != null) {
@@ -929,7 +930,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             // execute start transaction statements
             final Isolation finalIsolation;
-            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final Map<Option<?>, Object> map = _Collections.hashMap(7);
 

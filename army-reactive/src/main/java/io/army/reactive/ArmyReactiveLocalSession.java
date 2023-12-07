@@ -291,7 +291,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
      */
     private Mono<TransactionInfo> doPseudoTransaction(final TransactionOption option) {
         final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillis(null, option));
+        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillisIfNeed(null, option));
 
         if (!TRANSACTION_INFO.compareAndSet(this, null, pseudoInfo)) {
             return Mono.error(new ConcurrentModificationException());

@@ -395,7 +395,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             // execute start transaction statements
             final Isolation finalIsolation;
-            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final TransactionInfo info;
             this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, optionFunc);
@@ -546,7 +546,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             stmtCount++;
 
             final Isolation finalIsolation;
-            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final Map<Option<?>, Object> map = _Collections.hashMap(6);
 

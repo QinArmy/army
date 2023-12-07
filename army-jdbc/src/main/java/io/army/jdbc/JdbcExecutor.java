@@ -560,15 +560,16 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     final Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
-                                            final StringBuilder builder) throws DataAccessException {
+                                            final String multiStmtSql) throws DataAccessException {
 
-        final String semicolonStr = ";";
+        printSqlIfNeed(this.factory, this.sessionName, getLogger(), multiStmtSql);
+
+        final char semicolonChar = ';';
         try (final Statement statement = this.conn.createStatement()) {
-
             Isolation sessionIsolation = null;
             int batchSize = 0;
             if (this.factory.useMultiStmt) {
-                if (statement.execute(builder.toString())) {
+                if (statement.execute(multiStmtSql)) {
                     statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
                     // no bug never here
                     throw new IllegalStateException("sql error");
@@ -589,8 +590,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 int start = 0;
                 String sql;
 
-                for (int semicolon; (semicolon = builder.indexOf(semicolonStr, start)) > 0; start = semicolon + 1) {
-                    sql = builder.substring(start, semicolon).trim();
+                for (int semicolon; (semicolon = multiStmtSql.indexOf(semicolonChar, start)) > 0; start = semicolon + 1) {
+                    sql = multiStmtSql.substring(start, semicolon).trim();
                     batchSize++;
                     if (sql.startsWith("SELECT ") || sql.startsWith("SHOW ")) {
                         assert sessionIsolation == null;
@@ -599,16 +600,16 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                         statement.executeUpdate(sql);
                     }
                 }
-                statement.executeUpdate(builder.substring(start, builder.length()));
+                statement.executeUpdate(multiStmtSql.substring(start));
                 batchSize++;
                 assert sessionIsolation != null;
             } else {
                 int start = 0;
-                for (int semicolon; (semicolon = builder.indexOf(semicolonStr, start)) > 0; start = semicolon + 1) {
-                    statement.addBatch(builder.substring(start, semicolon));
+                for (int semicolon; (semicolon = multiStmtSql.indexOf(semicolonChar, start)) > 0; start = semicolon + 1) {
+                    statement.addBatch(multiStmtSql.substring(start, semicolon));
                     batchSize++;
                 }
-                statement.addBatch(builder.substring(start, builder.length()));
+                statement.addBatch(multiStmtSql.substring(start));
                 batchSize++;
                 statement.executeBatch();
             }
@@ -631,7 +632,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #executeStartTransaction(int, Isolation, StringBuilder)
+     * @see #executeStartTransaction(int, Isolation, String)
      */
     final Isolation readIsolationAndClose(final ResultSet rs) throws SQLException {
         try (ResultSet resultSet = rs) {
@@ -1974,7 +1975,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     }
                     compatibleTypeArray[i] = type;
                 }
-
 
 
                 // dialect executor read one column
