@@ -32,6 +32,8 @@ import java.util.function.Function;
  */
 public abstract class _ArmySession implements Session {
 
+    protected static final String PSEUDO_SAVE_POINT = "ARMY_PSEUDO_SAVE_POINT";
+
     protected final _ArmySessionFactory factory;
 
     protected final String name;
@@ -104,12 +106,7 @@ public abstract class _ArmySession implements Session {
         }
         final TransactionInfo info;
         info = obtainTransactionInfo();
-
-        final boolean in;
-        in = info != null && !info.inTransaction();
-
-        assert !in || info.isolation() == Isolation.PSEUDO; // fail, bug
-        return in;
+        return info != null && info.isolation() == Isolation.PSEUDO;
     }
 
     @Override

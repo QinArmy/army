@@ -20,20 +20,26 @@ import java.util.stream.Stream;
  *     <li>{@link SyncLocalSession}</li>
  *     <li>{@link SyncRmSession}</li>
  * </ul>
+ * <p>This interface's directly underlying api is {@link io.army.session.executor.StmtExecutor}.
+ * <p>This interface representing high-level database session. This interface's underlying database session is one of
+ * <ul>
+ *     <li>{@code java.sql.Connection}</li>
+ *     <li>other database driver spi</li>
+ * </ul>
+ *
+ * @since 1.0
  */
 public interface SyncSession extends Session, AutoCloseable {
 
 
     /**
-     * <p>
-     * Session identifier(non-unique, for example : database server cluster),probably is following :
-     *     <ul>
-     *         <li>server process id</li>
-     *         <li>server thread id</li>
-     *         <li>other identifier</li>
-     *     </ul>
-     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
-     * </p>
+     * <p>Session identifier(non-unique, for example : database server cluster),probably is following :
+     * <ul>
+     *    <li>server process id</li>
+     *    <li>server thread id</li>
+     *    <li>other identifier</li>
+     * </ul>
+     * <strong>NOTE</strong>: identifier will probably be updated if reconnect.
      *
      * @return {@link io.army.env.SyncKey#SESSION_IDENTIFIER_ENABLE} : <ul>
      * <li>true :  session identifier </li>
@@ -44,22 +50,125 @@ public interface SyncSession extends Session, AutoCloseable {
     @Override
     long sessionIdentifier() throws SessionException;
 
+    /**
+     * <p>Get the {@link SyncSessionFactory} that create this session instance.
+     * <p>This method don't check session whether closed or not.
+     *
+     * @return session factory of this instance.
+     */
     @Override
     SyncSessionFactory sessionFactory();
 
+    /**
+     * <p>Get session transaction info
+     * <ul>
+     *     <li>If session exists transaction ,then return transaction info</li>
+     *     <li>Else query session level transaction info ,for example : isolation ,readonly etc.</li>
+     * </ul>
+     * <pre>
+     *     The implementation of this method like following :
+     *     <code><br/>
+     *          TransactionInfo info = this.transactionInfo;
+     *         if(info == null){
+     *              // this.executor is a instance of {@link io.army.sync.executor.SyncExecutor}
+     *             info = this.executor.transactionInfo(); // query session level transaction info
+     *         }
+     *         return info;
+     *     </code>
+     * </pre>
+     *
+     * @return session transaction info session have closed
+     * @throws SessionException throw when
+     */
     TransactionInfo transactionInfo();
 
-
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncSession}
+     *             session.setSavePoint(Option.EMPTY_FUNC) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #setSavePoint(Function)
+     */
     Object setSavePoint();
 
+    /**
+     * <p>Set a save point.
+     * <p>If {@link Option#NAME} non-null,then use name value set a save point
+     * <p>If session exists pseudo transaction ,then this method don't access database server.
+     *
+     * @param optionFunc option function,see {@link Option#EMPTY_FUNC}
+     * @return save point :
+     * <ul>
+     *     <li>real save point : real transaction</li>
+     *     <li>pseudo save point : pseudo transaction</li>
+     * </ul>
+     * @throws SessionException throw when
+     *                          <ul>
+     *                              <li>session have closed</li>
+     *                              <li>session not in transaction(real/pseudo)</li>
+     *                              <li>set save point failure</li>
+     *                          </ul>
+     */
     Object setSavePoint(Function<Option<?>, ?> optionFunc);
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncSession}
+     *             session.releaseSavePoint(savepoint,Option.EMPTY_FUNC) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #releaseSavePoint(Object, Function)
+     */
     void releaseSavePoint(Object savepoint);
 
+    /**
+     * <p>Release a save point.
+     * <p>If session exists pseudo transaction ,then this method don't access database server.
+     *
+     * @param optionFunc option function,see {@link Option#EMPTY_FUNC}
+     * @throws IllegalArgumentException throw when savepoint is unknown
+     * @throws SessionException         throw when
+     *                                  <ul>
+     *                                      <li>session have closed</li>
+     *                                      <li>session not in transaction(real/pseudo)</li>
+     *                                      <li>release point failure</li>
+     *                                  </ul>
+     */
     void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncSession}
+     *             session.rollbackToSavePoint(savepoint,Option.EMPTY_FUNC) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #rollbackToSavePoint(Object, Function)
+     */
     void rollbackToSavePoint(Object savepoint);
 
+    /**
+     * <p>Rollback a save point.
+     * <p>If session exists pseudo transaction ,then this method don't access database server.
+     *
+     * @param optionFunc option function,see {@link Option#EMPTY_FUNC}
+     * @throws IllegalArgumentException throw when savepoint is unknown
+     * @throws SessionException         throw when
+     *                                  <ul>
+     *                                      <li>session have closed</li>
+     *                                      <li>session not in transaction(real/pseudo)</li>
+     *                                      <li>rollback point failure</li>
+     *                                  </ul>
+     */
     void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
     /**
@@ -87,12 +196,65 @@ public interface SyncSession extends Session, AutoCloseable {
      */
     void setTransactionCharacteristics(TransactionOption option);
 
+
     /**
-     * @param <R> representing select result Java Type.
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link SyncSession}
+     *             session.queryOne(statement,resultClass,defaultOption()) ; // defaultOption() is private method of the implementation of {@link SyncSession}.
+     *         </code>
+     * </pre>
+     *
+     * @see #queryOne(SimpleDqlStatement, Class, SyncStmtOption)
      */
     @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass);
 
+    /**
+     * <p>Execute a simple(non-batch) statement to query one row.
+     * <p>This method don't support {@link java.util.Map},but you can use {@link #queryOneObject(SimpleDqlStatement, Supplier, SyncStmtOption)} instead of this method.
+     * <pre>
+     *     This method is equivalent to following :
+     *     <code><br/>
+     *          final List&lt;R> resultList;
+     *          resultList = this.queryList(statement,resultClass,option);
+     *          final R result;
+     *          switch (resultList.size()) {
+     *              case 1:
+     *                  result = resultList.get(0);
+     *                  break;
+     *              case 0:
+     *                  result = null;
+     *                  break;
+     *              default:
+     *                  throw _Exceptions.nonUnique(resultList);
+     *          }
+     *          return result;
+     *     </code>
+     * </pre>
+     *
+     * @param statement   simple(non-batch) query statement.
+     * @param resultClass result class is one of
+     *                    <ul>
+     *                        <li>simple value class ,for example : {@link Integer},{@link String},{@link java.util.BitSet},byte[],{@link java.time.LocalDateTime}</li>
+     *                        <li>POJO</li>
+     *                    </ul>
+     *                    ,couldn't be {@link java.util.Map} or it's sub class/interface
+     * @param option      statement option for more control,see {@link SyncStmtOption#timeoutMillis(int)} ,{@link SyncStmtOption#builder()} etc.
+     * @param <R>         representing select result Java Type.
+     * @throws CriteriaException throw when
+     * @throws SessionException  throw when
+     *                           <ul>
+     *                               <li>session have closed</li>
+     *                               <li>statement is dml statement,but {@link #isReadonlySession()} is true,see {@link ReadOnlySessionException}</li>
+     *                               <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
+     *                               <li>update/delete child table (eg : firebird ),but no real(non-pseudo) transaction,see {@link ChildDmlNoTractionException}</li>
+     *                               <li>result row count more than one,see {@link NonUniqueException}</li>
+     *                               <li>server response error message</li>
+     *                           </ul>
+     * @see #queryList(DqlStatement, Class, SyncStmtOption)
+     */
     @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 

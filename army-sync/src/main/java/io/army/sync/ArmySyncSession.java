@@ -110,6 +110,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final Object setSavePoint(Function<Option<?>, ?> optionFunc) {
+        if (inPseudoTransaction()) {
+            return PSEUDO_SAVE_POINT;
+        }
         try {
             return this.stmtExecutor.setSavePoint(optionFunc);
         } catch (Exception e) {
@@ -123,12 +126,17 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
-    public final void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
-        try {
-            this.stmtExecutor.releaseSavePoint(savepoint, optionFunc);
-        } catch (Exception e) {
-            throw wrapSessionError(e);
+    public final void releaseSavePoint(final Object savepoint, Function<Option<?>, ?> optionFunc) {
+        if (!inPseudoTransaction()) {
+            try {
+                this.stmtExecutor.releaseSavePoint(savepoint, optionFunc);
+            } catch (Exception e) {
+                throw wrapSessionError(e);
+            }
+        } else if (!PSEUDO_SAVE_POINT.equals(savepoint)) {
+            throw _Exceptions.unknownSavePoint(savepoint);
         }
+
     }
 
     @Override
@@ -137,12 +145,17 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
-    public final void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
-        try {
-            this.stmtExecutor.rollbackToSavePoint(savepoint, optionFunc);
-        } catch (Exception e) {
-            throw wrapSessionError(e);
+    public final void rollbackToSavePoint(final Object savepoint, Function<Option<?>, ?> optionFunc) {
+        if (!inPseudoTransaction()) {
+            try {
+                this.stmtExecutor.rollbackToSavePoint(savepoint, optionFunc);
+            } catch (Exception e) {
+                throw wrapSessionError(e);
+            }
+        } else if (!PSEUDO_SAVE_POINT.equals(savepoint)) {
+            throw _Exceptions.unknownSavePoint(savepoint);
         }
+
     }
 
     @Override
