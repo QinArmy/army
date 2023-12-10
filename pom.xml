@@ -8,7 +8,7 @@
     <groupId>io.qinarmy</groupId>
     <artifactId>army</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version><!--Army version find and replace-->
+    <version>1.0-SNAPSHOT</version><!--Army maven version-->
     <modules>
         <module>army-core</module>
         <module>army-struct</module>

@@ -569,13 +569,13 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public final SR setNamed(F field, BiFunction<F, String, Expression> valueOperator) {
+        public final SR setSpace(F field, BiFunction<F, String, Expression> valueOperator) {
             this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
             return (SR) this;
         }
 
         @Override
-        public final <R extends AssignmentItem> SR setNamed(F field, BiFunction<F, Expression, R> fieldOperator,
+        public final <R extends AssignmentItem> SR setSpace(F field, BiFunction<F, Expression, R> fieldOperator,
                                                             BiFunction<F, String, Expression> valueOperator) {
             return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
         }

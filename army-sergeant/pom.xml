@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.qinarmy</groupId>
         <artifactId>army</artifactId>
-        <version>1.0-SNAPSHOT</version><!--Army version find and replace-->
+        <version>1.0-SNAPSHOT</version><!--Army maven version-->
     </parent>
 
     <artifactId>army-sergeant</artifactId>

@@ -93,9 +93,9 @@ public interface UpdateStatement extends NarrowDmlStatement {
     interface _StaticBatchSetClause<F extends SqlField, SR> extends _StaticSetClause<F, SR> {
 
 
-        SR setNamed(F field, BiFunction<F, String, Expression> valueOperator);
+        SR setSpace(F field, BiFunction<F, String, Expression> valueOperator);
 
-        <R extends AssignmentItem> SR setNamed(F field, BiFunction<F, Expression, R> fieldOperator, BiFunction<F, String, Expression> valueOperator);
+        <R extends AssignmentItem> SR setSpace(F field, BiFunction<F, Expression, R> fieldOperator, BiFunction<F, String, Expression> valueOperator);
 
     }
 

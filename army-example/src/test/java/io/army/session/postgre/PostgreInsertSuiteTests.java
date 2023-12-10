@@ -14,7 +14,6 @@ import io.army.example.bank.domain.user.*;
 import io.army.session.Isolation;
 import io.army.session.TransactionOption;
 import io.army.sync.SyncLocalSession;
-import io.army.sync.SyncSessionFactory;
 import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
 import io.army.util.ImmutableHashMap;
@@ -23,17 +22,14 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.*;
 
-@Test(dataProvider = "localSessionProvider")
+@Test(dataProvider = "localSessionProvider", groups = Groups.DOMAIN_INSERT)
 public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertSuiteTests.class);
@@ -65,22 +61,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    private void test(SyncSessionFactory sessionFactory) {
-        final Select stmt;
-        stmt = Postgres.query()
-                .select(ChinaRegion_.id, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.name.equal(SQLs::param, "曲境"))
-                .and(ChinaRegion_.createTime::less, SQLs::literal, LocalDateTime.now().minusDays(1))
-                .limit(SQLs::literal, 1)
-                .asQuery();
-
-        try (SyncLocalSession session = sessionFactory.localSession()) {
-            final Supplier<Map<String, Object>> constructor = HashMap::new;
-            session.queryObject(stmt, constructor)
-                    .forEach(map -> LOG.debug("{}", map));
-        }
-    }
 
     @Test(groups = Groups.DOMAIN_INSERT)
     public void returningDomainInsertParent(final SyncLocalSession session) {

@@ -209,12 +209,12 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     }
 
     @Override
-    public final SR setNamed(F field, BiFunction<F, String, Expression> valueOperator) {
+    public final SR setSpace(F field, BiFunction<F, String, Expression> valueOperator) {
         return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
     }
 
     @Override
-    public final <R extends AssignmentItem> SR setNamed(F field, BiFunction<F, Expression, R> fieldOperator
+    public final <R extends AssignmentItem> SR setSpace(F field, BiFunction<F, Expression, R> fieldOperator
             , BiFunction<F, String, Expression> valueOperator) {
         return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
     }

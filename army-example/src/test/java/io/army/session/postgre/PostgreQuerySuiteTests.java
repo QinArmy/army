@@ -37,7 +37,6 @@ public class PostgreQuerySuiteTests extends PostgreSuiteTests {
         syncSession.queryObject(stmt, constructor)
                 .forEach(c -> LOG.debug("{}", c.getName()));
 
-
     }
 
 }
