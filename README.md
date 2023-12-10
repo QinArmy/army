@@ -21,7 +21,7 @@ public class HowToStartTests {
 
         final DataSource dataSource;
         dataSource = createDataSource();
-        return SyncFactoryBuilder.builder()
+        sessionFactory = SyncFactoryBuilder.builder()
                 .name("army-test")
                 .packagesToScan(Collections.singletonList("io.army.example.bank.domain"))
                 .datasource(dataSource)
@@ -53,10 +53,10 @@ public class HowToStartTests {
         final Insert stmt;
         stmt = SQLs.singleInsert()  // standard criteria api
                 //.literalMode(LiteralMode.LITERAL)
-                .insertInto(ChinaRegion_.T).as("c")
-                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE) // default value for each row
                 .values(regionList)
-                .asInsert();
+                .asInsert(); // end statement
 
         try (SyncLocalSession session = sessionFactory.localSession()) {
             session.update(stmt);
@@ -71,10 +71,10 @@ public class HowToStartTests {
         final Insert stmt;
         stmt = SQLs.singleInsert() // standard criteria api
                 //.literalMode(LiteralMode.LITERAL)
-                .insertInto(ChinaRegion_.T).as("c")
-                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE) // default value for each row
                 .values(regionList)
-                .asInsert();
+                .asInsert(); // end statement
 
         try (SyncLocalSession session = sessionFactory.localSession()) {
             session.startTransaction();
