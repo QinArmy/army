@@ -5,7 +5,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.qinarmy.army</groupId>
+    <groupId>io.qinarmy</groupId>
     <artifactId>army</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version><!--Army version find and replace-->
@@ -55,62 +55,62 @@
         <dependencies>
             <!-- 模块 start  -->
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-core</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-struct</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-annotation</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-jdbc</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-jdbd</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-example</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-postgre</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-sync</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-reactive</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-spring</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-mysql</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.qinarmy.army</groupId>
+                <groupId>io.qinarmy</groupId>
                 <artifactId>army-example-domain</artifactId>
                 <version>${army.version}</version>
             </dependency>

@@ -6,6 +6,17 @@
 
 ### How to start ?
 
+#### Maven
+
+```xml
+
+<dependency>
+    <groupId>io.qinarmy</groupId>
+    <artifactId>army-jdbc</artifactId>
+    <version>1.0-SNAPSHOT</version><!--Army version find and replace-->
+</dependency>
+```
+
 #### Java code
 
 ```java
