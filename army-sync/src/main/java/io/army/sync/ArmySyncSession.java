@@ -11,6 +11,7 @@ import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
 import io.army.sync.executor.SyncExecutor;
+import io.army.type.ImmutableSpec;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -214,9 +215,11 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     @Override
     public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         try (Stream<R> stream = query(statement, resultClass, option)) {
-            return stream.collect(Collectors.toCollection(listConstructor));
+
+            return collectToList(stream, listConstructor);
         }
     }
+
 
     @Override
     public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor) {
@@ -236,7 +239,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     @Override
     public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         try (Stream<R> stream = queryObject(statement, constructor, option)) {
-            return stream.collect(Collectors.toCollection(listConstructor));
+            return collectToList(stream, listConstructor);
         }
     }
 
@@ -258,7 +261,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     @Override
     public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         try (Stream<R> stream = queryRecord(statement, function, option)) {
-            return stream.collect(Collectors.toCollection(listConstructor));
+            return collectToList(stream, listConstructor);
         }
     }
 
@@ -766,6 +769,16 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             return (Long) result;
         }
         return ((ResultStates) result).affectedRows();
+    }
+
+    private static <R> List<R> collectToList(final Stream<R> stream, final Supplier<List<R>> listConstructor) {
+        List<R> resultList;
+        resultList = stream.collect(Collectors.toCollection(listConstructor));
+
+        if (resultList instanceof ImmutableSpec) {
+            resultList = _Collections.unmodifiableListForDeveloper(resultList);
+        }
+        return resultList;
     }
 
 

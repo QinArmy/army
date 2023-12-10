@@ -5,7 +5,6 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
-import io.army.mapping.mysql.MySqlBitType;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -422,7 +421,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                 } else if (targetType == String.class) {
                     type = StringType.INSTANCE;
                 } else if (targetType == Long.class || targetType == long.class) {
-                    type = MySqlBitType.INSTANCE;
+                    type = LongType.INSTANCE;
                 } else if (targetType == Integer.class || targetType == int.class) {
                     type = IntegerType.INSTANCE;
                 } else {

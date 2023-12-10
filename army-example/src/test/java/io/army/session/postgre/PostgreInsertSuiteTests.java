@@ -1,4 +1,4 @@
-package io.army.session.suite.postgre;
+package io.army.session.postgre;
 
 
 import com.alibaba.fastjson2.JSON;
@@ -10,8 +10,10 @@ import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
+import io.army.dialect.Database;
 import io.army.example.bank.domain.user.*;
 import io.army.session.Isolation;
+import io.army.session.SyncSessionTestSupport;
 import io.army.session.TransactionOption;
 import io.army.sync.SyncLocalSession;
 import io.army.util.Groups;
@@ -29,10 +31,14 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static io.army.criteria.impl.SQLs.*;
 
-@Test(dataProvider = "getSession")
-public class PostgreInsertSuiteTests extends PostgreSuiteTests {
+@Test(dataProvider = "localSessionProvider")
+public class PostgreInsertSuiteTests extends SyncSessionTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertSuiteTests.class);
+
+    public PostgreInsertSuiteTests() {
+        super(Database.PostgreSQL);
+    }
 
     @Test(groups = Groups.DOMAIN_INSERT)
     public void domainInsertParent(final SyncLocalSession session) {
@@ -58,7 +64,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             Assert.assertNotNull(region.getId());
         }
 
-        releaseSyncSession(session);
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
@@ -88,7 +93,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         }
 
         LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        releaseSyncSession(session);
 
     }
 
@@ -119,7 +123,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertEquals(resultList.size(), regionList.size());
 
-        releaseSyncSession(session);
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
@@ -169,7 +172,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         resultList = session.queryList(stmt, ChinaRegion_.CLASS);
         Assert.assertEquals(resultList.size(), regionList.size());
         LOG.debug("{}", JSON.toJSONString(resultList));
-        releaseSyncSession(session);
+
 
     }
 
@@ -207,7 +210,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             session.rollbackIfExists();
             throw e;
         }
-        releaseSyncSession(session);
+
 
     }
 
@@ -264,8 +267,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.error("insert child error", e);
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
 
     }
@@ -323,10 +324,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.error("insert child error", e);
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
-
     }
 
 
@@ -385,8 +383,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.error("insert child error", e);
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
 
     }
@@ -448,8 +444,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             session.rollbackIfExists();
 
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
 
     }
@@ -481,8 +475,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         rows = session.update(stmt);
 
         Assert.assertEquals(rows, 2);
-
-        releaseSyncSession(session);
 
     }
 
@@ -520,7 +512,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         }
 
         LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        releaseSyncSession(session);
 
     }
 
@@ -554,7 +545,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertEquals(rows, 2);
 
-        releaseSyncSession(session);
     }
 
     @Test(groups = Groups.VALUES_INSERT)
@@ -625,7 +615,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         LOG.debug("{}", JSON.toJSONString(resultList));
 
-        releaseSyncSession(session);
 
     }
 
@@ -676,8 +665,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             session.rollbackIfExists();
             throw e;
         }
-
-        releaseSyncSession(session);
 
     }
 
@@ -749,8 +736,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.error("insert child error", e);
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
 
     }
@@ -819,10 +804,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.error("insert child error", e);
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
-
     }
 
 
@@ -893,8 +875,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.error("insert child error", e);
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
 
     }
@@ -967,8 +947,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.error("insert child error", e);
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
 
     }
@@ -1104,8 +1082,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         } catch (Exception e) {
             session.rollbackIfExists();
             throw e;
-        } finally {
-            releaseSyncSession(session);
         }
 
     }
