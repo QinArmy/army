@@ -10,10 +10,8 @@ import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
-import io.army.dialect.Database;
 import io.army.example.bank.domain.user.*;
 import io.army.session.Isolation;
-import io.army.session.SyncSessionTestSupport;
 import io.army.session.TransactionOption;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncSessionFactory;
@@ -33,13 +31,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class PostgreInsertSuiteTests extends SyncSessionTestSupport {
+public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertSuiteTests.class);
 
-    public PostgreInsertSuiteTests() {
-        super(Database.PostgreSQL);
-    }
 
     @Test(groups = Groups.DOMAIN_INSERT)
     public void domainInsertParent(final SyncLocalSession session) {

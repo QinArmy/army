@@ -78,8 +78,14 @@ public class HowToStartTests {
 
         try (SyncLocalSession session = sessionFactory.localSession()) {
             session.startTransaction();
-            session.update(stmt);
-            session.commit();
+            try {
+                session.update(stmt);
+                session.commit();
+            } catch (Exception e) {
+                session.rollback();
+                throw e;
+            }
+
         }
     }
 
