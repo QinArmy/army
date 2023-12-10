@@ -51,7 +51,7 @@ public class HowToStartTests {
         final List<ChinaRegion<?>> regionList;
         regionList = this.createReginList();
         final Insert stmt;
-        stmt = Postgres.singleInsert()
+        stmt = SQLs.singleInsert()  // standard criteria api
                 //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T).as("c")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
@@ -69,7 +69,7 @@ public class HowToStartTests {
         final List<ChinaRegion<?>> regionList;
         regionList = this.createReginList();
         final Insert stmt;
-        stmt = Postgres.singleInsert()
+        stmt = SQLs.singleInsert() // standard criteria api
                 //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T).as("c")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
