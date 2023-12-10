@@ -62,18 +62,18 @@ public abstract class ExecutorSupport {
             mode = factory.sqlLogMode;
         }
 
-        final String format = "session[name : {}]\n{}";
+        final String format = "session[name : {} , executorHash : {}]\n{}";
         switch (mode) {
             case OFF:
                 break;
             case SIMPLE:
             case BEAUTIFY:
-                log.info(format, sessionName, sql);
+                log.info(format, sessionName, System.identityHashCode(this), sql);
                 break;
             case DEBUG:
             case BEAUTIFY_DEBUG: {
                 if (log.isDebugEnabled()) {
-                    log.debug(format, sessionName, sql);
+                    log.debug(format, sessionName, System.identityHashCode(this), sql);
                 }
             }
             break;

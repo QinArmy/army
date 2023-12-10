@@ -267,6 +267,8 @@ public abstract class _ArmySession implements Session {
         final StringBuilder builder = new StringBuilder(128);
         builder.append("session[name : ")
                 .append(this.name)
+                .append(" , hash : ")
+                .append(System.identityHashCode(this))
                 .append("]\n");
         factory.dialectParser.printStmt(stmt, beautify, builder::append);
         if (debug) {
