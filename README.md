@@ -9,6 +9,8 @@
 #### Java code
 
 ```java
+import java.beans.Transient;
+
 public class HowToStartTests {
 
     private static DatabaseSessionFactory sessionFactory;
@@ -60,6 +62,61 @@ public class HowToStartTests {
 
         try (SyncLocalSession session = sessionFactory.localSession()) {
             session.update(stmt);
+        }
+    }
+
+
+    @Test
+    public void queryFields() {
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(ChinaRegion_.id, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.name.equal(SQLs::param, "曲境")) // bind parameter, output '?'
+                .and(ChinaRegion_.createTime::less, SQLs::literal, LocalDateTime.now().minusDays(1)) // bind literal ,output literal
+                .limit(SQLs::literal, 1) // bind literal ,output literal
+                .asQuery();
+
+        try (SyncLocalSession session = sessionFactory.localSession()) {
+            final Supplier<Map<String, Object>> constructor = HashMap::new;
+            session.queryObject(stmt, constructor)
+                    .forEach(map -> LOG.debug("{}", map));
+        }
+    }
+
+
+    @Test
+    public void querySimpleDomain() {
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("c", PERIOD, Captcha_.T)
+                .from(Captcha_.T, AS, "c")
+                .where(Captcha_.requestNo.equal(SQLs::param, "3423423435435")) // bind parameter, output '?'
+                .and(Captcha_.createTime::less, SQLs::literal, LocalDateTime.now().minusDays(1)) // bind literal ,output literal
+                .limit(SQLs::literal, 1) // bind literal ,output literal
+                .asQuery();
+
+        try (SyncLocalSession session = sessionFactory.localSession()) {
+            session.query(stmt, Captcha.class)
+                    .forEach(c -> LOG.debug("{}", c.getCaptcha()));
+        }
+    }
+
+    @Test
+    public void queryGenericsDomain() {
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.name.equal(SQLs::param, "曲境")) // bind parameter, output '?'
+                .and(ChinaRegion_.createTime::less, SQLs::literal, LocalDateTime.now().minusDays(1)) // bind literal ,output literal
+                .limit(SQLs::literal, 1) // bind literal ,output literal
+                .asQuery();
+
+        try (SyncLocalSession session = sessionFactory.localSession()) {
+            final Supplier<ChinaRegion<?>> supplier = ChinaRegion::new;
+            session.queryObject(stmt, supplier)
+                    .forEach(c -> LOG.debug("{}", c.getName()));
         }
     }
 

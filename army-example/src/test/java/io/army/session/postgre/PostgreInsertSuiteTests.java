@@ -23,10 +23,13 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.*;
 
@@ -63,20 +66,19 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     private void test(SyncSessionFactory sessionFactory) {
-        final List<ChinaRegion<?>> regionList;
-        regionList = this.createReginList();
-        final Insert stmt;
-        stmt = Postgres.singleInsert()
-                //.literalMode(LiteralMode.LITERAL)
-                .insertInto(ChinaRegion_.T).as("c")
-                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
-                .values(regionList)
-                .asInsert();
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(ChinaRegion_.id, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.name.equal(SQLs::param, "曲境"))
+                .and(ChinaRegion_.createTime::less, SQLs::literal, LocalDateTime.now().minusDays(1))
+                .limit(SQLs::literal, 1)
+                .asQuery();
 
         try (SyncLocalSession session = sessionFactory.localSession()) {
-            session.startTransaction();
-            session.update(stmt);
-            session.commit();
+            final Supplier<Map<String, Object>> constructor = HashMap::new;
+            session.queryObject(stmt, constructor)
+                    .forEach(map -> LOG.debug("{}", map));
         }
     }
 
