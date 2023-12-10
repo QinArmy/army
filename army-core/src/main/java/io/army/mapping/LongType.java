@@ -6,7 +6,6 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -64,19 +63,7 @@ public final class LongType extends _NumericType._IntegerType {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.serverDatabase()) {
-            case MySQL:
-                type = MySQLType.BIGINT;
-                break;
-            case PostgreSQL:
-                type = PostgreType.BIGINT;
-                break;
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-
-        }
-        return type;
+        return mapToDataType(this, meta);
     }
 
 
@@ -93,6 +80,21 @@ public final class LongType extends _NumericType._IntegerType {
     @Override
     public Long afterGet(DataType dataType, MappingEnv env, Object source) {
         return toLong(this, dataType, source, Long.MIN_VALUE, Long.MAX_VALUE, ACCESS_ERROR_HANDLER);
+    }
+
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
+        switch (meta.serverDatabase()) {
+            case MySQL:
+                dataType = MySQLType.BIGINT;
+                break;
+            case PostgreSQL:
+                dataType = PostgreType.BIGINT;
+                break;
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return dataType;
     }
 
 

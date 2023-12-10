@@ -5,6 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
+import io.army.mapping.mysql.MySqlBitType;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -12,8 +13,10 @@ import io.army.session.DataAccessException;
 import io.army.session.ParamException;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
+import io.army.struct.TextEnum;
 import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -28,6 +31,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAmount;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -129,14 +134,14 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                             throw noMatchCompatibleMapping(this, targetType);
                     }
                 } else if (targetType == Instant.class && armyType == ArmyType.BIGINT) {
-
+                    type = InstantType.INSTANCE;
                 } else switch (armyType) {
                     case INTEGER:
                     case BIGINT: { // compute result
-                        if (CodeEnum.class.isAssignableFrom(targetType)) {
-                            type = CodeEnumType.from(targetType);
-                            break;
+                        if (!CodeEnum.class.isAssignableFrom(targetType)) {
+                            throw noMatchCompatibleMapping(this, targetType);
                         }
+                        type = CodeEnumType.from(targetType);
                     }
                     break;
                     default:
@@ -215,8 +220,23 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                     } else if (targetType == YearMonth.class) {
                         type = YearMonthType.INSTANCE;
                     } else if (targetType == Year.class) {
-
+                        type = YearType.INSTANCE;
+                    } else if (targetType == Instant.class) {
+                        type = InstantType.INSTANCE;
+                    } else {
+                        throw noMatchCompatibleMapping(this, targetType);
                     }
+                } else if (TemporalAmount.class.isAssignableFrom(targetType)) {
+                    // TODO
+                    throw noMatchCompatibleMapping(this, targetType);
+                } else if (Enum.class.isAssignableFrom(targetType)) {
+                    if (TextEnum.class.isAssignableFrom(targetType)) {
+                        type = TextEnumType.from(targetType);
+                    } else {
+                        type = NameEnumType.from(targetType);
+                    }
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
                 }
             }
             break;
@@ -233,28 +253,183 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
             }
             break;
             case JSON:
+                type = JsonType.from(targetType);
+                break;
             case JSONB:
+                type = JsonbType.from(targetType);
+                break;
             case XML:
-
+                type = XmlType.from(targetType);
+                break;
             case BINARY:
             case VARBINARY:
             case TINYBLOB:
             case MEDIUMBLOB:
             case BLOB:
-            case LONGBLOB:
+            case LONGBLOB: {
+                if (targetType == byte[].class) {
+                    type = BinaryType.from(targetType);
+                } else { // TODO
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
+            case YEAR: {
+                if (targetType == Year.class) {
+                    type = YearType.INSTANCE;
+                } else if (targetType == Integer.class) {
+                    type = IntegerType.INSTANCE;
+                } else if (targetType == Short.class) {
+                    type = ShortType.INSTANCE;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
+            case MONTH_DAY: {
+                if (targetType == MonthDay.class) {
+                    type = MonthDayType.INSTANCE;
+                } else if (targetType == LocalDate.class) {
+                    type = LocalDateType.INSTANCE;
+                } else if (targetType == Month.class) {
+                    type = MonthType.DEFAULT;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
+            case YEAR_MONTH: {
+                if (targetType == YearMonth.class) {
+                    type = YearMonthType.INSTANCE;
+                } else if (targetType == LocalDate.class) {
+                    type = LocalDateType.INSTANCE;
+                } else if (targetType == Year.class) {
+                    type = YearType.INSTANCE;
+                } else if (targetType == Month.class) {
+                    type = MonthType.DEFAULT;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
+            case TIME: {
 
-            case YEAR:
-            case MONTH_DAY:
-            case YEAR_MONTH:
+                if (targetType == LocalTime.class) {
+                    type = LocalTimeType.INSTANCE;
+                } else if (targetType == OffsetTime.class) {
 
-            case TIME:
-            case TIME_WITH_TIMEZONE:
-            case DATE:
-            case TIMESTAMP:
-            case TIMESTAMP_WITH_TIMEZONE:
+                    switch (((SqlType) dataType).database()) {
+                        case MySQL:
+                            type = OffsetTimeType.INSTANCE;
+                            break;
+                        case SQLite:
+                        case PostgreSQL:
+                        default:
+                            throw noMatchCompatibleMapping(this, targetType);
+                    }
+
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else if (targetType != Duration.class) {
+                    throw noMatchCompatibleMapping(this, targetType);
+                } else if (dataType == MySQLType.TIME) {
+                    type = DurationType.INSTANCE;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
+            case TIME_WITH_TIMEZONE: {
+
+                if (targetType == OffsetTime.class) {
+                    type = OffsetTimeType.INSTANCE;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
+            case DATE: {
+
+                if (targetType == LocalDate.class) {
+                    type = LocalDateType.INSTANCE;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else if (targetType == YearMonth.class) {
+                    type = YearMonthType.INSTANCE;
+                } else if (targetType == MonthDay.class) {
+                    type = MonthDayType.INSTANCE;
+                } else if (targetType == Year.class) {
+                    type = YearType.INSTANCE;
+                } else if (targetType == Month.class) {
+                    type = MonthType.DEFAULT;
+                } else if (targetType == DayOfWeek.class) {
+                    type = DayOfWeekType.DEFAULT;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
+            case TIMESTAMP: {
+
+                if (targetType == LocalDateTime.class) {
+                    type = LocalDateTimeType.INSTANCE;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else switch (((SqlType) dataType).database()) {
+                    case MySQL: {
+                        if (targetType == OffsetDateTime.class) {
+                            type = OffsetDateTimeType.INSTANCE;
+                        } else if (targetType == ZonedDateTime.class) {
+                            type = ZonedDateTimeType.INSTANCE;
+                        } else {
+                            throw noMatchCompatibleMapping(this, targetType);
+                        }
+                    }
+                    break;
+                    case SQLite:
+                    case PostgreSQL:
+                    default:
+                        throw noMatchCompatibleMapping(this, targetType);
+                } // else switch
+            }
+            break;
+            case TIMESTAMP_WITH_TIMEZONE: {
+
+                if (targetType == OffsetDateTime.class) {
+                    type = OffsetDateTimeType.INSTANCE;
+                } else if (targetType == ZonedDateTime.class) {
+                    type = ZonedDateTimeType.INSTANCE;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
 
             case BIT:
-            case VARBIT:
+            case VARBIT: {
+                if (targetType == BitSet.class) {
+                    type = BitSetType.INSTANCE;
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else if (targetType == Long.class || targetType == long.class) {
+                    type = MySqlBitType.INSTANCE;
+                } else if (targetType == Integer.class || targetType == int.class) {
+                    type = IntegerType.INSTANCE;
+                } else {
+                    throw noMatchCompatibleMapping(this, targetType);
+                }
+            }
+            break;
 
             case DURATION:
             case PERIOD:
@@ -268,8 +443,9 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
             case GEOMETRY:
             case DIALECT_TYPE:
             default:
+                throw noMatchCompatibleMapping(this, targetType);
         }
-        throw noMatchCompatibleMapping(this, targetType);
+        return type;
     }
 
 
