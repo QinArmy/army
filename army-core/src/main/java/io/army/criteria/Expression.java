@@ -13,8 +13,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static io.army.dialect.Database.H2;
-import static io.army.dialect.Database.PostgreSQL;
+import static io.army.dialect.Database.*;
 
 /**
  * Interface representing the sql expression, eg: column,function.
@@ -43,15 +42,14 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see SimpleExpression#equal(BiFunction, Object)
-     * @see SqlField#equalSpace(BiFunction)
+     * @see SqlField#equal(BiFunction)
      */
-    CompoundPredicate equal(Object operand);
+    CompoundPredicate equal(Expression operand);
 
-    CompoundPredicate notEqual(Object operand);
+    CompoundPredicate notEqual(Expression operand);
 
-    @Deprecated
+    @Support({MySQL, PostgreSQL, H2})
     CompoundPredicate nullSafeEqual(Expression operand);
-
 
     /**
      * <p>
@@ -71,7 +69,6 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     CompoundPredicate greater(Expression operand);
 
     CompoundPredicate greaterEqual(Expression operand);
-
 
 
     /**

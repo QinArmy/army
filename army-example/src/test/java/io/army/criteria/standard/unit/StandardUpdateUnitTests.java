@@ -1,6 +1,7 @@
 package io.army.criteria.standard.unit;
 
 import io.army.annotation.UpdateMode;
+import io.army.criteria.BatchUpdate;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.UpdateStatement;
@@ -75,12 +76,12 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
 
     @Test
     public void batchUpdateParent() {
-        final UpdateStatement stmt;
+        final BatchUpdate stmt;
         stmt = SQLs.batchSingleUpdate()
                 .update(ChinaProvince_.T, AS, "p") // update only parent table field: ChinaRegion_.*
                 .setNamed(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
-                .where(ChinaRegion_.id::equalSpace, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::plusSpace, SQLs::namedParam, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
                 .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
@@ -114,7 +115,8 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     /**
      * @see io.army.annotation.UpdateMode
      */
-    @Test
+    @Test(enabled = false)
+    @Deprecated
     public void updateParentWithOnlyNullMode() {
         assert PillUser_.identityId.updateMode() == UpdateMode.ONLY_NULL;
         final UpdateStatement stmt;

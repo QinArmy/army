@@ -37,20 +37,20 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final CompoundPredicate equal(Object operand) {
+    public final CompoundPredicate equal(Expression operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate notEqual(Object operand) {
+    public final CompoundPredicate notEqual(Expression operand) {
         throw unsupportedOperation(this);
     }
+
 
     @Override
     public final CompoundPredicate nullSafeEqual(Expression operand) {
         throw unsupportedOperation(this);
     }
-
 
     @Override
     public final CompoundPredicate equalAny(SubQuery subQuery) {

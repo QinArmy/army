@@ -47,13 +47,13 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final CompoundPredicate equal(Object operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, SQLs._nonNullExp(operand));
+    public final CompoundPredicate equal(Expression operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, operand);
     }
 
     @Override
-    public final CompoundPredicate notEqual(Object operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, SQLs._nonNullExp(operand));
+    public final CompoundPredicate notEqual(Expression operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, operand);
     }
 
     @Override

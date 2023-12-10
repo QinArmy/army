@@ -59,7 +59,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
         final DeleteStatement stmt;
         stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "cr")
-                .where(ChinaRegion_.id::equalSpace, SQLs::namedParam)
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .asDelete()
                 .namedParamList(this.createProvinceList());

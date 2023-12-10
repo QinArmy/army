@@ -153,7 +153,9 @@ public abstract class _MockDialects implements DialectEnv {
             default:
                 throw _Exceptions.unexpectedEnum(dialect);
         }
-        return builder.build();
+        return builder
+                .driverSpi("java.sql")
+                .build();
     }
 
     private static ServerMeta createPostgreServerMeta(final PostgreDialect dialect) {
@@ -196,7 +198,9 @@ public abstract class _MockDialects implements DialectEnv {
                 throw _Exceptions.unexpectedEnum(dialect);
         }
 
-        return builder.build();
+        return builder
+                .driverSpi("java.sql")
+                .build();
     }
 
 

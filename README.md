@@ -65,6 +65,49 @@ public class HowToStartTests {
         }
     }
 
+    @Test
+    public void update() {
+        final BigDecimal addGdp = new BigDecimal("888.8");
+        final Map<String, Object> map = _Collections.hashMap();
+        map.put("firstId", (byte) 1);
+        map.put("secondId", "3");
+
+        final Update stmt;
+        stmt = SQLs.singleUpdate()
+                .update(ChinaRegion_.T, AS, "c")
+                .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
+                .where(ChinaRegion_.id::between, SQLs::literal, map.get("firstId"), AND, map.get("secondId"))
+                .and(SQLs::bracket, ChinaRegion_.name.equal(SQLs::literal, "江湖"))
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greaterEqual, BigDecimal.ZERO)
+                .asUpdate();
+
+        try (SyncLocalSession session = sessionFactory.localSession()) {
+            session.update(stmt);
+        }
+    }
+
+
+    @Test
+    public void batchUpdate() {
+        final BatchUpdate stmt;
+        stmt = SQLs.batchSingleUpdate()
+                .update(ChinaProvince_.T, AS, "p") // update only parent table field: ChinaRegion_.*
+                .setNamed(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
+                .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
+                .and(ChinaRegion_.version::equal, SQLs::param, "0")
+                .asUpdate()
+                .namedParamList(this.createProvinceList());
+
+        try (SyncLocalSession session = sessionFactory.localSession()) {
+            session.batchUpdate(stmt);
+        }
+
+    }
+
 
     @Test
     public void queryFields() {
