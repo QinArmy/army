@@ -16,6 +16,7 @@ import io.army.session.Isolation;
 import io.army.session.SyncSessionTestSupport;
 import io.army.session.TransactionOption;
 import io.army.sync.SyncLocalSession;
+import io.army.sync.SyncSessionFactory;
 import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
 import io.army.util.ImmutableHashMap;
@@ -64,6 +65,24 @@ public class PostgreInsertSuiteTests extends SyncSessionTestSupport {
             Assert.assertNotNull(region.getId());
         }
 
+    }
+
+    private void test(SyncSessionFactory sessionFactory) {
+        final List<ChinaRegion<?>> regionList;
+        regionList = this.createReginList();
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                //.literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T).as("c")
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values(regionList)
+                .asInsert();
+
+        try (SyncLocalSession session = sessionFactory.localSession()) {
+            session.startTransaction();
+            session.update(stmt);
+            session.commit();
+        }
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
