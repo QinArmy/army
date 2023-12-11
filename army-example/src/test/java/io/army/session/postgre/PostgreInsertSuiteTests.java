@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static io.army.criteria.impl.SQLs.*;
 
-@Test(dataProvider = "localSessionProvider", groups = Groups.DOMAIN_INSERT)
+@Test(dataProvider = "localSessionProvider")
 public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertSuiteTests.class);

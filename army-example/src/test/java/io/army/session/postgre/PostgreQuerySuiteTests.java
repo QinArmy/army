@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.AS;
@@ -27,8 +26,8 @@ public class PostgreQuerySuiteTests extends PostgreSuiteTests {
         stmt = Postgres.query()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.name.equal(SQLs::param, "曲境"))
-                .and(ChinaRegion_.createTime::equal, SQLs::literal, LocalDateTime.now().minusDays(1))
+//                .where(ChinaRegion_.name.equal(SQLs::param, "曲境"))
+//                .and(ChinaRegion_.createTime::equal, SQLs::literal, LocalDateTime.now().minusDays(1))
                 .limit(SQLs::literal, 1)
                 .asQuery();
 

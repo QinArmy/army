@@ -20,7 +20,6 @@
 #### Java code
 
 ```java
-import java.beans.Transient;
 
 public class HowToStartTests {
 
@@ -104,7 +103,7 @@ public class HowToStartTests {
         final BatchUpdate stmt;
         stmt = SQLs.batchSingleUpdate()
                 .update(ChinaProvince_.T, AS, "p") // update only parent table field: ChinaRegion_.*
-                .setNamed(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
@@ -123,7 +122,7 @@ public class HowToStartTests {
     @Test
     public void queryFields() {
         final Select stmt;
-        stmt = Postgres.query()
+        stmt = SQLs.query()
                 .select(ChinaRegion_.id, ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .from(ChinaRegion_.T, AS, "c")
                 .where(ChinaRegion_.name.equal(SQLs::param, "曲境")) // bind parameter, output '?'
@@ -142,7 +141,7 @@ public class HowToStartTests {
     @Test
     public void querySimpleDomain() {
         final Select stmt;
-        stmt = Postgres.query()
+        stmt = SQLs.query()
                 .select("c", PERIOD, Captcha_.T)
                 .from(Captcha_.T, AS, "c")
                 .where(Captcha_.requestNo.equal(SQLs::param, "3423423435435")) // bind parameter, output '?'
@@ -159,7 +158,7 @@ public class HowToStartTests {
     @Test
     public void queryGenericsDomain() {
         final Select stmt;
-        stmt = Postgres.query()
+        stmt = SQLs.query()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
                 .where(ChinaRegion_.name.equal(SQLs::param, "曲境")) // bind parameter, output '?'
