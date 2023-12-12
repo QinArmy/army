@@ -3,7 +3,7 @@
 :email: zoro@qinarmy.io
 :revnumber: {version}
 :revdate: {docdate}
-:revremark: Final
+:revremark: Snapshot
 ifdef::backend-pdf[]
 :pagenums:
 :toc:

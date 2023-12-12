@@ -9,6 +9,7 @@
     <artifactId>army</artifactId>
     <packaging>pom</packaging>
     <version>0.6.0</version><!--Army maven version-->
+    <!-- SNAPSHOT  -->
     <modules>
         <module>army-core</module>
         <module>army-struct</module>
