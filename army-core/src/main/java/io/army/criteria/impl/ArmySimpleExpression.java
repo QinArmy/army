@@ -13,9 +13,7 @@ package io.army.criteria.impl;
  *         <li>{@link SQLs#FALSE}</li>
  *         <li>{@link  OperationPredicate.OperationSimplePredicate}</li>
  *     </ul>
- * </p>
- *
- * @since 1.0
+ ** @since 1.0
  */
 interface ArmySimpleExpression extends ArmyExpression, ArmySimpleSQLExpression {
 

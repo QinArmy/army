@@ -6,9 +6,8 @@ import io.army.criteria.Statement;
 /**
  * <p>
  * This interface representing statement with standard syntax.
- * </p>
+ * * @see StandardQuery
  *
- * @see StandardQuery
  * @see StandardInsert
  * @since 1.0
  */

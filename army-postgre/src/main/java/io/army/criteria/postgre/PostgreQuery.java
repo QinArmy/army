@@ -16,8 +16,7 @@ import java.util.function.*;
 /**
  * <p>
  * This interface representing postgre SELECT statement.
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
  * @since 1.0
  */
@@ -372,7 +371,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -395,7 +394,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     /**
      * <p>
      * primary-statement syntax support static WITH clause,it's simple and clear and free
-     * </p>
+     *
      *
      * @since 1.0
      */

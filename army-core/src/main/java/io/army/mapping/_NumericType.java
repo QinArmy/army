@@ -20,8 +20,7 @@ import java.math.BigInteger;
  *         <li>{@link ShortType}</li>
  *         <li>{@link _UnsignedNumericType}</li>
  *     </ul>
- * </p>
- */
+*/
 abstract class _NumericType extends _ArmyNoInjectionMapping {
 
 
@@ -65,7 +64,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *         <li>{@link LongType}</li>
      *         <li>{@link BigIntegerType}</li>
      *     </ul>
-     * </p>
+     *
      */
     static abstract class _IntegerType extends _NumericType implements SqlIntegerType {
 
@@ -77,7 +76,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *         <li>{@link FloatType}</li>
      *         <li>{@link DoubleType}</li>
      *     </ul>
-     * </p>
+     *
      */
     static abstract class _FloatNumericType extends _NumericType implements SqlFloatType {
 
@@ -90,7 +89,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *         <li>{@link UnsignedBigDecimalType}</li>
      *         <li>{@link _UnsignedIntegerType}</li>
      *     </ul>
-     * </p>
+     *
      */
     static abstract class _UnsignedNumericType extends _NumericType implements SqlUnsignedNumberType {
 
@@ -107,7 +106,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *         <li>{@link UnsignedLongType}</li>
      *         <li>{@link UnsignedBigIntegerType}</li>
      *     </ul>
-     * </p>
+     *
      */
     static abstract class _UnsignedIntegerType extends _UnsignedNumericType implements SqlIntegerType {
 

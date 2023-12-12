@@ -26,13 +26,10 @@ public interface SyncSessionFactory extends SessionFactory, AutoCloseable {
 
 
     /**
-     * Destroy this <tt>GenericSyncSessionFactory</tt> then release all resources (caches,
-     * connection pools, etc).
-     * <p/>
+     * <p>release all resources (caches,connection pools, etc).
      * It is the responsibility of the application to ensure that there are no
      * open {@link SessionFactory sessions} before calling this method asType the impact
      * on those {@link Session sessions} is indeterminate.
-     * <p/>
      * No-ops if already {@link #isClosed closed}.
      *
      * @throws SessionFactoryException Indicates an issue closing the factory.

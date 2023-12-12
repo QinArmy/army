@@ -19,9 +19,7 @@ import java.util.List;
  * <li>{@link MultiTableQueryContext}</li>
  * <li>{@link ParensSelectContext}</li>
  * </ul>
- * </p>
- *
- * @see 1.0
+ * * @see 1.0
  */
 abstract class BatchSpecStatementContext extends StatementContext implements BatchSpecContext {
 

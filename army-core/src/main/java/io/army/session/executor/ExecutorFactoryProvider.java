@@ -13,7 +13,6 @@ import java.util.function.Function;
  * <pre>
  *      <code>
  *          public static {implementation class of StmtExecutorFactoryProviderSpec} create(Object datasource,String factoryName,ArmyEnvironment env){
- *
  *          }
  *      </code>
  *  </pre>

@@ -23,8 +23,7 @@ import java.time.*;
  *     <li>{@link String} ,{@link Year} string {@link YearMonth} string or {@link LocalDate} string</li>
  * </ul>
  *  to {@link Year},if error,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @since 1.0
  */
 public final class YearType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalType,

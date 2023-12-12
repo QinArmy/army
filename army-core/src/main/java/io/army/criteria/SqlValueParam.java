@@ -10,8 +10,7 @@ import javax.annotation.Nullable;
  *         <li>{@link  SQLParam}</li>
  *          <li>SQL literal expression</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface SqlValueParam extends TypeInfer {

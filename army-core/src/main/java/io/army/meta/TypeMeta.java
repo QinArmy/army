@@ -11,8 +11,7 @@ import io.army.mapping.MappingType;
  *         <li>{@link MappingType}</li>
  *         <li>{@link TableField}</li>
  *     </ul>
- * </p>
- *
+*
  * @see MappingType
  * @see FieldMeta
  */

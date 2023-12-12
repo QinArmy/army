@@ -12,8 +12,7 @@ import io.army.criteria.Values;
  *         <li>MySQL {@link  io.army.criteria.Values}</li>
  *         <li>MySQL {@link io.army.criteria.SubValues}</li>
  *     </ul>
- * </p>
- *
+*
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
  * @since 1.0
  */
@@ -86,7 +85,7 @@ public interface MySQLValues extends MySQLStatement, RowSet {
     /**
      * <p>
      * VALUES statement don't support WITH clause.
-     * </p>
+     *
      */
     interface _SelectComplexCommandSpec<I extends Item> extends MySQLQuery._MySQLSelectClause<I>,
             _DynamicParensRowSetClause<_ValueWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {

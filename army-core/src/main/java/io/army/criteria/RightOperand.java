@@ -8,9 +8,7 @@ package io.army.criteria;
  *     <li>{@link SQLExpression}</li>
  *     <li>{@link SQLColumnSet}</li>
  * </ul>
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public interface RightOperand extends Item {
 

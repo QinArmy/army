@@ -12,8 +12,7 @@ import java.time.temporal.Temporal;
 /**
  * <p>
  * package interface
- * </p>
- *
+*
  * @since 1.0
  */
 interface RowWrapper {
@@ -21,7 +20,7 @@ interface RowWrapper {
     /**
      * <p>
      * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)}
-     * </p>
+     *
      *
      * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
      */
@@ -31,7 +30,7 @@ interface RowWrapper {
      * <p>
      * This method is invoked by {@link  FieldValueGenerator#validate(TableMeta, RowWrapper) }.
      * Note: couldn't read value from default expression map.
-     * </p>
+     *
      *
      * @see FieldValueGenerator#validate(TableMeta, RowWrapper)
      */
@@ -41,7 +40,7 @@ interface RowWrapper {
     /**
      * <p>
      * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)}
-     * </p>
+     *
      *
      * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
      */

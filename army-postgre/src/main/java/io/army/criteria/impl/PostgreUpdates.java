@@ -32,8 +32,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is a abstract implementation of {@link PostgreUpdate}.
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class PostgreUpdates<I extends Item, Q extends Item, T>
@@ -67,7 +66,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     /**
      * <p>
      * create new simple(non-batch) single-table UPDATE statement that is primary statement.
-     * </p>
+     *
      */
     static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> simple() {
         return new PrimarySimpleUpdateClause();
@@ -77,7 +76,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     /**
      * <p>
      * create new simple(non-batch) single-table UPDATE statement that is sub statement in with clause.
-     * </p>
+     *
      */
     static <I extends Item> PostgreUpdate._SingleWithSpec<I, I> subSimpleUpdate(CriteriaContext outerContext,
                                                                                 Function<SubStatement, I> function) {
@@ -87,7 +86,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     /**
      * <p>
      * create new batch single-table UPDATE statement that is primary statement.
-     * </p>
+     *
      */
     static PostgreUpdate._SingleWithSpec<_BatchUpdateParamSpec, _BatchReturningUpdateParamSpec> batchUpdate() {
         return new PrimaryBatchUpdateClause();

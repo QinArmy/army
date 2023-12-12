@@ -25,14 +25,12 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the implementations of MySQL single-table DELETE syntax
- * </p>
  * <p>
  * This class is base class of below:
- *     <ul>
- *         <li>{@link MySQLSimpleDelete}</li>
- *         <li>{@link MySQLBatchDelete}</li>
- *     </ul>
- * </p>
+ * <ul>
+ *     <li>{@link MySQLSimpleDelete}</li>
+ *     <li>{@link MySQLBatchDelete}</li>
+ * </ul>
  */
 abstract class MySQLSingleDeletes<I extends Item>
         extends SingleDeleteStatement<

@@ -8,8 +8,7 @@ package io.army.dialect;
  *         <li>{@link _UpdateContext}</li>
  *         <li>{@link _DeleteContext}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 interface NarrowDmlContext extends _DmlContext, BatchSpecContext {

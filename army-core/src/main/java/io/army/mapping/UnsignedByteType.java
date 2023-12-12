@@ -10,8 +10,7 @@ import io.army.sqltype.SqlType;
 /**
  * <p>
  * This class representing the mapping from {@link Short} to (unsigned TINY)  INT.
- * </p>
- *
+*
  * @see Short
  */
 public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {

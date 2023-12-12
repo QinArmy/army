@@ -2,8 +2,10 @@ package io.army.sync.executor;
 
 import io.army.session.Session;
 
+import java.util.function.Function;
+
 /**
- * <p>The instance of this interface is created by {@link SyncExecutorFactory#rmExecutor(String)} )}.
+ * <p>The instance of this interface is created by {@link SyncExecutorFactory#rmExecutor(String, boolean, Function)}.
  *
  * @since 1.0
  */

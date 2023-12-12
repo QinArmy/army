@@ -8,8 +8,7 @@ package io.army.criteria.impl.inner;
  *         <li>{@link _MultiUpdate}</li>
  *         <li>joinable single update</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface _JoinableUpdate extends _Update, _Statement._JoinableStatement {

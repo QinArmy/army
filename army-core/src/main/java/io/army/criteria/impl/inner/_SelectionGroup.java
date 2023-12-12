@@ -13,8 +13,7 @@ import java.util.List;
 /**
  * <p>
  * This interface representing group consist of multi select list clause items.
- * </p>
- *
+*
  * @since 1.0
  */
 public interface _SelectionGroup extends _SelectItem {
@@ -29,7 +28,7 @@ public interface _SelectionGroup extends _SelectItem {
      *         <li>{@link io.army.criteria.impl.inner._SelfDescribed#appendSql(StringBuilder, _SqlContext)}</li>
      *         <li>{@link _Selection#appendSelectItem(StringBuilder, _SqlContext)}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @return element list of this group.
      */

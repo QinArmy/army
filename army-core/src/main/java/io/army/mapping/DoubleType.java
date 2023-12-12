@@ -21,8 +21,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Double},if overflow,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @since 1.0
  */
 public final class DoubleType extends _NumericType._FloatNumericType {

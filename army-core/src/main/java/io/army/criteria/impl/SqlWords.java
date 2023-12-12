@@ -273,7 +273,7 @@ abstract class SqlWords {
     /**
      * <p>
      * package enum
-     * </p>
+     *
      *
      * @since 1.0
      */

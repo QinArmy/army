@@ -7,10 +7,8 @@ import io.army.type.DaoLayer;
 /**
  * <p>
  * This interface representing the function that create postgre range instance.
- * </p>
  * <p>
  * <strong>NOTE</strong> :This interface present only in DAO layer,not service layer,business layer,web layer.
- * </p>
  *
  * @see PostgreSingleRangeType
  * @since 1.0

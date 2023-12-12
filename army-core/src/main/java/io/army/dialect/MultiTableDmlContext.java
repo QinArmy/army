@@ -18,8 +18,7 @@ import java.util.Map;
  *         <li>{@link MultiUpdateContext}</li>
  *         <li>{@link MultiDeleteContext}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class MultiTableDmlContext extends NarrowDmlStmtContext implements _MultiTableStmtContext {

@@ -24,9 +24,7 @@ import java.util.Objects;
  *     <li>{@link String} , {@link DayOfWeek#name()} or {@link LocalDate} string</li>
  * </ul>
  *  to {@link DayOfWeek},if error,throw {@link io.army.ArmyException}
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 

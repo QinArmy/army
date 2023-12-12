@@ -17,8 +17,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * Package class,this class is base class of {@link SQLs}.
- * </p>
- *
+*
  * @see SQLs
  * @since 1.0
  */
@@ -63,7 +62,7 @@ abstract class SQLsSyntax extends Functions {
      *         <li>{@link java.time.YearMonth}</li>
      *         <li>{@link java.time.MonthDay}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @param value non null
      * @return parameter expression
@@ -77,7 +76,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create parameter expression, parameter expression output parameter placeholder({@code ?})
-     * </p>
+     *
      *
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will be invoked.
      * @throws io.army.criteria.CriteriaException throw when infer is codec {@link FieldMeta}.
@@ -97,7 +96,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create encoding parameter expression, parameter expression output parameter placeholder({@code ?})
-     * </p>
+     *
      *
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will be invoked.
      * @see #param(TypeInfer, Object)
@@ -117,7 +116,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
-     * </p>
+     *
      *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer is codec {@link FieldMeta}.</li>
@@ -138,7 +137,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
-     * </p>
+     *
      *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer isn't codec {@link FieldMeta}.</li>
@@ -159,7 +158,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
-     * </p>
+     *
      *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer is codec {@link FieldMeta}.</li>
@@ -180,7 +179,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
-     * </p>
+     *
      *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer isn't codec {@link FieldMeta}.</li>
@@ -230,7 +229,7 @@ abstract class SQLsSyntax extends Functions {
      *         <li>{@link java.time.YearMonth}</li>
      *         <li>{@link java.time.MonthDay}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @param value non null
      * @return literal expression
@@ -249,7 +248,7 @@ abstract class SQLsSyntax extends Functions {
      *         <li>{@link String} map to {@link NoCastTextType} not {@link io.army.mapping.StringType}</li>
      *         <li>{@link Integer} map to {@link NoCastIntegerType} not {@link io.army.mapping.IntegerType}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @param nonNullValue non-null value
      *@see SQLs#literalValue(Object)
@@ -270,7 +269,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create literal expression,literal expression will output literal of value
-     * </p>
+     *
      *
      * @param type  non-null
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
@@ -290,7 +289,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create literal expression,literal expression will output literal of value
-     * </p>
+     *
      *
      * @param type  non-null
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
@@ -311,10 +310,10 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null literal expression. This expression can only be used in values insert statement.
-     * </p>
+     *
      * <p>
      * Note: this method couldn't be used in batch update(delete) statement.
-     * </p>
+     *
      *
      * @param type non-null
      * @param name non-null and non-empty
@@ -338,10 +337,10 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null literal expression. This expression can only be used in values insert statement.
-     * </p>
+     *
      * <p>
      * Note: this method couldn't be used in batch update(delete) statement.
-     * </p>
+     *
      *
      * @param type non-null
      * @param name non-null and non-empty
@@ -365,10 +364,10 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null literal expression. This expression can only be used in values insert statement.
-     * </p>
+     *
      * <p>
      * Note: this method couldn't be used in batch update(delete) statement.
-     * </p>
+     *
      *
      * @param type non-null
      * @param name non-null and non-empty
@@ -392,10 +391,10 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null literal expression. This expression can only be used in values insert statement.
-     * </p>
+     *
      * <p>
      * Note: this method couldn't be used in batch update(delete) statement.
-     * </p>
+     *
      *
      * @param type non-null
      * @param name non-null and non-empty
@@ -421,7 +420,7 @@ abstract class SQLsSyntax extends Functions {
      * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
      * ? , ? , ? ...
      * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
+     *
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
@@ -440,7 +439,7 @@ abstract class SQLsSyntax extends Functions {
      * Create multi literal expression, multi literal expression will output multi LITERAL like below:
      * LITERAL , LITERAL , LITERAL ...
      * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
-     * </p>
+     *
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
@@ -455,10 +454,10 @@ abstract class SQLsSyntax extends Functions {
      * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
      * ? , ? , ? ...
      * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
+     *
      * <p>
      * Named multi parameter expression is used in batch update(or delete) and values insert.
-     * </p>
+     *
      *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
@@ -480,10 +479,10 @@ abstract class SQLsSyntax extends Functions {
      * Create named non-null multi literal expression, multi literal expression will output multi LITERAL like below:
      * LITERAL , LITERAL , LITERAL ...
      * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
-     * </p>
+     *
      * <p>
      * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
-     * </p>
+     *
      *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
@@ -500,7 +499,7 @@ abstract class SQLsSyntax extends Functions {
      * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
      * ? , ? , ? ...
      * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
+     *
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
@@ -519,7 +518,7 @@ abstract class SQLsSyntax extends Functions {
      * Create multi literal expression, multi literal expression will output multi LITERAL like below:
      * LITERAL , LITERAL , LITERAL ...
      * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
-     * </p>
+     *
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
@@ -538,10 +537,10 @@ abstract class SQLsSyntax extends Functions {
      * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
      * ? [, ...]
      * but as the right operand of  IN(or NOT IN) operator, will output (  ? [, ...] )
-     * </p>
+     *
      * <p>
      * Named multi parameter expression is used in batch update(or delete) and values insert.
-     * </p>
+     *
      *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
@@ -564,10 +563,10 @@ abstract class SQLsSyntax extends Functions {
      * Create named non-null multi literal expression, multi literal expression will output multi LITERAL like below:
      * LITERAL [, ...]
      * but as the right operand of  IN(or NOT IN) operator, will output ( LITERAL  [, ...] )
-     * </p>
+     *
      * <p>
      * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
-     * </p>
+     *
      *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
@@ -621,7 +620,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Get a {@link QualifiedField}. You don't need a {@link QualifiedField},if no self-join in statement.
-     * </p>
+     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>current statement don't support this method,eg: single-table UPDATE statement</li>
@@ -635,7 +634,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Reference a derived field from current statement.
-     * </p>
+     *
      *
      * @param derivedAlias   derived table alias,
      * @param selectionAlias derived field alias
@@ -647,7 +646,7 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Reference a derived field from outer statement.
-     * </p>
+     *
      *
      * @param derivedAlias   derived table alias,
      * @param selectionAlias derived field alias
@@ -661,10 +660,10 @@ abstract class SQLsSyntax extends Functions {
      * <p>
      * Reference a {@link  Selection} of current statement ,eg: ORDER BY clause.
      * The {@link Expression} returned don't support {@link Expression#as(String)} method.
-     * </p>
+     *
      * <p>
      * <strong>NOTE</strong> : override,if selection alias duplication.
-     * </p>
+     *
      *
      * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link TypeMeta#mappingType()} of {@link Selection#typeMeta()} .
      * @throws CriteriaException then when <ul>
@@ -680,7 +679,7 @@ abstract class SQLsSyntax extends Functions {
      * <p>
      * Reference a {@link  Selection} of current statement ,eg: ORDER BY clause.
      * The {@link Expression} returned don't support {@link Expression#as(String)} method.
-     * </p>
+     *
      *
      * @param selectionOrdinal based 1 .
      * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link io.army.mapping.IntegerType#INSTANCE}

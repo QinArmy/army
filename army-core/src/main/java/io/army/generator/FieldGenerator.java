@@ -11,11 +11,8 @@ import io.army.meta.GeneratorMeta;
  * there is two ways for implementation of MultiGenerator:
  * <pre>
  *    Example one:
- *
  *    public class MyMultiGenerator implements PreMultiGenerator {
- *
  *        private MyMultiGenerator(){}
- *
  *        &#047;&#042;&#042;
  *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
@@ -24,25 +21,20 @@ import io.army.meta.GeneratorMeta;
  *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; paramMeta, Map&lt;String,String&gt; paramMap){
  *           ...
  *        }
- *
  *     }
  * </pre>
  * or
  * <pre>
  *    Example two:
- *
  *    public class MyMultiGenerator implements PreMultiGenerator {
- *
  *        &#047;&#042;&#042;
  *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
  *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; paramMeta,  Map&lt;String,String&gt; paramMap){...}
- *
  *     }
  * </pre>
- * </p>
  *
  * @see io.army.annotation.Generator
  * @see FieldGeneratorFactory

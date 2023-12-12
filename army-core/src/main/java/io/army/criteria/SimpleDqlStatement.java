@@ -9,8 +9,7 @@ package io.army.criteria;
  *     <li>{@link io.army.criteria.dialect.ReturningUpdate}</li>
  *     <li>{@link io.army.criteria.dialect.ReturningDelete}</li>
  * </ul>
- * </p>
- *
+*
  * @see SimpleDmlStatement
  * @since 1.0
  */

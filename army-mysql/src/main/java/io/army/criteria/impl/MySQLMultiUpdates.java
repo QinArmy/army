@@ -28,8 +28,7 @@ import java.util.function.Supplier;
  *     <ul>
  *         <li>{@link MySQLSimpleUpdate} ,MySQL multi update api implementation</li>
  *     </ul>
- * </p>
- */
+*/
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdates<I extends Item>
         extends JoinableUpdate<
@@ -513,7 +512,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     /**
      * <p>
      * This class is the implementation of  multi-table update api.
-     * </p>
+     *
      */
     private static final class MySQLSimpleUpdate extends MySQLMultiUpdates<Update>
             implements Update {

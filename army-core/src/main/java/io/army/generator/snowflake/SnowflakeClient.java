@@ -4,8 +4,7 @@ package io.army.generator.snowflake;
 import java.util.function.Consumer;
 
 /**
- *
- */
+*/
 public interface SnowflakeClient {
 
 

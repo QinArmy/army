@@ -11,8 +11,7 @@ import java.time.temporal.Temporal;
 /**
  * <p>
  * This class is test class of {@link _TimeUtils}
- * </p>
- */
+*/
 public class TimeUtilsTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(TimeUtilsTests.class);

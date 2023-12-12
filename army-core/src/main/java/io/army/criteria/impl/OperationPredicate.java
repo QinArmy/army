@@ -24,7 +24,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     /**
      * <p>
      * Private constructor .
-     * </p>
+     *
      *
      * @see OperationSimplePredicate#OperationSimplePredicate()
      * @see OperationCompoundPredicate#OperationPredicate()
@@ -768,7 +768,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * <li>{@link BracketPredicate}</li>
      * <li>{@link SqlFunctionPredicate}</li>
      * <li>{@link OrPredicate},because OR/XOR operator always have outer parentheses。</li>
-     * </p>
+     *
      */
     static abstract class OperationSimplePredicate extends OperationPredicate
             implements SimplePredicate, ArmySimpleExpression {
@@ -776,7 +776,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         /**
          * <p>
          * <strong>Private constructor</strong>
-         * </p>
+         *
          */
         private OperationSimplePredicate() {
         }

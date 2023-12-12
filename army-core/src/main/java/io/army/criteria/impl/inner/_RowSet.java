@@ -13,8 +13,7 @@ import java.util.List;
  *         <li>{@link _UnionRowSet}</li>
  *         <li>{@link _PrimaryRowSet}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface _RowSet extends _Statement, RowSet {

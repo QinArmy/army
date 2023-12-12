@@ -20,8 +20,7 @@ import java.util.function.*;
  *         <li>{@link Select}</li>
  *         <li>{@link SubQuery}</li>
  *     </ul>
- * </p>
- *
+*
  * @see Select
  * @see SubQuery
  * @since 1.0
@@ -248,12 +247,12 @@ public interface Query extends RowSet {
     /**
      * <p>
      * This interface representing dialect FROM clause.
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @param <R> next clause java type
      * @see Statement._FromClause

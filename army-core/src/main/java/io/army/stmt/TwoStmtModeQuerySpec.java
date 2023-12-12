@@ -7,9 +7,7 @@ package io.army.stmt;
  *         <li>{@link TwoStmtQueryStmt}</li>
  *         <li>{@link TwoStmtBatchQueryStmt}</li>
  *     </ul>
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public interface TwoStmtModeQuerySpec extends SingleSqlStmt.IdSelectionIndexSpec {
 

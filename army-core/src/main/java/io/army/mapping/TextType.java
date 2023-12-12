@@ -37,8 +37,7 @@ import java.time.*;
  *     <li>{@link java.time.Period} </li>
  * </ul>
  *  to {@link String},if error,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @see StringType
  * @see MediumTextType
  * @since 1.0

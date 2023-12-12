@@ -10,8 +10,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This interface representing postgre INSERT statement.
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
  * @since 1.0
  */
@@ -265,7 +264,7 @@ public interface PostgreInsert extends PostgreStatement {
     /**
      * <p>
      * This interface is used by in multi-statement api.
-     * </p>
+     *
      */
     interface _ComplexInsertIntoClause<I extends Item> extends Item {
 
@@ -350,7 +349,7 @@ public interface PostgreInsert extends PostgreStatement {
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause of cte insert,because it destroy the Readability of code.
-     * </p>
+     *
      */
     interface _StaticSubPreferLiteralSpec<I extends Item>
             extends InsertStatement._PreferLiteralClause<_CteInsertIntoClause<I>>,
@@ -361,7 +360,7 @@ public interface PostgreInsert extends PostgreStatement {
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause of cte insert,because it destroy the Readability of code.
-     * </p>
+     *
      */
     interface _StaticSubNullOptionSpec<I extends Item>
             extends InsertStatement._NullOptionClause<_StaticSubPreferLiteralSpec<I>>,
@@ -372,7 +371,7 @@ public interface PostgreInsert extends PostgreStatement {
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause of cte insert,because it destroy the Readability of code.
-     * </p>
+     *
      */
     interface _StaticSubOptionSpec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_StaticSubNullOptionSpec<I>>,

@@ -10,9 +10,7 @@ import java.math.BigInteger;
 /**
  * <p>
  * This class representing the mapping from {@link BigInteger} to (unsigned) decimal.
- * </p>
- *
- * @see BigInteger
+ * * @see BigInteger
  */
 public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerType {
 

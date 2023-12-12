@@ -64,7 +64,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
@@ -76,7 +76,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param distinct nullable,{@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
@@ -110,7 +110,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
@@ -121,7 +121,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
@@ -133,7 +133,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LongType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
      */
@@ -160,7 +160,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
      * [ORDER BY {unsigned_integer | col_name | expr}
@@ -174,7 +174,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @param exp      expression or multi-value expression
@@ -193,7 +193,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @param exp      expression or multi-value expression
@@ -219,7 +219,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
      * [ORDER BY {unsigned_integer | col_name | expr}
@@ -240,7 +240,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link JsonListType}
-     * </p>
+     *
      *
      * @param exp parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-arrayagg">JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
@@ -254,7 +254,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link JsonMapType}
-     * </p>
+     *
      *
      * @param key   non-null parameter or {@link Expression},but couldn't be null.
      * @param value non-null parameter or {@link Expression},but couldn't be null.
@@ -273,7 +273,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
-     * </p>
+     *
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
@@ -285,7 +285,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
-     * </p>
+     *
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
@@ -298,7 +298,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
-     * </p>
+     *
      *
      * @param exp non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
@@ -311,7 +311,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
-     * </p>
+     *
      *
      * @param exp non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
@@ -323,7 +323,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_std">STD(xpr) [over_clause]</a>
@@ -335,7 +335,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev">STDDEV(xpr) [over_clause]</a>
@@ -347,7 +347,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-pop">STDDEV_POP(xpr) [over_clause]</a>
@@ -359,7 +359,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-samp">STDDEV_SAMP(xpr) [over_clause]</a>
@@ -371,7 +371,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
@@ -383,7 +383,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
@@ -395,7 +395,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-pop">VAR_POP(xpr) [over_clause]</a>
@@ -407,7 +407,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VAR_SAMP(xpr) [over_clause]</a>
@@ -419,7 +419,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VARIANCE(expr) [over_clause]</a>
@@ -435,7 +435,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      */
@@ -446,7 +446,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  LongType}.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
@@ -458,7 +458,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
@@ -470,7 +470,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
@@ -482,7 +482,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
@@ -494,7 +494,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr non-null parameter or {@link  Expression}
      * @param n    nullable,probably is below:
@@ -515,7 +515,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr         non-null parameter or {@link  Expression},but couldn't be {@link SQLs#NULL}
      * @param n            nullable,probably is below:
@@ -536,7 +536,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
@@ -549,7 +549,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @param n    nullable,probably is below:
@@ -569,7 +569,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr         non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @param n            nullable,probably is below:
@@ -590,7 +590,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
+     *
      *
      * @param expr non-null {@link  Expression}
      * @param n    positive.output literal.
@@ -603,7 +603,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LongType}
-     * </p>
+     *
      *
      * @param n positive number or {@link  Expression}.in any of the following forms:
      *          <ul>
@@ -628,7 +628,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType}.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
      */
@@ -639,7 +639,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LongType}.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
@@ -651,7 +651,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LongType}.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      */

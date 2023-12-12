@@ -14,8 +14,7 @@ import java.util.function.Function;
 /**
  * <p>
  * Package class,This class hold postgre data/time function methods.
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">Date/Time Functions</a>
  * @since 1.0
  */
@@ -36,7 +35,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">clock_timestamp ( ) → timestamp with time zone</a>
      */
@@ -47,7 +46,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_time ( integer ) → time with time zone</a>
      */
@@ -58,7 +57,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_timestamp ( integer ) → timestamp with time zone</a>
      */
@@ -69,7 +68,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_bin ( interval, timestamp, timestamp ) → timestamp</a>
      */
@@ -80,7 +79,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType}
-     * </p>
+     *
      *
      * @param source timestamp or interval {@link Expression}
      * @see #datePart(Expression, Expression)
@@ -103,7 +102,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType}
-     * </p>
+     *
      *
      * @param source timestamp or interval {@link Expression}
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT">field</a>
@@ -118,11 +117,11 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     * <u>
+     * <ul>
      * <li>If the {@link MappingType} of source is {@link IntervalType},then the {@link MappingType} of source</li>
      * <li>Else {@link LocalDateTimeType}</li>
-     * </u>
-     * </p>
+     * </ul>
+     *
      *
      * @param field  lower field ,valid values for field are :
      *               <ul>
@@ -156,7 +155,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @param field  lower field ,valid values for field are :
      *               <ul>
@@ -190,11 +189,10 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     * <u>
+     * <ul>
      * <li>If the {@link MappingType} of source is {@link IntervalType},then the {@link MappingType} of source</li>
      * <li>Else {@link LocalDateTimeType}</li>
-     * </u>
-     * </p>
+     * </ul>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp ) → timestamp <br/>
      * date_trunc ( text, interval ) → interval
@@ -209,7 +207,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
      */
@@ -220,7 +218,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BigDecimalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">extract ( field from timestamp ) → numeric<br/>
      * extract ( field from interval ) → numeric
@@ -239,7 +237,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_days ( interval ) → interval</a>
      */
@@ -250,7 +248,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_hours ( interval ) → interval</a>
      */
@@ -261,7 +259,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_interval ( interval ) → interval</a>
      */
@@ -272,7 +270,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalTimeType}
-     * </p>
+     *
      *
      * @see Postgres#LOCALTIME
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtime ( integer ) → time</a>
@@ -284,7 +282,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
-     * </p>
+     *
      *
      * @see Postgres#LOCALTIMESTAMP
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtimestamp ( integer ) → timestamp</a>
@@ -296,7 +294,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_date ( year int, month int, day int ) → date</a>
      */
@@ -307,7 +305,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @param years if Positional Notation ,then representing years,else Named Notation
      * @see Postgres#namedNotation(String, Expression)
@@ -325,7 +323,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @param years  if Positional Notation ,then representing years,else Named Notation
      * @param months if Positional Notation ,then representing months,else Named Notation
@@ -344,7 +342,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @param years  if Positional Notation ,then representing years,else Named Notation
      * @param months if Positional Notation ,then representing months,else Named Notation
@@ -364,7 +362,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @param years  if Positional Notation ,then representing years,else Named Notation
      * @param months if Positional Notation ,then representing months,else Named Notation
@@ -385,7 +383,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @param years  if Positional Notation ,then representing years,else Named Notation
      * @param months if Positional Notation ,then representing months,else Named Notation
@@ -408,7 +406,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @param years  if Positional Notation ,then representing years,else Named Notation
      * @param months if Positional Notation ,then representing months,else Named Notation
@@ -432,7 +430,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntervalType}
-     * </p>
+     *
      *
      * @param years  if Positional Notation ,then representing years,else Named Notation
      * @param months if Positional Notation ,then representing months,else Named Notation
@@ -459,7 +457,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_time ( hour int, min int, sec double precision ) → time</a>
      */
@@ -470,7 +468,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamp ( year int, month int, day int, hour int, min int, sec double precision ) → timestamp</a>
      */
@@ -482,7 +480,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamptz ( year int, month int, day int, hour int, min int, sec double precision [, timezone text ] ) → timestamp with time zone</a>
      */
@@ -495,7 +493,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamptz ( year int, month int, day int, hour int, min int, sec double precision [, timezone text ] ) → timestamp with time zone</a>
      */
@@ -509,7 +507,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">now ( ) → timestamp with time zone</a>
      */
@@ -520,7 +518,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">statement_timestamp ( ) → timestamp with time zone</a>
      */
@@ -531,7 +529,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">timeofday ( ) → text</a>
      */
@@ -542,7 +540,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">transaction_timestamp ( ) → timestamp with time zone</a>
      */
@@ -553,7 +551,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">to_timestamp ( double precision ) → timestamp with time zone</a>
      */
@@ -564,7 +562,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep ( double precision )</a>
      */
@@ -575,7 +573,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_for ( interval )</a>
      */
@@ -586,7 +584,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_until ( timestamp with time zone )</a>
      */

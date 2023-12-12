@@ -27,9 +27,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class is base class of all simple {@link Window}.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 @SuppressWarnings("unchecked")
 abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
@@ -102,8 +100,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     /**
      * <p>
      * Constructor for named {@link  Window}
-     * </p>
-     */
+     *     */
     SQLWindow(final String windowName, final CriteriaContext context, final @Nullable String existingWindowName) {
         super(context);
         if (!_StringUtils.hasText(windowName)) {
@@ -124,8 +121,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     /**
      * <p>
      * Constructor for anonymous {@link  Window}
-     * </p>
-     */
+     *     */
     SQLWindow(final CriteriaContext context, final @Nullable String existingWindowName) {
         super(context);
         if (existingWindowName != null) {

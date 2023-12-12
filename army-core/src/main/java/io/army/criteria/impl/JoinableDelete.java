@@ -21,8 +21,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class is base class of multi-table delete implementation.
- * </p>
- */
+*/
 abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object, Object>
         implements _Delete,

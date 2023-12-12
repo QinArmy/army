@@ -17,7 +17,6 @@ import static io.army.criteria.impl.SQLs.AS;
 /**
  * <p>
  * This class is unit test class of {@link MySQLs#singleUpdate()} and {@link MySQLs#batchSingleUpdate()}
- * </p>
  */
 public class MySQLSingleUpdateUnitTests extends MySQLUnitTests {
 

@@ -12,8 +12,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing Postgre lseg type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">lseg</a>
  */
 public final class PostgreLsegType extends PostgreGeometricType implements MappingType.SqlLineType {

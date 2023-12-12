@@ -22,8 +22,7 @@ import javax.annotation.Nullable;
  *         <li>{@link  SingleDmlContext}</li>
  *         <li>{@link  SingleJoinableDmlContext}</li>
  *     </ul>
- * </p>
- */
+*/
 abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _SingleTableContext
         , _DmlContext._SetClauseContextSpec {
 
@@ -42,7 +41,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     /**
      * <p>
      * For {@link SingleTableMeta}
-     * </p>
+     *
      */
     SingleTableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser,
                           Visible visible) {
@@ -74,7 +73,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     /**
      * <p>
      * For {@link  ChildTableMeta}
-     * </p>
+     *
      *
      * @see #decideParentContext(SingleTableDmlContext)
      */

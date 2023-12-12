@@ -25,9 +25,7 @@ import java.time.format.DateTimeParseException;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link LocalDateTime},if overflow,throw {@link io.army.ArmyException}
- * </p>
- *
- * @since 1.0
+ ** @since 1.0
  */
 public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateTimeType {
 

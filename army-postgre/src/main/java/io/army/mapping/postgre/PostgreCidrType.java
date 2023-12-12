@@ -14,8 +14,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing Postgre cidr type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/datatype-net-types.html#DATATYPE-CIDR">cidr</a>
  */
 public final class PostgreCidrType extends _ArmyNoInjectionMapping {

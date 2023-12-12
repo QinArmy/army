@@ -16,8 +16,7 @@ import io.army.sqltype.PostgreType;
 /**
  * <p>
  * This class representing Postgre tsvector type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/datatype-textsearch.html#DATATYPE-TSVECTOR">tsvector</a>
  */
 public final class PostgreTsVectorType extends _ArmyNoInjectionMapping {

@@ -25,7 +25,6 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is utils class for creating {@link CriteriaContext}
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
@@ -182,7 +181,7 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * For Example , Postgre update/delete criteria context
-     * </p>
+     *
      */
     static CriteriaContext primaryJoinableSingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryJoinableSingleDmlContext context;
@@ -199,7 +198,7 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * For Example ,Postgre update/delete criteria context
-     * </p>
+     *
      */
     static CriteriaContext subJoinableSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
         final SubJoinableSingleDmlContext context;
@@ -1648,7 +1647,7 @@ abstract class CriteriaContexts {
         /**
          * <p>
          * add nested {@link TabularItem} to {@link #aliasToBlock}
-         * </p>
+         *
          *
          * @see #onAddBlock(_TabularBlock)
          * @see #addTableBlock(_TabularBlock)
@@ -1937,7 +1936,7 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * This class representing multi-table dml context.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -2483,7 +2482,7 @@ abstract class CriteriaContexts {
          *         <li>{@link #refSelection(String)}</li>
          *         <li>{@link #endQueryContext()}</li>
          *     </ul>
-         * </p>
+         *
          */
         private void callDeferSelectClauseIfNeed() {
             final Runnable deferSelectClause = this.deferSelectClause;
@@ -3135,7 +3134,7 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * This class is designed for codec field.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -3157,7 +3156,7 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * Package interface for {@link OperationExpression#as(String)}
-     * </p>
+     *
      */
     interface SelectionReference extends Expression {
 

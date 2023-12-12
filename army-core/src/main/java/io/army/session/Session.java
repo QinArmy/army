@@ -33,8 +33,7 @@ public interface Session extends CloseableSpec, OptionSpec {
      *         <li>other identifier</li>
      *     </ul>
      *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
-     * </p>
-     *
+     *     *
      * @throws SessionException throw when session have closed.
      */
     long sessionIdentifier() throws SessionException;

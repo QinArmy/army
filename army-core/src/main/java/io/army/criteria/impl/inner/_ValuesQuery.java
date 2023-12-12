@@ -8,8 +8,7 @@ import java.util.List;
 /**
  * <p>
  * This interface is inner interface of {@link ValuesQuery}.
- * </p>
- *
+*
  * @since 1.0
  */
 public interface _ValuesQuery extends ValuesQuery, _PartRowSet, _RowSet._SelectItemListSpec {

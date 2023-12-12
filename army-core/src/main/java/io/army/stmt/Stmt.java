@@ -23,11 +23,11 @@ public interface Stmt {
     /**
      * <p>This interface representing  pair sql statement spec.
      * <p>This interface is base interface of following :
-     *     <ul>
-     *         <li>{@link PairStmt}</li>
-     *         <li>{@link PairBatchStmt}</li>
-     *     </ul>
-     * </p>
+     * <ul>
+     *     <li>{@link PairStmt}</li>
+     *     <li>{@link PairBatchStmt}</li>
+     * </ul>
+     * *
      *
      * @since 1.0
      */

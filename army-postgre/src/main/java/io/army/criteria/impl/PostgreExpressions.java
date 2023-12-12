@@ -95,7 +95,7 @@ abstract class PostgreExpressions {
      *         <li>path + path → path</li>
      *         <li>inet + bigint → inet</li>
      *     </ul>
-     * </p>
+     *
      *
      * @see Postgres#plus(Expression, Expression)
      * @see Expressions#plusType(MappingType, MappingType)
@@ -240,7 +240,7 @@ abstract class PostgreExpressions {
      *         <li>anycompatible || anycompatiblearray → anycompatiblearray</li>
      *         <li>anycompatiblearray || anycompatible → anycompatiblearray</li>
      *     </ul>
-     * </p>
+     *
      *
      * @see Postgres#doubleVertical(Expression, Expression)
      */
@@ -275,7 +275,7 @@ abstract class PostgreExpressions {
      *     <ul>
      *         <li>tsquery && tsquery → tsquery</li>
      *     </ul>
-     * </p>
+     *
      *
      * @see Postgres#ampAmp(Expression, Expression)
      */

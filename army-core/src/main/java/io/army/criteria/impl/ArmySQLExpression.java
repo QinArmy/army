@@ -10,9 +10,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
  *     <li>{@link ArmyExpression}</li>
  *     <li>{@link ArmyRowExpression}</li>
  * </ul>
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 interface ArmySQLExpression extends SQLExpression, _SelfDescribed, ArmyRightOperand {
 

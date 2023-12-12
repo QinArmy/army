@@ -6,8 +6,7 @@ import io.army.criteria.SubStatement;
 /**
  * <p>
  * This interface representing sub insert that can present in with clause.
- * </p>
- *
+*
  * @since 1.0
  */
 @Deprecated

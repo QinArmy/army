@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
  *     <ul>
  *         <li>{@link MySQLStringFunctions}</li>
  *     </ul>
- * </p>
  * package class
  */
 @SuppressWarnings("unused")

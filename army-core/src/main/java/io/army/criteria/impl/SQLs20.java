@@ -10,8 +10,7 @@ import io.army.mapping.MappingType;
 /**
  * <p>
  * This hold standard 2.0 api.
- * </p>
- *
+*
  * @since 1.0
  */
 public abstract class SQLs20 {
@@ -34,7 +33,7 @@ public abstract class SQLs20 {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  DoubleType}.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">cume_dist () → double precision<br/>
@@ -48,7 +47,7 @@ public abstract class SQLs20 {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  LongType}.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">row_number () → bigint<br/>

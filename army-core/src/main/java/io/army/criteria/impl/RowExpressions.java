@@ -25,11 +25,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the methods that create {@link io.army.criteria.RowExpression}.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @since 1.0
  */

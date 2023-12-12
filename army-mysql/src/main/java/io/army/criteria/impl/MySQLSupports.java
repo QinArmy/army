@@ -285,7 +285,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     /**
      * <p>
      * sub class must implements RR .
-     * </p>
+     *
      *
      * @param <RR> sub interface of {@link  io.army.criteria.Statement._OnClause}
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}

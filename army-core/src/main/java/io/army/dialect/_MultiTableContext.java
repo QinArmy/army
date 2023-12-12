@@ -11,8 +11,7 @@ import io.army.meta.TableMeta;
  *         <li>{@link  _MultiUpdateContext}</li>
  *         <li>{@link  _MultiDeleteContext}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface _MultiTableContext extends SqlContextSpec {

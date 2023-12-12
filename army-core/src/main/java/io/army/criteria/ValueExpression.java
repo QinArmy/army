@@ -8,9 +8,8 @@ package io.army.criteria;
  * <li>{@link LiteralExpression}</li>
  * <li>{@link ParamExpression}</li>
  * </ul>
- * </p>
+ * * @see RowValueExpression
  *
- * @see RowValueExpression
  * @since 1.0
  */
 public interface ValueExpression extends SimpleExpression, SqlValueParam.SingleValue {

@@ -42,11 +42,9 @@ import java.util.function.Predicate;
 /**
  * <p>
  * This class is base class of all implementation of {@link DialectParser}.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @since 1.0
  */
@@ -687,7 +685,7 @@ abstract class ArmyParser implements DialectParser {
     /**
      * <p>
      * Append  literal
-     * </p>
+     *
      */
     public final void literal(final TypeMeta typeMeta, @Nullable Object value, final StringBuilder sqlBuilder) {
         final MappingType type;

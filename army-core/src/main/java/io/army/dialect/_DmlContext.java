@@ -17,8 +17,7 @@ import java.util.List;
  *         <li>{@link  _MultiUpdateContext}</li>
  *         <li>{@link  _MultiDeleteContext}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public  interface _DmlContext extends _PrimaryContext {
@@ -49,7 +48,7 @@ public  interface _DmlContext extends _PrimaryContext {
         /**
          * <p>
          * supported only by domain update.
-         * </p>
+         *
          *
          * @throws UnsupportedOperationException throw when non-domain update.
          */
@@ -64,10 +63,10 @@ public  interface _DmlContext extends _PrimaryContext {
         /**
          * <p>
          * just append column name, no preceding space ,no preceding table alias
-         * </p>
+         *
          * <p>
          * This method is designed for postgre EXCLUDED in INSERT statement.
-         * </p>
+         *
          *
          * @see _SqlContext#appendFieldOnly(FieldMeta)
          */

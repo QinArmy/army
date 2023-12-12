@@ -3,8 +3,7 @@ package io.army.criteria;
 /**
  * <p>
  * This interface representing batch primary DELETE statement that don't return result set.
- * </p>
- *
+*
  * @see BatchUpdate
  * @since 1.0
  */

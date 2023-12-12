@@ -21,11 +21,9 @@ import java.util.function.*;
 /**
  * <p>
  * This class hold the base class(interface) of the implementation of all insert syntax interfaces.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @since 1.0
  */
@@ -2344,7 +2342,7 @@ abstract class InsertSupports {
      * <p>
      * Try find parent insert sub-statement for childStmt in cteList.
      * This method is designed for child sub-insert.
-     * </p>
+     *
      */
     static ParentSubInsert parentSubInsertOfChildSubInsert(final ArmyInsert childStmt, final int rowCount,
                                                            final List<_Cte> cteList) {
@@ -2360,7 +2358,7 @@ abstract class InsertSupports {
     /**
      * <p>
      * Find parent insert sub-statement for childStmt in cteList.
-     * </p>
+     *
      */
     static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final int rowCount, final List<_Cte> cteList) {
         final ParentSubInsert parentSubInsert;
@@ -2604,7 +2602,7 @@ abstract class InsertSupports {
     /**
      * <p>
      * Check insert statement for safety.
-     * </p>
+     *
      *
      * @see ArmyInsertStatement#asInsertStatement()
      */

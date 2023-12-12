@@ -12,9 +12,7 @@ import java.math.BigDecimal;
 /**
  * <p>
  * This class representing the mapping from {@link BigDecimal} to unsigned decimal.
- * </p>
- *
- * @see BigDecimal
+ * * @see BigDecimal
  */
 public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericType
         implements MappingType.SqlDecimalType {

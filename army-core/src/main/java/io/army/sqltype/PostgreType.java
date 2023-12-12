@@ -18,11 +18,10 @@ public enum PostgreType implements SqlType {
 
     /**
      * <p>
-     *     <ul>
-     *         <li>{@link MappingType#beforeBind(DataType, MappingEnv, Object)} must return {@link Boolean}</li>
-     *         <li>{@link MappingType#afterGet(DataType, MappingEnv, Object)} nonNull parameter must be {@link Boolean}</li>
-     *     </ul>
-     * </p>
+     * <ul>
+     *     <li>{@link MappingType#beforeBind(DataType, MappingEnv, Object)} must return {@link Boolean}</li>
+     *     <li>{@link MappingType#afterGet(DataType, MappingEnv, Object)} nonNull parameter must be {@link Boolean}</li>
+     * </ul>
      */
     BOOLEAN("BOOLEAN", ArmyType.BOOLEAN, Boolean.class),
 

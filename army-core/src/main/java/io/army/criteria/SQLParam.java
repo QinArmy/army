@@ -10,8 +10,7 @@ import io.army.stmt.SingleParam;
  *         <li>{@link SingleParam}</li>
  *         <li>{@link MultiParam}</li>
  *     </ul>
- * </p>
- */
+*/
 public interface SQLParam extends SqlValueParam {
 
 }

@@ -10,8 +10,7 @@ import io.army.meta.DatabaseObject;
  *         <li>{@link SQLIdentifier}</li>
  *         <li>{@link DatabaseObject}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface SQLElement {

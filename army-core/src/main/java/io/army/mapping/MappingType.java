@@ -759,7 +759,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      *         <li>{@link SqlNumberType}</li>
      *         <li>{@link SqlStringType}</li>
      *     </ul>
-     * </p>
+     *
      */
     public interface SqlNumberOrStringType {
 
@@ -772,7 +772,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      *         <li>{@link SqlNumberType}</li>
      *         <li>{@link SqlBitType}</li>
      *     </ul>
-     * </p>
+     *
      */
     public interface SqlNumberOrBitType {
 
@@ -811,7 +811,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      *         <li>{@link SqlStringOrBinaryType }</li>
      *         <li>{@link SqlBitType }</li>
      *     </ul>
-     * </p>
+     *
      */
     public interface SqlSqlStringOrBinaryOrBitType {
 
@@ -824,7 +824,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      *         <li>{@link SqlStringType }</li>
      *         <li>{@link SqlBinaryType }</li>
      *     </ul>
-     * </p>
+     *
      */
     public interface SqlStringOrBinaryType extends SqlSqlStringOrBinaryOrBitType {
 
@@ -861,7 +861,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      *         <li>{@link SqlJsonType}</li>
      *         <li>{@link SqlJsonbType}</li>
      *     </ul>
-     * </p>
+     *
      */
     public interface SqlJsonDocumentType {
 

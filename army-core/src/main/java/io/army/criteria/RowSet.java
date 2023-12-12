@@ -10,8 +10,7 @@ import java.util.function.Function;
  *         <li>{@link Query}</li>
  *         <li>{@link Values}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface RowSet extends Statement {

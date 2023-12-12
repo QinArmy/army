@@ -12,8 +12,7 @@ import java.util.List;
 /**
  * <p>
  * This interface is inner interface of {@link Query}.
- * </p>
- *
+*
  * @since 1.0
  */
 public interface _Query extends Query, _PartRowSet, _RowSet._SelectItemListSpec, _Statement._WithClauseSpec {

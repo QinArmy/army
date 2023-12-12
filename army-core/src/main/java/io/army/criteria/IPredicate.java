@@ -16,9 +16,7 @@ import java.util.function.Supplier;
  * <p>
  * This interface representing sql predicate in WHERE clause or HAVING clause.
  * This interface name is 'IPredicate' not 'Predicate', because of {@link java.util.function.Predicate}.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public interface IPredicate extends Expression, Statement._WhereAndClause<IPredicate> {
 
@@ -32,8 +30,7 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
      * Logical OR
      * <p>
      * This method representing expression (this OR predicate)
-     * </p>
-     */
+     *     */
     SimplePredicate or(IPredicate predicate);
 
     SimplePredicate or(Supplier<IPredicate> supplier);
@@ -104,14 +101,11 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
      * <p>
      * This method is designed for dialect logical operator.
      * This method name is 'blank' not 'whiteSpace' , because of distinguishing logical operator and other operator.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
-     * <p>
+     *     * <p>
      *
-     * </p>
-     *
+     *     *
      * @param funcRef the reference of the method of dialect logical operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
      *                For example: {@code MySQL.xor(IPredicate,IPredicate)}
@@ -124,14 +118,11 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
      * <p>
      * This method is designed for dialect logical operator.
      * This method name is 'blank' not 'whiteSpace' , because of distinguishing logical operator and other operator.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
-     * <p>
+     *     * <p>
      *
-     * </p>
-     *
+     *     *
      * @param funcRef  the reference of the method of dialect logical operator,<strong>NOTE</strong>: not lambda.
      *                 The first argument of funcRef always is <strong>this</strong>.
      *                 For example: {@code MySQL.xor(IPredicate,IPredicate)}

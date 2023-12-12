@@ -13,8 +13,7 @@ import io.army.util._StringUtils;
 /**
  * <p>
  * This class representing PostgreSQL-style typecast expression
- * </p>
- *
+*
  * @since 1.0
  */
 final class PostgreDoubleColonCastExpression extends OperationExpression.OperationSimpleExpression

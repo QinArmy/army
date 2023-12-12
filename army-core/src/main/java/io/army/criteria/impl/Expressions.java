@@ -28,11 +28,9 @@ import java.util.function.UnaryOperator;
 /**
  * <p>
  * This class hold the methods that create {@link Expression} and {@link IPredicate}.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @since 1.0
  */
@@ -851,7 +849,7 @@ abstract class Expressions {
     /**
      * <p>
      * This class representing unary expression,unary expression always out outer bracket.
-     * </p>
+     *
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link UnaryExpOperator}.
      */
@@ -2347,7 +2345,7 @@ abstract class Expressions {
      *         <li>{@link SimpleArrayConstructor}</li>
      *         <li>{@link SubQueryArrayConstructor}</li>
      *     </ul>
-     * </p>
+     *
      */
     private static abstract class ArrayConstructor extends OperationExpression.OperationSimpleExpression
             implements ArmyArrayExpression, SQLs._ArrayConstructorSpec {

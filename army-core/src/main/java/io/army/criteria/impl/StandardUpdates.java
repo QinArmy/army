@@ -21,8 +21,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class hold the implementations of standard update statement.
- * </p>
- *
+*
  * @since 1.0
  */
 

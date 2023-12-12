@@ -10,8 +10,7 @@ import java.util.List;
 /**
  * <p>
  * This class is unit test class of {@link ArmyKey}
- * </p>
- */
+*/
 public class ArmyKeyUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmyKeyUnitTests.class);

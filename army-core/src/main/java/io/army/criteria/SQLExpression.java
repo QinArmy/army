@@ -7,8 +7,7 @@ package io.army.criteria;
  *         <li>{@link Expression}</li>
  *         <li>{@link RowExpression}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface SQLExpression extends RowElement, RightOperand {
@@ -17,14 +16,14 @@ public interface SQLExpression extends RowElement, RightOperand {
     /**
      * <p>
      * <strong>= ANY</strong> operator
-     * </p>
+     *
      */
     CompoundPredicate equalAny(SubQuery subQuery);
 
     /**
      * <p>
      * <strong>= SOME</strong> operator
-     * </p>
+     *
      */
     CompoundPredicate equalSome(SubQuery subQuery);
 

@@ -31,8 +31,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is the implementation of Postgre DELETE syntax.
- * </p>
- *
+*
  * @see PostgreDelete
  * @since 1.0
  */

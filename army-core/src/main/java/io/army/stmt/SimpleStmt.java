@@ -13,8 +13,7 @@ import java.util.List;
  *         <li>{@link GeneratedKeyStmt}</li>
  *         <li>{@link TwoStmtQueryStmt}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface SimpleStmt extends SingleSqlStmt {

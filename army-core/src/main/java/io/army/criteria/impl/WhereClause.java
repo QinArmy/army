@@ -17,8 +17,7 @@ import java.util.function.*;
 /**
  * <p>
  * package class
- * </p>
- *
+*
  * @since 1.0
  */
 @SuppressWarnings("unchecked")

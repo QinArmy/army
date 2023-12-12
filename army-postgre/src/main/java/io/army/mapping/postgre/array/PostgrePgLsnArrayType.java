@@ -14,8 +14,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing Postgre pg_lsn array type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/15/datatype-pg-lsn.html">pg_lsn</a>
  */
 public final class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {

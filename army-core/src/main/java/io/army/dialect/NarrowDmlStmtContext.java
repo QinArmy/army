@@ -22,9 +22,7 @@ import java.util.List;
  *         <li>{@link SingleTableDmlContext}</li>
  *         <li>{@link MultiTableDmlContext}</li>
  *     </ul>
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements NarrowDmlContext, DmlStmtParams {
 

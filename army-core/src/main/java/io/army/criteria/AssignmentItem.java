@@ -7,8 +7,7 @@ package io.army.criteria;
  *         <li>{@link Expression}</li>
  *         <li>{@link ItemPair}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface AssignmentItem {

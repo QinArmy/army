@@ -15,8 +15,7 @@ import java.util.List;
  *         <li>{@link _DerivedTable}</li>
  *         <li>{@link  _Cte}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface _SelectionMap {
@@ -28,7 +27,7 @@ public interface _SelectionMap {
      *         <li>{@link io.army.criteria.impl.inner._SelfDescribed#appendSql(StringBuilder, _SqlContext)}</li>
      *         <li>{@link _Selection#appendSelectItem(StringBuilder, _SqlContext)}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @return the {@link Selection} that couldn't be rendered.
      */
@@ -42,7 +41,7 @@ public interface _SelectionMap {
      *         <li>{@link io.army.criteria.impl.inner._SelfDescribed#appendSql(StringBuilder, _SqlContext)}</li>
      *         <li>{@link _Selection#appendSelectItem(StringBuilder, _SqlContext)}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @return a unmodified list, the list of {@link Selection} that couldn't be rendered.
      */

@@ -19,9 +19,7 @@ import io.army.sqltype.PostgreType;
 /**
  * <p>
  * This class representing Postgre aclitem array type {@link MappingType}
- * </p>
- *
- * @see <a href="https://www.postgresql.org/docs/current/ddl-priv.html">Privileges</a>
+ * * @see <a href="https://www.postgresql.org/docs/current/ddl-priv.html">Privileges</a>
  */
 public final class PostgreAclItemArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 

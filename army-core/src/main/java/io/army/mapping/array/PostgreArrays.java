@@ -380,7 +380,7 @@ public abstract class PostgreArrays extends ArrayMappings {
     /**
      * <p>
      * parse postgre array text.
-     * </p>
+     * *
      *
      * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
@@ -441,8 +441,7 @@ public abstract class PostgreArrays extends ArrayMappings {
     /**
      * <p>
      * parse postgre array text.
-     * </p>
-     *
+     *     *
      * @param function       before end index possibly with trailing whitespace.
      * @param dimensionIndex based one
      * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>

@@ -23,8 +23,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link String} </li>
  * </ul>
  *  to medium {@link Integer},if overflow,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @since 1.0
  */
 public final class MediumIntType extends _NumericType {

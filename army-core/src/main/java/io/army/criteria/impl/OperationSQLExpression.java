@@ -12,8 +12,7 @@ import io.army.criteria.SubQuery;
  *         <li>{@link OperationExpression}</li>
  *         <li>{@link OperationRowExpression}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class OperationSQLExpression implements ArmySQLExpression {

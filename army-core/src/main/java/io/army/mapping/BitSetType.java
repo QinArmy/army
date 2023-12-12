@@ -28,9 +28,7 @@ import java.util.BitSet;
  *     <li>{@code long[]}, non-empty</li>
  * </ul>
  *  to {@link BitSet}
- * </p>
- *
- * @since 1.0
+ ** @since 1.0
  */
 public final class BitSetType extends _ArmyNoInjectionMapping implements MappingType.SqlBitType {
 

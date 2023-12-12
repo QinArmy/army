@@ -20,8 +20,7 @@ import java.util.List;
 /**
  * <p>
  * This class representing standard domain delete statement.
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class StandardDeletes<I extends Item, WE extends Item, DR>

@@ -16,7 +16,6 @@ public abstract class MySQLs extends MySQLSyntax {
     /**
      * <p>
      * create single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
-     * </p>
      */
     public static MySQLInsert._PrimaryOptionSpec singleInsert() {
         return MySQLInserts.singleInsert();

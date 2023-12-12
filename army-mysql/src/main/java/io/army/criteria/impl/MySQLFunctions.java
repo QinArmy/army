@@ -14,8 +14,7 @@ import java.util.Objects;
 /**
  * <p>
  * Package class ,This class is MySQL function utils for application developer.
- * </p>
- *
+*
  * @since 1.0
  */
 @SuppressWarnings("unused")
@@ -57,7 +56,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
      *      </ul>
-     * </p>
+     *
      *
      * @param exp  non-null {@link Expression}
      * @param as   {@link SQLs#AS}
@@ -102,7 +101,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
      *      </ul>
-     * </p>
+     *
      *
      * @param exp  non-null {@link Expression}
      * @param as   {@link SQLs#AS}
@@ -175,7 +174,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BigDecimalType}
-     * </p>
+     *
      *
      * @param exp  non-null  {@link Expression}
      * @param as   {@link SQLs#AS}
@@ -224,7 +223,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
-     * </p>
+     *
      *
      * @param timestampValue    non-null {@link Expression}
      * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
@@ -241,7 +240,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
-     * </p>
+     *
      *
      * @param timestampValue    non-null {@link Expression}
      * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
@@ -260,7 +259,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
-     * </p>
+     *
      *
      * @param timestampValue    non-null {@link Expression}
      * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
@@ -301,7 +300,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
      *      </ul>
-     * </p>
+     *
      *
      * @param exp             non-null   {@link Expression}
      * @param using           {@link MySQLs#USING}
@@ -329,7 +328,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
+     *
      *
      * @param n nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -348,7 +347,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr1
-     * </p>
+     *
      *
      * @throws CriteriaException throw when any arg is multi-value expression
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
@@ -361,7 +360,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr1
-     * </p>
+     *
      *
      * @throws CriteriaException throw when any arg is multi-value expression
      * @see #ifFunc(Expression, Expression, Expression)

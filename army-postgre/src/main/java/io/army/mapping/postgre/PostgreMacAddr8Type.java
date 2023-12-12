@@ -14,8 +14,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing Postgre macaddr8 type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/datatype-net-types.html#DATATYPE-MACADDR8">macaddr8</a>
  */
 public final class PostgreMacAddr8Type extends _ArmyNoInjectionMapping {

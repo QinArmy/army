@@ -13,8 +13,7 @@ import io.army.criteria.dialect.BatchDqlStatement;
  *     <li>{@link io.army.criteria.dialect.ReturningDelete}</li>
  *     <li>{@link BatchDqlStatement}</li>
  * </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface DqlStatement extends PrimaryStatement {

@@ -26,8 +26,7 @@ import java.util.function.Supplier;
  *     <li>{@link UpdateStatement}</li>
  *     <li>{@link DeleteStatement}</li>
  * </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
@@ -55,7 +54,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     /**
      * <p>
      * private constructor
-     * </p>
+     *
      */
     private JoinableClause(CriteriaContext context, Consumer<_TabularBlock> blockConsumer) {
         super(context);
@@ -66,7 +65,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     /**
      * <p>
      * package constructor for {@link  Statement}
-     * </p>
+     *
      */
     JoinableClause(CriteriaContext context) {
         super(context);

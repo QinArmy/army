@@ -22,7 +22,7 @@ public interface TableMeta<T> extends TabularItem, DatabaseObject {
     /**
      * <p>
      * Table name,Equivalence : {@link  FieldMeta#objectName()}
-     * </p>
+     *
      */
     String tableName();
 

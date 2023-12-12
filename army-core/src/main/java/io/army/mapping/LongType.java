@@ -25,8 +25,7 @@ import java.math.BigInteger;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Long},if overflow,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @since 1.0
  */
 public final class LongType extends _NumericType._IntegerType {

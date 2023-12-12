@@ -8,9 +8,8 @@ import io.army.sqltype.*;
 /**
  * <p>
  * This class is mapping class of {@code byte[]}.
- * </p>
+ * * @see BinaryType
  *
- * @see BinaryType
  * @see MediumBlobType
  * @since 1.0
  */

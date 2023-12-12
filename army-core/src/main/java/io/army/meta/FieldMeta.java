@@ -9,7 +9,7 @@ import io.army.modelgen._MetaBridge;
 import java.util.List;
 
 /**
- * <p> this interface representing a Java class then tableMeta column mapping.</p>
+ * <p> this interface representing a Java class then tableMeta column mapping.
  *
  * @param <T> representing Domain Java Type
  */
@@ -26,7 +26,7 @@ public interface FieldMeta<T> extends TypeTableField<T> {
     /**
      * <p>
      * if this field representing {@link _MetaBridge#ID}
-     * </p>
+     *
      */
     @Nullable
     GeneratorMeta generator();
@@ -67,7 +67,7 @@ public interface FieldMeta<T> extends TypeTableField<T> {
      *     <li>{@link java.util.Map}</li>
      * </ul>
      * else return {@code void.class}.
-     * </p>
+     *
      */
     List<Class<?>> elementTypes();
 

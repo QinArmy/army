@@ -47,7 +47,7 @@ interface CriteriaContext {
     /**
      * <p>
      * This method is invoked by sub-dml,now WITH clause have not ended.
-     * </p>
+     * *
      *
      * @return unmodified list
      */
@@ -70,8 +70,7 @@ interface CriteriaContext {
     /**
      * <p>
      * This method flat {@link #selectItemList()} as list of {@link  Selection}.
-     * </p>
-     *
+     *     *
      * @return a unmodified list
      * @throws CriteriaException throw when context not end.
      */
@@ -97,8 +96,7 @@ interface CriteriaContext {
     /**
      * <p>
      * This method always is invoked by {@link SQLs#refOuter(String, String)}
-     * </p>
-     *
+     *     *
      * @see SQLs#refOuter(String, String)
      */
     DerivedField refOuter(String derivedAlias, String fieldName);
@@ -151,8 +149,7 @@ interface CriteriaContext {
     /**
      * <p>
      * should be invoked before {@link ContextStack#pop(CriteriaContext)}
-     * </p>
-     */
+     *     */
     List<_TabularBlock> endContext();
 
     void endContextBeforeCommand();
@@ -166,8 +163,7 @@ interface CriteriaContext {
     /**
      * <p>
      * This method is invoked by sub context
-     * </p>
-     */
+     *     */
     void validateFieldFromSubContext(QualifiedField<?> field);
 
 

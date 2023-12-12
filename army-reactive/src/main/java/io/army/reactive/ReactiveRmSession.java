@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 /**
  * <p>This interface representing reactive RM(Resource Manager) session in XA transaction.
- *
  * <p>This interface extends {@link Session} for support XA interface based on
  * the X/Open CAE Specification (Distributed Transaction Processing: The XA Specification).<br/>
  * This document is published by The Open Group and available at

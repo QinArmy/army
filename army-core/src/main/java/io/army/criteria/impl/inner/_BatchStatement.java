@@ -6,8 +6,7 @@ import java.util.List;
  * <p>
  * This interface representing batch dml(only update and delete).
  * The design for dialect instance parse sql.
- * </p>
- */
+*/
 public interface _BatchStatement extends _Statement {
 
     /**

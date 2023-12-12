@@ -7,8 +7,7 @@ package io.army.criteria;
  *         <li>{@link  Values}</li>
  *         <li>{@link  SubValues}</li>
  *     </ul>
- * </p>
- */
+*/
 public interface ValuesQuery extends RowSet {
 
 }

@@ -76,7 +76,7 @@ abstract class SelectionGroups {
      * for RETURNING clause
      * <p>
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
-     * </p>
+     *
      */
     private static final class InsertTableGroup<T> implements _SelectionGroup._TableFieldGroup {
 
@@ -137,7 +137,7 @@ abstract class SelectionGroups {
     /**
      * <p>
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
-     * </p>
+     *
      */
     static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, RowElementGroup,
             ObjectElementGroup {
@@ -304,7 +304,7 @@ abstract class SelectionGroups {
     /**
      * <p>
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
-     * </p>
+     *
      */
     static final class DerivedSelectionGroup implements _SelectionGroup, RowElementGroup, ObjectElementGroup {
 

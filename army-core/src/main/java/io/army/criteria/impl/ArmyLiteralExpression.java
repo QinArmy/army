@@ -18,11 +18,9 @@ import java.util.Objects;
 /**
  * <p>
  * This class representing single-literal expression.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @see ArmyParamExpression
  * @see ArmyRowLiteralExpression

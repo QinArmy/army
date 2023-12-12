@@ -17,8 +17,7 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * package class.
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
@@ -35,7 +34,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE">Comparison Functions</a>
      */
@@ -46,7 +45,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE">Comparison Functions</a>
      */
@@ -60,7 +59,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">cbrt(double precision)</a>
      */
@@ -71,7 +70,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of y
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">div ( y numeric, x numeric )</a>
      */
@@ -83,7 +82,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  BigDecimalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">factorial ( bigint ) → numeric</a>
      */
@@ -94,7 +93,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  MappingType} of exp
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">floor ( numeric ) → numeric,floor ( double precision ) → double precision</a>
      */
@@ -105,7 +104,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  MappingType} of exp1
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">gcd ( numeric_type, numeric_type ) → numeric_type</a>
      */
@@ -116,7 +115,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  MappingType} of exp1
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">lcm ( numeric_type, numeric_type ) → numeric_type</a>
      */
@@ -128,7 +127,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">min_scale ( numeric ) → integer</a>
      */
@@ -143,7 +142,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">power ( a numeric, b numeric ) → numeric,power ( a double precision, b double precision ) → double precision</a>
      */
@@ -154,7 +153,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">scale ( numeric ) → integer</a>
      */
@@ -166,7 +165,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BigDecimalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">trim_scale ( numeric ) → numeric</a>
      */
@@ -177,7 +176,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:The {@link MappingType} of exp
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">trunc ( numeric ) → numeric,trunc ( double precision ) → double precision</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#MACADDR-FUNCTIONS-TABLE">trunc ( macaddr ) → macaddr<br/>
@@ -191,7 +190,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BigDecimalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">trunc ( v numeric, s integer ) → numeric</a>
      */
@@ -202,7 +201,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">width_bucket ( operand numeric, low numeric, high numeric, count integer ) → integer,width_bucket ( operand double precision, low double precision, high double precision, count integer ) → integer</a>
      */
@@ -213,7 +212,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">width_bucket ( operand anycompatible, thresholds anycompatiblearray ) → integer</a>
      */
@@ -227,7 +226,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE">random ( ) → double precision</a>
      */
@@ -238,7 +237,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE">setseed ( double precision ) → void</a>
      */
@@ -252,7 +251,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">acosd ( double precision ) → double precision</a>
      */
@@ -263,7 +262,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">asind ( double precision ) → double precision</a>
      */
@@ -274,7 +273,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atand ( double precision ) → double precision</a>
      */
@@ -285,7 +284,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan2 ( y double precision, x double precision ) → double precision</a>
      */
@@ -296,7 +295,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan2d ( y double precision, x double precision ) → double precision</a>
      */
@@ -307,7 +306,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cosd ( double precision ) → double precision</a>
      */
@@ -318,7 +317,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cotd ( double precision ) → double precision</a>
      */
@@ -329,7 +328,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">sind ( double precision ) → double precision</a>
      */
@@ -340,7 +339,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">tand ( double precision ) → double precision</a>
      */
@@ -353,7 +352,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">sinh ( double precision ) → double precision</a>
      */
@@ -364,7 +363,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">cosh ( double precision ) → double precision</a>
      */
@@ -376,7 +375,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">tanh ( double precision ) → double precision</a>
      */
@@ -387,7 +386,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">asinh ( double precision ) → double precision</a>
      */
@@ -399,7 +398,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">acosh ( double precision ) → double precision</a>
      */
@@ -410,7 +409,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">atanh ( double precision ) → double precision</a>
      */
@@ -423,7 +422,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">to_char ( timestamp, text ) → text <br/>
      * to_char ( timestamp with time zone, text ) → text <br/>
@@ -438,7 +437,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">to_date ( text, text ) → date</a>
      */
@@ -449,7 +448,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BigDecimalType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">to_number ( text, text ) → numeric</a>
      */
@@ -460,7 +459,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">to_timestamp ( text, text ) → timestamp with time zone</a>
      */
@@ -473,7 +472,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">age ( timestamp ) → interval</a>
      */
@@ -484,7 +483,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">age ( timestamp, timestamp ) → interval</a>
      */
@@ -496,7 +495,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">isfinite ( date ) → boolean<br/>
      * isfinite ( timestamp ) → boolean <br/>
@@ -515,7 +514,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_first ( anyenum ) → anyenum</a>
      */
@@ -526,7 +525,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_first ( anyenum ) → anyenum</a>
      */
@@ -541,7 +540,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_last ( anyenum ) → anyenum</a>
      */
@@ -552,7 +551,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_last ( anyenum ) → anyenum</a>
      */
@@ -567,7 +566,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_range ( anyenum ) → anyarray</a>
      */
@@ -578,7 +577,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_range ( anyenum ) → anyarray</a>
      */
@@ -595,7 +594,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_range ( anyenum, anyenum ) → anyarray</a>
      */
@@ -618,7 +617,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">abbrev ( inet ) → text<br/>
      * abbrev ( cidr ) → text
@@ -631,7 +630,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link PostgreInetType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">broadcast ( inet ) → inet<br/>
      * Computes the broadcast address for the address's network.
@@ -644,7 +643,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">family ( inet ) → integer<br/>
      * Returns the address's family: 4 for IPv4, 6 for IPv6.<br/>
@@ -658,7 +657,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">host ( inet ) → text<br/>
      * Returns the IP address as text, ignoring the netmask.<br/>
@@ -673,7 +672,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link PostgreInetType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">hostmask ( inet ) → inet<br/>
      * Computes the host mask for the address's network.<br/>
@@ -688,7 +687,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link PostgreCidrType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">inet_merge ( inet, inet ) → cidr<br/>
      * Computes the smallest network that includes both of the given networks.<br/>
@@ -702,7 +701,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">inet_same_family ( inet, inet ) → boolean<br/>
      * Tests whether the addresses belong to the same IP family.<br/>
@@ -716,7 +715,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">masklen ( inet ) → integer<br/>
      * Returns the netmask length in bits.<br/>
@@ -730,7 +729,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link PostgreInetType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">netmask ( inet ) → inet<br/>
      * Computes the network mask for the address's network.<br/>
@@ -744,7 +743,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link PostgreCidrType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">network ( inet ) → cidr<br/>
      * Returns the network part of the address, zeroing out whatever is to the right of the netmask. (This is equivalent to casting the value to cidr.)<br/>
@@ -762,7 +761,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <li>If exp1 type is {@link PostgreCidrType},then {@link PostgreCidrType}</li>
      * <li>Else The {@link MappingType} of exp1</li>
      * </ul>
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -791,7 +790,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <li>If exp1 type is {@link PostgreCidrType},then {@link PostgreCidrType}</li>
      * <li>Else The {@link MappingType} of exp1</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">set_masklen ( inet, integer ) → inet<br/>
      * Sets the netmask length for an inet value. The address part does not change.<br/>
@@ -805,7 +804,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">text ( inet ) → text<br/>
      * Returns the unabbreviated IP address and netmask length as text. (This has the same result as an explicit cast to text.)<br/>
@@ -821,7 +820,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: The {@link MappingType} of macAddr8
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">macaddr8_set7bit ( macaddr8 ) → macaddr8<br/>
      * Sets the 7th bit of the address to one, creating what is known as modified EUI-64, for inclusion in an IPv6 address.<br/>
@@ -840,7 +839,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">col_description ( table oid, column integer ) → text<br/>
      * </a>
@@ -852,7 +851,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">obj_description ( object oid, catalog name ) → text<br/>
      * </a>
@@ -864,7 +863,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">obj_description ( object oid ) → text<br/>
      * </a>
@@ -876,7 +875,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">shobj_description ( object oid, catalog name ) → text<br/>
      * </a>
@@ -890,7 +889,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id () → xid8<br/>
      * </a>
@@ -902,7 +901,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id_if_assigned () → xid8<br/>
      * </a>
@@ -915,7 +914,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_xact_status ( xid8 ) → text<br/>
      * </a>
@@ -927,7 +926,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_snapshot () → pg_snapshot<br/>
      * </a>
@@ -943,7 +942,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
      * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xip ( pg_snapshot ) → setof xid8<br/>
      * </a>
@@ -955,7 +954,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmax ( pg_snapshot ) → xid8<br/>
      * </a>
@@ -968,7 +967,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmin ( pg_snapshot ) → xid8<br/>
      * </a>
@@ -981,7 +980,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_visible_in_snapshot ( xid8, pg_snapshot ) → boolean<br/>
      * </a>
@@ -996,10 +995,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
+     *
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_current () → bigint<br/>
      * See pg_current_xact_id().
@@ -1010,14 +1009,11 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
-     * <p>
-     * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     * <p>The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_current_if_assigned () → bigint<br/>
+     * <p><strong>Deprecated</strong> as of postgre 13
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_current_if_assigned () → bigint
      * See pg_current_xact_id_if_assigned().
      * </a>
      */
@@ -1029,10 +1025,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_current_snapshot () → txid_snapshot<br/>
      * See pg_current_snapshot().
@@ -1049,10 +1045,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
      * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_snapshot_xip ( txid_snapshot ) → setof bigint<br/>
      * see pg_snapshot_xip()
@@ -1066,10 +1062,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
+     *
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_snapshot_xmax ( txid_snapshot ) → bigint<br/>
      * See pg_snapshot_xmax().
@@ -1082,10 +1078,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     * </p>
+     *
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_snapshot_xmin ( txid_snapshot ) → bigint<br/>
      * See pg_snapshot_xmin().
@@ -1098,10 +1094,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     * </p>
+     *
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_visible_in_snapshot ( bigint, txid_snapshot ) → boolean<br/>
      * See pg_visible_in_snapshot().
@@ -1115,10 +1111,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     * </p>
+     *
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_status ( bigint ) → text<br/>
      * See pg_xact_status().
@@ -1134,7 +1130,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link OffsetDateTimeType#INSTANCE}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_xact_commit_timestamp ( xid ) → timestamp with time zone<br/>
      * </a>
@@ -1152,7 +1148,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>roident : {@link LongType#INSTANCE}</li>
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_xact_commit_timestamp_origin ( xid ) → record ( timestamp timestamp with time zone, roident oid)<br/>
      * </a>
@@ -1175,7 +1171,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>roident : {@link LongType#INSTANCE}</li>
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_last_committed_xact () → record ( xid xid, timestamp timestamp with time zone, roident oid )<br/>
      * </a>
@@ -1202,28 +1198,28 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>redo_lsn : {@link PostgrePgLsnType#LONG}</li>
      *     <li>redo_wal_file : {@link TextType#INSTANCE}</li>
      *     <li>timeline_id : {@link IntegerType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>prev_timeline_id : {@link IntegerType#INSTANCE}</li>
      *     <li>full_page_writes : {@link BooleanType#INSTANCE}</li>
      *     <li>next_xid : {@link TextType#INSTANCE}</li>
      *     <li>next_oid : {@link LongType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>next_multixact_id : {@link IntegerType#INSTANCE}</li>
      *     <li>next_multi_offset : {@link IntegerType#INSTANCE}</li>
      *     <li>oldest_xid : {@link IntegerType#INSTANCE}</li>
      *     <li>oldest_xid_dbid : {@link LongType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>oldest_active_xid : {@link IntegerType#INSTANCE}</li>
      *     <li>oldest_multi_xid : {@link IntegerType#INSTANCE}</li>
      *     <li>oldest_multi_dbid : {@link LongType#INSTANCE}</li>
      *     <li>oldest_commit_ts_xid : {@link IntegerType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>newest_commit_ts_xid : {@link IntegerType#INSTANCE}</li>
      *     <li>checkpoint_time : {@link OffsetDateTimeType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_checkpoint () → record<br/>
      * </a>
@@ -1262,17 +1258,15 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>pg_control_version : {@link IntegerType#INSTANCE}</li>
      *     <li>catalog_version_no : {@link IntegerType#INSTANCE}</li>
      *     <li>system_identifier : {@link LongType#INSTANCE}</li>
      *     <li>pg_control_last_modified : {@link OffsetDateTimeType#INSTANCE}</li>
-     *     <br/>
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_system () → record<br/>
      * </a>
@@ -1300,19 +1294,19 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>database_block_size : {@link IntegerType#INSTANCE}</li>
      *     <li>blocks_per_segment : {@link IntegerType#INSTANCE}</li>
      *     <li>wal_block_size : {@link IntegerType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>bytes_per_wal_segment : {@link IntegerType#INSTANCE}</li>
      *     <li>max_identifier_length : {@link IntegerType#INSTANCE}</li>
      *     <li>max_index_columns : {@link IntegerType#INSTANCE}</li>
      *     <li>max_toast_chunk_size : {@link IntegerType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>large_object_chunk_size : {@link IntegerType#INSTANCE}</li>
      *     <li>float8_pass_by_value : {@link BooleanType#INSTANCE}</li>
      *     <li>data_page_checksum_version : {@link IntegerType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_init () → record<br/>
      * </a>
@@ -1348,12 +1342,12 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>min_recovery_end_timeline : {@link IntegerType#INSTANCE}</li>
      *     <li>backup_start_lsn : {@link PostgrePgLsnType#LONG}</li>
      *     <li>backup_end_lsn : {@link PostgrePgLsnType#LONG}</li>
-     *     <br/>
+     *
      *     <li>end_of_backup_record_required : {@link BooleanType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_recovery () → record<br/>
      * </a>
@@ -1392,12 +1386,12 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>values : {@link TextArrayType#LINEAR}</li>
      *     <li>nulls : {@link BooleanArrayType#PRIMITIVE_LINEAR}</li>
      *     <li>frequency : {@link DoubleType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>base_frequency : {@link DoubleType#INSTANCE}</li>
-     *     <br/>
+     *
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-statistics.html">Statistics Information Functions<br/>
      * </a>
@@ -1420,7 +1414,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link VoidType#VOID}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM">TABLESAMPLE sampling_method ( argument [, ...] ) [ REPEATABLE ( seed ) ]<br/>
      * </a>
@@ -1432,7 +1426,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link VoidType#VOID}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM">TABLESAMPLE sampling_method ( argument [, ...] ) [ REPEATABLE ( seed ) ]<br/>
      * </a>

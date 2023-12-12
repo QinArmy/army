@@ -5,9 +5,7 @@ import io.army.criteria.impl.inner._Window;
 /**
  * <p>
  * Package interface
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 interface ArmyWindow extends _Window {
 

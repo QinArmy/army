@@ -16,8 +16,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is abstract implementation of {@link PostgreValues}.
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimpleValues<
@@ -41,7 +40,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
     /**
      * <p>
      * create primary VALUES statement.
-     * </p>
+     *
      */
     static PostgreValues._WithSpec<Values> simpleValues() {
         return new SimplePrimaryValues<>(null, null, SQLs::identity);

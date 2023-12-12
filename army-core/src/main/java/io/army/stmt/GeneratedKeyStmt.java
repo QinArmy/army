@@ -5,8 +5,7 @@ import io.army.meta.PrimaryFieldMeta;
 /**
  * <p>
  * This interface representing a insert statement that has auto increment id.
- * </p>
- */
+*/
 public interface GeneratedKeyStmt extends SimpleStmt, SingleSqlStmt.IdSelectionIndexSpec {
 
     int rowSize();

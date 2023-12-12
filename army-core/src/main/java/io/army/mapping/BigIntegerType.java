@@ -23,8 +23,7 @@ import java.math.BigInteger;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link BigInteger},if overflow,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @since 1.0
  */
 public final class BigIntegerType extends _NumericType._IntegerType {

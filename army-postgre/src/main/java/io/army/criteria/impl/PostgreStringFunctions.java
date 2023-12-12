@@ -12,8 +12,7 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * package class,hold postgre string functions and operators method.
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/functions-string.html">String Functions and Operators</a>
  */
 abstract class PostgreStringFunctions extends Functions {
@@ -127,7 +126,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">bit_length ( text ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">bit_length ( bit ) → integer</a>
@@ -140,7 +139,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">char_length ( text ) → integer</a>
      */
@@ -151,7 +150,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType} .
-     * </p>
+     *
      *
      * @see #upper(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">lower ( text ) → text</a>
@@ -166,7 +165,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of exp.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">normalize ( text [, form ] ) → text</a>
      */
@@ -177,7 +176,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of exp.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">normalize ( text [, form ] ) → text</a>
      */
@@ -198,7 +197,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  IntegerType}.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">octet_length ( text ) → integer ; octet_length ( character ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">octet_length ( bit ) → integer</a>
@@ -211,7 +210,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
@@ -226,7 +225,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
@@ -244,7 +243,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link  IntegerType}.
-     * </p>
+     *
      *
      * @param in {@link SQLs#IN}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">position ( substring text IN string text ) → integer</a>
@@ -270,7 +269,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param from {@link SQLs#FROM}
      * @see #substring(Expression, SQLs.WordFor, Expression)
@@ -287,7 +286,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param wordFor {@link SQLs#FOR}
      * @see #substring(Expression, SQLs.WordFrom, Expression)
@@ -304,7 +303,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param from    {@link SQLs#FROM}
      * @param wordFor {@link SQLs#FOR}
@@ -325,7 +324,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param similar    {@link SQLs#SIMILAR}
      * @param wordEscape {@link SQLs#ESCAPE}
@@ -357,7 +356,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      */
@@ -368,7 +367,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param from {@link SQLs#FROM}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
@@ -386,7 +385,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param position below:
      *                 <ul>
@@ -414,7 +413,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param from {@link SQLs#FROM}
      * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
@@ -437,7 +436,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param position below:
      *                 <ul>
@@ -468,7 +467,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
@@ -486,7 +485,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
@@ -508,7 +507,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @param position below:
      *                 <ul>
@@ -538,7 +537,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType} .
-     * </p>
+     *
      *
      * @see #lower(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">upper ( text ) → text</a>
@@ -552,7 +551,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType} .
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">ascii ( text ) → integer</a>
      */
@@ -563,7 +562,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of exp.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">btrim ( string text [, characters text ] ) → text</a>
      */
@@ -574,7 +573,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of exp.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">btrim ( string text [, characters text ] ) → text</a>
      */
@@ -585,7 +584,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">chr ( integer ) → text</a>
      */
@@ -596,7 +595,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">concat ( val1 "any" [, val2 "any" [, ...] ] ) → text</a>
      */
@@ -607,7 +606,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}.
-     * </p>
+     *
      *
      * @param expList non-null and non-empty.
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">concat ( val1 "any" [, val2 "any" [, ...] ] ) → text</a>
@@ -619,7 +618,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}.
-     * </p>
+     *
      *
      * @param sep  non-multi param value
      * @param exp1 expression ,possibly be multi param value:
@@ -649,7 +648,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}.
-     * </p>
+     *
      *
      * @param sep     non-multi param value
      * @param expList non-null and non-empty,element possibly be multi param value:
@@ -670,7 +669,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of formatStr.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">format ( formatstr text [, formatarg "any" [, ...] ] ) → text</a>
      */
@@ -681,7 +680,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of formatStr.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">format ( formatstr text [, formatarg "any" [, ...] ] ) → text</a>
      */
@@ -692,7 +691,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">initcap ( text ) → text</a>
      */
@@ -703,7 +702,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">left ( string text, n integer ) → text</a>
      */
@@ -715,7 +714,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see #lpad(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">lpad ( string text, length integer [, fill text ] ) → text</a>
@@ -727,7 +726,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see #lpad(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">lpad ( string text, length integer [, fill text ] ) → text</a>
@@ -739,7 +738,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">ltrim ( string text [, characters text ] ) → text</a>
      */
@@ -750,7 +749,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">ltrim ( string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">ltrim ( bytes bytea, bytesremoved bytea ) → bytea</a>
@@ -762,7 +761,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">md5 ( text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">md5 ( bytea ) → text</a>
@@ -774,7 +773,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextArrayType} .
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">parse_ident ( qualified_identifier text [, strict_mode boolean DEFAULT true ] ) → text[]</a>
      */
@@ -785,7 +784,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextArrayType} .
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">parse_ident ( qualified_identifier text [, strict_mode boolean DEFAULT true ] ) → text[]</a>
      */
@@ -801,7 +800,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link StringType} .
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">pg_client_encoding ( ) → name</a>
      */
@@ -817,7 +816,7 @@ abstract class PostgreStringFunctions extends Functions {
      *     <li>If the {@link MappingType} of anyElement is string type,then the {@link MappingType} of anyElement</li>
      *     <li>Else {@link StringType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">quote_literal ( anyelement ) → text</a>
      */
@@ -832,7 +831,7 @@ abstract class PostgreStringFunctions extends Functions {
      *     <li>If the {@link MappingType} of anyElement is string type,then the {@link MappingType} of anyElement</li>
      *     <li>Else {@link StringType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">quote_nullable ( anyelement ) → text</a>
      */
@@ -844,7 +843,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see #regexpCount(Expression, Expression, Expression)
      * @see #regexpCount(Expression, Expression, Expression, Expression)
@@ -858,7 +857,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see #regexpCount(Expression, Expression)
      * @see #regexpCount(Expression, Expression, Expression, Expression)
@@ -871,7 +870,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see #regexpCount(Expression, Expression)
      * @see #regexpCount(Expression, Expression, Expression)
@@ -884,7 +883,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
-     * </p>
+     *
      *
      * @param valueFunc valid function are :
      *                  <ul>
@@ -904,7 +903,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
-     * </p>
+     *
      *
      * @see #regexpLike(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
@@ -916,7 +915,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
-     * </p>
+     *
      *
      * @param valueFunc valid function are :
      *                  <ul>
@@ -938,7 +937,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
-     * </p>
+     *
      *
      * @param valueFunc valid function are :
      *                  <ul>
@@ -958,7 +957,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
-     * </p>
+     *
      *
      * @see #regexpLike(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
@@ -970,7 +969,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_match ( string text, pattern text [, flags text ] ) → text[] </a>
      */
@@ -981,7 +980,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_match ( string text, pattern text [, flags text ] ) → text[]</a>
      */
@@ -992,7 +991,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
@@ -1004,7 +1003,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
@@ -1017,7 +1016,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_replace ( string text, pattern text, replacement text [, start integer ] [, flags text ] ) → text</a>
      */
@@ -1028,7 +1027,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_replace ( string text, pattern text, replacement text [, start integer ] [, flags text ] ) → text</a>
      */
@@ -1039,7 +1038,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see #regexpLike(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_replace ( string text, pattern text, replacement text [, start integer ] [, flags text ] ) → text ;
@@ -1052,7 +1051,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see #regexpReplace(Expression, Expression, Expression, Expression, Expression)
      * @see #regexpReplace(Expression, Expression, Expression, Expression)
@@ -1065,7 +1064,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see #regexpSplitToArray(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_array ( string text, pattern text [, flags text ] ) → text[]</a>
@@ -1077,7 +1076,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see #regexpSplitToArray(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_array ( string text, pattern text [, flags text ] ) → text[]</a>
@@ -1089,7 +1088,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see #regexpSplitToTable(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
@@ -1102,7 +1101,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see #regexpSplitToTable(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
@@ -1116,7 +1115,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_substr ( string text, pattern text [, start integer [, N integer [, flags text [, subexpr integer ] ] ] ] ) → text</a>
      */
@@ -1127,7 +1126,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_substr ( string text, pattern text [, start integer [, N integer [, flags text [, subexpr integer ] ] ] ] ) → text</a>
      */
@@ -1138,7 +1137,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_substr ( string text, pattern text [, start integer [, N integer [, flags text [, subexpr integer ] ] ] ] ) → text</a>
      */
@@ -1150,7 +1149,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_substr ( string text, pattern text [, start integer [, N integer [, flags text [, subexpr integer ] ] ] ] ) → text</a>
      */
@@ -1161,7 +1160,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">repeat ( string text, number integer ) → text</a>
      */
@@ -1173,7 +1172,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">replace ( string text, from text, to text ) → text</a>
      */
@@ -1184,7 +1183,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">reverse ( text ) → text</a>
      */
@@ -1195,7 +1194,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">right ( string text, n integer ) → text</a>
      */
@@ -1206,7 +1205,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">rpad ( string text, length integer [, fill text ] ) → text</a>
      */
@@ -1217,7 +1216,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">rpad ( string text, length integer [, fill text ] ) → text</a>
      */
@@ -1228,7 +1227,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">rtrim ( string text [, characters text ] ) → text</a>
      */
@@ -1239,7 +1238,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">rtrim ( string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">rtrim ( bytes bytea, bytesremoved bytea ) → bytea</a>
@@ -1251,7 +1250,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">split_part ( string text, delimiter text, n integer ) → text</a>
      */
@@ -1262,7 +1261,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
+     *
      *
      * @see Postgres#caretAt(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">starts_with ( string text, prefix text ) → boolean</a>
@@ -1274,7 +1273,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_array ( string text, delimiter text [, null_string text ] ) → text[]</a>
      */
@@ -1286,7 +1285,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextArrayType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_array ( string text, delimiter text [, null_string text ] ) → text[]</a>
      */
@@ -1297,7 +1296,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
@@ -1311,7 +1310,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
@@ -1323,7 +1322,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">strpos ( string text, substring text ) → integer</a>
      */
@@ -1334,7 +1333,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">substr ( string text, start integer [, count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substr ( bytes bytea, start integer [, count integer ] ) → bytea</a>
@@ -1346,7 +1345,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of string
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">substr ( string text, start integer [, count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substr ( bytes bytea, start integer [, count integer ] ) → bytea</a>
@@ -1358,7 +1357,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">to_ascii ( string text ) → text <br/>
      * to_ascii ( string text, encoding name ) → text <br/>
@@ -1372,7 +1371,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">to_ascii ( string text ) → text <br/>
      * to_ascii ( string text, encoding name ) → text <br/>
@@ -1386,7 +1385,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">to_hex ( integer ) → text <br/>
      * to_hex ( bigint ) → text
@@ -1399,7 +1398,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">translate ( string text, from text, to text ) → text</a>
      */
@@ -1410,7 +1409,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">unistr ( text ) → text<br/>
      * to_hex ( bigint ) → text
@@ -1426,7 +1425,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LongType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">bit_count ( bit ) → bigint</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">bit_count ( bytes bytea ) → bigint</a>
@@ -1438,7 +1437,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">get_bit ( bits bit, n integer ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">get_bit ( bytes bytea, n bigint ) → integer</a>
@@ -1450,7 +1449,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bits
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">set_bit ( bits bit, n integer, newvalue integer ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">set_bit ( bytes bytea, n bigint, newvalue integer ) → bytea</a>
@@ -1464,7 +1463,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">get_bit ( bytes bytea, n bigint ) → integer</a>
      */
@@ -1475,7 +1474,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">length ( bytes bytea, encoding name ) → integer</a>
      */
@@ -1486,7 +1485,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bits
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">set_bit ( bytes bytea, n bigint, newvalue integer ) → bytea</a>
      */
@@ -1497,7 +1496,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bits
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">set_byte ( bytes bytea, n integer, newvalue integer ) → bytea</a>
      */
@@ -1508,7 +1507,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bytea
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha224 ( bytea ) → bytea</a>
      */
@@ -1519,7 +1518,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bytea
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha256 ( bytea ) → bytea</a>
      */
@@ -1530,7 +1529,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bytea
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha384 ( bytea ) → bytea</a>
      */
@@ -1541,7 +1540,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bytea
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha512 ( bytea ) → bytea</a>
      */
@@ -1552,7 +1551,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of bytea
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert ( bytes bytea, src_encoding name, dest_encoding name ) → bytea</a>
      */
@@ -1563,7 +1562,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType} .
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert_from ( bytes bytea, src_encoding name ) → text</a>
      */
@@ -1574,7 +1573,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BinaryType} .
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert_to ( string text, dest_encoding name ) → bytea</a>
      */
@@ -1586,7 +1585,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">encode ( bytes bytea, format text ) → text</a>
      */
@@ -1597,7 +1596,7 @@ abstract class PostgreStringFunctions extends Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BinaryType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">decode ( string text, format text ) → bytea</a>
      */

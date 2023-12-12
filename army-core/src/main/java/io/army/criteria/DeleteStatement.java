@@ -14,8 +14,7 @@ import io.army.meta.SingleTableMeta;
  *         <li>{@link io.army.criteria.dialect.ReturningDelete}</li>
  *         <li>{@link io.army.criteria.dialect.BatchReturningDelete}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface DeleteStatement extends NarrowDmlStatement {
@@ -29,12 +28,12 @@ public interface DeleteStatement extends NarrowDmlStatement {
     /**
      * <p>
      * This interface representing FROM clause for single-table DELETE syntax.
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>/
+     * /
      *
      * @param <DT> next clause java type
      * @since 1.0

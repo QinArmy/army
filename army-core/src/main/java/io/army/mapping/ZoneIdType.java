@@ -9,9 +9,7 @@ import java.time.*;
 /**
  * <p>
  * This class is mapping class of {@link ZoneId}.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public final class ZoneIdType extends _ArmyNoInjectionMapping {
 

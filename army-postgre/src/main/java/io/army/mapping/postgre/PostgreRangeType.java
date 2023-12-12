@@ -19,8 +19,7 @@ import java.util.function.Function;
  *         <li>{@link PostgreSingleRangeType}</li>
  *         <li>{@link PostgreMultiRangeType}</li>
  *     </ul>
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  */
 public abstract class PostgreRangeType extends _ArmyPostgreRangeType {

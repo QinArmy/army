@@ -12,9 +12,8 @@ import java.util.List;
  *         <li>{@link SimpleStmt}</li>
  *         <li>{@link BatchStmt}</li>
  *     </ul>
- * </p>
+ * * @see PairStmt
  *
- * @see PairStmt
  * @since 1.0
  */
 public interface SingleSqlStmt extends Stmt {

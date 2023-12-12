@@ -37,8 +37,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ascii">ASCII(str)</a>
      */
@@ -49,8 +48,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param n nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bin">BIN(n)</a>
      */
@@ -61,8 +59,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
      */
@@ -73,8 +70,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param n parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
@@ -86,8 +82,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param list parameter or {@link Expression} list
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
@@ -100,8 +95,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param n           nullable parameter or non-empty {@link List} or {@link Expression}
      * @param using       {@link MySQLs#USING}
      * @param charsetName non-null, {@link MySQLCharset} or {@link MySQLs#charset(String)} ,output identifier
@@ -125,8 +119,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param list        parameter or {@link Expression} list
      * @param using       {@link MySQLs#USING}
      * @param charsetName non-null, {@link MySQLCharset} or {@link MySQLs#charset(String)} ,output identifier
@@ -154,8 +147,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR_LENGTH(str)</a>
@@ -167,8 +159,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Collection} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
@@ -180,8 +171,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param separator nullable parameter or {@link Expression}
      * @param str       nullable parameter or {@link Collection} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -194,8 +184,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param list nullable parameter or {@link Collection} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
@@ -207,8 +196,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param n   non-null parameter or {@link Expression}
      * @param str non-null parameter or non-empty {@link List} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -221,8 +209,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param n    non-null parameter or {@link Expression}
      * @param list nullable parameter or {@link Collection} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -236,8 +223,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param bits non-null parameter or {@link Expression}
      * @param on   non-null parameter or {@link Expression}
      * @param off  non-null parameter or {@link Expression}
@@ -253,8 +239,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param bits non-null parameter or {@link Expression}
      * @param on   non-null parameter or {@link Expression}
      * @param off  non-null parameter or {@link Expression}
@@ -271,8 +256,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param bits non-null parameter or {@link Expression}
      * @param on   non-null parameter or {@link Expression}
      * @param off  non-null parameter or {@link Expression}
@@ -290,8 +274,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList non-null literal or non-empty {@link List}  or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -304,8 +287,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList non-null literal or non-empty {@link List}  or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -318,8 +300,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -333,8 +314,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -347,8 +327,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param x non-null
      * @param d non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -363,8 +342,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param x      non-null
      * @param d      non-null
      * @param locale non-null
@@ -379,8 +357,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #toBase64(Expression)
@@ -393,8 +370,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #fromBase64(Expression)
@@ -407,8 +383,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param strOrNum nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #unhex(Expression)
@@ -421,8 +396,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #hex(Expression)
@@ -435,8 +409,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str    nullable parameter or {@link Expression}
      * @param pos    nullable parameter or {@link Expression}
      * @param len    nullable parameter or {@link Expression}
@@ -452,8 +425,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str    nullable parameter or {@link Expression}
      * @param substr nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -466,8 +438,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lower">LOWER(str)</a>
@@ -479,8 +450,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #lower(Expression)
@@ -493,8 +463,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @param len nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -507,8 +476,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
@@ -520,8 +488,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param fileName non-null parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_load-file">LOAD_FILE(fileName)</a>
@@ -533,8 +500,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -549,8 +515,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @param pos    nullable parameter or {@link Expression}
@@ -565,8 +530,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str    nullable parameter or {@link Expression}
      * @param len    nullable parameter or {@link Expression}
      * @param padstr nullable parameter or {@link Expression}
@@ -581,8 +545,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str    nullable parameter or {@link Expression}
      * @param len    nullable parameter or {@link Expression}
      * @param padstr nullable parameter or {@link Expression}
@@ -598,8 +561,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #rtrim(Expression)
@@ -612,8 +574,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #ltrim(Expression)
@@ -626,8 +587,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param bits    non-null {@link Long} or {@link Integer} or {@link BitSet} or {@link Expression}
      * @param strList {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -640,8 +600,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param bits    non-null {@link Expression}
      * @param strList {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -654,8 +613,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @param pos nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -668,8 +626,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @param pos nullable parameter or {@link Expression}
      * @param len nullable parameter or {@link Expression}
@@ -683,8 +640,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param n nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_oct">OCT(N)</a>
@@ -696,8 +652,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
@@ -709,8 +664,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -725,8 +679,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_quote">QUOTE(str)</a>
@@ -738,8 +691,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str   nullable parameter or {@link Expression}
      * @param count nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -752,8 +704,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str     nullable parameter or {@link Expression}
      * @param fromStr nullable parameter or {@link Expression}
      * @param toStr   nullable parameter or {@link Expression}
@@ -767,8 +718,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_reverse">REVERSE(str)</a>
@@ -780,8 +730,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @param len nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -794,8 +743,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_soundex">SOUNDEX(str)</a>
@@ -808,8 +756,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param n nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_space">SPACE(n)</a>
@@ -821,8 +768,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str   nullable parameter or {@link Expression}
      * @param delim nullable parameter or {@link Expression}
      * @param count nullable parameter or {@link Expression}
@@ -836,8 +782,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
@@ -849,8 +794,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param remstr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -864,8 +808,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param position non-null,should be below:
      *                 <ul>
      *                      <li>{@link SQLs#BOTH}</li>
@@ -896,8 +839,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str)</a>
@@ -909,8 +851,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
-     *
+     *     *
      * @param str  nullable parameter or {@link Expression}
      * @param type non-null {@link  MySQLCastType#CHAR} or {@link  MySQLCastType#BINARY}
      * @param n    non-null parameter or {@link Expression}

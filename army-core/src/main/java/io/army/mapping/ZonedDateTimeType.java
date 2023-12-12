@@ -24,9 +24,7 @@ import java.time.ZonedDateTime;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link ZonedDateTime},if error,throw {@link io.army.ArmyException}
- * </p>
- *
- * @since 1.0
+ ** @since 1.0
  */
 public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlOffsetDateTimeType {
 

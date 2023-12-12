@@ -27,8 +27,7 @@ import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link MonthDay},if error,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @since 1.0
  */
 public final class MonthDayType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {

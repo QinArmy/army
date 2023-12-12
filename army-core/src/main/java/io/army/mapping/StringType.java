@@ -37,8 +37,7 @@ import java.time.temporal.TemporalAmount;
  *     <li>{@link java.time.Period} </li>
  * </ul>
  *  to {@link String},if error,throw {@link io.army.ArmyException}
- * </p>
- *
+*
  * @see TextType
  * @see MediumTextType
  * @since 1.0

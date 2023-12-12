@@ -11,8 +11,7 @@ package io.army.criteria;
  *     <li>{@link Delete}</li>
  *     <li>The dml command interface that don't return result set</li>
  * </ul>
- * </p>
- *
+*
  * @see SimpleDqlStatement
  * @see BatchDmlStatement
  * @see io.army.criteria.dialect.BatchDqlStatement

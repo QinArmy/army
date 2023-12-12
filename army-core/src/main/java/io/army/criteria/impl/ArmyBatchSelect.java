@@ -8,8 +8,7 @@ import io.army.criteria.impl.inner._PrimaryRowSet;
 /**
  * <p>
  * package interface
- * </p>
- *
+*
  * @see ArmySelect
  * @since 1.0
  */

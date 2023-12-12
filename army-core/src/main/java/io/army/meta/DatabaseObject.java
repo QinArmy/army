@@ -9,8 +9,7 @@ import io.army.criteria.SQLElement;
  *         <li>{@link  TableMeta}</li>
  *         <li>{@link  io.army.criteria.TableField}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface DatabaseObject extends SQLElement {

@@ -20,8 +20,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the implementation of standard nested join
- * </p>
- *
+*
  * @see StandardQueries
  * @since 1.0
  */

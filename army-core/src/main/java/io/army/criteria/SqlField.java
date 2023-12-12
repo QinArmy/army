@@ -12,8 +12,7 @@ import java.util.function.BiFunction;
  *         <li>{@link DerivedField}</li>
  *         <li>{@link DerivedField}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface SqlField extends NamedExpression {

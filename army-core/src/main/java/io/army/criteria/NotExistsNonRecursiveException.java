@@ -3,9 +3,7 @@ package io.army.criteria;
 /**
  * <p>
  * Throw when WITH RECURSIVE clause not exists non-recursive part and try reference recursive cte.
- * </p>
- *
- * @since 1.p
+ * * @since 1.p
  */
 public final class NotExistsNonRecursiveException extends CriteriaException {
 

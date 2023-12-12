@@ -10,8 +10,7 @@ import javax.annotation.Nullable;
  *         <li>{@link _SingleUpdateContext}</li>
  *         <li>{@link _MultiUpdateContext}</li>
  *     </ul>
- * </p>
- */
+*/
 public interface _UpdateContext extends _SqlContext, NarrowDmlContext, _DmlContext.ConditionFieldsSpec,
         _SetClauseContext {
 

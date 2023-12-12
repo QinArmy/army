@@ -32,7 +32,7 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
     /**
      * <p>
      * <strong>NOTE</strong> : driver don't send message to database server before subscribing.
-     * </p>
+     *
      *
      * @throws SessionException emit(not throw) when database driver emit error.
      */

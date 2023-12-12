@@ -37,7 +37,7 @@ public abstract class DialectParserFactory {
     /**
      * <p>
      * Inner method
-     * </p>
+     *
      */
     @SuppressWarnings("unchecked")
     protected static <T extends ArmyParser> T invokeFactoryMethod(Class<T> dialectType, String className

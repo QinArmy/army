@@ -25,8 +25,7 @@ import java.util.function.*;
 /**
  * <p>
  * This class is base class of all simple SELECT query.
- * </p>
- *
+*
  * @since 1.0
  */
 @SuppressWarnings("unchecked")

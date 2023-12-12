@@ -6,11 +6,10 @@ import io.army.criteria.impl.inner._SelectionGroup;
  * <p>
  * This interface representing select list item(s).
  * This interface is base interface of below:
- *     <ul>
- *        <lii>{@link Selection}</lii>
- *        <lii>{@link _SelectionGroup}</lii>
- *     </ul>
- * </p>
+ * <ul>
+ *    <li>{@link Selection}</li>
+ *    <li>{@link _SelectionGroup}</li>
+ * </ul>
  *
  * @see Selection
  * @see _SelectionGroup

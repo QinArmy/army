@@ -4,8 +4,7 @@ package io.army.criteria;
 /**
  * <p>
  * This interface representing SQL parameter expression.
- * </p>
- *
+*
  * @see LiteralExpression
  * @since 1.0
  */

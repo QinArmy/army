@@ -110,12 +110,11 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing STRAIGHT JOIN clause
-     * </p>
-     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     * *
      *
      * @param <JT> same with JT with the JT of {@link _JoinClause}
      * @param <JS> same with JT with the JS of {@link _JoinClause}
@@ -156,13 +155,11 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing dialect join clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <JP> next clause java type
      * @since 1.0
      */
@@ -181,13 +178,11 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing dialect STRAIGHT JOIN clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <JP> same with the JP of {@link _DialectJoinClause}
      * @see _DialectJoinClause
      * @since 1.0
@@ -199,16 +194,11 @@ public interface DialectStatement extends Statement {
     }
 
 
-
     /**
-     * <p>
-     * This interface representing dialect CROSS JOIN clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
+     * <p>This interface representing dialect CROSS JOIN clause.
+     *  <p><strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
      *
      * @since 1.0
      */
@@ -222,13 +212,11 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing JOIN CTE clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <JC> same with the JS of {@link _JoinClause}
      * @since 1.0
      */
@@ -292,13 +280,11 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing STRAIGHT JOIN CTE clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <JS> same with the JS of {@link _JoinClause}
      * @since 1.0
      */
@@ -322,13 +308,11 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing dialect left bracket clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <LP> next clause java type
      * @since 1.0
      */
@@ -340,13 +324,11 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing  left bracket cte clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <R> same with the LS of {@link _NestedLeftParenClause}
      * @since 1.0
      */

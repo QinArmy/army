@@ -23,12 +23,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>UNION clause for standard syntax</li>
      *          <li>method {@link _AsQueryClause#asQuery()}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -44,12 +44,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>LIMIT clause for standard syntax</li>
      *          <li> {@link _AsQueryClause}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -70,12 +70,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>ORDER BY clause for standard syntax</li>
      *          <li>the composite {@link _UnionLimitSpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -93,12 +93,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>lock clause for standard syntax</li>
      *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -116,12 +116,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>LIMIT clause for standard syntax</li>
      *          <li>the composite {@link _LockSpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -142,12 +142,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>ORDER BY clause for standard syntax</li>
      *          <li>the composite {@link _LimitSpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -185,12 +185,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>HAVING clause for standard syntax</li>
      *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -213,12 +213,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>GROUP BY clause for standard syntax</li>
      *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -236,12 +236,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>AND clause for standard syntax</li>
      *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -259,12 +259,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>WHERE clause for standard syntax</li>
      *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -281,12 +281,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>{@link _StandardJoinClause}</li>
      *          <li>the composite {@link _WhereSpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -303,12 +303,12 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>FROM clause for standard syntax</li>
      *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -328,12 +328,12 @@ public interface StandardQuery extends Query, StandardStatement {
     /**
      * <p>
      * This interface representing SELECT clause for standard syntax.
-     * </p>
+     *
      * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      *
      * @since 1.0
      */

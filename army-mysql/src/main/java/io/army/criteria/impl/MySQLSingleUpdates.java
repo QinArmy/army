@@ -28,7 +28,6 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is an implementation of single-table {@link MySQLUpdate}
- * </p>
  */
 
 abstract class MySQLSingleUpdates<I extends Item, T>
@@ -52,8 +51,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
     /**
      * <p>
      * create simple(non-batch) single-table UPDATE statement that is primary statement.
-     * </p>
-     */
+     *     */
     static _SingleWithSpec<Update> simple() {
         return new SimpleUpdateClause();
     }
@@ -61,8 +59,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
     /**
      * <p>
      * create batch single-table UPDATE statement that is primary statement.
-     * </p>
-     */
+     *     */
     static _SingleWithSpec<_BatchUpdateParamSpec> batch() {
         return new BatchUpdateClause();
     }

@@ -10,8 +10,7 @@ package io.army.criteria;
  *         <li>{@link SimpleDmlStatement}</li>
  *         <li>{@link BatchDmlStatement}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface DmlStatement extends PrimaryStatement, Statement.DmlStatementSpec {

@@ -12,8 +12,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing Postgre path type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">path</a>
  */
 public final class PostgrePathType extends PostgreGeometricType implements MappingType.SqlLineStringType {

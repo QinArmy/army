@@ -236,7 +236,7 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing INTO clause that support only {@link SingleTableMeta}.
-     * </p>
+     *
      */
     interface _PrimarySingleIntoClause<I extends Item> {
 
@@ -248,7 +248,7 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing INSERT INTO spec that support only {@link SingleTableMeta}.
-     * </p>
+     *
      */
     interface _PrimarySingleInsertIntoSpec<I extends Item> extends _InsertClause<_PrimarySingleIntoClause<I>>, Item {
 
@@ -260,7 +260,7 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing {@link LiteralMode} spec that support only {@link SingleTableMeta}.
-     * </p>
+     *
      */
     interface _PrimarySinglePreferLiteralSpec<I extends Item>
             extends InsertStatement._PreferLiteralClause<_PrimarySingleInsertIntoSpec<I>>,
@@ -272,7 +272,7 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing {@link NullMode} spec that support only {@link SingleTableMeta}.
-     * </p>
+     *
      */
     interface _PrimarySingleNullOptionSpec<I extends Item>
             extends InsertStatement._NullOptionClause<_PrimarySinglePreferLiteralSpec<I>>,
@@ -283,7 +283,7 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing migration spec that support only {@link SingleTableMeta}.
-     * </p>
+     *
      */
     interface _PrimarySingleOptionSpec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_PrimarySingleNullOptionSpec<I>>,

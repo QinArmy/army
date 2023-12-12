@@ -12,8 +12,7 @@ import io.army.criteria.DqlStatement;
  *         <li>{@link BatchReturningUpdate}</li>
  *         <li>{@link BatchReturningDelete}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface BatchDqlStatement extends DqlStatement {

@@ -32,8 +32,7 @@ import java.util.stream.Stream;
 /**
  * <p>
  * This class is a implementation of {@link SyncExecutor} with postgre JDBC driver.
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class PostgreExecutor extends JdbcExecutor {

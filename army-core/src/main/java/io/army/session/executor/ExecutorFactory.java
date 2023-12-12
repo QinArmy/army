@@ -19,7 +19,6 @@ import java.util.function.Function;
  *     <li>{@link #localExecutor(String, boolean, Function)}</li>
  *     <li>{@link #rmExecutor(String, boolean, Function)}</li>
  * </ul>
- *
  * @since 1.0
  */
 public interface ExecutorFactory extends CloseableSpec, OptionSpec {

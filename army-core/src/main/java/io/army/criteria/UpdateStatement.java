@@ -18,8 +18,7 @@ import java.util.function.Supplier;
  *         <li>{@link io.army.criteria.dialect.ReturningUpdate}</li>
  *         <li>{@link io.army.criteria.dialect.BatchReturningUpdate}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface UpdateStatement extends NarrowDmlStatement {

@@ -114,8 +114,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param string non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-quote">JSON_QUOTE(string)</a>
@@ -127,8 +126,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
+     *     *
      * @param target    non-null
      * @param candidate non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -142,8 +140,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
+     *     *
      * @param target    non-null
      * @param candidate non-null
      * @param path      non-null
@@ -158,8 +155,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc  non-null
      * @param oneOrAll literal 'one' or 'all'
      * @param paths    non-null,multi parameter(literal) {@link Expression} is allowed
@@ -175,8 +171,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc  non-null
      * @param oneOrAll non-null
      * @param pathList non-null,non-empty
@@ -192,8 +187,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null
      * @param paths   non-null,multi parameter(literal) {@link Expression} is allowed
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -207,8 +201,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc  non-null
      * @param pathList non-null,non-empty
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -222,8 +215,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null,wrap to {@link SQLs#param(TypeInfer, Object)}
      * @param firstPath non-null,non-empty,wrap to {@link SQLs#param(TypeInfer, Object)} or {@link SQLs#rowParam(TypeInfer, Collection)}
      * @param paths     optional paths ,wrap to {@link SQLs#rowParam(TypeInfer, Collection)}
@@ -247,8 +239,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonKeys(Expression, Expression)
@@ -261,8 +252,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null
      * @param path    non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -276,8 +266,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null
      * @param path    wrap to {@link SQLs#param(TypeInfer, Object)}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -292,8 +281,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null, wrap to {@link SQLs#param(TypeInfer, Object)}
      * @param path    non-null,wrap to {@link SQLs#param(TypeInfer, Object)}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -310,8 +298,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc1 non-null
      * @param jsonDoc2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -324,8 +311,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc1 non-null
      * @param jsonDoc2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -338,8 +324,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null
      * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
      * @param searchStr non-null
@@ -355,8 +340,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null
      * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
      * @param searchStr non-null
@@ -372,8 +356,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null
      * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
      * @param searchStr non-null
@@ -390,8 +373,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null
      * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
      * @param searchStr non-null
@@ -419,8 +401,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc    non-null
      * @param oneOrAll   non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
      * @param searchStr  non-null,wrap to literal expression
@@ -446,8 +427,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc    non-null wrap parameter expression
      * @param oneOrAll   non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
      * @param searchStr  non-null,wrap to literal expression
@@ -466,8 +446,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     * <p>
+     *     * <p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
@@ -502,8 +481,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
      *      </ul>
-     * </p>
-     *
+     *     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
@@ -523,8 +501,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc     non-null
      * @param pathValList non-null,non-empty,size is even
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -537,8 +514,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null
      * @param firstPath     wrap to literal expression
      * @param firstValue    wrap to parameter expression
@@ -554,8 +530,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null,wrap to parameter expression
      * @param firstPath     non-null,wrap to literal expression
      * @param firstValue    non-null,wrap to parameter expression
@@ -573,8 +548,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc     non-null
      * @param pathValList non-null,non-empty,size is even
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -588,8 +562,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null
      * @param firstPath     wrap to literal expression
      * @param firstValue    wrap to parameter expression
@@ -605,8 +578,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null,wrap to parameter expression
      * @param firstPath     non-null,wrap to literal expression
      * @param firstValue    non-null,wrap to parameter expression
@@ -623,8 +595,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc     non-null
      * @param pathValList non-null,non-empty,size is even
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -638,8 +609,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null
      * @param firstPath     wrap to literal expression
      * @param firstValue    wrap to parameter expression
@@ -655,8 +625,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null,wrap to parameter expression
      * @param firstPath     non-null,wrap to literal expression
      * @param firstValue    non-null,wrap to parameter expression
@@ -673,8 +642,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc     non-null
      * @param pathValList non-null,non-empty,size is even
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -687,8 +655,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null
      * @param firstPath     wrap to literal expression
      * @param firstValue    wrap to parameter expression
@@ -704,8 +671,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null,wrap to parameter expression
      * @param firstPath     non-null,wrap to literal expression
      * @param firstValue    non-null,wrap to parameter expression
@@ -723,8 +689,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc     non-null
      * @param pathValList non-null,non-empty,size is even
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -737,8 +702,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null
      * @param firstPath     wrap to literal expression
      * @param firstValue    wrap to parameter expression
@@ -754,8 +718,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc       non-null,wrap to parameter expression
      * @param firstPath     non-null,wrap to literal expression
      * @param firstValue    non-null,wrap to parameter expression
@@ -773,11 +736,9 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     * <p>
+     *     * <p>
      * You should use {@link #jsonMergePreserve(Expression, Expression, Expression...)},if database is 8.0+.
-     * </p>
-     *
+     *     *
      * @param jsonDoc1 non-null
      * @param jsonDoc2 non-null,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -790,11 +751,9 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     * <p>
+     *     * <p>
      * You should use {@link #jsonMergePreserve(List)},if database is 8.0+.
-     * </p>
-     *
+     *     *
      * @param jsonDocList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge">JSON_MERGE(json_doc, json_doc[, json_doc] ...)</a>
@@ -810,8 +769,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc1 non-null
      * @param jsonDoc2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -825,8 +783,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDocList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-preserve">JSON_MERGE_PRESERVE(json_doc, json_doc[, json_doc] ...)</a>
@@ -842,8 +799,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc1 non-null
      * @param jsonDoc2 non-null,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -857,8 +813,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDocList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
@@ -874,8 +829,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null
      * @param firstPath non-null,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -888,8 +842,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc  non-null
      * @param pathList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -906,8 +859,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null
      * @param firstPath non-null,wrap to literal expression
      * @param paths     non-null, empty or paths,wrap to literal expressions
@@ -928,8 +880,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * </p>
-     *
+     *     *
      * @param jsonDoc   non-null,wrap to parameter expression
      * @param firstPath non-null,wrap to literal expression
      * @param paths     non-null, empty or paths,wrap to literal expressions
@@ -944,8 +895,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonVal non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-unquote">JSON_UNQUOTE(json_val)</a>
@@ -957,8 +907,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
@@ -971,8 +920,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
@@ -985,8 +933,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     * </p>
-     *
+     *     *
      * @param jsonDoc non-null
      * @param path    non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -999,8 +946,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     * </p>
-     *
+     *     *
      * @param jsonVal non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-type">JSON_TYPE(json_val)</a>
@@ -1014,8 +960,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
+     *     *
      * @param val non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-valid">JSON_VALID(val)</a>

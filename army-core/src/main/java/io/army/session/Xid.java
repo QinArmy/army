@@ -19,10 +19,7 @@ import java.util.function.Function;
  *     <li>write gtrid or bqual as hex strings</li>
  * </ul>
  * the conversion process of {@code  RmSession#recover(int, java.util.function.Function)} is the reverse of above.
- * <br/>
- * <p>
- *     Application developer can get the instance of {@link Xid} by {@link #from(String, String, int)} method.
- * <br/>
+ * <p>Application developer can get the instance of {@link Xid} by {@link #from(String, String, int)} method.
  *
  * @see Option#XID
  * @see RmSession
@@ -134,21 +131,16 @@ public interface Xid extends OptionSpec {
     String toString();
 
     /**
-     * <p>
-     * {@code  RmSession#recover(int, java.util.function.Function) } maybe add some dialect value.
-     * <br/>
+     * <p>{@code  RmSession#recover(int, java.util.function.Function) } maybe add some dialect value.
      *
      * @return null or dialect option value.
-     * @code RmSession#recover(int, java.util.function.Function)
      */
     @Nullable
     @Override
     <T> T valueOf(Option<T> option);
 
     /**
-     * <p>
-     * Create one {@link Xid} instance.
-     * <br/>
+     * <p>Create one {@link Xid} instance.
      *
      * @param gtrid must have text
      * @param bqual null or must have text
@@ -159,9 +151,7 @@ public interface Xid extends OptionSpec {
     }
 
     /**
-     * <p>
-     * Create one {@link Xid} instance.
-     * <br/>
+     * <p>Create one {@link Xid} instance.
      *
      * @param gtrid must have text
      * @param bqual null or must have text

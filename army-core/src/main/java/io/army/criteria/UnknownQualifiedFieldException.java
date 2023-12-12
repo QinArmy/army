@@ -3,9 +3,7 @@ package io.army.criteria;
 /**
  * <p>
  * Throw when {@link Statement} exists unknown {@link QualifiedField}.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public final class UnknownQualifiedFieldException extends CriteriaException {
 

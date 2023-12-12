@@ -21,8 +21,7 @@ import java.util.List;
 /**
  * <p>
  * This class is all MySQL optimizer hint base class.
- * </p>
- *
+*
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">Optimizer Hints</a>
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
  */
@@ -215,7 +214,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
      *         <li>{@link HintType#JOIN_PREFIX}</li>
      *         <li>{@link HintType#JOIN_SUFFIX}</li>
      *     </ul>
-     * </p>
+     *
      */
     private static final class JoinOrder extends MySQLHints {
 

@@ -16,7 +16,6 @@ import java.util.function.Function;
  * <li>{@link SQLs#DEFAULT}</li>
  * <li>{@link SQLs#_ASTERISK_EXP}</li>
  * </ul>
- * </p>
  */
 abstract class NonOperationExpression implements ArmyExpression {
 

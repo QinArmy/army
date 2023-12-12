@@ -24,8 +24,7 @@ import java.util.regex.Pattern;
  *     <li>sql literal</li>
  *     <li>standard sql function</li>
  * </ul>
- * </p>
- *
+*
  * @see SQLs
  */
 @SuppressWarnings("unused")
@@ -142,7 +141,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  MappingType} of expr
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_abs">ABS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ABS(numeric_type)</a>
@@ -154,7 +153,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">ACOS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">acos ( double precision ) → double precision</a>
@@ -166,7 +165,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_asin">ASIN(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">asin ( double precision ) → double precision</a>
@@ -178,7 +177,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan">ATAN(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan ( double precision ) → double precision</a>
@@ -190,7 +189,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan2">ATAN(X,y)</a>
      */
@@ -205,7 +204,7 @@ abstract class Functions {
      *     <li>if {@link MappingType} of exp is number type,then {@link MappingType} of exp </li>
      *     <li>else {@link BigDecimalType} </li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ceil">CEIL(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ceil ( numeric ) → numeric,ceil ( double precision ) → double precision</a>
@@ -217,7 +216,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} or expr
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_conv">CONV(X)</a>
      */
@@ -228,7 +227,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cos">COS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cos ( double precision ) → double precision</a>
@@ -240,7 +239,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cot">COT(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cot ( double precision ) → double precision</a>
@@ -252,7 +251,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_crc32">CRC32(expr)</a>
      */
@@ -263,7 +262,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_degrees">DEGREES(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">degrees ( double precision )</a>
@@ -279,7 +278,7 @@ abstract class Functions {
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_exp">EXP(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">exp ( numeric )</a>
@@ -291,7 +290,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_floor">FLOOR(x)</a>
      */
@@ -302,7 +301,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  StringType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_format">FORMAT(x,d)</a>
      */
@@ -313,7 +312,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  StringType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_hex">HEX(n_or_s)</a>
      */
@@ -328,7 +327,7 @@ abstract class Functions {
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ln">LN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ln ( numeric ) → numeric,ln ( double precision ) → double precision</a>
@@ -344,7 +343,7 @@ abstract class Functions {
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( numeric ) → numeric,log ( double precision ) → double precision</a>
@@ -356,7 +355,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  BigDecimalType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(B,X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( b numeric, x numeric ) → numeric</a>
@@ -372,7 +371,7 @@ abstract class Functions {
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log10 ( numeric ) → numeric,log10 ( double precision ) → double precision</a>
@@ -384,7 +383,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of n.
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_mod">MOD(N,M), N % M, N MOD M</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">mod ( y numeric_type, x numeric_type ) → numeric_type</a>
@@ -396,7 +395,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pi">PI()</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">pi ( ) → double precision</a>
@@ -408,7 +407,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link MappingType} of x
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pow">POW(x,y)</a>
      */
@@ -419,7 +418,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_radians">RADIANS(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">radians ( double precision ) → double precision</a>
@@ -431,7 +430,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
@@ -442,7 +441,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
@@ -457,7 +456,7 @@ abstract class Functions {
      *     <li>If the {@link MappingType} of exp is number type,then {@link MappingType} of exp</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( numeric ) → numeric</a>
@@ -469,7 +468,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BigDecimalType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x,d)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( v numeric, s integer ) → numeric</a>
@@ -481,7 +480,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sign">SIGN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sign ( numeric ) → numeric</a>
@@ -493,7 +492,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sin">SIN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sin ( numeric ) → numeric</a>
@@ -520,7 +519,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_tan">TAN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">tan ( numeric ) → numeric</a>
@@ -532,7 +531,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_truncate">TRUNCATE(x,d)</a>
      */
@@ -543,10 +542,10 @@ abstract class Functions {
     /**
      * <p>
      * This function is standard sql92 functions
-     * </p>
+     *
      * <p>
      * The {@link MappingType} of function return type:the {@link  MappingType} of expr1
-     * </p>
+     *
      *
      * @throws CriteriaException throw when any arg is multi-value expression
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_nullif">NULLIF(expr1,expr2)</a>
@@ -559,7 +558,7 @@ abstract class Functions {
     /**
      * <p>
      * standard sql92 functions,The {@link MappingType} of function return type: {@link IntegerType} .
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">length ( text ) → integer</a>
@@ -575,7 +574,7 @@ abstract class Functions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType}
-     * </p>
+     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
@@ -928,7 +927,7 @@ abstract class Functions {
      *     <li>Else if exp is sql float type,then {@link DoubleType}</li>
      *     <li>Else he {@link MappingType} of exp</li>
      * </ul>
-     * </p>
+     *
      */
     static MappingType _sumType(final MappingType type) {
         final MappingType returnType;

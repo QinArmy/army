@@ -23,8 +23,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This class representing Postgre Built-in Range  Types type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  */
 public final class PostgreSingleRangeType extends PostgreRangeType implements PostgreRangeType.SingleRangeType {
@@ -209,7 +208,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     /**
      * <p>
      * package constructor
-     * </p>
+     *
      */
     private PostgreSingleRangeType(PostgreType sqlType, Class<?> javaType, @Nullable RangeFunction<?, ?> rangeFunc) {
         super(sqlType, javaType, rangeFunc);

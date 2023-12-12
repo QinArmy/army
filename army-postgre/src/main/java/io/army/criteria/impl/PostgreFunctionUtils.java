@@ -1274,11 +1274,10 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     /**
      * <p>
      * This class is base class of :
-     *     <ul>
-     *         <li>{@link NonOrderedSetAggregateFunction}</li>
-     *         <li>{@link PgWithGroupAggFunc}</li>
-     *     </ul>
-     * </p>
+     * <ul>
+     *     <li>{@link NonOrderedSetAggregateFunction}</li>
+     *     <li>{@link PgWithGroupAggFunc}</li>
+     * </ul>
      */
     private static abstract class PostgreAggregateFunction extends OperationExpression.SqlFunctionExpression
             implements PostgreWindowFunctions._PgAggFunc, FunctionOuterClause {

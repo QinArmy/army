@@ -23,21 +23,17 @@ import static io.army.dialect.Database.PostgreSQL;
  *         <li>sql function,for example {@link SQLs#countAsterisk()}</li>
  *         <li>sql variable</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface SimpleExpression extends Expression {
 
 
     /**
-     * <p>
-     * <strong>=</strong> operator. This method is similar to {@link #equal(Object)},except that the operand
-     * of {@link #equal(Object)} is returned by funcRef.
-     * </p>
-     * <p>
-     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     * <p><strong>=</strong> operator. This method is similar to {@link #equal(Expression)},except that the operand
+     * of {@link #equal(Expression)} is returned by funcRef.
+     *
+     * <p><strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -64,10 +60,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>!=</strong> . This method is similar to {@link #notEqual(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -94,10 +90,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * <strong>=</strong> operator. This method is similar to {@link #equal(Expression)},except that the operand
      * of {@link #equal(Expression)} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -126,10 +122,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>&lt;</strong> . This method is similar to {@link #less(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -157,10 +153,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>&lt;=</strong> . This method is similar to {@link #lessEqual(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -187,10 +183,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>></strong> . This method is similar to {@link #greater(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -217,10 +213,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>>=</strong> . This method is similar to {@link #greaterEqual(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -248,10 +244,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>BETWEEN AND</strong> . This method is similar to {@link #between(Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -281,10 +277,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>BETWEEN AND</strong> . This method is similar to {@link #between(Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                      <ul>
@@ -329,10 +325,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>NOT BETWEEN AND</strong> . This method is similar to {@link #notBetween(Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
@@ -361,10 +357,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>BETWEEN AND</strong> . This method is similar to {@link #between(Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                      <ul>
@@ -409,10 +405,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>BETWEEN [SYMMETRIC/ASYMMETRIC] AND</strong> . This method is similar to {@link #between(SQLs.BetweenModifier, Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param modifier {@link SQLs#SYMMETRIC} or {@link SQLs#ASYMMETRIC}
      * @param funcRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -443,10 +439,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>BETWEEN AND</strong> . This method is similar to {@link #between(Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                      <ul>
@@ -492,10 +488,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>NOT BETWEEN [SYMMETRIC/ASYMMETRIC] AND</strong> . This method is similar to {@link #notBetween(SQLs.BetweenModifier, Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param modifier {@link SQLs#SYMMETRIC} or {@link SQLs#ASYMMETRIC}
      * @param funcRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -526,10 +522,10 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>BETWEEN AND</strong> . This method is similar to {@link #between(Expression, SQLs.WordAnd, Expression)},except that the operand
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                      <ul>
@@ -575,14 +571,14 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>IS </strong> . This method is similar to {@link #notEqual(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
      *
-     * @param operator see <u>
+     *
+     * @param operator see <ul>
      *                 <li>{@link SQLs#DISTINCT_FROM}</li>
-     *                 </u>
+     *                 </ul>
      * @param funcRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                 <ul>
      *                     <li>{@link SQLs#param(TypeInfer, Object)}</li>
@@ -609,14 +605,14 @@ public interface SimpleExpression extends Expression {
      * <p>
      * Operator <strong>IS </strong> . This method is similar to {@link #notEqual(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
      *
-     * @param operator see <u>
+     *
+     * @param operator see <ul>
      *                 <li>{@link SQLs#DISTINCT_FROM}</li>
-     *                 </u>
+     *                 </ul>
      * @param funcRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                 <ul>
      *                     <li>{@link SQLs#param(TypeInfer, Object)}</li>
@@ -683,10 +679,10 @@ public interface SimpleExpression extends Expression {
     /**
      * <p>
      * This method is designed for dialect operator.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -699,10 +695,10 @@ public interface SimpleExpression extends Expression {
     /**
      * <p>
      * This method is designed for dialect operator.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -714,10 +710,10 @@ public interface SimpleExpression extends Expression {
     /**
      * <p>
      * This method is designed for dialect operator.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -730,13 +726,13 @@ public interface SimpleExpression extends Expression {
      * <p>
      * This method is designed for dialect operator that produce boolean type expression.
      * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      * <p>
      *
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -749,13 +745,13 @@ public interface SimpleExpression extends Expression {
      * <p>
      * This method is designed for dialect operator that produce boolean type expression.
      * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      * <p>
      *
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -768,13 +764,13 @@ public interface SimpleExpression extends Expression {
      * <p>
      * This method is designed for dialect operator that produce boolean type expression.
      * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      * <p>
      *
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.

@@ -31,11 +31,9 @@ import java.util.regex.Pattern;
 /**
  * <p>
  * This class is the implementation of {@link DialectParser} for  MySQL dialect criteria api.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @since 1.0
  */

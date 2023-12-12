@@ -18,8 +18,7 @@ import java.lang.reflect.Field;
  *     <li>{@link FieldMeta}</li>
  *      <li>{@link QualifiedField}</li>
  * </ul>
- * </p>
- *
+*
  * @see FieldMeta
  * @see QualifiedField
  */
@@ -43,7 +42,7 @@ public interface TableField extends SqlField, FieldSelection, TypeMeta, Database
     /**
      * <p>
      * Equivalence : {@link  FieldMeta#objectName()}
-     * </p>
+     *
      *
      * @return column name(lower case).
      */

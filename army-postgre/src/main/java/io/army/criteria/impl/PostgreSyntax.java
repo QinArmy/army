@@ -18,8 +18,7 @@ import java.util.function.Function;
 /**
  * <p>
  * Package class
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class PostgreSyntax extends PostgreWindowFunctions {
@@ -34,7 +33,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -45,7 +44,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Static array constructor
-     * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -63,7 +61,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -74,7 +72,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -85,7 +83,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -98,7 +96,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -112,7 +110,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Dynamic array constructor, if empty,then array is {@link TextArrayType#LINEAR} type.
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -150,7 +148,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * create empty row. non-empty row see {@link SQLs#row(Object)}
-     * </p>
+     *
      *
      * @see SQLs#row(Object)
      * @see SQLs#row(SubQuery)
@@ -169,7 +167,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of exp
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
      */
@@ -208,32 +206,27 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
 
     /**
-     * <p>
-     * Create PostgreSQL-style typecast expression. Format : 'string'::type .
+     * <p>Create PostgreSQL-style typecast expression. Format : 'string'::type .
      * This method is used for postgre dialect type, for example : text, regclass .
-     * </p>
-     * <p>
-     * <strong>NOTE</strong>: {@link LiteralExpression#typeMeta()} always is {@link NoCastTextType#INSTANCE)
-     * </p>
-     * <p>
-     * examples :
+     *
+     * <p><strong>NOTE</strong>: {@link LiteralExpression#typeMeta()} always is {@link NoCastTextType#INSTANCE}
+     *
+     * <p>examples :
      * <pre><br/>
      *        Postgres.space("my_seq",Postgres.DOUBLE_COLON,"regclass")
      *        Postgres.space('my_seq',DOUBLE_COLON,"regclass")
      *        Postgres.space('QinArmy',DOUBLE_COLON,"text")
      *     </pre>
-     * </p>
      *
      * @param literal     text literal
      * @param doubleColon must be {@link Postgres#DOUBLE_COLON}
      * @param typeName    not key word , a simple sql identifier.
-     * @return a {@link LiteralExpression} whose {@link LiteralExpression#typeMeta()} always is {@link NoCastTextType#INSTANCE)
+     * @return a {@link LiteralExpression} whose {@link LiteralExpression#typeMeta()} always is {@link NoCastTextType#INSTANCE}
      * @throws CriteriaException throw when <ul>
      *                           <li>literal error,here is delay , throw when parsing</li>
      *                           <li>typeName error,here is delay , throw when parsing</li>
      *                           <li>dialect isn't {@link io.army.dialect.postgre.PostgreDialect},here is delay , throw when parsing</li>
      *                           </ul>
-     * @see SQLs#space(Object, BiFunction, Object)
      */
     public static LiteralExpression space(String literal, Postgres.DoubleColon doubleColon, String typeName) {
         if (doubleColon != Postgres.DOUBLE_COLON) {
@@ -252,7 +245,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     }
 
     /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type <-> geometric_type → double precision<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;-> geometric_type → double precision<br/>
      * Computes the distance between the objects. Available for all seven geometric types, for all combinations of point with another geometric type, and for these additional pairs of types: (box, lseg), (lseg, line), (polygon, circle) (and the commutator cases).
      * </a>
      */
@@ -306,19 +299,18 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: follow <code><pre><br>
+     * The {@link MappingType} of function return type: follow <pre><code><br>
      *    private static MappingType caretResultType(final MappingType left, final MappingType right) {
      *        final MappingType returnType;
      *        if (left instanceof MappingType.IntegerOrDecimalType
-     *                && right instanceof MappingType.IntegerOrDecimalType) {
+     *                &amp;&amp; right instanceof MappingType.IntegerOrDecimalType) {
      *            returnType = BigDecimalType.INSTANCE;
      *        } else {
      *            returnType = DoubleType.INSTANCE;
      *        }
      *        return returnType;
      *    }
-     * </pre></code>
-     * </p>
+     * </code></pre>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
      * double precision ^ double precision → double precision <br/>
@@ -331,7 +323,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see #doubleAmp(Expression, Expression)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery && tsquery → tsquery<br>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery &amp;&amp; tsquery → tsquery<br>
      * ANDs two tsquerys together, producing a query that matches documents that match both input queries.
      * </a>
      */
@@ -399,7 +391,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of operator return type: follow  <code><pre><br/>
+     * The {@link MappingType} of operator return type: follow <pre><code><br/>
      *    private static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
      *        final MappingType returnType;
      *        if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
@@ -416,8 +408,8 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *        }
      *        return returnType;
      *    }
-     * </pre></code>
-     * </p>
+     *    </code>
+     * </pre>
      *
      * @param left  not {@link SQLs#DEFAULT} etc.
      * @param right not {@link SQLs#DEFAULT} etc.
@@ -444,7 +436,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision<br/>
      * Square root
@@ -466,7 +458,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision<br/>
      * Cube root
@@ -530,14 +522,14 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
      * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;@ geometric_type → boolean<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&#64; geometric_type → boolean<br/>
      * Is first object contained in or on second? Available for these pairs of types: (point, box), (point, lseg), (point, line), (point, path), (point, polygon), (point, circle), (box, box), (lseg, box), (lseg, line), (polygon, polygon), (circle, circle).
      * </a>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery <@ tsquery → boolean<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery &lt;&#64; tsquery → boolean<br/>
      * </a>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb <@ jsonb → boolean<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb &lt;&#64; jsonb → boolean<br/>
      * </a>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anyarray <@ anyarray → boolean<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anyarray &lt;&#64; anyarray → boolean<br/>
      * </a>
      */
     public static CompoundPredicate ltAt(Expression left, Expression right) {
@@ -554,7 +546,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * inet '192.168.1/24' &amp;&amp; inet '192.168.1.80/28' → t<br/>
      * inet '192.168.1/24' &amp;&amp; inet '192.168.2.0/28' → f
      * </a>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anyarray && anyarray → boolean<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anyarray &amp;&amp; anyarray → boolean<br/>
      * </a>
      */
     public static CompoundPredicate doubleAmp(Expression left, Expression right) {
@@ -727,9 +719,9 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
      * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ?& text[] → boolean<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ?&amp; text[] → boolean<br/>
      * Do all of the strings in the text array exist as top-level keys or array elements?<br/>
-     * '["a", "b", "c"]'::jsonb ?& array['a', 'b'] → t
+     * '["a", "b", "c"]'::jsonb ?&amp; array['a', 'b'] → t
      * </a>
      */
     public static CompoundPredicate questionAmp(Expression left, Expression right) {
@@ -815,7 +807,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of operator return type: {@link  BooleanType} .
-     * </p>
+     *
      *
      * @param left not {@link SQLs#DEFAULT} etc.
      * @see Expression#space(BiFunction, Object)
@@ -831,7 +823,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @see Postgres#regexpLike(Expression, Expression)
      * @see Postgres#regexpLike(Expression, Expression, Expression)
@@ -845,7 +837,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @see Postgres#regexpLike(Expression, Expression)
      * @see Postgres#regexpLike(Expression, Expression, Expression)
@@ -859,7 +851,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~* text → boolean<br/>
      * String matches regular expression, case insensitively</a>
@@ -871,7 +863,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~* text → boolean<br/>
      * String does not match regular expression, case insensitively</a>
@@ -884,7 +876,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * OVERLAPS operator
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
@@ -896,7 +888,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * OVERLAPS operator
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
@@ -907,7 +899,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * OVERLAPS operator
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
@@ -918,7 +910,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * OVERLAPS operator
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
@@ -937,7 +929,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *         <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetTimeType},then {@link LocalTimeType}</li>
      *         <li>Else raise {@link CriteriaException}</li>
      *     </ol>
-     * </p>
+     *
      *
      * @param source non-multi value parameter/literal
      * @param zone   non-multi value parameter/literal
@@ -1003,7 +995,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             <li>{@link SQLs#SOME}</li>
      *             <li>{@link SQLs#ANY}</li>
      *             </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)</a>
      */
     public static CompoundPredicate equal(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.EQUAL, word, array);
@@ -1015,7 +1007,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             <li>{@link SQLs#SOME}</li>
      *             <li>{@link SQLs#ANY}</li>
      *             </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)</a>
      */
     public static CompoundPredicate notEqual(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.NOT_EQUAL, word, array);
@@ -1028,7 +1020,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             <li>{@link SQLs#SOME}</li>
      *             <li>{@link SQLs#ANY}</li>
      *             </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)</a>
      */
     public static CompoundPredicate less(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.LESS, word, array);
@@ -1041,7 +1033,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             <li>{@link SQLs#SOME}</li>
      *             <li>{@link SQLs#ANY}</li>
      *             </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)</a>
      */
     public static CompoundPredicate lessEqual(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.LESS_EQUAL, word, array);
@@ -1053,7 +1045,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             <li>{@link SQLs#SOME}</li>
      *             <li>{@link SQLs#ANY}</li>
      *             </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/></a>
      */
     public static CompoundPredicate greater(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.GREATER, word, array);
@@ -1065,14 +1057,14 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             <li>{@link SQLs#SOME}</li>
      *             <li>{@link SQLs#ANY}</li>
      *             </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/></a>
      */
     public static CompoundPredicate greaterEqual(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.GREATER_EQUAL, word, array);
     }
 
     /**
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-COLLATE-EXPRS">Collation Expressions<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-COLLATE-EXPRS">Collation Expressions<br/></a>
      */
     public static SimpleResultExpression collate(Expression expr, String collation) {
         return Expressions.collateExp(expr, collation);

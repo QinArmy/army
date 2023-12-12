@@ -23,8 +23,7 @@ import static io.army.dialect.Database.*;
  *         <li>{@link CompoundExpression}</li>
  *         <li>{@link IPredicate}</li>
  *     </ul>
- * </p>
- *
+*
  * @see FieldMeta
  * @since 1.0
  */
@@ -36,7 +35,6 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     /**
      * <p>
      * <strong>=</strong> operator
-     * </p>
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -54,7 +52,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     /**
      * <p>
      * <strong>&lt;</strong> operator
-     * </p>
+     *
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -121,17 +119,17 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     CompoundPredicate isNotNull();
 
     /**
-     * @param operator see <u>
+     * @param operator see <ul>
      *                 <li>{@link SQLs#DISTINCT_FROM}</li>
-     *                 </u>
+     *                 </ul>
      */
     @Support({PostgreSQL, H2})
     CompoundPredicate is(SQLs.IsComparisonWord operator, Expression operand);
 
     /**
-     * @param operator see <u>
+     * @param operator see <ul>
      *                 <li>{@link SQLs#DISTINCT_FROM}</li>
-     *                 </u>
+     *                 </ul>
      */
     @Support({PostgreSQL, H2})
     CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
@@ -223,10 +221,10 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     /**
      * <p>
      * This method is designed for dialect key word syntax. For example : postgre using key word
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -238,10 +236,10 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     /**
      * <p>
      * This method is designed for dialect operator.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -254,10 +252,10 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     /**
      * <p>
      * This method is designed for dialect operator.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -270,10 +268,10 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     /**
      * <p>
      * This method is designed for dialect operator.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -287,13 +285,13 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * <p>
      * This method is designed for dialect operator that produce boolean type expression.
      * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      * <p>
      *
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -307,13 +305,13 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * <p>
      * This method is designed for dialect operator that produce boolean type expression.
      * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      * <p>
      *
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -326,13 +324,13 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * <p>
      * This method is designed for dialect operator that produce boolean type expression.
      * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      * <p>
      *
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.
@@ -346,13 +344,13 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * <p>
      * This method is designed for dialect operator that produce boolean type expression.
      * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      * <p>
      *
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.

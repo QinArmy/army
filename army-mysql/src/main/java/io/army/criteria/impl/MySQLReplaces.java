@@ -25,11 +25,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the implementations of {@link MySQLReplace}.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @since 1.0
  */
@@ -43,7 +41,7 @@ abstract class MySQLReplaces extends InsertSupports {
     /**
      * <p>
      * create single-table REPLACE statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
-     * </p>
+     *
      */
     static MySQLReplace._PrimaryOptionSpec singleReplace() {
         return new PrimaryReplaceIntoClause();
@@ -53,7 +51,7 @@ abstract class MySQLReplaces extends InsertSupports {
     /**
      * <p>
      * create single-table REPLACE statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
-     * </p>
+     *
      */
     static <I extends Item> MySQLReplace._PrimarySingleOptionSpec<I> singleReplace(ArmyStmtSpec spec,
                                                                                    Function<? super Insert, I> function) {

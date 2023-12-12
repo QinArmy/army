@@ -11,8 +11,7 @@ import java.time.LocalTime;
 import static java.lang.annotation.ElementType.FIELD;
 
 /**
- *
- */
+*/
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -23,7 +22,7 @@ public @interface Column {
      *
      * <p>
      * see {@code io.army.util.StringUtils#camelToLowerCase(String)}
-     * </p>
+     *
      */
     String name() default "";
 
@@ -75,7 +74,7 @@ public @interface Column {
      *         <li>mapping field java type is {@link Float},because army specify default 0</li>
      *         <li>mapping field java type is {@link LocalTime},because army specify default {@link LocalTime#MIDNIGHT}</li>
      *     </ol>
-     * </p>
+     *
      */
     String defaultValue() default "";
 
@@ -86,7 +85,7 @@ public @interface Column {
      *         <li>{@code TableMeta#RESERVED_PROPS}</li>
      *         <li>{@code TableMeta#discriminator()} </li>
      *     </ol>
-     * </p>
+     *
      */
     String comment() default "";
 

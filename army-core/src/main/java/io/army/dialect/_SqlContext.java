@@ -13,9 +13,7 @@ import io.army.meta.TypeMeta;
  * <p>
  * This interface representing sql context,that is used by {@link  DialectParser} and the implementation of criteria api,
  * for example {@link  io.army.criteria.impl.inner._Expression}.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public interface _SqlContext extends SqlContextSpec {
 
@@ -38,15 +36,13 @@ public interface _SqlContext extends SqlContextSpec {
     /**
      * <p>
      * This method is designed for parameter expression.
-     * </p>
-     * <p> steps:
+     *     * <p> steps:
      *     <ol>
      *         <li>append one space</li>
      *         <li>append '?' to {@link #sqlBuilder()}</li>
      *         <li>append sqlParam to param list</li>
      *     </ol>
-     * </p>
-     */
+     *     */
     void appendParam(SQLParam sqlParam);
 
     void appendLiteral(TypeMeta typeMeta, @Nullable Object value);

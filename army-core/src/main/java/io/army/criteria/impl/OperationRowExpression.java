@@ -9,8 +9,7 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * This class is a abstract implementation of {@link io.army.criteria.RowExpression}.
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class OperationRowExpression extends OperationSQLExpression implements ArmyRowExpression {

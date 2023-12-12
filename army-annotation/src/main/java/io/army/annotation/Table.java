@@ -6,11 +6,9 @@ import java.lang.annotation.*;
 
 /**
  * Specifies the tableMeta for the annotated domain.
- *
  * <p>
  * <pre>
  *    Example:
- *
  *    &#064;Table(name="u_user", schema="army",comment="storage user info")
  *    public class User { ... }
  * </pre>
@@ -73,7 +71,7 @@ public @interface Table {
      *         <li>MySQL : utf8</li>
      *         <li>Oracle : utf8</li>
      *     </ul>
-     * </p>
+     *
      */
     String charset() default "";
 }

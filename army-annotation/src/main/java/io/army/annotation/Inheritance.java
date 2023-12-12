@@ -4,7 +4,6 @@ import java.lang.annotation.*;
 
 
 /**
- *
  * @see DiscriminatorValue
  */
 @Target(ElementType.TYPE)

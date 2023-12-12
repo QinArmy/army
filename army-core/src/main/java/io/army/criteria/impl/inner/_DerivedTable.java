@@ -6,7 +6,6 @@ import io.army.criteria.DerivedTable;
 /**
  * <p>
  * This interface is inner interface of {@link DerivedTable}.
- * </p>
  *
  * @since 1.0
  */

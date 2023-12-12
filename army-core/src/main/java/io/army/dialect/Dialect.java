@@ -3,8 +3,7 @@ package io.army.dialect;
 /**
  * <p>
  * This interface representing database dialect version.
- * </p>
- *
+*
  * @since 1.0
  */
 public interface Dialect {

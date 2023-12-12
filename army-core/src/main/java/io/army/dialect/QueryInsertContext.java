@@ -39,7 +39,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
     /**
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
-     * </p>
+     *
      *
      * @see #forSingle(_SqlContext, _Insert._QueryInsert, ArmyParser, Visible)
      * @see #forParent(_SqlContext, _Insert._ChildQueryInsert, ArmyParser, Visible)
@@ -64,7 +64,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
     /**
      * <p>
      * For {@link  io.army.meta.ChildTableMeta}
-     * </p>
+     *
      *
      * @see #forChild(_SqlContext, _Insert._ChildQueryInsert, QueryInsertContext)
      */

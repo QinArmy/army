@@ -15,8 +15,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is unit test class of {@link PostgreSingleRangeType}
- * </p>
- */
+*/
 public class PostgreRangeTypeUniteTests {
 
     /**

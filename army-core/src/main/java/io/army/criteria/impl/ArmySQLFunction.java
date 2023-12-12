@@ -7,9 +7,7 @@ import io.army.criteria.standard.SQLFunction;
 /**
  * <p>
  * Package interface
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 interface ArmySQLFunction extends SQLFunction, _SelfDescribed {
 

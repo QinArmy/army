@@ -10,8 +10,7 @@ package io.army.criteria;
  *         <li>{@link Expression}</li>
  *         <li>{@link io.army.criteria.impl.Functions._TabularFunction}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface SelectionSpec extends TypeInfer {

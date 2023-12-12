@@ -23,8 +23,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This class representing army build-in postgre range array type.
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  * @since 1.0
  */

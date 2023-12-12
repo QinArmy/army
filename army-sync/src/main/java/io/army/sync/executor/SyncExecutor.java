@@ -27,7 +27,6 @@ import java.util.stream.Stream;
  * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
  * so all implementation of methods of this interface don't check underlying database session whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
- *
  * <p>The instance of this interface is created by {@link SyncExecutorFactory}.
  *
  * @see SyncExecutorFactory

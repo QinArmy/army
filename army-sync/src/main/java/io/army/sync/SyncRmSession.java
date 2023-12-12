@@ -8,13 +8,11 @@ import java.util.stream.Stream;
 
 /**
  * <p>This interface representing blocking RM(Resource Manager) {@link SyncSession} in XA transaction.
- *
  * <p>This interface extends {@link RmSession} for support XA interface based on
  * the X/Open CAE Specification (Distributed Transaction Processing: The XA Specification).<br/>
  * This document is published by The Open Group and available at
  * <a href="http://www.opengroup.org/public/pubs/catalog/c193.htm">The XA Specification</a>,
  * here ,you can download the pdf about The XA Specification.
- *
  * <p>The instance of this interface is created by {@link SyncSessionFactory.RmSessionBuilder#build()}.
  * <p>Application developer can control XA transaction by following methods :
  * <ol>
@@ -40,7 +38,6 @@ import java.util.stream.Stream;
  *     <li>{@link #recoverSupportFlags()}</li>
  *     <li>{@link #isSameRm(XaTransactionSupportSpec)}</li>
  * </ul>
- *
  * @see SyncSessionFactory
  * @since 1.0
  */

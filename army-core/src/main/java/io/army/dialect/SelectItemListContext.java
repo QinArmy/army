@@ -12,12 +12,9 @@ import java.util.List;
  *         <li>{@link _SimpleQueryContext}</li>
  *         <li>{@link ParensSelectContext}</li>
  *     </ul>
- * </p>
- * <p>
+ * * <p>
  *     Package interface
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 interface SelectItemListContext extends _SqlContext {
 

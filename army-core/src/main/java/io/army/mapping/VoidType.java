@@ -7,8 +7,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing the mapping from {@code  void} to nothing,that returned by some special {@link io.army.criteria.Expression}.
- * </p>
- *
+*
  * @see Void
  */
 

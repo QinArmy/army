@@ -30,7 +30,7 @@ abstract class OperationExpression extends OperationSQLExpression
     /**
      * <p>
      * Private constructor
-     * </p>
+     *
      *
      * @see OperationSimpleExpression#OperationSimpleExpression()
      * @see OperationCompoundExpression#OperationCompoundExpression()
@@ -989,7 +989,7 @@ abstract class OperationExpression extends OperationSQLExpression
         /**
          * <p>
          * <strong>Private constructor</strong>
-         * </p>
+         *
          *
          * @see #bracketExp(Expression)
          */
@@ -1047,7 +1047,7 @@ abstract class OperationExpression extends OperationSQLExpression
     /**
      * <p>
      * This class representing sql {@code NULL} key word.
-     * </p>
+     *
      *
      * @see SQLs#NULL
      */

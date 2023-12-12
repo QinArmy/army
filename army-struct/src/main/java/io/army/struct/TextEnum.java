@@ -9,8 +9,7 @@ import java.util.Map;
  * Army will persist {@link #text()} to database table column not {@link Enum#name()}.
  * If you want to persist {@link Enum#name()},then you should use {@code io.army.mapping.NameEnumType},
  * but never persist {@link Enum#ordinal()}.
- * </p>
- *
+*
  * @see CodeEnum
  * @since 1.0
  */
@@ -41,7 +40,7 @@ public interface TextEnum {
     /**
      * <p>
      * see {@code io.army.mapping.TextEnumType#getTextMap(java.lang.Class)}
-     * </p>
+     *
      *
      * @return a unmodified map
      */

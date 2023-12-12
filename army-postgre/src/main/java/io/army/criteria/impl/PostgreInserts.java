@@ -34,11 +34,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the implementation of postgre insert syntax interfaces.
- * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
  *
  * @since 1.0
  */
@@ -50,7 +48,7 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
-     * </p>
+     *
      */
     static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return new PrimaryInsertIntoClause();
@@ -59,7 +57,7 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is primary statement for multi-statement and don't support {@link io.army.meta.ChildTableMeta}.
-     * </p>
+     *
      */
     static <I extends Item> PostgreInsert._ComplexOptionSpec<I> fromDispatcher(ArmyStmtSpec spec,
                                                                                Function<PrimaryStatement, I> function) {
@@ -69,7 +67,7 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is sub insert statement in dynamic with clause.
-     * </p>
+     *
      */
     static <I extends Item> PostgreInsert._DynamicSubOptionSpec<I> dynamicSubInsert(
             CriteriaContext outContext, Function<SubStatement, I> function) {
@@ -79,7 +77,7 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is sub insert statement in static with clause.
-     * </p>
+     *
      */
     static <I extends Item> PostgreInsert._StaticSubOptionSpec<I> staticSubInsert(ArmyStmtSpec spec,
                                                                                   Function<SubStatement, I> function) {

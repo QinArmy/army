@@ -8,8 +8,7 @@ package io.army.criteria.impl;
  *     <ul>
  *         <li>{@link SingleFunctionArg}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 interface FunctionArg extends ArmySQLExpression {
@@ -23,7 +22,7 @@ interface FunctionArg extends ArmySQLExpression {
      *         <li>{@link SQLs#_ASTERISK_EXP}</li>
      *         <li>{@link ArmyRowExpression}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @since 1.0
      */

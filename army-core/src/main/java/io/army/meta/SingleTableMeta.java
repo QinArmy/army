@@ -9,9 +9,7 @@ package io.army.meta;
  *         <li>{@link SimpleTableMeta}</li>
  *         <li>{@link ParentTableMeta}</li>
  *     </ul>
- * </p>
- *
- * @param <T> domain java type
+ * * @param <T> domain java type
  */
 public interface SingleTableMeta<T> extends TableMeta<T> {
 

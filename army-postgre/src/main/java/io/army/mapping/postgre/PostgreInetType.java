@@ -13,8 +13,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing Postgre inet type {@link MappingType}
- * </p>
- *
+*
  * @see <a href="https://www.postgresql.org/docs/current/datatype-net-types.html#DATATYPE-INET">inet</a>
  */
 public final class PostgreInetType extends _ArmyNoInjectionMapping {

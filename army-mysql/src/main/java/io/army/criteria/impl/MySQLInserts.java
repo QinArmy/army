@@ -30,13 +30,10 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is the container of  MySQL insert syntax api implementation class.
- * </p>
- * <p>
+ * * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 abstract class MySQLInserts extends InsertSupports {
 
@@ -47,8 +44,7 @@ abstract class MySQLInserts extends InsertSupports {
     /**
      * <p>
      * create single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
-     * </p>
-     */
+     *     */
     static MySQLInsert._PrimaryOptionSpec singleInsert() {
         return new PrimaryInsertIntoClause();
     }
@@ -56,8 +52,7 @@ abstract class MySQLInserts extends InsertSupports {
     /**
      * <p>
      * create single-table INSERT statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
-     * </p>
-     */
+     *     */
     static <I extends Item> MySQLInsert._PrimarySingleOptionSpec<I> singleInsert(ArmyStmtSpec spec,
                                                                                  Function<? super Insert, I> function) {
         return new PrimarySingleInsertIntoClause<>(spec, function);
@@ -116,8 +111,7 @@ abstract class MySQLInserts extends InsertSupports {
     /**
      * <p>
      * This class is the implementation of {@link MySQLInsert._PrimaryOptionSpec}.
-     * </p>
-     */
+     *     */
     private static final class PrimaryInsertIntoClause
             extends InsertSupports.NonQueryInsertOptionsImpl<MySQLInsert._PrimaryNullOptionSpec>
             implements MySQLInsert._PrimaryOptionSpec,
@@ -210,8 +204,7 @@ abstract class MySQLInserts extends InsertSupports {
     /**
      * <p>
      * This class is the implementation of {@link MySQLInsert._PrimarySingleOptionSpec}.
-     * </p>
-     */
+     *     */
     private static final class PrimarySingleInsertIntoClause<I extends Item>
             extends InsertSupports.NonQueryInsertOptionsImpl<MySQLInsert._PrimarySingleNullOptionSpec<I>>
             implements MySQLInsert._PrimarySingleOptionSpec<I>,

@@ -8,8 +8,7 @@ import io.army.sqltype.*;
 /**
  * <p>
  * This class is mapping class of {@code byte[]}.
- * </p>
- *
+*
  * @since 1.0
  */
 public final class BinaryType extends _ArmyBuildInMapping implements MappingType.SqlBinaryType {

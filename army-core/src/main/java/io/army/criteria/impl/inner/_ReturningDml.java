@@ -10,8 +10,7 @@ package io.army.criteria.impl.inner;
  *     <li>{@link io.army.criteria.dialect.ReturningDelete}</li>
  *     <li>{@link io.army.criteria.SubStatement} with RETURNING clause and return result set</li>
  * </ul>
- * </p>
- */
+*/
 public interface _ReturningDml extends _Statement._ReturningListSpec {
 
 }

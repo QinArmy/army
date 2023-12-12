@@ -39,8 +39,7 @@ import java.util.function.Function;
  *         <li>{@link PostgreSingleRangeArrayType}</li>
  *         <li>{@link PostgreMultiRangeArrayType}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
@@ -59,7 +58,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     /**
      * <p>
      * package constructor
-     * </p>
+     *
      */
     @SuppressWarnings("unchecked")
     protected _ArmyPostgreRangeType(final PostgreType dataType, final Class<?> javaType,

@@ -25,7 +25,6 @@ public abstract class Stmts {
     /**
      * <p>
      * Post insert for generated key
-     * </p>
      */
     public static GeneratedKeyStmt postStmt(final InsertStmtParams params) {
         final GeneratedKeyStmt stmt;

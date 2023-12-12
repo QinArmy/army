@@ -18,9 +18,8 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is mapping of enum that implements {@link CodeEnum}.
- * </p>
+ * * @see Enum
  *
- * @see Enum
  * @see io.army.struct.CodeEnum
  * @see TextEnumType
  * @see NameEnumType

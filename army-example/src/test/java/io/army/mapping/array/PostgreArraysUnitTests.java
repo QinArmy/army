@@ -12,9 +12,7 @@ import java.time.LocalDateTime;
 /**
  * <p>
  * This class unit test class of {@link PostgreArrays}.
- * </p>
- *
- * @see PostgreArrays
+ * * @see PostgreArrays
  */
 @Test
 public class PostgreArraysUnitTests {

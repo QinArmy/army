@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 
 /**
  * <p>This interface representing blocking {@link Session}.
- *
  * <p>This interface is base interface of below interface:
  * <ul>
  *     <li>{@link SyncLocalSession}</li>
@@ -298,7 +297,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * <p>
      * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     * </p>
+     *
      */
     <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor);
 
@@ -309,7 +308,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * <p>
      * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     * </p>
+     *
      */
     <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor);
 
@@ -319,7 +318,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * <p>
      * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     * </p>
+     *
      */
     <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function);
 
@@ -387,7 +386,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * <p>
      * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     * </p>
+     *
      */
     <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
@@ -396,7 +395,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * <p>
      * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     * </p>
+     *
      */
     <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function);
 
@@ -404,7 +403,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * <p>
      * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     * </p>
+     *
      *
      * @throws VisibleModeException throw when satisfy all the following conditions :
      *                              <ul>

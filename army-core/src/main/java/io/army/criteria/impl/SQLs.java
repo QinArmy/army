@@ -35,7 +35,6 @@ import static io.army.dialect.Database.PostgreSQL;
 /**
  * <p>
  * This class is util class used to create standard sql statement.
- * </p>
  */
 @SuppressWarnings({"unused"})
 public abstract class SQLs extends SQLsSyntax {
@@ -174,8 +173,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain update
-     * </p>
-     */
+     *     */
     public static StandardUpdate._DomainUpdateClause<Statement._BatchUpdateParamSpec> batchDomainUpdate() {
         return StandardUpdates.batchDomain();
     }
@@ -184,8 +182,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain update
-     * </p>
-     */
+     *     */
     public static StandardUpdate._SingleUpdateClause<Statement._BatchUpdateParamSpec> batchSingleUpdate() {
         return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD10);
     }
@@ -211,8 +208,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain delete
-     * </p>
-     */
+     *     */
     public static StandardDelete._StandardDeleteClause<Statement._BatchDeleteParamSpec> batchSingleDelete() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD10);
     }
@@ -220,8 +216,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain delete
-     * </p>
-     */
+     *     */
     public static StandardDelete._WithSpec<Statement._BatchDeleteParamSpec> batchSingleDelete20() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
     }
@@ -315,8 +310,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * package method that is used by army developer.
-     * </p>
-     *
+     *     *
      * @param value {@link Expression} or parameter.
      * @see #plusEqual(SqlField, Expression)
      */
@@ -338,8 +332,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * package method that is used by army developer.
-     * </p>
-     */
+     *     */
     static _ItemPair _itemExpPair(final SqlField field, @Nullable Expression value) {
         assert value != null;
         return SQLs._itemPair(field, null, value);
@@ -353,8 +346,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * This method is similar to {@link Function#identity()}, except that use method reference.
-     * </p>
-     *
+     *     *
      * @see Function#identity()
      */
     static <T extends Item> T identity(T t) {
@@ -923,8 +915,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * This class representing sql {@code DEFAULT} key word.
-     * </p>
-     *
+     *     *
      * @see SQLs#DEFAULT
      */
     private static final class DefaultWord extends NonOperationExpression

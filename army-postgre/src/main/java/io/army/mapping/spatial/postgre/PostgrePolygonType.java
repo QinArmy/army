@@ -13,9 +13,7 @@ import io.army.sqltype.DataType;
 /**
  * <p>
  * This class representing Postgre polygon type {@link MappingType}
- * </p>
- *
- * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">polygon</a>
+ * * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">polygon</a>
  */
 public final class PostgrePolygonType extends PostgreGeometricType {
 

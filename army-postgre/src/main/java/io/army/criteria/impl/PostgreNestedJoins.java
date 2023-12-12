@@ -26,8 +26,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the implementation of Postgre nested join.
- * </p>
- *
+*
  * @since 1.0
  */
 

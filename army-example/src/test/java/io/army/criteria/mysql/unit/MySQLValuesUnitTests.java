@@ -81,7 +81,7 @@ public class MySQLValuesUnitTests {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use the interface that start with {@code _ }
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
+     *
      */
     private <V extends ValuesQuery> MySQLValues._UnionOrderBySpec<V> createSimpleValues(Supplier<MySQLValues._ValueSpec<V>> supplier) {
         return supplier.get()

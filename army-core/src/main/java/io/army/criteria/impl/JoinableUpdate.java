@@ -20,8 +20,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is base class of multi-table update implementation.
- * </p>
- *
+*
  * @see SetWhereClause
  * @since 1.0
  */

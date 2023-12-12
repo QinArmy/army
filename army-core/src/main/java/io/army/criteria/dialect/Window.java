@@ -17,9 +17,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This interface representing window that is defined by application developer in query statement.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public interface Window extends Item {
 
@@ -48,13 +46,11 @@ public interface Window extends Item {
     /**
      * <p>
      * This interface representing static comma clause in WINDOW clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <CR> next clause java type
      * @since 1.0
      */
@@ -67,13 +63,11 @@ public interface Window extends Item {
     /**
      * <p>
      * This interface representing dynamic WINDOW clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <T> sub interface of {@link Builder}
      * @param <R> next clause java type
      * @since 1.0
@@ -107,13 +101,11 @@ public interface Window extends Item {
     /**
      * <p>
      * This interface representing PARTITION BY clause in WINDOW clause.
-     * </p>
-     * <p>
+     *     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
+     *     *
      * @param <R> next clause java type
      * @since 1.0
      */
@@ -141,8 +133,7 @@ public interface Window extends Item {
      *         <li>CURRENT ROW</li>
      *         <li>UNBOUNDED FOLLOWING</li>
      *     </ul>
-     * </p>
-     *
+     *     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
      * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
@@ -156,8 +147,7 @@ public interface Window extends Item {
      *         <li>PRECEDING</li>
      *         <li>FOLLOWING</li>
      *     </ul>
-     * </p>
-     *
+     *     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
      * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */

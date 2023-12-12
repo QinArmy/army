@@ -20,9 +20,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Float},if overflow,throw {@link io.army.ArmyException}
- * </p>
- *
- * @since 1.0
+ ** @since 1.0
  */
 public final class FloatType extends _NumericType._FloatNumericType {
 

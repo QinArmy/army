@@ -5,8 +5,7 @@ import io.army.criteria.CteBuilderSpec;
 /**
  * <p>
  * This interface representing Postgre cte builder.
- * </p>
- *
+*
  * @since 1.0
  */
 public interface PostgreCtes extends CteBuilderSpec {
@@ -14,7 +13,7 @@ public interface PostgreCtes extends CteBuilderSpec {
    /**
     * <p>
     * create new cte that create new single-table INSERT statement that is sub insert statement in dynamic with clause.
-    * </p>
+    *
     *
     * @param name cte name
     */
@@ -23,7 +22,7 @@ public interface PostgreCtes extends CteBuilderSpec {
    /**
     * <p>
     * create new cte that create new single-table UPDATE statement that is sub insert statement in dynamic with clause.
-    * </p>
+    *
     *
     * @param name cte name
     */
@@ -32,7 +31,7 @@ public interface PostgreCtes extends CteBuilderSpec {
    /**
     * <p>
     * create new cte that create new single-table DELETE statement that is sub insert statement in dynamic with clause.
-    * </p>
+    *
     *
     * @param name cte name
     */

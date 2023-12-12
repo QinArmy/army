@@ -9,9 +9,7 @@ package io.army.criteria;
  *         <li>{@link SQLExpression}</li>
  *         <li>{@code  io.army.criteria.impl.SelectionGroups.RowElementGroup}</li>
  *     </ul>
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public interface RowElement extends Item {
 

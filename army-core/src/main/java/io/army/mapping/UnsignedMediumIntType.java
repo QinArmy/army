@@ -23,9 +23,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link String} </li>
  * </ul>
  *  to  (unsigned) int,if overflow,throw {@link io.army.ArmyException}
- * </p>
- *
- * @since 1.0
+ ** @since 1.0
  */
 public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerType {
 

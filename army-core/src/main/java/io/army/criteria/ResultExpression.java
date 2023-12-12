@@ -8,8 +8,7 @@ package io.army.criteria;
  *     <li>{@link CompoundExpression}</li>
  *     <li>{@link SimpleResultExpression}</li>
  * </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface ResultExpression extends Expression {

@@ -26,8 +26,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is the implementation of MySQL 8.0 multi-table delete syntax.
- * </p>
- *
+*
  * @since 1.0
  */
 @SuppressWarnings("unchecked")

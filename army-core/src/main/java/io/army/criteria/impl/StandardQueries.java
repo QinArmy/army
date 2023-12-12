@@ -28,8 +28,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is a implementation of {@link StandardQuery}.
- * </p>
- *
+*
  * @since 1.0
  */
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
@@ -476,7 +475,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         /**
          * <p>
          * Primary constructor
-         * </p>
+         *
          */
         private SimpleSelect(StandardDialect dialect, @Nullable ArmyStmtSpec spec,
                              @Nullable CriteriaContext outerBracketContext, Function<? super Select, I> function,

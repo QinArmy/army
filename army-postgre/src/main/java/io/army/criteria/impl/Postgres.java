@@ -13,8 +13,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class is Postgre SQL syntax utils.
- * </p>
- *
+*
  * @since 1.0
  */
 public abstract class Postgres extends PostgreSyntax {
@@ -98,7 +97,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_date → date</a>
      */
@@ -106,7 +105,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  OffsetTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_time</a>
      */
@@ -114,7 +113,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  OffsetDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_timestamp → timestamp with time zone</a>
      */
@@ -122,7 +121,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtime → time</a>
      */
@@ -130,7 +129,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtimestamp → timestamp</a>
      */
@@ -139,7 +138,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_catalog → name</a>
      */
@@ -148,7 +147,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_user → name</a>
      */
@@ -158,7 +157,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">session_user → name</a>
      */
@@ -167,7 +166,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
-     * </p>
+     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">user → name</a>
      */
@@ -176,7 +175,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create single-table INSERT statement that is primary statement.
-     * </p>
+     *
      */
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return PostgreInserts.singleInsert();
@@ -185,7 +184,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create simple(non-batch) SELECT statement that is primary statement.
-     * </p>
+     *
      */
     public static PostgreQuery._WithSpec<Select> query() {
         return PostgreQueries.simpleQuery();
@@ -194,7 +193,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create batch SELECT statement that is primary statement.
-     * </p>
+     *
      */
     public static PostgreQuery._WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
         return PostgreQueries.batchQuery();
@@ -204,7 +203,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create SUB-SELECT statement that is sub query statement.
-     * </p>
+     *
      */
     public static PostgreQuery._WithSpec<SubQuery> subQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), SQLs::identity);
@@ -213,7 +212,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create SUB-SELECT statement that is sub query statement and would be converted to {@link Expression}.
-     * </p>
+     *
      */
     public static PostgreQuery._WithSpec<Expression> scalarSubQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
@@ -222,7 +221,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create simple(non-batch) single-table UPDATE statement that is primary statement.
-     * </p>
+     *
      */
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
         return PostgreUpdates.simple();
@@ -231,7 +230,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create batch single-table UPDATE statement that is primary statement.
-     * </p>
+     *
      */
     public static PostgreUpdate._SingleWithSpec<Statement._BatchUpdateParamSpec, Statement._BatchReturningUpdateParamSpec> batchSingleUpdate() {
         return PostgreUpdates.batchUpdate();
@@ -240,7 +239,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create simple(non-batch) single-table DELETE statement that is primary statement.
-     * </p>
+     *
      */
     public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
         return PostgreDeletes.simpleDelete();
@@ -249,7 +248,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create batch single-table DELETE statement that is primary statement.
-     * </p>
+     *
      */
     public static PostgreDelete._SingleWithSpec<Statement._BatchDeleteParamSpec, Statement._BatchReturningDeleteParamSpec> batchSingleDelete() {
         return PostgreDeletes.batchDelete();
@@ -316,7 +315,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * This interface not start with underscore, so this interface can present in application developer code.
-     * </p>
+     *
      *
      * @since 1.0
      */
@@ -374,7 +373,7 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * This interface not start with underscore, so this interface can present in application developer code.
-     * </p>
+     *
      *
      * @since 1.0
      */

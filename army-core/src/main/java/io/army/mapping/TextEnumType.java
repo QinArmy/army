@@ -18,8 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * <p>
  * This class representing the mapping from {@link TextEnum} to {@link SqlType}.
- * </p>
- *
+*
  * @see TextEnum
  * @see NameEnumType
  * @see CodeEnumType

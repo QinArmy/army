@@ -11,8 +11,7 @@ import io.army.criteria.SimpleExpression;
  *         <li>{@link SimpleExpression#notIn(TeNamedOperator, String, int)}</li>
  *         <li>other custom method</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 @FunctionalInterface

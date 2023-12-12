@@ -8,8 +8,7 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * This interface representing one row in SQL.
- * </p>
- *
+*
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/row-constructor-optimization.html">MySQL Row Constructor Expression Optimization</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/range-optimization.html#row-constructor-range-optimization">Range Optimization of Row Constructor Expressions</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/row-subqueries.html">MySQL Row Subqueries</a>
@@ -23,7 +22,7 @@ public interface RowExpression extends SQLExpression, SQLColumnSet {
     /**
      * <p>
      * <strong>=</strong> operator
-     * </p>
+     *
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -38,7 +37,7 @@ public interface RowExpression extends SQLExpression, SQLColumnSet {
     /**
      * <p>
      * <strong>&lt;</strong> operator
-     * </p>
+     *
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -58,10 +57,10 @@ public interface RowExpression extends SQLExpression, SQLColumnSet {
     /**
      * <p>
      * This method is designed for dialect operator.
-     * </p>
+     *
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
-     * </p>
+     *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
      *                The first argument of funcRef always is <strong>this</strong>.

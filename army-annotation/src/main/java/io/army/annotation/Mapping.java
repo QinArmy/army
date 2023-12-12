@@ -10,7 +10,7 @@ public @interface Mapping {
     /**
      * <p>
      * Required
-     * </p>
+     * *
      *
      * @return the qualified class name of the implementation of {@code io.army.mapping.MappingType}.
      */
@@ -30,8 +30,7 @@ public @interface Mapping {
      * If {@link #value()} is the class name
      * of the implementation of {@code io.army.mapping.TextMappingType} and representing binary then required,
      * else ignore.
-     * </p>
-     * <p>
+     *     * <p>
      * example:
      * <pre>
      *         <br/><code>
@@ -44,8 +43,7 @@ public @interface Mapping {
      *              private InputStream userInfo;
      *         </code>
      *     </pre>
-     * </p>
-     *
+     *     *
      * @return the name of {@link java.nio.charset.Charset}.
      */
     String charset() default "";
@@ -55,8 +53,7 @@ public @interface Mapping {
      * If {@link #value()} is the class name
      * of the implementation of {@code io.army.mapping.ElementMappingType} then required,
      * else ignore.
-     * </p>
-     * <p>
+     *     * <p>
      * example:
      * <pre>
      *         <br/><code>
@@ -66,11 +63,10 @@ public @interface Mapping {
      *
      *              &#64;Mapping("io.army.mapping.mysql.MySQLLongBlob",elements=byte[].class)
      *              &#64;Column(comment="user image")
-     *              private reactor.core.publisher.Flux&lt;byte[]></> image;
+     *              private reactor.core.publisher.Flux&lt;byte[]> image;
      *         </code>
      *     </pre>
-     * </p>
-     *
+     *     *
      * @return the name of {@link java.nio.charset.Charset}.
      */
     Class<?>[] elements() default {};

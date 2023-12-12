@@ -89,7 +89,7 @@ public interface MySQLStatement extends DialectStatement {
      *         <li>{@link _JoinClause }</li>
      *         <li>{@link  _StraightJoinClause}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @param <JT> next clause java type
      * @param <JS> next clause java type
@@ -108,7 +108,7 @@ public interface MySQLStatement extends DialectStatement {
      *         <li>{@link _JoinCteClause }</li>
      *         <li>{@link  _StraightJoinCteClause}</li>
      *     </ul>
-     * </p>
+     *
      */
     interface _MySQLJoinCteClause<JC> extends _JoinCteClause<JC>, _StraightJoinCteClause<JC> {
 
@@ -126,7 +126,7 @@ public interface MySQLStatement extends DialectStatement {
      *         <li>{@link _DialectJoinClause }</li>
      *         <li>{@link  _DialectStraightJoinClause}</li>
      *     </ul>
-     * </p>
+     *
      *
      * @param <JP> next clause java type
      * @since 1.0

@@ -3,8 +3,7 @@ package io.army.criteria;
 import io.army.ArmyException;
 
 /**
- *
- */
+*/
 public class CriteriaException extends ArmyException {
 
 

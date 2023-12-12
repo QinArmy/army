@@ -6,8 +6,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This interface representing VALUES statement
- * </p>
- *
+*
  * @since 1.0
  */
 public interface Values extends DqlStatement, DialectStatement, ValuesQuery {

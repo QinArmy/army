@@ -14,7 +14,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     /**
      * <p>
      * Assert insert is MySQL dialect {@link  InsertStatement} statement.
-     * </p>
+     *
      */
     public static void assertInsert(final InsertStatement insert) {
         if (insert instanceof _Insert._DomainInsert || insert instanceof _Insert._ValuesInsert) {
@@ -39,7 +39,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     /**
      * <p>
      * Assert insert is MySQL dialect {@link  InsertStatement} statement.
-     * </p>
+     *
      */
     public static void assertReplace(final MySQLReplace replace) {
         if (replace instanceof _Insert._DomainInsert) {

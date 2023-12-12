@@ -5,9 +5,7 @@ import io.army.mapping.MappingType;
 /**
  * <p>
  * This interface not start with underscore, so this interface can present in application developer code.
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 public interface FuncColumnDefCommaClause {
 

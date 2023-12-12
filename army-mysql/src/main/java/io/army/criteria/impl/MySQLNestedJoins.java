@@ -27,9 +27,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold MySQL nested join implementations
- * </p>
- *
- * @since 1.0
+ * * @since 1.0
  */
 final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<
         I,
@@ -351,8 +349,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
      *         <li>{@link JoinClauseTableBlock}</li>
      *         <li>{@link CrossClauseTableBlock}</li>
      *     </ul>
-     * </p>
-     */
+     *     */
     @SuppressWarnings("unchecked")
     private static abstract class MySQLNestedTableBlock<I extends Item, R extends Item> extends MySQLNestedBlock<I>
             implements MySQLStatement._QueryIndexHintSpec<R>,

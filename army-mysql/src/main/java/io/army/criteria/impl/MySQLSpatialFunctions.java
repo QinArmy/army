@@ -12,8 +12,7 @@ import java.util.List;
 /**
  * <p>
  * Package class,this class provider MySQL spatial function.
- * </p>
- *
+*
  * @since 1.0
  */
 @SuppressWarnings("unused")
@@ -31,7 +30,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param geometryList non-null,empty list or list
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -45,7 +44,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param first non-null
      * @param rest  non-null,empty or non-empty
@@ -61,7 +60,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ptList non-null,empty list or list
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -75,7 +74,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param first non-null
      * @param rest  non-null,empty or non-empty
@@ -91,7 +90,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ptList non-null,empty list or list
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -105,7 +104,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param first non-null
      * @param rest  non-null,empty or non-empty
@@ -120,7 +119,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ptList non-null,empty list or list
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -134,7 +133,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param first non-null
      * @param rest  non-null,empty or non-empty
@@ -150,7 +149,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ptList non-null,empty list or list
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -164,7 +163,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param first non-null
      * @param rest  non-null,empty or non-empty
@@ -180,7 +179,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param lsList non-null,empty list or list
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -194,7 +193,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param first non-null
      * @param rest  non-null,empty or non-empty
@@ -210,7 +209,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param x non-null
      * @param y non-null
@@ -224,7 +223,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -238,7 +237,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -252,7 +251,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -266,7 +265,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -280,7 +279,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -294,7 +293,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -309,7 +308,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -323,7 +322,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -337,7 +336,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -351,7 +350,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param polyOrmpoly non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -365,7 +364,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param polyOrmpoly non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -379,7 +378,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param poly non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -393,7 +392,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param poly non-null
      * @param n    non-null
@@ -408,7 +407,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
+     *
      *
      * @param poly non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -421,7 +420,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
+     *
      *
      * @param poly non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -436,7 +435,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -450,7 +449,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g       non-null
      * @param options non-null
@@ -465,7 +464,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -479,7 +478,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g       non-null
      * @param options non-null
@@ -494,7 +493,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -507,7 +506,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g       non-null
      * @param options non-null
@@ -521,7 +520,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -534,7 +533,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g       non-null
      * @param options non-null
@@ -549,7 +548,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -563,7 +562,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -576,7 +575,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g            non-null
      * @param maxDecDigits non-null
@@ -590,7 +589,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g            non-null
      * @param maxDecDigits non-null
@@ -605,7 +604,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -618,7 +617,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param str     non-null
      * @param options non-null
@@ -632,7 +631,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param str     non-null
      * @param options non-null
@@ -648,7 +647,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @param d non-null
@@ -663,7 +662,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @param d non-null
@@ -678,7 +677,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @param d non-null
@@ -693,7 +692,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @param d non-null
@@ -710,7 +709,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType}
-     * </p>
+     *
      *
      * @param expList non-null ,the list that size in [1,2].
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -736,7 +735,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType}
-     * </p>
+     *
      *
      * @param strategy non-null ,the list that size in [1,2].
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -749,7 +748,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType}
-     * </p>
+     *
      *
      * @param strategy non-null ,the list that size in [1,2].
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -764,7 +763,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -778,7 +777,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -793,7 +792,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -808,7 +807,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ls                 non-null
      * @param fractionalDistance non-null
@@ -823,7 +822,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ls                 non-null
      * @param fractionalDistance non-null
@@ -838,7 +837,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ls       non-null
      * @param distance non-null
@@ -853,7 +852,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -868,7 +867,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g          non-null
      * @param targetSrid non-null
@@ -883,7 +882,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -899,7 +898,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param expList non-null,size in [2,3].
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -923,7 +922,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -937,7 +936,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -951,7 +950,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -965,7 +964,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param pt1 non-null
      * @param pt2 non-null
@@ -980,7 +979,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g           non-null
      * @param maxDistance non-null
@@ -996,7 +995,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1013,7 +1012,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ls non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1027,7 +1026,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param ls non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1040,7 +1039,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param ls non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1053,7 +1052,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param ls   non-null
      * @param unit non-null
@@ -1067,7 +1066,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
+     *
      *
      * @param ls non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1082,7 +1081,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ls non-null
      * @param n  non-null
@@ -1098,7 +1097,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param ls non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1114,7 +1113,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1129,7 +1128,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1143,7 +1142,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1158,7 +1157,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1173,7 +1172,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1   non-null
      * @param g2   non-null
@@ -1190,7 +1189,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1204,7 +1203,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1218,7 +1217,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1   non-null
      * @param g2   non-null
@@ -1233,7 +1232,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1247,7 +1246,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param g1   non-null
      * @param g2   non-null
@@ -1262,7 +1261,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1276,7 +1275,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1290,7 +1289,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1304,7 +1303,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g1 non-null
      * @param g2 non-null
@@ -1321,7 +1320,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param point     non-null
      * @param maxLength non-null
@@ -1336,7 +1335,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param longitude non-null
      * @param latitude  non-null
@@ -1353,7 +1352,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param geohashStr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1366,7 +1365,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param geohashStr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1380,7 +1379,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType}
-     * </p>
+     *
      *
      * @param geohashStr non-null
      * @param srid       non-null
@@ -1398,7 +1397,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1412,7 +1411,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1426,7 +1425,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1441,7 +1440,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1455,7 +1454,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1469,7 +1468,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1484,7 +1483,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1498,7 +1497,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1512,7 +1511,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1527,7 +1526,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1541,7 +1540,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1555,7 +1554,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1570,7 +1569,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1584,7 +1583,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1598,7 +1597,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1613,7 +1612,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1627,7 +1626,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1641,7 +1640,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1656,7 +1655,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1670,7 +1669,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1684,7 +1683,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1699,7 +1698,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1713,7 +1712,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1727,7 +1726,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1744,7 +1743,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1758,7 +1757,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1772,7 +1771,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1787,7 +1786,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1801,7 +1800,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1815,7 +1814,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1830,7 +1829,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1844,7 +1843,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1858,7 +1857,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1872,7 +1871,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1886,7 +1885,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1900,7 +1899,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1915,7 +1914,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1929,7 +1928,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1943,7 +1942,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1958,7 +1957,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1972,7 +1971,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1986,7 +1985,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2001,7 +2000,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2015,7 +2014,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2029,7 +2028,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2046,7 +2045,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param gc non-null
      * @param n  non-null
@@ -2060,7 +2059,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
+     *
      *
      * @param gc non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2075,7 +2074,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2089,7 +2088,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2102,7 +2101,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2115,7 +2114,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2129,7 +2128,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     * </p>
+     *
      *
      * @param g non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2142,7 +2141,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     * </p>
+     *
      *
      * @param p non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2156,7 +2155,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param p non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2171,7 +2170,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param p non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2185,7 +2184,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param p              non-null
      * @param newLatitudeVal non-null
@@ -2199,7 +2198,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param p non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2213,7 +2212,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param p               non-null
      * @param newLongitudeVal non-null
@@ -2227,7 +2226,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param p non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2241,7 +2240,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param p       non-null
      * @param newXVal non-null
@@ -2255,7 +2254,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
+     *
      *
      * @param p non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -2269,7 +2268,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BinaryType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
+     *
      *
      * @param p       non-null
      * @param newYVal non-null

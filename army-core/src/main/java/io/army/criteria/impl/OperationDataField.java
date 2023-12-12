@@ -12,13 +12,12 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * This class is a implementation of {@link SqlField},and This class is base class of below:
- *     <ul>
- *         <li>{@link TableFieldMeta}</li>
- *         <li>{@link QualifiedFieldImpl}</li>
- *         <li>{@link  CriteriaContexts.ImmutableDerivedField}</li>
- *         <li>{@code   CriteriaContexts.MutableDerivedField}</li>
- *     </ul>
- * </p>
+ * <ul>
+ *     <li>{@link TableFieldMeta}</li>
+ *     <li>{@link QualifiedFieldImpl}</li>
+ *     <li>{@link  CriteriaContexts.ImmutableDerivedField}</li>
+ *     <li>{@code   CriteriaContexts.MutableDerivedField}</li>
+ * </ul>
  */
 abstract class OperationDataField extends OperationExpression.OperationSimpleExpression implements SqlField,
         _Selection {

@@ -8,8 +8,7 @@ package io.army.criteria;
  *          <li>{@link DerivedTable}</li>
  *          <li>{@link io.army.meta.TableMeta}</li>
  *     </ul>
- * </p>
- *
+*
  * @since 1.0
  */
 public interface TabularItem extends Item {

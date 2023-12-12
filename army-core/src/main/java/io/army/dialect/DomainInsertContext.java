@@ -27,8 +27,7 @@ import java.util.function.ObjIntConsumer;
 /**
  * <p>
  * This class representing standard value insert context.
- * </p>
- */
+*/
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
 
 
