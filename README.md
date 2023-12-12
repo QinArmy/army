@@ -17,7 +17,7 @@
 <dependency>
     <groupId>io.qinarmy</groupId>
     <artifactId>army-jdbc</artifactId>
-    <version>0.6.0</version><!--Army maven version-->
+    <version>0.6.1-preview</version><!--Army maven version-->
 </dependency>
 ```
 
