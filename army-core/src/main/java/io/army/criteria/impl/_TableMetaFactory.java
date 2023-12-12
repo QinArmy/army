@@ -1,15 +1,13 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.Table;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.modelgen.ArmyMetaModelDomainProcessor;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -461,9 +459,9 @@ public abstract class _TableMetaFactory {
         if (isTableAnn) {
             final boolean catalogMatch, schemaMatch;
             catalogMatch = (catalog == null && targetCatalog.isEmpty())
-                    || targetCatalog.equals(_StringUtils.toLowerCase(catalog));
+                    || targetCatalog.equals(_StringUtils.toLowerCaseIfNonNull(catalog));
             schemaMatch = (schema == null && targetSchema.isEmpty())
-                    || targetSchema.equals(_StringUtils.toLowerCase(schema));
+                    || targetSchema.equals(_StringUtils.toLowerCaseIfNonNull(schema));
             match = catalogMatch && schemaMatch;
         } else {
             match = false;

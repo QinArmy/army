@@ -9,17 +9,31 @@ import java.util.BitSet;
 import java.util.Locale;
 import java.util.Map;
 
-public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
+public abstract class _StringUtils {
 
     protected _StringUtils() {
         throw new UnsupportedOperationException();
     }
 
-    public static String toLowerCase(String text) {
+    public static boolean isEmpty(@Nullable Object str) {
+        return str == null || str.equals("");
+    }
+
+    public static boolean hasLength(@Nullable CharSequence str) {
+        return str != null && str.length() > 0;
+    }
+
+    public static boolean hasText(@Nullable CharSequence str) {
+        return (str != null && str.length() > 0 && containsText(str));
+    }
+
+    @Nullable
+    public static String toLowerCaseIfNonNull(final @Nullable String text) {
         return text == null ? null : text.toLowerCase(Locale.ROOT);
     }
 
-    public static String toUpperCase(String text) {
+    @Nullable
+    public static String toUpperCase(final @Nullable String text) {
         return text == null ? null : text.toUpperCase(Locale.ROOT);
     }
 
@@ -191,5 +205,16 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
 
 
     /*################################## private method #############################################*/
+
+    private static boolean containsText(CharSequence str) {
+        int strLen = str.length();
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

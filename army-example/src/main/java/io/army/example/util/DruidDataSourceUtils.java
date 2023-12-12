@@ -4,9 +4,9 @@ import com.alibaba.druid.pool.DruidDataSource;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
-public abstract class DataSourceUtils {
+public abstract class DruidDataSourceUtils {
 
-    private DataSourceUtils() {
+    private DruidDataSourceUtils() {
         throw new UnsupportedOperationException();
     }
 

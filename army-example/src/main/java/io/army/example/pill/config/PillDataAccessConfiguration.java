@@ -4,7 +4,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import io.army.example.common.BaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.pill.service.sync.PillSyncBaseService;
-import io.army.example.util.DataSourceUtils;
+import io.army.example.util.DruidDataSourceUtils;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.spring.sync.ArmySyncLocalTransactionManager;
 import io.army.spring.sync.ArmySyncSessionFactoryBean;
@@ -34,7 +34,7 @@ public class PillDataAccessConfiguration implements EnvironmentAware {
 
     @Bean(destroyMethod = "close")
     public DruidDataSource pillDataSource() {
-        return DataSourceUtils.createDataSource(this.env, "pill", "primary");
+        return DruidDataSourceUtils.createDataSource(this.env, "pill", "primary");
     }
 
     @Bean

@@ -3,7 +3,7 @@ package io.army.example.bank.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
-import io.army.example.util.DataSourceUtils;
+import io.army.example.util.DruidDataSourceUtils;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.spring.sync.ArmySyncLocalTransactionManager;
 import io.army.spring.sync.ArmySyncSessionFactoryBean;
@@ -30,7 +30,7 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
 
     @Bean(destroyMethod = "close")
     public DruidDataSource bankDataSource() {
-        return DataSourceUtils.createDataSource(this.env, "bank", "primary");
+        return DruidDataSourceUtils.createDataSource(this.env, "bank", "primary");
     }
 
     @Bean

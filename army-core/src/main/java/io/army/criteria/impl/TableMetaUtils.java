@@ -6,9 +6,9 @@ import io.army.generator.FieldGenerator;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
+import io.army.util.Pair;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
-import io.qinarmy.util.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -319,7 +319,7 @@ abstract class TableMetaUtils {
 
 
     static String columnName(final Column column, final Field field) throws MetaException {
-        final String customColumnName = _StringUtils.toLowerCase(column.name()), fieldName = field.getName();
+        final String customColumnName = column.name().toLowerCase(Locale.ROOT), fieldName = field.getName();
         final String columnName;
         if (customColumnName.isEmpty()) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
@@ -392,7 +392,7 @@ abstract class TableMetaUtils {
             throw missingProperties(parentDomainClass, Collections.singleton(_MetaBridge.ID));
         }
         final Pair<Set<String>, Field> fieldPair;
-        fieldPair = new Pair<>(Collections.unmodifiableSet(fieldNameSet), idField);
+        fieldPair = Pair.create(Collections.unmodifiableSet(fieldNameSet), idField);
         parentFieldPairCache.putIfAbsent(parentDomainClass, fieldPair);
         return fieldPair;
     }
@@ -514,7 +514,7 @@ abstract class TableMetaUtils {
                 }
                 dependName = generatorMeta.params().get(FieldGenerator.DEPEND_FIELD_NAME);
             }
-            levelList.add(new Pair<>(field, level));
+            levelList.add(Pair.create(field, level));
         }
 
         final List<FieldMeta<?>> generatorChain;

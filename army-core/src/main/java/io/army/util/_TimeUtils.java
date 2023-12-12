@@ -17,7 +17,7 @@ import static java.time.temporal.ChronoField.*;
 /**
  *
  */
-public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
+public abstract class _TimeUtils {
 
     private _TimeUtils() {
         throw new UnsupportedOperationException();

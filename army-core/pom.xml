@@ -21,14 +21,6 @@
             <artifactId>army-annotation</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.qinarmy.common</groupId>
-            <artifactId>common-env</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.qinarmy.common</groupId>
-            <artifactId>common-util</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -57,10 +49,6 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid</artifactId>
         </dependency>
 
     </dependencies>

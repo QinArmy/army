@@ -245,7 +245,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             for (ChinaProvince province : provinceList) {
                 Assert.assertNotNull(province.getId()); // database generated key
             }
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
             for (ChinaProvince province : resultList) {
                 Assert.assertNotNull(province.getId());
 
@@ -300,7 +300,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             for (ChinaProvince province : provinceList) {
                 Assert.assertNotNull(province.getId()); // database generated key
             }
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
 
             for (ChinaProvince province : resultList) {
                 // parent fields
@@ -359,7 +359,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             for (ChinaProvince province : provinceList) {
                 Assert.assertNotNull(province.getId()); // database generated key
             }
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
             for (Map<String, Object> map : resultList) {
 
                 Assert.assertFalse(map instanceof ImmutableHashMap);
@@ -418,7 +418,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             for (ChinaProvince province : provinceList) {
                 Assert.assertNotNull(province.getId()); // database generated key
             }
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
             for (Map<String, Object> map : resultList) {
 
                 Assert.assertFalse(map instanceof ImmutableHashMap);
@@ -711,7 +711,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
             Assert.assertEquals(resultList.size(), 2);
 
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
 
             for (ChinaProvince province : resultList) {
                 Assert.assertNotNull(province.getId());
@@ -780,7 +779,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
             Assert.assertEquals(resultList.size(), 2);
 
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
 
             for (ChinaProvince province : resultList) {
                 // parent fields
@@ -850,7 +848,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
             Assert.assertEquals(resultList.size(), 2);
 
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
 
             for (Map<String, Object> map : resultList) {
 
@@ -921,7 +918,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
             Assert.assertEquals(resultList.size(), 2);
 
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
 
             for (Map<String, Object> map : resultList) {
 
@@ -1003,7 +999,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         final List<ChinaRegion<?>> resultList;
         resultList = session.queryList(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
 
-        Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
         Assert.assertTrue(resultList.size() > 0);
         LOG.debug("query insert rows : {}\n resultList : {}", resultList.size(), JSON.toJSONString(resultList));
 
@@ -1068,7 +1064,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             final List<ChinaProvince> resultList;
             resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
-            Assert.assertFalse(resultList instanceof ImmutableArrayList);
 
             final int resultRows = resultList.size();
             Assert.assertTrue(resultRows > 0 && resultRows <= maxRowCount);

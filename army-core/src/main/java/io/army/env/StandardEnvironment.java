@@ -1,36 +1,23 @@
 package io.army.env;
 
 import io.army.dialect.Database;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
-import io.qinarmy.env.convert.Converter;
-import io.qinarmy.env.convert.ConverterManager;
-import io.qinarmy.env.convert.ImmutableConverterManager;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 public final class StandardEnvironment implements ArmyEnvironment {
 
     public static StandardEnvironment from(Map<String, Object> map) {
-        final ConverterManager converterManager;
-        converterManager = ImmutableConverterManager.create(consumer -> {
-        });
-        return new StandardEnvironment(converterManager, map);
+        return new StandardEnvironment(map);
     }
-
-    public static StandardEnvironment create(ConverterManager converterManager, Map<String, Object> map) {
-        return new StandardEnvironment(converterManager, map);
-    }
-
-
-    private final ConverterManager converterManager;
 
     private final Map<String, Object> map;
 
-    private StandardEnvironment(ConverterManager converterManager, Map<String, Object> map) {
-        this.converterManager = converterManager;
-        this.map = Collections.unmodifiableMap(new HashMap<>(map));
+    private StandardEnvironment(Map<String, Object> map) {
+        this.map = Collections.unmodifiableMap(_Collections.hashMap(map));
     }
 
     @SuppressWarnings("unchecked")
@@ -42,7 +29,7 @@ public final class StandardEnvironment implements ArmyEnvironment {
         final Class<T> javaType = key.javaType;
         final T value;
         if (userValue == null) {
-            value = key.defaultValue;
+            value = null;
         } else if (javaType.isInstance(userValue)) {
             value = (T) userValue;
         } else if (!(userValue instanceof String)) {
@@ -57,18 +44,9 @@ public final class StandardEnvironment implements ArmyEnvironment {
                 throw new IllegalStateException(m);
             }
         } else {
-            final Converter<T> converter;
-            converter = this.converterManager.getConverter(javaType);
-            if (converter == null) {
-                String m = String.format("Not found %s for key[%s]", Converter.class.getName(), key.name);
-                throw new IllegalStateException(m);
-            }
-
-            try {
-                value = converter.convert((String) userValue);
-            } catch (IllegalArgumentException e) {
-                throw _Exceptions.convertFail(key, userValue, e);
-            }
+            final BiFunction<Class<T>, String, T> function;
+            function = Converters.findConvertor(javaType);
+            value = function.apply(javaType, (String) userValue);
         }
 
         return value;
@@ -87,12 +65,15 @@ public final class StandardEnvironment implements ArmyEnvironment {
     }
 
     @Override
-    public <T> T getOrDefault(ArmyKey<T> key) {
-        final T value;
-        value = this.get(key);
+    public <T> T getOrDefault(final ArmyKey<T> key) {
+        T value;
+        value = get(key);
         if (value == null) {
-            String m = String.format("%s %s no default value.", ArmyKey.class.getName(), key.name);
-            throw new IllegalArgumentException(m);
+            value = key.defaultValue;
+            if (value == null) {
+                String m = String.format("%s %s no default value.", ArmyKey.class.getName(), key.name);
+                throw new IllegalArgumentException(m);
+            }
         }
         return value;
     }
