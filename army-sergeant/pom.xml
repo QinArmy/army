@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.qinarmy</groupId>
         <artifactId>army</artifactId>
-        <version>1.0-SNAPSHOT</version><!--Army maven version-->
+        <version>0.6.0-PREVIEW</version><!--Army maven version-->
     </parent>
 
     <artifactId>army-sergeant</artifactId>
@@ -15,15 +15,18 @@
         <dependency>
             <groupId>io.qinarmy</groupId>
             <artifactId>army-struct</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.qinarmy</groupId>
             <artifactId>army-sync</artifactId>
+            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.qinarmy</groupId>
             <artifactId>army-reactive</artifactId>
+            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
     </dependencies>

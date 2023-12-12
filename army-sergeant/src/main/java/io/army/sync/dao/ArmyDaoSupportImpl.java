@@ -5,6 +5,11 @@ import io.army.sync.SyncSessionContext;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <p>This class is a abstract implementation of {@link ArmyDaoSupport}
+ *
+ * @since 1.0
+ */
 public abstract class ArmyDaoSupportImpl implements ArmyDaoSupport {
 
     protected final SyncSessionContext sessionContext;

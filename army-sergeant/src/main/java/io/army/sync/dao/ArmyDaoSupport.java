@@ -2,10 +2,14 @@ package io.army.sync.dao;
 
 
 import javax.annotation.Nullable;
-
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <p>This interface is designed for dao layer.
+ *
+ * @since 1.0
+ */
 public interface ArmyDaoSupport {
 
     <T> void save(T domain);

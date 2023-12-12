@@ -13,7 +13,7 @@
 <dependency>
     <groupId>io.qinarmy</groupId>
     <artifactId>army-jdbc</artifactId>
-    <version>1.0-SNAPSHOT</version><!--Army maven version-->
+    <version>0.6.0-PREVIEW</version><!--Army maven version-->
 </dependency>
 ```
 
