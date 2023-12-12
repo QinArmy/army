@@ -6,6 +6,7 @@ import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
+import java.io.Closeable;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,7 +30,7 @@ import java.util.stream.Stream;
  *
  * @since 1.0
  */
-public interface SyncSession extends Session, AutoCloseable {
+public interface SyncSession extends Session, Closeable {
 
 
     /**

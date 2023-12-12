@@ -6,6 +6,8 @@ import io.army.session.SessionFactory;
 import io.army.session.SessionFactoryException;
 import io.army.session.executor.ExecutorFactory;
 
+import java.io.Closeable;
+
 /**
  * <p>This interface representing blocking {@link SessionFactory}.
  * <p>The instance of this interface is created by {@link SyncFactoryBuilder}
@@ -13,7 +15,7 @@ import io.army.session.executor.ExecutorFactory;
  *
  * @since 1.0
  */
-public interface SyncSessionFactory extends SessionFactory, AutoCloseable {
+public interface SyncSessionFactory extends SessionFactory, Closeable {
 
 
     SyncLocalSession localSession();
