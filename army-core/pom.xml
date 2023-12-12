@@ -5,12 +5,13 @@
     <parent>
         <artifactId>army</artifactId>
         <groupId>io.qinarmy</groupId>
-        <version>0.6.0-PREVIEW</version><!--Army maven version-->
+        <version>0.6.0</version><!--Army maven version-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>army-core</artifactId>
 
+    <description>Army code module,provide standard criteria api etc.</description>
     <dependencies>
         <dependency>
             <groupId>io.qinarmy</groupId>

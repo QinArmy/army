@@ -5,11 +5,13 @@
     <parent>
         <artifactId>army</artifactId>
         <groupId>io.qinarmy</groupId>
-        <version>0.6.0-PREVIEW</version><!--Army maven version-->
+        <version>0.6.0</version><!--Army maven version-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>army-jdbd</artifactId>
+
+    <description>Army jdbc module,provide jdbd executor.</description>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
