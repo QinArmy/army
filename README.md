@@ -6,7 +6,7 @@
 2. We need standard,we need dialect,it's real world.
 3. We need blocking way,we need reactive way,it's real world.
 
-### [Army document](https://qinarmy.io "Army document site")
+### [Army document](https://army.qinarmy.io "Army document pages")
 
 ### How to start ?
 
