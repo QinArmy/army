@@ -41,16 +41,8 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
             return;
         }
 
-        for (Database db : Database.values()) {
-            switch (db) {
-                case MySQL:
-                case PostgreSQL:
-                    FACTORY_MAP.computeIfAbsent(db, FactoryUtils::createArmyBankReactiveFactory);
-                    break;
-                default:
-                    // no-op
-
-            } // switch
+        for (Database db : DATABASE_VALUES) {
+            FACTORY_MAP.computeIfAbsent(db, FactoryUtils::createArmyBankReactiveFactory);
 
         }// for loop
 

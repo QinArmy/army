@@ -1,4 +1,4 @@
-package io.army.session.postgre;
+package io.army.session.sync.postgre;
 
 
 import com.alibaba.fastjson2.JSON;

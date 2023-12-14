@@ -1,4 +1,4 @@
-package io.army.session.postgre;
+package io.army.session.sync.postgre;
 
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;

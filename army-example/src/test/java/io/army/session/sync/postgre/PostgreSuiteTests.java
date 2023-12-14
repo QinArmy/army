@@ -1,4 +1,4 @@
-package io.army.session.postgre;
+package io.army.session.sync.postgre;
 
 import io.army.dialect.Database;
 import io.army.session.SyncSessionTestSupport;
