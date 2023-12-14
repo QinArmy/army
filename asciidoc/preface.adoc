@@ -4,12 +4,11 @@
 
 === Foreword
 
-Army is
-
-* one better way to write SQL in Java
-* one better blocking orm framework
-* one better reactive orm framework
-* one better high-level database driver
+.Army is
+* a better way to write SQL in Java
+* a better blocking orm framework
+* a better reactive orm framework
+* a better high-level database driver
 
 === Design Philosophy
 

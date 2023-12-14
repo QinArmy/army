@@ -234,7 +234,9 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
                 //create ddl
                 final List<String> ddlList;
                 ddlList = parseMetaDdl(sessionFactory, schemaResult);
+
                 if (ddlList.size() > 0) {
+                    LOG.info("{}:\n\n{}", sessionFactory, ddlToSqlLog(ddlList));
                     mono = executor.executeDdl(ddlList);
                 } else {
                     mono = Mono.empty();

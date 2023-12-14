@@ -3,7 +3,6 @@ package io.army.sync;
 import io.army.advice.FactoryAdvice;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectEnv;
-import io.army.dialect._Constant;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
@@ -242,15 +241,8 @@ final class ArmySyncFactoryBuilder
                     if (ddlSize == 0) {
                         break;
                     }
-                    final StringBuilder builder = new StringBuilder(ddlSize * 30);
-                    for (int i = 0; i < ddlSize; i++) {
-                        if (i > 0) {
-                            builder.append("\n\n");
-                        }
-                        builder.append(ddlList.get(i))
-                                .append(_Constant.SPACE_SEMICOLON);
-                    }
-                    log.info(builder.toString());
+
+                    LOG.info("{}:\n\n{}", sessionFactory, ddlToSqlLog(ddlList));
                     metaExecutor.executeDdl(ddlList);
                 }
                 break;

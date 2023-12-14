@@ -106,7 +106,7 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
     }
 
     @Override
-    public Mono<ReactiveMetaExecutor> metaExecutor(Function<Option<?>, ?> func) {
+    public Mono<ReactiveMetaExecutor> metaExecutor(final Function<Option<?>, ?> func) {
         if (isClosed()) {
             return Mono.error(ExecutorSupport.executorFactoryClosed(this));
         }
@@ -115,7 +115,7 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
             factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).writableDataSource(func);
         }
         return Mono.from(factory.localSession())
-                .map(session -> JdbdMetaExecutor.create(this.sessionFactoryName, this, session))
+                .map(session -> JdbdMetaExecutor.create(this.sessionFactoryName, session))
                 .onErrorMap(this::wrapExecuteErrorIfNeed);
     }
 

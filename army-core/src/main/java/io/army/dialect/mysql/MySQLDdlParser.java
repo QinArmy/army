@@ -34,7 +34,6 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     }
 
 
-
     @Override
     protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
         if (index.isPrimaryKey()) {
@@ -81,14 +80,20 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
             case LONGTEXT:
 
             case GEOMETRY:
-//            case POINT:
-//            case LINESTRING:
-//            case POLYGON:
-//            case MULTIPOINT:
-//            case MULTIPOLYGON:
-//            case MULTILINESTRING:
-//            case GEOMETRYCOLLECTION:
-                builder.append(dataType.name());
+            case POINT:
+            case LINESTRING:
+            case POLYGON:
+            case MULTIPOINT:
+            case MULTIPOLYGON:
+            case MULTILINESTRING:
+            case GEOMETRYCOLLECTION:
+
+            case TINYINT_UNSIGNED:
+            case SMALLINT_UNSIGNED:
+            case MEDIUMINT_UNSIGNED:
+            case INT_UNSIGNED:
+            case BIGINT_UNSIGNED:
+                builder.append(dataType.typeName());
                 break;
             case DECIMAL_UNSIGNED:
             case DECIMAL: {
@@ -101,19 +106,19 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
             break;
             case TIME:
             case DATETIME: {
-                builder.append(dataType.name());
+                builder.append(dataType.typeName());
                 timeTypeScale(field, dataType, builder);
             }
             break;
             case BINARY:
             case CHAR: {
-                builder.append(dataType.name());
+                builder.append(dataType.typeName());
                 precision(field, dataType, 0xFF, 1, builder);
             }
             break;
             case VARBINARY:
             case VARCHAR: {
-                builder.append(dataType.name());
+                builder.append(dataType.typeName());
                 precision(field, dataType, 0xFFFF, 0xFF, builder);
             }
             break;
@@ -121,7 +126,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
                 setType(field, builder);
                 break;
             case BIT: {
-                builder.append(dataType.name());
+                builder.append(dataType.typeName());
                 precision(field, dataType, 64, 1, builder);
             }
             break;
@@ -130,27 +135,12 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
                 break;
             case BLOB:
             case TEXT: {
-                builder.append(dataType.name());
+                builder.append(dataType.typeName());
                 if (field.precision() > 0) {
                     precision(field, dataType, 0xFFFF, 0xFFFF, builder);
                 }
             }
             break;
-            case TINYINT_UNSIGNED:
-                builder.append("TINYINT UNSIGNED");
-                break;
-            case SMALLINT_UNSIGNED:
-                builder.append("SMALLINT UNSIGNED");
-                break;
-            case MEDIUMINT_UNSIGNED:
-                builder.append("MEDIUMINT UNSIGNED");
-                break;
-            case INT_UNSIGNED:
-                builder.append("INT UNSIGNED");
-                break;
-            case BIGINT_UNSIGNED:
-                builder.append("BIGINT UNSIGNED");
-                break;
             default:
                 throw _Exceptions.unexpectedEnum((MySQLType) dataType);
         }
@@ -160,7 +150,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
 
     @Override
     protected void postDataType(FieldMeta<?> field, DataType dataType, StringBuilder builder) {
-        // no-op
+        dataType(field, dataType, builder);
     }
 
     @Override
@@ -184,7 +174,6 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
         final String defaultValue;
         if (result.containSqlType() || result.containNullable() || result.containComment()) {
             builder.append("MODIFY COLUMN ");
-            this.parser.safeObjectName(field, builder);
             columnDefinition(field, builder);
         } else if (!result.containDefault()) {
             //no bug,never here

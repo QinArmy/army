@@ -26,30 +26,6 @@
         <module>army-sergeant</module>
     </modules>
 
-    <properties>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <spring.boot.version>2.7.16</spring.boot.version>
-
-        <slf4.version>1.7.28</slf4.version>
-
-
-        <testng.version>6.14.3</testng.version>
-
-        <mssql-jdbc.version>8.2.2.jre13</mssql-jdbc.version>
-        <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
-        <mysql.versioin>8.0.28</mysql.versioin>
-        <postgresql.version>42.6.0</postgresql.version>
-        <!-- javax  -->
-        <jsr305.version>3.0.2</jsr305.version>
-        <army.version>${project.version}</army.version>
-        <ali.druid.version>1.1.20</ali.druid.version>
-        <r2dbc-postgresql.version>0.8.4.RELEASE</r2dbc-postgresql.version>
-    </properties>
-
     <name>army</name>
     <description>One better way to write SQL in Java ; one better blocking orm framework ; one better hight-level
         database driver ; one better reactive orm framework ;
@@ -81,6 +57,29 @@
         </license>
     </licenses>
 
+    <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <spring.boot.version>2.7.16</spring.boot.version>
+
+        <slf4.version>1.7.28</slf4.version>
+
+
+        <testng.version>6.14.3</testng.version>
+
+        <mssql-jdbc.version>8.2.2.jre13</mssql-jdbc.version>
+        <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
+        <mysql.versioin>8.0.28</mysql.versioin>
+        <postgresql.version>42.6.0</postgresql.version>
+        <!-- javax  -->
+        <jsr305.version>3.0.2</jsr305.version>
+        <army.version>${project.version}</army.version>
+        <ali.druid.version>1.1.20</ali.druid.version>
+        <r2dbc-postgresql.version>0.8.4.RELEASE</r2dbc-postgresql.version>
+    </properties>
 
     <dependencyManagement>
 
@@ -352,20 +351,20 @@
                             <doctype>book</doctype>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>pdf</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>process-asciidoc</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDocumentName>index.adoc</sourceDocumentName>
-                            <outputFile>army.pdf</outputFile>
-                            <backend>pdf</backend>
-                            <sourceDirectory>${project.basedir}/asciidoc</sourceDirectory>
-                            <outputDirectory>${project.basedir}/asciidoc-pdf</outputDirectory>
-                        </configuration>
-                    </execution>
+                    <!--                    <execution>-->
+                    <!--                        <id>pdf</id>-->
+                    <!--                        <phase>generate-resources</phase>-->
+                    <!--                        <goals>-->
+                    <!--                            <goal>process-asciidoc</goal>-->
+                    <!--                        </goals>-->
+                    <!--                        <configuration>-->
+                    <!--                            <sourceDocumentName>index.adoc</sourceDocumentName>-->
+                    <!--                            <outputFile>army.pdf</outputFile>-->
+                    <!--                            <backend>pdf</backend>-->
+                    <!--                            <sourceDirectory>${project.basedir}/asciidoc</sourceDirectory>-->
+                    <!--                            <outputDirectory>${project.basedir}/asciidoc-pdf</outputDirectory>-->
+                    <!--                        </configuration>-->
+                    <!--                    </execution>-->
                 </executions>
             </plugin>
         </plugins>

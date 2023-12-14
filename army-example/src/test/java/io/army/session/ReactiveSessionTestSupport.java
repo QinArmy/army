@@ -2,8 +2,8 @@ package io.army.session;
 
 import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
-import io.army.sync.SyncSession;
-import io.army.sync.SyncSessionFactory;
+import io.army.reactive.ReactiveSession;
+import io.army.reactive.ReactiveSessionFactory;
 import io.army.util._Collections;
 import io.jdbd.session.DatabaseSession;
 import org.testng.ITestContext;
@@ -17,13 +17,13 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
+public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
 
-    private static final ConcurrentMap<Database, SyncSessionFactory> SYNC_FACTORY_MAP = _Collections.concurrentHashMap();
+    private static final ConcurrentMap<Database, ReactiveSessionFactory> FACTORY_MAP = _Collections.concurrentHashMap();
 
     private final Database database;
 
-    protected SyncSessionTestSupport(@Nullable Database database) {
+    protected ReactiveSessionTestSupport(@Nullable Database database) {
         this.database = database;
     }
 
@@ -34,7 +34,7 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
         final Database database = this.database;
 
         if (database != null) {
-            SYNC_FACTORY_MAP.computeIfAbsent(database, FactoryUtils::createArmyBankSyncFactory);
+            FACTORY_MAP.computeIfAbsent(database, FactoryUtils::createArmyBankReactiveFactory);
             return;
         }
 
@@ -42,11 +42,13 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
             switch (db) {
                 case MySQL:
                 case PostgreSQL:
-                    SYNC_FACTORY_MAP.computeIfAbsent(db, FactoryUtils::createArmyBankSyncFactory);
+                    FACTORY_MAP.computeIfAbsent(db, FactoryUtils::createArmyBankReactiveFactory);
                     break;
                 default:
                     // no-op
+
             } // switch
+
         }// for loop
 
     }
@@ -54,19 +56,21 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
     @AfterSuite
     public final void afterSuiteCloseSessionFactory() {
         final Database database = this.database;
-        SyncSessionFactory syncFactory;
+        ReactiveSessionFactory factory;
         if (database != null) {
-            syncFactory = SYNC_FACTORY_MAP.remove(database);
-            if (syncFactory != null) {
-                syncFactory.close();
+            factory = FACTORY_MAP.remove(database);
+            if (factory != null) {
+                factory.close()
+                        .block();
             }
             return;
         }
 
         for (Database db : Database.values()) {
-            syncFactory = SYNC_FACTORY_MAP.remove(db);
-            if (syncFactory != null) {
-                syncFactory.close();
+            factory = FACTORY_MAP.remove(db);
+            if (factory != null) {
+                factory.close()
+                        .block();
             }
         }
     }
@@ -76,7 +80,7 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
     public final void closeSessionAfterTest(final Method method, final ITestContext context) {
         boolean match = false;
         for (Class<?> parameterType : method.getParameterTypes()) {
-            if (SyncSession.class.isAssignableFrom(parameterType)) {
+            if (ReactiveSession.class.isAssignableFrom(parameterType)) {
                 match = true;
                 break;
             }
@@ -86,16 +90,18 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
         }
 
         final String key;
-        key = method.getDeclaringClass().getName() + '.' + method.getName() + "#syncSession";
+        key = method.getDeclaringClass().getName() + '.' + method.getName() + "#reactiveSession";
 
         final Object value;
         value = context.getAttribute(key);
-        if (value instanceof SyncSession) {
+        if (value instanceof ReactiveSession) {
             context.removeAttribute(key);
-            ((SyncSession) value).close();
+            ((ReactiveSession) value).close()
+                    .block();
         } else if (value instanceof TestSessionHolder && ((TestSessionHolder) value).close) {
             context.removeAttribute(key);
-            ((TestSessionHolder) value).session.close();
+            ((TestSessionHolder) value).session.close()
+                    .block();
         }
     }
 
@@ -139,23 +145,25 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
 
         final boolean readOnly = (currentInvocationCount & 1) == 0;
 
-        final SyncSessionFactory sessionFactory;
-        sessionFactory = SYNC_FACTORY_MAP.get(this.database);
+        final ReactiveSessionFactory sessionFactory;
+        sessionFactory = FACTORY_MAP.get(this.database);
         assert sessionFactory != null;
 
-        final SyncSession session;
+        final ReactiveSession session;
         if (local) {
             session = sessionFactory.localBuilder()
                     .name(methodName)
                     .readonly(readOnly)
                     .allowQueryInsert(true)
-                    .build();
+                    .build()
+                    .block();
         } else {
             session = sessionFactory.rmBuilder()
                     .name(methodName)
                     .readonly(readOnly)
                     .allowQueryInsert(true)
-                    .build();
+                    .build()
+                    .block();
         }
 
         context.setAttribute(keyOfSession, session);
@@ -183,7 +191,7 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
     /*-------------------below protected static -------------------*/
 
     protected static String keyNameOfSession(final ITestNGMethod targetMethod) {
-        return targetMethod.getRealClass().getName() + '.' + targetMethod.getMethodName() + "#syncSession";
+        return targetMethod.getRealClass().getName() + '.' + targetMethod.getMethodName() + "#reactiveSession";
     }
 
     /*-------------------below static class  -------------------*/
@@ -193,11 +201,11 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
      */
     protected static final class TestSessionHolder {
 
-        public final SyncSession session;
+        public final ReactiveSession session;
 
         public final boolean close;
 
-        public TestSessionHolder(SyncSession session, boolean close) {
+        public TestSessionHolder(ReactiveSession session, boolean close) {
             this.session = session;
             this.close = close;
         }

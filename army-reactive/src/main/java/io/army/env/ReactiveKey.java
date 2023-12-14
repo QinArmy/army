@@ -8,7 +8,7 @@ public final class ReactiveKey<T> extends ArmyKey<T> {
     /**
      * @see #EXECUTOR_PROVIDER_MD5
      */
-    public static final ReactiveKey<String> EXECUTOR_PROVIDER = new ReactiveKey<>("reactive.executor.provider", String.class, "io.army.jdbc.JdbcExecutorProvider");
+    public static final ReactiveKey<String> EXECUTOR_PROVIDER = new ReactiveKey<>("reactive.executor.provider", String.class, "io.army.jdbd.JdbdExecutorFactoryProvider");
 
     /**
      * @see #EXECUTOR_PROVIDER

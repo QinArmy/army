@@ -287,16 +287,20 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         if (indexNameSize == 0) {
             return;
         }
-        final boolean ifExists;
+        final boolean ifExists, onTableName;
         switch (this.parser.database) {
             case PostgreSQL:
                 ifExists = true;
+                onTableName = false;
                 break;
             case MySQL:
+                ifExists = false;
+                onTableName = true;
+                break;
             case Oracle:
             case H2:
             default:
-                ifExists = false;
+                throw _Exceptions.unexpectedEnum(this.parser.database);
         }
 
         final StringBuilder builder = new StringBuilder(30);
@@ -318,6 +322,12 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
                 builder.append("IF EXISTS ");
             }
             this.parser.identifier(index.name(), builder);
+
+            if (onTableName) {
+                builder.append(_Constant.SPACE_ON_SPACE);
+                this.parser.safeObjectName(index.tableMeta(), builder);
+            }
+
             sqlList.add(builder.toString());
 
             builder.setLength(0); // clear

@@ -16,6 +16,8 @@ final class MySQLComparer extends ArmySchemaComparer {
         return new MySQLComparer(serverMeta);
     }
 
+    // private static final Logger LOG = LoggerFactory.getLogger(MySQLComparer.class);
+
     private MySQLComparer(ServerMeta serverMeta) {
         super(serverMeta);
         if (serverMeta.serverDatabase() != Database.MySQL) {
@@ -38,8 +40,8 @@ final class MySQLComparer extends ArmySchemaComparer {
 
     @Override
     boolean compareSqlType(final ColumnInfo columnInfo, final FieldMeta<?> field, final DataType dataType) {
-        final String typeName;
-        typeName = columnInfo.typeName().toUpperCase(Locale.ROOT);
+        final String upperCaseTypeName;
+        upperCaseTypeName = columnInfo.typeName().toUpperCase(Locale.ROOT);
 
         if (!(dataType instanceof MySQLType)) {
             return true;
@@ -48,7 +50,7 @@ final class MySQLComparer extends ArmySchemaComparer {
         final boolean match;
         switch ((MySQLType) dataType) {
             case BOOLEAN: {
-                switch (typeName) {
+                switch (upperCaseTypeName) {
                     case "BOOLEAN":
                     case "TINYINT":
                         match = true;
@@ -59,7 +61,7 @@ final class MySQLComparer extends ArmySchemaComparer {
             }
             break;
             case INT: {
-                switch (typeName) {
+                switch (upperCaseTypeName) {
                     case "INT":
                     case "INTEGER":
                         match = true;
@@ -70,7 +72,7 @@ final class MySQLComparer extends ArmySchemaComparer {
             }
             break;
             case INT_UNSIGNED: {
-                switch (typeName) {
+                switch (upperCaseTypeName) {
                     case "INT UNSIGNED":
                     case "INTEGER UNSIGNED":
                         match = true;
@@ -80,8 +82,30 @@ final class MySQLComparer extends ArmySchemaComparer {
                 }
             }
             break;
+            case CHAR:
+            case VARCHAR:
+            case BINARY:
+            case VARBINARY: {
+                final boolean nameMatch;
+                nameMatch = upperCaseTypeName.equalsIgnoreCase(dataType.typeName());
+                final int precision = field.precision();
+                match = nameMatch && (precision == -1 || precision == columnInfo.precision());
+            }
+            break;
+            case DECIMAL:
+            case DECIMAL_UNSIGNED: {
+                final boolean nameMatch;
+                nameMatch = upperCaseTypeName.equalsIgnoreCase(dataType.typeName());
+                final int precision, scale;
+                precision = field.precision();
+                scale = field.scale();
+                match = nameMatch
+                        && (precision == -1 || precision == columnInfo.precision())
+                        && (scale == -1 || scale == columnInfo.scale());
+            }
+            break;
             case GEOMETRYCOLLECTION: {
-                switch (typeName) {
+                switch (upperCaseTypeName) {
                     case "GEOMCOLLECTION":
                     case "GEOMETRYCOLLECTION":
                         match = true;
@@ -92,7 +116,7 @@ final class MySQLComparer extends ArmySchemaComparer {
             }
             break;
             default:
-                match = typeName.equals(dataType.typeName());
+                match = upperCaseTypeName.equalsIgnoreCase(dataType.typeName());
         }
         return !match;
     }

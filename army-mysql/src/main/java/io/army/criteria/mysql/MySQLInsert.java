@@ -3,11 +3,9 @@ package io.army.criteria.mysql;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -169,6 +167,7 @@ public interface MySQLInsert extends MySQLStatement {
 
     interface _ColumnListSpec<I extends Item, T>
             extends InsertStatement._ColumnListParensClause<T, _ComplexColumnDefaultSpec<I, T>>,
+            _ComplexColumnDefaultSpec<I, T>,
             _ValuesColumnDefaultSpec<I, T>,
             _MySQLStaticAssignmentClause<I, T>,
             InsertStatement._DynamicAssignmentSetClause<T, _OnAsRowAliasSpec<I, T>> {
@@ -236,7 +235,6 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing INTO clause that support only {@link SingleTableMeta}.
-     *
      */
     interface _PrimarySingleIntoClause<I extends Item> {
 
@@ -248,7 +246,6 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing INSERT INTO spec that support only {@link SingleTableMeta}.
-     *
      */
     interface _PrimarySingleInsertIntoSpec<I extends Item> extends _InsertClause<_PrimarySingleIntoClause<I>>, Item {
 
@@ -260,7 +257,6 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing {@link LiteralMode} spec that support only {@link SingleTableMeta}.
-     *
      */
     interface _PrimarySinglePreferLiteralSpec<I extends Item>
             extends InsertStatement._PreferLiteralClause<_PrimarySingleInsertIntoSpec<I>>,
@@ -272,7 +268,6 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing {@link NullMode} spec that support only {@link SingleTableMeta}.
-     *
      */
     interface _PrimarySingleNullOptionSpec<I extends Item>
             extends InsertStatement._NullOptionClause<_PrimarySinglePreferLiteralSpec<I>>,
@@ -283,7 +278,6 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * <p>
      * This interface representing migration spec that support only {@link SingleTableMeta}.
-     *
      */
     interface _PrimarySingleOptionSpec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_PrimarySingleNullOptionSpec<I>>,

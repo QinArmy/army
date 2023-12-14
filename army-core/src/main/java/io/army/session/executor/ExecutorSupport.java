@@ -765,7 +765,7 @@ public abstract class ExecutorSupport {
         return new MetaException(m);
     }
 
-    protected static DataAccessException driverError() {
+    public static DataAccessException driverError() {
         // driver no bug,never here
         return new DataAccessException("driver error");
     }

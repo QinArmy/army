@@ -137,7 +137,7 @@ class JdbcMetaExecutor implements MetaExecutor {
                 type = resultSet.getString("TABLE_TYPE");
 
                 final TableInfo.Builder builder;
-                builder = TableInfo.builder(tableName)
+                builder = TableInfo.builder(false, tableName)
                         .comment(resultSet.getString("REMARKS"));
                 switch (type) {
                     case "TABLE":
@@ -159,8 +159,8 @@ class JdbcMetaExecutor implements MetaExecutor {
 
     }
 
-    private void appendColumn(final @Nullable String catalog, final @Nullable String schema
-            , final DatabaseMetaData metaData, final Map<String, TableInfo.Builder> tableBuilderMap)
+    private void appendColumn(final @Nullable String catalog, final @Nullable String schema,
+                              final DatabaseMetaData metaData, final Map<String, TableInfo.Builder> tableBuilderMap)
             throws SQLException {
 
         try (ResultSet resultSet = metaData.getColumns(catalog, schema, "%", "%")) {
@@ -180,10 +180,9 @@ class JdbcMetaExecutor implements MetaExecutor {
                 builder.name(resultSet.getString("COLUMN_NAME"))
                         .type(resultSet.getString("TYPE_NAME"))
                         .defaultExp(resultSet.getString("COLUMN_DEF"))
-                        .defaultExp(resultSet.getString("COLUMN_DEF"))
 
                         .comment(resultSet.getString("REMARKS"))
-                        .autoincrement("YES" .equals(resultSet.getString("IS_AUTOINCREMENT")))
+                        .autoincrement("YES".equals(resultSet.getString("IS_AUTOINCREMENT")))
                         .precision(resultSet.getInt("COLUMN_SIZE"));
                 nullable = resultSet.getString("IS_NULLABLE");
                 switch (nullable) {

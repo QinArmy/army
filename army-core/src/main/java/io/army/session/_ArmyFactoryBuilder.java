@@ -8,6 +8,7 @@ import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
+import io.army.dialect._Constant;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
@@ -325,6 +326,19 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         throw new SessionFactoryException(m);
     }
 
+
+    protected static String ddlToSqlLog(final List<String> ddlList) {
+        final int ddlSize = ddlList.size();
+        final StringBuilder builder = new StringBuilder(ddlSize * 30);
+        for (int i = 0; i < ddlSize; i++) {
+            if (i > 0) {
+                builder.append("\n\n");
+            }
+            builder.append(ddlList.get(i))
+                    .append(_Constant.SPACE_SEMICOLON);
+        }
+        return builder.toString();
+    }
 
     @Nullable
     protected static FactoryAdvice createFactoryAdviceComposite(Collection<FactoryAdvice> factoryAdvices) {

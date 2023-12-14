@@ -9,8 +9,8 @@ import java.util.Map;
 
 final class TableInfoImpl implements TableInfo {
 
-    static TableInfoBuilder createBuilder(String name) {
-        return new TableInfoBuilder(name);
+    static TableInfoBuilder createBuilder(boolean reactive, String name) {
+        return new TableInfoBuilder(reactive, name);
     }
 
     private final String name;
@@ -83,7 +83,11 @@ final class TableInfoImpl implements TableInfo {
 
         private Map<String, IndexInfo> indexMap;
 
-        private TableInfoBuilder(String name) {
+        private TableInfoBuilder(boolean reactive, String name) {
+            if (reactive) {
+                this.columnMap = _Collections.concurrentHashMap();
+                this.indexMap = _Collections.concurrentHashMap();
+            }
             this.name = name;
         }
 

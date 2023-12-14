@@ -138,7 +138,7 @@ final class ColumnInfoImpl implements ColumnInfo {
         }
 
         @Override
-        public Builder defaultExp(String defaultExp) {
+        public Builder defaultExp(@Nullable String defaultExp) {
             this.defaultExp = defaultExp;
             return this;
         }
@@ -150,7 +150,7 @@ final class ColumnInfoImpl implements ColumnInfo {
         }
 
         @Override
-        public Builder comment(String comment) {
+        public Builder comment(@Nullable String comment) {
             this.comment = comment;
             return this;
         }

@@ -171,7 +171,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     @Override
     public final String toString() {
-        return _StringUtils.builder(48)
+        return _StringUtils.builder(90)
                 .append(getClass().getName())
                 .append("[name:")
                 .append(this.name)

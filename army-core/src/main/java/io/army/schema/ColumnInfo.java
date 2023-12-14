@@ -41,11 +41,11 @@ public interface ColumnInfo {
 
         Builder scale(int scale);
 
-        Builder defaultExp(String defaultExp);
+        Builder defaultExp(@Nullable String defaultExp);
 
         Builder nullable(@Nullable Boolean nullable);
 
-        Builder comment(String comment);
+        Builder comment(@Nullable String comment);
 
         Builder autoincrement(boolean autoincrement);
 

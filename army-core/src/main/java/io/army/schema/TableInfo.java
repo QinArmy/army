@@ -22,8 +22,8 @@ public interface TableInfo {
     Map<String, IndexInfo> indexMap();
 
 
-    static Builder builder(String tableName) {
-        return TableInfoImpl.createBuilder(tableName);
+    static Builder builder(boolean reactive, String tableName) {
+        return TableInfoImpl.createBuilder(reactive, tableName);
     }
 
 

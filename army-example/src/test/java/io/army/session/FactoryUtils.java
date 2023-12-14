@@ -9,10 +9,14 @@ import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
 import io.army.env.StandardEnvironment;
 import io.army.example.common.SimpleFieldGeneratorFactory;
+import io.army.reactive.ReactiveFactoryBuilder;
+import io.army.reactive.ReactiveSessionFactory;
 import io.army.sync.SyncFactoryBuilder;
 import io.army.sync.SyncSessionFactory;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.jdbd.Driver;
+import io.jdbd.session.DatabaseSessionFactory;
 
 import java.util.Collections;
 import java.util.Map;
@@ -33,6 +37,31 @@ public abstract class FactoryUtils {
                 .environment(createEnvironment(database))
                 .fieldGeneratorFactory(new SimpleFieldGeneratorFactory())
                 .build();
+    }
+
+    public static ReactiveSessionFactory createArmyBankReactiveFactory(final Database database) {
+        final String url;
+        url = mapDatabaseToJdbdUrl(database);
+        final Map<String, Object> map = _Collections.hashMap();
+        map.put(Driver.USER, "army_w");
+        map.put(Driver.PASSWORD, "army123");
+        map.put("factoryWorkerCount", 10);
+
+        final DatabaseSessionFactory databaseSessionFactory;
+        databaseSessionFactory = Driver.findDriver(url).forDeveloper(url, map);
+
+        final ReactiveSessionFactory factory;
+        factory = ReactiveFactoryBuilder.builder()
+                .name(mapDatabaseToFactoryName(database))
+                .packagesToScan(Collections.singletonList("io.army.example.bank.domain"))
+                .datasource(databaseSessionFactory)
+                .environment(createEnvironment(database))
+                .fieldGeneratorFactory(new SimpleFieldGeneratorFactory())
+                .build()
+                .block();
+
+        assert factory != null;
+        return factory;
     }
 
 
@@ -86,6 +115,21 @@ public abstract class FactoryUtils {
                 break;
             case PostgreSQL:
                 url = "jdbc:postgresql://localhost:5432/army_bank";
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(database);
+        }
+        return url;
+    }
+
+    private static String mapDatabaseToJdbdUrl(final Database database) {
+        final String url;
+        switch (database) {
+            case MySQL:
+                url = "jdbd:mysql://localhost:3306/army_bank";
+                break;
+            case PostgreSQL:
+                url = "jdbd:postgresql://localhost:5432/army_bank";
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(database);
