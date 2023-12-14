@@ -87,12 +87,8 @@ abstract class MySQLExecutor extends JdbcExecutor {
             builder.append(READ_WRITE);
         }
 
-        try (Statement statement = this.conn.createStatement()) {
+        executeSimpleStaticStatement(builder.toString(), LOG);
 
-            statement.executeUpdate(builder.toString());
-        } catch (Exception e) {
-            throw handleException(e);
-        }
     }
 
 
@@ -466,18 +462,16 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(" RELEASE");
             }
 
-            try (Statement statement = this.conn.createStatement()) {
-                statement.executeUpdate(builder.toString());
 
-                this.transactionInfo = newInfo;
-                return newInfo;
-            } catch (Exception e) {
-                throw handleException(e);
-            }
+            executeSimpleStaticStatement(builder.toString(), LOG);
+
+            this.transactionInfo = newInfo;
+            return newInfo;
         }
 
 
     } // LocalExecutor
+
 
 
     private static class RmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
@@ -643,15 +637,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(" ONE PHASE");
             }
 
-            try (Statement statement = this.conn.createStatement()) {
+            executeSimpleStaticStatement(builder.toString(), LOG);
 
-                statement.executeUpdate(builder.toString());
-
-                this.transactionInfo = null; // clear current transaction info
-                return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
-            } catch (Exception e) {
-                throw handleException(e);
-            }
+            this.transactionInfo = null; // clear current transaction info
+            return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
         }
 
         /**
@@ -688,15 +677,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(" ONE PHASE");
             }
 
-            try (Statement statement = this.conn.createStatement()) {
 
-                statement.executeUpdate(builder.toString());
+            executeSimpleStaticStatement(builder.toString(), LOG);
 
-                if ((flags & RmSession.TM_ONE_PHASE) != 0) {
-                    this.transactionInfo = null; // clear for one phase
-                }
-            } catch (Exception e) {
-                throw handleException(e);
+            if ((flags & RmSession.TM_ONE_PHASE) != 0) {
+                this.transactionInfo = null; // clear for one phase
             }
 
         }
@@ -734,16 +719,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             xidToString(actualXid, builder);
 
-            try (Statement statement = this.conn.createStatement()) {
+            executeSimpleStaticStatement(builder.toString(), LOG);
 
-                statement.executeUpdate(builder.toString());
-
-                if (onePhaseRollback) {
-                    this.transactionInfo = null; // clear for one phase rollback
-                }
-            } catch (Exception e) {
-                throw handleException(e);
+            if (onePhaseRollback) {
+                this.transactionInfo = null; // clear for one phase rollback
             }
+
         }
 
         @Override

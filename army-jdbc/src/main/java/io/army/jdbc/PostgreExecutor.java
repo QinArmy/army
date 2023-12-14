@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 /**
  * <p>
  * This class is a implementation of {@link SyncExecutor} with postgre JDBC driver.
-*
+ *
  * @since 1.0
  */
 abstract class PostgreExecutor extends JdbcExecutor {
@@ -422,6 +422,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
         final String sql = "SHOW transaction_isolation ; SHOW transaction_read_only ; SHOW transaction_deferrable ";
         try (final Statement statement = this.conn.createStatement()) {
 
+            printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
+
             if (!statement.execute(sql)) {
                 statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
                 throw driverError();
@@ -611,7 +613,13 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
 
             try (Statement statement = this.conn.createStatement()) {
-                statement.executeUpdate(builder.toString());
+
+                final String sql;
+                sql = builder.toString();
+
+                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
+
+                statement.executeUpdate(sql);
 
                 this.transactionInfo = newInfo;
                 return newInfo;
@@ -736,8 +744,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
 
             try (Statement statement = this.conn.createStatement()) {
+                final String sql;
+                sql = builder.toString();
 
-                statement.executeUpdate(builder.toString());
+                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
+
+                statement.executeUpdate(sql);
 
                 this.transactionInfo = null; // clear current transaction info
                 return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
@@ -781,7 +793,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             try (Statement statement = this.conn.createStatement()) {
 
-                statement.executeUpdate(builder.toString());
+                final String sql;
+                sql = builder.toString();
+
+                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
+
+                statement.executeUpdate(sql);
 
                 if ((flags & RmSession.TM_ONE_PHASE) != 0) {
                     this.transactionInfo = null; // clear for one phase
@@ -821,7 +838,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             try (Statement statement = this.conn.createStatement()) {
 
-                statement.executeUpdate(builder.toString());
+                final String sql;
+                sql = builder.toString();
+
+                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
+
+                statement.executeUpdate(sql);
 
                 if (onePhaseRollback) {
                     this.transactionInfo = null; // clear for one phase

@@ -675,6 +675,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     final Stream<Xid> jdbcRecover(final String sql, Function<DataRecord, Xid> function, StreamOption option) {
 
+        printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
+
         Statement statement = null;
         ResultSet resultSet = null;
         try {
@@ -919,6 +921,20 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         } else {
             throw beforeBindMethodError(type, dataType, nonNull);
         }
+    }
+
+
+    final int executeSimpleStaticStatement(final String sql, final Logger logger) throws ArmyException {
+
+        try (Statement statement = this.conn.createStatement()) {
+
+            printSqlIfNeed(this.factory, this.sessionName, logger, sql);
+
+            return statement.executeUpdate(sql);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+
     }
 
     final ArmyException handleException(Exception cause) {
