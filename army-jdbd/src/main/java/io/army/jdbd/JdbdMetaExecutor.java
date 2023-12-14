@@ -8,8 +8,6 @@ import io.army.util._StringUtils;
 import io.jdbd.meta.*;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.Option;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,7 +20,7 @@ final class JdbdMetaExecutor implements ReactiveMetaExecutor {
         return new JdbdMetaExecutor(sessionFactoryName, session);
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbdMetaExecutor.class);
+   // private static final Logger LOG = LoggerFactory.getLogger(JdbdMetaExecutor.class);
 
 
     private final String sessionFactoryName;
@@ -152,10 +150,6 @@ final class JdbdMetaExecutor implements ReactiveMetaExecutor {
     }
 
     private void appendIndexInfo(final TableInfo.Builder tableBuilder, final TableIndexMeta meta) {
-
-        if (meta.indexName().equals("uni_certificate_no_type")) {
-            LOG.debug("{} {} ,{}", meta.indexName(), meta.isUnique(), meta.keyType());
-        }
 
         final IndexInfo.Builder builder;
         builder = IndexInfo.builder()

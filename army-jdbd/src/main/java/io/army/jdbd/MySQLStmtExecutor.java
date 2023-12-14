@@ -14,6 +14,8 @@ import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.LocalDatabaseSession;
 import io.jdbd.session.RmDatabaseSession;
 import io.jdbd.statement.ParametrizedStatement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -45,6 +47,8 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
         return null;
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(MySQLStmtExecutor.class);
+
     private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
 
     /**
@@ -54,6 +58,10 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
         super(factory, session, name);
     }
 
+    @Override
+    final Logger getLogger() {
+        return LOG;
+    }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/data-types.html">MySQL Data Types</a>

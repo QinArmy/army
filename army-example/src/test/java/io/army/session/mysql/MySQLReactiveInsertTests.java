@@ -174,7 +174,7 @@ public class MySQLReactiveInsertTests extends MySQLReactiveSessionTestsSupport {
 
     /*-------------------below query insert syntax-------------------*/
 
-    @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    @Test(groups = Groups.QUERY_INSERT)
     public void queryInsertParent(final ReactiveLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 

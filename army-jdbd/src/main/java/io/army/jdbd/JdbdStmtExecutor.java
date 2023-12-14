@@ -5,6 +5,7 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
+import io.army.env.SqlLogMode;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -40,6 +41,8 @@ import io.jdbd.session.RmDatabaseSession;
 import io.jdbd.session.SavePoint;
 import io.jdbd.statement.BindStatement;
 import io.jdbd.statement.ParametrizedStatement;
+import io.jdbd.util.SqlLogger;
+import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -80,12 +83,15 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     final DatabaseSession session;
 
-    final String name;
+    final String sessionName;
 
-    JdbdStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session, String name) {
-        this.name = name;
+    private final SqlLogger jdbdSqlLogger;
+
+    JdbdStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session, String sessionName) {
+        this.sessionName = sessionName;
         this.factory = factory;
         this.session = session;
+        this.jdbdSqlLogger = this::jdbdSqlLogger;
     }
 
 
@@ -124,7 +130,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @Override
     public final Mono<TransactionInfo> transactionInfo() {
-        return Mono.from(this.session.transactionInfo())
+        final Function<io.jdbd.session.Option<?>, ?> optionFunc;
+        optionFunc = addJdbdLogOptionIfNeed(io.jdbd.session.Option.EMPTY_OPTION_FUNC);
+
+        return Mono.from(this.session.transactionInfo(optionFunc))
                 .map(this::mapToArmyTransactionInfo)
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
@@ -144,7 +153,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @Override
     public final Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
-        return Mono.from(this.session.setSavePoint(this.factory.mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(this.session.setSavePoint(mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
 
@@ -153,7 +162,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
-        return Mono.from(this.session.releaseSavePoint((SavePoint) savepoint, this.factory.mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(this.session.releaseSavePoint((SavePoint) savepoint, mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
@@ -164,7 +173,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
-        return Mono.from(this.session.rollbackToSavePoint((SavePoint) savepoint, this.factory.mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(this.session.rollbackToSavePoint((SavePoint) savepoint, mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
@@ -351,19 +360,19 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     @Override
     public final <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option,
                                             ChildTableMeta<?> childTable) {
-        return null;
+        return Flux.error(new UnsupportedOperationException());
     }
 
     @Override
     public final <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor,
                                                   ReactiveStmtOption option, ChildTableMeta<?> childTable) {
-        return null;
+        return Flux.error(new UnsupportedOperationException());
     }
 
     @Override
     public final <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function,
                                                   ReactiveStmtOption option, ChildTableMeta<?> childTable) {
-        return null;
+        return Flux.error(new UnsupportedOperationException());
     }
 
 
@@ -402,7 +411,6 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             return Mono.error(wrapExecuteIfNeed(e));
         }
 
-
         return Mono.from(((LocalDatabaseSession) this.session).startTransaction(jdbdOption, jdbdMode))
                 .map(this::mapToArmyTransactionInfo)
                 .onErrorMap(this::wrapExecuteIfNeed);
@@ -413,7 +421,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         if (!(this instanceof ReactiveLocalExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
-        return Mono.from(((LocalDatabaseSession) this.session).commit(this.factory.mapToJdbdOptionFunc(optionFunc)))
+
+        return Mono.from(((LocalDatabaseSession) this.session).commit(mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyOptionalTransactionInfo)
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
@@ -424,7 +433,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         if (!(this instanceof ReactiveLocalExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
-        return Mono.from(((LocalDatabaseSession) this.session).rollback(this.factory.mapToJdbdOptionFunc(optionFunc)))
+
+        return Mono.from(((LocalDatabaseSession) this.session).rollback(mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyOptionalTransactionInfo)
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
@@ -463,7 +473,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapExecuteIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).end(jdbdXid, flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
+
+        return Mono.from(((RmDatabaseSession) this.session).end(jdbdXid, flags, mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyTransactionInfo)
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
@@ -479,7 +490,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapExecuteIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).prepare(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
+
+        return Mono.from(((RmDatabaseSession) this.session).prepare(jdbdXid, mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
 
@@ -494,7 +506,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapExecuteIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).commit(jdbdXid, flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
+
+        return Mono.from(((RmDatabaseSession) this.session).commit(jdbdXid, flags, mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
@@ -510,10 +523,12 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapExecuteIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).rollback(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
+
+        return Mono.from(((RmDatabaseSession) this.session).rollback(jdbdXid, mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
+
 
     @Override
     public final Mono<Void> forget(Xid xid, Function<Option<?>, ?> optionFunc) {
@@ -526,7 +541,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapExecuteIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).forget(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((RmDatabaseSession) this.session).forget(jdbdXid, mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
@@ -536,7 +551,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         if (!(this instanceof ReactiveRmExecutor)) {
             return Flux.error(new UnsupportedOperationException());
         }
-        return Flux.from(((RmDatabaseSession) this.session).recover(flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
+        return Flux.from(((RmDatabaseSession) this.session).recover(flags, mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToOptionalArmyXid)
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
@@ -627,17 +642,20 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @Override
     public final String toString() {
-        return _StringUtils.builder(48)
+        return _StringUtils.builder(70)
                 .append(getClass().getName())
-                .append("[name:")
-                .append(this.name)
-                .append(",hash:")
+                .append("[sessionName:")
+                .append(this.sessionName)
+                .append(",executorHash:")
                 .append(System.identityHashCode(this))
                 .append(']')
                 .toString();
     }
 
     /*-------------------below package instance methods-------------------*/
+
+    abstract Logger getLogger();
+
 
     abstract DataType getDataType(ResultRowMeta meta, int indexBasedZero);
 
@@ -925,6 +943,28 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         return this.factory.wrapExecuteError(cause);
     }
 
+
+    final Function<io.jdbd.session.Option<?>, ?> mapToJdbdOptionFunc(final Function<Option<?>, ?> optionFunc) {
+        return addJdbdLogOptionIfNeed(this.factory.mapToJdbdOptionFunc(optionFunc));
+    }
+
+    final Function<io.jdbd.session.Option<?>, ?> addJdbdLogOptionIfNeed(final Function<io.jdbd.session.Option<?>, ?> func) {
+        final JdbdStmtExecutorFactory factory = this.factory;
+
+        final Function<io.jdbd.session.Option<?>, ?> finalJdbdFunc;
+        if (factory.sqlLogMode != SqlLogMode.OFF || factory.sqlLogDynamic) {
+            finalJdbdFunc = jdbdOption -> {
+                if (io.jdbd.session.Option.SQL_LOGGER == jdbdOption) {
+                    return this.jdbdSqlLogger;
+                }
+                return func.apply(jdbdOption);
+            };
+        } else {
+            finalJdbdFunc = func;
+        }
+        return finalJdbdFunc;
+    }
+
     final Throwable wrapExecuteIfNeed(final Throwable cause) {
         if (!(cause instanceof Exception)) {
             return cause;
@@ -932,7 +972,13 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         return wrapExecutingError((Exception) cause);
     }
 
+
+
     /*-------------------below private instance methods-------------------*/
+
+    private void jdbdSqlLogger(final String sessionName, final int jdbdSessionHash, final String sql) {
+        printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
+    }
 
     /**
      * @see #start(Xid, int, TransactionOption)
@@ -965,11 +1011,16 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
      */
     private io.jdbd.session.TransactionOption mapToJdbdTransactionOption(final TransactionOption option)
             throws ArmyException {
+
+        final Function<io.jdbd.session.Option<?>, ?> jdbdOptionFunc;
+        jdbdOptionFunc = addJdbdLogOptionIfNeed(this.factory.mapToJdbdOptionFunc(option::valueOf));
+
         return io.jdbd.session.TransactionOption.option(
-                mapToJdbdIsolation(option.isolation()), option.isReadOnly(), this.factory.mapToJdbdOptionFunc(option::valueOf)
+                mapToJdbdIsolation(option.isolation()), option.isReadOnly(), jdbdOptionFunc
         );
 
     }
+
 
     @SuppressWarnings("all")
     private Optional<Xid> mapToOptionalArmyXid(Optional<io.jdbd.session.Xid> optional) {

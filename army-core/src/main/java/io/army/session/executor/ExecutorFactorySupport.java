@@ -8,9 +8,9 @@ public abstract class ExecutorFactorySupport {
 
     final ArmyEnvironment armyEnv;
 
-    final boolean sqlLogDynamic;
+    public final boolean sqlLogDynamic;
 
-    final SqlLogMode sqlLogMode;
+    public final SqlLogMode sqlLogMode;
 
     protected ExecutorFactorySupport(ArmyEnvironment armyEnv) {
         this.armyEnv = armyEnv;

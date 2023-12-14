@@ -13,10 +13,12 @@ import io.army.reactive.executor.ReactiveLocalExecutor;
 import io.army.reactive.executor.ReactiveMetaExecutor;
 import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.session.*;
+import io.army.session.executor.ExecutorFactorySupport;
 import io.army.session.executor.ExecutorSupport;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.jdbd.JdbdException;
+import io.jdbd.pool.ReadWriteSplittingFactory;
 import io.jdbd.session.DatabaseSessionFactory;
 import io.jdbd.session.LocalDatabaseSession;
 import io.jdbd.session.RmDatabaseSession;
@@ -32,7 +34,7 @@ import java.util.function.Function;
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  * @since 1.0
  */
-final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
+final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements ReactiveExecutorFactory {
 
     static JdbdStmtExecutorFactory create(JdbdExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
         return new JdbdStmtExecutorFactory(provider, executorEnv);
@@ -68,6 +70,7 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
      */
     @SuppressWarnings("unchecked")
     private JdbdStmtExecutorFactory(JdbdExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
+        super(executorEnv.environment());
         this.sessionFactoryName = provider.factoryName;
         this.sessionFactory = provider.sessionFactory;
         this.executorEnv = executorEnv;
@@ -112,9 +115,11 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
         }
         DatabaseSessionFactory factory = this.sessionFactory;
         if (factory instanceof ReadWriteSplittingDataSource) {
-            factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).writableDataSource(func);
+            factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).readWriteDataSource(func);
+        } else if (factory instanceof ReadWriteSplittingFactory) {
+            factory = ((ReadWriteSplittingFactory) factory).readWriteFactory(mapToJdbdOptionFunc(func));
         }
-        return Mono.from(factory.localSession())
+        return Mono.from(factory.localSession(this.sessionFactoryName, mapToJdbdOptionFunc(func)))
                 .map(session -> JdbdMetaExecutor.create(this.sessionFactoryName, session))
                 .onErrorMap(this::wrapExecuteErrorIfNeed);
     }
@@ -130,11 +135,13 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
             // no bug,never here
             mono = Mono.error(new NullPointerException());
         } else {
-            DatabaseSessionFactory factory = this.sessionFactory;
-            if (readOnly && factory instanceof ReadWriteSplittingDataSource) {
-                factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).readOnlyDataSource(func);
-            }
-            mono = Mono.from(factory.localSession())
+            final Function<io.jdbd.session.Option<?>, ?> jdbdOptionFunc;
+            jdbdOptionFunc = mapToJdbdOptionFunc(func);
+
+            final DatabaseSessionFactory factory;
+            factory = obtainFactory(readOnly, func, jdbdOptionFunc);
+
+            mono = Mono.from(factory.localSession(sessionName, jdbdOptionFunc))
                     .map(session -> this.localFunc.apply(this, session, sessionName))
                     .onErrorMap(this::wrapExecuteErrorIfNeed);
         }
@@ -151,11 +158,13 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
             // no bug,never here
             mono = Mono.error(new NullPointerException());
         } else {
-            DatabaseSessionFactory factory = this.sessionFactory;
-            if (readOnly && factory instanceof ReadWriteSplittingDataSource) {
-                factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).readOnlyDataSource(func);
-            }
-            mono = Mono.from(factory.rmSession())
+            final Function<io.jdbd.session.Option<?>, ?> jdbdOptionFunc;
+            jdbdOptionFunc = mapToJdbdOptionFunc(func);
+
+            final DatabaseSessionFactory factory;
+            factory = obtainFactory(readOnly, func, jdbdOptionFunc);
+
+            mono = Mono.from(factory.rmSession(sessionName, jdbdOptionFunc))
                     .map(session -> this.rmFunc.apply(this, session, sessionName))
                     .onErrorMap(this::wrapExecuteErrorIfNeed);
         }
@@ -273,7 +282,7 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
         } else if (option == Option.WAIT) {
             jdbdOption = io.jdbd.session.Option.WAIT;
         } else if (option == Option.LOCK_TIMEOUT_MILLIS) {
-            jdbdOption = io.jdbd.session.Option.LOCK_TIMEOUT;
+            jdbdOption = io.jdbd.session.Option.LOCK_TIMEOUT_MILLIS;
         } else if (option == Option.READ_ONLY_SESSION) {
             jdbdOption = io.jdbd.session.Option.READ_ONLY_SESSION;
         } else {
@@ -309,7 +318,7 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
             armyOption = Option.AUTO_COMMIT;
         } else if (option == io.jdbd.session.Option.WAIT) {
             armyOption = Option.WAIT;
-        } else if (option == io.jdbd.session.Option.LOCK_TIMEOUT) {
+        } else if (option == io.jdbd.session.Option.LOCK_TIMEOUT_MILLIS) {
             armyOption = Option.LOCK_TIMEOUT_MILLIS;
         } else if (option == io.jdbd.session.Option.READ_ONLY_SESSION) {
             armyOption = Option.READ_ONLY_SESSION;
@@ -333,6 +342,18 @@ final class JdbdStmtExecutorFactory implements ReactiveExecutorFactory {
         return mono;
     }
 
+
+    private DatabaseSessionFactory obtainFactory(final boolean readOnly,
+                                                 final Function<Option<?>, ?> func,
+                                                 final Function<io.jdbd.session.Option<?>, ?> jdbdOptionFunc) {
+        DatabaseSessionFactory factory = this.sessionFactory;
+        if (readOnly && factory instanceof ReadWriteSplittingDataSource) {
+            factory = (DatabaseSessionFactory) ((ReadWriteSplittingDataSource<?>) factory).readOnlyDataSource(func);
+        } else if (factory instanceof ReadWriteSplittingFactory) {
+            factory = ((ReadWriteSplittingFactory) factory).readOnlyFactory(jdbdOptionFunc);
+        }
+        return factory;
+    }
 
     private Throwable mapCloseFactoryError(final Throwable cause) {
         final Throwable error;

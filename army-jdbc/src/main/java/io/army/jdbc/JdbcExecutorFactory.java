@@ -151,7 +151,7 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
         try {
             CommonDataSource dataSource = this.dataSource;
             if (dataSource instanceof ReadWriteSplittingDataSource) {
-                dataSource = (CommonDataSource) ((ReadWriteSplittingDataSource<?>) dataSource).writableDataSource(optionFunc);
+                dataSource = (CommonDataSource) ((ReadWriteSplittingDataSource<?>) dataSource).readWriteDataSource(optionFunc);
             }
             final JdbcMetaExecutor executor;
             if (dataSource instanceof DataSource) {

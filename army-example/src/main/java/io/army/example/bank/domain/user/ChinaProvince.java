@@ -11,10 +11,10 @@ import io.army.annotation.Table;
 @DiscriminatorValue(RegionType.Constant.PROVINCE)
 public class ChinaProvince extends ChinaRegion<ChinaProvince> {
 
-    @Column(precision = 30, nullable = false, comment = "china provincial capital")
+    @Column(precision = 80, nullable = false, comment = "china provincial capital")
     private String provincialCapital;
 
-    @Column(precision = 30, nullable = false, defaultValue = "''", comment = "china provincial governor")
+    @Column(precision = 80, nullable = false, defaultValue = "''", comment = "china provincial governor")
     private String governor;
 
 

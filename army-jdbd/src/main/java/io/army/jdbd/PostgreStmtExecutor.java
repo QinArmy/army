@@ -11,6 +11,8 @@ import io.jdbd.result.DataRow;
 import io.jdbd.result.ResultRowMeta;
 import io.jdbd.session.*;
 import io.jdbd.statement.ParametrizedStatement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -18,7 +20,7 @@ import java.time.*;
 import java.util.BitSet;
 import java.util.UUID;
 
-abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtExecutor {
+abstract class PostgreStmtExecutor extends JdbdStmtExecutor {
 
     static ReactiveLocalExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
         throw new UnsupportedOperationException();
@@ -50,6 +52,7 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
         return armyOption;
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(PostgreStmtExecutor.class);
 
     /**
      * <p>
@@ -67,6 +70,11 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
      */
     private PostgreStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session, String name) {
         super(factory, session, name);
+    }
+
+    @Override
+    final Logger getLogger() {
+        return LOG;
     }
 
     @Override
@@ -194,7 +202,7 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
     final Object get(final DataRow row, final int indexBasedZero, final MappingType type, final DataType dataType) {
         final Object value;
         if (!(dataType instanceof PostgreType)) {
-            if ("hstore" .equalsIgnoreCase(dataType.typeName())) {
+            if ("hstore".equalsIgnoreCase(dataType.typeName())) {
                 value = row.getMap(indexBasedZero, String.class, Object.class);
             } else {
                 value = row.get(indexBasedZero, String.class);
