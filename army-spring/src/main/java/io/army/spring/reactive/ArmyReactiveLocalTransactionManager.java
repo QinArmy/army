@@ -237,34 +237,27 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
             builder.option(Option.TIMEOUT_MILLIS, (int) timeoutMillis);
         }
 
-        final Mono<TransactionInfo> mono;
-        if (!readOnly
-                || isolationLevel != TransactionDefinition.ISOLATION_DEFAULT
-                || this.useReadOnlyTransaction) {
+        final boolean pseudoTransaction;
+        pseudoTransaction = readOnly
+                && isolationLevel == TransactionDefinition.ISOLATION_DEFAULT
+                && this.useReadOnlyTransaction;
 
-            if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
-                builder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
-            }
-
-            // start real transaction
-            mono = session.startTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS)
-                    .doOnSuccess(info -> {
-                        assert info.inTransaction();
-                    }).onErrorMap(this::wrapErrorIfNeed);
-        } else {
+        if (pseudoTransaction) {
             builder.option(Option.ISOLATION, Isolation.PSEUDO);
-
-            // start pseudo transaction
-
-            mono = session.pseudoTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS)
-                    .doOnSuccess(info -> {
-                        assert !info.inTransaction();
-                        assert info.isReadOnly();
-                        assert info.isolation() == Isolation.PSEUDO;
-                    });
+        } else if (isolationLevel != TransactionDefinition.ISOLATION_DEFAULT) {
+            builder.option(Option.ISOLATION, SpringUtils.toArmyIsolation(isolationLevel));
         }
-        return mono.then();
 
+        return session.startTransaction(builder.build(), HandleMode.ERROR_IF_EXISTS)
+                .doOnSuccess(info -> {
+                    if (pseudoTransaction) {
+                        assert info.isolation() == Isolation.PSEUDO;
+                    } else {
+                        assert info.inTransaction();
+                    }
+                    assert info.isReadOnly() == readOnly;
+                }).onErrorMap(this::wrapErrorIfNeed)
+                .then();
     }
 
 

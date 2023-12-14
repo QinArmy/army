@@ -382,19 +382,24 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             stmtCount++;
 
-            final Function<Option<?>, ?> optionFunc;
-            if (consistentSnapshot != null && consistentSnapshot) {
-                optionFunc = Option.singleFunc(WITH_CONSISTENT_SNAPSHOT, Boolean.TRUE);
-            } else {
-                optionFunc = Option.EMPTY_FUNC;
-            }
-
             // execute start transaction statements
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
+            final Map<Option<?>, Object> map = _Collections.hashMap(8);
+            map.put(Option.START_MILLIS, System.currentTimeMillis());
+
+            final Integer timeoutMillis;
+            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+            if (timeoutMillis != null) {
+                map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+            }
+            if (consistentSnapshot != null && consistentSnapshot) {
+                map.put(WITH_CONSISTENT_SNAPSHOT, Boolean.TRUE);
+            }
+
             final TransactionInfo info;
-            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, optionFunc);
+            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
             return info;
         }
 
@@ -473,7 +478,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
     } // LocalExecutor
 
 
-
     private static class RmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
 
         private TransactionInfo transactionInfo;
@@ -542,15 +546,22 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(6);
+            final Map<Option<?>, Object> map = _Collections.hashMap(8);
 
             map.put(Option.XID, xid);
             map.put(Option.XA_FLAGS, flags);
             map.put(Option.XA_STATES, XaStates.ACTIVE);
+            map.put(Option.START_MILLIS, System.currentTimeMillis());
+
+            final Integer timeoutMillis;
+            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+            if (timeoutMillis != null) {
+                map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+            }
+
 
             final TransactionInfo info;
             this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
-
             return info;
         }
 
@@ -583,23 +594,25 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(" SUSPEND");
             }
 
-            try (Statement statement = this.conn.createStatement()) {
 
-                statement.executeUpdate(builder.toString());
+            executeSimpleStaticStatement(builder.toString(), LOG);
 
-                final Map<Option<?>, Object> map = _Collections.hashMap(6);
+            final Map<Option<?>, Object> map = _Collections.hashMap(8);
 
-                map.put(Option.XID, infoXid); // same instance
-                map.put(Option.XA_FLAGS, flags);
-                map.put(Option.XA_STATES, XaStates.IDLE);
+            map.put(Option.XID, infoXid); // same instance
+            map.put(Option.XA_FLAGS, flags);
+            map.put(Option.XA_STATES, XaStates.IDLE);
+            map.put(Option.START_MILLIS, infoXid.nonNullOf(Option.START_MILLIS));
 
-                final TransactionInfo newInfo;
-                this.transactionInfo = newInfo = TransactionInfo.info(true, info.isolation(), info.isReadOnly(), map::get);
-
-                return newInfo;
-            } catch (Exception e) {
-                throw handleException(e);
+            final Integer timeoutMillis;
+            timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS);
+            if (timeoutMillis != null) {
+                map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
             }
+
+            final TransactionInfo newInfo;
+            this.transactionInfo = newInfo = TransactionInfo.info(true, info.isolation(), info.isReadOnly(), map::get);
+            return newInfo;
         }
 
         /**

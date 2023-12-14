@@ -54,7 +54,6 @@ public interface TransactionOption extends OptionSpec {
         return ArmyTransactionOption.option(isolation, readOnly);
     }
 
-
     static Builder builder() {
         return ArmyTransactionOption.builder();
     }

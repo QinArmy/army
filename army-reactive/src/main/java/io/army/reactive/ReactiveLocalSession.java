@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 /**
  * <p>This interface representing reactive local session that support database local transaction.
+ * <p>The instance of this interface is create by {@link ReactiveSessionFactory.LocalSessionBuilder#build()}
  *
  * @see ReactiveSessionFactory
  * @since 1.0
@@ -16,32 +17,77 @@ public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 
 
     /**
-     * <p>Start pseudo transaction that don't start real local transaction.
-     * <p>Pseudo transaction is designed for some framework in readonly transaction,for example {@code org.springframework.transaction.ReactiveTransactionManager}.
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link ReactiveLocalSession}
+     *             session.startTransaction(TransactionOption.option(),HandleMode.ERROR_IF_EXISTS) ;
+     *         </code>
+     * </pre>
      *
-     * @throws IllegalArgumentException                  emit when
-     *                                                   <ul>
-     *                                                       <li>{@link TransactionOption#isolation()} isn't {@link Isolation#PSEUDO}</li>
-     *                                                       <li>{@link TransactionOption#isReadOnly()} is false</li>
-     *                                                   </ul>
-     * @throws java.util.ConcurrentModificationException emit when concurrent control transaction
-     * @throws SessionException                          emit when
+     * @see #startTransaction(TransactionOption, HandleMode)
+     */
+    Mono<TransactionInfo> startTransaction();
+
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link ReactiveLocalSession}
+     *             session.startTransaction(option,HandleMode.ERROR_IF_EXISTS) ;
+     *         </code>
+     * </pre>
+     *
+     * @see #startTransaction(TransactionOption, HandleMode)
+     */
+    Mono<TransactionInfo> startTransaction(TransactionOption option);
+
+    /**
+     * <p>Start local/pseudo transaction.
+     * <ul>
+     *     <li>Local transaction is supported by database server.</li>
+     *     <li>Pseudo transaction({@link TransactionOption#isolation()} is {@link Isolation#PSEUDO}) is supported only by army readonly session.
+     *     Pseudo transaction is designed for some framework in readonly transaction,for example
+     *     {@code org.springframework.transaction.PlatformTransactionManager}
+     *     </li>
+     * </ul>
+     * <strong>NOTE</strong>: if option representing pseudo transaction,then this method don't access database server.
+     *
+     * <p>Army prefer to start local transaction with one sql statement or multi-statement( if driver support),because transaction starting should keep atomicity and reduce network overhead.
+     * <pre>For example: {@code TransactionOption.option(Isolation.READ_COMMITTED)},MySQL database will execute following sql :
+     *     <code><br/>
+     *             SET TRANSACTION ISOLATION LEVEL READ COMMITTED ; START TRANSACTION READ WRITE
+     *     </code>
+     *     {@code TransactionOption.option()},MySQL database will execute following sql :
+     *     <code><br/>
+     *             SET @@transaction_isolation = @@SESSION.transaction_isolation ; SELECT @@SESSION.transaction_isolation AS txIsolationLevel ; START TRANSACTION READ WRITE
+     *             // SET @@transaction_isolation = @@SESSION.transaction_isolation to  guarantee isolation is session isolation
+     *     </code>
+     * </pre>
+     * <pre>For example : {@code TransactionOption.option(Isolation.READ_COMMITTED)},PostgreSQL database will execute following sql :
+     *     <code><br/>
+     *             START TRANSACTION ISOLATION LEVEL READ COMMITTED , READ WRITE
+     *     </code>
+     * </pre>
+     *
+     * @param option non-null,if {@link TransactionOption#isolation()} is {@link Isolation#PSEUDO},then start pseudo transaction.
+     * @param mode   non-null,
+     *               <ul>
+     *                  <li>{@link HandleMode#ERROR_IF_EXISTS} :  if session exists transaction then throw {@link SessionException}</li>
+     *                  <li>{@link HandleMode#COMMIT_IF_EXISTS} :  if session exists transaction then commit existing transaction.</li>
+     *                  <li>{@link HandleMode#ROLLBACK_IF_EXISTS} :  if session exists transaction then rollback existing transaction.</li>
+     *               </ul>
+     * @throws IllegalArgumentException                  emit(not throw) when pseudo transaction {@link TransactionOption#isReadOnly()} is false.
+     * @throws java.util.ConcurrentModificationException emit(not throw) when concurrent control transaction
+     * @throws SessionException                          emit(not throw) when
      *                                                   <ul>
      *                                                       <li>session have closed</li>
-     *                                                       <li>{@link #isReadonlySession()} is false</li>
+     *                                                       <li>pseudo transaction and {@link #isReadonlySession()} is false</li>
      *                                                       <li>mode is {@link HandleMode#ERROR_IF_EXISTS} and {@link #hasTransactionInfo()} is true</li>
      *                                                       <li>mode is {@link HandleMode#COMMIT_IF_EXISTS} and commit failure</li>
      *                                                       <li>mode is {@link HandleMode#ROLLBACK_IF_EXISTS} and rollback failure</li>
      *                                                   </ul>
      */
-    Mono<TransactionInfo> pseudoTransaction(TransactionOption option, HandleMode mode);
-
-
-    Mono<TransactionInfo> startTransaction();
-
-    Mono<TransactionInfo> startTransaction(TransactionOption option);
-
-
     Mono<TransactionInfo> startTransaction(TransactionOption option, HandleMode mode);
 
     Mono<ReactiveLocalSession> commit();

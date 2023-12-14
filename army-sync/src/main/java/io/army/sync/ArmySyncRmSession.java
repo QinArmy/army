@@ -97,7 +97,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         }
 
         final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.pseudo(wrapStartMillisIfNeed(xid, option));
+        pseudoInfo = TransactionInfo.pseudo(option);
 
         this.transactionInfo = pseudoInfo;
         this.rollbackOnly = false;

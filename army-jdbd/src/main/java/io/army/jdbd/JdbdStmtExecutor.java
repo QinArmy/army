@@ -417,7 +417,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc) {
+    public final Mono<Optional<TransactionInfo>> commit(final Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveLocalExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -429,7 +429,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     @Override
-    public final Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc) {
+    public final Mono<Optional<TransactionInfo>> rollback(final Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveLocalExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -995,7 +995,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     /**
      * @see #transactionInfo()
      */
-    private TransactionInfo mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo info) {
+    private TransactionInfo mapToArmyTransactionInfo(final io.jdbd.session.TransactionInfo info) {
         return TransactionInfo.info(
                 info.inTransaction(), mapToArmyIsolation(info.isolation()), info.isReadOnly(),
                 this.factory.mapToArmyOptionFunc(info::valueOf)
@@ -1080,7 +1080,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     @SuppressWarnings("all")
     private Optional<TransactionInfo> mapToArmyOptionalTransactionInfo(Optional<io.jdbd.session.TransactionInfo> jdbdOptional) {
         if (jdbdOptional.isPresent()) {
-            Optional.of(mapToArmyTransactionInfo(jdbdOptional.get()));
+            return Optional.of(mapToArmyTransactionInfo(jdbdOptional.get()));
         }
         return Optional.empty();
     }

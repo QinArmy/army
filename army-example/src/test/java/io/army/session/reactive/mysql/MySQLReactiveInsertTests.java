@@ -81,7 +81,7 @@ public class MySQLReactiveInsertTests extends MySQLReactiveSessionTestsSupport {
                 .asInsert();
 
 
-        session.startTransaction(TransactionOption.option())
+        session.startTransaction()
                 .flatMap(info -> session.update(stmt))
                 .flatMap(states -> {
                     Assert.assertEquals(states.affectedRows(), provinceList.size());

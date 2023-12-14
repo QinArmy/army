@@ -1,7 +1,10 @@
 package io.army.session;
 
 
+import io.army.util._Collections;
+
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -61,8 +64,21 @@ public interface TransactionInfo extends TransactionOption {
         return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
     }
 
-    static TransactionInfo pseudo(Function<Option<?>, ?> optionFunc) {
-        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, optionFunc);
+    static TransactionInfo pseudo(TransactionOption option) {
+        final Map<Option<?>, Object> map = _Collections.hashMap(8);
+
+        map.put(Option.START_MILLIS, System.currentTimeMillis());
+
+        final Integer timeoutMillis;
+        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+        if (timeoutMillis != null) {
+            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+        }
+        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
+    }
+
+    static <T> TransactionInfo replaceOption(TransactionInfo info, Option<T> option, T value) {
+        return ArmyTransactionInfo.replaceOption(info, option, value);
     }
 
 

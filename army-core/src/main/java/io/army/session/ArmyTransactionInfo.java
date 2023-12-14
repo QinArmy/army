@@ -41,20 +41,43 @@ final class ArmyTransactionInfo implements TransactionInfo {
             }
         }
 
-        if (inTransaction == (isolation == Isolation.PSEUDO)) {
-            String m = String.format("inTransaction[%s] and Isolation[%s] not match.", inTransaction, isolation.name());
-            throw new IllegalArgumentException(m);
-        } else if (readOnly ^ (isolation == Isolation.PSEUDO)) {
-            String m = String.format("readOnly[%s] and Isolation[%s] not match.", readOnly, isolation.name());
-            throw new IllegalArgumentException(m);
-        } else if (optionFunc != Option.EMPTY_FUNC) {
-            if (optionFunc.apply(Option.TIMEOUT_MILLIS) != null && optionFunc.apply(Option.START_MILLIS) == null) {
-                String m = String.format("Option[%s] and Option[%s] not match.", Option.TIMEOUT_MILLIS.name(),
-                        Option.START_MILLIS.name());
+
+        if (isolation != Isolation.PSEUDO) {
+            if (inTransaction && optionFunc != Option.EMPTY_FUNC && optionFunc.apply(Option.START_MILLIS) == null) {
+                String m = String.format("inTransaction is true ,but %s is null", Option.START_MILLIS);
                 throw new IllegalArgumentException(m);
             }
+        } else if (optionFunc != Option.EMPTY_FUNC && optionFunc.apply(Option.START_MILLIS) == null) {
+            String m = String.format("pseudo transaction , %s must be non-null", Option.START_MILLIS);
+            throw new IllegalArgumentException(m);
+        } else if (inTransaction) {
+            String m = String.format("inTransaction[%s] and Isolation[%s] not match.", inTransaction, isolation.name());
+            throw new IllegalArgumentException(m);
+        } else if (!readOnly) {
+            String m = String.format("readOnly[false] and Isolation[%s] not match.", isolation.name());
+            throw new IllegalArgumentException(m);
         }
         return new ArmyTransactionInfo(inTransaction, isolation, readOnly, optionFunc);
+    }
+
+    static <T> TransactionInfo replaceOption(final TransactionInfo info, final Option<T> option, final T value) {
+
+        final Function<Option<?>, ?> oldFunc, newFunc;
+
+        if (info instanceof ArmyTransactionInfo) {
+            final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
+            oldFunc = armyInfo.optionFunc;
+        } else {
+            oldFunc = info::valueOf;
+        }
+
+        newFunc = o -> {
+            if (option.equals(o)) {
+                return value;
+            }
+            return oldFunc.apply(o);
+        };
+        return new ArmyTransactionInfo(info.inTransaction(), info.isolation(), info.isReadOnly(), newFunc);
     }
 
     private final boolean inTransaction;

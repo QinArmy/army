@@ -108,12 +108,14 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
                         throw _Exceptions.rollbackOnlyTransaction(this);
                     } else if (existTransaction.isolation() == Isolation.PSEUDO) {
                         this.transactionInfo = null; // clear pseudo transaction
+                        this.rollbackOnly = false;
                     }
                 }
                 break;
                 case ROLLBACK_IF_EXISTS: {
                     if (existTransaction.isolation() == Isolation.PSEUDO) {
                         this.transactionInfo = null; // clear pseudo transaction
+                        this.rollbackOnly = false;
                     }
                 }
                 break;
@@ -126,7 +128,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
         final TransactionInfo info;
         if (startPseudo) {
-            info = TransactionInfo.pseudo(wrapStartMillisIfNeed(null, option));
+            info = TransactionInfo.pseudo(option);
         } else {
             info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
 

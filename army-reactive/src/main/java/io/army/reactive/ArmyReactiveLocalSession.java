@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -23,7 +24,7 @@ import java.util.function.Function;
 class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
 
     /**
-     * @see ArmyReactiveSessionFactory.LocalBuilder#createSession(String, boolean)
+     * @see ArmyReactiveSessionFactory.LocalBuilder#createSession(String, boolean, Function)
      */
     static ArmyReactiveLocalSession create(ArmyReactiveSessionFactory.LocalBuilder builder) {
         final ArmyReactiveLocalSession session;
@@ -90,38 +91,6 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
 
     /*-------------------below local transaction methods -------------------*/
 
-    @Override
-    public final Mono<TransactionInfo> pseudoTransaction(final TransactionOption option, final HandleMode mode) {
-        final Mono<TransactionInfo> mono;
-
-        if (isClosed()) {
-            mono = Mono.error(_Exceptions.sessionClosed(this));
-        } else if (!this.readonly) {
-            mono = Mono.error(_Exceptions.writeSessionPseudoTransaction(this));
-        } else if (option.isolation() != Isolation.PSEUDO) {
-            mono = Mono.error(_Exceptions.pseudoIsolationError(this, option));
-        } else if (!option.isReadOnly()) {
-            mono = Mono.error(_Exceptions.pseudoWriteError(this, option));
-        } else if (this.transactionInfo == null) {
-            mono = doPseudoTransaction(option);
-        } else switch (mode) {
-            case ERROR_IF_EXISTS:
-                mono = Mono.error(_Exceptions.existsTransaction(this));
-                break;
-            case COMMIT_IF_EXISTS:
-                mono = commit()
-                        .then(Mono.defer(() -> doPseudoTransaction(option)));
-                break;
-            case ROLLBACK_IF_EXISTS:
-                mono = rollback()
-                        .then(Mono.defer(() -> doPseudoTransaction(option)));
-                break;
-            default:
-                mono = Mono.error(_Exceptions.unexpectedEnum(mode));
-        }
-        return mono;
-    }
-
 
     @Override
     public final Mono<TransactionInfo> startTransaction() {
@@ -134,28 +103,36 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     }
 
     @Override
-    public final Mono<TransactionInfo> startTransaction(TransactionOption option, HandleMode mode) {
-        if (isClosed()) {
-            return Mono.error(_Exceptions.sessionClosed(this));
-        }
-        return ((ReactiveLocalExecutor) this.stmtExecutor).startTransaction(option, mode)
-                .doOnSuccess(info -> {
-                    assert info.inTransaction();
-                    assert option.isolation() == null || info.isolation().equals(option.isolation());
-                    assert info.isReadOnly() == option.isReadOnly();
-                    if (option.valueOf(Option.TIMEOUT_MILLIS) != null) {
-                        assert info.valueOf(Option.TIMEOUT_MILLIS) != null;
-                        assert info.valueOf(Option.START_MILLIS) != null;
-                    }
+    public final Mono<TransactionInfo> startTransaction(final TransactionOption option, final HandleMode mode) {
 
-                    TRANSACTION_INFO.set(this, info);
-                    ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-                })
-                .onErrorMap(error -> {
-                    TRANSACTION_INFO.set(this, null);
-                    ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-                    return _ArmySession.wrapIfNeed(error);
-                });
+        final Mono<TransactionInfo> mono;
+        if (isClosed()) {
+            mono = Mono.error(_Exceptions.sessionClosed(this));
+        } else if (option.isolation() == Isolation.PSEUDO) {
+            mono = pseudoTransactionInfo(option, mode);
+        } else {
+            mono = ((ReactiveLocalExecutor) this.stmtExecutor).startTransaction(option, mode)
+                    .map(info -> {
+                        assert info.inTransaction();
+                        assert option.isolation() == null || info.isolation().equals(option.isolation());
+                        assert info.isReadOnly() == option.isReadOnly();
+                        assert info.valueOf(Option.START_MILLIS) != null;
+
+                        assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
+
+                        TRANSACTION_INFO.set(this, info);
+                        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+
+                        return info;
+                    })
+                    .onErrorMap(error -> {
+                        TRANSACTION_INFO.set(this, null);
+                        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+                        return _ArmySession.wrapIfNeed(error);
+                    });
+        }
+
+        return mono;
     }
 
 
@@ -166,12 +143,17 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     }
 
     @Override
-    public final Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc) {
+    public final Mono<Optional<TransactionInfo>> commit(final Function<Option<?>, ?> optionFunc) {
         final Mono<Optional<TransactionInfo>> mono;
+        final TransactionInfo info;
         if (isClosed()) {
             mono = Mono.error(_Exceptions.sessionClosed(this));
-        } else if (ROLLBACK_ONLY.get(this) != 0) {
+        } else if (this.rollbackOnly != 0) {
             mono = Mono.error(_Exceptions.rollbackOnlyTransaction(this));
+        } else if ((info = this.transactionInfo) != null && info.isolation() == Isolation.PSEUDO) {
+            TRANSACTION_INFO.set(this, null);
+            ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+            mono = Mono.just(Optional.empty());
         } else {
             mono = ((ReactiveLocalExecutor) this.stmtExecutor).commit(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
@@ -204,13 +186,21 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     }
 
     @Override
-    public final Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc) {
+    public final Mono<Optional<TransactionInfo>> rollback(final Function<Option<?>, ?> optionFunc) {
+        final Mono<Optional<TransactionInfo>> mono;
+        final TransactionInfo info;
         if (isClosed()) {
-            return Mono.error(_Exceptions.sessionClosed(this));
+            mono = Mono.error(_Exceptions.sessionClosed(this));
+        } else if ((info = this.transactionInfo) != null && info.isolation() == Isolation.PSEUDO) {
+            TRANSACTION_INFO.set(this, null);
+            ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+            mono = Mono.just(Optional.empty());
+        } else {
+            mono = ((ReactiveLocalExecutor) this.stmtExecutor).rollback(optionFunc)
+                    .doOnSuccess(this::handleTransactionEndSuccess)
+                    .onErrorMap(_ArmySession::wrapIfNeed);
         }
-        return ((ReactiveLocalExecutor) this.stmtExecutor).rollback(optionFunc)
-                .doOnSuccess(this::handleTransactionEndSuccess)
-                .onErrorMap(_ArmySession::wrapIfNeed);
+        return mono;
     }
 
     @Override
@@ -287,25 +277,76 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
 
 
     /**
-     * @see #pseudoTransaction(TransactionOption, HandleMode)
+     * @see #startTransaction(TransactionOption, HandleMode)
      */
-    private Mono<TransactionInfo> doPseudoTransaction(final TransactionOption option) {
-        final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillisIfNeed(null, option));
+    private Mono<TransactionInfo> pseudoTransactionInfo(final TransactionOption option, final HandleMode mode) {
 
-        if (!TRANSACTION_INFO.compareAndSet(this, null, pseudoInfo)) {
-            return Mono.error(new ConcurrentModificationException());
-        }
-        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-        return Mono.just(pseudoInfo);
+        final Mono<TransactionInfo> mono;
+        final TransactionInfo existTransaction;
+        if (!this.readonly) {
+            mono = Mono.error(_Exceptions.writeSessionPseudoTransaction(this));
+        } else if (!option.isReadOnly()) {
+            mono = Mono.error(_Exceptions.pseudoWriteError(this, option));
+        } else if ((existTransaction = this.transactionInfo) == null) {
+            mono = storePseudoTransactionInfo(null, option);
+        } else switch (mode) {
+            case ERROR_IF_EXISTS:
+                mono = Mono.error(_Exceptions.existsTransaction(this));
+                break;
+            case COMMIT_IF_EXISTS: {
+                if (isRollbackOnly()) {
+                    mono = Mono.error(_Exceptions.rollbackOnlyTransaction(this));
+                } else if (existTransaction.isolation() == Isolation.PSEUDO) {
+                    mono = storePseudoTransactionInfo(existTransaction, option);
+                } else {
+                    mono = commit(Option.EMPTY_FUNC)
+                            .then(Mono.defer(() -> storePseudoTransactionInfo(null, option)));
+                }
+            }
+            break;
+            case ROLLBACK_IF_EXISTS: {
+                if (existTransaction.isolation() == Isolation.PSEUDO) {
+                    mono = storePseudoTransactionInfo(existTransaction, option);
+                } else {
+                    mono = rollback(Option.EMPTY_FUNC)
+                            .then(Mono.defer(() -> storePseudoTransactionInfo(null, option)));
+                }
+            }
+            break;
+            default:
+                mono = Mono.error(_Exceptions.unexpectedEnum(mode));
+
+        } //  switch
+
+        return mono;
     }
+
+    /**
+     * @see #pseudoTransactionInfo(TransactionOption, HandleMode)
+     */
+    private Mono<TransactionInfo> storePseudoTransactionInfo(final @Nullable TransactionInfo existTransaction,
+                                                             final TransactionOption option) {
+        final TransactionInfo info;
+        info = TransactionInfo.pseudo(option);
+
+        final Mono<TransactionInfo> mono;
+        if (TRANSACTION_INFO.compareAndSet(this, existTransaction, info)) {
+            ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+            mono = Mono.just(info);
+        } else {
+            mono = Mono.error(new ConcurrentModificationException());
+        }
+        return mono;
+    }
+
 
     /**
      * @see #commit(Function)
      * @see #rollback(Function)
      */
     @SuppressWarnings("all")
-    private void handleTransactionEndSuccess(Optional<TransactionInfo> optional) {
+    private void handleTransactionEndSuccess(final Optional<TransactionInfo> optional) {
+        final TransactionInfo info;
         if (optional.isPresent()) {
             TRANSACTION_INFO.set(this, optional.get());
         } else {
