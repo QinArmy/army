@@ -10,7 +10,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -256,7 +256,7 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
                 JdbcExecutorFactoryProvider.class.getName(),
                 DataSource.class.getName(),
                 XADataSource.class.getName(),
-                _ClassUtils.safeClassName(dataSource)
+                ClassUtils.safeClassName(dataSource)
         );
         throw new ArmyException(m);
     }

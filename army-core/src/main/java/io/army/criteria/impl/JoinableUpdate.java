@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.util.ClassUtils;
 import io.army.util._Assert;
-import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -352,7 +352,7 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
 
     final SR onAddItemPair(final ItemPair pair) {
         if (!(pair instanceof SQLs.ArmyItemPair)) {
-            String m = String.format("unknown %s[%s]", ItemPair.class.getName(), _ClassUtils.safeClassName(pair));
+            String m = String.format("unknown %s[%s]", ItemPair.class.getName(), ClassUtils.safeClassName(pair));
             throw ContextStack.criteriaError(this.context, m);
         }
         List<_ItemPair> itemPairList = this.itemPairList;

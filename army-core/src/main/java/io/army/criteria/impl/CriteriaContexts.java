@@ -13,7 +13,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -2571,7 +2571,7 @@ abstract class CriteriaContexts {
                     }
                 } else if (!(group instanceof SelectionGroups.DerivedSelectionGroup)) {
                     //no bug,never here
-                    String m = String.format("unknown selection group %s", _ClassUtils.safeClassName(group));
+                    String m = String.format("unknown selection group %s", ClassUtils.safeClassName(group));
                     throw ContextStack.criteriaError(this, m);
                 } else if (this.getDerived(group.tableAlias()) == null) {
                     throw CriteriaUtils.unknownFieldDerivedGroup(this, group.tableAlias());

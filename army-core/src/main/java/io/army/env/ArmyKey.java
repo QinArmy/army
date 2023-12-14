@@ -6,7 +6,7 @@ import io.army.dialect.Dialect;
 import io.army.meta.FieldMeta;
 import io.army.session.AllowMode;
 import io.army.session.DdlMode;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
@@ -142,8 +142,8 @@ public class ArmyKey<T> {
 
         static {
             final Class<?> syncKeyClass, reactiveKeyClass;
-            syncKeyClass = _ClassUtils.tryLoadClass("io.army.env.SyncKey", ArmyKey.class.getClassLoader());
-            reactiveKeyClass = _ClassUtils.tryLoadClass("io.army.env.ReactiveKey", ArmyKey.class.getClassLoader());
+            syncKeyClass = ClassUtils.tryLoadClass("io.army.env.SyncKey", ArmyKey.class.getClassLoader());
+            reactiveKeyClass = ClassUtils.tryLoadClass("io.army.env.ReactiveKey", ArmyKey.class.getClassLoader());
 
 
             final List<ArmyKey<?>> list = _Collections.arrayList(ArmyKey.INSTANCE_MAP.size());

@@ -1,11 +1,11 @@
-package io.army.session;
+package io.army.session.reactive;
 
 import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.session.FactoryUtils;
 import io.army.util._Collections;
-import io.jdbd.session.DatabaseSession;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterMethod;
@@ -18,6 +18,9 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
 
 public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
+
+
+    private static final Database[] DATABASE_VALUES = new Database[]{Database.MySQL};
 
     private static final ConcurrentMap<Database, ReactiveSessionFactory> FACTORY_MAP = _Collections.concurrentHashMap();
 
@@ -105,19 +108,41 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
         }
     }
 
+
     @DataProvider(name = "localSessionProvider", parallel = true)
     public final Object[][] createLocalSession(final ITestNGMethod targetMethod, final ITestContext context) {
-        return createDatabaseSession(true, targetMethod, context);
+        return createDataSession(true, targetMethod, context);
     }
 
     @DataProvider(name = "rmSessionProvider", parallel = true)
     public final Object[][] createRmSession(final ITestNGMethod targetMethod, final ITestContext context) {
-        return createDatabaseSession(false, targetMethod, context);
+        return createDataSession(false, targetMethod, context);
     }
 
 
-    private Object[][] createDatabaseSession(final boolean local, final ITestNGMethod targetMethod,
-                                             final ITestContext context) {
+    private Object[][] createDataSession(final boolean local, final ITestNGMethod targetMethod,
+                                         final ITestContext context) {
+        final Database database = this.database;
+
+        if (database != null) {
+            final Object[] sessionInfo;
+            sessionInfo = createDatabaseSession(local, database, targetMethod, context);
+            return new Object[][]{sessionInfo};
+        }
+
+        final int length = DATABASE_VALUES.length;
+
+        final Object[][] dataArray = new Object[length][];
+
+        for (int i = 0; i < length; i++) {
+            dataArray[i] = createDatabaseSession(local, DATABASE_VALUES[i], targetMethod, context);
+        }
+        return dataArray;
+    }
+
+
+    private Object[] createDatabaseSession(final boolean local, final Database database, final ITestNGMethod targetMethod,
+                                           final ITestContext context) {
 
         final int currentInvocationCount = targetMethod.getCurrentInvocationCount() + 1;
 
@@ -134,7 +159,7 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
         Class<?> parameterType;
         for (int i = 0; i < parameterTypeArray.length; i++) {
             parameterType = parameterTypeArray[i];
-            if (DatabaseSession.class.isAssignableFrom(parameterType)) {
+            if (ReactiveSession.class.isAssignableFrom(parameterType)) {
                 sessionIndex = i;
             } else if (parameterType == boolean.class) {
                 readOnlyIndex = i;
@@ -146,7 +171,7 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
         final boolean readOnly = (currentInvocationCount & 1) == 0;
 
         final ReactiveSessionFactory sessionFactory;
-        sessionFactory = FACTORY_MAP.get(this.database);
+        sessionFactory = FACTORY_MAP.get(database);
         assert sessionFactory != null;
 
         final ReactiveSession session;
@@ -168,22 +193,22 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
 
         context.setAttribute(keyOfSession, session);
 
-        final Object[][] result;
+        final Object[] result;
         if (sessionIndex > -1 && methodIndex > -1 && readOnlyIndex > -1) {
-            result = new Object[1][3];
-            result[0][sessionIndex] = session;
-            result[0][methodIndex] = methodName;
-            result[0][readOnlyIndex] = readOnly;
+            result = new Object[3];
+            result[sessionIndex] = session;
+            result[methodIndex] = methodName;
+            result[readOnlyIndex] = readOnly;
         } else if (sessionIndex > -1 && readOnlyIndex > -1) {
-            result = new Object[1][2];
-            result[0][sessionIndex] = session;
-            result[0][readOnlyIndex] = readOnly;
+            result = new Object[2];
+            result[sessionIndex] = session;
+            result[readOnlyIndex] = readOnly;
         } else if (sessionIndex > -1 && methodIndex > -1) {
-            result = new Object[1][2];
-            result[0][sessionIndex] = session;
-            result[0][methodIndex] = methodName;
+            result = new Object[2];
+            result[sessionIndex] = session;
+            result[methodIndex] = methodName;
         } else {
-            result = new Object[][]{{session}};
+            result = new Object[]{session};
         }
         return result;
     }

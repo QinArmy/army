@@ -10,7 +10,7 @@ import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -527,7 +527,7 @@ abstract class CriteriaUtils {
 
     static CriteriaException illegalHint(@Nullable Hint hint) {
         String m = String.format("Hint %s is illegal."
-                , _ClassUtils.safeClassName(hint));
+                , ClassUtils.safeClassName(hint));
         return new CriteriaException(m);
     }
 
@@ -792,13 +792,13 @@ abstract class CriteriaUtils {
         if (errorArg == null) {
             return ContextStack.clearStackAndNullPointer();
         }
-        String m = String.format("SQL function %s don't support %s", funcName, _ClassUtils.safeClassName(errorArg));
+        String m = String.format("SQL function %s don't support %s", funcName, ClassUtils.safeClassName(errorArg));
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException notCompositeType(String funcName, Expression exp) {
         String m = String.format("%s isn't composite type expression,function[%s] don't support"
-                , _ClassUtils.safeClassName(exp), funcName);
+                , ClassUtils.safeClassName(exp), funcName);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
@@ -810,7 +810,7 @@ abstract class CriteriaUtils {
 
     static CriteriaException errorCustomReturnType(String name, MappingType returnType) {
         String m = String.format("You specify error return type[%s] for function[%s]",
-                _ClassUtils.safeClassName(returnType), name);
+                ClassUtils.safeClassName(returnType), name);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
@@ -856,13 +856,13 @@ abstract class CriteriaUtils {
     }
 
     static CriteriaException illegalItemPair(CriteriaContext context, @Nullable ItemPair pair) {
-        String m = String.format("ItemPair %s is illegal.", _ClassUtils.safeClassName(pair));
+        String m = String.format("ItemPair %s is illegal.", ClassUtils.safeClassName(pair));
         return ContextStack.criteriaError(context, m);
     }
 
 
     static CriteriaException illegalAssignmentItem(@Nullable CriteriaContext context, @Nullable AssignmentItem item) {
-        String m = String.format("%s is illegal %s", _ClassUtils.safeClassName(item), AssignmentItem.class.getName());
+        String m = String.format("%s is illegal %s", ClassUtils.safeClassName(item), AssignmentItem.class.getName());
         final CriteriaException e;
         if (context == null) {
             e = ContextStack.clearStackAndCriteriaError(m);
@@ -908,7 +908,7 @@ abstract class CriteriaUtils {
                 appendSelectionGroup(((_NestedItems) tabularItem).tableBlockList(), groupList);
             } else {
                 String m;
-                m = String.format("unknown %s[%s]", TabularItem.class.getName(), _ClassUtils.safeClassName(tabularItem));
+                m = String.format("unknown %s[%s]", TabularItem.class.getName(), ClassUtils.safeClassName(tabularItem));
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
 

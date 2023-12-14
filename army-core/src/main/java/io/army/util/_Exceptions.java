@@ -92,7 +92,7 @@ public abstract class _Exceptions {
     public static MetaException beforeBindMethod(DataType sqlType, MappingType mappingType,
                                                  @Nullable Object returnValue) {
         String m = String.format("%s beforeBind() method return type %s and %s type not match."
-                , mappingType, _ClassUtils.safeClassName(returnValue), sqlType);
+                , mappingType, ClassUtils.safeClassName(returnValue), sqlType);
         return new MetaException(m);
     }
 
@@ -115,7 +115,7 @@ public abstract class _Exceptions {
     }
 
     public static CriteriaException nonStandardTableBlock(_TabularBlock block) {
-        String m = String.format("%s is non-standard %s", _ClassUtils.safeClassName(block), _TabularBlock.class.getName());
+        String m = String.format("%s is non-standard %s", ClassUtils.safeClassName(block), _TabularBlock.class.getName());
         return new CriteriaException(m);
     }
 
@@ -158,7 +158,7 @@ public abstract class _Exceptions {
             dialectText = dialect.toString();
         }
         String m = String.format("%s don't support %s %s alias %s .",
-                dialectText, TabularItem.class.getName(), _ClassUtils.safeClassName(item), alias);
+                dialectText, TabularItem.class.getName(), ClassUtils.safeClassName(item), alias);
         return new CriteriaException(m);
     }
 
@@ -174,7 +174,7 @@ public abstract class _Exceptions {
 
     public static CriteriaException dontSupportLateralItem(TabularItem item, String alias, @Nullable Dialect dialect) {
         String m = String.format("%s Don't support LATERAL %s alias %s ."
-                , dialect == null ? "Standard" : dialect, _ClassUtils.safeClassName(item), alias);
+                , dialect == null ? "Standard" : dialect, ClassUtils.safeClassName(item), alias);
         return new CriteriaException(m);
     }
 
@@ -433,7 +433,7 @@ public abstract class _Exceptions {
     }
 
     public static CriteriaException dontSupportDialectStatement(DialectStatement statement, Dialect dialect) {
-        String m = String.format("%s don't dialect statement[%s]", dialect, _ClassUtils.safeClassName(statement));
+        String m = String.format("%s don't dialect statement[%s]", dialect, ClassUtils.safeClassName(statement));
         return new CriteriaException(m);
     }
 
@@ -546,7 +546,7 @@ public abstract class _Exceptions {
     }
 
     public static CriteriaException nestedItemIsEmpty(_NestedItems nestedItems) {
-        String m = String.format("%s %s is empty.", _NestedItems.class.getName(), _ClassUtils.safeClassName(nestedItems));
+        String m = String.format("%s %s is empty.", _NestedItems.class.getName(), ClassUtils.safeClassName(nestedItems));
         return new CriteriaException(m);
     }
 
@@ -716,7 +716,7 @@ public abstract class _Exceptions {
 
     public static CriteriaException namedParamNotMatch(SqlValueParam.NamedMultiValue param, @Nullable Object value) {
         String m = String.format("named value[name:%s,size:%s] value[%s] isn't %s."
-                , param.name(), param.columnSize(), _ClassUtils.safeClassName(value), Collection.class.getName());
+                , param.name(), param.columnSize(), ClassUtils.safeClassName(value), Collection.class.getName());
         return new CriteriaException(m);
     }
 
@@ -728,13 +728,13 @@ public abstract class _Exceptions {
 
     public static CriteriaException unknownParamValue(@Nullable SQLParam paramValue) {
         String m = String.format("unknown %s type %s", SQLParam.class.getName()
-                , _ClassUtils.safeClassName(paramValue));
+                , ClassUtils.safeClassName(paramValue));
         return new CriteriaException(m);
     }
 
     public static ArmyException unexpectedSqlParam(@Nullable SQLParam sqlParam) {
         String m;
-        m = String.format("unexpected %s type %s", SQLParam.class.getName(), _ClassUtils.safeClassName(sqlParam));
+        m = String.format("unexpected %s type %s", SQLParam.class.getName(), ClassUtils.safeClassName(sqlParam));
         return new ArmyException(m);
     }
 
@@ -1018,7 +1018,7 @@ public abstract class _Exceptions {
 
     public static CriteriaException tableItemAliasNoText(TabularItem tableItem) {
         String m = String.format("%s[%s] alias must be not empty."
-                , TabularItem.class.getName(), _ClassUtils.safeClassName(tableItem));
+                , TabularItem.class.getName(), ClassUtils.safeClassName(tableItem));
         return new CriteriaException(m);
     }
 
@@ -1041,7 +1041,7 @@ public abstract class _Exceptions {
 
     public static ObjectAccessException propertyTypeNotMatch(FieldMeta<?> field, Object value) {
         String m = String.format("%s java type is %s,but value type is %s,not match."
-                , field, field.javaType().getName(), _ClassUtils.safeClassName(value));
+                , field, field.javaType().getName(), ClassUtils.safeClassName(value));
         return new ObjectAccessException(m);
     }
 
@@ -1165,7 +1165,7 @@ public abstract class _Exceptions {
 
     public static CriteriaException notFoundMappingType(Object value) {
         String m = String.format("Not found default %s for %s.", MappingType.class.getName(),
-                _ClassUtils.safeClassName(value));
+                ClassUtils.safeClassName(value));
         return new CriteriaException(m);
     }
 

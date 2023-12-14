@@ -17,7 +17,7 @@ import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util.ArrayUtils;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -694,7 +694,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     private static String createConvertErrorMessage(final MappingType type, final Object nonNull) {
         final StringBuilder builder = new StringBuilder();
-        builder.append(_ClassUtils.safeClassName(nonNull));
+        builder.append(ClassUtils.safeClassName(nonNull));
 
         if (type instanceof _ArmyNoInjectionMapping
                 || nonNull instanceof Number

@@ -6,15 +6,13 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
 import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.Collections;
@@ -51,7 +49,7 @@ final class SessionCache implements _SessionCache {
     @Override
     public <T> T get(final TableMeta<T> table, final Object id) {
         if (!table.id().javaType().isInstance(id)) {
-            String m = String.format("%s isn't %s type.", _ClassUtils.safeClassName(id), table);
+            String m = String.format("%s isn't %s type.", ClassUtils.safeClassName(id), table);
             throw new IllegalArgumentException(m);
         }
 
@@ -84,7 +82,7 @@ final class SessionCache implements _SessionCache {
             throw new IllegalArgumentException(m);
         }
         if (!field.javaType().isInstance(fieldValue)) {
-            String m = String.format("%s isn't %s type.", _ClassUtils.safeClassName(fieldValue), table);
+            String m = String.format("%s isn't %s type.", ClassUtils.safeClassName(fieldValue), table);
             throw new IllegalArgumentException(m);
         }
 

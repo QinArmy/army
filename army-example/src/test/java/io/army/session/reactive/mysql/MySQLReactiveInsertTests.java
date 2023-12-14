@@ -1,4 +1,4 @@
-package io.army.session.mysql;
+package io.army.session.reactive.mysql;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;

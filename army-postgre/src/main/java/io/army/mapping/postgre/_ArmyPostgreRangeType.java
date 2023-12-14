@@ -14,7 +14,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
@@ -241,7 +241,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
 
     private MetaException boundTypeError(@Nullable Object bound) {
         String m = String.format("%s type return bound java type %s error.", this.javaType.getName(),
-                _ClassUtils.safeClassName(bound));
+                ClassUtils.safeClassName(bound));
         return new MetaException(m);
     }
 
@@ -437,7 +437,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                     final Object result;
                     result = method.invoke(instance);
                     if (!resultType.isInstance(result)) {
-                        String m = String.format("%s isn't instance of %s.", _ClassUtils.safeClassName(result),
+                        String m = String.format("%s isn't instance of %s.", ClassUtils.safeClassName(result),
                                 resultType.getName());
                         throw new MetaException(m);
                     }

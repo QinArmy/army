@@ -6,7 +6,7 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
@@ -49,7 +49,7 @@ public final class TextEnumType extends MappingType {
             throw new IllegalArgumentException("no text");
         }
         final Class<?> actualEnumType;
-        actualEnumType = _ClassUtils.enumClass(enumType);
+        actualEnumType = ClassUtils.enumClass(enumType);
 
         final String key;
         key = actualEnumType.getName() + '#' + enumName;

@@ -1,7 +1,7 @@
-package io.army.session.mysql;
+package io.army.session.reactive.mysql;
 
 import io.army.dialect.Database;
-import io.army.session.ReactiveSessionTestSupport;
+import io.army.session.reactive.ReactiveSessionTestSupport;
 
 abstract class MySQLReactiveSessionTestsSupport extends ReactiveSessionTestSupport {
 

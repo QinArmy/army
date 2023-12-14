@@ -8,7 +8,7 @@ import io.army.executor.ExecutorEnv;
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.ReactiveExecutorFactory;
 import io.army.reactive.executor.ReactiveExecutorFactoryProvider;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.jdbd.meta.DatabaseMetaData;
@@ -33,7 +33,7 @@ public final class JdbdExecutorFactoryProvider implements ReactiveExecutorFactor
             String m = String.format("%s support only %s,but passing %s",
                     JdbdExecutorFactoryProvider.class.getName(),
                     DatabaseSessionFactory.class.getName(),
-                    _ClassUtils.safeClassName(datasource)
+                    ClassUtils.safeClassName(datasource)
             );
             throw new ArmyException(m);
         } else if (!_StringUtils.hasText(factoryName)) {

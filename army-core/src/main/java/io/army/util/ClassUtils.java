@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 /**
  * @since 1.0
  */
-public abstract class _ClassUtils {
+public abstract class ClassUtils {
 
     public static final String PUBLISHER_CLASS_NAME = "org.reactivestreams.Publisher";
 
@@ -17,6 +17,11 @@ public abstract class _ClassUtils {
 
     public static boolean isSyncPresent() {
         return isPresent("io.army.sync.Session", null);
+    }
+
+
+    private ClassUtils() {
+        throw new UnsupportedOperationException();
     }
 
     public static boolean isPresent(String className, @Nullable ClassLoader classLoader) {

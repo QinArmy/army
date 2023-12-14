@@ -7,7 +7,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 
 import java.math.BigInteger;
@@ -32,7 +32,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
             throw errorJavaType(CodeEnumType.class, enumClass);
         }
-        return INSTANCE_MAP.computeIfAbsent(_ClassUtils.enumClass(enumClass), CONSTRUCTOR);
+        return INSTANCE_MAP.computeIfAbsent(ClassUtils.enumClass(enumClass), CONSTRUCTOR);
     }
 
     private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();

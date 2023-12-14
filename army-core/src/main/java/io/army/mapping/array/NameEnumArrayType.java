@@ -14,7 +14,7 @@ import io.army.sqltype.PostgreType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util.ArrayUtils;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
@@ -50,7 +50,7 @@ public final class NameEnumArrayType extends _ArmyBuildInMapping implements Mapp
             throw errorJavaType(NameEnumArrayType.class, enumClass);
         }
         final Class<?> actualClass;
-        actualClass = _ClassUtils.enumClass(enumClass);
+        actualClass = ClassUtils.enumClass(enumClass);
         return INSTANCE_MAP.computeIfAbsent(actualClass, key -> new NameEnumArrayType(Object.class, actualClass));
     }
 

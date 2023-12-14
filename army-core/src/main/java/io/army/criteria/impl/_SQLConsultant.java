@@ -6,10 +6,9 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.dialect.Database;
+import io.army.util.ClassUtils;
 
 import javax.annotation.Nullable;
-
-import io.army.util._ClassUtils;
 
 public abstract class _SQLConsultant {
     // consultant
@@ -75,7 +74,7 @@ public abstract class _SQLConsultant {
 
     protected static CriteriaException instanceNotMatch(Statement statement, Class<?> statementClass) {
         String m = String.format("%s isn't instance of %s"
-                , _ClassUtils.safeClassName(statement), statementClass.getName());
+                , ClassUtils.safeClassName(statement), statementClass.getName());
         throw new CriteriaException(m);
     }
 
@@ -83,7 +82,7 @@ public abstract class _SQLConsultant {
     static CriteriaException illegalNestedItems(@Nullable _NestedItems nestedItem, @Nullable Database database) {
         String m = String.format("Illegal %s %s for %s"
                 , _NestedItems.class.getName()
-                , _ClassUtils.safeClassName(nestedItem)
+                , ClassUtils.safeClassName(nestedItem)
                 , database == null ? "standard" : database);
         throw new CriteriaException(m);
     }
@@ -93,17 +92,17 @@ public abstract class _SQLConsultant {
     }
 
     static CriteriaException nonArmyStatement(Statement statement) {
-        String m = String.format("%s isn't army implementation", _ClassUtils.safeClassName(statement));
+        String m = String.format("%s isn't army implementation", ClassUtils.safeClassName(statement));
         return new CriteriaException(m);
     }
 
     static CriteriaException illegalWindow(@Nullable Window window) {
-        String m = String.format("Illegal window[%s]", _ClassUtils.safeClassName(window));
+        String m = String.format("Illegal window[%s]", ClassUtils.safeClassName(window));
         return new CriteriaException(m);
     }
 
     static CriteriaException illegalSqlElement(@Nullable SQLElement element) {
-        String m = String.format("Illegal SQLElement[%s]", _ClassUtils.safeClassName(element));
+        String m = String.format("Illegal SQLElement[%s]", ClassUtils.safeClassName(element));
         return new CriteriaException(m);
     }
 

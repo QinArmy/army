@@ -12,7 +12,7 @@ import io.army.sqltype.DataType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util.ArrayUtils;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 
 import java.util.Map;
@@ -49,7 +49,7 @@ public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements 
             throw errorJavaType(CodeEnumArrayType.class, enumClass);
         }
         final Class<?> actualClass;
-        actualClass = _ClassUtils.enumClass(enumClass);
+        actualClass = ClassUtils.enumClass(enumClass);
         return INSTANCE_MAP.computeIfAbsent(actualClass, key -> new CodeEnumArrayType(Object.class, actualClass));
     }
 

@@ -8,7 +8,7 @@ import io.army.generator.GeneratorException;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Exceptions;
 
 import java.math.BigInteger;
@@ -227,7 +227,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
     private static GeneratorException returnValueError(FieldGenerator generator, FieldMeta<?> field, Object value) {
         String m = String.format("%s return value isn't %s instance,for %s"
                 , generator.getClass().getName()
-                , _ClassUtils.safeClassName(value), field);
+                , ClassUtils.safeClassName(value), field);
         return new GeneratorException(m);
     }
 

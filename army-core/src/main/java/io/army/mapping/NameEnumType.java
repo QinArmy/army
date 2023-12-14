@@ -9,7 +9,7 @@ import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
-import io.army.util._ClassUtils;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
@@ -55,7 +55,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
                     TextEnum.class.getName(), TextEnumType.class.getName());
             throw new IllegalArgumentException(m);
         }
-        return _ClassUtils.enumClass(javaType);
+        return ClassUtils.enumClass(javaType);
     }
 
     private static final ConcurrentMap<Object, NameEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();

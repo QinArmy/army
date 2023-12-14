@@ -11,5 +11,8 @@ import io.army.annotation.Table;
 @Inheritance("regionType")
 public class ChinaRegion<T extends ChinaRegion<T>> extends AbstractChinaRegion<T> {
 
+    public static ChinaRegion<?> create() {
+        return new ChinaRegion<>();
+    }
 
 }
