@@ -173,7 +173,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain update
-     *     */
+     */
     public static StandardUpdate._DomainUpdateClause<Statement._BatchUpdateParamSpec> batchDomainUpdate() {
         return StandardUpdates.batchDomain();
     }
@@ -182,7 +182,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain update
-     *     */
+     */
     public static StandardUpdate._SingleUpdateClause<Statement._BatchUpdateParamSpec> batchSingleUpdate() {
         return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD10);
     }
@@ -208,7 +208,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain delete
-     *     */
+     */
     public static StandardDelete._StandardDeleteClause<Statement._BatchDeleteParamSpec> batchSingleDelete() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD10);
     }
@@ -216,7 +216,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * Batch domain delete
-     *     */
+     */
     public static StandardDelete._WithSpec<Statement._BatchDeleteParamSpec> batchSingleDelete20() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
     }
@@ -310,7 +310,8 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * package method that is used by army developer.
-     *     *
+     * *
+     *
      * @param value {@link Expression} or parameter.
      * @see #plusEqual(SqlField, Expression)
      */
@@ -332,7 +333,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * package method that is used by army developer.
-     *     */
+     */
     static _ItemPair _itemExpPair(final SqlField field, @Nullable Expression value) {
         assert value != null;
         return SQLs._itemPair(field, null, value);
@@ -346,7 +347,8 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * This method is similar to {@link Function#identity()}, except that use method reference.
-     *     *
+     * *
+     *
      * @see Function#identity()
      */
     static <T extends Item> T identity(T t) {
@@ -561,6 +563,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
+
     public interface WordsForOrdinality extends SQLWords {
 
     }
@@ -578,6 +581,18 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
     public interface WordSimilar {
+
+    }
+
+    public interface WordColumns {
+
+    }
+
+    public interface WordNested {
+
+    }
+
+    public interface WordExists {
 
     }
 
@@ -915,7 +930,8 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * <p>
      * This class representing sql {@code DEFAULT} key word.
-     *     *
+     * *
+     *
      * @see SQLs#DEFAULT
      */
     private static final class DefaultWord extends NonOperationExpression

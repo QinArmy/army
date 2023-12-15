@@ -1,5 +1,7 @@
 package io.army.sqltype;
 
+import io.army.criteria.TypeDef;
+
 /**
  * <p>This is base interface of following:
  * <ul>
@@ -9,7 +11,7 @@ package io.army.sqltype;
  *
  * @since 1.0
  */
-public interface DataType {
+public interface DataType extends TypeDef {
 
 
     /**
@@ -20,12 +22,6 @@ public interface DataType {
      */
     String name();
 
-    /**
-     * <p>SQL type's type name in database.
-     *
-     * @return SQL type's name in database
-     */
-    String typeName();
 
     boolean isUnknown();
 

@@ -401,4 +401,31 @@ public interface MySQLFunction extends SQLFunction {
     }
 
 
+    interface _JsonTableColumnCommaClause {
+
+
+    }
+
+
+    interface _JsonTableColumnSpaceClause {
+
+        _JsonTableColumnCommaClause comma(String name, SQLs.WordsForOrdinality forOrdinality);
+
+        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, String strPath);
+
+        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, Expression strPath);
+
+        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, String strPath);
+
+        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Expression strPath);
+
+        _JsonTableColumnCommaClause comma(SQLs.WordNested nested, Expression path, SQLs.WordColumns columns);
+
+    }
+
+    interface _JsonTableColumnConsumerClause {
+
+    }
+
+
 }
