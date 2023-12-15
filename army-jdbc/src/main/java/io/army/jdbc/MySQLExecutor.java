@@ -547,18 +547,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final Map<Option<?>, Object> map = _Collections.hashMap(8);
-
-            map.put(Option.XID, xid);
-            map.put(Option.XA_FLAGS, flags);
-            map.put(Option.XA_STATES, XaStates.ACTIVE);
-            map.put(Option.START_MILLIS, System.currentTimeMillis());
-
-            final Integer timeoutMillis;
-            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-            if (timeoutMillis != null) {
-                map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-            }
-
+            xaStartOptionMap(map, xid, option, flags);
 
             final TransactionInfo info;
             this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
@@ -598,17 +587,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             executeSimpleStaticStatement(builder.toString(), LOG);
 
             final Map<Option<?>, Object> map = _Collections.hashMap(8);
-
-            map.put(Option.XID, infoXid); // same instance
-            map.put(Option.XA_FLAGS, flags);
-            map.put(Option.XA_STATES, XaStates.IDLE);
-            map.put(Option.START_MILLIS, infoXid.nonNullOf(Option.START_MILLIS));
-
-            final Integer timeoutMillis;
-            timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS);
-            if (timeoutMillis != null) {
-                map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-            }
+            xaEndOptionMap(map, info, flags);
 
             final TransactionInfo newInfo;
             this.transactionInfo = newInfo = TransactionInfo.info(true, info.isolation(), info.isReadOnly(), map::get);
@@ -634,7 +613,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
             } else if ((info.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
                 throw _Exceptions.xaTransactionRollbackOnly(infoXid);
             }
-
             final StringBuilder builder = new StringBuilder(140);
 
             final boolean readOnly = info.isReadOnly();
@@ -712,12 +690,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             final Xid infoXid, actualXid;
             final boolean onePhaseRollback;
-            if (info != null
-                    && (infoXid = info.valueOf(Option.XID)) != null
-                    && infoXid.equals(xid)) {
+            if (info != null && (infoXid = info.nonNullOf(Option.XID)).equals(xid)) {
                 // rollback current transaction
-                if (infoXid.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, infoXid.nonNullOf(Option.XA_STATES));
+                if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
+                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, info.nonNullOf(Option.XA_STATES));
                 }
                 actualXid = infoXid;
                 onePhaseRollback = true;

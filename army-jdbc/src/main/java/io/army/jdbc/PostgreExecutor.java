@@ -555,15 +555,20 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Function<Option<?>, ?> optionFunc;
+            final Map<Option<?>, Object> map = _Collections.hashMap(6);
+            map.put(Option.START_MILLIS, System.currentTimeMillis());
+
+            final Integer timeoutMillis;
+            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+            if (timeoutMillis != null) {
+                map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+            }
             if (deferrable != null) {
-                optionFunc = Option.singleFunc(DEFERRABLE, deferrable);
-            } else {
-                optionFunc = Option.EMPTY_FUNC;
+                map.put(DEFERRABLE, deferrable);
             }
 
             final TransactionInfo info;
-            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, optionFunc);
+            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
             return info;
         }
 
@@ -612,20 +617,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 newInfo = null;
             }
 
-            try (Statement statement = this.conn.createStatement()) {
-
-                final String sql;
-                sql = builder.toString();
-
-                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
-
-                statement.executeUpdate(sql);
-
-                this.transactionInfo = newInfo;
-                return newInfo;
-            } catch (Exception e) {
-                throw handleException(e);
-            }
+            executeSimpleStaticStatement(builder.toString(), LOG);
+            this.transactionInfo = newInfo;
+            return newInfo;
         }
 
 
@@ -670,10 +664,19 @@ abstract class PostgreExecutor extends JdbcExecutor {
             } else if (flags != RmSession.TM_JOIN) {
                 throw _Exceptions.xaInvalidFlag(flags, "start");
             } else if (states == XaStates.IDLE && infoXid != null && infoXid.equals(xid)) { // It's ok to join an ended transaction. WebLogic does that.
-                final Map<Option<?>, Object> map;
-                map = cloneOption(info);
-                map.put(Option.XA_STATES, XaStates.ACTIVE); // modify states
+                final Map<Option<?>, Object> map = _Collections.hashMap(8);
+
+                map.put(Option.XID, infoXid);
                 map.put(Option.XA_FLAGS, flags); // modify flags
+                map.put(Option.XA_STATES, XaStates.ACTIVE);
+                map.put(Option.START_MILLIS, info.nonNullOf(Option.START_MILLIS)); // use old value
+
+
+                final Integer timeoutMillis;
+                timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS); // use old value
+                if (timeoutMillis != null) {
+                    map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+                }
 
                 newInfo = TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), map::get);
             } else {
@@ -702,10 +705,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 throw _Exceptions.xaInvalidFlag(flags, "end");
             }
 
-            final Map<Option<?>, Object> map;
-            map = cloneOption(info);
-            map.put(Option.XA_STATES, XaStates.IDLE); // modify states
-            map.put(Option.XA_FLAGS, flags); // modify flags
+            final Map<Option<?>, Object> map = _Collections.hashMap(10);
+            xaEndOptionMap(map, info, flags);
 
             final TransactionInfo newInfo;
             newInfo = TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), map::get);
@@ -743,19 +744,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 xidToString(infoXid, builder);
             }
 
-            try (Statement statement = this.conn.createStatement()) {
-                final String sql;
-                sql = builder.toString();
-
-                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
-
-                statement.executeUpdate(sql);
-
-                this.transactionInfo = null; // clear current transaction info
-                return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
-            } catch (Exception e) {
-                throw handleRmException(e);
-            }
+            executeSimpleStaticStatement(builder.toString(), LOG);
+            this.transactionInfo = null; // clear current transaction info
+            return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
         }
 
         /**
@@ -791,20 +782,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 builder.append(COMMIT);
             }
 
-            try (Statement statement = this.conn.createStatement()) {
+            executeSimpleStaticStatement(builder.toString(), LOG);
 
-                final String sql;
-                sql = builder.toString();
-
-                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
-
-                statement.executeUpdate(sql);
-
-                if ((flags & RmSession.TM_ONE_PHASE) != 0) {
-                    this.transactionInfo = null; // clear for one phase
-                }
-            } catch (Exception e) {
-                throw handleRmException(e);
+            if ((flags & RmSession.TM_ONE_PHASE) != 0) {
+                this.transactionInfo = null; // clear for one phase
             }
         }
 
@@ -821,12 +802,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             final Xid infoXid;
             final boolean onePhaseRollback;
-            if (info != null
-                    && (infoXid = info.valueOf(Option.XID)) != null
-                    && infoXid.equals(xid)) {
+            if (info != null && (infoXid = info.nonNullOf(Option.XID)).equals(xid)) {
                 // rollback current transaction
-                if (infoXid.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
-                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, infoXid.nonNullOf(Option.XA_STATES));
+                if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
+                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, info.nonNullOf(Option.XA_STATES));
                 }
                 onePhaseRollback = true;
                 builder.append(ROLLBACK);
@@ -836,20 +815,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 xidToString(xid, builder);
             }
 
-            try (Statement statement = this.conn.createStatement()) {
+            executeSimpleStaticStatement(builder.toString(), LOG);
 
-                final String sql;
-                sql = builder.toString();
-
-                printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
-
-                statement.executeUpdate(sql);
-
-                if (onePhaseRollback) {
-                    this.transactionInfo = null; // clear for one phase
-                }
-            } catch (Exception e) {
-                throw handleRmException(e);
+            if (onePhaseRollback) {
+                this.transactionInfo = null; // clear for one phase
             }
 
         }
@@ -953,35 +922,16 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(7);
+            final Map<Option<?>, Object> map = _Collections.hashMap(12);
 
-            map.put(Option.XID, xid);
-            map.put(Option.XA_FLAGS, flags);
-            map.put(Option.XA_STATES, XaStates.ACTIVE);
+            xaStartOptionMap(map, xid, option, flags);
+
             if (deferrable != null) {
                 map.put(DEFERRABLE, deferrable);
             }
+
             return TransactionInfo.info(true, finalIsolation, readOnly, map::get);
         }
-
-        private Map<Option<?>, Object> cloneOption(final TransactionInfo info) {
-            final Map<Option<?>, Object> map = _Collections.hashMap(8);
-
-            map.put(Option.XID, info.nonNullOf(Option.XID));
-            map.put(Option.XA_FLAGS, info.nonNullOf(Option.XA_FLAGS));
-            map.put(Option.XA_STATES, info.nonNullOf(Option.XA_STATES));
-            final Boolean deferrable = info.valueOf(DEFERRABLE);
-            if (deferrable != null) {
-                map.put(DEFERRABLE, deferrable);
-            }
-            final Boolean rollbackOnly = info.valueOf(Option.ROLLBACK_ONLY);
-            if (rollbackOnly != null) {
-                map.put(Option.ROLLBACK_ONLY, rollbackOnly);
-            }
-
-            return map;
-        }
-
 
         private void xidToString(final Xid xid, final StringBuilder builder) {
             final String gtrid, bqual;

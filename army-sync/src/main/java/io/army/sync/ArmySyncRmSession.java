@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +36,6 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmySyncRmSession.class);
 
-    private static final ConcurrentMap<Xid, TransactionInfo> ROLLBACK_ONLY_MAP = _Collections.concurrentHashMap();
 
     private TransactionInfo transactionInfo;
 

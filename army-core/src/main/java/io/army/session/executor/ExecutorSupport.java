@@ -13,9 +13,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.MetaException;
 import io.army.meta.TypeMeta;
-import io.army.session.DataAccessException;
-import io.army.session.Isolation;
-import io.army.session.Option;
+import io.army.session.*;
 import io.army.session.record.*;
 import io.army.sqltype.*;
 import io.army.util.ClassUtils;
@@ -724,6 +722,36 @@ public abstract class ExecutorSupport {
         return type;
     }
 
+
+    protected static void xaStartOptionMap(final Map<Option<?>, Object> map, final Xid xid,
+                                           final TransactionOption option, final int flags) {
+
+        map.put(Option.XID, xid);
+        map.put(Option.XA_FLAGS, flags);
+        map.put(Option.XA_STATES, XaStates.ACTIVE);
+        map.put(Option.START_MILLIS, System.currentTimeMillis());
+
+        final Integer timeoutMillis;
+        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+        if (timeoutMillis != null) {
+            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+        }
+
+    }
+
+    protected static void xaEndOptionMap(final Map<Option<?>, Object> map, final TransactionInfo info, final int flags) {
+
+        map.put(Option.XID, info.nonNullOf(Option.XID));
+        map.put(Option.XA_FLAGS, flags);
+        map.put(Option.XA_STATES, XaStates.IDLE);
+        map.put(Option.START_MILLIS, info.nonNullOf(Option.START_MILLIS));
+
+        final Integer timeoutMillis;
+        timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS);
+        if (timeoutMillis != null) {
+            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+        }
+    }
 
     /*-------------------below Exception  -------------------*/
 

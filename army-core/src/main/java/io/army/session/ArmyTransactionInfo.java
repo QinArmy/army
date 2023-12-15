@@ -112,11 +112,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
         final Function<Option<?>, ?> optionFunc;
 
         final boolean rollbackOnly;
-        if (this.isolation == Isolation.PSEUDO) {
-            optionFunc = this.optionFunc;
-            rollbackOnly = optionFunc != Option.EMPTY_FUNC
-                    && Boolean.TRUE.equals(optionFunc.apply(Option.ROLLBACK_ONLY));
-        } else if (!this.inTransaction) {
+        if (!this.inTransaction && this.isolation != Isolation.PSEUDO) {
             rollbackOnly = false;
         } else if ((optionFunc = this.optionFunc) == Option.EMPTY_FUNC) {
             rollbackOnly = false;
