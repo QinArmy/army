@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
@@ -80,31 +81,6 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
     @Override
-    public final TransactionInfo pseudoTransaction(final @Nullable Xid xid, final TransactionOption option) {
-
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        } else if (!this.readonly) {
-            throw _Exceptions.writeSessionPseudoTransaction(this);
-        } else if (xid == null) {
-            throw _Exceptions.xidIsNull();
-        } else if (option.isolation() != Isolation.PSEUDO) {
-            throw _Exceptions.pseudoIsolationError(this, option);
-        } else if (!option.isReadOnly()) {
-            throw _Exceptions.pseudoWriteError(this, option);
-        } else if (this.transactionInfo != null) {
-            throw _Exceptions.existsTransaction(this);
-        }
-
-        final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.pseudo(option);
-
-        this.transactionInfo = pseudoInfo;
-        this.rollbackOnly = false;
-        return pseudoInfo;
-    }
-
-    @Override
     public final TransactionInfo start(Xid xid) {
         return this.start(xid, TM_NO_FLAGS, TransactionOption.option(null, false));
     }
@@ -115,7 +91,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
     @Override
-    public final TransactionInfo start(final @Nullable Xid xid, final int flags, TransactionOption option) {
+    public final TransactionInfo start(final @Nullable Xid xid, final int flags, final TransactionOption option) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         } else if (this.transactionInfo != null) {
@@ -125,15 +101,30 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         }
 
         final TransactionInfo info;
-        info = ((SyncRmStmtExecutor) this.stmtExecutor).start(xid, flags, option);
 
-        Objects.requireNonNull(info);   // fail ,executor bug
-        assert info.inTransaction();  // fail ,executor bug
-        assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
-        assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
+        if (option.isolation() != Isolation.PSEUDO) {
+            info = ((SyncRmStmtExecutor) this.stmtExecutor).start(xid, flags, option);
+            Objects.requireNonNull(info);   // fail ,executor bug
+            assert info.inTransaction();  // fail ,executor bug
 
-        assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
+            assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
+            assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
+            assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
+            assert info.valueOf(Option.START_MILLIS) != null;
+            assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
+
+        } else if (!this.readonly) {
+            throw _Exceptions.writeSessionPseudoTransaction(this);
+        } else if (!option.isReadOnly()) {
+            throw _Exceptions.pseudoWriteError(this, option);
+        } else {
+            info = TransactionInfo.pseudoStart(xid, flags, option);
+        }
+
+        if (this.transactionInfo != null) {
+            throw new ConcurrentModificationException();
+        }
         this.transactionInfo = info;
         this.rollbackOnly = false;
         return info;
@@ -169,18 +160,26 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, states); // use infoXid
         }
 
-        info = ((SyncRmStmtExecutor) this.stmtExecutor).end(infoXid, flags, optionFunc); // use infoXid
+        if (lastInfo.isolation() == Isolation.PSEUDO) {
+            info = TransactionInfo.pseudoEnd(lastInfo, flags);
+        } else {
+            info = ((SyncRmStmtExecutor) this.stmtExecutor).end(infoXid, flags, optionFunc); // use infoXid
 
-        Objects.requireNonNull(info); // fail ,executor bug
-        assert info != lastInfo; // fail ,executor bug
-        assert info.inTransaction(); // fail ,executor bug
-        assert infoXid.equals(info.valueOf(Option.XID)); // use infoXid ; fail ,executor bug
+            Objects.requireNonNull(info); // fail ,executor bug
 
-        assert info.valueOf(Option.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
-        assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
+            assert info.inTransaction(); // fail ,executor bug
+            assert infoXid.equals(info.valueOf(Option.XID)); // use infoXid ; fail ,executor bug
+            assert info.valueOf(Option.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
+            assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
+            assert lastInfo.nonNullOf(Option.START_MILLIS).equals(info.valueOf(Option.START_MILLIS));
+            assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), lastInfo.valueOf(Option.TIMEOUT_MILLIS));
+        }
+
+        if (this.transactionInfo != null) {
+            throw new ConcurrentModificationException();
+        }
         this.transactionInfo = info;
-
         return info;
     }
 
@@ -196,6 +195,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         }
 
         final TransactionInfo lastInfo = this.transactionInfo;
+
         final XaStates states;
         final Xid infoXid;
 
@@ -205,25 +205,24 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             throw _Exceptions.xaNonCurrentTransaction(xid); // use xid
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             throw _Exceptions.xaStatesDontSupportPrepareCommand(infoXid, states); // use infoXid
-        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
+        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0 || this.rollbackOnly) {
             throw _Exceptions.xaTransactionRollbackOnly(infoXid);
         }
 
         final int flags;
-        flags = ((SyncRmStmtExecutor) this.stmtExecutor).prepare(infoXid, optionFunc); // use infoXid
+        if (lastInfo.isolation() == Isolation.PSEUDO) {
+            flags = XA_RDONLY;
+        } else {
+            flags = ((SyncRmStmtExecutor) this.stmtExecutor).prepare(infoXid, optionFunc); // use infoXid
 
-        final boolean rollbackOnly = this.rollbackOnly;
+        }
+
+        if (this.transactionInfo != lastInfo) {
+            throw new ConcurrentModificationException();
+        }
 
         this.transactionInfo = null;
         this.rollbackOnly = false;
-        if (rollbackOnly || (lastInfo.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) { // rollback only
-
-            if (ROLLBACK_ONLY_MAP.putIfAbsent(infoXid, lastInfo) != null) {
-                // no bug ,never here
-                String m = String.format("%s duplication prepare", infoXid);
-                throw new SessionException(m);
-            }
-        }
         return flags;
     }
 
@@ -239,44 +238,43 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public final void commit(final @Nullable Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+
+        final TransactionInfo info = this.transactionInfo;
+
+        final XaStates states;
+        final Xid infoXid;
+
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
-        }
-
-        final TransactionInfo info;
-
-        if ((flags & TM_ONE_PHASE) != 0) {
-            info = this.transactionInfo;
-            final XaStates states;
-            final Xid infoXid;
-
-            if (info == null) {
-                throw _Exceptions.noTransaction(this);
-            } else if (!(infoXid = info.nonNullOf(Option.XID)).equals(xid)) {
-                throw _Exceptions.xaNonCurrentTransaction(xid); // use xid
-            } else if ((states = info.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
-                throw _Exceptions.xaStatesDontSupportCommitCommand(infoXid, states); // use infoXid
-            } else if (this.rollbackOnly || (info.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) {
-                // rollback only
-                throw _Exceptions.xaTransactionRollbackOnly(infoXid);
-            }
-
-            ((SyncRmStmtExecutor) this.stmtExecutor).commit(infoXid, flags, optionFunc); // use infoXid
-
-            this.transactionInfo = null;
         } else if (xid == null) {
             // application developer no bug,never here
-            throw new NullPointerException();
-        } else if ((info = ROLLBACK_ONLY_MAP.get(xid)) != null) {
+            throw _Exceptions.xidIsNull();
+        } else if ((flags & TM_ONE_PHASE) == 0) { // tow phase commit
+            if (info != null && info.nonNullOf(Option.XID).equals(xid)) {
+                throw _Exceptions.xaTowPhaseXidConflict(xid);
+            }
+            ((SyncRmStmtExecutor) this.stmtExecutor).commit(xid, flags, optionFunc); // use xid
+        } else if (info == null) {
+            throw _Exceptions.noTransaction(this);
+        } else if (!(infoXid = info.nonNullOf(Option.XID)).equals(xid)) {
+            throw _Exceptions.xaNonCurrentTransaction(xid); // use xid
+        } else if ((states = info.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
+            throw _Exceptions.xaStatesDontSupportCommitCommand(infoXid, states); // use infoXid
+        } else if (this.rollbackOnly || (info.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) {
             // rollback only
-            throw _Exceptions.xaTransactionRollbackOnly(info.nonNullOf(Option.XID));
-        } else {
+            throw _Exceptions.xaTransactionRollbackOnly(infoXid);
+        } else if (info.isolation() == Isolation.PSEUDO) { // one phase commit pseudo transaction
+            this.transactionInfo = null; // clear transactionInfo for one phase commit
+            this.rollbackOnly = false; // clear transactionInfo for one phase commit
+        } else {  // one phase commit
 
-            ((SyncRmStmtExecutor) this.stmtExecutor).commit(xid, flags, optionFunc);
-
-            ROLLBACK_ONLY_MAP.remove(xid);
+            ((SyncRmStmtExecutor) this.stmtExecutor).commit(infoXid, flags, optionFunc); // use infoXid
+            if (this.transactionInfo != info) {
+                throw new ConcurrentModificationException();
+            }
+            this.transactionInfo = null;  // clear transactionInfo for one phase commit
+            this.rollbackOnly = false;  // clear transactionInfo for one phase commit
         }
-
 
     }
 
@@ -291,11 +289,29 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             throw _Exceptions.sessionClosed(this);
         } else if (xid == null) {
             // application developer no bug,never here
-            throw new NullPointerException();
+            throw _Exceptions.xidIsNull();
         }
 
-        ((SyncRmStmtExecutor) this.stmtExecutor).rollback(xid, optionFunc);
-        ROLLBACK_ONLY_MAP.remove(xid);
+        final TransactionInfo info = this.transactionInfo;
+        final XaStates states;
+        final Xid infoXid;
+
+        if (info == null || !((infoXid = info.nonNullOf(Option.XID)).equals(xid))) { // tow phase rollback
+            ((SyncRmStmtExecutor) this.stmtExecutor).rollback(xid, optionFunc);
+        } else if ((states = info.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
+            throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, states);
+        } else if (info.isolation() == Isolation.PSEUDO) { // one phase rollback pseudo transaction
+            this.transactionInfo = null; // clear  for one phase rollback
+            this.rollbackOnly = false; // clear  for one phase rollback
+        } else {
+            ((SyncRmStmtExecutor) this.stmtExecutor).rollback(infoXid, optionFunc);  // use infoXid
+            if (this.transactionInfo != info) {
+                throw new ConcurrentModificationException();
+            }
+            this.transactionInfo = null; // clear  for one phase rollback
+            this.rollbackOnly = false; // clear  for one phase rollback
+        }
+
 
     }
 

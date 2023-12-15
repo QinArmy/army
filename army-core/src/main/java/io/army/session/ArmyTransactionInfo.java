@@ -19,13 +19,17 @@ final class ArmyTransactionInfo implements TransactionInfo {
         if (isolation == null || optionFunc == null) {
             throw new NullPointerException();
         }
+
+        final boolean pseudoTransaction = isolation == Isolation.PSEUDO;
+
         final XaStates states;
         states = (XaStates) optionFunc.apply(Option.XA_STATES);
+
         if (states != null) {
             switch (states) {
                 case ACTIVE:
                 case IDLE: {
-                    if (!inTransaction) {
+                    if (!(inTransaction || pseudoTransaction)) {
                         throw new IllegalArgumentException("inTransaction error");
                     }
                 }
@@ -42,7 +46,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
         }
 
 
-        if (isolation != Isolation.PSEUDO) {
+        if (!pseudoTransaction) {
             if (inTransaction && optionFunc != Option.EMPTY_FUNC && optionFunc.apply(Option.START_MILLIS) == null) {
                 String m = String.format("inTransaction is true ,but %s is null", Option.START_MILLIS);
                 throw new IllegalArgumentException(m);

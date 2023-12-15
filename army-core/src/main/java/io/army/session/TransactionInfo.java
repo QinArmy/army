@@ -64,7 +64,7 @@ public interface TransactionInfo extends TransactionOption {
         return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
     }
 
-    static TransactionInfo pseudo(TransactionOption option) {
+    static TransactionInfo pseudoLocal(final TransactionOption option) {
         final Map<Option<?>, Object> map = _Collections.hashMap(8);
 
         map.put(Option.START_MILLIS, System.currentTimeMillis());
@@ -76,6 +76,53 @@ public interface TransactionInfo extends TransactionOption {
         }
         return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
     }
+
+    /**
+     * <p>Create pseudo transaction info for XA transaction start method.
+     */
+    static TransactionInfo pseudoStart(final Xid xid, final int flags, final TransactionOption option) {
+        if (option.isolation() != Isolation.PSEUDO || !option.isReadOnly()) {
+            throw new IllegalArgumentException("non-pseudo transaction option");
+        }
+
+        final Map<Option<?>, Object> map = _Collections.hashMap(12);
+
+        map.put(Option.START_MILLIS, System.currentTimeMillis());
+
+        final Integer timeoutMillis;
+        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+        if (timeoutMillis != null) {
+            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+        }
+        map.put(Option.XID, xid);
+        map.put(Option.XA_FLAGS, flags);
+        map.put(Option.XA_STATES, XaStates.ACTIVE);
+        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
+    }
+
+
+    /**
+     * <p>Create pseudo transaction info for XA transaction end method.
+     */
+    static TransactionInfo pseudoEnd(final TransactionInfo info, final int flags) {
+        if (info.inTransaction() || info.isolation() != Isolation.PSEUDO || !info.isReadOnly()) {
+            throw new IllegalArgumentException("non-pseudo transaction info");
+        }
+        final Map<Option<?>, Object> map = _Collections.hashMap(12);
+
+        map.put(Option.START_MILLIS, info.nonNullOf(Option.START_MILLIS));
+
+        final Integer timeoutMillis;
+        timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS);
+        if (timeoutMillis != null) {
+            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+        }
+        map.put(Option.XID, info.nonNullOf(Option.XID));
+        map.put(Option.XA_FLAGS, flags);
+        map.put(Option.XA_STATES, XaStates.IDLE);
+        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
+    }
+
 
     static <T> TransactionInfo replaceOption(TransactionInfo info, Option<T> option, T value) {
         return ArmyTransactionInfo.replaceOption(info, option, value);

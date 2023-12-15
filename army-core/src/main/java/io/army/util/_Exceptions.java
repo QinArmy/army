@@ -869,6 +869,11 @@ public abstract class _Exceptions {
         return new RmSessionException("bytes length of bqual beyond 64 bytes.", RmSessionException.XAER_NOTA);
     }
 
+    public static RmSessionException xaTowPhaseXidConflict(Xid xid) {
+        String m = String.format("xid[%s] tow phase commit conflict with current transaction.", xid);
+        return new RmSessionException(m, RmSessionException.XAER_PROTO);
+    }
+
     public static RmSessionException xaNonCurrentTransaction(@Nullable Xid xid) {
         String m = String.format("xid[%s] not current transaction.", xid);
         return new RmSessionException(m, RmSessionException.XAER_PROTO);

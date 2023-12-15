@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -25,7 +26,7 @@ import java.util.function.Function;
 class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSession {
 
     /**
-     * @see ArmyReactiveSessionFactory.RmBuilder#createSession(String, boolean)
+     * @see ArmyReactiveSessionFactory.RmBuilder#createSession(String, boolean, Function)
      */
     static ArmyReactiveRmSession create(ArmyReactiveSessionFactory.RmBuilder builder) {
         final ArmyReactiveRmSession session;
@@ -64,11 +65,9 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             return true;
         }
         final TransactionInfo info = this.transactionInfo;
-        final Integer flags;
         return info != null
                 && info.valueOf(Option.XA_STATES) == XaStates.IDLE
-                && (flags = info.valueOf(Option.XA_FLAGS)) != null
-                && (flags & TM_FAIL) != 0;
+                && (info.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0;
     }
 
     @Override
@@ -76,39 +75,18 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        if (ROLLBACK_ONLY.compareAndSet(this, 0, 1)) {
-            final TransactionInfo info = this.transactionInfo;
-            if (info != null) {
-                TRANSACTION_INFO.compareAndSet(this, info, wrapRollbackOnly(info));
-            }
-        }
-    }
 
-    @Override
-    public final TransactionInfo pseudoTransaction(final @Nullable Xid xid, final TransactionOption option) {
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        } else if (!this.readonly) {
-            throw _Exceptions.writeSessionPseudoTransaction(this);
-        } else if (xid == null) {
-            throw _Exceptions.xidIsNull();
-        } else if (option.isolation() != Isolation.PSEUDO) {
-            throw _Exceptions.pseudoIsolationError(this, option);
-        } else if (!option.isReadOnly()) {
-            throw _Exceptions.pseudoWriteError(this, option);
-        } else if (this.transactionInfo != null) {
-            throw _Exceptions.existsTransaction(this);
+        final TransactionInfo info = this.transactionInfo;
+        if (!ROLLBACK_ONLY.compareAndSet(this, 0, 1) || info == null) {
+            return;
         }
 
-        final TransactionInfo pseudoInfo;
-        pseudoInfo = TransactionInfo.info(false, Isolation.PSEUDO, true, wrapStartMillisIfNeed(xid, option));
-
-        if (!TRANSACTION_INFO.compareAndSet(this, null, pseudoInfo)) {
+        if (!TRANSACTION_INFO.compareAndSet(this, info, TransactionInfo.replaceOption(info, Option.ROLLBACK_ONLY, Boolean.TRUE))) {
             throw new ConcurrentModificationException();
         }
-        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-        return pseudoInfo;
+
     }
+
 
     @Override
     public final Mono<ReactiveRmSession> setTransactionCharacteristics(TransactionOption option) {
@@ -152,16 +130,16 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     @Override
     public final Mono<TransactionInfo> start(Xid xid) {
-        return start(xid, TM_NO_FLAGS, TransactionOption.option(null, false));
+        return start(xid, TM_NO_FLAGS, TransactionOption.option());
     }
 
     @Override
     public final Mono<TransactionInfo> start(Xid xid, int flags) {
-        return start(xid, flags, TransactionOption.option(null, false));
+        return start(xid, flags, TransactionOption.option());
     }
 
     @Override
-    public final Mono<TransactionInfo> start(final @Nullable Xid xid, final int flags, TransactionOption option) {
+    public final Mono<TransactionInfo> start(final @Nullable Xid xid, final int flags, final TransactionOption option) {
         final Mono<TransactionInfo> mono;
         if (isClosed()) {
             mono = Mono.error(_Exceptions.sessionClosed(this));
@@ -169,22 +147,32 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             mono = Mono.error(_Exceptions.existsTransaction(this));
         } else if (xid == null) {
             mono = Mono.error(_Exceptions.xidIsNull());
-        } else {
+        } else if (option.isolation() == Isolation.PSEUDO) { // start pseudo transaction
+            if (!this.readonly) {
+                mono = Mono.error(_Exceptions.writeSessionPseudoTransaction(this));
+            } else if (!option.isReadOnly()) {
+                mono = Mono.error(_Exceptions.pseudoWriteError(this, option));
+            } else {
+                final TransactionInfo info;
+                info = TransactionInfo.pseudoStart(xid, flags, option);
+                TRANSACTION_INFO.set(this, info);
+                ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+                mono = Mono.just(info);
+            }
+        } else {  // start XA transaction
             mono = ((ReactiveRmExecutor) this.stmtExecutor).start(xid, flags, option)
                     .doOnSuccess(info -> {
                         assert info.inTransaction();  // fail ,executor bug
                         assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
                         assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
-
                         assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
+
+                        assert info.valueOf(Option.START_MILLIS) != null;  // fail ,executor bug
+                        assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
 
                         TRANSACTION_INFO.set(this, info);
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-                    }).onErrorMap(error -> {
-                        TRANSACTION_INFO.set(this, null);
-                        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-                        return _ArmySession.wrapIfNeed(error);
-                    });
+                    }).onErrorMap(_ArmySession::wrapIfNeed);
         }
         return mono;
     }
@@ -200,7 +188,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
     }
 
     @Override
-    public final Mono<ReactiveRmSession> end(final @Nullable Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+    public final Mono<ReactiveRmSession> end(final @Nullable Xid xid, final int flags, final Function<Option<?>, ?> optionFunc) {
         final Mono<ReactiveRmSession> mono;
 
         final TransactionInfo lastInfo;
@@ -216,14 +204,19 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             mono = Mono.error(_Exceptions.xaNonCurrentTransaction(xid));
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.ACTIVE) {
             mono = Mono.error(_Exceptions.xaTransactionDontSupportEndCommand(infoXid, states)); // use infoXid
+        } else if (lastInfo.isolation() == Isolation.PSEUDO) { // start pseudo transaction
+            TRANSACTION_INFO.set(this, TransactionInfo.pseudoEnd(lastInfo, flags));
+            mono = Mono.just(this);
         } else {
             mono = ((ReactiveRmExecutor) this.stmtExecutor).end(infoXid, flags, optionFunc) // use infoXid
                     .doOnSuccess(info -> {
                         assert info.inTransaction();  // fail ,executor bug
                         assert infoXid.equals(info.valueOf(Option.XID));  // fail ,executor bug
                         assert info.valueOf(Option.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
-
                         assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
+
+                        assert lastInfo.nonNullOf(Option.START_MILLIS).equals(info.valueOf(Option.START_MILLIS));  // fail ,executor bug
+                        assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), lastInfo.valueOf(Option.TIMEOUT_MILLIS));
 
                         TRANSACTION_INFO.set(this, info);
                     }).onErrorMap(_ArmySession::wrapIfNeed)
@@ -254,8 +247,12 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             mono = Mono.error(_Exceptions.xaNonCurrentTransaction(xid));
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             mono = Mono.error(_Exceptions.xaStatesDontSupportPrepareCommand(infoXid, states)); // use infoXid
-        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0 || ROLLBACK_ONLY.get(this) != 0) {
+        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0 || this.rollbackOnly != 0) {
             mono = Mono.error(_Exceptions.xaTransactionRollbackOnly(infoXid));
+        } else if (lastInfo.isolation() == Isolation.PSEUDO) { // commit pseudo transaction
+            TRANSACTION_INFO.set(this, null);
+            ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+            mono = Mono.just((int) XA_RDONLY);
         } else {
             mono = ((ReactiveRmExecutor) this.stmtExecutor).prepare(infoXid, optionFunc) // use infoXid
                     .doOnSuccess(flag -> TRANSACTION_INFO.set(this, null))
@@ -295,11 +292,18 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             mono = Mono.error(_Exceptions.xaNonCurrentTransaction(xid));
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             mono = Mono.error(_Exceptions.xaStatesDontSupportCommitCommand(infoXid, states)); // use infoXid
-        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0 || ROLLBACK_ONLY.get(this) != 0) {
+        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0 || this.rollbackOnly != 0) {
             mono = Mono.error(_Exceptions.xaTransactionRollbackOnly(infoXid));
+        } else if (lastInfo.isolation() == Isolation.PSEUDO) { // one phase commit pseudo transaction
+            TRANSACTION_INFO.set(this, null);
+            ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+            mono = Mono.just(this);
         } else {   // one phase commit
             mono = ((ReactiveRmExecutor) this.stmtExecutor).commit(infoXid, flags, optionFunc) // use infoXid
-                    .doOnSuccess(flag -> TRANSACTION_INFO.set(this, null)) // clear transactionInfo for one phase commit
+                    .doOnSuccess(v -> {
+                        TRANSACTION_INFO.set(this, null); // clear transactionInfo for one phase commit
+                        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+                    })
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
         }
@@ -325,15 +329,22 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         } else if (xid == null) {
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if ((lastInfo = this.transactionInfo) == null
-                || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {
+                || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {  // two phase rollback
             mono = ((ReactiveRmExecutor) this.stmtExecutor).rollback(xid, optionFunc) // use xid
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
-            mono = Mono.error(_Exceptions.xaStatesDontSupportRollbackCommand(xid, states)); // use xid
-        } else {
+            mono = Mono.error(_Exceptions.xaStatesDontSupportRollbackCommand(infoXid, states)); // use infoXid
+        } else if (lastInfo.isolation() == Isolation.PSEUDO) { // one phase rollback pseudo transaction
+            TRANSACTION_INFO.set(this, null); // clear  for one phase rollback
+            ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+            mono = Mono.just(this);
+        } else {  // one phase rollback
             mono = ((ReactiveRmExecutor) this.stmtExecutor).rollback(infoXid, optionFunc) // use infoXid
-                    .doOnSuccess(flag -> TRANSACTION_INFO.set(this, null)) // clear transactionInfo for one phase rollback
+                    .doOnSuccess(v -> {
+                        TRANSACTION_INFO.set(this, null); // clear  for one phase rollback
+                        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+                    })
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
         }

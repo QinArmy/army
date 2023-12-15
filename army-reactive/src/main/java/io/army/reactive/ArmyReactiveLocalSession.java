@@ -327,7 +327,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     private Mono<TransactionInfo> storePseudoTransactionInfo(final @Nullable TransactionInfo existTransaction,
                                                              final TransactionOption option) {
         final TransactionInfo info;
-        info = TransactionInfo.pseudo(option);
+        info = TransactionInfo.pseudoLocal(option);
 
         final Mono<TransactionInfo> mono;
         if (TRANSACTION_INFO.compareAndSet(this, existTransaction, info)) {

@@ -128,7 +128,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
         final TransactionInfo info;
         if (startPseudo) {
-            info = TransactionInfo.pseudo(option);
+            info = TransactionInfo.pseudoLocal(option);
         } else {
             info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
 
