@@ -1032,88 +1032,32 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         return MySQLFunctionUtils.jsonTable(SQLs::identity);
     }
 
-    /*-------------------below static jsonTable function -------------------*/
 
     /**
+     * <p>MySQL jsonTable function static method
+     *
+     * @param expr    {@link String} (output literal) or {@link Expression}
+     * @param pathExp {@link String} (output literal) or {@link Expression}
+     *                7
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
-     * @see #jsonTable(Expression, Expression, SQLs.WordColumns, Consumer)
-     */
-    public static _TabularFunction jsonTable(String expr, Expression path, SQLs.WordColumns columns,
-                                             Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
-        return jsonTable(SQLs.literal(JsonType.TEXT, expr), path, columns, consumer);
-    }
-
-    /**
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
-     * @see #jsonTable(Expression, Expression, SQLs.WordColumns, Consumer)
-     */
-    public static _TabularFunction jsonTable(Expression expr, String path, SQLs.WordColumns columns,
-                                             Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
-        return jsonTable(expr, SQLs.literal(StringType.INSTANCE, path), columns, consumer);
-    }
-
-    /**
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
-     * @see #jsonTable(Expression, Expression, SQLs.WordColumns, Consumer)
-     */
-    public static _TabularFunction jsonTable(String expr, String path, SQLs.WordColumns columns,
-                                             Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
-        return jsonTable(SQLs.literal(JsonType.TEXT, expr), SQLs.literal(StringType.INSTANCE, path), columns, consumer);
-    }
-
-    /**
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonTable(Object, Object, SQLs.WordColumns, SQLs.SymbolSpace, Consumer) dynamic method
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
-    public static _TabularFunction jsonTable(Expression expr, Expression path, SQLs.WordColumns columns,
+    public static _TabularFunction jsonTable(Object expr, Object pathExp, SQLs.WordColumns columns,
                                              Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
         throw new UnsupportedOperationException();
     }
 
-
-    /*-------------------below dynamic jsonTable function -------------------*/
-
     /**
+     * <p>MySQL jsonTable function dynamic method
+     *
+     * @param expr    {@link String} (output literal) or {@link Expression}
+     * @param pathExp {@link String} (output literal) or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
-     * @see #jsonTable(Expression, Expression, SQLs.WordColumns, SQLs.SymbolSpace, Consumer)
-     */
-    public static _TabularFunction jsonTable(String expr, Expression path, SQLs.WordColumns columns,
-                                             SQLs.SymbolSpace space,
-                                             Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
-        return jsonTable(SQLs.literal(JsonType.TEXT, expr), path, columns, space, consumer);
-    }
-
-    /**
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
-     * @see #jsonTable(Expression, Expression, SQLs.WordColumns, SQLs.SymbolSpace, Consumer)
-     */
-    public static _TabularFunction jsonTable(Expression expr, String path, SQLs.WordColumns columns,
-                                             SQLs.SymbolSpace space,
-                                             Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
-        return jsonTable(expr, SQLs.literal(StringType.INSTANCE, path), columns, space, consumer);
-    }
-
-    /**
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
-     * @see #jsonTable(Expression, Expression, SQLs.WordColumns, SQLs.SymbolSpace, Consumer)
-     */
-    public static _TabularFunction jsonTable(String expr, String path, SQLs.WordColumns columns,
-                                             SQLs.SymbolSpace space,
-                                             Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
-        return jsonTable(SQLs.literal(JsonType.TEXT, expr), SQLs.literal(StringType.INSTANCE, path), columns, space, consumer);
-    }
-
-    /**
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonTable(Object, Object, SQLs.WordColumns, Consumer) static method
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
-    public static _TabularFunction jsonTable(Expression expr, Expression path, SQLs.WordColumns columns,
+    public static _TabularFunction jsonTable(Object expr, Object pathExp, SQLs.WordColumns columns,
                                              SQLs.SymbolSpace space,
                                              Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
         throw new UnsupportedOperationException();

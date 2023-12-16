@@ -170,7 +170,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         } else if (!_StringUtils.hasText(name)) {
             throw ContextStack.clearStackAndCriteriaError("function field name must have text.");
         }
-        return new FunctionField(name, type);
+        return new NamedFunctionField(name, type);
     }
 
     static UndoneFunction oneArgUndoneFunc(final String name, final Expression one) {
@@ -186,7 +186,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     /**
      * <p>
      * This class don't support {@link Functions._WithOrdinalityClause}.
-     *     */
+     */
     private static final class CompositeTabularFunction implements Functions._TabularFunction, _DerivedTable,
             _SelfDescribed {
 
@@ -244,16 +244,16 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//CompositeTabularFunction
 
 
-     static abstract class TabularSqlFunction implements ArmyTabularFunction {
+    static abstract class TabularSqlFunction implements ArmyTabularFunction {
 
-         static final String ORDINALITY = "ordinality";
+        static final String ORDINALITY = "ordinality";
 
-         static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
+        static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
 
-         private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
+        private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
 
 
-         final CriteriaContext outerContext;
+        final CriteriaContext outerContext;
 
         final String name;
 
@@ -276,20 +276,20 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             return this.name;
         }
 
-         @Override
-         public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+        @Override
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-             context.appendFuncName(this.buildIn, this.name);
+            context.appendFuncName(this.buildIn, this.name);
 
-             if (this instanceof NoArgFunction) {
-                 sqlBuilder.append(_Constant.PARENS);
-             } else {
-                 sqlBuilder.append(_Constant.LEFT_PAREN);
+            if (this instanceof NoArgFunction) {
+                sqlBuilder.append(_Constant.PARENS);
+            } else {
+                sqlBuilder.append(_Constant.LEFT_PAREN);
 
-                 appendArg(sqlBuilder, context);
+                appendArg(sqlBuilder, context);
 
-                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-             }
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
             if (this.isWithOrdinality()) {
                 sqlBuilder.append(SPACE_WITH_ORDINALITY);
             }
@@ -992,29 +992,72 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//OneArgUndoneFunction
 
 
-    /**
-     * <p>
-     * For {@link UndoneFunction}
-     *     */
-    private static final class FunctionField extends OperationDataField implements _FunctionField {
+    static abstract class FunctionField extends OperationDataField implements _FunctionField {
 
-        private final String name;
+        final String name;
 
-        private final MappingType type;
+        final MappingType type;
 
-        /**
-         * @see #funcField(String, MappingType)
-         */
-        private FunctionField(String name, MappingType type) {
+
+        FunctionField(String name, MappingType type) {
             this.name = name;
             this.type = type;
         }
 
         @Override
-        public void appendSelectItem(final StringBuilder sqlBuilder, _SqlContext context) {
+        public final void appendSelectItem(final StringBuilder sqlBuilder, _SqlContext context) {
             // no bug,never here
             throw new UnsupportedOperationException("invoking error");
         }
+
+        @Override
+        public final String fieldName() {
+            return this.name;
+        }
+
+        @Override
+        public final String label() {
+            return this.name;
+        }
+
+        /**
+         * @return function field must return {@link MappingType}, not {@link TableField}
+         */
+        @Override
+        public final MappingType typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public final TableField tableField() {
+            // always null
+            return null;
+        }
+
+        @Override
+        public final Expression underlyingExp() {
+            // always null
+            return null;
+        }
+
+
+    } // FunctionField
+
+
+    /**
+     * <p>
+     * For {@link UndoneFunction}
+     */
+    private static final class NamedFunctionField extends FunctionField {
+
+
+        /**
+         * @see #funcField(String, MappingType)
+         */
+        private NamedFunctionField(String name, MappingType type) {
+            super(name, type);
+        }
+
 
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
@@ -1029,36 +1072,6 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
             parser.typeName(this.type, sqlBuilder);
 
-        }
-
-        @Override
-        public String fieldName() {
-            return this.name;
-        }
-
-        @Override
-        public String label() {
-            return this.name;
-        }
-
-        /**
-         * @return function field must return {@link MappingType}, not {@link TableField}
-         */
-        @Override
-        public MappingType typeMeta() {
-            return this.type;
-        }
-
-        @Override
-        public TableField tableField() {
-            // always null
-            return null;
-        }
-
-        @Override
-        public Expression underlyingExp() {
-            // always null
-            return null;
         }
 
         @Override

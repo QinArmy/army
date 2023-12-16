@@ -175,19 +175,12 @@ abstract class SqlWords {
 
     enum KeyWordPath implements SQLs.WordPath, SQLs.ArmyKeyWord {
 
-        PATH(" PATH");
-
-        private final String spaceWord;
-
-        KeyWordPath(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        PATH;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return " PATH";
         }
-
 
         @Override
         public final String toString() {
@@ -195,6 +188,22 @@ abstract class SqlWords {
         }
 
     }//KeyWordPath
+
+    enum KeyWordExists implements SQLs.WordExists, SQLs.ArmyKeyWord {
+
+        EXISTS;
+
+        @Override
+        public final String spaceRender() {
+            return " EXISTS";
+        }
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+    }//KeyWordExists
 
     enum KeyWordsForOrdinality implements SQLs.WordsForOrdinality, SQLs.ArmyKeyWord {
 
@@ -218,6 +227,25 @@ abstract class SqlWords {
         }
 
     }//KeyWordsForOrdinality
+
+
+    enum KeyWordError implements SQLs.WordError, SQLs.ArmyKeyWord {
+
+        ERROR;
+
+        @Override
+        public final String spaceRender() {
+            return " ERROR";
+        }
+
+
+        @Override
+        public String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+
+    } // KeyWordError
 
     enum KeyWordDocument implements SQLs.WordDocument, SQLs.ArmyKeyWord {
 
@@ -273,7 +301,6 @@ abstract class SqlWords {
     /**
      * <p>
      * package enum
-     *
      *
      * @since 1.0
      */

@@ -4,12 +4,10 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.StringType;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -309,12 +307,17 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
 
+    @Deprecated
     public static final WordExistsPath EXISTS_PATH = KeyWordExistsPath.EXISTS_PATH;
+
+    public static final SQLs.WordExists EXISTS = SqlWords.KeyWordExists.EXISTS;
 
 
     public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
 
     // public static final WordNested NESTED = KeyWordNested.NESTED;
+
+    public static final SQLs.WordError ERROR = SqlWords.KeyWordError.ERROR;
 
     public static final WordsAtTimeZone AT_TIME_ZONE = KeyWordsAtTimeZone.AT_TIME_ZONE;
 

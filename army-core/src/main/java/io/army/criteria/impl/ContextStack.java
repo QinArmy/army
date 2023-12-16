@@ -4,13 +4,11 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-
-import javax.annotation.Nullable;
-
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -175,8 +173,16 @@ abstract class ContextStack {
         return function.apply(input);
     }
 
-    static <T, U, E extends CriteriaException> E clearStackAnd(BiFunction<T, U, E> function, @Nullable T input1,
-                                                               @Nullable U input2) {
+    static Error clearStackAndError(final Error cause) {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+        }
+        return cause;
+    }
+
+    static <T, U, E extends ArmyException> E clearStackAnd(BiFunction<T, U, E> function, @Nullable T input1,
+                                                           @Nullable U input2) {
         final Stack stack = HOLDER.get();
         if (stack != null) {
             HOLDER.remove();

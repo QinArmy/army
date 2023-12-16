@@ -203,7 +203,7 @@ public interface MySQLFunction extends SQLFunction {
     }
 
 
-    interface _JsonTableOnErrorClause<I extends Item> extends _OnErrorClause {
+    interface _JsonTableOnErrorClause0<I extends Item> extends _OnErrorClause {
 
         @Override
         _JsonTableColumnCommaSpec<I> onError();
@@ -215,26 +215,26 @@ public interface MySQLFunction extends SQLFunction {
             , _JsonTableColumnCommaSpec<I> {
 
         @Override
-        _JsonTableOnErrorClause<I> nullWord();
+        _JsonTableOnErrorClause0<I> nullWord();
 
         @Override
-        _JsonTableOnErrorClause<I> error();
+        _JsonTableOnErrorClause0<I> error();
 
         @Override
-        _JsonTableOnErrorClause<I> defaultValue(Expression value);
+        _JsonTableOnErrorClause0<I> defaultValue(Expression value);
 
         @Override
-        <T> _JsonTableOnErrorClause<I> defaultValue(Function<T, Expression> valueOperator, T value);
+        <T> _JsonTableOnErrorClause0<I> defaultValue(Function<T, Expression> valueOperator, T value);
 
         @Override
-        _JsonTableOnErrorClause<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _JsonTableOnErrorClause0<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         @Override
-        _JsonTableOnErrorClause<I> defaultValue(Supplier<Expression> supplier);
+        _JsonTableOnErrorClause0<I> defaultValue(Supplier<Expression> supplier);
     }
 
 
-    interface _JsonTableOnEmptySpec<I extends Item> extends _JsonTableOnErrorClause<I>, _OnEmptyClause {
+    interface _JsonTableOnEmptySpec<I extends Item> extends _JsonTableOnErrorClause0<I>, _OnEmptyClause {
 
         @Override
         _JsonTableOnErrorActionSpec<I> onEmpty();
@@ -401,29 +401,96 @@ public interface MySQLFunction extends SQLFunction {
     }
 
 
+    interface _JsonTableOnErrorClause {
+
+        Object onError();
+
+    }
+
+
+    interface _JsonTableEventHandleClause {
+
+        _JsonTableOnErrorClause spaceNull();
+
+        _JsonTableOnErrorClause spaceDefault(Object jsonExp);
+
+        _JsonTableOnErrorClause spaceError();
+
+    }
+
+    interface _JsonTableOnEmptyClause extends _JsonTableOnErrorClause {
+
+        _JsonTableEventHandleClause onEmpty();
+
+    }
+
+
+    interface _JsonTableEmptyHandleClause extends _JsonTableEventHandleClause {
+
+
+        @Override
+        _JsonTableOnEmptyClause spaceNull();
+
+        @Override
+        _JsonTableOnEmptyClause spaceDefault(Object jsonExp);
+
+        @Override
+        _JsonTableOnEmptyClause spaceError();
+
+
+    }
+
+
     interface _JsonTableColumnCommaClause {
 
+        /**
+         * @param name          column name
+         * @param forOrdinality see {@link MySQLs#FOR_ORDINALITY}
+         */
+        _JsonTableColumnCommaClause comma(String name, SQLs.WordsForOrdinality forOrdinality);
+
+        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, Object pathExp);
+
+        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+
+        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
+
+        _JsonTableColumnCommaClause comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<_JsonTableColumnSpaceClause> consumer);
+
+        _JsonTableColumnCommaClause comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<_JsonTableColumnConsumerClause> consumer);
 
     }
 
 
     interface _JsonTableColumnSpaceClause {
 
-        _JsonTableColumnCommaClause comma(String name, SQLs.WordsForOrdinality forOrdinality);
+        _JsonTableColumnCommaClause space(String name, SQLs.WordsForOrdinality forOrdinality);
 
-        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, String strPath);
+        _JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, Expression strPath);
+        _JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
 
-        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, String strPath);
+        _JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Expression strPath);
+        _JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<_JsonTableColumnSpaceClause> consumer);
 
-        _JsonTableColumnCommaClause comma(SQLs.WordNested nested, Expression path, SQLs.WordColumns columns);
+        _JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<_JsonTableColumnConsumerClause> consumer);
 
     }
 
     interface _JsonTableColumnConsumerClause {
+
+        _JsonTableColumnConsumerClause accept(String name, SQLs.WordsForOrdinality forOrdinality);
+
+        _JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp);
+
+        _JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+
+        _JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
+
+        _JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<_JsonTableColumnSpaceClause> consumer);
+
+        _JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<_JsonTableColumnConsumerClause> consumer);
 
     }
 

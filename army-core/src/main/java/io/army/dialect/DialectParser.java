@@ -79,6 +79,8 @@ public interface DialectParser {
 
     void typeName(MappingType type, StringBuilder sqlBuilder);
 
+    void typeDef(TypeDef typeDef);
+
 
     Dialect dialect();
 

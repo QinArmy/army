@@ -8,10 +8,7 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.mapping.IntegerType;
-import io.army.mapping.LongType;
-import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
+import io.army.mapping.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLType;
@@ -19,6 +16,8 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -27,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class MySQLFunctionUtils extends FunctionUtils {
+abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
     private MySQLFunctionUtils() {
     }
@@ -140,7 +139,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
     static <I extends Item> MySQLFunction._JsonTableLeftParenClause<I> jsonTable(Function<DerivedTable, I> function) {
-        return new JsonTableFunction<>(function);
+        return new JsonTableFunction0<>(function);
     }
 
     /**
@@ -157,6 +156,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             String m = String.format("%s support only simple statement", funcName);
             throw ContextStack.criteriaError(ContextStack.peek(), m);
         }
+    }
+
+    private static MappingType mapType(final TypeDef typeDef) {
+        throw new UnsupportedOperationException();
     }
 
 
@@ -1276,7 +1279,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         List<JsonTableColumn> columnList;
 
         private JsonTableColumnsClause(CriteriaContext context) {
-            assert this instanceof JsonTableFunction;
+            assert this instanceof JsonTableFunction0;
             this.context = context;
             this.selectionConsumer = this::onAddSelect;
         }
@@ -2033,7 +2036,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
     }//JsonTableNestedColumn
 
-    static final class JsonTableFunction<R extends Item> extends JsonTableColumnsClause<R>
+    static final class JsonTableFunction0<R extends Item> extends JsonTableColumnsClause<R>
             implements TabularItem, MySQLFunction, _SelfDescribed
             , MySQLFunction._JsonTableLeftParenClause<R>
             , _DerivedTable {
@@ -2050,7 +2053,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private List<String> columnAliasList;
 
-        private JsonTableFunction(Function<DerivedTable, R> function) {
+        private JsonTableFunction0(Function<DerivedTable, R> function) {
             super(ContextStack.peek());
             this.function = function;
         }
@@ -2094,8 +2097,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof JsonTableFunction) {
-                final JsonTableFunction<?> o = (JsonTableFunction<?>) obj;
+            } else if (obj instanceof JsonTableFunction0) {
+                final JsonTableFunction0<?> o = (JsonTableFunction0<?>) obj;
                 match = Objects.equals(o.expr, this.expr)
                         && Objects.equals(o.path, this.path)
                         && Objects.equals(o.columnList, this.columnList);
@@ -2196,6 +2199,432 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
     }//JsonTableFunction
+
+
+    private static final class ColumnEventClause implements MySQLFunction._JsonTableEmptyHandleClause,
+            MySQLFunction._JsonTableOnEmptyClause, _SelfDescribed {
+
+        private Object temp;
+
+        private Object actionOnEmpty;
+
+        private Object actionOnError;
+
+        private ColumnEventClause() {
+        }
+
+        @Override
+        public ColumnEventClause spaceNull() {
+            this.temp = SQLs.NULL;
+            return this;
+        }
+
+        @Override
+        public ColumnEventClause spaceDefault(final @Nullable Object jsonExp) {
+            if (jsonExp == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            if (jsonExp instanceof Expression) {
+                this.temp = jsonExp;
+            } else {
+                this.temp = SQLs.literal(JsonType.TEXT, jsonExp);
+            }
+            return this;
+        }
+
+        @Override
+        public ColumnEventClause spaceError() {
+            this.temp = MySQLs.ERROR;
+            return this;
+        }
+
+        @Override
+        public Object onError() {
+            final Object temp = this.temp;
+            if (temp == null || this.actionOnError != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.temp = null;
+            this.actionOnError = temp;
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public ColumnEventClause onEmpty() {
+            final Object temp = this.temp;
+            if (temp == null || this.actionOnEmpty != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.temp = null;
+            this.actionOnEmpty = temp;
+            return this;
+        }
+
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            Object action;
+
+            for (int i = 0; i < 2; i++) {
+                if (i == 0) {
+                    action = this.actionOnEmpty;
+                } else {
+                    action = this.actionOnError;
+                }
+
+                if (action == null) {
+                    continue;
+                }
+
+                if (action == SQLs.NULL) {
+                    sqlBuilder.append(_Constant.SPACE_NULL);
+                } else if (action == MySQLs.ERROR) {
+                    sqlBuilder.append(MySQLs.ERROR.spaceRender());
+                } else {
+                    sqlBuilder.append(_Constant.SPACE_DEFAULT);
+                    ((ArmyExpression) action).appendSql(sqlBuilder, context);
+                }
+
+                if (i == 0) {
+                    sqlBuilder.append(" ON EMPTY");
+                } else {
+                    sqlBuilder.append(" ON ERROR");
+                }
+
+
+            } // for loop
+
+
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            Object action;
+            for (int i = 0; i < 2; i++) {
+                if (i == 0) {
+                    action = this.actionOnEmpty;
+                } else {
+                    action = this.actionOnError;
+                }
+
+                if (action == null) {
+                    continue;
+                }
+
+                if (action == SQLs.NULL) {
+                    builder.append(_Constant.SPACE_NULL);
+                } else if (action == MySQLs.ERROR) {
+                    builder.append(MySQLs.ERROR.spaceRender());
+                } else {
+                    builder.append(_Constant.SPACE_DEFAULT)
+                            .append(action);
+                }
+
+                if (i == 0) {
+                    builder.append(" ON EMPTY");
+                } else {
+                    builder.append(" ON ERROR");
+                }
+            }
+
+            return builder.toString();
+        }
+
+
+    } // ColumnEventClause
+
+
+    private static final class JsonTableOrdinalityField extends FunctionField {
+
+        private JsonTableOrdinalityField(String name) {
+            super(name, UnsignedIntegerType.INSTANCE);
+        }
+
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE);
+            context.identifier(this.name, sqlBuilder);
+            sqlBuilder.append(MySQLs.FOR_ORDINALITY.spaceRender());
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(MySQLs.FOR_ORDINALITY.spaceRender())
+                    .toString();
+        }
+
+    } // JsonTableOrdinalityField
+
+
+    private static final class JsonTablePathField extends FunctionField {
+
+        private final TypeDef typeDef;
+
+        private final boolean exists;
+
+        private final ArmyExpression pathExp;
+
+        private final ColumnEventClause eventClause;
+
+        private JsonTablePathField(String name, MappingType type, TypeDef typeDef, Expression pathExp,
+                                   @Nullable ColumnEventClause eventClause) {
+            super(name, type);
+            this.typeDef = typeDef;
+            this.exists = false;
+            this.pathExp = (ArmyExpression) pathExp;
+            this.eventClause = eventClause;
+        }
+
+        private JsonTablePathField(String name, MappingType type, TypeDef typeDef, Expression pathExp) {
+            super(name, type);
+            this.typeDef = typeDef;
+            this.exists = true;
+            this.pathExp = (ArmyExpression) pathExp;
+            this.eventClause = null;
+        }
+
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE);
+            context.identifier(this.name, sqlBuilder);
+            sqlBuilder.append(_Constant.SPACE);
+            context.parser().typeDef(this.typeDef);
+
+            if (this.exists) {
+                sqlBuilder.append(MySQLs.EXISTS.spaceRender());
+            }
+            sqlBuilder.append(MySQLs.PATH.spaceRender());
+            this.pathExp.appendSql(sqlBuilder, context);
+
+            final ColumnEventClause eventClause = this.eventClause;
+            if (eventClause != null) {
+                eventClause.appendSql(sqlBuilder, context);
+            }
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+
+            builder.append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.SPACE)
+                    .append(this.typeDef);
+
+            if (this.exists) {
+                builder.append(MySQLs.EXISTS.spaceRender());
+            }
+
+            builder.append(MySQLs.PATH.spaceRender())
+                    .append(this.pathExp);
+
+            final ColumnEventClause eventClause = this.eventClause;
+            if (eventClause != null) {
+                builder.append(eventClause);
+            }
+            return builder.toString();
+        }
+
+
+    } // JsonTablePathField
+
+
+    private static class MySQLJsonTableColumns implements MySQLFunction._JsonTableColumnSpaceClause,
+            MySQLFunction._JsonTableColumnCommaClause,
+            MySQLFunction._JsonTableColumnConsumerClause,
+            _SelfDescribed {
+
+
+        private List<FunctionField> fieldList;
+
+
+        private MySQLJsonTableColumns() {
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnCommaClause space(String name, SQLs.WordsForOrdinality forOrdinality) {
+            return comma(name, forOrdinality);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp) {
+            return comma(name, type, path, pathExp);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+            return comma(name, type, path, pathExp, consumer);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+            return comma(name, type, exists, path, pathExp);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+            return comma(nested, pathExp, columns, consumer);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+            return comma(nested, pathExp, columns, space, consumer);
+        }
+
+        @Override
+        public final MySQLJsonTableColumns comma(String name, SQLs.WordsForOrdinality forOrdinality) {
+            return addField(new JsonTableOrdinalityField(name));
+        }
+
+        @Override
+        public final MySQLJsonTableColumns comma(String name, TypeDef type, SQLs.WordPath path, final Object pathExp) {
+            return addPathField(name, type, false, pathExp, null);
+        }
+
+        @Override
+        public final MySQLJsonTableColumns comma(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+            final ColumnEventClause eventClause = new ColumnEventClause();
+            CriteriaUtils.invokeConsumer(eventClause, consumer);
+
+            return addPathField(name, type, false, pathExp, eventClause);
+        }
+
+        @Override
+        public final MySQLJsonTableColumns comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+            return addPathField(name, type, true, pathExp, null);
+        }
+
+        @Override
+        public final MySQLJsonTableColumns comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+            return null;
+        }
+
+        @Override
+        public final MySQLJsonTableColumns comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+            return this;
+        }
+
+
+        @Override
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, SQLs.WordsForOrdinality forOrdinality) {
+            return comma(name, forOrdinality);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp) {
+            return comma(name, type, path, pathExp);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+            return comma(name, type, path, pathExp, consumer);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+            return comma(name, type, exists, path, pathExp);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+            return comma(nested, pathExp, columns, consumer);
+        }
+
+        @Override
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+            return comma(nested, pathExp, columns, space, consumer);
+        }
+
+        @Override
+        public void appendSql(StringBuilder sqlBuilder, _SqlContext context) {
+
+        }
+
+
+        private MySQLJsonTableColumns addPathField(String name, TypeDef typeDef, final boolean exists,
+                                                   final Object pathExp, final @Nullable ColumnEventClause eventClause) {
+            final Expression pathExpression;
+            if (pathExp instanceof String) {
+                pathExpression = SQLs.literal(StringType.INSTANCE, pathExp);
+            } else if (pathExp instanceof Expression) {
+                pathExpression = (Expression) pathExp;
+            } else {
+                String m = String.format("pathExp must be %s or %s", String.class.getName(), Expression.class.getName());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+
+            final MappingType type;
+            type = mapType(typeDef);
+
+            final JsonTablePathField field;
+            if (exists) {
+                assert eventClause == null;
+                field = new JsonTablePathField(name, type, typeDef, pathExpression);
+            } else {
+                field = new JsonTablePathField(name, type, typeDef, pathExpression, eventClause);
+            }
+            return this.addField(field);
+        }
+
+        private MySQLJsonTableColumns addField(final FunctionField field) {
+            List<FunctionField> fieldList = this.fieldList;
+            if (fieldList == null) {
+                this.fieldList = fieldList = _Collections.arrayList();
+            } else if (!(fieldList instanceof ArrayList)) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+
+            fieldList.add(field);
+
+            return this;
+        }
+
+
+    } // MySQLJsonTableColumns
+
+
+    private static final class JsonTableFunc implements Functions._TabularFunction,
+            _DerivedTable,
+            _SelfDescribed {
+
+        private final ArmyExpression exp;
+
+        private final ArmyExpression pathExp;
+
+
+        private JsonTableFunc(Expression exp, Expression pathExp) {
+            this.exp = (ArmyExpression) exp;
+            this.pathExp = (ArmyExpression) pathExp;
+        }
+
+        @Override
+        public String name() {
+            return "JSON_TABLE";
+        }
+
+        @Nullable
+        @Override
+        public Selection refSelection(String name) {
+            return null;
+        }
+
+        @Override
+        public List<? extends Selection> refAllSelection() {
+            return null;
+        }
+
+        @Override
+        public void appendSql(StringBuilder sqlBuilder, _SqlContext context) {
+
+        }
+
+
+    } // JsonTableFunc
 
 
 }

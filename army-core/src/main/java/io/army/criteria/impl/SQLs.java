@@ -592,7 +592,11 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordExists {
+    public interface WordExists extends SQLWords {
+
+    }
+
+    public interface WordError extends SQLWords {
 
     }
 

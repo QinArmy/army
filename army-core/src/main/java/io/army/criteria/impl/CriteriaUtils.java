@@ -126,6 +126,16 @@ abstract class CriteriaUtils {
     }
 
 
+    static <T> void invokeConsumer(T data, Consumer<T> consumer) {
+        try {
+            consumer.accept(data);
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
     static List<_Expression> expressionList(final @Nullable CriteriaContext ctx, final boolean required,
                                             final Consumer<Consumer<Expression>> consumer) {
         final List<_Expression> list = _Collections.arrayList();
@@ -773,8 +783,6 @@ abstract class CriteriaUtils {
     static CriteriaException duplicateDynamicMethod(CriteriaContext context) {
         return ContextStack.criteriaError(context, "duplicate invoking dynamic method");
     }
-
-
 
 
     static CriteriaException funcColumnDuplicate(CriteriaContext context, String funcName, String columnName) {
