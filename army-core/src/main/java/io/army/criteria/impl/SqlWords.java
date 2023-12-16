@@ -205,6 +205,23 @@ abstract class SqlWords {
 
     }//KeyWordColumns
 
+
+    enum KeyWordNested implements SQLs.WordNested, SQLs.ArmyKeyWord {
+
+        NESTED;
+
+        @Override
+        public final String spaceRender() {
+            return " NESTED";
+        }
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+    } // KeyWordNested
+
     enum KeyWordExists implements SQLs.WordExists, SQLs.ArmyKeyWord {
 
         EXISTS;

@@ -67,6 +67,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     public static final SQLs.WordColumns COLUMNS = SqlWords.KeyWordColumns.COLUMNS;
 
+    public static final SQLs.WordNested NESTED = SqlWords.KeyWordNested.NESTED;
 
     public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
 

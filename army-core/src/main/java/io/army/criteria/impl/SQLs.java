@@ -588,7 +588,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordNested {
+    public interface WordNested extends SQLWords {
 
     }
 

@@ -763,6 +763,11 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(_Exceptions::notFoundMappingType, value);
     }
 
+    static CriteriaException mustExpressionOrType(String exp, Class<?> typeClass) {
+        String m = String.format("%s must be %s or %s", exp, Expression.class.getName(), typeClass.getName());
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
     static CriteriaException errorSymbol(@Nullable Object symbol) {
         return ContextStack.clearStackAndCriteriaError(String.format("error symbol %s", symbol));
     }
