@@ -1023,36 +1023,37 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /*-------------------below JSON Table Functions-------------------*/
 
-    /**
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
-     */
-    @Deprecated
-    public static MySQLFunction._JsonTableLeftParenClause<DerivedTable> jsonTable() {
-        return MySQLFunctionUtils.jsonTable(SQLs::identity);
-    }
-
 
     /**
      * <p>MySQL jsonTable function static method
      *
-     * @param expr    {@link String} (output literal) or {@link Expression}
-     * @param pathExp {@link String} (output literal) or {@link Expression}
-     *                7
+     * @param expr     {@link Expression} or the instance that {@link JsonType#TEXT} can accept,here it will output literal .
+     * @param pathExp  {@link String} (output literal) or {@link Expression}
+     * @param columns  see {@link MySQLs#COLUMNS}
+     * @param consumer the consumer can accept jsonTable static columns clause.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonTable(Object, Object, SQLs.WordColumns, SQLs.SymbolSpace, Consumer) dynamic method
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
     public static _TabularFunction jsonTable(Object expr, Object pathExp, SQLs.WordColumns columns,
                                              Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
-        throw new UnsupportedOperationException();
+
+        final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
+        tableColumns = MySQLFunctionUtils.jsonTableColumns();
+
+        CriteriaUtils.invokeConsumer(tableColumns, consumer);
+
+        return MySQLFunctionUtils.jsonTable(expr, pathExp, tableColumns);
     }
 
     /**
      * <p>MySQL jsonTable function dynamic method
      *
-     * @param expr    {@link String} (output literal) or {@link Expression}
-     * @param pathExp {@link String} (output literal) or {@link Expression}
+     * @param expr     {@link Expression} or the instance that {@link JsonType#TEXT} can accept,here it will output literal .
+     * @param pathExp  {@link String} (output literal) or {@link Expression}
+     * @param columns  see {@link MySQLs#COLUMNS}
+     * @param space    see {@link SQLs#SPACE} for distinguishing between static method and dynamic method.
+     * @param consumer the consumer can accept jsonTable dynamic columns clause.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonTable(Object, Object, SQLs.WordColumns, Consumer) static method
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
@@ -1060,7 +1061,12 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     public static _TabularFunction jsonTable(Object expr, Object pathExp, SQLs.WordColumns columns,
                                              SQLs.SymbolSpace space,
                                              Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
-        throw new UnsupportedOperationException();
+        final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
+        tableColumns = MySQLFunctionUtils.jsonTableColumns();
+
+        CriteriaUtils.invokeConsumer(tableColumns, consumer);
+
+        return MySQLFunctionUtils.jsonTable(expr, pathExp, tableColumns);
     }
 
 

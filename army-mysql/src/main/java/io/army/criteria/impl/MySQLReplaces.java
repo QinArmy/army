@@ -173,7 +173,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public MySQLReplace._ChildIntoClause<P> replace(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+        public MySQLReplace._ChildIntoClause<P> replace(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::replaceModifier);
             return this;
@@ -212,7 +212,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public MySQLReplace._PrimarySingleIntoClause<I> replace(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+        public MySQLReplace._PrimarySingleIntoClause<I> replace(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::replaceModifier);
             return this;

@@ -8,15 +8,13 @@ import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -62,7 +60,7 @@ abstract class MySQLSingleDeletes<I extends Item>
 
     private List<Hint> hintList;
 
-    private List<MySQLSyntax.Modifier> modifierList;
+    private List<MySQLs.Modifier> modifierList;
 
     private SingleTableMeta<?> deleteTable;
 
@@ -104,7 +102,7 @@ abstract class MySQLSingleDeletes<I extends Item>
 
 
     @Override
-    public final DeleteStatement._SingleDeleteFromClause<_SinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+    public final DeleteStatement._SingleDeleteFromClause<_SinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;

@@ -9,15 +9,13 @@ import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -223,7 +221,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public MySQLInsert._PrimarySingleIntoClause<I> insert(Supplier<List<Hint>> supplier, List<MySQLSyntax.Modifier> modifiers) {
+        public MySQLInsert._PrimarySingleIntoClause<I> insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
             return this;

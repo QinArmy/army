@@ -10,9 +10,6 @@ import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
@@ -20,6 +17,7 @@ import io.army.meta.TableMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -293,7 +291,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
         }
 
         @Override
-        public final _SingleUpdateSpaceClause<I> update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+        public final _SingleUpdateSpaceClause<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
             return this;

@@ -14,16 +14,16 @@ import io.army.sqltype.DataType;
  */
 public final class GeometryType extends ArmyGeometryType implements MappingType.SqlGeometryType {
 
-    public static final GeometryType TEXT_INSTANCE = new GeometryType(String.class);
+    public static final GeometryType TEXT = new GeometryType(String.class);
 
-    public static final GeometryType BINARY_INSTANCE = new GeometryType(byte[].class);
+    public static final GeometryType BINARY = new GeometryType(byte[].class);
 
     public static GeometryType from(final Class<?> javaType) {
         final GeometryType instance;
         if (javaType == String.class) {
-            instance = TEXT_INSTANCE;
+            instance = TEXT;
         } else if (javaType == byte[].class) {
-            instance = BINARY_INSTANCE;
+            instance = BINARY;
         } else {
             throw errorJavaType(GeometryType.class, javaType);
         }

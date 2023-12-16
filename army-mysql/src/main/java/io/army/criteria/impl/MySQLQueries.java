@@ -9,14 +9,12 @@ import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -1193,7 +1191,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             extends WithBuilderSelectClauseDispatcher<
             MySQLCtes,
             MySQLQuery._QueryComplexSpec<I>,
-            MySQLSyntax.Modifier,
+            MySQLs.Modifier,
             MySQLQuery._MySQLSelectCommaSpec<I>,
             MySQLQuery._FromSpec<I>>
             implements MySQLQuery._QueryWithComplexSpec<I> {

@@ -14,16 +14,16 @@ import io.army.sqltype.DataType;
  */
 public final class PointType extends ArmyGeometryType implements MappingType.SqlPointType {
 
-    public static final PointType TEXT_INSTANCE = new PointType(String.class);
+    public static final PointType TEXT = new PointType(String.class);
 
-    public static final PointType BINARY_INSTANCE = new PointType(byte[].class);
+    public static final PointType BINARY = new PointType(byte[].class);
 
     public static PointType from(final Class<?> javaType) {
         final PointType instance;
         if (javaType == String.class) {
-            instance = TEXT_INSTANCE;
+            instance = TEXT;
         } else if (javaType == byte[].class) {
-            instance = BINARY_INSTANCE;
+            instance = BINARY;
         } else {
             throw errorJavaType(PointType.class, javaType);
         }

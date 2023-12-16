@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.IPredicate;
+import io.army.criteria.LogicalPredicate;
+import io.army.criteria.SQLIdentifier;
+import io.army.criteria.SimpleExpression;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
@@ -30,287 +33,39 @@ abstract class MySQLSyntax extends MySQLFunctions {
     }
 
 
-    public interface Modifier extends Query.SelectModifier {
+    public static final MySQLs.Modifier ALL = MySQLWords.MySQLModifier.ALL;
+    public static final MySQLs.WordDistinct DISTINCT = MySQLWords.KeyWordDistinct.DISTINCT;
 
-    }
+    public static final MySQLs.Modifier DISTINCTROW = MySQLWords.MySQLModifier.DISTINCTROW;
+    public static final MySQLs.Modifier HIGH_PRIORITY = MySQLWords.MySQLModifier.HIGH_PRIORITY;
 
-    public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
+    public static final MySQLs.Modifier STRAIGHT_JOIN = MySQLWords.MySQLModifier.STRAIGHT_JOIN;
+    public static final MySQLs.Modifier SQL_SMALL_RESULT = MySQLWords.MySQLModifier.SQL_SMALL_RESULT;
+    public static final MySQLs.Modifier SQL_BIG_RESULT = MySQLWords.MySQLModifier.SQL_BIG_RESULT;
+    public static final MySQLs.Modifier SQL_BUFFER_RESULT = MySQLWords.MySQLModifier.SQL_BUFFER_RESULT;
 
-    }
+    public static final MySQLs.Modifier SQL_NO_CACHE = MySQLWords.MySQLModifier.SQL_NO_CACHE;
+    public static final MySQLs.Modifier SQL_CALC_FOUND_ROWS = MySQLWords.MySQLModifier.SQL_CALC_FOUND_ROWS;
+    public static final MySQLs.Modifier LOW_PRIORITY = MySQLWords.MySQLModifier.LOW_PRIORITY;
+    public static final MySQLs.Modifier DELAYED = MySQLWords.MySQLModifier.DELAYED;
 
-    public interface WordUsing extends SQLWords {
+    public static final MySQLs.Modifier QUICK = MySQLWords.MySQLModifier.QUICK;
+    public static final MySQLs.Modifier IGNORE = MySQLWords.MySQLModifier.IGNORE;
+    public static final MySQLs.Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
+    public static final MySQLs.Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
 
-    }
 
-    public interface WordNested extends SQLWords {
-
-    }
-
-    public interface WordExistsPath extends SQLWords {
-
-    }
-
-    public interface WordsAtTimeZone extends SQLWords {
-
-    }
-
-    public interface WordsCharacterSet extends SQLWords {
-
-    }
-
-    public interface WordsCollate extends SQLWords {
-
-    }
-
-
-    private enum MySQLModifier implements Modifier {
-
-
-        ALL(" ALL"),
-        DISTINCTROW(" DISTINCTROW"),
-
-        HIGH_PRIORITY(" HIGH_PRIORITY"),
-
-        STRAIGHT_JOIN(" STRAIGHT_JOIN"),
-
-        SQL_SMALL_RESULT(" SQL_SMALL_RESULT"),
-        SQL_BIG_RESULT(" SQL_BIG_RESULT"),
-        SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT"),
-
-        SQL_NO_CACHE(" SQL_NO_CACHE"),
-        SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS"),
-
-        LOW_PRIORITY(" LOW_PRIORITY"),
-        DELAYED(" DELAYED"),
-
-        QUICK(" QUICK"),
-        IGNORE(" IGNORE"),
-
-        CONCURRENT(" CONCURRENT"),
-        LOCAL(" LOCAL");
-
-        private final String spaceWords;
-
-        MySQLModifier(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//MySQLModifier
-
-
-    private enum KeyWordDistinct implements WordDistinct {
-
-        DISTINCT(" DISTINCT");
-
-        private final String spaceWord;
-
-        KeyWordDistinct(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//WordDistinct
-
-
-    private enum KeyWordUsing implements WordUsing {
-
-        USING(" USING");
-
-        private final String spaceWord;
-
-        KeyWordUsing(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordUsing
-
-    private enum KeyWordNested implements WordNested {
-
-        NESTED(" NESTED");
-
-        private final String spaceWord;
-
-        KeyWordNested(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordNested
-
-    private enum KeyWordExistsPath implements WordExistsPath {
-
-        EXISTS_PATH(" EXISTS PATH");
-
-        private final String spaceWord;
-
-        KeyWordExistsPath(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//KeyWordExistsPath
-
-
-    private enum KeyWordsAtTimeZone implements WordsAtTimeZone {
-
-        AT_TIME_ZONE(" AT TIME ZONE");
-
-
-        private final String spaceWord;
-
-        KeyWordsAtTimeZone(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//KeyWordsAtTimeZone
-
-    private enum KeyWordsCharacterSet implements WordsCharacterSet {
-
-        CHARACTER_SET(" CHARACTER SET");
-
-
-        private final String spaceWord;
-
-        KeyWordsCharacterSet(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordsCharacterSet
-
-    private enum KeyWordsCollate implements WordsCollate {
-
-        COLLATE(" COLLATE");
-
-
-        private final String spaceWord;
-
-        KeyWordsCollate(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordsCollate
-
-
-    public static final Modifier ALL = MySQLModifier.ALL;
-    public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
-
-    public static final Modifier DISTINCTROW = MySQLModifier.DISTINCTROW;
-    public static final Modifier HIGH_PRIORITY = MySQLModifier.HIGH_PRIORITY;
-
-    public static final Modifier STRAIGHT_JOIN = MySQLModifier.STRAIGHT_JOIN;
-    public static final Modifier SQL_SMALL_RESULT = MySQLModifier.SQL_SMALL_RESULT;
-    public static final Modifier SQL_BIG_RESULT = MySQLModifier.SQL_BIG_RESULT;
-    public static final Modifier SQL_BUFFER_RESULT = MySQLModifier.SQL_BUFFER_RESULT;
-
-    public static final Modifier SQL_NO_CACHE = MySQLModifier.SQL_NO_CACHE;
-    public static final Modifier SQL_CALC_FOUND_ROWS = MySQLModifier.SQL_CALC_FOUND_ROWS;
-    public static final Modifier LOW_PRIORITY = MySQLModifier.LOW_PRIORITY;
-    public static final Modifier DELAYED = MySQLModifier.DELAYED;
-
-    public static final Modifier QUICK = MySQLModifier.QUICK;
-    public static final Modifier IGNORE = MySQLModifier.IGNORE;
-    public static final Modifier CONCURRENT = MySQLModifier.CONCURRENT;
-    public static final Modifier LOCAL = MySQLModifier.LOCAL;
-
-
-    public static final WordUsing USING = KeyWordUsing.USING;
+    public static final MySQLs.WordUsing USING = MySQLWords.KeyWordUsing.USING;
 
 
     public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
 
     @Deprecated
-    public static final WordExistsPath EXISTS_PATH = KeyWordExistsPath.EXISTS_PATH;
+    public static final MySQLs.WordExistsPath EXISTS_PATH = MySQLWords.KeyWordExistsPath.EXISTS_PATH;
 
     public static final SQLs.WordExists EXISTS = SqlWords.KeyWordExists.EXISTS;
+
+    public static final SQLs.WordColumns COLUMNS = SqlWords.KeyWordColumns.COLUMNS;
 
 
     public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
@@ -319,16 +74,16 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     public static final SQLs.WordError ERROR = SqlWords.KeyWordError.ERROR;
 
-    public static final WordsAtTimeZone AT_TIME_ZONE = KeyWordsAtTimeZone.AT_TIME_ZONE;
+    public static final MySQLs.WordsAtTimeZone AT_TIME_ZONE = MySQLWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
 
-    public static final WordsCharacterSet CHARACTER_SET = KeyWordsCharacterSet.CHARACTER_SET;
+    public static final MySQLs.WordsCharacterSet CHARACTER_SET = MySQLWords.KeyWordsCharacterSet.CHARACTER_SET;
 
-    public static final WordsCollate COLLATE = KeyWordsCollate.COLLATE;
+    public static final MySQLs.WordsCollate COLLATE = MySQLWords.KeyWordsCollate.COLLATE;
 
 
-    public static final Expression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");
+    public static final SimpleExpression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");
 
-    public static final Expression LITERAL_all = SQLs.literal(StringType.INSTANCE, "all");
+    public static final SimpleExpression LITERAL_all = SQLs.literal(StringType.INSTANCE, "all");
 
 
     /**
@@ -620,7 +375,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
     /*-------------------below private method -------------------*/
 
 
-    private static String keyWordsToString(Enum<?> words) {
+    static String keyWordsToString(Enum<?> words) {
         return _StringUtils.builder()
                 .append(MySQLs.class.getSimpleName())
                 .append(_Constant.PERIOD)

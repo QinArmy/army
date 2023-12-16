@@ -9,12 +9,10 @@ import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -68,7 +66,7 @@ abstract class MySQLMultiUpdates<I extends Item>
 
     private List<Hint> hintList;
 
-    private List<MySQLSyntax.Modifier> modifierList;
+    private List<MySQLs.Modifier> modifierList;
 
     _TabularBlock fromCrossBlock;
 
@@ -90,7 +88,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     }
 
     @Override
-    public final _MultiUpdateSpaceClause<I> update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+    public final _MultiUpdateSpaceClause<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers) {
         this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
         return this;

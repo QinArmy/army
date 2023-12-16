@@ -189,6 +189,22 @@ abstract class SqlWords {
 
     }//KeyWordPath
 
+    enum KeyWordColumns implements SQLs.WordColumns, SQLs.ArmyKeyWord {
+
+        COLUMNS;
+
+        @Override
+        public final String spaceRender() {
+            return " COLUMNS";
+        }
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+    }//KeyWordColumns
+
     enum KeyWordExists implements SQLs.WordExists, SQLs.ArmyKeyWord {
 
         EXISTS;

@@ -11,13 +11,11 @@ import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.util._Assert;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -84,7 +82,7 @@ abstract class MySQLLoads {
         }
 
 
-        public final T loadData(MySQLSyntax.Modifier local) {
+        public final T loadData(MySQLs.Modifier local) {
             if (local != MySQLs.LOCAL) {
                 throw ContextStack.criteriaError(this.context, String.format("%s isn't %s", local, MySQLs.LOCAL));
             }
@@ -92,7 +90,7 @@ abstract class MySQLLoads {
             return THIS;
         }
 
-        public final T loadData(List<MySQLSyntax.Modifier> modifierList) {
+        public final T loadData(List<MySQLs.Modifier> modifierList) {
             if (!modifierList.contains(MySQLs.LOCAL)) {
                 String m = String.format("%s don't contains %s", modifierList, MySQLs.LOCAL);
                 throw ContextStack.criteriaError(this.context, m);

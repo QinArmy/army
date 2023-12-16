@@ -5,7 +5,6 @@ import io.army.criteria.mysql.MySQLCastType;
 import io.army.dialect.mysql.MySQLDialect;
 
 import javax.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,7 +62,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return match;
     }
 
-    static int selectModifier(final MySQLSyntax.Modifier modifier) {
+    static int selectModifier(final MySQLs.Modifier modifier) {
         final int level;
         if (modifier == MySQLs.ALL
                 || modifier == MySQLs.DISTINCT
@@ -89,7 +88,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int insertModifier(final MySQLSyntax.Modifier modifier) {
+    static int insertModifier(final MySQLs.Modifier modifier) {
         final int level;
         if (modifier == MySQLs.LOW_PRIORITY
                 || modifier == MySQLs.DELAYED
@@ -114,7 +113,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int updateModifier(final MySQLSyntax.Modifier modifier) {
+    static int updateModifier(final MySQLs.Modifier modifier) {
         final int level;
         if (modifier == MySQLs.LOW_PRIORITY) {
             level = 1;
@@ -126,7 +125,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int deleteModifier(final MySQLSyntax.Modifier modifier) {
+    static int deleteModifier(final MySQLs.Modifier modifier) {
         final int level;
         if (modifier == MySQLs.LOW_PRIORITY) {
             level = 1;
@@ -140,7 +139,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int loadDataModifier(final MySQLSyntax.Modifier modifier) {
+    static int loadDataModifier(final MySQLs.Modifier modifier) {
         final int level;
         if (modifier == MySQLs.LOW_PRIORITY
                 || modifier == MySQLs.CONCURRENT) {

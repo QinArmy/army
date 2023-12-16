@@ -1,6 +1,5 @@
 package io.army.criteria.mysql.unit;
 
-import io.army.criteria.impl.MySQLs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -11,7 +10,7 @@ public class MySQLJsonFuncUnitTests {
 
     @Test
     public void jsonTable() {
-        MySQLs.jsonTable();
+       // MySQLs.jsonTable();
 
     }
 

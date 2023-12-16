@@ -98,4 +98,35 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
+    public interface Modifier extends Query.SelectModifier {
+
+    }
+
+    public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
+
+    }
+
+    public interface WordUsing extends SQLWords {
+
+    }
+
+    public interface WordNested extends SQLWords {
+
+    }
+
+    public interface WordExistsPath extends SQLWords {
+
+    }
+
+    public interface WordsAtTimeZone extends SQLWords {
+
+    }
+
+    public interface WordsCharacterSet extends SQLWords {
+
+    }
+
+    public interface WordsCollate extends SQLWords {
+
+    }
 }

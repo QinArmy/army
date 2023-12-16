@@ -584,7 +584,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordColumns {
+    public interface WordColumns extends SQLWords {
 
     }
 

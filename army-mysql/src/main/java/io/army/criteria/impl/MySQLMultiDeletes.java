@@ -9,14 +9,12 @@ import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -96,7 +94,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
 
     @Override
     public final _MultiDeleteFromAliasClause<I> delete(Supplier<List<Hint>> hints,
-                                                       List<MySQLSyntax.Modifier> modifiers) {
+                                                       List<MySQLs.Modifier> modifiers) {
         this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return new MySQLFromAliasClause<>(this);
