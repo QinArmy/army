@@ -52,7 +52,7 @@ public final class MySqlBitType extends _ArmyNoInjectionMapping {
         } else if (targetType == BitSet.class) {
             instance = BitSetType.INSTANCE;
         } else if (targetType == byte[].class) {
-            instance = BinaryType.INSTANCE;
+            instance = VarBinaryType.INSTANCE;
         } else {
             throw noMatchCompatibleMapping(this, targetType);
         }

@@ -1,6 +1,11 @@
 package io.army.criteria;
 
-public interface TypeDef {
+/**
+ * <p>This interface is base interface of {@link io.army.sqltype.DataType} :
+ *
+ * @since 1.0
+ */
+public interface TypeDef extends TypeItem {
 
     /**
      * <p>SQL type's type name in database.

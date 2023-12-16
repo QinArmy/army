@@ -228,4 +228,61 @@ public enum MySQLType implements SqlType {
     }
 
 
+//            case BOOLEAN:
+//            case TINYINT:
+//
+//            case SMALLINT:
+//            case MEDIUMINT:
+//            case INT:
+//            case BIGINT:
+//            case DECIMAL:
+//
+//            case DOUBLE:
+//            case FLOAT:
+//
+//            case TINYINT_UNSIGNED:
+//            case SMALLINT_UNSIGNED:
+//            case MEDIUMINT_UNSIGNED:
+//            case INT_UNSIGNED:
+//            case BIGINT_UNSIGNED:
+//            case DECIMAL_UNSIGNED:
+//
+//            case TIME:
+//            case DATE:
+//            case DATETIME:
+//            case YEAR:
+//
+//            case CHAR:
+//            case VARCHAR:
+//            case TINYTEXT:
+//            case TEXT:
+//            case MEDIUMTEXT:
+//            case LONGTEXT:
+//            case JSON:
+//
+//            case SET:
+//            case ENUM:
+//
+//            case BIT:
+//
+//            case BINARY:
+//            case VARBINARY:
+//            case TINYBLOB:
+//            case BLOB:
+//            case MEDIUMBLOB:
+//            case LONGBLOB:
+//
+//            case GEOMETRY:
+//            case POINT:
+//            case LINESTRING:
+//            case POLYGON:
+//            case MULTIPOINT:
+//            case MULTIPOLYGON:
+//            case MULTILINESTRING:
+//            case GEOMETRYCOLLECTION:
+//
+//            case NULL:
+//            case UNKNOWN:
+
+
 }

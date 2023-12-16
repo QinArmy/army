@@ -3,6 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
+import io.army.criteria.TypeItem;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.mapping.optional.CompositeTypeField;
@@ -35,7 +36,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public abstract class MappingType extends MappingSupport implements TypeMeta, TypeInfer {
+public abstract class MappingType extends MappingSupport implements TypeMeta, TypeInfer, TypeItem {
 
     @Deprecated
     protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER_0 = MappingType::paramError0;
@@ -267,7 +268,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
             case BLOB:
             case LONGBLOB: {
                 if (targetType == byte[].class) {
-                    type = BinaryType.from(targetType);
+                    type = VarBinaryType.from(targetType);
                 } else { // TODO
                     throw noMatchCompatibleMapping(this, targetType);
                 }
@@ -755,11 +756,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     /**
      * <p>
      * This interface is base interface of below:
-     *     <ul>
-     *         <li>{@link SqlNumberType}</li>
-     *         <li>{@link SqlStringType}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link SqlNumberType}</li>
+     *     <li>{@link SqlStringType}</li>
+     * </ul>
      */
     public interface SqlNumberOrStringType {
 
@@ -768,11 +768,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     /**
      * <p>
      * This interface is base interface of below:
-     *     <ul>
-     *         <li>{@link SqlNumberType}</li>
-     *         <li>{@link SqlBitType}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link SqlNumberType}</li>
+     *     <li>{@link SqlBitType}</li>
+     * </ul>
      */
     public interface SqlNumberOrBitType {
 
@@ -807,11 +806,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     /**
      * <p>
      * This interface is base interface of below:
-     *     <ul>
-     *         <li>{@link SqlStringOrBinaryType }</li>
-     *         <li>{@link SqlBitType }</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link SqlStringOrBinaryType }</li>
+     *     <li>{@link SqlBitType }</li>
+     * </ul>
      */
     public interface SqlSqlStringOrBinaryOrBitType {
 
@@ -820,11 +818,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     /**
      * <p>
      * This interface is base interface of below:
-     *     <ul>
-     *         <li>{@link SqlStringType }</li>
-     *         <li>{@link SqlBinaryType }</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link SqlStringType }</li>
+     *     <li>{@link SqlBinaryType }</li>
+     * </ul>
      */
     public interface SqlStringOrBinaryType extends SqlSqlStringOrBinaryOrBitType {
 
@@ -857,11 +854,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     /**
      * <p>
      * This interface is base interface of below:
-     *     <ul>
-     *         <li>{@link SqlJsonType}</li>
-     *         <li>{@link SqlJsonbType}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link SqlJsonType}</li>
+     *     <li>{@link SqlJsonbType}</li>
+     * </ul>
      */
     public interface SqlJsonDocumentType {
 

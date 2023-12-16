@@ -1572,13 +1572,12 @@ abstract class PostgreStringFunctions extends Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link BinaryType} .
-     *
+     * The {@link MappingType} of function return type:  {@link VarBinaryType} .
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert_to ( string text, dest_encoding name ) → bytea</a>
      */
     public static SimpleExpression convertTo(Expression bytea, Expression destEncoding) {
-        return FunctionUtils.twoArgFunc("CONVERT_TO", bytea, destEncoding, BinaryType.INSTANCE);
+        return FunctionUtils.twoArgFunc("CONVERT_TO", bytea, destEncoding, VarBinaryType.INSTANCE);
     }
 
 
@@ -1595,13 +1594,13 @@ abstract class PostgreStringFunctions extends Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link BinaryType}
+     * The {@link MappingType} of function return type:  {@link VarBinaryType}
      *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">decode ( string text, format text ) → bytea</a>
      */
     public static SimpleExpression decode(Expression text, Expression format) {
-        return FunctionUtils.twoArgFunc("DECODE", text, format, BinaryType.INSTANCE);
+        return FunctionUtils.twoArgFunc("DECODE", text, format, VarBinaryType.INSTANCE);
     }
 
 

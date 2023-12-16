@@ -3,15 +3,19 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.array.BinaryArrayType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.*;
+import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PostgreType;
+import io.army.sqltype.SqlType;
 
 /**
- * <p>
- * This class is mapping class of {@code byte[]}.
-*
- * @since 1.0
+ * <p>This class map {@code byte[]} to sql binary type.
+ * <p>If you need to map varbinary ,you can use {@link VarBinaryType} instead of this class.
+ *
+ * @see VarBinaryType
  */
 public final class BinaryType extends _ArmyBuildInMapping implements MappingType.SqlBinaryType {
+
 
     public static BinaryType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
@@ -44,16 +48,10 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.VARBINARY;
+                type = MySQLType.BINARY;
                 break;
             case PostgreSQL:
                 type = PostgreType.BYTEA;
-                break;
-            case Oracle:
-                type = OracleDataType.BLOB;
-                break;
-            case H2:
-                type = H2DataType.VARBINARY;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

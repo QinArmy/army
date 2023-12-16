@@ -630,15 +630,14 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link BinaryType}
-     *
+     * The {@link MappingType} of function return type: {@link VarBinaryType}
      *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet6-aton">INET6_ATON(expr)</a>
      */
     public static SimpleExpression inet6Aton(final Expression expr) {
-        return FunctionUtils.oneArgFunc("INET6_ATON", expr, BinaryType.INSTANCE);
+        return FunctionUtils.oneArgFunc("INET6_ATON", expr, VarBinaryType.INSTANCE);
     }
 
     /**
@@ -873,26 +872,26 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link BinaryType}
+     * The {@link MappingType} of function return type: {@link VarBinaryType}
      *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid)</a>
      */
     public static SimpleExpression uuidToBin(final Expression stringUuid) {
-        return FunctionUtils.oneArgFunc("UUID_TO_BIN", stringUuid, BinaryType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UUID_TO_BIN", stringUuid, VarBinaryType.INSTANCE);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link BinaryType}
+     * The {@link MappingType} of function return type: {@link VarBinaryType}
      *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid, swap_flag)</a>
      */
     public static SimpleExpression uuidToBin(final Expression stringUuid, final Expression swapFlag) {
-        return FunctionUtils.twoArgFunc("UUID_TO_BIN", stringUuid, swapFlag, BinaryType.INSTANCE);
+        return FunctionUtils.twoArgFunc("UUID_TO_BIN", stringUuid, swapFlag, VarBinaryType.INSTANCE);
     }
 
     /**

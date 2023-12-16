@@ -9,12 +9,14 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.*;
+import io.army.mapping.mysql.MySqlBitType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLType;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -159,7 +161,139 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }
 
     private static MappingType mapType(final TypeDef typeDef) {
-        throw new UnsupportedOperationException();
+        final MySQLType dataType;
+        if (typeDef instanceof MySQLType) {
+            dataType = (MySQLType) typeDef;
+        } else if (!(typeDef instanceof TypeDefs)) {
+            throw ContextStack.clearStackAndCriteriaError("unknown TypeDef");
+        } else if (((TypeDefs) typeDef).dataType instanceof MySQLType) {
+            dataType = (MySQLType) ((TypeDefs) typeDef).dataType;
+        } else {
+            throw ContextStack.clearStackAndCriteriaError("unknown TypeDef");
+        }
+
+        final MappingType type;
+        switch (dataType) {
+            case BOOLEAN:
+                type = BooleanType.INSTANCE;
+                break;
+            case TINYINT:
+                type = ByteType.INSTANCE;
+                break;
+            case SMALLINT:
+                type = ShortType.INSTANCE;
+                break;
+            case MEDIUMINT:
+                type = MediumIntType.INSTANCE;
+                break;
+            case INT:
+                type = IntegerType.INSTANCE;
+                break;
+            case BIGINT:
+                type = LongType.INSTANCE;
+                break;
+            case DECIMAL:
+                type = BigDecimalType.INSTANCE;
+                break;
+            case DOUBLE:
+                type = DoubleType.INSTANCE;
+                break;
+            case FLOAT:
+                type = FloatType.INSTANCE;
+                break;
+
+            case TINYINT_UNSIGNED:
+                type = UnsignedByteType.INSTANCE;
+                break;
+            case SMALLINT_UNSIGNED:
+                type = UnsignedShortType.INSTANCE;
+                break;
+            case MEDIUMINT_UNSIGNED:
+                type = UnsignedMediumIntType.INSTANCE;
+                break;
+            case INT_UNSIGNED:
+                type = UnsignedIntegerType.INSTANCE;
+                break;
+            case BIGINT_UNSIGNED:
+                type = UnsignedLongType.INSTANCE;
+                break;
+            case DECIMAL_UNSIGNED:
+                type = UnsignedBigDecimalType.INSTANCE;
+                break;
+
+            case TIME:
+                type = LocalTimeType.INSTANCE;
+                break;
+            case DATE:
+                type = LocalDateType.INSTANCE;
+                break;
+            case DATETIME:
+                type = LocalDateTimeType.INSTANCE;
+                break;
+            case YEAR:
+                type = YearType.INSTANCE;
+                break;
+
+            case CHAR:
+                type = SqlCharType.INSTANCE;
+                break;
+            case VARCHAR:
+                type = StringType.INSTANCE;
+                break;
+            case TINYTEXT:
+                type = TinyTextType.INSTANCE;
+                break;
+            case TEXT:
+                type = TextType.INSTANCE;
+                break;
+            case MEDIUMTEXT:
+                type = MediumTextType.INSTANCE;
+                break;
+            case LONGTEXT:
+                type = LongText.STRING;
+                break;
+
+            case JSON:
+                type = JsonType.TEXT;
+                break;
+            case BIT:
+                type = MySqlBitType.INSTANCE;
+                break;
+
+            case BINARY:
+                type = BinaryType.INSTANCE;
+                break;
+            case VARBINARY:
+                type = VarBinaryType.INSTANCE;
+                break;
+            case TINYBLOB:
+                type = TinyBlobType.INSTANCE;
+                break;
+            case BLOB:
+                type = BlobType.INSTANCE;
+                break;
+            case MEDIUMBLOB:
+                type = MediumBlobType.INSTANCE;
+                break;
+            case LONGBLOB:
+
+            case GEOMETRY:
+            case POINT:
+            case LINESTRING:
+            case POLYGON:
+            case MULTIPOINT:
+            case MULTIPOLYGON:
+            case MULTILINESTRING:
+            case GEOMETRYCOLLECTION:
+
+            case SET:
+            case ENUM:
+            case NULL:
+            case UNKNOWN:
+            default:
+                throw ContextStack.clearStackAndCriteriaError("");
+        }
+        return type;
     }
 
 
@@ -2363,7 +2497,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
     private static final class JsonTablePathField extends FunctionField {
 
-        private final TypeDef typeDef;
+        private final TypeItem typeItem;
 
         private final boolean exists;
 
@@ -2371,18 +2505,18 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         private final ColumnEventClause eventClause;
 
-        private JsonTablePathField(String name, MappingType type, TypeDef typeDef, Expression pathExp,
+        private JsonTablePathField(String name, MappingType type, TypeItem typeItem, Expression pathExp,
                                    @Nullable ColumnEventClause eventClause) {
             super(name, type);
-            this.typeDef = typeDef;
+            this.typeItem = typeItem;
             this.exists = false;
             this.pathExp = (ArmyExpression) pathExp;
             this.eventClause = eventClause;
         }
 
-        private JsonTablePathField(String name, MappingType type, TypeDef typeDef, Expression pathExp) {
+        private JsonTablePathField(String name, MappingType type, TypeItem typeItem, Expression pathExp) {
             super(name, type);
-            this.typeDef = typeDef;
+            this.typeItem = typeItem;
             this.exists = true;
             this.pathExp = (ArmyExpression) pathExp;
             this.eventClause = null;
@@ -2393,7 +2527,16 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             sqlBuilder.append(_Constant.SPACE);
             context.identifier(this.name, sqlBuilder);
             sqlBuilder.append(_Constant.SPACE);
-            context.parser().typeDef(this.typeDef);
+
+            final TypeItem typeItem = this.typeItem;
+
+            if (typeItem instanceof MappingType) {
+                context.parser().typeName((MappingType) typeItem, sqlBuilder);
+            } else if (typeItem instanceof MySQLType) {
+                sqlBuilder.append(((MySQLType) typeItem).typeName());
+            } else {
+                ((_SelfDescribed) typeItem).appendSql(sqlBuilder, context);
+            }
 
             if (this.exists) {
                 sqlBuilder.append(MySQLs.EXISTS.spaceRender());
@@ -2414,7 +2557,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             builder.append(_Constant.SPACE)
                     .append(this.name)
                     .append(_Constant.SPACE)
-                    .append(this.typeDef);
+                    .append(this.typeItem);
 
             if (this.exists) {
                 builder.append(MySQLs.EXISTS.spaceRender());
@@ -2452,17 +2595,17 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp) {
+        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, path, pathExp);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
             return comma(name, type, path, pathExp, consumer);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, exists, path, pathExp);
         }
 
@@ -2482,12 +2625,12 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(String name, TypeDef type, SQLs.WordPath path, final Object pathExp) {
+        public final MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, final Object pathExp) {
             return addPathField(name, type, false, pathExp, null);
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public final MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
             final ColumnEventClause eventClause = new ColumnEventClause();
             CriteriaUtils.invokeConsumer(eventClause, consumer);
 
@@ -2495,7 +2638,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+        public final MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
             return addPathField(name, type, true, pathExp, null);
         }
 
@@ -2516,17 +2659,17 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp) {
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, path, pathExp);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
             return comma(name, type, path, pathExp, consumer);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, exists, path, pathExp);
         }
 
@@ -2546,7 +2689,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
 
-        private MySQLJsonTableColumns addPathField(String name, TypeDef typeDef, final boolean exists,
+        private MySQLJsonTableColumns addPathField(final String name, final TypeItem typeItem, final boolean exists,
                                                    final Object pathExp, final @Nullable ColumnEventClause eventClause) {
             final Expression pathExpression;
             if (pathExp instanceof String) {
@@ -2559,14 +2702,21 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             }
 
             final MappingType type;
-            type = mapType(typeDef);
+            if (typeItem instanceof MappingType) {
+                type = (MappingType) typeItem;
+            } else if (typeItem instanceof TypeDef) {
+                type = mapType((TypeDef) typeItem);
+            } else {
+                String m = String.format("don't support %s[%s]", TypeItem.class, ClassUtils.safeClassName(typeItem));
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
 
             final JsonTablePathField field;
             if (exists) {
                 assert eventClause == null;
-                field = new JsonTablePathField(name, type, typeDef, pathExpression);
+                field = new JsonTablePathField(name, type, typeItem, pathExpression);
             } else {
-                field = new JsonTablePathField(name, type, typeDef, pathExpression, eventClause);
+                field = new JsonTablePathField(name, type, typeItem, pathExpression, eventClause);
             }
             return this.addField(field);
         }

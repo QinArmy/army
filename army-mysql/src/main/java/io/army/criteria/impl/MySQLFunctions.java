@@ -34,7 +34,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link BinaryType}</li>
+     *          <li>If type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
@@ -48,13 +48,13 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
      *      </ul>
      *
      *
@@ -79,7 +79,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link BinaryType}</li>
+     *          <li>If type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
@@ -93,13 +93,13 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
      *      </ul>
      *
      *
@@ -277,30 +277,29 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
-     *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
-     *          <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
-     *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
-     *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
+     *     <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
+     *     <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
+     *     <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
+     *     <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
+     *     <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
+     * </ul>
      *
      * @param exp             non-null   {@link Expression}
      * @param using           {@link MySQLs#USING}
@@ -466,7 +465,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
             case Polygon:
             case MultiPolygon:
             case GeometryCollection:
-                returnType = BinaryType.INSTANCE;
+                returnType = VarBinaryType.INSTANCE;
                 break;
             case CHAR:
             case NCHAR:

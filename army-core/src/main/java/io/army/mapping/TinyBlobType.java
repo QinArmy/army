@@ -5,30 +5,22 @@ import io.army.mapping.array.MediumBlobArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
+public final class TinyBlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
 
-/**
- * <p>
- * This class is mapping class of {@code byte[]}.
- *
- * @see VarBinaryType
- * @see BlobType
- * @since 1.0
- */
-public final class MediumBlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
 
-    public static MediumBlobType from(final Class<?> fieldType) {
-        if (fieldType != byte[].class) {
-            throw errorJavaType(MediumBlobType.class, fieldType);
+    public static TinyBlobType from(final Class<?> javaType) {
+        if (javaType != byte[].class) {
+            throw errorJavaType(TinyBlobType.class, javaType);
         }
         return INSTANCE;
     }
 
-    public static final MediumBlobType INSTANCE = new MediumBlobType();
+    public static final TinyBlobType INSTANCE = new TinyBlobType();
 
     /**
      * private constructor
      */
-    private MediumBlobType() {
+    private TinyBlobType() {
     }
 
 
@@ -39,7 +31,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping implements Mapping
 
     @Override
     public LengthType lengthType() {
-        return LengthType.MEDIUM;
+        return LengthType.TINY;
     }
 
     @Override
@@ -52,7 +44,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping implements Mapping
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.MEDIUMBLOB;
+                type = MySQLType.TINYBLOB;
                 break;
             case PostgreSQL:
                 type = PostgreType.BYTEA;
@@ -94,6 +86,5 @@ public final class MediumBlobType extends _ArmyBuildInMapping implements Mapping
         }
         return (byte[]) source;
     }
-
 
 }

@@ -1,36 +1,33 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
-import io.army.mapping.array.MediumBlobArrayType;
+import io.army.mapping.array.VarBinaryArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
-
 /**
- * <p>
- * This class is mapping class of {@code byte[]}.
+ * <p>This class map {@code byte[]} to sql varbinary type.
+ * <p>If you need to map binary ,you can use {@link BinaryType} instead of this class.
  *
- * @see VarBinaryType
- * @see BlobType
- * @since 1.0
+ * @see BinaryType
  */
-public final class MediumBlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
+public final class VarBinaryType extends _ArmyBuildInMapping implements MappingType.SqlBinaryType {
 
-    public static MediumBlobType from(final Class<?> fieldType) {
+    public static VarBinaryType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
-            throw errorJavaType(MediumBlobType.class, fieldType);
+            throw errorJavaType(VarBinaryType.class, fieldType);
         }
         return INSTANCE;
     }
 
-    public static final MediumBlobType INSTANCE = new MediumBlobType();
+    public static final VarBinaryType INSTANCE = new VarBinaryType();
+
 
     /**
      * private constructor
      */
-    private MediumBlobType() {
+    private VarBinaryType() {
     }
-
 
     @Override
     public Class<?> javaType() {
@@ -39,12 +36,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping implements Mapping
 
     @Override
     public LengthType lengthType() {
-        return LengthType.MEDIUM;
-    }
-
-    @Override
-    public MappingType arrayTypeOfThis() throws CriteriaException {
-        return MediumBlobArrayType.LINEAR;
+        return LengthType.TINY;
     }
 
     @Override
@@ -52,7 +44,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping implements Mapping
         final SqlType type;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.MEDIUMBLOB;
+                type = MySQLType.VARBINARY;
                 break;
             case PostgreSQL:
                 type = PostgreType.BYTEA;
@@ -70,6 +62,18 @@ public final class MediumBlobType extends _ArmyBuildInMapping implements Mapping
         return type;
     }
 
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return VarBinaryArrayType.LINEAR;
+    }
+
+    @Override
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
+        if (targetType != String.class) {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        return StringType.INSTANCE;
+    }
 
     @Override
     public byte[] convert(MappingEnv env, Object source) throws CriteriaException {

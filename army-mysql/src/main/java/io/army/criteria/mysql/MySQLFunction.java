@@ -449,11 +449,11 @@ public interface MySQLFunction extends SQLFunction {
          */
         _JsonTableColumnCommaClause comma(String name, SQLs.WordsForOrdinality forOrdinality);
 
-        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, Object pathExp);
+        _JsonTableColumnCommaClause comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+        _JsonTableColumnCommaClause comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
 
-        _JsonTableColumnCommaClause comma(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
+        _JsonTableColumnCommaClause comma(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
 
         _JsonTableColumnCommaClause comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<_JsonTableColumnSpaceClause> consumer);
 
@@ -466,11 +466,11 @@ public interface MySQLFunction extends SQLFunction {
 
         _JsonTableColumnCommaClause space(String name, SQLs.WordsForOrdinality forOrdinality);
 
-        _JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp);
+        _JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+        _JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
 
-        _JsonTableColumnCommaClause space(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
+        _JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
 
         _JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<_JsonTableColumnSpaceClause> consumer);
 
@@ -482,11 +482,11 @@ public interface MySQLFunction extends SQLFunction {
 
         _JsonTableColumnConsumerClause accept(String name, SQLs.WordsForOrdinality forOrdinality);
 
-        _JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp);
+        _JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+        _JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
 
-        _JsonTableColumnConsumerClause accept(String name, TypeDef type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
+        _JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
 
         _JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<_JsonTableColumnSpaceClause> consumer);
 

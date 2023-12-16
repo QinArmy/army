@@ -2,9 +2,9 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.BinaryType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.VarBinaryType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -15,36 +15,35 @@ import io.army.util.ArrayUtils;
 
 
 /**
- * <p>This class is array type of {@link BinaryType}.
+ * <p>This class is array type of {@link VarBinaryType}.
  *
- * @see BinaryType
- * @see VarBinaryArrayType
+ * @see VarBinaryType
+ * @see BinaryArrayType
  * @since 1.0
  */
-public final class BinaryArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public final class VarBinaryArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
-
-    public static BinaryArrayType from(final Class<?> javaType) {
-        final BinaryArrayType instance;
+    public static VarBinaryArrayType from(final Class<?> javaType) {
+        final VarBinaryArrayType instance;
 
         if (javaType == byte[][].class) {
             instance = LINEAR;
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
         } else if (!javaType.isArray() || ArrayUtils.dimensionOf(javaType) < 2) {
-            throw errorJavaType(BinaryArrayType.class, javaType);
+            throw errorJavaType(VarBinaryArrayType.class, javaType);
         } else if (ArrayUtils.underlyingComponent(javaType) == byte.class) {
-            instance = new BinaryArrayType(javaType);
+            instance = new VarBinaryArrayType(javaType);
         } else {
-            throw errorJavaType(BinaryArrayType.class, javaType);
+            throw errorJavaType(VarBinaryArrayType.class, javaType);
         }
         return instance;
     }
 
 
-    public static final BinaryArrayType UNLIMITED = new BinaryArrayType(Object.class);
+    public static final VarBinaryArrayType UNLIMITED = new VarBinaryArrayType(Object.class);
 
-    public static final BinaryArrayType LINEAR = new BinaryArrayType(byte[][].class);
+    public static final VarBinaryArrayType LINEAR = new VarBinaryArrayType(byte[][].class);
 
 
     private final Class<?> javaType;
@@ -52,7 +51,7 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
     /**
      * private constructor
      */
-    private BinaryArrayType(Class<?> javaType) {
+    private VarBinaryArrayType(Class<?> javaType) {
         this.javaType = javaType;
     }
 
@@ -73,7 +72,7 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
         if (javaType == Object.class) { // unlimited dimension array
             instance = this;
         } else if (javaType == byte[][].class) {
-            instance = BinaryType.INSTANCE;
+            instance = VarBinaryType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -98,6 +97,7 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
                 break;
             case MySQL:
             case SQLite:
+            case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -122,6 +122,11 @@ public final class BinaryArrayType extends _ArmyBuildInMapping implements Mappin
         return PostgreArrays.arrayAfterGet(this, dataType, source, false, PostgreArrays::parseBytea,
                 ACCESS_ERROR_HANDLER);
     }
+
+
+
+
+    /*-------------------below static methods -------------------*/
 
 
 }

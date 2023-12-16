@@ -35,6 +35,13 @@ public abstract class ClassUtils {
         return present;
     }
 
+    public static boolean isAssignableFrom(String className, @Nullable ClassLoader classLoader, Class<?> target) {
+        try {
+            return Class.forName(className, false, classLoader).isAssignableFrom(target);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
 
 
     @Nullable

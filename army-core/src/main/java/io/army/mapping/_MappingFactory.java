@@ -200,7 +200,7 @@ public abstract class _MappingFactory {
         map.put(BigInteger.class, BigIntegerType::from);
 
         map.put(Boolean.class, BooleanType::from);
-        map.put(byte[].class, BinaryType::from);
+        map.put(byte[].class, VarBinaryType::from);
         map.put(String.class, StringType::from);
         map.put(LocalDateTime.class, LocalDateTimeType::from);
 
