@@ -25,10 +25,7 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -342,46 +339,6 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         return type;
     }
 
-    /**
-     * @see JsonTableFunc#appendSql(StringBuilder, _SqlContext)
-     * @see JsonTableNestedField#appendSql(StringBuilder, _SqlContext)
-     */
-    private static void appendJsonTableColumns(final List<JsonTableColumn> columnList,
-                                               final StringBuilder sqlBuilder, final _SqlContext context) {
-        sqlBuilder.append(MySQLs.COLUMNS.spaceRender())
-                .append(_Constant.LEFT_PAREN);
-
-        final int columnSize = columnList.size();
-        for (int i = 0; i < columnSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-            }
-            columnList.get(i).appendSql(sqlBuilder, context);
-        }
-
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-    }
-
-    /**
-     * @see JsonTableFunc#toString()
-     * @see JsonTableNestedField#toString()
-     */
-    private static void jsonTableColumnsToString(final List<JsonTableColumn> columnList, final StringBuilder builder) {
-
-        builder.append(MySQLs.COLUMNS.spaceRender())
-                .append(_Constant.LEFT_PAREN);
-
-        final int columnSize = columnList.size();
-        for (int i = 0; i < columnSize; i++) {
-            if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA);
-            }
-            builder.append(columnList.get(i));
-        }
-
-        builder.append(_Constant.SPACE_RIGHT_PAREN);
-    }
-
 
     private static abstract class MySQLWindowFunction extends WindowFunctionUtils.WindowFunction<MySQLWindow._PartitionBySpec>
             implements MySQLWindowFunctions._OverSpec, MySQLFunction {
@@ -397,7 +354,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             if (!(dialect instanceof MySQLDialect)) {
                 throw dialectError(dialect);
             }
-            return MySQLDialect.MySQL80.compareWith((MySQLDialect) dialect) < 0;
+            return MySQLDialect.MySQL80.compareWith(dialect) < 0;
         }
 
         @Override
@@ -1495,7 +1452,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
             this.pathExp.appendSql(sqlBuilder, context);
 
-            appendJsonTableColumns(this.columnList, sqlBuilder, context);
+            JsonTableFunc.appendJsonTableColumns(this.columnList, sqlBuilder, context);
         }
 
         @Override
@@ -1505,7 +1462,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                     .append(MySQLs.NESTED.spaceRender())
                     .append(this.pathExp);
 
-            jsonTableColumnsToString(this.columnList, builder);
+            JsonTableFunc.jsonTableColumnsToString(this.columnList, builder);
 
             return builder.toString();
         }
@@ -1580,26 +1537,22 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         @Override
         public final MySQLJsonTableColumns comma(SQLs.WordNested nested, final Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
-            final Expression pathExpression;
-            if (pathExp instanceof String) {
-                pathExpression = SQLs.literal(StringType.INSTANCE, pathExp);
-            } else if (pathExp instanceof Expression) {
-                pathExpression = (Expression) pathExp;
-            } else {
-                throw CriteriaUtils.mustExpressionOrType("path", String.class);
-            }
-
             final MySQLJsonTableColumns tableColumns;
             tableColumns = new MySQLJsonTableColumns();
 
             CriteriaUtils.invokeConsumer(tableColumns, consumer);
 
-            return addField(new JsonTableNestedField(pathExpression, tableColumns.endClause()));
+            return addField(new JsonTableNestedField(pathExpression(pathExp), tableColumns.endClause()));
         }
 
         @Override
         public final MySQLJsonTableColumns comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
-            return this;
+            final MySQLJsonTableColumns tableColumns;
+            tableColumns = new MySQLJsonTableColumns();
+
+            CriteriaUtils.invokeConsumer(tableColumns, consumer);
+
+            return addField(new JsonTableNestedField(pathExpression(pathExp), tableColumns.endClause()));
         }
 
 
@@ -1648,16 +1601,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
 
         private MySQLJsonTableColumns addPathField(final String name, final TypeItem typeItem, final boolean exists,
-                                                   final Object pathExp, final @Nullable ColumnEventClause eventClause) {
-            final Expression pathExpression;
-            if (pathExp instanceof String) {
-                pathExpression = SQLs.literal(StringType.INSTANCE, pathExp);
-            } else if (pathExp instanceof Expression) {
-                pathExpression = (Expression) pathExp;
-            } else {
-                String m = String.format("pathExp must be %s or %s", String.class.getName(), Expression.class.getName());
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
+                                                   final Object path, final @Nullable ColumnEventClause eventClause) {
+            final Expression pathExp;
+            pathExp = pathExpression(path);
 
             final MappingType type;
             if (typeItem instanceof MappingType) {
@@ -1672,9 +1618,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             final JsonTablePathField field;
             if (exists) {
                 assert eventClause == null;
-                field = new JsonTablePathField(name, type, typeItem, pathExpression);
+                field = new JsonTablePathField(name, type, typeItem, pathExp);
             } else {
-                field = new JsonTablePathField(name, type, typeItem, pathExpression, eventClause);
+                field = new JsonTablePathField(name, type, typeItem, pathExp, eventClause);
             }
             return this.addField(field);
         }
@@ -1693,6 +1639,19 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
 
+        private static Expression pathExpression(final Object path) {
+            final Expression pathExp;
+            if (path instanceof String) {
+                pathExp = SQLs.literal(StringType.INSTANCE, path);
+            } else if (path instanceof Expression) {
+                pathExp = (Expression) path;
+            } else {
+                throw CriteriaUtils.mustExpressionOrType("path", String.class);
+            }
+            return pathExp;
+        }
+
+
     } // MySQLJsonTableColumns
 
 
@@ -1708,14 +1667,25 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         private final List<JsonTableColumn> columnList;
 
+        private final List<Selection> selectionList;
+
+        private final Map<String, Selection> selectionMap;
+
         /**
          * @param columnList unmodified list
          * @see #jsonTable(Object, Object, MySQLJsonTableColumns)
          */
-        private JsonTableFunc(Expression exp, Expression pathExp, List<JsonTableColumn> columnList) {
+        private JsonTableFunc(Expression exp, Expression pathExp, final List<JsonTableColumn> columnList) {
             this.exp = (ArmyExpression) exp;
             this.pathExp = (ArmyExpression) pathExp;
             this.columnList = columnList;
+            this.selectionList = obtainSelectionList(columnList);
+            this.selectionMap = CriteriaUtils.createSelectionMap(this.selectionList);
+
+            if (this.selectionMap.size() != this.selectionList.size()) {
+                String m = String.format("%s column name duplication,please check", JSON_TABLE);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
         }
 
 
@@ -1727,12 +1697,12 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         @Nullable
         @Override
         public Selection refSelection(String name) {
-            return null;
+            return this.selectionMap.get(name);
         }
 
         @Override
         public List<? extends Selection> refAllSelection() {
-            return null;
+            return this.selectionList;
         }
 
 
@@ -1770,6 +1740,65 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
             return builder.append(_Constant.SPACE_RIGHT_PAREN)
                     .toString();
+        }
+
+        /*-------------------below static methods -------------------*/
+
+        private static List<Selection> obtainSelectionList(final List<JsonTableColumn> columnList) {
+            final int columnSize = columnList.size();
+
+            final List<Selection> selectionList = _Collections.arrayList(columnSize);
+            JsonTableColumn column;
+            for (int i = 0; i < columnSize; i++) {
+                column = columnList.get(i);
+                if (column instanceof JsonTableNestedField) {
+                    selectionList.addAll(obtainSelectionList(((JsonTableNestedField) column).columnList));
+                } else {
+                    selectionList.add((Selection) column);
+                }
+            }
+            return _Collections.unmodifiableList(selectionList);
+        }
+
+
+        /**
+         * @see #appendSql(StringBuilder, _SqlContext)
+         * @see JsonTableNestedField#appendSql(StringBuilder, _SqlContext)
+         */
+        private static void appendJsonTableColumns(final List<JsonTableColumn> columnList,
+                                                   final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(MySQLs.COLUMNS.spaceRender())
+                    .append(_Constant.LEFT_PAREN);
+
+            final int columnSize = columnList.size();
+            for (int i = 0; i < columnSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                columnList.get(i).appendSql(sqlBuilder, context);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        /**
+         * @see #toString()
+         * @see JsonTableNestedField#toString()
+         */
+        private static void jsonTableColumnsToString(final List<JsonTableColumn> columnList, final StringBuilder builder) {
+
+            builder.append(MySQLs.COLUMNS.spaceRender())
+                    .append(_Constant.LEFT_PAREN);
+
+            final int columnSize = columnList.size();
+            for (int i = 0; i < columnSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                builder.append(columnList.get(i));
+            }
+
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
 

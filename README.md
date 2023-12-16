@@ -23,6 +23,27 @@
     <artifactId>army-jdbc</artifactId>
     <version>0.6.1-SNAPSHOT</version><!--Army maven version-->
 </dependency>
+
+```
+
+###### appropriate maven module that contain domain class
+
+```xml
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+                <annotationProcessors>
+                    io.army.modelgen.ArmyMetaModelDomainProcessor
+                </annotationProcessors>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+
 ```
 
 #### Java code

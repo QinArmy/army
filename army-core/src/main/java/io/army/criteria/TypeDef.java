@@ -3,6 +3,7 @@ package io.army.criteria;
 /**
  * <p>This interface is base interface of {@link io.army.sqltype.DataType} :
  *
+ * @see io.army.criteria.impl.TypeDefs
  * @since 0.6.0
  */
 public interface TypeDef extends TypeItem {
