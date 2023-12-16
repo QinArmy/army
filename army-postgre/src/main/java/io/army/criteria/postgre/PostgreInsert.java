@@ -10,9 +10,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This interface representing postgre INSERT statement.
-*
+ *
  * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface PostgreInsert extends PostgreStatement {
 

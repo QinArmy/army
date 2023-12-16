@@ -3,7 +3,7 @@ package io.army.stmt;
 
 /**
  * @see SingleSqlStmt
- * @since 1.0
+ * @since 0.6.0
  */
 public interface PairStmt extends Stmt.PairStmtSpec {
 

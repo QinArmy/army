@@ -20,7 +20,7 @@ import java.util.function.Function;
  * </ul>
  * for reactor.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveExecutorFactoryProvider extends ExecutorFactoryProvider {
 

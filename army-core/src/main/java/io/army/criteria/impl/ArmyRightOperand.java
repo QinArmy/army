@@ -11,7 +11,7 @@ import io.army.criteria.RightOperand;
  *     </li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 interface ArmyRightOperand extends RightOperand {
 

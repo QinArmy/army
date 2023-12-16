@@ -10,9 +10,9 @@ import io.army.meta.TableMeta;
 /**
  * <p>
  * This interface representing Postgre DELETE syntax.
-*
+ *
  * @see <a href="https://www.postgresql.org/docs/current/sql-delete.html">Postgre DELETE syntax</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface PostgreDelete extends PostgreStatement {
 

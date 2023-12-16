@@ -5,6 +5,12 @@ import io.army.mapping.array.SqlCharArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
+/**
+ * <p>This class map {@link String} to sql char .
+ * <p>If you need to map varchar ,you can use {@link StringType} instead of this class.
+ *
+ * @since 0.6.0
+ */
 public final class SqlCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
 
     public static SqlCharType from(Class<?> javaType) {
@@ -73,9 +79,6 @@ public final class SqlCharType extends _ArmyBuildInMapping implements MappingTyp
     public String afterGet(DataType dataType, MappingEnv env, Object source) {
         return StringType.toString(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
-
-
-
 
 
 }

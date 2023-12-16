@@ -642,7 +642,7 @@ public abstract class _TimeUtils {
      *     <li>{@link OffsetTime#truncatedTo(TemporalUnit)}</li>
      * </ul>
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     private enum TruncatedUnit implements TemporalUnit {
 

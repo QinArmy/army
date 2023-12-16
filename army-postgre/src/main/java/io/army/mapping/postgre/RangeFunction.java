@@ -11,7 +11,7 @@ import io.army.type.DaoLayer;
  * <strong>NOTE</strong> :This interface present only in DAO layer,not service layer,business layer,web layer.
  *
  * @see PostgreSingleRangeType
- * @since 1.0
+ * @since 0.6.0
  */
 @DaoLayer
 public interface RangeFunction<T, R> {

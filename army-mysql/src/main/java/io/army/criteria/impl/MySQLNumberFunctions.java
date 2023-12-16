@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 /**
  * package class
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class MySQLNumberFunctions extends Functions {
 

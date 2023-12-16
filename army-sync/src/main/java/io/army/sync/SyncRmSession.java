@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  *     <li>{@link #isSameRm(XaTransactionSupportSpec)}</li>
  * </ul>
  * @see SyncSessionFactory
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncRmSession extends SyncSession, RmSession {
 

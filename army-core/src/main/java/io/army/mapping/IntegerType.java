@@ -25,8 +25,8 @@ import java.math.BigInteger;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Integer},if overflow,throw {@link io.army.ArmyException}
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public final class IntegerType extends _NumericType._IntegerType {
 

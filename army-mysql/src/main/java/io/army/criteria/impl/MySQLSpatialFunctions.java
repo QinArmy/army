@@ -12,8 +12,8 @@ import java.util.List;
 /**
  * <p>
  * Package class,this class provider MySQL spatial function.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 @SuppressWarnings("unused")
 abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {

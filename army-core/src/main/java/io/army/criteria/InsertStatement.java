@@ -15,12 +15,12 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This interface representing primary INSERT statement.This interface is base interface of below:
- *     <ul>
- *         <li>{@link Insert}</li>
- *         <li>{@link io.army.criteria.dialect.ReturningInsert}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link Insert}</li>
+ *     <li>{@link io.army.criteria.dialect.ReturningInsert}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface InsertStatement extends DmlStatement {
 
@@ -35,7 +35,7 @@ public interface InsertStatement extends DmlStatement {
      * ,because army don't guarantee compatibility to future distribution.
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     @Deprecated
     interface _InsertSpec extends _DmlInsertClause<InsertStatement> {
@@ -58,7 +58,7 @@ public interface InsertStatement extends DmlStatement {
      * ,because army don't guarantee compatibility to future distribution.
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _PreferLiteralClause<R> {
         R literalMode(LiteralMode mode);
@@ -66,7 +66,7 @@ public interface InsertStatement extends DmlStatement {
 
 
     /**
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _NullOptionClause<R> {
 
@@ -206,7 +206,7 @@ public interface InsertStatement extends DmlStatement {
     }
 
     /**
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _StaticColumnDefaultClause<T, R extends _ColumnDefaultClause<T>> extends _ColumnDefaultClause<T> {
 
@@ -259,7 +259,7 @@ public interface InsertStatement extends DmlStatement {
 
 
     /**
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _DomainValueClause<T, VR> {
 

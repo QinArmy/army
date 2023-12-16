@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  * <p>
  * This interface representing sql predicate in WHERE clause or HAVING clause.
  * This interface name is 'IPredicate' not 'Predicate', because of {@link java.util.function.Predicate}.
- * * @since 1.0
+ * * @since 0.6.0
  */
 public interface IPredicate extends Expression, Statement._WhereAndClause<IPredicate> {
 

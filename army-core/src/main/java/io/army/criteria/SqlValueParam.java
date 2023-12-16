@@ -6,12 +6,12 @@ import javax.annotation.Nullable;
 /**
  * <p>
  * This interface is base interface of below:
- *     <ul>
- *         <li>{@link  SQLParam}</li>
- *          <li>SQL literal expression</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link  SQLParam}</li>
+ *      <li>SQL literal expression</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface SqlValueParam extends TypeInfer {
 

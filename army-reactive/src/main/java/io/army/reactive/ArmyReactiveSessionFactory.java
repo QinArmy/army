@@ -17,7 +17,7 @@ import java.util.function.Function;
  *
  * @see ArmyReactiveLocalSession
  * @see ArmyReactiveRmSession
- * @since 1.0
+ * @since 0.6.0
  */
 final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements ReactiveSessionFactory {
 

@@ -21,7 +21,7 @@ import java.util.function.Function;
 /**
  * this class is base class of most implementation of {@link Expression}
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class OperationExpression extends OperationSQLExpression
         implements FunctionArg.SingleFunctionArg, ArmyExpression {

@@ -10,7 +10,7 @@ import java.util.function.Function;
 /**
  * <p>This interface representing blocking {@link SyncExecutor} factory.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncExecutorFactory extends ExecutorFactory, AutoCloseable {
 

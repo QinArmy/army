@@ -32,7 +32,7 @@ import java.util.function.Function;
  * <p>This class is a implementation of {@link ReactiveExecutorFactory} with jdbd spi.
  *
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
- * @since 1.0
+ * @since 0.6.0
  */
 final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements ReactiveExecutorFactory {
 

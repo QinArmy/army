@@ -28,7 +28,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is base class of the implementation of {@link MySQLQuery}:
- * * @since 1.0
+ * * @since 0.6.0
  */
 abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         I,

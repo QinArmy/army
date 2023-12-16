@@ -3,8 +3,8 @@ package io.army.session;
 /**
  * <p>
  * the handle mode to exists transaction when invoke {@code  Session.startTransaction(TransactionOption, HandleMode)}.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public enum HandleMode {
 

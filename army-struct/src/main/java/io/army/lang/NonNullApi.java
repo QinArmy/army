@@ -15,7 +15,7 @@ import java.lang.annotation.*;
  * annotations at parameter and return value level.
  * <p> reference{@code @org.springframework.lang.NonNullApi}
  *
- * @since 1.0
+ * @since 0.6.0
  */
 @Target(ElementType.PACKAGE)
 @Retention(RetentionPolicy.RUNTIME)

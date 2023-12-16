@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner._SelfDescribed;
 /**
  * <p>
  * package interface
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 interface ArmyGroupByItem extends GroupByItem, _SelfDescribed {
 

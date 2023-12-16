@@ -14,9 +14,9 @@ import java.util.function.Function;
 /**
  * <p>
  * Package class,This class hold postgre data/time function methods.
-*
+ *
  * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">Date/Time Functions</a>
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
 

@@ -32,7 +32,7 @@ import java.util.function.UnaryOperator;
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class Expressions {
 
@@ -682,7 +682,7 @@ abstract class Expressions {
      * This class is a implementation of {@link Expression}.
      * The expression consist of a left {@link Expression} ,a {@link DualBooleanOperator} and right {@link Expression}.
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     private static class DualExpression extends OperationExpression.OperationCompoundExpression {
 

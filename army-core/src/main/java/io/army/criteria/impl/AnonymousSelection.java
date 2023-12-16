@@ -5,7 +5,7 @@ import io.army.criteria.Selection;
 /**
  * package interface
  *
- * @since 1.0
+ * @since 0.6.0
  */
 interface AnonymousSelection extends Selection {
 

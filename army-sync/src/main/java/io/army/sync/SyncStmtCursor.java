@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * @see SyncStmtCursor#SYNC_STMT_CURSOR
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncStmtCursor extends StmtCursor, SyncCursor {
 

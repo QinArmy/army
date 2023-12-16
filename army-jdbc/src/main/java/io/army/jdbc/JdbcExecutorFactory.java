@@ -30,7 +30,7 @@ import java.util.function.Function;
 
 /**
  * @see JdbcExecutorFactoryProvider
- * @since 1.0
+ * @since 0.6.0
  */
 final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncExecutorFactory {
 

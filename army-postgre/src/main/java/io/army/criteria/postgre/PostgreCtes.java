@@ -5,8 +5,8 @@ import io.army.criteria.CteBuilderSpec;
 /**
  * <p>
  * This interface representing Postgre cte builder.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface PostgreCtes extends CteBuilderSpec {
 

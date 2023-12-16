@@ -3,7 +3,7 @@ package io.army.util;
 import javax.annotation.Nullable;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 public abstract class ClassUtils {
 

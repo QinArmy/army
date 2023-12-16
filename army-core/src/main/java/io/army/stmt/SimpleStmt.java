@@ -9,12 +9,12 @@ import java.util.List;
  * <p>
  * This interface representing a simple sql statement.
  * This interface have two important sub interfaces :
- *     <ul>
- *         <li>{@link GeneratedKeyStmt}</li>
- *         <li>{@link TwoStmtQueryStmt}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link GeneratedKeyStmt}</li>
+ *     <li>{@link TwoStmtQueryStmt}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface SimpleStmt extends SingleSqlStmt {
 

@@ -7,7 +7,7 @@ import io.army.dialect.Dialect;
 /**
  * package enum,This enum is designed for standard statement. For example : {@link StandardQueries}
  *
- * @since 1.0
+ * @since 0.6.0
  */
 enum StandardDialect implements Dialect {
 

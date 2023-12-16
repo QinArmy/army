@@ -34,7 +34,7 @@ import static java.lang.annotation.ElementType.FIELD;
  * see {@code io.army.generator.PreFieldGenerator} and {@code io.army.generator.FieldGenerator}
  * * @see Column
  *
- * @since 1.0
+ * @since 0.6.0
  */
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)

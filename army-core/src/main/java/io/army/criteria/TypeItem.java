@@ -7,7 +7,7 @@ package io.army.criteria;
  *     <li>{@link TypeDef}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface TypeItem {
 

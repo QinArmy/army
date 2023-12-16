@@ -26,8 +26,8 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the implementation of Postgre nested join.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 
 final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<

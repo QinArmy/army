@@ -16,8 +16,8 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is abstract implementation of {@link PostgreValues}.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimpleValues<
         I,

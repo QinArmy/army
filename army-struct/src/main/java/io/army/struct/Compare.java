@@ -4,7 +4,7 @@ package io.army.struct;
 import javax.annotation.Nonnull;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 @Deprecated
 public interface Compare<T> {

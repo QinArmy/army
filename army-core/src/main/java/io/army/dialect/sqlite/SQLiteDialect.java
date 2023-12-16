@@ -10,7 +10,7 @@ import io.army.util._StringUtils;
  * <p>This enum representing SQLite dialect version.
  *
  * @see <a href="https://www.sqlite.org/index.html">SQLite</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public enum SQLiteDialect implements Dialect {
 

@@ -10,7 +10,7 @@ import io.army.session.record.ResultStates;
  * <p>This enum is a implementation of {@link DataType} for the convenience that application get column type meta by ResultRecordMeta#getArmyType(int) .
  *
  * @see ResultRecordMeta#getArmyType(int)
- * @since 1.0
+ * @since 0.6.0
  */
 public enum ArmyType {
 

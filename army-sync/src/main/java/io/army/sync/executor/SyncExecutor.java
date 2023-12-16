@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  * <p>The instance of this interface is created by {@link SyncExecutorFactory}.
  *
  * @see SyncExecutorFactory
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
@@ -121,7 +121,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
     /**
      * <p><strong>NOTE</strong> : this interface never extends any interface.
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface LocalTransactionSpec {
 
@@ -138,7 +138,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
     /**
      * <p><strong>NOTE</strong> : this interface never extends any interface.
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface XaTransactionSpec {
 

@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import java.io.PrintWriter;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 @Deprecated
 public interface IArmyExpression {

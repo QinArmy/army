@@ -8,11 +8,11 @@ package io.army.criteria;
  *         <li>{@link BatchUpdate}</li>
  *         <li>{@link BatchDelete}</li>
  *     </ul>
-*
+ *
  * @see SimpleDqlStatement
  * @see SimpleDmlStatement
  * @see io.army.criteria.dialect.BatchDqlStatement
- * @since 1.0
+ * @since 0.6.0
  */
 public interface BatchDmlStatement extends DmlStatement {
 

@@ -2,7 +2,7 @@ package io.army.session;
 
 /**
  * @see RmSession
- * @since 1.0
+ * @since 0.6.0
  */
 public class RmSessionException extends DataAccessException {
 

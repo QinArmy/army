@@ -29,7 +29,7 @@ import java.util.function.Function;
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class CriteriaContexts {
 
@@ -1937,8 +1937,7 @@ abstract class CriteriaContexts {
      * <p>
      * This class representing multi-table dml context.
      *
-     *
-     * @since 1.0
+     * @since 0.6.0
      */
     private static abstract class MultiDmlContext extends JoinableContext {
 
@@ -3136,7 +3135,7 @@ abstract class CriteriaContexts {
      * This class is designed for codec field.
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     private static final class FieldSelectionField extends ImmutableDerivedField implements FieldSelection {
 

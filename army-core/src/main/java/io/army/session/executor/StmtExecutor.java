@@ -16,7 +16,7 @@ import io.army.session.OptionSpec;
  * but {@link io.army.session.Session} need to do that.
  *
  * @see ExecutorFactory
- * @since 1.0
+ * @since 0.6.0
  */
 public interface StmtExecutor extends OptionSpec, DriverSpiHolder {
 

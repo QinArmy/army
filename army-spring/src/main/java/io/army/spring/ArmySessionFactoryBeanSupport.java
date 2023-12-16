@@ -31,7 +31,7 @@ import java.util.function.Function;
  *     <li>{@link io.army.spring.reactive.ArmyReactiveSessionFactoryBean}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public abstract class ArmySessionFactoryBeanSupport implements InitializingBean,
         ApplicationContextAware, BeanNameAware, DisposableBean {

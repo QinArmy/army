@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  *
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/update.html">UPDATE Statement</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface MySQLUpdate extends MySQLStatement {
 
@@ -41,7 +41,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _LimitSpec<I extends Item> extends Statement._DmlRowCountLimitClause<_DmlUpdateSpec<I>>,
             _DmlUpdateSpec<I> {
@@ -64,7 +64,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_OrderByCommaSpec<I>>,
             _LimitSpec<I> {
@@ -83,7 +83,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _SingleWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_SingleWhereAndSpec<I>>,
             _OrderBySpec<I> {
@@ -97,12 +97,13 @@ public interface MySQLUpdate extends MySQLStatement {
     /**
      * <p>
      * This interface representing SET clause for single-table UPDATE syntax.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
-     * @since 1.0
+     * *
+     *
+     * @since 0.6.0
      */
     interface _SingleSetClause<I extends Item, T>
             extends UpdateStatement._StaticBatchSetClause<FieldMeta<T>, _SingleWhereSpec<I, T>>,
@@ -122,7 +123,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _SingleWhereSpec<I extends Item, T> extends _SingleWhereClause<I>, _SingleSetClause<I, T> {
 
@@ -141,7 +142,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _SingleIndexHintSpec<I extends Item, T>
             extends MySQLQuery._IndexHintForOrderByClause<_SingleIndexHintSpec<I, T>>,
@@ -195,7 +196,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _SingleWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_SingleUpdateClause<I>>,
@@ -223,7 +224,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_MultiWhereAndSpec<I>>,
             _DmlUpdateSpec<I> {
@@ -238,7 +239,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiSetClause<I extends Item> extends UpdateStatement._StaticBatchSetClause<TableField, _MultiWhereSpec<I>>,
             UpdateStatement._DynamicSetClause<UpdateStatement._BatchItemPairs<TableField>, _MultiWhereSpec<I>> {
@@ -257,7 +258,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiWhereSpec<I extends Item> extends _WhereClause<_DmlUpdateSpec<I>, _MultiWhereAndSpec<I>>,
             _MultiSetClause<I> {
@@ -278,7 +279,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiIndexHintOnSpec<I extends Item>
             extends _IndexHintForJoinClause<_MultiIndexHintOnSpec<I>>,
@@ -295,7 +296,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiPartitionOnClause<I extends Item> extends _PartitionAsClause<_MultiIndexHintOnSpec<I>> {
 
@@ -346,7 +347,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiIndexHintJoinSpec<I extends Item>
             extends _IndexHintForJoinClause<_MultiIndexHintJoinSpec<I>>,
@@ -363,7 +364,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiPartitionJoinClause<I extends Item> extends _PartitionAsClause<_MultiIndexHintJoinSpec<I>> {
 
@@ -400,7 +401,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _SimpleMultiUpdateClause<I extends Item> extends Item {
 
@@ -441,7 +442,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SimpleMultiUpdateClause<I>>,
             _MySQLStaticWithClause<_SimpleMultiUpdateClause<I>>,

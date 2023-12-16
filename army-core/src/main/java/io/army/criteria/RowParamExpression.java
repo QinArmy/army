@@ -7,7 +7,7 @@ package io.army.criteria;
  *
  * @see LiteralExpression
  * @see ParamExpression
- * @since 1.0
+ * @since 0.6.0
  */
 public interface RowParamExpression extends RowValueExpression, SQLParam {
 

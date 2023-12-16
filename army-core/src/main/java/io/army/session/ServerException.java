@@ -8,7 +8,7 @@ import java.util.function.Function;
  * <p>This class representing server error message.
  * <p>Throw(or emit) when database server response error message.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public final class ServerException extends DriverException implements OptionSpec {
 

@@ -28,8 +28,8 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is a implementation of {@link StandardQuery}.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
         I,

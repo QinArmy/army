@@ -7,8 +7,8 @@ package io.army.criteria;
  * <li>{@link Select}</li>
  * <li>{@link BatchSelect}</li>
  * </ul>
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface SelectStatement extends Query, DqlStatement {
 

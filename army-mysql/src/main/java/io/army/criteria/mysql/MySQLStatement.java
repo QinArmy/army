@@ -93,7 +93,7 @@ public interface MySQLStatement extends DialectStatement {
      *
      * @param <JT> next clause java type
      * @param <JS> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MySQLJoinClause<JT, JS> extends _JoinModifierTabularClause<JT, JS>,
             _StraightJoinModifierTabularClause<JT, JS> {
@@ -122,14 +122,13 @@ public interface MySQLStatement extends DialectStatement {
     /**
      * <p>
      * This interface representing the composite of below:
-     *     <ul>
-     *         <li>{@link _DialectJoinClause }</li>
-     *         <li>{@link  _DialectStraightJoinClause}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link _DialectJoinClause }</li>
+     *     <li>{@link  _DialectStraightJoinClause}</li>
+     * </ul>
      *
      * @param <JP> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _MySQLDialectJoinClause<JP> extends DialectStatement._DialectJoinClause<JP>,
             DialectStatement._DialectStraightJoinClause<JP> {

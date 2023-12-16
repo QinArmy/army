@@ -14,7 +14,7 @@ import java.util.List;
  *     </ul>
  * * @see PairStmt
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SingleSqlStmt extends Stmt {
 

@@ -9,8 +9,8 @@ package io.army.criteria;
  *     <li>the sql function that produce result set,for example JSON_TABLE()</li>
  *     <li>the sub INSERT/UPDATE/DELETE with RETURNING</li>
  * </ul>
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface DerivedTable extends TabularItem {
 

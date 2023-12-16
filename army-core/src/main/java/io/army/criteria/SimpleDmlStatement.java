@@ -11,11 +11,11 @@ package io.army.criteria;
  *     <li>{@link Delete}</li>
  *     <li>The dml command interface that don't return result set</li>
  * </ul>
-*
+ *
  * @see SimpleDqlStatement
  * @see BatchDmlStatement
  * @see io.army.criteria.dialect.BatchDqlStatement
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SimpleDmlStatement extends DmlStatement {
 

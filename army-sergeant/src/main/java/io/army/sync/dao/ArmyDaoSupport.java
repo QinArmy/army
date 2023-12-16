@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * <p>This interface is designed for dao layer.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ArmyDaoSupport {
 

@@ -10,7 +10,7 @@ import io.army.criteria.SubStatement;
  * @see InsertStatement
  * @see ReturningInsert
  * @see SubInsert
- * @since 1.0
+ * @since 0.6.0
  */
 @Deprecated
 public interface SubReturningInsert extends DialectStatement, Statement.DqlInsert, SubStatement {

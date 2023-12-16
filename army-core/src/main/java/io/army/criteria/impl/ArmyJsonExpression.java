@@ -5,7 +5,7 @@ import io.army.criteria.JsonExpression;
 /**
  * package interface
  *
- * @since 1.0
+ * @since 0.6.0
  */
 interface ArmyJsonExpression extends JsonExpression, ArmyExpression {
 

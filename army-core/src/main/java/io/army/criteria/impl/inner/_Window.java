@@ -6,8 +6,8 @@ import io.army.dialect.DialectParser;
 /**
  * <p>
  * This interface representing the window that can be access by army {@link DialectParser}.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface _Window extends _SelfDescribed, Window {
 

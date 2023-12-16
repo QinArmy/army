@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  * <p>This class is a implementation of {@link SyncRmSession}
  *
  * @see ArmySyncSessionFactory
- * @since 1.0
+ * @since 0.6.0
  */
 class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 

@@ -302,7 +302,7 @@ abstract class SqlWords {
      * <p>
      * package enum
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     enum BooleanTestKeyWord implements SQLs.BooleanTestWord, SQLs.ArmyKeyWord {
 

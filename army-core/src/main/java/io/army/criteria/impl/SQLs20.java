@@ -10,8 +10,8 @@ import io.army.mapping.MappingType;
 /**
  * <p>
  * This hold standard 2.0 api.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public abstract class SQLs20 {
 

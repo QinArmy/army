@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 @Deprecated
 public enum ErrorCode implements CodeEnum {

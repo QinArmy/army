@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  *     <li>other database driver spi</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncSession extends Session, Closeable {
 

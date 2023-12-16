@@ -21,8 +21,8 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class hold the implementations of standard update statement.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 
 abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>

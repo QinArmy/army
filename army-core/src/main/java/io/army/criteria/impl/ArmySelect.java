@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner._PrimaryRowSet;
 /**
  * <p>
  * This interface is package interface of {@link Select}
- * * @since 1.0
+ * * @since 0.6.0
  */
 interface ArmySelect extends Select, _PrimaryRowSet {
 

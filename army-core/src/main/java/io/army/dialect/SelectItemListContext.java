@@ -14,7 +14,7 @@ import java.util.List;
  *     </ul>
  * * <p>
  *     Package interface
- * * @since 1.0
+ * * @since 0.6.0
  */
 interface SelectItemListContext extends _SqlContext {
 

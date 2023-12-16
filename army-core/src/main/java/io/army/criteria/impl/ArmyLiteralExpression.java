@@ -25,7 +25,7 @@ import java.util.Objects;
  * @see ArmyParamExpression
  * @see ArmyRowLiteralExpression
  * @see ArmyRowParamExpression
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmyLiteralExpression extends OperationExpression.OperationSimpleExpression
         implements LiteralExpression {

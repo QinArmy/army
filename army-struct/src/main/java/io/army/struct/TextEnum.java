@@ -9,9 +9,9 @@ import java.util.Map;
  * Army will persist {@link #text()} to database table column not {@link Enum#name()}.
  * If you want to persist {@link Enum#name()},then you should use {@code io.army.mapping.NameEnumType},
  * but never persist {@link Enum#ordinal()}.
-*
+ *
  * @see CodeEnum
- * @since 1.0
+ * @since 0.6.0
  */
 public interface TextEnum {
 

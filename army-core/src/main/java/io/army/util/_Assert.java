@@ -6,7 +6,7 @@ import io.army.criteria.Statement;
 import javax.annotation.Nullable;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 public abstract class _Assert {
 

@@ -16,14 +16,14 @@ import java.util.function.*;
 /**
  * <p>
  * This interface representing query,is base interface of below:
- *     <ul>
- *         <li>{@link Select}</li>
- *         <li>{@link SubQuery}</li>
- *     </ul>
-*
+ * <ul>
+ *     <li>{@link Select}</li>
+ *     <li>{@link SubQuery}</li>
+ * </ul>
+ *
  * @see Select
  * @see SubQuery
- * @since 1.0
+ * @since 0.6.0
  */
 public interface Query extends RowSet {
 
@@ -256,7 +256,7 @@ public interface Query extends RowSet {
      *
      * @param <R> next clause java type
      * @see Statement._FromClause
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _FromTableClause<R> {
 

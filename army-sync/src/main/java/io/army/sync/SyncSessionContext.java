@@ -6,7 +6,7 @@ import io.army.session.NoCurrentSessionException;
  * <p>This interface representing current {@link SyncSession} context.
  * <p>This interface is designed for some framework,for example {@code  org.springframework.transaction.PlatformTransactionManager}
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncSessionContext {
 

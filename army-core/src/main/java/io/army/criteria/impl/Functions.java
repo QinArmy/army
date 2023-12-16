@@ -984,7 +984,7 @@ abstract class Functions {
      * private class, standard count(*) function expression
      *
      * @see #countAsterisk()
-     * @since 1.0
+     * @since 0.6.0
      */
     private static final class CountAsteriskFunction extends OperationExpression.SqlFunctionExpression {
 

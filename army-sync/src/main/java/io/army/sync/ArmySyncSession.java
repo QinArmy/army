@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  * </ul>
  * <p>This class extends {@link _ArmySession} and implements of {@link SyncSession}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 

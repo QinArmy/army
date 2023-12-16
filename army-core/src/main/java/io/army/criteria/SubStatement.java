@@ -5,7 +5,7 @@ package io.army.criteria;
  * This interface representing non-primary statement.eg: {@link SubQuery}
  * * @see PrimaryStatement
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SubStatement extends Statement {
 

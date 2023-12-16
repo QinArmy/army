@@ -96,7 +96,7 @@ import io.army.type.DaoLayer;
  *
  * @see RangeFunction
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html">Range Types</a>
- * @since 1.0
+ * @since 0.6.0
  */
 @DaoLayer
 public interface ArmyPostgreRange<T> {

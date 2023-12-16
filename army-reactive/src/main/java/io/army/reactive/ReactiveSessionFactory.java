@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
  * <p>This interface representing a reactive {@link SessionFactory}.
  * <p>The instance of this interface is created by {@link ReactiveFactoryBuilder}
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveSessionFactory extends SessionFactory, ReactiveCloseable {
 

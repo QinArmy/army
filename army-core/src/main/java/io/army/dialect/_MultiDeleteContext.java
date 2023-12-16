@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 public interface _MultiDeleteContext extends _DeleteContext, _MultiTableStmtContext {
 

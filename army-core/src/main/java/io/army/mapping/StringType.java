@@ -14,9 +14,10 @@ import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
 
 /**
- * <p>
- * This class is mapping class of {@link String}.
- * This mapping type can convert below java type:
+ * <p>This class map {@link String} to sql varchar .
+ * <p>If you need to map char ,you can use {@link SqlCharType} instead of this class.
+ *
+ * <p>This mapping type can convert below java type:
  * <ul>
  *     <li>{@link Number}</li>
  *     <li>{@link Boolean} </li>
@@ -37,10 +38,10 @@ import java.time.temporal.TemporalAmount;
  *     <li>{@link java.time.Period} </li>
  * </ul>
  *  to {@link String},if error,throw {@link io.army.ArmyException}
-*
+ *
  * @see TextType
  * @see MediumTextType
- * @since 1.0
+ * @since 0.6.0
  */
 public final class StringType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
 

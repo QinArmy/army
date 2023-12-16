@@ -17,8 +17,8 @@ import java.util.function.*;
 /**
  * <p>
  * package class
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
 abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>

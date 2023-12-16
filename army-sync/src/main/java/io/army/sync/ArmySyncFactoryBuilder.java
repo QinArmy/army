@@ -31,7 +31,7 @@ import java.util.List;
  * <p>This class is the builder of {@link ArmySyncSessionFactory}.
  *
  * @see ArmySyncSessionFactory
- * @since 1.0
+ * @since 0.6.0
  */
 final class ArmySyncFactoryBuilder
         extends _ArmyFactoryBuilder<SyncFactoryBuilder, SyncSessionFactory> implements SyncFactoryBuilder {

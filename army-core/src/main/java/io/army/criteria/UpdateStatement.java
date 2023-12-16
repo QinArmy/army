@@ -12,14 +12,14 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This interface representing primary update statement.This interface is base interface of below:
- *     <ul>
- *         <li>{@link Update}</li>
- *         <li>{@link BatchUpdate}</li>
- *         <li>{@link io.army.criteria.dialect.ReturningUpdate}</li>
- *         <li>{@link io.army.criteria.dialect.BatchReturningUpdate}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link Update}</li>
+ *     <li>{@link BatchUpdate}</li>
+ *     <li>{@link io.army.criteria.dialect.ReturningUpdate}</li>
+ *     <li>{@link io.army.criteria.dialect.BatchReturningUpdate}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface UpdateStatement extends NarrowDmlStatement {
 

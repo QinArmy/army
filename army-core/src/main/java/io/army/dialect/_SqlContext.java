@@ -13,7 +13,7 @@ import io.army.meta.TypeMeta;
  * <p>
  * This interface representing sql context,that is used by {@link  DialectParser} and the implementation of criteria api,
  * for example {@link  io.army.criteria.impl.inner._Expression}.
- * * @since 1.0
+ * * @since 0.6.0
  */
 public interface _SqlContext extends SqlContextSpec {
 

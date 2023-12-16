@@ -13,7 +13,7 @@ import io.army.stmt.Stmt;
  * </ul>
  *
  * @see Stmt#hasOptimistic()
- * @since 1.0
+ * @since 0.6.0
  */
 public final class OptimisticLockException extends DataAccessException {
 

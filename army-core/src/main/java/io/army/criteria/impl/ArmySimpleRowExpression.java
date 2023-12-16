@@ -6,7 +6,7 @@ package io.army.criteria.impl;
  *     <li></li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 interface ArmySimpleRowExpression extends ArmyRowExpression, ArmySimpleSQLExpression {
 

@@ -20,9 +20,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is base class of multi-table update implementation.
-*
+ *
  * @see SetWhereClause
- * @since 1.0
+ * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
 abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends SqlField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>

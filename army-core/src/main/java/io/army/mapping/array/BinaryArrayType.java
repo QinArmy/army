@@ -19,7 +19,7 @@ import io.army.util.ArrayUtils;
  *
  * @see BinaryType
  * @see VarBinaryArrayType
- * @since 1.0
+ * @since 0.6.0
  */
 public final class BinaryArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 

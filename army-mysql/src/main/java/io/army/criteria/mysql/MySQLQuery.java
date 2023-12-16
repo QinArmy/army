@@ -25,7 +25,7 @@ import java.util.function.Function;
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/with.html">MySQL 8.0 WITH (Common Table Expressions)</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-named-windows.html">MySQL 8.0 Named Windows</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface MySQLQuery extends Query, MySQLStatement {
 
@@ -42,7 +42,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
      *
      * @param <IO> next clause java type
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select-into.html">MySQL 5.7 SELECT ... INTO Statement</a>
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _IntoOptionClause<IO> {
 
@@ -115,8 +115,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _LockSpec<I extends Item> extends _MinLockStrengthClause<_LockOfTableSpec<I>>,
             _DynamicLockClause<_DynamicLockStrengthClause, _LockSpec<I>>,

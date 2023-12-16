@@ -16,7 +16,7 @@ import io.army.util._StringUtils;
  * @see Option#XA_STATES
  * @see RmSession
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-states.html">XA Transaction States</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public enum XaStates {
 

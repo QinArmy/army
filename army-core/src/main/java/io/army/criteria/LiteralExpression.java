@@ -5,7 +5,7 @@ package io.army.criteria;
  * This interface representing SQL literal expression.
  * * @see ParamExpression
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface LiteralExpression extends ValueExpression {
 

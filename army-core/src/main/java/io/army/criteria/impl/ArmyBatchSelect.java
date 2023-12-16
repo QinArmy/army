@@ -8,9 +8,9 @@ import io.army.criteria.impl.inner._PrimaryRowSet;
 /**
  * <p>
  * package interface
-*
+ *
  * @see ArmySelect
- * @since 1.0
+ * @since 0.6.0
  */
 interface ArmyBatchSelect extends _PrimaryRowSet, BatchSelect, _BatchStatement {
 

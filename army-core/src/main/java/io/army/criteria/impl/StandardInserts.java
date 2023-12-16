@@ -24,8 +24,8 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class representing standard value insert statement.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 abstract class StandardInserts extends InsertSupports {
 

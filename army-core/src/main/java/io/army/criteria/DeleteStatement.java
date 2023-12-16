@@ -8,14 +8,14 @@ import io.army.meta.SingleTableMeta;
 /**
  * <p>
  * This interface is base interface of below:
- *     <ul>
- *         <li>{@link Delete}</li>
- *         <li>{@link BatchDelete}</li>
- *         <li>{@link io.army.criteria.dialect.ReturningDelete}</li>
- *         <li>{@link io.army.criteria.dialect.BatchReturningDelete}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link Delete}</li>
+ *     <li>{@link BatchDelete}</li>
+ *     <li>{@link io.army.criteria.dialect.ReturningDelete}</li>
+ *     <li>{@link io.army.criteria.dialect.BatchReturningDelete}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface DeleteStatement extends NarrowDmlStatement {
 
@@ -36,7 +36,7 @@ public interface DeleteStatement extends NarrowDmlStatement {
      * /
      *
      * @param <DT> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _SingleDeleteFromClause<DT> {
 

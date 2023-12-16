@@ -5,11 +5,11 @@ package io.army.criteria.impl;
  * <p>
  * Package interface . This interface representing legal sql function argument.
  * This interface is base interface of below:
- *     <ul>
- *         <li>{@link SingleFunctionArg}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link SingleFunctionArg}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 interface FunctionArg extends ArmySQLExpression {
 
@@ -24,7 +24,7 @@ interface FunctionArg extends ArmySQLExpression {
      *     </ul>
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface SingleFunctionArg extends FunctionArg {
 

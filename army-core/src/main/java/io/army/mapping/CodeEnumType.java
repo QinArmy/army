@@ -23,7 +23,7 @@ import java.util.function.Function;
  * @see io.army.struct.CodeEnum
  * @see TextEnumType
  * @see NameEnumType
- * @since 1.0
+ * @since 0.6.0
  */
 public final class CodeEnumType extends _ArmyNoInjectionMapping {
 

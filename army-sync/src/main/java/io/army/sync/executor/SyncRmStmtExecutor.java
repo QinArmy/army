@@ -7,7 +7,7 @@ import java.util.function.Function;
 /**
  * <p>The instance of this interface is created by {@link SyncExecutorFactory#rmExecutor(String, boolean, Function)}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncRmStmtExecutor extends SyncExecutor,
         SyncExecutor.XaTransactionSpec,

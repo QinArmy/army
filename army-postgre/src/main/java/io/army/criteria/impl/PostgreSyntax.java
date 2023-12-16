@@ -18,8 +18,8 @@ import java.util.function.Function;
 /**
  * <p>
  * Package class
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 abstract class PostgreSyntax extends PostgreWindowFunctions {
 

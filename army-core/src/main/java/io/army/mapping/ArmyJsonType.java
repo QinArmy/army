@@ -12,7 +12,7 @@ import io.army.sqltype.DataType;
  *     <li>{@link JsonbType}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmyJsonType extends _ArmyBuildInMapping {
 

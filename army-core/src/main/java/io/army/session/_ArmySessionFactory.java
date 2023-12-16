@@ -30,7 +30,7 @@ import java.util.function.Function;
  *     <li>{@code io.army.sync.ArmySyncSessionFactory}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public abstract class _ArmySessionFactory implements SessionFactory {
 

@@ -13,8 +13,8 @@ import java.util.List;
 /**
  * <p>
  * This interface representing group consist of multi select list clause items.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface _SelectionGroup extends _SelectItem {
 

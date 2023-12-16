@@ -17,7 +17,7 @@ import java.util.function.Function;
  *     <li>{@link #rmExecutor(String, boolean, Function)}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveExecutorFactory extends ExecutorFactory, ReactiveCloseable {
 

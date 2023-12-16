@@ -29,7 +29,7 @@ public interface Stmt {
      * </ul>
      * *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface PairStmtSpec extends Stmt {
 

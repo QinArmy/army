@@ -37,10 +37,10 @@ import java.time.*;
  *     <li>{@link java.time.Period} </li>
  * </ul>
  *  to {@link String},if error,throw {@link io.army.ArmyException}
-*
+ *
  * @see StringType
  * @see MediumTextType
- * @since 1.0
+ * @since 0.6.0
  */
 public final class TextType extends ArmyTextType {
 

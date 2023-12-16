@@ -4,8 +4,8 @@ package io.army.criteria;
  * <p>
  * This interface representing group by item in GROUP BY clause.
  * This interface is base interface of {@link ExpressionItem}
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface GroupByItem extends Item {
 

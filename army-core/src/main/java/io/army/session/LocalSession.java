@@ -8,7 +8,7 @@ package io.army.session;
  *     <li>{@code io.army.reactive.ReactiveLocalSession}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface LocalSession extends Session {
 

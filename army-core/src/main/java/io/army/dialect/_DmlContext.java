@@ -17,8 +17,8 @@ import java.util.List;
  *         <li>{@link  _MultiUpdateContext}</li>
  *         <li>{@link  _MultiDeleteContext}</li>
  *     </ul>
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public  interface _DmlContext extends _PrimaryContext {
 

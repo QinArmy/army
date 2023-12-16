@@ -12,8 +12,8 @@ import java.time.temporal.Temporal;
 /**
  * <p>
  * package interface
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 interface RowWrapper {
 

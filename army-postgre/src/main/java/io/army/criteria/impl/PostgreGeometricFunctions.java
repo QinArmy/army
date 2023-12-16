@@ -16,7 +16,7 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * Package class,This class hold postgre geometric function methods.
- * * @since 1.0
+ * * @since 0.6.0
  */
 abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
 

@@ -16,7 +16,7 @@ import java.util.function.Function;
  * </ul>
  *
  * @see SyncSessionFactory
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncLocalSession extends SyncSession, LocalSession {
 

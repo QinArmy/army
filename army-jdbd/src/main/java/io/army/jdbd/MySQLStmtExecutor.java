@@ -25,7 +25,7 @@ import java.time.*;
 /**
  * <p>This class is MySQL {@link JdbdStmtExecutor}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 

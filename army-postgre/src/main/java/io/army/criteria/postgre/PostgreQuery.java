@@ -16,9 +16,9 @@ import java.util.function.*;
 /**
  * <p>
  * This interface representing postgre SELECT statement.
-*
+ *
  * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface PostgreQuery extends Query, PostgreStatement {
 
@@ -373,7 +373,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
      * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _StaticCteComplexCommandSpec<I extends Item>
             extends _StaticCteSelectSpec<_StaticCteSearchSpec<I>>,
@@ -396,7 +396,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
      * primary-statement syntax support static WITH clause,it's simple and clear and free
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _WithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
             _PostgreStaticWithClause<_SelectSpec<I>>,

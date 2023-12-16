@@ -10,13 +10,13 @@ import java.util.List;
 /**
  * <p>
  * Package interface,this interface is base interface of below:
- *     <ul>
- *         <li>{@link _AliasDerivedBlock}</li>
- *         <li>{@link _DerivedTable}</li>
- *         <li>{@link  _Cte}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link _AliasDerivedBlock}</li>
+ *     <li>{@link _DerivedTable}</li>
+ *     <li>{@link  _Cte}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface _SelectionMap {
 

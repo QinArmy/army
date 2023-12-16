@@ -13,7 +13,7 @@ import io.army.criteria.impl.inner._SelectionGroup;
  *
  * @see Selection
  * @see _SelectionGroup
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SelectItem extends Item {
 

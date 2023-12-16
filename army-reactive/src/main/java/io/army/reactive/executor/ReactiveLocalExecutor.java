@@ -7,7 +7,7 @@ package io.army.reactive.executor;
  * so all implementation of methods of this interface don't check whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveLocalExecutor extends ReactiveStmtExecutor, ReactiveStmtExecutor.LocalTransactionSpec {
 

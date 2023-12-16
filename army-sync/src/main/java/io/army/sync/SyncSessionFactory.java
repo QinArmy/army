@@ -13,7 +13,7 @@ import java.io.Closeable;
  * <p>The instance of this interface is created by {@link SyncFactoryBuilder}
  * <p>This interface's underlying api is {@link ExecutorFactory}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SyncSessionFactory extends SessionFactory, Closeable {
 

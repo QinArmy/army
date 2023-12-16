@@ -5,10 +5,10 @@ import io.army.meta.FieldMeta;
 /**
  * <p>
  * Package interface,this interface representing sub query context.
-*
+ *
  * @see _SelectContext
  * @see _SimpleQueryContext
- * @since 1.0
+ * @since 0.6.0
  */
 interface _SubQueryContext extends _SqlContext {
 

@@ -16,7 +16,7 @@ import java.util.List;
  * @see ResultStates#valueOf(Option)
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface StmtCursor extends Cursor {
 

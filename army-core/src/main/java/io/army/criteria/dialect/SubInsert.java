@@ -6,8 +6,8 @@ import io.army.criteria.SubStatement;
 /**
  * <p>
  * This interface representing sub insert that can present in with clause.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 @Deprecated
 public interface SubInsert extends Statement.DmlInsert, SubStatement {

@@ -6,10 +6,10 @@ import io.army.stmt.SimpleStmt;
 /**
  * <p>
  * This interface representing simple query context.
-*
+ *
  * @see _SelectContext
  * @see _SubQueryContext
- * @since 1.0
+ * @since 0.6.0
  */
 public interface _SimpleQueryContext extends _PrimaryContext, _MultiTableStmtContext, SelectItemListContext {
 

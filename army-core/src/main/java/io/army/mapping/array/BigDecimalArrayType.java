@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  * <p>This class representing the mapping that map the array of {@link BigDecimal} to database decimal array,for example {@link PostgreType#DECIMAL_ARRAY}.
  *
  * @see io.army.mapping.BigDecimalType
- * @since 1.0
+ * @since 0.6.0
  */
 public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 

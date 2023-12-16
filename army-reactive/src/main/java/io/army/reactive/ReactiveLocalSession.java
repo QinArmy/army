@@ -11,7 +11,7 @@ import java.util.function.Function;
  * <p>The instance of this interface is create by {@link ReactiveSessionFactory.LocalSessionBuilder#build()}
  *
  * @see ReactiveSessionFactory
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 

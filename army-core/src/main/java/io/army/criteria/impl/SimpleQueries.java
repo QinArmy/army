@@ -25,8 +25,8 @@ import java.util.function.*;
 /**
  * <p>
  * This class is base class of all simple SELECT query.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
 abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>

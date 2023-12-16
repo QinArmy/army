@@ -26,7 +26,7 @@ import java.math.BigInteger;
  *     <li>{@link String} , true or false ,case insensitive</li>
  * </ul>
  *  to {@link Boolean},if overflow,throw {@link io.army.ArmyException}
- ** @since 1.0
+ ** @since 0.6.0
  */
 public final class BooleanType extends _ArmyNoInjectionMapping {
 

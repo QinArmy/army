@@ -13,8 +13,8 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class is Postgre SQL syntax utils.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public abstract class Postgres extends PostgreSyntax {
 
@@ -317,7 +317,7 @@ public abstract class Postgres extends PostgreSyntax {
      * This interface not start with underscore, so this interface can present in application developer code.
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     public interface XmlTableCommaClause {
 
@@ -375,7 +375,7 @@ public abstract class Postgres extends PostgreSyntax {
      * This interface not start with underscore, so this interface can present in application developer code.
      *
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     public interface _RowsFromCommaClause {
 

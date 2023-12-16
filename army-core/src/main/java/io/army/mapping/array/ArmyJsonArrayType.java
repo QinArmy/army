@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  *     <li>{@link JsonbArrayType}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmyJsonArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 

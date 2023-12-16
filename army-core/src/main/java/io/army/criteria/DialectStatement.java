@@ -119,7 +119,7 @@ public interface DialectStatement extends Statement {
      * @param <JT> same with JT with the JT of {@link _JoinClause}
      * @param <JS> same with JT with the JS of {@link _JoinClause}
      * @see _CrossJoinClause
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _StraightJoinClause<JT, JS> {
 
@@ -155,13 +155,14 @@ public interface DialectStatement extends Statement {
     /**
      * <p>
      * This interface representing dialect join clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <JP> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _DialectJoinClause<JP> {
 
@@ -185,7 +186,7 @@ public interface DialectStatement extends Statement {
      *     *
      * @param <JP> same with the JP of {@link _DialectJoinClause}
      * @see _DialectJoinClause
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _DialectStraightJoinClause<JP> {
 
@@ -200,7 +201,7 @@ public interface DialectStatement extends Statement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _DialectCrossJoinClause<FP> {
 
@@ -218,7 +219,7 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <JC> same with the JS of {@link _JoinClause}
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _JoinCteClause<JC> {
 
@@ -286,7 +287,7 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <JS> same with the JS of {@link _JoinClause}
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _StraightJoinCteClause<JS> {
 
@@ -314,7 +315,7 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <LP> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _DialectLeftParenClause<LP> {
 
@@ -330,7 +331,7 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <R> same with the LS of {@link _NestedLeftParenClause}
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _LeftParenCteClause<R> {
 

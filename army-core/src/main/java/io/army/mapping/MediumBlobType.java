@@ -12,7 +12,7 @@ import io.army.sqltype.*;
  *
  * @see VarBinaryType
  * @see BlobType
- * @since 1.0
+ * @since 0.6.0
  */
 public final class MediumBlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
 

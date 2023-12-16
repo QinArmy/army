@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * but {@link io.army.session.Session} need to do that.
  *
  * @see ReactiveExecutorFactory
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
@@ -73,7 +73,7 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
     /**
      * <p><strong>NOTE</strong> : this interface never extends any interface.
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface LocalTransactionSpec {
 
@@ -89,7 +89,7 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
     /**
      * <p><strong>NOTE</strong> : this interface never extends any interface.
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface XaTransactionSpec {
 

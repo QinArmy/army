@@ -21,7 +21,7 @@ import io.army.criteria.standard.SQLFunction;
  *
  * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_to_record ( jsonb ) → record<br/>
  * </a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface UndoneFunction extends TabularItem, SQLFunction {
 

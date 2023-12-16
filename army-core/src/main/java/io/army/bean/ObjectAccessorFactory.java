@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 public abstract class ObjectAccessorFactory {
 

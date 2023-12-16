@@ -24,7 +24,7 @@ import java.util.Objects;
  *
  * @see ArmyRowParamExpression
  * @see ArmyRowLiteralExpression
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmyParamExpression extends OperationExpression.OperationSimpleExpression
         implements ParamExpression {

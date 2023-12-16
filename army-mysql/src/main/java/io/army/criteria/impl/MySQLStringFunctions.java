@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * package class
  *
- * @since 1.0
+ * @since 0.6.0
  */
 @SuppressWarnings("unused")
 abstract class MySQLStringFunctions extends MySQLNumberFunctions {

@@ -185,7 +185,7 @@ public interface Session extends CloseableSpec, OptionSpec {
      * /**
      * <p><strong>NOTE</strong> : this interface never extends any interface.
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface XaTransactionSupportSpec {
 

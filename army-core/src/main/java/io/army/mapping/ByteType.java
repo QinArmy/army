@@ -23,7 +23,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Byte},if overflow,throw {@link io.army.ArmyException}
- ** @since 1.0
+ ** @since 0.6.0
  */
 public final class ByteType extends _NumericType._IntegerType {
 

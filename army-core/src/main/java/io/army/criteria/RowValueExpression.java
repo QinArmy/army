@@ -8,8 +8,8 @@ package io.army.criteria;
  * <li>{@link RowLiteralExpression}</li>
  * <li>{@link RowParamExpression}</li>
  * </ul>
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface RowValueExpression extends RowExpression, SqlValueParam.MultiValue {
 

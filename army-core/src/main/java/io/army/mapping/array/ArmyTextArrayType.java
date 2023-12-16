@@ -19,7 +19,7 @@ import io.army.sqltype.DataType;
  *     <li>{@link MediumTextArrayType}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmyTextArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 

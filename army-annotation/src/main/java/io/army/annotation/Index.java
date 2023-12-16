@@ -6,7 +6,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 @Target({})
 @Retention(RUNTIME)

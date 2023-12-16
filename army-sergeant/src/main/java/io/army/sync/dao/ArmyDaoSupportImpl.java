@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * <p>This class is a abstract implementation of {@link ArmyDaoSupport}
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public abstract class ArmyDaoSupportImpl implements ArmyDaoSupport {
 

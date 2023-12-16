@@ -10,7 +10,7 @@ import java.util.function.Function;
 /**
  * <p>This interface representing the transaction info of session.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface TransactionInfo extends TransactionOption {
 

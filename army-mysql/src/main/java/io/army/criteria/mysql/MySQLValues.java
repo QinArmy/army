@@ -8,13 +8,13 @@ import io.army.criteria.Values;
 /**
  * <p>
  * This interface representing MySQL Values statement,this interface is base interface of below:
- *     <ul>
- *         <li>MySQL {@link  io.army.criteria.Values}</li>
- *         <li>MySQL {@link io.army.criteria.SubValues}</li>
- *     </ul>
-*
+ * <ul>
+ *     <li>MySQL {@link  io.army.criteria.Values}</li>
+ *     <li>MySQL {@link io.army.criteria.SubValues}</li>
+ * </ul>
+ *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface MySQLValues extends MySQLStatement, RowSet {
 

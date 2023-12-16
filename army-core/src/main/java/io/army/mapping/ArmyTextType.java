@@ -14,7 +14,7 @@ import io.army.sqltype.DataType;
  *     <li>{@link MediumTextType}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmyTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
 

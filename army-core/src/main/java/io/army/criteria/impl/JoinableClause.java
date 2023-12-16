@@ -26,8 +26,8 @@ import java.util.function.Supplier;
  *     <li>{@link UpdateStatement}</li>
  *     <li>{@link DeleteStatement}</li>
  * </ul>
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
 abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>

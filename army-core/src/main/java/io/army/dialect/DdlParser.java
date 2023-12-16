@@ -11,9 +11,9 @@ import java.util.List;
 /**
  * <p>
  * This interface representing ddl parser. The result of this interface will be used by session factory for updating schema.
-*
+ *
  * @see DialectParser#schemaDdl(_SchemaResult)
- * @since 1.0
+ * @since 0.6.0
  */
 interface DdlParser {
 

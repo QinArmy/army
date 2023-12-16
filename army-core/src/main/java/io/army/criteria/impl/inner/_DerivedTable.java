@@ -7,7 +7,7 @@ import io.army.criteria.DerivedTable;
  * <p>
  * This interface is inner interface of {@link DerivedTable}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface _DerivedTable extends DerivedTable, _SelectionMap {
 

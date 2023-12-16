@@ -23,8 +23,8 @@ import java.time.YearMonth;
  *     <li>{@link String} ,{@link YearMonth} string or {@link LocalDate} string</li>
  * </ul>
  *  to {@link YearMonth},if error,throw {@link io.army.ArmyException}
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public final class YearMonthType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 

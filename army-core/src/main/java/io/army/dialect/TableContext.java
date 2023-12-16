@@ -20,7 +20,7 @@ import java.util.Map;
 
 
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 final class TableContext {
 

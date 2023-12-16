@@ -15,7 +15,7 @@ import io.army.session.record.ResultStates;
  * @see ResultStates#valueOf(Option)
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ProcCursor extends Cursor {
 

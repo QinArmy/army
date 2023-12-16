@@ -9,7 +9,7 @@ import java.util.function.Function;
 /**
  * <p>This class is package class.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 final class ArmyXid implements Xid {
 

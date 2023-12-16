@@ -20,9 +20,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold the implementation of standard nested join
-*
+ *
  * @see StandardQueries
- * @since 1.0
+ * @since 0.6.0
  */
 final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<
         I,

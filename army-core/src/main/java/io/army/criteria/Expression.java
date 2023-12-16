@@ -18,14 +18,14 @@ import static io.army.dialect.Database.*;
 /**
  * Interface representing the sql expression, eg: column,function.
  * <p> This interface is the base interface of below"
- *     <ul>
- *         <li>{@link SimpleExpression}</li>
- *         <li>{@link CompoundExpression}</li>
- *         <li>{@link IPredicate}</li>
- *     </ul>
-*
+ * <ul>
+ *     <li>{@link SimpleExpression}</li>
+ *     <li>{@link CompoundExpression}</li>
+ *     <li>{@link IPredicate}</li>
+ * </ul>
+ *
  * @see FieldMeta
- * @since 1.0
+ * @since 0.6.0
  */
 @SuppressWarnings("unused")
 public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpdateSpec, SortItem,

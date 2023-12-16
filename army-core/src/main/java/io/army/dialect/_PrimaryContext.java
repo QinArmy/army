@@ -7,8 +7,8 @@ import io.army.stmt.Stmt;
  * <p>
  * Package interface ,This interface representing a statement context,extends {@link _SqlContext}
  * and add method for the implementation of {@link DialectParser}.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface _PrimaryContext extends _SqlContext {
 

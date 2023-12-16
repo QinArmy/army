@@ -19,7 +19,7 @@ import org.springframework.util.Assert;
 /**
  * <p>This class is Army sync local transaction manager
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public final class ArmySyncLocalTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean {
 

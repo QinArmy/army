@@ -8,8 +8,8 @@ import io.army.criteria.UpdateStatement;
 /**
  * <p>
  * This interface representing simple(non-batch) primary update statement with RETURNING clause that can return result set.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface ReturningUpdate extends UpdateStatement, SimpleDqlStatement, DialectStatement,
         Statement.DmlStatementSpec {

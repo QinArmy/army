@@ -6,12 +6,12 @@ import java.util.function.Function;
 /**
  * <p>
  * This interface The statement that can present in UNION clause,this interface is base interface of below:
- *     <ul>
- *         <li>{@link Query}</li>
- *         <li>{@link Values}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link Query}</li>
+ *     <li>{@link Values}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface RowSet extends Statement {
 

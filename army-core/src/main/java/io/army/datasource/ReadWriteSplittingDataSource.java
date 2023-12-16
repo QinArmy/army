@@ -10,7 +10,7 @@ import java.util.function.Function;
  * <p>This interface representing routing DataSource for Read/Write Splitting.
  *
  * @param <R> the java type of DataSource
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReadWriteSplittingDataSource<R> {
 

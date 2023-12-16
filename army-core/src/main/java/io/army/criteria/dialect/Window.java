@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This interface representing window that is defined by application developer in query statement.
- * * @since 1.0
+ * * @since 0.6.0
  */
 public interface Window extends Item {
 
@@ -46,13 +46,14 @@ public interface Window extends Item {
     /**
      * <p>
      * This interface representing static comma clause in WINDOW clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <CR> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _StaticWindowCommaClause<CR> {
 
@@ -70,7 +71,7 @@ public interface Window extends Item {
      *     *
      * @param <T> sub interface of {@link Builder}
      * @param <R> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _DynamicWindowClause<T extends Item, R extends Item> {
 
@@ -107,7 +108,7 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <R> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _PartitionByExpClause<R> extends _WindowSpec {
 

@@ -9,7 +9,7 @@ import io.army.criteria.TypeDef;
  *     <li>{@link ArmyType}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface DataType extends TypeDef {
 

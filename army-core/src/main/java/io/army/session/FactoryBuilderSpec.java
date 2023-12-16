@@ -21,7 +21,7 @@ import java.util.function.Function;
  *
  * @param <B> factory builder java type,it is the sub interface of this interface
  * @param <R> sync session factory or Mono
- * @since 1.0
+ * @since 0.6.0
  */
 public interface FactoryBuilderSpec<B, R> {
 

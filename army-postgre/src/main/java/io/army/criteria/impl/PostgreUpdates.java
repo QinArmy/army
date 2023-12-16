@@ -32,8 +32,8 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is a abstract implementation of {@link PostgreUpdate}.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         extends JoinableUpdate<

@@ -28,7 +28,7 @@ import static io.army.dialect.Database.*;
  *     <li>{@link SubQuery}</li>
  *     <li>{@link Values}</li>
  * </ul>
- ** @since 1.0
+ ** @since 0.6.0
  */
 public interface Statement extends Item {
 
@@ -222,7 +222,7 @@ public interface Statement extends Item {
      * *
      *
      * @param <AR> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _AsClause<AR> extends Item {
 
@@ -248,13 +248,14 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing bind params clause for batch update(delete).
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <R> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _BatchParamClause<R extends Item> extends Item {
 
@@ -296,7 +297,7 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <RR> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _RightParenClause<RR> extends Item {
 
@@ -314,7 +315,7 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <OR> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _OnClause<OR> extends Item {
 
@@ -343,7 +344,7 @@ public interface Statement extends Item {
      *     *
      * @param <FT> next clause java type
      * @param <FS> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _FromClause<FT, FS> extends Item {
 
@@ -385,7 +386,7 @@ public interface Statement extends Item {
      *     *
      * @param <R> same with the FS of {@link _FromClause}
      * @see _FromClause
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _FromCteClause<R> {
 
@@ -424,7 +425,7 @@ public interface Statement extends Item {
      *     *
      * @param <FT> next clause java type
      * @param <FS> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _UsingItemClause<FT, FS> extends Item {
 
@@ -465,7 +466,7 @@ public interface Statement extends Item {
      *     *
      * @param <FC> same with the FS of {@link _FromClause}
      * @see _FromClause
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _UsingCteClause<FC> {
 
@@ -505,7 +506,7 @@ public interface Statement extends Item {
      * @param <JT> next clause java type,it's sub interface of {@link _OnClause}
      * @param <JS> next clause java type,it's sub interface of {@link _OnClause}
      * @see _CrossJoinClause
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _JoinClause<JT, JS> extends Item {
 
@@ -601,7 +602,7 @@ public interface Statement extends Item {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _CrossJoinClause<FT, FS> {
 
@@ -694,7 +695,7 @@ public interface Statement extends Item {
      *     *
      * @param <LT> next clause java type
      * @param <LS> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _NestedLeftParenClause<LT, LS> extends Item {
 
@@ -816,7 +817,7 @@ public interface Statement extends Item {
      *     *
      * @param <WR> next clause java type
      * @param <WA> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _WhereClause<WR, WA> extends _MinWhereClause<WR, WA> {
 
@@ -921,7 +922,7 @@ public interface Statement extends Item {
      *     *
      * @param <WR> next clause java type
      * @param <WA> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _QueryWhereClause<WR, WA> extends _WhereClause<WR, WA>, _MinQueryWhereClause<WR, WA> {
 
@@ -948,7 +949,7 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      *     *
      * @param <WA> next clause java type
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _WhereAndClause<WA> extends _MinWhereAndClause<WA> {
 
@@ -1082,7 +1083,7 @@ public interface Statement extends Item {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     @Deprecated
     interface _StaticOrderByClause0<OR> extends Item {
@@ -1160,7 +1161,7 @@ public interface Statement extends Item {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *     *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface _RowCountLimitClause<R> extends Item {
 
@@ -1657,7 +1658,7 @@ public interface Statement extends Item {
      *     <li>{@link SubUpdate}</li>
      * </ul>
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     interface DmlUpdate {
 
@@ -1671,7 +1672,7 @@ public interface Statement extends Item {
      *     <li>{@link SubDelete}</li>
      * </ul>
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     @Deprecated
     interface DmlDelete {
@@ -1691,7 +1692,7 @@ public interface Statement extends Item {
      *     <li>{@link InsertStatement}</li>
      * </ul>
      *
-     * @since 1.0
+     * @since 0.6.0
      */
     @Deprecated
     interface DmlInsert extends Item {

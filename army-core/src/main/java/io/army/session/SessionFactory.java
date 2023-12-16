@@ -18,7 +18,7 @@ import java.util.Map;
  *     <li>{@code io.army.reactive.ReactiveSessionFactory}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface SessionFactory extends CloseableSpec {
 

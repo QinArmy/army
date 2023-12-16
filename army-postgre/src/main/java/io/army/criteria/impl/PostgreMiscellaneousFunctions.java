@@ -17,8 +17,8 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * package class.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 

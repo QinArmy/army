@@ -14,8 +14,8 @@ import java.util.Objects;
 /**
  * <p>
  * Package class ,This class is MySQL function utils for application developer.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 @SuppressWarnings("unused")
 abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {

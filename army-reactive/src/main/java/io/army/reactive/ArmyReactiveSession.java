@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * </ul>
  * <p>This class extends {@link _ArmySession} and implements of {@link ReactiveSession}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSession {
 

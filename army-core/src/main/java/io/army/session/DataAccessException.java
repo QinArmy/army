@@ -11,7 +11,7 @@ package io.army.session;
  * are  important sub-class
  *
  * @see DriverException
- * @since 1.0
+ * @since 0.6.0
  */
 public class DataAccessException extends SessionException {
 

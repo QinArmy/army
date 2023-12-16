@@ -9,7 +9,7 @@ import io.army.session.SessionFactory;
  * Interface representing the environment in which Army is running.
  *
  * @see SessionFactory
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ArmyEnvironment {
 

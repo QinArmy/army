@@ -9,7 +9,7 @@ import io.army.criteria.UpdateStatement;
  * statement with RETURNING clause.
  * * @see BatchReturningDelete
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface BatchReturningUpdate extends BatchDqlStatement, UpdateStatement {
 

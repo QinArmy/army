@@ -8,12 +8,12 @@ import io.army.criteria.SubQuery;
 /**
  * <p>
  * This class is a abstract implementation of {@link io.army.criteria.SQLExpression}. This class is base class of :
- *     <ul>
- *         <li>{@link OperationExpression}</li>
- *         <li>{@link OperationRowExpression}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link OperationExpression}</li>
+ *     <li>{@link OperationRowExpression}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 abstract class OperationSQLExpression implements ArmySQLExpression {
 

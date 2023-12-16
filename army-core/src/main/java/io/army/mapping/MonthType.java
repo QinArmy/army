@@ -27,8 +27,8 @@ import java.util.concurrent.ConcurrentMap;
  *     <li>{@link String} , {@link Month#name()} or {@link LocalDate} string</li>
  * </ul>
  *  to {@link Month},if error,throw {@link io.army.ArmyException}
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public class MonthType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalFieldType {
 

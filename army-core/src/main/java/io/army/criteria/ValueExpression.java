@@ -10,7 +10,7 @@ package io.army.criteria;
  * </ul>
  * * @see RowValueExpression
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ValueExpression extends SimpleExpression, SqlValueParam.SingleValue {
 

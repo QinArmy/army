@@ -6,7 +6,7 @@ import io.army.criteria.RowExpression;
 /**
  * <p>
  * Package interface and must be package interface.
- * * @since 1.0
+ * * @since 0.6.0
  */
 interface ArmyRowExpression extends ArmySQLExpression, RowExpression, FunctionArg.SingleFunctionArg {
 

@@ -27,7 +27,7 @@ import java.util.function.Function;
  *     <li>{@link #createFactory(ExecutorEnv)}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ExecutorFactoryProvider {
 

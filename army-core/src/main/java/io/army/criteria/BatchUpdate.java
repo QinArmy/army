@@ -6,7 +6,7 @@ package io.army.criteria;
  * This interface representing batch primary UPDATE statement that don't return result set.
  * * @see BatchDelete
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface BatchUpdate extends BatchDmlStatement, UpdateStatement {
 

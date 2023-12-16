@@ -22,8 +22,8 @@ import java.time.ZonedDateTime;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link OffsetTime},if error,throw {@link io.army.ArmyException}
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public final class OffsetTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlOffsetTimeType {
 

@@ -5,7 +5,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This interface representing ROW constructor of VALUES statement.
- * * @since 1.0
+ * * @since 0.6.0
  */
 public interface ValuesRowConstructor {
 

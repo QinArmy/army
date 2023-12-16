@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @see ReactiveFactoryBuilder#builder()
  * @see ArmyReactiveSessionFactory#create(ArmyReactiveFactorBuilder)
- * @since 1.0
+ * @since 0.6.0
  */
 final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactoryBuilder, Mono<ReactiveSessionFactory>>
         implements ReactiveFactoryBuilder {

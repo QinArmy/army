@@ -14,12 +14,12 @@ import java.util.Map;
 /**
  * <p>
  * This class is base class of below:
- *     <ul>
- *         <li>{@link MultiUpdateContext}</li>
- *         <li>{@link MultiDeleteContext}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link MultiUpdateContext}</li>
+ *     <li>{@link MultiDeleteContext}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 abstract class MultiTableDmlContext extends NarrowDmlStmtContext implements _MultiTableStmtContext {
 

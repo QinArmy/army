@@ -12,7 +12,7 @@ import io.army.criteria.impl.SQLs;
  *     <li>other custom method</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 @FunctionalInterface
 public interface TeNamedOperator<E extends Expression> {

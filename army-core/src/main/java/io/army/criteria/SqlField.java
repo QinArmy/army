@@ -7,13 +7,13 @@ import java.util.function.BiFunction;
 /**
  * <p>
  * This interface is base interface of below:
- *     <ul>
- *         <li>{@link TableField}</li>
- *         <li>{@link DerivedField}</li>
- *         <li>{@link DerivedField}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link TableField}</li>
+ *     <li>{@link DerivedField}</li>
+ *     <li>{@link DerivedField}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface SqlField extends NamedExpression {
 

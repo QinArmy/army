@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner._DerivedTable;
 /**
  * <p>
  * This interface is package interface of {@link SubValues}
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 interface ArmySubValues extends SubValues, _DerivedTable {
 

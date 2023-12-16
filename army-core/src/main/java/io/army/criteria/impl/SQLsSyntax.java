@@ -17,9 +17,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * Package class,this class is base class of {@link SQLs}.
-*
+ *
  * @see SQLs
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class SQLsSyntax extends Functions {
 

@@ -6,13 +6,13 @@ import io.army.meta.FieldMeta;
 /**
  * <p>
  * This interface is base interface of following:
- *     <ul>
- *         <li>{@link _SqlContext}</li>
- *         <li>{@link _MultiTableContext}</li>
- *     </ul>
- *     declare common method.
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link _SqlContext}</li>
+ *     <li>{@link _MultiTableContext}</li>
+ * </ul>
+ * declare common method.
+ *
+ * @since 0.6.0
  */
 interface SqlContextSpec {
 

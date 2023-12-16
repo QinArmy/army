@@ -9,7 +9,7 @@ import io.army.meta.*;
 /**
  * <p>
  * This interface representing standard update statement.
- * * @since 1.0
+ * * @since 0.6.0
  */
 public interface StandardUpdate extends StandardStatement {
 

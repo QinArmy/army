@@ -23,8 +23,8 @@ import java.time.LocalTime;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link LocalTime},if overflow,throw {@link io.army.ArmyException}
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public final class LocalTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalTimeType {
 

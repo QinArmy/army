@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class hold tsvectory/ tsquery/xml /json/jsonb function method.
- * * @since 1.0
+ * * @since 0.6.0
  */
 //@SuppressWarnings("unused")
 abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {

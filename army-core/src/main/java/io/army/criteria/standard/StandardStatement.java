@@ -9,7 +9,7 @@ import io.army.criteria.Statement;
  * * @see StandardQuery
  *
  * @see StandardInsert
- * @since 1.0
+ * @since 0.6.0
  */
 public interface StandardStatement extends Statement {
 

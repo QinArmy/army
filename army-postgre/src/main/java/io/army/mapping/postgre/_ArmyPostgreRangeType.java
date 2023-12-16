@@ -34,13 +34,13 @@ import java.util.function.Function;
 /**
  * <p>
  * Package class This class is base class of below:
- *     <ul>
- *         <li>{@link PostgreRangeType}</li>
- *         <li>{@link PostgreSingleRangeArrayType}</li>
- *         <li>{@link PostgreMultiRangeArrayType}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link PostgreRangeType}</li>
+ *     <li>{@link PostgreSingleRangeArrayType}</li>
+ *     <li>{@link PostgreMultiRangeArrayType}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
 

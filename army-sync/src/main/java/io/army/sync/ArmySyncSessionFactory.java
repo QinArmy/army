@@ -15,7 +15,7 @@ import java.util.function.Function;
 /**
  * <p>This class is a implementation of {@link SyncSessionFactory}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSessionFactory {
 

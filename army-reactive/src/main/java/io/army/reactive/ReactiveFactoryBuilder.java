@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
  * <p>This interface representing the builder of {@link ReactiveSessionFactory}.
  * <p>The instance of This interface is created by {@link #builder()}.
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveFactoryBuilder extends FactoryBuilderSpec<ReactiveFactoryBuilder, Mono<ReactiveSessionFactory>> {
 

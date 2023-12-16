@@ -39,7 +39,7 @@ import java.time.*;
  *  to {@link String},if error,throw {@link io.army.ArmyException}
  ** @see StringType
  * @see TextType
- * @since 1.0
+ * @since 0.6.0
  */
 public final class MediumTextType extends ArmyTextType {
 

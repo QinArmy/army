@@ -9,7 +9,7 @@ package io.army.criteria;
  * @see Expression#as(String)
  * @see io.army.meta.FieldMeta#as(String)
  * @see QualifiedField#as(String)
- * @since 1.0
+ * @since 0.6.0
  */
 public interface Selection extends SelectItem, TypeInfer {
 

@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  *     <li>{@link ReactiveRmSession}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface ReactiveSession extends Session, ReactiveCloseable {
 

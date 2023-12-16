@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  * <p> {@link ServerException} is important sub-class.
  *
  * @see ServerException
- * @since 1.0
+ * @since 0.6.0
  */
 public class DriverException extends DataAccessException {
 

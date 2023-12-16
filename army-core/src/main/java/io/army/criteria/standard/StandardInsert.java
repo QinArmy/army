@@ -9,8 +9,8 @@ import io.army.meta.SimpleTableMeta;
 /**
  * <p>
  * This interface representing standard insert statement.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 public interface StandardInsert extends StandardStatement {
 

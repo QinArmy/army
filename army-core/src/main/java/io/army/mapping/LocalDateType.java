@@ -23,7 +23,7 @@ import java.time.*;
  *     <li>{@link String} </li>
  * </ul>
  *  to sql date,if overflow,throw {@link io.army.ArmyException}
- ** @since 1.0
+ ** @since 0.6.0
  */
 public final class LocalDateType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 

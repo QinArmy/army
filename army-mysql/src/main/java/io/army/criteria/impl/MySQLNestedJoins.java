@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class hold MySQL nested join implementations
- * * @since 1.0
+ * * @since 0.6.0
  */
 final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<
         I,

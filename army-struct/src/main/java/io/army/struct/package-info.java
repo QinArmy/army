@@ -1,4 +1,4 @@
 /**
- * @since 1.0
+ * @since 0.6.0
  */
 package io.army.struct;

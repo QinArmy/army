@@ -5,12 +5,12 @@ import io.army.criteria.SQLElement;
 /**
  * <p>
  * This interface representing database object ,this interface is base interface of below:
- *     <ul>
- *         <li>{@link  TableMeta}</li>
- *         <li>{@link  io.army.criteria.TableField}</li>
- *     </ul>
-*
- * @since 1.0
+ * <ul>
+ *     <li>{@link  TableMeta}</li>
+ *     <li>{@link  io.army.criteria.TableField}</li>
+ * </ul>
+ *
+ * @since 0.6.0
  */
 public interface DatabaseObject extends SQLElement {
 

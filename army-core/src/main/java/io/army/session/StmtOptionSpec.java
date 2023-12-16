@@ -12,7 +12,7 @@ import java.util.function.Consumer;
  *     <li>{@code  io.army.sync.StreamOption}</li>
  * </ul>
  *
- * @since 1.0
+ * @since 0.6.0
  */
 public interface StmtOptionSpec {
 

@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This class is base class of all simple {@link Window}.
- * * @since 1.0
+ * * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
 abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>

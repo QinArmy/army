@@ -13,7 +13,7 @@ package io.army.session;
  * This document is published by The Open Group and available at
  * <a href="http://www.opengroup.org/public/pubs/catalog/c193.htm">The XA Specification</a>,
  * here ,you can download the pdf about The XA Specification.
- * @since 1.0
+ * @since 0.6.0
  */
 public interface RmSession extends Session, Session.XaTransactionSupportSpec {
 

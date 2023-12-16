@@ -8,7 +8,7 @@ package io.army.session;
  *
  * @see io.army.env.ArmyKey#VISIBLE_MODE
  * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
- * @since 1.0
+ * @since 0.6.0
  */
 public final class VisibleModeException extends SessionException {
 

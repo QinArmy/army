@@ -31,9 +31,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is the implementation of Postgre DELETE syntax.
-*
+ *
  * @see PostgreDelete
- * @since 1.0
+ * @since 0.6.0
  */
 abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDelete<
         I,

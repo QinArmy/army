@@ -23,8 +23,8 @@ import java.util.function.IntSupplier;
 /**
  * <p>
  * This class is base class of all the implementation of {@link  _SqlContext}.
-*
- * @since 1.0
+ *
+ * @since 0.6.0
  */
 abstract class StatementContext implements _PrimaryContext, StmtParams {
 

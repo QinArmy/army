@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 
 /**
  * @see TransactionInfo
- * @since 1.0
+ * @since 0.6.0
  */
 public interface TransactionOption extends OptionSpec {
 
