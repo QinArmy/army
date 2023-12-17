@@ -7,6 +7,8 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
@@ -16,7 +18,7 @@ final class MySQLComparer extends ArmySchemaComparer {
         return new MySQLComparer(serverMeta);
     }
 
-    // private static final Logger LOG = LoggerFactory.getLogger(MySQLComparer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MySQLComparer.class);
 
     private MySQLComparer(ServerMeta serverMeta) {
         super(serverMeta);
@@ -55,9 +57,14 @@ final class MySQLComparer extends ArmySchemaComparer {
                     case "TINYINT":
                         match = true;
                         break;
+                    case "BIT": {
+                        match = this.jdbc;  // MySQL connector/J
+                    }
+                    break;
                     default:
                         match = false;
-                }
+
+                } // inner switch
             }
             break;
             case INT: {

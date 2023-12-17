@@ -1460,6 +1460,8 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
     private static final class JsonTableNestedField implements JsonTableColumn {
 
+        private final boolean path;
+
         private final ArmyExpression pathExp;
 
         private final List<JsonTableColumn> columnList;
@@ -1467,7 +1469,8 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         /**
          * @param columnList a unmodified list
          */
-        private JsonTableNestedField(Expression pathExp, List<JsonTableColumn> columnList) {
+        private JsonTableNestedField(boolean path, Expression pathExp, List<JsonTableColumn> columnList) {
+            this.path = path;
             this.pathExp = (ArmyExpression) pathExp;
             this.columnList = columnList;
         }
@@ -1477,6 +1480,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             sqlBuilder.append(_Constant.SPACE)
                     .append(MySQLs.NESTED.spaceRender());
 
+            if (this.path) {
+                sqlBuilder.append(MySQLs.PATH.spaceRender());
+            }
             this.pathExp.appendSql(sqlBuilder, context);
 
             JsonTableFunc.appendJsonTableColumns(this.columnList, sqlBuilder, context);
@@ -1498,7 +1504,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     } // JsonTableNestedField
 
 
-    private static class MySQLJsonTableColumns implements MySQLFunction._JsonTableColumnSpaceClause,
+    private static final class MySQLJsonTableColumns implements MySQLFunction._JsonTableColumnSpaceClause,
             MySQLFunction._JsonTableColumnCommaClause,
             MySQLFunction._JsonTableColumnConsumerClause {
 
@@ -1510,47 +1516,57 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(String name, SQLs.WordsForOrdinality forOrdinality) {
+        public MySQLFunction._JsonTableColumnCommaClause space(String name, SQLs.WordsForOrdinality forOrdinality) {
             return comma(name, forOrdinality);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
+        public MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, path, pathExp);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
             return comma(name, type, path, pathExp, consumer);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+        public MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, exists, path, pathExp);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+        public MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
             return comma(nested, pathExp, columns, consumer);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+        public MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
             return comma(nested, pathExp, columns, space, consumer);
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(String name, SQLs.WordsForOrdinality forOrdinality) {
+        public MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+            return comma(nested, path, pathExp, columns, consumer);
+        }
+
+        @Override
+        public MySQLFunction._JsonTableColumnCommaClause space(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+            return comma(nested, path, pathExp, columns, space, consumer);
+        }
+
+        @Override
+        public MySQLJsonTableColumns comma(String name, SQLs.WordsForOrdinality forOrdinality) {
             return addField(new JsonTableOrdinalityField(name));
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, final Object pathExp) {
+        public MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, final Object pathExp) {
             return addPathField(name, type, false, pathExp, null);
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
             final ColumnEventClause eventClause = new ColumnEventClause();
             CriteriaUtils.invokeConsumer(eventClause, consumer);
 
@@ -1558,61 +1574,70 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+        public MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
             return addPathField(name, type, true, pathExp, null);
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(SQLs.WordNested nested, final Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
-            final MySQLJsonTableColumns tableColumns;
-            tableColumns = new MySQLJsonTableColumns();
-
-            CriteriaUtils.invokeConsumer(tableColumns, consumer);
-
-            return addField(new JsonTableNestedField(jsonPathExp(pathExp), tableColumns.endClause()));
+        public MySQLJsonTableColumns comma(SQLs.WordNested nested, final Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+            return addNestedField(false, pathExp, consumer);
         }
 
         @Override
-        public final MySQLJsonTableColumns comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
-            final MySQLJsonTableColumns tableColumns;
-            tableColumns = new MySQLJsonTableColumns();
-
-            CriteriaUtils.invokeConsumer(tableColumns, consumer);
-
-            return addField(new JsonTableNestedField(jsonPathExp(pathExp), tableColumns.endClause()));
+        public MySQLJsonTableColumns comma(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+            return addNestedField(false, pathExp, consumer);
         }
 
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, SQLs.WordsForOrdinality forOrdinality) {
+        public MySQLFunction._JsonTableColumnCommaClause comma(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+            return addNestedField(true, pathExp, consumer);
+        }
+
+        @Override
+        public MySQLFunction._JsonTableColumnCommaClause comma(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+            return addNestedField(true, pathExp, consumer);
+        }
+
+        @Override
+        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, SQLs.WordsForOrdinality forOrdinality) {
             return comma(name, forOrdinality);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
+        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, path, pathExp);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
             return comma(name, type, path, pathExp, consumer);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, exists, path, pathExp);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+        public MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
             return comma(nested, pathExp, columns, consumer);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+        public MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
             return comma(nested, pathExp, columns, space, consumer);
         }
 
+        @Override
+        public MySQLFunction._JsonTableColumnCommaClause accept(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+            return comma(nested, path, pathExp, columns, consumer);
+        }
+
+        @Override
+        public MySQLFunction._JsonTableColumnCommaClause accept(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+            return comma(nested, path, pathExp, columns, space, consumer);
+        }
 
         private List<JsonTableColumn> endClause() {
             List<JsonTableColumn> fieldList = this.fieldList;
@@ -1624,6 +1649,16 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             return fieldList;
+        }
+
+        private MySQLJsonTableColumns addNestedField(final boolean path, final Object pathExp,
+                                                     final Consumer<? super MySQLJsonTableColumns> consumer) {
+            final MySQLJsonTableColumns tableColumns;
+            tableColumns = new MySQLJsonTableColumns();
+
+            CriteriaUtils.invokeConsumer(tableColumns, consumer);
+
+            return addField(new JsonTableNestedField(path, jsonPathExp(pathExp), tableColumns.endClause()));
         }
 
 

@@ -15,9 +15,11 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
 
     final ServerMeta serverMeta;
 
+    final boolean jdbc;
 
     ArmySchemaComparer(ServerMeta serverMeta) {
         this.serverMeta = serverMeta;
+        this.jdbc = serverMeta.driverSpi().equals("java.sql");
     }
 
     @Override

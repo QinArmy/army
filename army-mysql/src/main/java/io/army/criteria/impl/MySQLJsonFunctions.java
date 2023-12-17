@@ -1082,18 +1082,22 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * <pre>
      *     <code><br/>
      *    &#64;Test
-     *    public void jsonTableStatic(final ReactiveLocalSession session) {
+     *    public void jsonTableDynamic(final ReactiveLocalSession session) {
      *        final String jsonDocument;
      *        jsonDocument = "[{\"a\":\"3\"},{\"a\":2},{\"b\":1},{\"a\":0},{\"a\":[1,2]}]";
      *
+     *        final boolean needAjRow = false;
      *        final Select stmt;
      *        stmt = MySQLs.query()
      *                .select(s -> s.space("t", PERIOD, ASTERISK))
-     *                .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> s.space("rowId", FOR_ORDINALITY)
-     *                                .comma("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
-     *                                .comma("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
-     *                                .comma("bx", MySQLType.INT, EXISTS, PATH, "$.b")
-     *                        )
+     *                .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> {
+     *                               s.accept("rowId", FOR_ORDINALITY)
+     *                                .accept("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError());
+     *                                if(needAjRow){
+     *                                     s.accept("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
+     *                                }
+     *                                s.accept("bx", MySQLType.INT, EXISTS, PATH, "$.b")
+     *                        })
      *                )
      *                .as("t")
      *                .asQuery();
