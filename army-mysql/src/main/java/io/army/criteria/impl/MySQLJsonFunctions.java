@@ -1026,9 +1026,45 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /**
      * <p>MySQL jsonTable function static method
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void jsonTableStatic(final ReactiveLocalSession session) {
+     *        final String jsonDocument;
+     *        jsonDocument = "[{\"a\":\"3\"},{\"a\":2},{\"b\":1},{\"a\":0},{\"a\":[1,2]}]";
      *
-     * @param expr     {@link Expression} or the instance that {@link JsonType#TEXT} can accept,here it will output literal .
-     * @param pathExp  {@link String} (output literal) or {@link Expression}
+     *        final Select stmt;
+     *        stmt = MySQLs.query()
+     *                .select(s -> s.space("t", PERIOD, ASTERISK))
+     *                .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> s.space("rowId", FOR_ORDINALITY)
+     *                                .comma("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
+     *                                .comma("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
+     *                                .comma("bx", MySQLType.INT, EXISTS, PATH, "$.b")
+     *                        )
+     *                )
+     *                .as("t")
+     *                .asQuery();
+     *
+     *        final Supplier&lt;Map&lt;String, Object>> constructor = HashMap::new;
+     *
+     *        session.queryObject(stmt, constructor)
+     *                .doOnNext(System.out::println)
+     *                .blockLast();
+     *
+     *    }
+     *     </code>
+     * </pre>
+     *
+     * @param expr     json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param pathExp  path expression
+     *                 <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} instance. For example : {@code "$[*]"} is equivalent to {@code SQLs.literal(StringType.INSTANCE,"$[*]") }</li>
+     *                 </ul>
      * @param columns  see {@link MySQLs#COLUMNS}
      * @param consumer the consumer can accept jsonTable static columns clause.
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -1043,11 +1079,47 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /**
      * <p>MySQL jsonTable function dynamic method
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void jsonTableStatic(final ReactiveLocalSession session) {
+     *        final String jsonDocument;
+     *        jsonDocument = "[{\"a\":\"3\"},{\"a\":2},{\"b\":1},{\"a\":0},{\"a\":[1,2]}]";
      *
-     * @param expr     {@link Expression} or the instance that {@link JsonType#TEXT} can accept,here it will output literal .
-     * @param pathExp  {@link String} (output literal) or {@link Expression}
+     *        final Select stmt;
+     *        stmt = MySQLs.query()
+     *                .select(s -> s.space("t", PERIOD, ASTERISK))
+     *                .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> s.space("rowId", FOR_ORDINALITY)
+     *                                .comma("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
+     *                                .comma("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
+     *                                .comma("bx", MySQLType.INT, EXISTS, PATH, "$.b")
+     *                        )
+     *                )
+     *                .as("t")
+     *                .asQuery();
+     *
+     *        final Supplier&lt;Map&lt;String, Object>> constructor = HashMap::new;
+     *
+     *        session.queryObject(stmt, constructor)
+     *                .doOnNext(System.out::println)
+     *                .blockLast();
+     *
+     *    }
+     *     </code>
+     * </pre>
+     *
+     * @param expr     json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param pathExp  path expression
+     *                 <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} instance. For example : {@code "$[*]"} is equivalent to {@code SQLs.literal(StringType.INSTANCE,"$[*]") }</li>
+     *                 </ul>
      * @param columns  see {@link MySQLs#COLUMNS}
-     * @param space    see {@link SQLs#SPACE} for distinguishing between static method and dynamic method.
+     * @param space    see {@link SQLs#SPACE} for distinguishing both static method and dynamic method.
      * @param consumer the consumer can accept jsonTable dynamic columns clause.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonTable(Object, Object, SQLs.WordColumns, Consumer) static method

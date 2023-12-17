@@ -10,10 +10,10 @@ import io.army.reactive.ReactiveLocalSession;
 import io.army.sqltype.MySQLType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -50,7 +50,46 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
         final Supplier<Map<String, Object>> constructor = HashMap::new;
 
         session.queryObject(stmt, constructor)
-                .doOnNext(row -> LOG.debug(JSON.toJSONString(row)))
+                .doOnNext(row -> {
+                    switch (((Number) row.get("rowId")).intValue()) {
+                        case 1: {
+                            Assert.assertEquals(row.get("ac"), "3");
+                            Assert.assertEquals(row.get("aj"), "\"3\"");
+                            Assert.assertEquals(row.get("bx"), 0);
+                        }
+                        break;
+                        case 2: {
+                            Assert.assertEquals(row.get("ac"), "2");
+                            Assert.assertEquals(row.get("aj"), "2");
+                            Assert.assertEquals(row.get("bx"), 0);
+                        }
+                        break;
+                        case 3: {
+                            Assert.assertEquals(row.get("ac"), "111");
+                            final Map<?, ?> map;
+                            map = JSON.parseObject((String) row.get("aj"), Map.class);
+                            Assert.assertEquals(map, Collections.singletonMap("x", 333));
+                            Assert.assertEquals(row.get("bx"), 1);
+                        }
+                        break;
+                        case 4: {
+                            Assert.assertEquals(row.get("ac"), "0");
+                            Assert.assertEquals(row.get("aj"), "0");
+                            Assert.assertEquals(row.get("bx"), 0);
+                        }
+                        break;
+                        case 5: {
+                            Assert.assertEquals(row.get("ac"), "999");
+                            final List<Integer> list;
+                            list = JSON.parseArray((String) row.get("aj"), Integer.class);
+                            Assert.assertEquals(list, Arrays.asList(1, 2));
+                            Assert.assertEquals(row.get("bx"), 0);
+                        }
+                        break;
+                        default:
+                            throw new IllegalStateException("unknown row");
+                    }
+                })
                 .blockLast();
 
     }
