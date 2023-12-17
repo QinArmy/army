@@ -33,27 +33,22 @@ public interface SQLFunction extends Item {
 
     interface _CaseElseClause extends _CaseEndClause {
 
-        _CaseEndClause elseValue(Expression expression);
-
-        _CaseEndClause elseValue(Supplier<Expression> supplier);
+        _CaseEndClause elseValue(Object expression);
 
         _CaseEndClause elseValue(UnaryOperator<IPredicate> valueOperator, IPredicate value);
 
         _CaseEndClause elseValue(Function<Expression, Expression> valueOperator, Expression value);
 
-        _CaseEndClause elseValue(Function<Object, Expression> valueOperator, Object value);
-
-        <T> _CaseEndClause elseValue(Function<T, Expression> valueOperator, Supplier<T> supplier);
+        <T> _CaseEndClause elseValue(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         <T> _CaseEndClause elseValue(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
                                      BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
 
-        _CaseEndClause ifElse(Supplier<Expression> supplier);
+        _CaseEndClause ifElse(Supplier<?> supplier);
 
         <T> _CaseEndClause ifElse(Function<T, Expression> valueOperator, Supplier<T> getter);
 
-        <K, V> _CaseEndClause ifElse(Function<V, Expression> valueOperator, Function<K, V> function,
-                                     K key);
+        <K, V> _CaseEndClause ifElse(Function<V, Expression> valueOperator, Function<K, V> function, K key);
 
         <T> _CaseEndClause ifElse(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
                                   BiFunction<SimpleExpression, T, Expression> valueOperator, Supplier<T> getter);
@@ -67,17 +62,13 @@ public interface SQLFunction extends Item {
 
     interface _SqlCaseThenClause extends Item {
 
-        Item then(Expression expression);
-
-        Item then(Supplier<Expression> supplier);
+        Item then(Object expression);
 
         Item then(UnaryOperator<IPredicate> valueOperator, IPredicate value);
 
         Item then(Function<Expression, Expression> valueOperator, Expression value);
 
-        Item then(Function<Object, Expression> valueOperator, Object value);
-
-        <T> Item then(Function<T, Expression> valueOperator, Supplier<T> supplier);
+        <T> Item then(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         <T> Item then(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
                       BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
@@ -87,15 +78,11 @@ public interface SQLFunction extends Item {
 
     interface _DynamicWhenSpaceClause {
 
-        _SqlCaseThenClause space(Expression expression);
-
-        _SqlCaseThenClause space(Supplier<Expression> supplier);
+        _SqlCaseThenClause space(Object expression);
 
         _SqlCaseThenClause space(UnaryOperator<IPredicate> valueOperator, IPredicate predicate);
 
         _SqlCaseThenClause space(Function<Expression, Expression> valueOperator, Expression expression);
-
-        _SqlCaseThenClause space(Function<Object, Expression> valueOperator, Object value);
 
         <T> _SqlCaseThenClause space(Function<T, Expression> valueOperator, Supplier<T> getter);
 
@@ -110,15 +97,11 @@ public interface SQLFunction extends Item {
 
     interface _SqlCaseWhenClause extends Item {
 
-        Item when(Expression expression);
-
-        Item when(Supplier<Expression> supplier);
+        Item when(Object expression);
 
         Item when(UnaryOperator<IPredicate> valueOperator, IPredicate predicate);
 
         Item when(Function<Expression, Expression> valueOperator, Expression expression);
-
-        Item when(Function<Object, Expression> valueOperator, Object value);
 
         <T> Item when(Function<T, Expression> valueOperator, Supplier<T> getter);
 
@@ -135,10 +118,7 @@ public interface SQLFunction extends Item {
     interface _StaticCaseThenClause extends _SqlCaseThenClause {
 
         @Override
-        _CaseWhenSpec then(Expression expression);
-
-        @Override
-        _CaseWhenSpec then(Supplier<Expression> supplier);
+        _CaseWhenSpec then(Object expression);
 
         @Override
         _CaseWhenSpec then(UnaryOperator<IPredicate> valueOperator, IPredicate value);
@@ -147,10 +127,7 @@ public interface SQLFunction extends Item {
         _CaseWhenSpec then(Function<Expression, Expression> valueOperator, Expression value);
 
         @Override
-        _CaseWhenSpec then(Function<Object, Expression> valueOperator, Object value);
-
-        @Override
-        <T> _CaseWhenSpec then(Function<T, Expression> valueOperator, Supplier<T> supplier);
+        <T> _CaseWhenSpec then(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         @Override
         <T> _CaseWhenSpec then(ExpressionOperator<SimpleExpression, T, Expression> expOperator, BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
@@ -160,19 +137,13 @@ public interface SQLFunction extends Item {
     interface _StaticCaseWhenClause extends _SqlCaseWhenClause {
 
         @Override
-        _StaticCaseThenClause when(Expression expression);
-
-        @Override
-        _StaticCaseThenClause when(Supplier<Expression> supplier);
+        _StaticCaseThenClause when(Object expression);
 
         @Override
         _StaticCaseThenClause when(UnaryOperator<IPredicate> valueOperator, IPredicate predicate);
 
         @Override
         _StaticCaseThenClause when(Function<Expression, Expression> valueOperator, Expression expression);
-
-        @Override
-        _StaticCaseThenClause when(Function<Object, Expression> valueOperator, Object value);
 
         @Override
         <T> _StaticCaseThenClause when(Function<T, Expression> valueOperator, Supplier<T> getter);
@@ -195,22 +166,15 @@ public interface SQLFunction extends Item {
     interface _DynamicCaseThenClause extends _SqlCaseThenClause {
 
         @Override
-        CaseWhens then(Expression expression);
+        CaseWhens then(Object expression);
 
-        @Override
-        CaseWhens then(Supplier<Expression> supplier);
-
-        @Override
         CaseWhens then(UnaryOperator<IPredicate> valueOperator, IPredicate value);
 
-        @Override
         CaseWhens then(Function<Expression, Expression> valueOperator, Expression value);
 
-        @Override
-        CaseWhens then(Function<Object, Expression> valueOperator, Object value);
 
         @Override
-        <T> CaseWhens then(Function<T, Expression> valueOperator, Supplier<T> supplier);
+        <T> CaseWhens then(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         @Override
         <T> CaseWhens then(ExpressionOperator<SimpleExpression, T, Expression> expOperator, BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
@@ -220,19 +184,13 @@ public interface SQLFunction extends Item {
     interface _DynamicCaseWhenClause extends _SqlCaseWhenClause {
 
         @Override
-        _DynamicCaseThenClause when(Expression expression);
-
-        @Override
-        _DynamicCaseThenClause when(Supplier<Expression> supplier);
+        _DynamicCaseThenClause when(Object expression);
 
         @Override
         _DynamicCaseThenClause when(UnaryOperator<IPredicate> valueOperator, IPredicate predicate);
 
         @Override
         _DynamicCaseThenClause when(Function<Expression, Expression> valueOperator, Expression expression);
-
-        @Override
-        _DynamicCaseThenClause when(Function<Object, Expression> valueOperator, Object value);
 
         @Override
         <T> _DynamicCaseThenClause when(Function<T, Expression> valueOperator, Supplier<T> getter);

@@ -31,12 +31,12 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(cases(ChinaRegion_.regionType)
-                        .when(SQLs::literalValue, RegionType.NONE)
-                        .then(SQLs::literalValue, RegionType.NONE.name())
-                        .when(SQLs::literalValue, RegionType.PROVINCE)
-                        .then(SQLs::literalValue, RegionType.PROVINCE.name())
-                        .when(SQLs::literalValue, RegionType.CITY)
-                        .then(SQLs::literalValue, RegionType.CITY.name())
+                        .when(RegionType.NONE)
+                        .then(RegionType.NONE.name())
+                        .when(RegionType.PROVINCE)
+                        .then(RegionType.PROVINCE.name())
+                        .when(RegionType.CITY)
+                        .then(RegionType.CITY.name())
                         .elseValue(NULL).end()::as, ChinaRegion_.REGION_TYPE
                 )
                 .comma(MySQLs.rowNumber().over()::as, "rowNumber")

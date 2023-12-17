@@ -32,11 +32,11 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         stmt = SQLs.query()
                 .select(SQLs.cases()
                         .when(SQLs.literalValue(1).is(TRUE))
-                        .then(SQLs::literalValue, PillUserType.PARTNER)
+                        .then(PillUserType.PARTNER)
                         .ifWhen(c -> {
                             if (criteria.get("myCriteria") != null) {
-                                c.space(SQLs::literalValue, "zoro")
-                                        .then(SQLs::literalValue, "good");
+                                c.space("zoro")
+                                        .then("good");
                             }
                         })
                         .elseValue(SQLs.literalValue(PillUserType.NONE))
@@ -45,10 +45,10 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 ).comma(SQLs.cases()
                         .whens(c -> {
                             c.when(SQLs.literalValue(1).is(TRUE))
-                                    .then(SQLs::literalValue, PillUserType.PARTNER);
+                                    .then(PillUserType.PARTNER);
                             if (criteria.get("myCriteria") != null) {
                                 c.when(SQLs.literalValue(1).is(TRUE))
-                                        .then(SQLs::literalValue, PillUserType.PARTNER);
+                                        .then(PillUserType.PARTNER);
                             }
                         })
                         .elseValue(SQLs.literalValue(PillUserType.NONE))

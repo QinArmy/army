@@ -2,9 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect._SqlContext;
-import io.army.mapping.IntegerType;
-import io.army.mapping.JsonType;
-import io.army.mapping.StringType;
+import io.army.mapping.*;
+
+import javax.annotation.Nullable;
 
 abstract class FuncExpUtils {
     private FuncExpUtils() {
@@ -73,6 +73,26 @@ abstract class FuncExpUtils {
         } else {
             context.appendLiteral(IntegerType.INSTANCE, intExp);
         }
+    }
+
+
+    /**
+     * @throws NullPointerException throw when literal is null
+     */
+    static void appendLiteral(final @Nullable Object literal, final StringBuilder sqlBuilder, final _SqlContext context) {
+        if (literal == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (literal instanceof Expression) {
+            ((ArmyExpression) literal).appendSql(sqlBuilder, context);
+        } else {
+            final MappingType type;
+            type = _MappingFactory.getDefaultIfMatch(literal.getClass());
+            if (type == null) {
+                throw CriteriaUtils.clearStackAndNonDefaultType(literal);
+            }
+            context.appendLiteral(type, literal);
+        }
+
     }
 
 

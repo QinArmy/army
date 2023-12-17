@@ -28,10 +28,10 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
     public void caseFunc() {
         final Select stmt;
         stmt = Postgres.query()
-                .select(cases(SQLs.literalValue(3))
-                        .when(SQLs::literalValue, 1)
-                        .then(SQLs::literalValue, 2)
-                        .elseValue(SQLs::literalValue, 0)
+                .select(cases(3)
+                        .when(1)
+                        .then(2)
+                        .elseValue(0)
                         .end().as("a")
                 ).asQuery();
 
@@ -124,8 +124,6 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
 
 
     }
-
-
 
 
 }

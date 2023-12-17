@@ -41,11 +41,8 @@ abstract class FunctionUtils {
     }
 
 
-    static SQLFunction._CaseFuncWhenClause caseFunction(final @Nullable Expression caseValue) {
-        if (!(caseValue == null || caseValue instanceof OperationExpression)) {
-            throw CriteriaUtils.funcArgError("CASE", caseValue);
-        }
-        return new CaseFunction((ArmyExpression) caseValue);
+    static SQLFunction._CaseFuncWhenClause caseFunction(final @Nullable Object caseValue) {
+        return new CaseFunction(caseValue);
     }
 
 
@@ -1836,21 +1833,21 @@ abstract class FunctionUtils {
             SQLFunction._DynamicWhenSpaceClause,
             ArmySQLFunction {
 
-        private final ArmyExpression caseValue;
+        private final Object caseValue;
 
         private final CriteriaContext outerContext;
 
-        private List<_Pair<ArmyExpression, ArmyExpression>> expPairList;
+        private List<_Pair<Object, Object>> expPairList;
 
-        private ArmyExpression whenExpression;
+        private Object whenExpression;
 
-        private ArmyExpression elseExpression;
+        private Object elseExpression;
 
         private TypeMeta returnType;
 
         private boolean dynamicWhenSpace;
 
-        private CaseFunction(@Nullable ArmyExpression caseValue) {
+        private CaseFunction(@Nullable Object caseValue) {
             this.caseValue = caseValue;
             this.outerContext = ContextStack.peek();
         }
@@ -1876,33 +1873,32 @@ abstract class FunctionUtils {
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final int pairSize;
-            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            final List<_Pair<Object, Object>> expPairList = this.expPairList;
             if (expPairList == null || (pairSize = expPairList.size()) == 0) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
 
-            sqlBuilder.append(_Constant.SPACE)
-                    .append("CASE");
+            context.appendFuncName(true, "CASE");
 
-            final ArmyExpression caseValue = this.caseValue;
+            final Object caseValue = this.caseValue;
             if (caseValue != null) {
-                caseValue.appendSql(sqlBuilder, context);
+                FuncExpUtils.appendLiteral(caseValue, sqlBuilder, context);
             }
-            _Pair<ArmyExpression, ArmyExpression> pair;
+            _Pair<Object, Object> pair;
             for (int i = 0; i < pairSize; i++) {
                 pair = expPairList.get(i);
 
                 sqlBuilder.append(" WHEN");
-                pair.first.appendSql(sqlBuilder, context);
+                FuncExpUtils.appendLiteral(pair.first, sqlBuilder, context);
                 sqlBuilder.append(" THEN");
-                pair.second.appendSql(sqlBuilder, context);
+                FuncExpUtils.appendLiteral(pair.second, sqlBuilder, context);
 
             }
 
-            final ArmyExpression elseExpression = this.elseExpression;
+            final Object elseExpression = this.elseExpression;
             if (elseExpression != null) {
                 sqlBuilder.append(" ELSE");
-                elseExpression.appendSql(sqlBuilder, context);
+                FuncExpUtils.appendLiteral(elseExpression, sqlBuilder, context);
             }
 
             sqlBuilder.append(" END");
@@ -1913,17 +1909,17 @@ abstract class FunctionUtils {
         public String toString() {
             final StringBuilder builder = new StringBuilder();
             final int pairSize;
-            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            final List<_Pair<Object, Object>> expPairList = this.expPairList;
             if (expPairList == null || (pairSize = expPairList.size()) == 0) {
                 return super.toString();
             }
             builder.append(" CASE");
 
-            final ArmyExpression caseValue = this.caseValue;
+            final Object caseValue = this.caseValue;
             if (caseValue != null) {
                 builder.append(caseValue);
             }
-            _Pair<ArmyExpression, ArmyExpression> pair;
+            _Pair<Object, Object> pair;
             for (int i = 0; i < pairSize; i++) {
                 pair = expPairList.get(i);
 
@@ -1934,7 +1930,7 @@ abstract class FunctionUtils {
 
             }
 
-            final ArmyExpression elseExpression = this.elseExpression;
+            final Object elseExpression = this.elseExpression;
             if (elseExpression != null) {
                 builder.append(" ELSE")
                         .append(elseExpression);
@@ -1950,21 +1946,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public CaseFunction when(final @Nullable Expression expression) {
+        public CaseFunction when(final @Nullable Object expression) {
             if (this.whenExpression != null) {
                 throw ContextStack.criteriaError(this.outerContext, "last when clause not end.");
             } else if (expression == null) {
                 throw ContextStack.nullPointer(this.outerContext);
-            } else if ((!(expression instanceof ArmyExpression))) {
-                throw ContextStack.nonArmyExp(this.outerContext);
             }
-            this.whenExpression = (ArmyExpression) expression;
+            this.whenExpression = expression;
             return this;
-        }
-
-        @Override
-        public CaseFunction when(Supplier<Expression> supplier) {
-            return this.when(supplier.get());
         }
 
         @Override
@@ -1978,13 +1967,8 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public CaseFunction when(Function<Object, Expression> valueOperator, Object value) {
-            return this.when(valueOperator.apply(value));
-        }
-
-        @Override
         public <T> CaseFunction when(Function<T, Expression> valueOperator, Supplier<T> getter) {
-            return this.when(valueOperator.apply(getter.get()));
+            return when(valueOperator.apply(getter.get()));
         }
 
         @Override
@@ -2014,17 +1998,12 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public _SqlCaseThenClause space(Expression expression) {
+        public _SqlCaseThenClause space(Object expression) {
             if (!this.dynamicWhenSpace) {
                 throw ContextStack.criteriaError(this.outerContext, "duplication ifWhen space.");
             }
             this.dynamicWhenSpace = false;
             return this.when(expression);
-        }
-
-        @Override
-        public _SqlCaseThenClause space(Supplier<Expression> supplier) {
-            return this.space(supplier.get());
         }
 
         @Override
@@ -2037,10 +2016,6 @@ abstract class FunctionUtils {
             return this.space(valueOperator.apply(expression));
         }
 
-        @Override
-        public _SqlCaseThenClause space(Function<Object, Expression> valueOperator, Object value) {
-            return this.space(valueOperator.apply(value));
-        }
 
         @Override
         public <T> _SqlCaseThenClause space(Function<T, Expression> valueOperator, Supplier<T> getter) {
@@ -2066,32 +2041,23 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public CaseFunction then(final @Nullable Expression expression) {
-            final ArmyExpression whenExp = this.whenExpression;
+        public CaseFunction then(final @Nullable Object expression) {
+            final Object whenExp = this.whenExpression;
             if (whenExp == null) {
                 throw ContextStack.criteriaError(this.outerContext, "no when clause");
             } else if (expression == null) {
                 throw ContextStack.nullPointer(this.outerContext);
-            } else if (!(expression instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.outerContext);
             }
-            List<_Pair<ArmyExpression, ArmyExpression>> pairList = this.expPairList;
+            List<_Pair<Object, Object>> pairList = this.expPairList;
             if (pairList == null) {
-                pairList = _Collections.arrayList();
-                this.expPairList = pairList;
+                this.expPairList = pairList = _Collections.arrayList();
             } else if (!(pairList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            pairList.add(_Pair.create(whenExp, (ArmyExpression) expression));
+            pairList.add(_Pair.create(whenExp, expression));
             this.whenExpression = null; // clear for next
             return this;
         }
-
-        @Override
-        public CaseFunction then(Supplier<Expression> supplier) {
-            return this.then(supplier.get());
-        }
-
 
         @Override
         public CaseFunction then(UnaryOperator<IPredicate> valueOperator, IPredicate value) {
@@ -2100,11 +2066,6 @@ abstract class FunctionUtils {
 
         @Override
         public CaseFunction then(Function<Expression, Expression> valueOperator, Expression value) {
-            return this.then(valueOperator.apply(value));
-        }
-
-        @Override
-        public CaseFunction then(Function<Object, Expression> valueOperator, Object value) {
             return this.then(valueOperator.apply(value));
         }
 
@@ -2121,7 +2082,7 @@ abstract class FunctionUtils {
 
 
         @Override
-        public _CaseEndClause elseValue(final @Nullable Expression expression) {
+        public _CaseEndClause elseValue(final @Nullable Object expression) {
             if (this.expPairList == null) {
                 throw noWhenClause();
             } else if (this.whenExpression != null) {
@@ -2130,16 +2091,9 @@ abstract class FunctionUtils {
                 throw ContextStack.criteriaError(this.outerContext, "duplicate else clause.");
             } else if (expression == null) {
                 throw ContextStack.nullPointer(this.outerContext);
-            } else if (!(expression instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.outerContext);
             }
-            this.elseExpression = (ArmyExpression) expression;
+            this.elseExpression = expression;
             return this;
-        }
-
-        @Override
-        public _CaseEndClause elseValue(Supplier<Expression> supplier) {
-            return this.elseValue(supplier.get());
         }
 
 
@@ -2153,10 +2107,6 @@ abstract class FunctionUtils {
             return this.elseValue(valueOperator.apply(value));
         }
 
-        @Override
-        public _CaseEndClause elseValue(Function<Object, Expression> valueOperator, Object value) {
-            return this.elseValue(valueOperator.apply(value));
-        }
 
         @Override
         public <T> _CaseEndClause elseValue(Function<T, Expression> valueOperator, Supplier<T> supplier) {
@@ -2170,8 +2120,8 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public _CaseEndClause ifElse(Supplier<Expression> supplier) {
-            final Expression expression;
+        public _CaseEndClause ifElse(Supplier<?> supplier) {
+            final Object expression;
             expression = supplier.get();
             if (expression != null) {
                 this.elseValue(expression);
@@ -2246,7 +2196,7 @@ abstract class FunctionUtils {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
 
-            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            final List<_Pair<Object, Object>> expPairList = this.expPairList;
             if (expPairList == null) {
                 throw noWhenClause();
             } else if (expPairList instanceof ArrayList) {
