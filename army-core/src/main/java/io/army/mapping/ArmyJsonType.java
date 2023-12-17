@@ -73,10 +73,14 @@ abstract class ArmyJsonType extends _ArmyBuildInMapping {
         if (!(source instanceof String)) {
             throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
+        final Class<?> javaType = this.javaType;
+        if (javaType == String.class) {
+            return source;
+        }
         Object documentValue;
 
         try {
-            documentValue = env.jsonCodec().decode((String) source, this.javaType);
+            documentValue = env.jsonCodec().decode((String) source, javaType);
         } catch (Exception e) {
             throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, e);
         }

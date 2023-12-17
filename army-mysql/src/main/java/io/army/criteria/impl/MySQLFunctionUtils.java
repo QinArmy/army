@@ -1343,7 +1343,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         private ColumnEventClause endClause() {
             if (this.temp != null) {
-                throw ContextStack.clearStackAndCriteriaError("no ON EMPTY/ON ERROR clause");
+                throw ContextStack.clearStackAndCriteriaError("exists action clause, but no ON EMPTY/ON ERROR clause");
             }
             return this;
         }

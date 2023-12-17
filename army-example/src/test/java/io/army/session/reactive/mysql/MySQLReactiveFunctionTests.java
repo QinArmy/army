@@ -39,7 +39,7 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
         stmt = MySQLs.query()
                 .select(s -> s.space("t", PERIOD, ASTERISK))
                 .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> s.space("rowId", FOR_ORDINALITY)
-                                .comma("ac", TypeDefs.space(MySQLType.VARBINARY, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
+                                .comma("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
                                 .comma("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
                                 .comma("bx", MySQLType.INT, EXISTS, PATH, "$.b")
                         )
