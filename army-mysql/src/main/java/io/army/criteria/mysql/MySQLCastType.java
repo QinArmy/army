@@ -1,13 +1,11 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.SQLWords;
-import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS type [ARRAY])</a>
  */
-public enum MySQLCastType implements SQLWords {
+public enum MySQLCastType {
 
 
     BINARY,
@@ -22,10 +20,10 @@ public enum MySQLCastType implements SQLWords {
 
     NCHAR,
     REAL,
-    SIGNED_INTEGER,
+    SIGNED,
     TIME,
 
-    UNSIGNED_INTEGER,
+    UNSIGNED,
     YEAR,
 
     Point,
@@ -38,22 +36,10 @@ public enum MySQLCastType implements SQLWords {
     GeometryCollection;
 
 
-    @Override
-    public final String spaceRender() {
-        final String words;
-        switch (this) {
-            case SIGNED_INTEGER:
-                words = " SIGNED INTEGER";
-                break;
-            case UNSIGNED_INTEGER:
-                words = " UNSIGNED INTEGER";
-                break;
-            default:
-                words = _Constant.SPACE + this.name();
-
-        }
-        return words;
+    public final String typeName() {
+        return this.name();
     }
+
 
     @Override
     public final String toString() {

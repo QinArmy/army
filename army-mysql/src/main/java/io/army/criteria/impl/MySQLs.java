@@ -122,11 +122,4 @@ public abstract class MySQLs extends MySQLSyntax {
 
     }
 
-    public interface WordsCharacterSet extends SQLWords {
-
-    }
-
-    public interface WordsCollate extends SQLWords {
-
-    }
 }

@@ -41,8 +41,8 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
      *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
      *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
-     *          <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
+     *          <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
+     *          <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
      *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
      *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
@@ -86,8 +86,8 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
      *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
      *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
-     *          <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
+     *          <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
+     *          <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
      *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
      *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
@@ -155,18 +155,18 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     }
 
     public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
-            , final Expression n, MySQLs.WordsCharacterSet characterSet, SQLElement charset) {
+            , final Expression n, SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         Objects.requireNonNull(n);
         return _castToChar(exp, as, charType, n, characterSet, charset);
     }
 
     public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
-            , final int n, MySQLs.WordsCharacterSet characterSet, SQLElement charset) {
+            , final int n, SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         return _castToChar(exp, as, charType, SQLs.literal(IntegerType.INSTANCE, n), characterSet, charset);
     }
 
     public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
-            , MySQLs.WordsCharacterSet characterSet, SQLElement charset) {
+            , SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         return _castToChar(exp, as, charType, null, characterSet, charset);
     }
 
@@ -285,8 +285,8 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *     <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
      *     <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
      *     <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *     <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
-     *     <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
+     *     <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
+     *     <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
      *     <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
      *     <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
      *     <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
@@ -484,10 +484,10 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
             case DATETIME:
                 returnType = LocalDateTimeType.INSTANCE;
                 break;
-            case SIGNED_INTEGER:
+            case SIGNED:
                 returnType = LongType.INSTANCE;
                 break;
-            case UNSIGNED_INTEGER:
+            case UNSIGNED:
                 returnType = UnsignedBigIntegerType.INSTANCE;
                 break;
             case DECIMAL:
@@ -538,11 +538,11 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     }
 
     /**
-     * @see #cast(Expression, SQLs.WordAs, MySQLCastType, MySQLs.WordsCharacterSet, SQLElement)
-     * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression, MySQLs.WordsCharacterSet, SQLElement)
+     * @see #cast(Expression, SQLs.WordAs, MySQLCastType, SQLs.WordsCharacterSet, SQLElement)
+     * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression, SQLs.WordsCharacterSet, SQLElement)
      */
     private static SimpleExpression _castToChar(final Expression exp, final SQLs.WordAs as
-            , final MySQLCastType charType, final @Nullable Expression n, MySQLs.WordsCharacterSet characterSet
+            , final MySQLCastType charType, final @Nullable Expression n, SQLs.WordsCharacterSet characterSet
             , SQLElement charset) {
         assert as == SQLs.AS && characterSet == MySQLs.CHARACTER_SET;
 

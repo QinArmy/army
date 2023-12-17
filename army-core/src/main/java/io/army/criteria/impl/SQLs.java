@@ -146,6 +146,10 @@ public abstract class SQLs extends SQLsSyntax {
 
     static final UnaryOperator<SubQuery> SUB_QUERY = SQLs::identity;
 
+    static final String SPACE_CHARACTER_SET_SPACE = " CHARACTER SET ";
+
+    static final String SPACE_COLLATE_SPACE = " COLLATE ";
+
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
         return StandardInserts.singleInsert();
@@ -601,6 +605,14 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
     public interface TrimPosition {
+
+    }
+
+    public interface WordsCharacterSet extends SQLWords {
+
+    }
+
+    public interface WordCollate extends SQLWords {
 
     }
 

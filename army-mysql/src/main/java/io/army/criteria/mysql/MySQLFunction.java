@@ -1,12 +1,13 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.Clause;
+import io.army.criteria.Statement;
+import io.army.criteria.TypeItem;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.standard.SQLFunction;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface MySQLFunction extends SQLFunction {
@@ -30,156 +31,62 @@ public interface MySQLFunction extends SQLFunction {
     }
 
 
-    interface _OnErrorClause extends Item {
 
-        Item onError();
-    }
-
-
-    interface _OnEmptyClause extends Item {
-
-        Item onEmpty();
-    }
-
-
-    interface _OnEmptyOrErrorActionClause extends Item {
-
-        Item nullWord();
-
-        Item error();
-
-        Item defaultValue(Expression value);
-
-        <T> Item defaultValue(Function<T, Expression> valueOperator, T value);
-
-        Item defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        Item defaultValue(Supplier<Expression> supplier);
-
-    }
-
-
-    interface _JsonValueOnErrorClause extends _OnErrorClause {
-
-
-    }
-
-
-    interface _JsonValueOptionClause extends _OnEmptyOrErrorActionClause {
-
-        @Override
-        _JsonValueOnErrorClause nullWord();
-
-        @Override
-        _JsonValueOnErrorClause error();
-
-        @Override
-        _JsonValueOnErrorClause defaultValue(Expression value);
-
-        @Override
-        <T> _JsonValueOnErrorClause defaultValue(Function<T, Expression> valueOperator, T value);
-
-        @Override
-        _JsonValueOnErrorClause defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        @Override
-        _JsonValueOnErrorClause defaultValue(Supplier<Expression> supplier);
-
-
-    }
-
-    interface _JsonValueOptionSpec extends _JsonValueOptionClause {
-
-    }
-
-
-    interface _JsonValueOnEmptySpec extends _JsonValueOnErrorClause, _OnEmptyClause {
-
-        @Override
-        _JsonValueOptionSpec onEmpty();
-
-    }
-
-
-    interface _JsonValueOptionOnEmptySpec extends _JsonValueOptionSpec {
-
-
-        @Override
-        _JsonValueOnEmptySpec nullWord();
-
-        @Override
-        _JsonValueOnEmptySpec error();
-
-        @Override
-        _JsonValueOnEmptySpec defaultValue(Expression value);
-
-
-        @Override
-        <T> _JsonValueOnEmptySpec defaultValue(Function<T, Expression> valueOperator, T value);
-
-        @Override
-        _JsonValueOnEmptySpec defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        @Override
-        _JsonValueOnEmptySpec defaultValue(Supplier<Expression> supplier);
-
-    }
-
-
-    interface _JsonValueReturningSpec extends _JsonValueOptionOnEmptySpec {
-
-        _JsonValueOptionOnEmptySpec returning(MySQLCastType type);
-
-        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression n);
-
-        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, int n);
-
-        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression n, SQLElement charset);
-
-        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression m, Expression d);
-
-        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, int m, int d);
-
-    }
-
-
-
-
-    interface _JsonTableOnErrorClause {
+    interface _ValueOnErrorClause {
 
         Object onError();
 
     }
 
 
-    interface _JsonTableEventHandleClause {
+    interface _ValueErrorActionClause {
 
-        _JsonTableOnErrorClause spaceNull();
+        _ValueOnErrorClause spaceNull();
 
-        _JsonTableOnErrorClause spaceDefault(Object jsonExp);
+        _ValueOnErrorClause spaceDefault(Object jsonExp);
 
-        _JsonTableOnErrorClause spaceError();
-
-    }
-
-    interface _JsonTableOnEmptyClause extends _JsonTableOnErrorClause {
-
-        _JsonTableEventHandleClause onEmpty();
+        _ValueOnErrorClause spaceError();
 
     }
 
+    interface _ValueOnEmptySpec extends _ValueOnErrorClause {
 
-    interface _JsonTableEmptyHandleClause extends _JsonTableEventHandleClause {
+        _ValueErrorActionClause onEmpty();
+
+    }
+
+
+    interface _ValueEmptyActionSpec extends _ValueErrorActionClause {
 
 
         @Override
-        _JsonTableOnEmptyClause spaceNull();
+        _ValueOnEmptySpec spaceNull();
 
         @Override
-        _JsonTableOnEmptyClause spaceDefault(Object jsonExp);
+        _ValueOnEmptySpec spaceDefault(Object jsonExp);
 
         @Override
-        _JsonTableOnEmptyClause spaceError();
+        _ValueOnEmptySpec spaceError();
+
+
+    }
+
+
+    interface _JsonValueReturningSpec extends _ValueEmptyActionSpec {
+
+        _ValueEmptyActionSpec returning(MySQLCastType type);
+
+        _ValueEmptyActionSpec returning(MySQLCastType type, Object length);
+
+        _ValueEmptyActionSpec returning(MySQLCastType type, Object precision, Object scale);
+
+        _ValueEmptyActionSpec returning(MySQLCastType type, SQLs.WordsCharacterSet charSet, String charsetName);
+
+        _ValueEmptyActionSpec returning(MySQLCastType type, SQLs.WordsCharacterSet charSet, String charsetName, SQLs.WordCollate collate, String collation);
+
+        _ValueEmptyActionSpec returning(MySQLCastType type, Object length, SQLs.WordsCharacterSet charSet, String charsetName);
+
+        _ValueEmptyActionSpec returning(MySQLCastType type, Object length, SQLs.WordsCharacterSet charSet, String charsetName, SQLs.WordCollate collate, String collation);
 
 
     }
@@ -195,7 +102,7 @@ public interface MySQLFunction extends SQLFunction {
 
         _JsonTableColumnCommaClause comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnCommaClause comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+        _JsonTableColumnCommaClause comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_ValueEmptyActionSpec> consumer);
 
         _JsonTableColumnCommaClause comma(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
 
@@ -216,7 +123,7 @@ public interface MySQLFunction extends SQLFunction {
 
         _JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+        _JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_ValueEmptyActionSpec> consumer);
 
         _JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
 
@@ -237,7 +144,7 @@ public interface MySQLFunction extends SQLFunction {
 
         _JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp);
 
-        _JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_JsonTableEmptyHandleClause> consumer);
+        _JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<_ValueEmptyActionSpec> consumer);
 
         _JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp);
 

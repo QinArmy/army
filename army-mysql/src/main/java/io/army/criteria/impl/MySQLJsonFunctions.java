@@ -470,8 +470,10 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
-    public static SimpleExpression jsonValue(final Expression jsonDoc, final Expression path) {
-        return FunctionUtils.twoArgFunc("JSON_VALUE", jsonDoc, path, StringType.INSTANCE);
+    public static SimpleExpression jsonValue(final Object jsonDoc, final Object path) {
+        return FunctionUtils.twoArgFunc("JSON_VALUE", FuncExpUtils.jsonDocExp(jsonDoc), FuncExpUtils.jsonPathExp(path),
+                StringType.INSTANCE
+        );
     }
 
 
@@ -486,8 +488,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *      <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
      *      <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
      *      <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *      <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
-     *      <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
+     *      <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
+     *      <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
      *      <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
      *      <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
      *      <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
@@ -506,12 +508,9 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
-    public static SimpleExpression jsonValue(final Expression jsonDoc, final Expression path
-            , final Consumer<MySQLFunction._JsonValueReturningSpec> consumer) {
-        final MySQLFunctionUtils.JsonValueClause clause;
-        clause = MySQLFunctionUtils.jsonValueInnerClause();
-        consumer.accept(clause);
-        return MySQLFunctionUtils.jsonValueFunc(jsonDoc, path, clause);
+    public static SimpleExpression jsonValue(final Object jsonDoc, final Object path,
+                                             final Consumer<MySQLFunction._JsonValueReturningSpec> consumer) {
+        return MySQLFunctionUtils.jsonValueFunc(jsonDoc, path, consumer);
     }
 
 
@@ -1017,7 +1016,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-valid">JSON_VALID(val)</a>
      */
-    public static IPredicate jsonValid(final Expression val) {
+    public static SimplePredicate jsonValid(final Expression val) {
         return FunctionUtils.oneArgPredicateFunc("JSON_VALID", val);
     }
 

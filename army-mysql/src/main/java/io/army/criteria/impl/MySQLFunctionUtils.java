@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.MySQLCastType;
-import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.mysql.MySQLWindow;
 import io.army.dialect.Dialect;
@@ -28,7 +27,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 abstract class MySQLFunctionUtils extends DialectFunctionUtils {
@@ -94,18 +92,13 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }
 
 
-    static JsonValueClause jsonValueInnerClause() {
-        return new JsonValueClause();
-    }
+    static SimpleExpression jsonValueFunc(Object jsonDoc, Object path, Consumer<? super JsonValueOptionClause> consumer) {
+        FuncExpUtils.assertPathExp(path);
 
-    static SimpleExpression jsonValueFunc(Expression jsonDoc, Expression path, JsonValueClause clause) {
-        final String name = "JSON_VALUE";
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        } else if (path instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, path);
-        }
-        return new JsonValueFunction((ArmyExpression) jsonDoc, (ArmyExpression) path, clause);
+        final JsonValueOptionClause clause = new JsonValueOptionClause();
+        CriteriaUtils.invokeConsumer(clause, consumer);
+        clause.endEventClause();
+        return new JsonValueFunc(jsonDoc, path, clause);
     }
 
     static MySQLJsonTableColumns jsonTableColumns() {
@@ -117,20 +110,16 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
-    static Functions._TabularFunction jsonTable(final Object json, final Object path,
+    static Functions._TabularFunction jsonTable(final Object jsonDoc, final Object path,
                                                 final Consumer<? super MySQLJsonTableColumns> consumer) {
 
-
-        final Expression jsonExp, pathExp;
-        jsonExp = jsonDocExp(json);
-        pathExp = jsonPathExp(path);
+        FuncExpUtils.assertPathExp(path);
 
         final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
         tableColumns = MySQLFunctionUtils.jsonTableColumns();
 
         CriteriaUtils.invokeConsumer(tableColumns, consumer);
-
-        return new JsonTableFunc(jsonExp, pathExp, tableColumns.endClause());
+        return new JsonTableFunc(jsonDoc, path, tableColumns.endClause());
     }
 
 
@@ -337,27 +326,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         return type;
     }
 
-    private static Expression jsonPathExp(final Object path) {
-        final Expression pathExp;
-        if (path instanceof String) {
-            pathExp = SQLs.literal(StringType.INSTANCE, path);
-        } else if (path instanceof Expression) {
-            pathExp = (Expression) path;
-        } else {
-            throw CriteriaUtils.mustExpressionOrType("path", String.class);
-        }
-        return pathExp;
-    }
 
-    private static Expression jsonDocExp(final Object json) {
-        final Expression jsonExp;
-        if (json instanceof Expression) {
-            jsonExp = (Expression) json;
-        } else {
-            jsonExp = SQLs.literal(JsonType.TEXT, json);
-        }
-        return jsonExp;
-    }
 
 
     private static abstract class MySQLWindowFunction extends WindowFunctionUtils.WindowFunction<MySQLWindow._PartitionBySpec>
@@ -837,7 +806,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }//NullOrError
 
     /**
-     * @see JsonValueFunction#appendSql(StringBuilder, _SqlContext)
+     * @see JsonValueFunc#appendSql(StringBuilder, _SqlContext)
      */
     private static void appendOnEmptyOrErrorClause(final List<_Pair<Object, JsonValueWord>> actionList
             , final _SqlContext context) {
@@ -862,7 +831,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }
 
     /**
-     * @see JsonValueFunction#toString()
+     * @see JsonValueFunc#toString()
      */
     private static void onEmptyOrErrorClauseToString(final List<_Pair<Object, JsonValueWord>> actionList
             , final StringBuilder builder) {
@@ -885,333 +854,8 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }
 
 
-    @SuppressWarnings("unchecked")
-    private static abstract class OnEmptyOrErrorAction<S extends OnEmptyOrErrorAction<S>>
-            implements MySQLFunction._OnEmptyOrErrorActionClause
-            , MySQLFunction._OnErrorClause
-            , MySQLFunction._OnEmptyClause {
-
-        final CriteriaContext context;
-
-        List<_Pair<Object, JsonValueWord>> actionList;
-
-        private Object operateValue;
-
-        private OnEmptyOrErrorAction(CriteriaContext context) {
-            this.context = context;
-        }
-
-
-        @Override
-        public final S nullWord() {
-            if (this.operateValue != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.operateValue = JsonValueWord.NULL;
-            return (S) this;
-        }
-
-        @Override
-        public final S error() {
-            if (this.operateValue != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.operateValue = JsonValueWord.ERROR;
-            return (S) this;
-        }
-
-        @Override
-        public final S defaultValue(final Expression value) {
-            if (this.operateValue != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.context);
-            }
-            this.operateValue = value;
-            return (S) this;
-        }
-
-        @Override
-        public final S defaultValue(Supplier<Expression> supplier) {
-            return this.defaultValue(supplier.get());
-        }
-
-        @Override
-        public final <T> S defaultValue(Function<T, Expression> valueOperator, T value) {
-            return this.defaultValue(valueOperator.apply(value));
-        }
-
-        @Override
-        public final S defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-            return this.defaultValue(valueOperator.apply(function.apply(keyName)));
-        }
-
-        @Override
-        public final S onError() {
-            final Object operateValue = this.operateValue;
-            if (operateValue == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.operateValue = null;//clear
-            final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.actionList;
-            if (eventHandlerList == null) {
-                this.actionList = Collections.singletonList(_Pair.create(operateValue, JsonValueWord.ON_ERROR));
-            } else if (eventHandlerList.size() == 1) {
-                eventHandlerList.add(_Pair.create(operateValue, JsonValueWord.ON_ERROR));
-            } else {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return (S) this;
-        }
-
-        @Override
-        public final S onEmpty() {
-            final Object operateValue = this.operateValue;
-            if (operateValue == null || this.actionList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.operateValue = null;//clear
-            final List<_Pair<Object, JsonValueWord>> eventHandlerList = new ArrayList<>(2);
-            this.actionList = eventHandlerList;
-            eventHandlerList.add(_Pair.create(operateValue, JsonValueWord.ON_EMPTY));
-            return (S) this;
-        }
-
-
-    }//JsonTableOnEemptyOrErrorAction
-
-
-    static final class JsonValueClause extends OnEmptyOrErrorAction<JsonValueClause>
-            implements MySQLFunction._JsonValueReturningSpec
-            , MySQLFunction._JsonValueOptionOnEmptySpec
-            , MySQLFunction._JsonValueOnEmptySpec {
-
-        private List<Object> returningList;
-
-        private JsonValueClause() {
-            super(ContextStack.peek());
-        }
-
-
-        @Override
-        public MySQLFunction._JsonValueOptionOnEmptySpec returning(final MySQLCastType type) {
-            if (this.returningList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.returningList = Collections.singletonList(type);
-            return this;
-        }
-
-        @Override
-        public MySQLFunction._JsonValueOptionOnEmptySpec returning(final MySQLCastType type, Expression n) {
-            if (this.returningList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            if (!MySQLUtils.isSingleParamType(type)) {
-                throw typeError(type);
-            }
-            final List<Object> list = new ArrayList<>(4);
-
-            list.add(type);
-            list.add(Functions.FuncWord.LEFT_PAREN);
-            list.add(n);
-            list.add(Functions.FuncWord.RIGHT_PAREN);
-
-            this.returningList = list;
-            return this;
-        }
-
-        @Override
-        public MySQLFunction._JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression n, SQLElement charset) {
-            if (this.returningList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (type != MySQLCastType.CHAR) {
-                throw typeError(type);
-            } else if (!(charset instanceof MySQLCharset || charset instanceof SQLs.SQLIdentifierImpl)) {
-                throw CriteriaUtils.funcArgError("JSON_VALUE", charset);
-            }
-            final List<Object> list = new ArrayList<>(5);
-
-            list.add(type);
-            list.add(Functions.FuncWord.LEFT_PAREN);
-            list.add(n);
-            list.add(Functions.FuncWord.RIGHT_PAREN);
-
-            list.add(charset);
-            this.returningList = list;
-            return this;
-        }
-
-        @Override
-        public MySQLFunction._JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression m, Expression d) {
-            if (this.returningList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (type != MySQLCastType.DECIMAL) {
-                throw typeError(type);
-            }
-            final List<Object> list = new ArrayList<>(6);
-
-            list.add(type);
-            list.add(Functions.FuncWord.LEFT_PAREN);
-            list.add(m);
-            list.add(Functions.FuncWord.COMMA);
-
-            list.add(d);
-            list.add(Functions.FuncWord.RIGHT_PAREN);
-            this.returningList = list;
-            return this;
-        }
-
-        @Override
-        public MySQLFunction._JsonValueOptionOnEmptySpec returning(MySQLCastType type, int n) {
-            return this.returning(type, SQLs.literal(IntegerType.INSTANCE, n));
-        }
-
-        @Override
-        public MySQLFunction._JsonValueOptionOnEmptySpec returning(MySQLCastType type, int m, int d) {
-            return this.returning(type, SQLs.literal(IntegerType.INSTANCE, m), SQLs.literal(IntegerType.INSTANCE, d));
-        }
-
-
-        private CriteriaException typeError(MySQLCastType type) {
-            String m = String.format("%s error", type);
-            return ContextStack.criteriaError(this.context, m);
-        }
-
-
-    }//JsonValueClause
-
-
-    private static final class JsonValueFunction extends OperationExpression.SqlFunctionExpression implements MySQLFunction {
-
-        private final ArmyExpression jsonDoc;
-
-        private final ArmyExpression path;
-
-        private final List<Object> returningList;
-
-        private final List<_Pair<Object, JsonValueWord>> eventHandlerList;
-
-
-        private JsonValueFunction(ArmyExpression jsonDoc, ArmyExpression path, JsonValueClause clause) {
-            super("JSON_VALUE", StringType.INSTANCE);
-            this.jsonDoc = jsonDoc;
-            this.path = path;
-            this.returningList = clause.returningList;
-            this.eventHandlerList = clause.actionList;
-
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.jsonDoc, this.path, this.returningList, this.eventHandlerList,
-                    this.returnType);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof JsonValueFunction) {
-                final JsonValueFunction o = (JsonValueFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.jsonDoc.equals(this.jsonDoc)
-                        && Objects.equals(o.path, this.path)
-                        && Objects.equals(o.returningList, this.returningList)
-                        && Objects.equals(o.eventHandlerList, this.eventHandlerList)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-
-            this.jsonDoc.appendSql(sqlBuilder, context);
-            sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.path.appendSql(sqlBuilder, context);
-
-            final List<Object> returningList = this.returningList;
-            if (returningList != null) {
-                assert returningList.get(0) instanceof MySQLCastType;
-                for (Object o : returningList) {
-                    if (o instanceof MySQLCastType) {
-                        sqlBuilder.append(_Constant.SPACE_RETURNING)
-                                .append(((MySQLCastType) o).spaceRender());
-                    } else if (o == Functions.FuncWord.LEFT_PAREN) {
-                        sqlBuilder.append(_Constant.LEFT_PAREN);
-                    } else if (o instanceof SQLWords) {
-                        sqlBuilder.append(((SQLWords) o).spaceRender());
-                    } else if (o instanceof Expression) {
-                        ((ArmyExpression) o).appendSql(sqlBuilder, context);
-                    } else if (o instanceof SQLIdentifier) {
-                        sqlBuilder.append(_Constant.SPACE);
-                        context.identifier(((SQLIdentifier) o).render(), sqlBuilder);
-                    } else {
-                        //no bug,never here
-                        throw new IllegalStateException();
-                    }
-
-                }//for
-            }//if
-
-            final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.eventHandlerList;
-            if (eventHandlerList != null) {
-                appendOnEmptyOrErrorClause(eventHandlerList, context);
-            }//if
-
-        }
-
-        @Override
-        void argToString(final StringBuilder builder) {
-            builder.append(this.jsonDoc)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.path);
-
-            final List<Object> returningList = this.returningList;
-            if (returningList != null) {
-                assert returningList.get(0) instanceof MySQLCastType;
-                for (Object o : returningList) {
-                    if (o instanceof MySQLCastType) {
-                        builder.append(_Constant.SPACE_RETURNING)
-                                .append(((MySQLCastType) o).spaceRender());
-                    } else if (o == Functions.FuncWord.LEFT_PAREN) {
-                        builder.append(_Constant.LEFT_PAREN);
-                    } else if (o instanceof SQLWords) {
-                        builder.append(((SQLWords) o).spaceRender());
-                    } else if (o instanceof Expression) {
-                        builder.append(o);
-                    } else if (o instanceof SQLIdentifier) {
-                        builder.append(_Constant.SPACE);
-                        builder.append(o);
-                    } else {
-                        //no bug,never here
-                        throw new IllegalStateException();
-                    }
-
-                }//for
-            }//if
-
-            final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.eventHandlerList;
-            if (eventHandlerList != null) {
-                onEmptyOrErrorClauseToString(eventHandlerList, builder);
-            }//if
-        }
-
-
-    }//JsonValueFunction
-
-
-    private interface JsonTableColumn extends _SelfDescribed {
-
-    }
-
-
-    private static final class ColumnEventClause implements MySQLFunction._JsonTableEmptyHandleClause,
-            MySQLFunction._JsonTableOnEmptyClause, _SelfDescribed {
+    private static class ColumnEventClause implements MySQLFunction._ValueEmptyActionSpec,
+            MySQLFunction._ValueOnEmptySpec {
 
         private Object temp;
 
@@ -1223,32 +867,30 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public ColumnEventClause spaceNull() {
+        public final ColumnEventClause spaceNull() {
             this.temp = SQLs.NULL;
             return this;
         }
 
         @Override
-        public ColumnEventClause spaceDefault(final @Nullable Object jsonExp) {
+        public final ColumnEventClause spaceDefault(final @Nullable Object jsonExp) {
             if (jsonExp == null) {
                 throw ContextStack.clearStackAndNullPointer();
+            } else if (this.temp != null) {
+                throw ContextStack.clearStackAndCriteriaError("duplication action");
             }
-            if (jsonExp instanceof Expression) {
-                this.temp = jsonExp;
-            } else {
-                this.temp = SQLs.literal(JsonType.TEXT, jsonExp);
-            }
+            this.temp = jsonExp;
             return this;
         }
 
         @Override
-        public ColumnEventClause spaceError() {
+        public final ColumnEventClause spaceError() {
             this.temp = MySQLs.ERROR;
             return this;
         }
 
         @Override
-        public Object onError() {
+        public final Object onError() {
             final Object temp = this.temp;
             if (temp == null || this.actionOnError != null) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -1259,7 +901,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public ColumnEventClause onEmpty() {
+        public final ColumnEventClause onEmpty() {
             final Object temp = this.temp;
             if (temp == null || this.actionOnEmpty != null) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -1269,8 +911,8 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             return this;
         }
 
-        @Override
-        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+        void appendAction(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             Object action;
 
@@ -1291,7 +933,11 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                     sqlBuilder.append(MySQLs.ERROR.spaceRender());
                 } else {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
-                    ((ArmyExpression) action).appendSql(sqlBuilder, context);
+                    if (action instanceof Expression) {
+                        ((ArmyExpression) action).appendSql(sqlBuilder, context);
+                    } else {
+                        context.appendLiteral(JsonType.TEXT, action);
+                    }
                 }
 
                 if (i == 0) {
@@ -1304,12 +950,17 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             } // for loop
 
 
-        }
+        } // ColumnEventClause
 
 
         @Override
         public String toString() {
             final StringBuilder builder = new StringBuilder();
+            eventToString(builder);
+            return builder.toString();
+        }
+
+        final void eventToString(final StringBuilder builder) {
             Object action;
             for (int i = 0; i < 2; i++) {
                 if (i == 0) {
@@ -1337,11 +988,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                     builder.append(" ON ERROR");
                 }
             }
-
-            return builder.toString();
         }
 
-        private ColumnEventClause endClause() {
+        final ColumnEventClause endEventClause() {
             if (this.temp != null) {
                 throw ContextStack.clearStackAndCriteriaError("exists action clause, but no ON EMPTY/ON ERROR clause");
             }
@@ -1350,6 +999,322 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
 
     } // ColumnEventClause
+
+
+    static final class JsonValueOptionClause extends ColumnEventClause
+            implements MySQLFunction._JsonValueReturningSpec, _SelfDescribed {
+
+        private MySQLCastType castType;
+
+        private Object precision;
+
+        private Object scale;
+
+        private String charsetName;
+
+        private String collateName;
+
+
+        private JsonValueOptionClause() {
+        }
+
+
+        @Override
+        public MySQLFunction._ValueEmptyActionSpec returning(MySQLCastType type) {
+            if (this.castType != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            switch (type) {
+                case FLOAT:
+                case DOUBLE:
+                case DECIMAL:
+                case SIGNED:
+                case UNSIGNED:
+                case DATE:
+                case TIME:
+                case DATETIME:
+                case YEAR:
+                case CHAR:
+                case JSON:
+                    this.castType = type;
+                    break;
+                default:
+                    String m = String.format("JSON_VALUE function don't support %s", type);
+                    throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLFunction._ValueEmptyActionSpec returning(MySQLCastType type, final Object length) {
+            if (this.castType != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+
+            FuncExpUtils.assertIntExp(length);
+
+            switch (type) {
+                case TIME:
+                case DATETIME:
+                case DECIMAL:
+                case CHAR:
+                    this.castType = type;
+                    this.precision = length;
+                    break;
+                default:
+                    String m = String.format("current method don't support %s", type);
+                    throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLFunction._ValueEmptyActionSpec returning(MySQLCastType type, final Object precision, final Object scale) {
+            if (this.castType != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (type != MySQLCastType.DECIMAL) {
+                String m = String.format("current method don't support %s", type);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            FuncExpUtils.assertIntExp(precision);
+            FuncExpUtils.assertIntExp(scale);
+            this.castType = type;
+            this.precision = precision;
+            this.scale = scale;
+            return this;
+        }
+
+        @Override
+        public MySQLFunction._ValueEmptyActionSpec returning(MySQLCastType type, SQLs.WordsCharacterSet charSet, String charsetName) {
+            return storeCharType(type, null, charsetName, null);
+        }
+
+        @Override
+        public MySQLFunction._ValueEmptyActionSpec returning(MySQLCastType type, SQLs.WordsCharacterSet charSet, String charsetName, SQLs.WordCollate collate, String collation) {
+            return storeCharType(type, null, charsetName, collation);
+        }
+
+        @Override
+        public MySQLFunction._ValueEmptyActionSpec returning(MySQLCastType type, Object length, SQLs.WordsCharacterSet charSet, String charsetName) {
+            return storeCharType(type, length, charsetName, null);
+        }
+
+        @Override
+        public MySQLFunction._ValueEmptyActionSpec returning(MySQLCastType type, Object length, SQLs.WordsCharacterSet charSet, String charsetName, SQLs.WordCollate collate, String collation) {
+            return storeCharType(type, length, charsetName, collation);
+        }
+
+        private MySQLFunction._ValueEmptyActionSpec storeCharType(final MySQLCastType type, final @Nullable Object length,
+                                                                  final @Nullable String charsetName,
+                                                                  final @Nullable String collation) {
+
+            if (this.castType != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+
+            if (type != MySQLCastType.CHAR) {
+                String m = String.format("current method don't support %s", type);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            if (length != null) {
+                FuncExpUtils.assertIntExp(length);
+            }
+            this.castType = type;
+            this.precision = length;
+            this.scale = null;
+            this.charsetName = charsetName;
+            this.collateName = collation;
+            return this;
+        }
+
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final MySQLCastType type = this.castType;
+            if (type == null) {
+                appendAction(sqlBuilder, context);
+                return;
+            }
+
+            sqlBuilder.append(_Constant.SPACE_RETURNING)
+                    .append(_Constant.SPACE)
+                    .append(type.typeName());
+
+            final Object precision = this.precision;
+
+            if (precision != null) {
+                sqlBuilder.append(_Constant.LEFT_PAREN);
+                FuncExpUtils.appendIntExp(precision, sqlBuilder, context);
+
+                final Object scale = this.scale;
+                if (scale != null) {
+                    sqlBuilder.append(_Constant.COMMA);
+                    FuncExpUtils.appendIntExp(scale, sqlBuilder, context);
+                }
+
+                sqlBuilder.append(_Constant.RIGHT_PAREN);
+            }
+
+            final String charset = this.charsetName, collate = this.collateName;
+
+            if (charset != null) {
+                sqlBuilder.append(SQLs.SPACE_CHARACTER_SET_SPACE);
+                context.parser().identifier(charset, sqlBuilder);
+            }
+
+            if (collate != null) {
+                sqlBuilder.append(SQLs.SPACE_COLLATE_SPACE);
+                context.parser().identifier(collate, sqlBuilder);
+            }
+
+            appendAction(sqlBuilder, context);
+
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            final MySQLCastType type = this.castType;
+            if (type == null) {
+                eventToString(builder);
+                return builder.toString();
+            }
+
+
+            builder.append(_Constant.SPACE_RETURNING)
+                    .append(_Constant.SPACE)
+                    .append(type.typeName());
+
+            final Object precision = this.precision;
+
+            if (precision != null) {
+                builder.append(_Constant.LEFT_PAREN)
+                        .append(precision);
+                final Object scale = this.scale;
+                if (scale != null) {
+                    builder.append(_Constant.COMMA)
+                            .append(scale);
+                }
+
+                builder.append(_Constant.RIGHT_PAREN);
+            }
+
+            final String charset = this.charsetName, collate = this.collateName;
+
+            if (charset != null) {
+                builder.append(SQLs.SPACE_CHARACTER_SET_SPACE)
+                        .append(charset);
+            }
+
+            if (collate != null) {
+                builder.append(SQLs.SPACE_COLLATE_SPACE)
+                        .append(charset);
+            }
+
+            eventToString(builder);
+            return builder.toString();
+        }
+
+        private MappingType obtainType() {
+            final MySQLCastType castType = this.castType;
+            if (castType == null) {
+                return StringType.INSTANCE;
+            }
+
+            final MappingType type;
+            switch (castType) {
+                case FLOAT:
+                    type = FloatType.INSTANCE;
+                    break;
+                case DOUBLE:
+                    type = DoubleType.INSTANCE;
+                    break;
+                case DECIMAL:
+                    type = BigDecimalType.INSTANCE;
+                    break;
+                case SIGNED:
+                    type = LongType.INSTANCE;
+                    break;
+                case UNSIGNED:
+                    type = UnsignedLongType.INSTANCE;
+                    break;
+                case DATE:
+                    type = LocalDateType.INSTANCE;
+                    break;
+                case TIME:
+                    type = LocalTimeType.INSTANCE;
+                    break;
+                case DATETIME:
+                    type = LocalDateTimeType.INSTANCE;
+                    break;
+                case YEAR:
+                    type = YearType.INSTANCE;
+                    break;
+                case CHAR:
+                    type = StringType.INSTANCE;
+                    break;
+                case JSON:
+                    type = JsonType.TEXT;
+                    break;
+                default:
+                    // no bug ,never here
+                    throw _Exceptions.unexpectedEnum(castType);
+            }
+            return type;
+        }
+
+
+    } // JsonValueOptionClause
+
+
+    private static final class JsonValueFunc extends OperationExpression.SqlFunctionExpression
+            implements MySQLFunction {
+
+        private final Object jsonDoc;
+
+        private final Object path;
+
+        private final JsonValueOptionClause optionClause;
+
+        /**
+         * @see #jsonValueFunc(Expression, Expression, JsonValueOptionClause)
+         */
+        private JsonValueFunc(Object jsonDoc, Object path, JsonValueOptionClause clause) {
+            super("JSON_VALUE", clause.obtainType());
+            this.jsonDoc = jsonDoc;
+            this.path = path;
+            this.optionClause = clause;
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            FuncExpUtils.appendJsonDoc(this.jsonDoc, sqlBuilder, context);
+
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            FuncExpUtils.appendPathExp(this.path, sqlBuilder, context);
+
+            this.optionClause.appendSql(sqlBuilder, context);
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.jsonDoc)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.path)
+                    .append(this.optionClause);
+        }
+
+
+    }//JsonValueFunction
+
+
+    private interface JsonTableColumn extends _SelfDescribed {
+
+    }
 
 
     private static final class JsonTableOrdinalityField extends FunctionField implements JsonTableColumn {
@@ -1383,24 +1348,24 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         private final boolean exists;
 
-        private final ArmyExpression pathExp;
+        private final Object pathExp;
 
         private final ColumnEventClause eventClause;
 
-        private JsonTablePathField(String name, MappingType type, TypeItem typeItem, Expression pathExp,
+        private JsonTablePathField(String name, MappingType type, TypeItem typeItem, Object pathExp,
                                    @Nullable ColumnEventClause eventClause) {
             super(name, type);
             this.typeItem = typeItem;
             this.exists = false;
-            this.pathExp = (ArmyExpression) pathExp;
+            this.pathExp = pathExp;
             this.eventClause = eventClause;
         }
 
-        private JsonTablePathField(String name, MappingType type, TypeItem typeItem, Expression pathExp) {
+        private JsonTablePathField(String name, MappingType type, TypeItem typeItem, Object pathExp) {
             super(name, type);
             this.typeItem = typeItem;
             this.exists = true;
-            this.pathExp = (ArmyExpression) pathExp;
+            this.pathExp = pathExp;
             this.eventClause = null;
         }
 
@@ -1424,11 +1389,20 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                 sqlBuilder.append(MySQLs.EXISTS.spaceRender());
             }
             sqlBuilder.append(MySQLs.PATH.spaceRender());
-            this.pathExp.appendSql(sqlBuilder, context);
+
+            final Object pathExp = this.pathExp;
+            if (pathExp instanceof String) {
+                context.appendLiteral(StringType.INSTANCE, pathExp);
+            } else if (pathExp instanceof Expression) {
+                ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
+            } else {
+                // no bug ,never here
+                throw new IllegalStateException();
+            }
 
             final ColumnEventClause eventClause = this.eventClause;
             if (eventClause != null) {
-                eventClause.appendSql(sqlBuilder, context);
+                eventClause.appendAction(sqlBuilder, context);
             }
         }
 
@@ -1462,16 +1436,16 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         private final boolean path;
 
-        private final ArmyExpression pathExp;
+        private final Object pathExp;
 
         private final List<JsonTableColumn> columnList;
 
         /**
          * @param columnList a unmodified list
          */
-        private JsonTableNestedField(boolean path, Expression pathExp, List<JsonTableColumn> columnList) {
+        private JsonTableNestedField(boolean path, Object pathExp, List<JsonTableColumn> columnList) {
             this.path = path;
-            this.pathExp = (ArmyExpression) pathExp;
+            this.pathExp = pathExp;
             this.columnList = columnList;
         }
 
@@ -1483,7 +1457,15 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             if (this.path) {
                 sqlBuilder.append(MySQLs.PATH.spaceRender());
             }
-            this.pathExp.appendSql(sqlBuilder, context);
+            final Object pathExp = this.pathExp;
+            if (pathExp instanceof String) {
+                context.appendLiteral(StringType.INSTANCE, pathExp);
+            } else if (pathExp instanceof Expression) {
+                ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
+            } else {
+                // no bug ,never here
+                throw new IllegalStateException();
+            }
 
             JsonTableFunc.appendJsonTableColumns(this.columnList, sqlBuilder, context);
         }
@@ -1526,7 +1508,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public MySQLFunction._JsonTableColumnCommaClause space(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._ValueEmptyActionSpec> consumer) {
             return comma(name, type, path, pathExp, consumer);
         }
 
@@ -1566,11 +1548,11 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public MySQLJsonTableColumns comma(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._ValueEmptyActionSpec> consumer) {
             final ColumnEventClause eventClause = new ColumnEventClause();
             CriteriaUtils.invokeConsumer(eventClause, consumer);
 
-            return addPathField(name, type, false, pathExp, eventClause.endClause());
+            return addPathField(name, type, false, pathExp, eventClause.endEventClause());
         }
 
         @Override
@@ -1610,7 +1592,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._JsonTableEmptyHandleClause> consumer) {
+        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._ValueEmptyActionSpec> consumer) {
             return comma(name, type, path, pathExp, consumer);
         }
 
@@ -1653,19 +1635,20 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         private MySQLJsonTableColumns addNestedField(final boolean path, final Object pathExp,
                                                      final Consumer<? super MySQLJsonTableColumns> consumer) {
+            FuncExpUtils.assertPathExp(pathExp);
+
             final MySQLJsonTableColumns tableColumns;
             tableColumns = new MySQLJsonTableColumns();
 
             CriteriaUtils.invokeConsumer(tableColumns, consumer);
 
-            return addField(new JsonTableNestedField(path, jsonPathExp(pathExp), tableColumns.endClause()));
+            return addField(new JsonTableNestedField(path, pathExp, tableColumns.endClause()));
         }
 
 
         private MySQLJsonTableColumns addPathField(final String name, final TypeItem typeItem, final boolean exists,
                                                    final Object path, final @Nullable ColumnEventClause eventClause) {
-            final Expression pathExp;
-            pathExp = jsonPathExp(path);
+            FuncExpUtils.assertPathExp(path);
 
             final MappingType type;
             if (typeItem instanceof MappingType) {
@@ -1680,9 +1663,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             final JsonTablePathField field;
             if (exists) {
                 assert eventClause == null;
-                field = new JsonTablePathField(name, type, typeItem, pathExp);
+                field = new JsonTablePathField(name, type, typeItem, path);
             } else {
-                field = new JsonTablePathField(name, type, typeItem, pathExp, eventClause);
+                field = new JsonTablePathField(name, type, typeItem, path, eventClause);
             }
             return this.addField(field);
         }
@@ -1710,9 +1693,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         private static final String JSON_TABLE = "JSON_TABLE";
 
-        private final ArmyExpression exp;
+        private final Object jsonDoc;
 
-        private final ArmyExpression pathExp;
+        private final Object pathExp;
 
         private final List<JsonTableColumn> columnList;
 
@@ -1722,11 +1705,11 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         /**
          * @param columnList unmodified list
-         * @see #jsonTable(Object, Object, MySQLJsonTableColumns)
+         * @see #jsonTable(Object, Object, Consumer)
          */
-        private JsonTableFunc(Expression exp, Expression pathExp, final List<JsonTableColumn> columnList) {
-            this.exp = (ArmyExpression) exp;
-            this.pathExp = (ArmyExpression) pathExp;
+        private JsonTableFunc(Object jsonDoc, Object pathExp, final List<JsonTableColumn> columnList) {
+            this.jsonDoc = jsonDoc;
+            this.pathExp = pathExp;
             this.columnList = columnList;
             this.selectionList = obtainSelectionList(columnList);
             this.selectionMap = CriteriaUtils.createSelectionMap(this.selectionList);
@@ -1758,14 +1741,28 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(JSON_TABLE)
-                    .append(_Constant.LEFT_PAREN);
+            context.appendFuncName(true, JSON_TABLE);
 
-            this.exp.appendSql(sqlBuilder, context);
+            sqlBuilder.append(_Constant.LEFT_PAREN);
+
+            final Object jsonDoc = this.jsonDoc;
+            if (jsonDoc instanceof Expression) {
+                ((ArmyExpression) jsonDoc).appendSql(sqlBuilder, context);
+            } else {
+                context.appendLiteral(JsonType.TEXT, jsonDoc);
+            }
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.pathExp.appendSql(sqlBuilder, context);
+
+            final Object pathExp = this.pathExp;
+            if (pathExp instanceof String) {
+                context.appendLiteral(StringType.INSTANCE, pathExp);
+            } else if (pathExp instanceof Expression) {
+                ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
+            } else {
+                // no bug ,never here
+                throw new IllegalStateException();
+            }
 
             appendJsonTableColumns(this.columnList, sqlBuilder, context);
 
@@ -1781,7 +1778,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             builder.append(_Constant.SPACE)
                     .append(JSON_TABLE)
                     .append(_Constant.LEFT_PAREN)
-                    .append(this.exp)
+                    .append(this.jsonDoc)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.pathExp);
 

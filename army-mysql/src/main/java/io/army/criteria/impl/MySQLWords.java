@@ -172,7 +172,7 @@ abstract class MySQLWords {
 
     }//KeyWordsAtTimeZone
 
-    enum KeyWordsCharacterSet implements MySQLs.WordsCharacterSet {
+    enum KeyWordsCharacterSet implements SQLs.WordsCharacterSet {
 
         CHARACTER_SET(" CHARACTER SET");
 
@@ -196,7 +196,7 @@ abstract class MySQLWords {
 
     }//KeyWordsCharacterSet
 
-    enum KeyWordsCollate implements MySQLs.WordsCollate {
+    enum KeyWordsCollate implements SQLs.WordCollate {
 
         COLLATE(" COLLATE");
 

@@ -77,9 +77,9 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     public static final MySQLs.WordsAtTimeZone AT_TIME_ZONE = MySQLWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
 
-    public static final MySQLs.WordsCharacterSet CHARACTER_SET = MySQLWords.KeyWordsCharacterSet.CHARACTER_SET;
+    public static final SQLs.WordsCharacterSet CHARACTER_SET = MySQLWords.KeyWordsCharacterSet.CHARACTER_SET;
 
-    public static final MySQLs.WordsCollate COLLATE = MySQLWords.KeyWordsCollate.COLLATE;
+    public static final SQLs.WordCollate COLLATE = MySQLWords.KeyWordsCollate.COLLATE;
 
 
     public static final SimpleExpression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");
