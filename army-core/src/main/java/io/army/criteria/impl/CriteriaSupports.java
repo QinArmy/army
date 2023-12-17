@@ -978,8 +978,8 @@ abstract class CriteriaSupports {
 
     }//StringObjectConsumer
 
-    static final class StaticObjectConsumer implements Statement._StaticObjectSpaceClause
-            , Statement._StaticObjectCommaClause {
+    static final class StaticObjectConsumer implements Clause._PairVariadicSpaceClause
+            , Clause._PairVariadicCommaClause {
 
         private final boolean required;
 
@@ -993,7 +993,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._StaticObjectCommaClause space(String keyName, Object value) {
+        public Clause._PairVariadicCommaClause space(String keyName, Object value) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1002,7 +1002,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._StaticObjectCommaClause space(Expression key, Object value) {
+        public Clause._PairVariadicCommaClause space(Expression key, Object value) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1011,12 +1011,12 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._StaticObjectCommaClause comma(String keyName, Object value) {
+        public Clause._PairVariadicCommaClause comma(String keyName, Object value) {
             return this.onAddPair(keyName, value);
         }
 
         @Override
-        public Statement._StaticObjectCommaClause comma(Expression key, Object value) {
+        public Clause._PairVariadicCommaClause comma(Expression key, Object value) {
             return this.onAddPair(key, value);
         }
 
@@ -1028,7 +1028,7 @@ abstract class CriteriaSupports {
             this.state = Boolean.FALSE;
         }
 
-        private Statement._StaticObjectCommaClause onAddPair(final @Nullable Object key, final Object value) {
+        private Clause._PairVariadicCommaClause onAddPair(final @Nullable Object key, final Object value) {
             if (this.state != Boolean.TRUE) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (key == null) {
@@ -1042,7 +1042,7 @@ abstract class CriteriaSupports {
 
     }//StaticObjectConsumer
 
-    static final class DynamicObjectConsumer implements Statement._DynamicObjectConsumer {
+    static final class DynamicObjectConsumer implements Clause._PairVariadicConsumerClause {
 
         private final boolean required;
 
@@ -1056,12 +1056,12 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._DynamicObjectConsumer accept(String keyName, Object value) {
+        public Clause._PairVariadicConsumerClause accept(String keyName, Object value) {
             return this.onAddPair(keyName, value);
         }
 
         @Override
-        public Statement._DynamicObjectConsumer accept(Expression key, Object value) {
+        public Clause._PairVariadicConsumerClause accept(Expression key, Object value) {
             return this.onAddPair(key, value);
         }
 
@@ -1073,7 +1073,7 @@ abstract class CriteriaSupports {
         }
 
 
-        private Statement._DynamicObjectConsumer onAddPair(final @Nullable Object key, final Object value) {
+        private Clause._PairVariadicConsumerClause onAddPair(final @Nullable Object key, final Object value) {
             final Boolean state = this.state;
             if (state == Boolean.FALSE) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -1092,7 +1092,7 @@ abstract class CriteriaSupports {
     }//DynamicObjectConsumer
 
 
-    static final class ObjectVariadic implements Statement._ObjectSpaceClause, Statement._ObjectCommaClause {
+    static final class ObjectVariadic implements Clause._VariadicSpaceClause, Clause._VariadicCommaClause {
 
         private List<ArmyExpression> list;
 
@@ -1100,7 +1100,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._ObjectCommaClause comma(final @Nullable Object exp) {
+        public Clause._VariadicCommaClause comma(final @Nullable Object exp) {
             List<ArmyExpression> list = this.list;
             if (list == null) {
                 this.list = list = _Collections.arrayList();
@@ -1112,7 +1112,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._ObjectCommaClause space(@Nullable Object exp) {
+        public Clause._VariadicCommaClause space(@Nullable Object exp) {
             return this.comma(exp);
         }
 

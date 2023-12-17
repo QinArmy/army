@@ -744,6 +744,10 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
 
+
+
+    /*-------------------below private static method -------------------*/
+
     @Nullable
     private static <R> R onlyRow(final List<R> resultList) {
         final R result;
@@ -759,10 +763,6 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         }
         return result;
     }
-
-
-
-    /*-------------------below private static method -------------------*/
 
     private static long obtainAffectedRows(final Object result) {
         if (result instanceof Long) {

@@ -282,6 +282,7 @@ public abstract class _ArmySession implements Session {
 
     /*-------------------below static method -------------------*/
 
+
     @Nullable
     protected static TableMeta<?> getBatchUpdateDomainTable(final BatchDmlStatement statement) {
         final TableMeta<?> domainTable;

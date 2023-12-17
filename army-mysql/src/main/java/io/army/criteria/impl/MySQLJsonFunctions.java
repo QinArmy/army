@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.mapping.*;
-import io.army.util._Collections;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -24,6 +23,69 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /*-------------------below Functions That Create JSON Values-------------------*/
 
+    /**
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
+     */
+    public static SimpleExpression jsonArray() {
+        return FunctionUtils.zeroArgFunc("JSON_ARRAY", JsonType.TEXT);
+    }
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     *
+     * @param value non-null, one of following :
+     *              <ul>
+     *                <li>{@link Expression} instance</li>
+     *                <li>{@link List} instance</li>
+     *                <li>one dimension array</li>
+     *                <li>literal</li>
+     *              </ul>
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
+     */
+    public static SimpleExpression jsonArray(final Object value) {
+        final String name = "JSON_ARRAY";
+        final SimpleExpression func;
+        if (value instanceof List) {
+            func = LiteralFunctions.multiArgFunc(name, (List<?>) value, JsonType.TEXT);
+        } else if (!value.getClass().isArray()) {
+            func = LiteralFunctions.oneArgFunc(name, value, JsonType.TEXT);
+        } else if (value.getClass().getComponentType().isArray()) {
+            throw ContextStack.clearStackAndCriteriaError("reject multi dimension array");
+        } else {
+            func = LiteralFunctions.multiArgFunc(name, Arrays.asList((Object[]) value), JsonType.TEXT);
+        }
+        return func;
+    }
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     *
+     * @param value1   non-null, one of following :
+     *                 <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>literal</li>
+     *                 </ul>
+     * @param value2   non-null, one of following :
+     *                 <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>literal</li>
+     *                 </ul>
+     * @param variadic non-null,each of variadic is  one of following :
+     *                 <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>literal</li>
+     *                 </ul>
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
+     */
+    public static SimpleExpression jsonArray(Object value1, Object value2, Object... variadic) {
+        return LiteralFunctions.multiArgFunc("JSON_ARRAY", FuncExpUtils.twoAndVariadic(value1, value2, variadic), JsonType.TEXT);
+    }
+
 
     /**
      * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
@@ -31,12 +93,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static SimpleExpression jsonArray(Consumer<Statement._ObjectSpaceClause> consumer) {
-        final CriteriaSupports.ObjectVariadic variadic;
-        variadic = CriteriaSupports.objectVariadicClause();
-        consumer.accept(variadic);
-
-        return FunctionUtils.safeMultiArgFunc("JSON_ARRAY", variadic.endClause(), JsonType.TEXT);
+    public static SimpleExpression jsonArray(Consumer<Clause._VariadicSpaceClause> consumer) {
+        return LiteralFunctions.multiArgFunc("JSON_ARRAY", FuncExpUtils.variadicList(false, consumer), JsonType.TEXT);
     }
 
     /**
@@ -47,15 +105,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static SimpleExpression jsonArray(SQLs.SymbolSpace space, Consumer<Consumer<Object>> consumer) {
-        final List<ArmyExpression> list = _Collections.arrayList();
-
-        final Consumer<Object> variadic;
-        variadic = val -> list.add((ArmyExpression) SQLs._nullableExp(val));
-
-        consumer.accept(variadic);
-
-        return FunctionUtils.safeMultiArgFunc("JSON_ARRAY", list, JsonType.TEXT);
+    public static SimpleExpression jsonArray(SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
+        return LiteralFunctions.multiArgFunc("JSON_ARRAY", FuncExpUtils.variadicList(false, consumer), JsonType.TEXT);
     }
 
     /**
@@ -66,7 +117,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
     public static SimpleExpression jsonObject(final Map<String, ?> expMap) {
-        return FunctionUtils.jsonMapFunc("JSON_OBJECT", expMap, JsonType.TEXT);
+        return LiteralFunctions.jsonMapFunc("JSON_OBJECT", expMap, JsonType.TEXT);
     }
 
 
@@ -76,18 +127,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    public static SimpleExpression jsonObject(final Consumer<Statement._StaticObjectSpaceClause> consumer) {
-        final List<Object> argList = _Collections.arrayList();
-
-        final CriteriaSupports.StaticObjectConsumer objectConsumer;
-        objectConsumer = CriteriaSupports.staticObjectConsumer(false, argList::add);
-
-        consumer.accept(objectConsumer);
-        objectConsumer.endConsumer();
-
-        assert (argList.size() & 1) == 0; // even
-
-        return FunctionUtils.simpleJsonObjectFunc("JSON_OBJECT", argList, JsonType.TEXT);
+    public static SimpleExpression jsonObject(final Consumer<Clause._PairVariadicSpaceClause> consumer) {
+        return LiteralFunctions.multiArgFunc("JSON_OBJECT", FuncExpUtils.pariVariadicList(false, consumer), JsonType.TEXT);
     }
 
     /**
@@ -96,18 +137,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    public static SimpleExpression jsonObject(SQLs.SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
-        final List<Object> argList = _Collections.arrayList();
-
-        final CriteriaSupports.DynamicObjectConsumer clause;
-        clause = CriteriaSupports.dynamicObjectConsumer(false, argList::add);
-
-        consumer.accept(clause);
-        clause.endConsumer();
-
-        assert (argList.size() & 1) == 0; // even
-
-        return FunctionUtils.simpleJsonObjectFunc("JSON_OBJECT", argList, JsonType.TEXT);
+    public static SimpleExpression jsonObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+        return LiteralFunctions.multiArgFunc("JSON_OBJECT", FuncExpUtils.pariVariadicList(false, consumer), JsonType.TEXT);
     }
 
 
@@ -116,12 +147,17 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type: {@link StringType}
      * *
      *
-     * @param string non-null
+     * @param string non-null,each of variadic is  one of following :
+     *               <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} instance</li>
+     *               </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-quote">JSON_QUOTE(string)</a>
      */
-    public static SimpleExpression jsonQuote(final Expression string) {
-        return FunctionUtils.oneArgFunc("JSON_QUOTE", string, StringType.INSTANCE);
+    public static SimpleExpression jsonQuote(final Object string) {
+        FuncExpUtils.assertTextExp(string);
+        return LiteralFunctions.oneArgFunc("JSON_QUOTE", string, StringType.INSTANCE);
     }
 
     /**

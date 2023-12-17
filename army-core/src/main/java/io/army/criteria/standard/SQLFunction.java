@@ -97,6 +97,11 @@ public interface SQLFunction extends Item {
 
     interface _SqlCaseWhenClause extends Item {
 
+        /**
+         * <p>create WHEN clause of CASE function.
+         *
+         * @param expression {@link Expression} instance or literal
+         */
         Item when(Object expression);
 
         Item when(UnaryOperator<IPredicate> valueOperator, IPredicate predicate);
@@ -117,6 +122,9 @@ public interface SQLFunction extends Item {
 
     interface _StaticCaseThenClause extends _SqlCaseThenClause {
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         _CaseWhenSpec then(Object expression);
 
@@ -136,6 +144,9 @@ public interface SQLFunction extends Item {
 
     interface _StaticCaseWhenClause extends _SqlCaseWhenClause {
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         _StaticCaseThenClause when(Object expression);
 

@@ -97,23 +97,6 @@ public interface Statement extends Item {
 
     }
 
-    interface _ObjectCommaClause {
-
-        _ObjectCommaClause comma(@Nullable Object exp);
-
-    }
-
-    interface _ObjectSpaceClause {
-
-        _ObjectCommaClause space(@Nullable Object exp);
-    }
-
-    interface _VariadicConsumer {
-
-        _VariadicConsumer accept(@Nullable Object exp);
-
-    }
-
 
     interface _ElementCommaClause {
 
@@ -155,31 +138,6 @@ public interface Statement extends Item {
         _ElementObjectCommaClause comma(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
 
         _ElementObjectCommaClause comma(Expression key, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
-    }
-
-    interface _StaticObjectSpaceClause {
-
-        _StaticObjectCommaClause space(String keyName, Object value);
-
-        _StaticObjectCommaClause space(Expression key, Object value);
-
-    }
-
-    interface _StaticObjectCommaClause {
-
-        _StaticObjectCommaClause comma(String keyName, Object value);
-
-        _StaticObjectCommaClause comma(Expression key, Object value);
-
-    }
-
-
-    interface _DynamicObjectConsumer {
-
-        _DynamicObjectConsumer accept(String keyName, Object value);
-
-        _DynamicObjectConsumer accept(Expression key, Object value);
-
     }
 
 

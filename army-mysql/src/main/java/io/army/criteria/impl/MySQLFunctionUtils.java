@@ -1582,42 +1582,42 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, SQLs.WordsForOrdinality forOrdinality) {
+        public MySQLFunction._JsonTableColumnConsumerClause column(String name, SQLs.WordsForOrdinality forOrdinality) {
             return comma(name, forOrdinality);
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
+        public MySQLFunction._JsonTableColumnConsumerClause column(String name, TypeItem type, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, path, pathExp);
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._ValueEmptyActionSpec> consumer) {
+        public MySQLFunction._JsonTableColumnConsumerClause column(String name, TypeItem type, SQLs.WordPath path, Object pathExp, Consumer<MySQLFunction._ValueEmptyActionSpec> consumer) {
             return comma(name, type, path, pathExp, consumer);
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnConsumerClause accept(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
+        public MySQLFunction._JsonTableColumnConsumerClause column(String name, TypeItem type, SQLs.WordExists exists, SQLs.WordPath path, Object pathExp) {
             return comma(name, type, exists, path, pathExp);
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+        public MySQLFunction._JsonTableColumnConsumerClause column(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
             return comma(nested, pathExp, columns, consumer);
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnConsumerClause accept(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+        public MySQLFunction._JsonTableColumnConsumerClause column(SQLs.WordNested nested, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
             return comma(nested, pathExp, columns, space, consumer);
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnCommaClause accept(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
+        public MySQLFunction._JsonTableColumnCommaClause column(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
             return comma(nested, path, pathExp, columns, consumer);
         }
 
         @Override
-        public MySQLFunction._JsonTableColumnCommaClause accept(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
+        public MySQLFunction._JsonTableColumnCommaClause column(SQLs.WordNested nested, SQLs.WordPath path, Object pathExp, SQLs.WordColumns columns, SQLs.SymbolSpace space, Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
             return comma(nested, path, pathExp, columns, space, consumer);
         }
 

@@ -752,7 +752,7 @@ abstract class FunctionUtils {
     }
 
     static SimpleExpression objectElementFunc(final String name, final boolean required,
-                                              final Consumer<Statement._StaticObjectSpaceClause> consumer,
+                                              final Consumer<Clause._PairVariadicSpaceClause> consumer,
                                               final TypeMeta returnType) {
         final List<Object> argList = _Collections.arrayList();
         final CriteriaSupports.StaticObjectConsumer objectConsumer;
@@ -775,7 +775,7 @@ abstract class FunctionUtils {
     }
 
     static SimpleExpression objectElementFunc(SQLs.SymbolSpace space, final String name, final boolean required,
-                                              final Consumer<Statement._DynamicObjectConsumer> consumer,
+                                              final Consumer<Clause._PairVariadicConsumerClause> consumer,
                                               final TypeMeta returnType) {
         if (space != SQLs.SPACE) {
             throw CriteriaUtils.funcArgError(name, space);

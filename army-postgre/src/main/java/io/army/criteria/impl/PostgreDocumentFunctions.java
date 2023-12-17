@@ -2562,7 +2562,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(Consumer<Statement._StaticObjectSpaceClause> consumer) {
+    public static SimpleExpression jsonBuildObject(Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return FunctionUtils.objectElementFunc("json_build_object", false, consumer, JsonType.TEXT);
     }
 
@@ -2586,7 +2586,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(SQLs.SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
+    public static SimpleExpression jsonBuildObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return FunctionUtils.objectElementFunc(space, "json_build_object", false, consumer, JsonType.TEXT);
     }
 
@@ -2619,7 +2619,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(Consumer<Statement._StaticObjectSpaceClause> consumer) {
+    public static SimpleExpression jsonbBuildObject(Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return FunctionUtils.objectElementFunc("jsonb_build_object", false, consumer, JsonbType.TEXT);
     }
 
@@ -2643,7 +2643,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(SQLs.SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
+    public static SimpleExpression jsonbBuildObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return FunctionUtils.objectElementFunc(space, "jsonb_build_object", false, consumer, JsonbType.TEXT);
     }
 

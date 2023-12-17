@@ -1,9 +1,6 @@
 package io.army.reactive;
 
-import io.army.criteria.BatchDmlStatement;
-import io.army.criteria.DqlStatement;
-import io.army.criteria.InsertStatement;
-import io.army.criteria.SimpleDmlStatement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
 import io.army.reactive.executor.ReactiveStmtExecutor;
@@ -91,6 +88,58 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     }
 
+    @Override
+    public final <R> Mono<R> queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
+        return queryOne(statement, resultClass, defaultOption());
+    }
+
+
+    @Override
+    public final <R> Mono<R> queryOne(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
+        return query(statement, resultClass, option)
+                .take(2)
+                .collect(Collectors.toCollection(_Collections::arrayList))
+                .flatMap(ArmyReactiveSession::onlyRow);
+    }
+
+    @Override
+    public final <R> Mono<Optional<R>> queryOneNullable(SimpleDqlStatement statement, Class<R> resultClass) {
+        return queryOneNullable(statement, resultClass, defaultOption());
+    }
+
+    @Override
+    public final <R> Mono<Optional<R>> queryOneNullable(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
+        return queryNullable(statement, resultClass, option)
+                .take(2)
+                .collect(Collectors.toCollection(_Collections::arrayList))
+                .flatMap(ArmyReactiveSession::onlyRow);
+    }
+
+    @Override
+    public final <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
+        return queryOneObject(statement, constructor, defaultOption());
+    }
+
+    @Override
+    public final <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option) {
+        return queryObject(statement, constructor, option)
+                .take(2)
+                .collect(Collectors.toCollection(_Collections::arrayList))
+                .flatMap(ArmyReactiveSession::onlyRow);
+    }
+
+    @Override
+    public final <R> Mono<R> queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
+        return queryOneRecord(statement, function, defaultOption());
+    }
+
+    @Override
+    public final <R> Mono<R> queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
+        return queryRecord(statement, function, option)
+                .take(2)
+                .collect(Collectors.toCollection(_Collections::arrayList))
+                .flatMap(ArmyReactiveSession::onlyRow);
+    }
 
     @Override
     public final <R> Flux<R> query(DqlStatement statement, Class<R> resultClass) {
@@ -104,12 +153,12 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
 
     @Override
-    public final <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass) {
-        return this.queryOptional(statement, resultClass, defaultOption());
+    public final <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass) {
+        return this.queryNullable(statement, resultClass, defaultOption());
     }
 
     @Override
-    public final <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
+    public final <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
         return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryOptional(s, resultClass, o)); // here ,use o not option
     }
 
@@ -511,6 +560,26 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             return error;
         }
         return handleExecutionError(cause);
+    }
+
+
+
+    /*-------------------below static methods  -------------------*/
+
+
+    private static <R> Mono<R> onlyRow(final List<R> resultList) {
+        final Mono<R> mono;
+        switch (resultList.size()) {
+            case 1:
+                mono = Mono.just(resultList.get(0));
+                break;
+            case 0:
+                mono = Mono.empty();
+                break;
+            default:
+                mono = Mono.error(_Exceptions.nonUnique(resultList));
+        }
+        return mono;
     }
 
 

@@ -280,7 +280,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     static Expression _nonNullExp(final @Nullable Object value) {
         if (value == null) {
-            throw new CriteriaException("appropriate operator don't allow that operand is null");
+            throw ContextStack.clearStackAndCriteriaError("appropriate operator don't allow that operand is null");
         }
         if (value instanceof Expression) {
             return (Expression) value;
@@ -308,6 +308,22 @@ public abstract class SQLs extends SQLsSyntax {
             exp = SQLs.paramValue(value);
         }
         return exp;
+    }
+
+    static Expression _nonNullLiteral(final @Nullable Object value) {
+        if (value == null) {
+            throw ContextStack.clearStackAndCriteriaError("appropriate operator don't allow that operand is null");
+        }
+        if (value instanceof Expression) {
+            return (Expression) value;
+        }
+
+        if (value instanceof RightOperand) {
+            String m = String.format("appropriate operator don't allow that operand is %s",
+                    value.getClass().getName());
+            throw new CriteriaException(m);
+        }
+        return SQLs.literalValue(value);
     }
 
 
