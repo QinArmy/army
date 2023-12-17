@@ -117,22 +117,20 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
-    static Functions._TabularFunction jsonTable(final Object json, final Object path, final MySQLJsonTableColumns columns) {
-        final Expression jsonExp, pathExp;
-        if (json instanceof Expression) {
-            jsonExp = (Expression) json;
-        } else {
-            jsonExp = SQLs.literal(JsonType.TEXT, json);
-        }
+    static Functions._TabularFunction jsonTable(final Object json, final Object path,
+                                                final Consumer<? super MySQLJsonTableColumns> consumer) {
 
-        if (path instanceof String) {
-            pathExp = SQLs.literal(StringType.INSTANCE, jsonExp);
-        } else if (path instanceof Expression) {
-            pathExp = (Expression) path;
-        } else {
-            throw CriteriaUtils.mustExpressionOrType("path", String.class);
-        }
-        return new JsonTableFunc(jsonExp, pathExp, columns.endClause());
+
+        final Expression jsonExp, pathExp;
+        jsonExp = jsonDocExp(json);
+        pathExp = jsonPathExp(path);
+
+        final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
+        tableColumns = MySQLFunctionUtils.jsonTableColumns();
+
+        CriteriaUtils.invokeConsumer(tableColumns, consumer);
+
+        return new JsonTableFunc(jsonExp, pathExp, tableColumns.endClause());
     }
 
 
@@ -337,6 +335,28 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                 throw ContextStack.clearStackAndCriteriaError(String.format("error type %s", dataType));
         }
         return type;
+    }
+
+    private static Expression jsonPathExp(final Object path) {
+        final Expression pathExp;
+        if (path instanceof String) {
+            pathExp = SQLs.literal(StringType.INSTANCE, path);
+        } else if (path instanceof Expression) {
+            pathExp = (Expression) path;
+        } else {
+            throw CriteriaUtils.mustExpressionOrType("path", String.class);
+        }
+        return pathExp;
+    }
+
+    private static Expression jsonDocExp(final Object json) {
+        final Expression jsonExp;
+        if (json instanceof Expression) {
+            jsonExp = (Expression) json;
+        } else {
+            jsonExp = SQLs.literal(JsonType.TEXT, json);
+        }
+        return jsonExp;
     }
 
 
@@ -1321,6 +1341,13 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             return builder.toString();
         }
 
+        private ColumnEventClause endClause() {
+            if (this.temp != null) {
+                throw ContextStack.clearStackAndCriteriaError("no ON EMPTY/ON ERROR clause");
+            }
+            return this;
+        }
+
 
     } // ColumnEventClause
 
@@ -1471,7 +1498,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     } // JsonTableNestedField
 
 
-    static class MySQLJsonTableColumns implements MySQLFunction._JsonTableColumnSpaceClause,
+    private static class MySQLJsonTableColumns implements MySQLFunction._JsonTableColumnSpaceClause,
             MySQLFunction._JsonTableColumnCommaClause,
             MySQLFunction._JsonTableColumnConsumerClause {
 
@@ -1527,7 +1554,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             final ColumnEventClause eventClause = new ColumnEventClause();
             CriteriaUtils.invokeConsumer(eventClause, consumer);
 
-            return addPathField(name, type, false, pathExp, eventClause);
+            return addPathField(name, type, false, pathExp, eventClause.endClause());
         }
 
         @Override
@@ -1542,7 +1569,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
             CriteriaUtils.invokeConsumer(tableColumns, consumer);
 
-            return addField(new JsonTableNestedField(pathExpression(pathExp), tableColumns.endClause()));
+            return addField(new JsonTableNestedField(jsonPathExp(pathExp), tableColumns.endClause()));
         }
 
         @Override
@@ -1552,7 +1579,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
             CriteriaUtils.invokeConsumer(tableColumns, consumer);
 
-            return addField(new JsonTableNestedField(pathExpression(pathExp), tableColumns.endClause()));
+            return addField(new JsonTableNestedField(jsonPathExp(pathExp), tableColumns.endClause()));
         }
 
 
@@ -1603,7 +1630,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         private MySQLJsonTableColumns addPathField(final String name, final TypeItem typeItem, final boolean exists,
                                                    final Object path, final @Nullable ColumnEventClause eventClause) {
             final Expression pathExp;
-            pathExp = pathExpression(path);
+            pathExp = jsonPathExp(path);
 
             final MappingType type;
             if (typeItem instanceof MappingType) {
@@ -1636,19 +1663,6 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             fieldList.add(field);
 
             return this;
-        }
-
-
-        private static Expression pathExpression(final Object path) {
-            final Expression pathExp;
-            if (path instanceof String) {
-                pathExp = SQLs.literal(StringType.INSTANCE, path);
-            } else if (path instanceof Expression) {
-                pathExp = (Expression) path;
-            } else {
-                throw CriteriaUtils.mustExpressionOrType("path", String.class);
-            }
-            return pathExp;
         }
 
 

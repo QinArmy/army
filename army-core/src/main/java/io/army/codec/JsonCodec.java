@@ -1,17 +1,15 @@
 package io.army.codec;
 
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
 
 public interface JsonCodec {
 
     String encode(Object obj);
 
+    @Nullable
     <T> T decode(String json, Class<T> objectClass);
 
-    <T> List<T> decodeList(String json, Class<T> elementClass, Supplier<List<T>> listConstructor);
-
-    <T> Set<T> decodeSet(String json, Class<T> elementClass, Supplier<Set<T>> setConstructor);
+    <T> List<T> decodeList(String json, Class<T> elementClass);
 
 }

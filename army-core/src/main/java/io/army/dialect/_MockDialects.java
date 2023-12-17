@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 
-import io.army.codec.JsonCodec;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
@@ -13,12 +12,9 @@ import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Supplier;
 
 public abstract class _MockDialects implements DialectEnv {
 
@@ -27,6 +23,11 @@ public abstract class _MockDialects implements DialectEnv {
 
     public static DialectParser from(final Dialect dialect) {
         return DIALECT_MAP.computeIfAbsent(dialect, _MockDialects::createDialectParser);
+    }
+
+    private static void tryLoadJsonCodec() {
+        String m = "META-INF/qinarmy/army_json_codec";
+
     }
 
 
@@ -73,32 +74,6 @@ public abstract class _MockDialects implements DialectEnv {
     }//MockDialectEnv
 
 
-    private static final class MockJsonCodec implements JsonCodec {
-
-        @Override
-        public String encode(Object obj) {
-            throw new UnsupportedOperationException();
-        }
-
-
-        @Override
-        public <T> T decode(String json, Class<T> objectClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> List<T> decodeList(String json, Class<T> elementClass, Supplier<List<T>> listConstructor) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> Set<T> decodeSet(String json, Class<T> elementClass, Supplier<Set<T>> setConstructor) {
-            throw new UnsupportedOperationException();
-        }
-
-    }//MockJsonCodec
-
-
     private static DialectParser createDialectParser(final Dialect dialect) {
         final ServerMeta meta;
         switch (dialect.database()) {
@@ -115,7 +90,6 @@ public abstract class _MockDialects implements DialectEnv {
         final MappingEnv mappingEnv;
         mappingEnv = MappingEnv.builder()
                 .serverMeta(meta)
-                .jsonCodec(new MockJsonCodec())
                 .build();
         return DialectParserFactory.createDialect(new MockDialectEnv(mappingEnv));
     }

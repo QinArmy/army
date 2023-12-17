@@ -126,7 +126,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static <T> void invokeConsumer(T data, Consumer<T> consumer) {
+    static <T> void invokeConsumer(T data, Consumer<? super T> consumer) {
         try {
             consumer.accept(data);
         } catch (Exception e) {

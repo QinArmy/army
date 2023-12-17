@@ -1038,12 +1038,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     public static _TabularFunction jsonTable(Object expr, Object pathExp, SQLs.WordColumns columns,
                                              Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
 
-        final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
-        tableColumns = MySQLFunctionUtils.jsonTableColumns();
-
-        CriteriaUtils.invokeConsumer(tableColumns, consumer);
-
-        return MySQLFunctionUtils.jsonTable(expr, pathExp, tableColumns);
+        return MySQLFunctionUtils.jsonTable(expr, pathExp, consumer);
     }
 
     /**
@@ -1061,12 +1056,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     public static _TabularFunction jsonTable(Object expr, Object pathExp, SQLs.WordColumns columns,
                                              SQLs.SymbolSpace space,
                                              Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
-        final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
-        tableColumns = MySQLFunctionUtils.jsonTableColumns();
 
-        CriteriaUtils.invokeConsumer(tableColumns, consumer);
-
-        return MySQLFunctionUtils.jsonTable(expr, pathExp, tableColumns);
+        return MySQLFunctionUtils.jsonTable(expr, pathExp, consumer);
     }
 
 

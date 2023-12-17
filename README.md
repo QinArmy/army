@@ -26,7 +26,7 @@
 
 ```
 
-###### appropriate maven module that contain domain class
+##### appropriate maven module that contain domain class
 
 ```xml
 

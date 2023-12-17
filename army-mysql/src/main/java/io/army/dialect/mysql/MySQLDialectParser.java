@@ -2,10 +2,7 @@ package io.army.dialect.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl._MySQLConsultant;
-import io.army.criteria.impl._Pair;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLCharset;
@@ -13,9 +10,6 @@ import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.StringType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -23,6 +17,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -683,7 +678,7 @@ final class MySQLDialectParser extends MySQLParser {
         final boolean asOf80 = this.asOf80;
 
         _TabularBlock block;
-        TabularItem tableItem;
+        TabularItem tabularItem;
         TableMeta<?> table;
         String alias;
         _JoinType joinType;
@@ -698,11 +693,11 @@ final class MySQLDialectParser extends MySQLParser {
             } else {
                 assert joinType == _JoinType.NONE;
             }
-            tableItem = block.tableItem();
+            tabularItem = block.tableItem();
             alias = block.alias();
 
-            if (tableItem instanceof TableMeta) {
-                table = (TableMeta<?>) tableItem;
+            if (tabularItem instanceof TableMeta) {
+                table = (TableMeta<?>) tabularItem;
                 sqlBuilder.append(_Constant.SPACE);
                 this.safeObjectName(table, sqlBuilder);
                 if (block instanceof _MySQLTableBlock) {
@@ -713,41 +708,46 @@ final class MySQLDialectParser extends MySQLParser {
                 if (block instanceof _MySQLTableBlock) {
                     this.indexHintClause(((_MySQLTableBlock) block).indexHintList(), sqlBuilder);
                 }
-            } else if (tableItem instanceof SubQuery) {
+            } else if (tabularItem instanceof DerivedTable) {
                 if (block instanceof _ModifierTabularBlock
                         && (modifier = ((_ModifierTabularBlock) block).modifier()) != null) {
-                    if (!asOf80) {
-                        throw _Exceptions.dontSupportModifier(modifier, this.dialect);
-                    }
+                    assert modifier == SQLs.LATERAL;
                     sqlBuilder.append(modifier.spaceRender());
                 }
-                this.handleSubQuery((SubQuery) tableItem, context);
+                if (tabularItem instanceof SubQuery) {
+                    this.handleSubQuery((SubQuery) tabularItem, context);
+                } else if (tabularItem instanceof SubValues) {
+                    this.handleSubValues((SubValues) tabularItem, context);
+                } else {
+                    // function
+                    ((_SelfDescribed) tabularItem).appendSql(sqlBuilder, context);
+                }
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
-            } else if (tableItem instanceof _NestedItems) {
-                _MySQLConsultant.assertNestedItems((_NestedItems) tableItem);
+
+                if (block instanceof _AliasDerivedBlock) {
+                    this.derivedColumnAliasClause((_AliasDerivedBlock) block, context);
+                }
+            } else if (tabularItem instanceof _NestedItems) {
+                _MySQLConsultant.assertNestedItems((_NestedItems) tabularItem);
                 if (_StringUtils.hasText(alias)) {
                     throw _Exceptions.nestedItemsAliasHasText(alias);
                 }
-                this.mysqlTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
+                this.mysqlTableReferences(((_NestedItems) tabularItem).tableBlockList(), context, true);
             } else if (!asOf80) {
-                throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
-            } else if (tableItem instanceof _Cte) {
-                _MySQLConsultant.assertMySQLCte((_Cte) tableItem);
+                throw _Exceptions.dontSupportTableItem(tabularItem, alias, this.dialect);
+            } else if (tabularItem instanceof _Cte) {
+                _MySQLConsultant.assertMySQLCte((_Cte) tabularItem);
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((_Cte) tableItem).name(), sqlBuilder);
+                this.identifier(((_Cte) tabularItem).name(), sqlBuilder);
                 if (_StringUtils.hasText(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                     this.identifier(alias, sqlBuilder);
                 } else if (!"".equals(alias)) {
-                    throw _Exceptions.tableItemAliasNoText(tableItem);
+                    throw _Exceptions.tableItemAliasNoText(tabularItem);
                 }
-            } else if (tableItem instanceof SubValues && tableItem instanceof MySQLValues) {
-                this.handleSubValues((SubValues) tableItem, context);
-                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-                this.identifier(alias, sqlBuilder);
             } else {
-                throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
+                throw _Exceptions.dontSupportTableItem(tabularItem, alias, this.dialect);
             }
 
             switch (joinType) {

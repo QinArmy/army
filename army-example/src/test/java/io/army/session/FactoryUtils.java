@@ -9,6 +9,7 @@ import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
 import io.army.env.StandardEnvironment;
 import io.army.example.common.SimpleFieldGeneratorFactory;
+import io.army.example.util.FastJsonCodec;
 import io.army.reactive.ReactiveFactoryBuilder;
 import io.army.reactive.ReactiveSessionFactory;
 import io.army.sync.SyncFactoryBuilder;
@@ -35,6 +36,7 @@ public abstract class FactoryUtils {
                 .packagesToScan(Collections.singletonList("io.army.example.bank.domain"))
                 .datasource(dataSource)
                 .environment(createEnvironment(database))
+                .jsonCodec(FastJsonCodec.getInstance())
                 .fieldGeneratorFactory(new SimpleFieldGeneratorFactory())
                 .build();
     }
@@ -57,6 +59,7 @@ public abstract class FactoryUtils {
                 .datasource(databaseSessionFactory)
                 .environment(createEnvironment(database))
                 .fieldGeneratorFactory(new SimpleFieldGeneratorFactory())
+                .jsonCodec(FastJsonCodec.getInstance())
                 .build()
                 .block();
 

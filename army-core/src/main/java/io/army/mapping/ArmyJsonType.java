@@ -33,13 +33,22 @@ abstract class ArmyJsonType extends _ArmyBuildInMapping {
 
     @Override
     public final Object convert(MappingEnv env, final Object source) throws CriteriaException {
-        if (this.javaType.isInstance(source)) {
+        if (!(source instanceof String) && this.javaType.isInstance(source)) {
             return source;
         }
         if (!(source instanceof String)) {
             throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
         }
-        return env.jsonCodec().decode((String) source, this.javaType);
+        Object documentValue;
+        try {
+            documentValue = env.jsonCodec().decode((String) source, this.javaType);
+        } catch (Exception e) {
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, e);
+        }
+        if (documentValue == null) {
+            documentValue = DOCUMENT_NULL_VALUE;
+        }
+        return documentValue;
     }
 
     @Override
@@ -60,11 +69,22 @@ abstract class ArmyJsonType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public final Object afterGet(DataType dataType, MappingEnv env, Object source) {
+    public final Object afterGet(DataType dataType, MappingEnv env, final Object source) {
         if (!(source instanceof String)) {
             throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        return env.jsonCodec().decode((String) source, this.javaType);
+        Object documentValue;
+
+        try {
+            documentValue = env.jsonCodec().decode((String) source, this.javaType);
+        } catch (Exception e) {
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, e);
+        }
+
+        if (documentValue == null) {
+            documentValue = DOCUMENT_NULL_VALUE;
+        }
+        return documentValue;
     }
 
 

@@ -1473,6 +1473,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             final List<? extends Selection> selectionList = this.selectionList;
 
             final MappingType[] compatibleTypeArray = this.compatibleTypeArray;
+            final Object documentNullValue = MappingType.DOCUMENT_NULL_VALUE;
 
             final int columnCount;
             if (dataTypeArray[0] == null
@@ -1530,6 +1531,12 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 }
 
                 columnValue = type.afterGet(dataType, env, columnValue);
+
+                if ((columnValue == documentNullValue && type instanceof MappingType.SqlDocumentType)) {
+                    acceptColumn(i, fieldName, null);
+                    continue;
+                }
+
                 //TODO field codec
                 acceptColumn(i, fieldName, columnValue);
 

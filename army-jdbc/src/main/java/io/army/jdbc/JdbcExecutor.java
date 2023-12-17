@@ -1965,6 +1965,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final List<? extends Selection> selectionList = this.selectionList;
 
+            final Object documentNullValue = MappingType.DOCUMENT_NULL_VALUE;
+
             // su class create one row
             final ObjectAccessor accessor;
             accessor = createRow();
@@ -2004,6 +2006,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 // MappingType convert one column
                 columnValue = type.afterGet(dataType, env, columnValue);
+
+                if ((columnValue == documentNullValue && type instanceof MappingType.SqlDocumentType)) {
+                    acceptColumn(i, fieldName, null);
+                    continue;
+                }
 
                 //TODO field codec
 

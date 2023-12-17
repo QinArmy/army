@@ -38,6 +38,11 @@ import java.util.function.BiFunction;
 
 public abstract class MappingType extends MappingSupport implements TypeMeta, TypeInfer, TypeItem {
 
+    /**
+     * document type mapping ,perhaps return null value ,for example : {@link JsonType#afterGet(DataType, MappingEnv, Object)}
+     */
+    public static final Object DOCUMENT_NULL_VALUE = new Object();
+
     @Deprecated
     protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER_0 = MappingType::paramError0;
 
@@ -851,6 +856,11 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     }
 
+
+    public interface SqlDocumentType {
+
+    }
+
     /**
      * <p>
      * This interface is base interface of below:
@@ -859,7 +869,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      *     <li>{@link SqlJsonbType}</li>
      * </ul>
      */
-    public interface SqlJsonDocumentType {
+    public interface SqlJsonDocumentType extends SqlDocumentType {
 
     }
 
