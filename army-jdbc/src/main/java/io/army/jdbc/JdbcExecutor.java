@@ -2007,7 +2007,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 // MappingType convert one column
                 columnValue = type.afterGet(dataType, env, columnValue);
 
-                if ((columnValue == documentNullValue && type instanceof MappingType.SqlDocumentType)) {
+                if ((columnValue == documentNullValue)) {
+                    if (!(type instanceof MappingType.SqlDocumentType)) {
+                        throw afterGetMethodError(type, dataType, columnValue);
+                    }
                     acceptColumn(i, fieldName, null);
                     continue;
                 }
@@ -2333,6 +2336,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      */
     private static abstract class JdbcRowSpliterator<R> implements Spliterator<R> {
 
+        private final JdbcExecutor executor;
+
         final Statement statement;
 
         final int fetchSize;
@@ -2344,10 +2349,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         boolean canceled;
 
-        private JdbcRowSpliterator(Statement statement, StmtType stmtType, SyncStmtOption option) {
+        private JdbcRowSpliterator(JdbcExecutor executor, Statement statement, StmtType stmtType, SyncStmtOption option) {
+            this.executor = executor;
             this.statement = statement;
             this.option = option;
             this.stmtType = stmtType;
+
             this.fetchSize = option.fetchSize();
             assert this.fetchSize > -1;
         }
@@ -2515,13 +2522,24 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
         }
 
-
         final void close() {
             if (this.closed) {
                 return;
             }
             this.closed = true;
+
             doCloseStream();
+
+            final JdbcExecutor executor = this.executor;
+
+            final Logger logger;
+            logger = executor.getLogger();
+            if (logger.isDebugEnabled()) {
+                logger.debug("session[name : {} , executorHash : {}]\nResultItem stream have closed", executor.sessionName,
+                        System.identityHashCode(executor)
+                );
+            }
+
         }
 
 
@@ -2591,7 +2609,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private JdbcSimpleSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
                                       SimpleStmt stmt, SyncStmtOption option) {
-            super(statement, stmt.stmtType(), option);
+            super(rowReader.executor, statement, stmt.stmtType(), option);
             this.statement = statement;
             this.stmt = stmt;
             this.resultSet = resultSet;
@@ -2963,7 +2981,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private JdbcBatchSpliterator(Statement statement, RowReader<R> rowReader,
                                      BatchStmt stmt, SyncStmtOption option, ResultSet resultSet) {
-            super(statement, stmt.stmtType(), option);
+            super(rowReader.executor, statement, stmt.stmtType(), option);
 
             this.statement = statement;
             this.rowReader = rowReader;

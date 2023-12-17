@@ -1532,7 +1532,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
                 columnValue = type.afterGet(dataType, env, columnValue);
 
-                if ((columnValue == documentNullValue && type instanceof MappingType.SqlDocumentType)) {
+                if ((columnValue == documentNullValue)) {
+                    if (!(type instanceof MappingType.SqlDocumentType)) {
+                        throw afterGetMethodError(type, dataType, columnValue);
+                    }
                     acceptColumn(i, fieldName, null);
                     continue;
                 }

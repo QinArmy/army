@@ -5,6 +5,7 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.TypeDefs;
+import io.army.criteria.mysql.MySQLCastType;
 import io.army.sqltype.MySQLType;
 import io.army.sync.SyncLocalSession;
 import io.army.util.RowMaps;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -99,7 +101,7 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
      * @see MySQLs#jsonTable(Object, Object, SQLs.WordColumns, Consumer)
      */
     @Test
-    public void jsonTableNested(final SyncLocalSession session) {
+    public void jsonTableFuncNested(final SyncLocalSession session) {
         final String jsonDocument;
         jsonDocument = "[{\"a\": 1, \"b\": [11,111]}, {\"a\": 2, \"b\": [22,222]}]";
 
@@ -119,6 +121,27 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
                 .forEach(row -> LOG.debug(JSON.toJSONString(row)));
 
 
+    }
+
+    /**
+     * @see MySQLs#jsonValue(Object, Object, Consumer)
+     */
+    @Test
+    public void jsonValueFunc(final SyncLocalSession session) {
+        final String jsonDoc = "{\"fname\": \"Joe\", \"lname\": \"Palmer\",\"date\":\"2023-12-18\"}";
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(jsonValue(jsonDoc, "$.fname", s -> s.returning(MySQLCastType.CHAR, 3, CHARACTER_SET, "utf8mb4")).as("name"))
+                .comma(jsonValue(jsonDoc, "$.date", s -> s.returning(MySQLCastType.DATE).spaceNull().onEmpty()).as("date"))
+                .asQuery();
+
+        final Map<String, Object> row;
+        row = session.queryOneObject(stmt, RowMaps::hashMap);
+
+        Assert.assertNotNull(row);
+        Assert.assertEquals(row.get("name"), "Joe");
+        Assert.assertEquals(row.get("date"), LocalDate.parse("2023-12-18"));
     }
 
 

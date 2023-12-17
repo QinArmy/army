@@ -806,6 +806,13 @@ public abstract class ExecutorSupport {
         return new MetaException(m);
     }
 
+    public static MetaException afterGetMethodError(MappingType type, DataType dataType,
+                                                    @Nullable Object returnValue) {
+        String m = String.format("%s afterGet() method return type %s and %s type not match.",
+                type.getClass().getName(), ClassUtils.safeClassName(returnValue), dataType);
+        return new MetaException(m);
+    }
+
 
     public static ArmyException executorFactoryClosed(ExecutorFactory factory) {
         String m = String.format("%s have closed.", factory);

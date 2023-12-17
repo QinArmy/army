@@ -468,6 +468,16 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type: {@link StringType}
      * * <p>
      *
+     * @param jsonDoc json expression
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
+     * @param path    path expression
+     *                <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} instance. For example : {@code "$[*]"} is equivalent to {@code SQLs.literal(StringType.INSTANCE,"$[*]") }</li>
+     *                </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
     public static SimpleExpression jsonValue(final Object jsonDoc, final Object path) {
@@ -479,32 +489,32 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /**
      * The {@link MappingType} of function return type:
-     *  <ul>
-     *      <li>If don't specified RETURNING clause then {@link StringType}</li>
-     *      <li>Else if type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
-     *      <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
-     *      <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
-     *      <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
-     *      <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
-     *      <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
-     *      <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *      <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
-     *      <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
-     *      <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
-     *      <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
-     *      <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
-     *      <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
-     *      <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *      <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
-     *      <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
-     *      <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
-     *      <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
-     *      <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
-     *      <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
-     *      <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
-     *  </ul>
-     * *
+     * <ul>
+     *     <li>If don't specified RETURNING clause then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
+     *     <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
+     *     <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
+     *     <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
+     *     <li>Else if type is {@link MySQLCastType#JSON }then {@link JsonType#TEXT}</li>
+     * </ul>, it's up to option clause.
      *
+     * @param jsonDoc  json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param path     path expression
+     *                 <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} instance. For example : {@code "$[*]"} is equivalent to {@code SQLs.literal(StringType.INSTANCE,"$[*]") }</li>
+     *                 </ul>
+     * @param consumer consumer that can accept option clause
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */

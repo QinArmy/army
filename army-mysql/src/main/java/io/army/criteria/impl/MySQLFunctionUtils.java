@@ -1151,7 +1151,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                     FuncExpUtils.appendIntExp(scale, sqlBuilder, context);
                 }
 
-                sqlBuilder.append(_Constant.RIGHT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
             final String charset = this.charsetName, collate = this.collateName;
@@ -1277,7 +1277,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         private final JsonValueOptionClause optionClause;
 
         /**
-         * @see #jsonValueFunc(Expression, Expression, JsonValueOptionClause)
+         * @see #jsonValueFunc(Object, Object, Consumer)
          */
         private JsonValueFunc(Object jsonDoc, Object path, JsonValueOptionClause clause) {
             super("JSON_VALUE", clause.obtainType());
