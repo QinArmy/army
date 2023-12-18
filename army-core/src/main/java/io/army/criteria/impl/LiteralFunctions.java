@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.RowExpression;
 import io.army.criteria.SimpleExpression;
+import io.army.criteria.SimplePredicate;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.StringType;
@@ -36,13 +37,52 @@ abstract class LiteralFunctions {
         return new OneArgFunc(name, false, arg, returnType);
     }
 
+    static SimpleExpression twoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
+        return new TwoArgFunc(name, true, one, two, returnType);
+    }
+
+    static SimpleExpression myTwoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
+        return new TwoArgFunc(name, false, one, two, returnType);
+    }
+
 
     static SimpleExpression multiArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new MultiArgFunc(name, true, argList, returnType);
     }
 
+    static SimpleExpression myMultiArgFunc(String name, List<?> argList, TypeMeta returnType) {
+        return new MultiArgFunc(name, false, argList, returnType);
+    }
+
     public static SimpleExpression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
         return new JsonMapFunc(name, map, returnType);
+    }
+
+
+    /*-------------------below predicate function methods -------------------*/
+
+    static SimplePredicate twoArgPredicate(String name, @Nullable Object one, @Nullable Object two) {
+        return new TwoArgPredicate(name, true, one, two);
+    }
+
+    static SimplePredicate myTwoArgPredicate(String name, @Nullable Object one, @Nullable Object two) {
+        return new TwoArgPredicate(name, false, one, two);
+    }
+
+    static SimplePredicate threeArgPredicate(String name, @Nullable Object one, @Nullable Object two, @Nullable Object three) {
+        return new ThreeArgPredicate(name, true, one, two, three);
+    }
+
+    static SimplePredicate myThreeArgPredicate(String name, @Nullable Object one, @Nullable Object two, @Nullable Object three) {
+        return new ThreeArgPredicate(name, false, one, two, three);
+    }
+
+    static SimplePredicate multiArgPredicate(String name, List<?> argList) {
+        return new MultiArgPredicate(name, true, argList);
+    }
+
+    static SimplePredicate myMultiArgPredicate(String name, List<?> argList) {
+        return new MultiArgPredicate(name, false, argList);
     }
 
 
@@ -71,6 +111,10 @@ abstract class LiteralFunctions {
 
         private final Object arg;
 
+        /**
+         * @see #oneArgFunc(String, Object, TypeMeta)
+         * @see #myOneArgFunc(String, Object, TypeMeta)
+         */
         private OneArgFunc(String name, boolean buildIn, @Nullable Object arg, TypeMeta returnType) {
             super(name, buildIn, returnType);
             this.arg = arg;
@@ -90,6 +134,36 @@ abstract class LiteralFunctions {
 
     } // OneArgFunc
 
+    private static final class TwoArgFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final Object one;
+
+        private final Object two;
+
+        private TwoArgFunc(String name, boolean buildIn, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
+            super(name, buildIn, returnType);
+            this.one = one;
+            this.two = two;
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
+
+    } // TwoArgFunc
+
     private static final class MultiArgFunc extends OperationExpression.SqlFunctionExpression {
 
         private final List<?> argList;
@@ -101,32 +175,114 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            final List<?> argList = this.argList;
-            final int size = argList.size();
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                FuncExpUtils.appendLiteral(argList.get(i), sqlBuilder, context);
-            }
-
+            FuncExpUtils.appendLiteralList(this.argList, sqlBuilder, context);
         }
 
         @Override
         void argToString(final StringBuilder builder) {
-            final List<?> argList = this.argList;
-            final int size = argList.size();
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                builder.append(argList.get(i));
-            }
+            FuncExpUtils.literalListToString(this.argList, builder);
 
         }
 
 
     } // MultiArgFunc
+
+    /*-------------------below predicate functions -------------------*/
+
+    private static final class TwoArgPredicate extends OperationPredicate.SqlFunctionPredicate {
+
+        private final Object one;
+
+        private final Object two;
+
+        private TwoArgPredicate(String name, boolean buildIn, @Nullable Object one, @Nullable Object two) {
+            super(name, buildIn);
+            this.one = one;
+            this.two = two;
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
+
+    } // TwoArgPredicate
+
+
+    private static final class ThreeArgPredicate extends OperationPredicate.SqlFunctionPredicate {
+
+        private final Object one;
+
+        private final Object two;
+
+        private final Object three;
+
+        private ThreeArgPredicate(String name, boolean buildIn, @Nullable Object one, @Nullable Object two,
+                                  @Nullable Object three) {
+            super(name, buildIn);
+            this.one = one;
+            this.two = two;
+            this.three = three;
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.appendLiteral(this.three, sqlBuilder, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three);
+        }
+
+
+    } // TwoArgPredicate
+
+
+    private static final class MultiArgPredicate extends OperationPredicate.SqlFunctionPredicate {
+
+        private final List<?> argList;
+
+        private MultiArgPredicate(String name, boolean buildIn, List<?> argList) {
+            super(name, buildIn);
+            this.argList = argList;
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            FuncExpUtils.appendLiteralList(this.argList, sqlBuilder, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            FuncExpUtils.literalListToString(this.argList, builder);
+
+        }
+
+
+    } // MultiArgPredicate
 
 
     /**

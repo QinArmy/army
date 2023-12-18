@@ -89,6 +89,26 @@ abstract class FuncExpUtils {
         }
     }
 
+    static void addTextExpList(final List<Object> argList, String argName, final List<?> expList) {
+        for (Object exp : expList) {
+            if (exp instanceof String || exp instanceof Expression) {
+                argList.add(exp);
+                continue;
+            }
+            throw CriteriaUtils.mustExpressionOrType(argName, String.class);
+        }
+    }
+
+    static void addAllText(final List<Object> argList, String argName, final Object[] expArray) {
+        for (Object exp : expArray) {
+            if (exp instanceof String || exp instanceof Expression) {
+                argList.add(exp);
+                continue;
+            }
+            throw CriteriaUtils.mustExpressionOrType(argName, String.class);
+        }
+    }
+
 
     static void appendLiteral(final @Nullable Object literal, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (literal == null) {
@@ -102,6 +122,28 @@ abstract class FuncExpUtils {
                 throw CriteriaUtils.clearStackAndNonDefaultType(literal);
             }
             context.appendLiteral(type, literal);
+        }
+
+    }
+
+    static void appendLiteralList(final List<?> literalList, final StringBuilder sqlBuilder, final _SqlContext context) {
+        final int size = literalList.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            FuncExpUtils.appendLiteral(literalList.get(i), sqlBuilder, context);
+        }
+
+    }
+
+    static void literalListToString(final List<?> literalList, final StringBuilder builder) {
+        final int size = literalList.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            builder.append(literalList.get(i));
         }
 
     }

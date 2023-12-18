@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.mapping.*;
+import io.army.util._Collections;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -54,7 +55,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         } else if (!value.getClass().isArray()) {
             func = LiteralFunctions.oneArgFunc(name, value, JsonType.TEXT);
         } else if (value.getClass().getComponentType().isArray()) {
-            throw ContextStack.clearStackAndCriteriaError("reject multi dimension array");
+            throw CriteriaUtils.rejectMultiDimensionArray();
         } else {
             func = LiteralFunctions.multiArgFunc(name, Arrays.asList((Object[]) value), JsonType.TEXT);
         }
@@ -160,7 +161,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param string non-null,each of variadic is  one of following :
      *               <ul>
      *                 <li>{@link Expression} instance</li>
-     *                 <li>{@link String} instance</li>
+     *                 <li>{@link String} literal</li>
      *               </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-quote">JSON_QUOTE(string)</a>
@@ -175,14 +176,24 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type: {@link BooleanType}
      * *
      *
-     * @param target    non-null
-     * @param candidate non-null
+     * @param target    json expression
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                  </ul>
+     * @param candidate json expression
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                  </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonContains(Expression, Expression, Expression)
+     * @see #jsonContains(Object, Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
      */
-    public static IPredicate jsonContains(final Expression target, final Expression candidate) {
-        return FunctionUtils.twoArgPredicateFunc("JSON_CONTAINS", target, candidate);
+    public static SimplePredicate jsonContains(final Object target, final Object candidate) {
+        return LiteralFunctions.twoArgPredicate("JSON_CONTAINS", FuncExpUtils.jsonDocExp(target),
+                FuncExpUtils.jsonDocExp(candidate)
+        );
     }
 
     /**
@@ -190,15 +201,30 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type: {@link BooleanType}
      * *
      *
-     * @param target    non-null
-     * @param candidate non-null
-     * @param path      non-null
+     * @param target    json expression
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                  </ul>
+     * @param candidate json expression
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                  </ul>
+     * @param path      path expression
+     *                  <ul>
+     *                        <li>{@link Expression} instance</li>
+     *                        <li>{@link String} literal. For example : {@code "$[*]"} is equivalent to {@code SQLs.literal(StringType.INSTANCE,"$[*]") }</li>
+     *                  </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonContains(Expression, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
+     * @see #jsonContains(Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
      */
-    public static IPredicate jsonContains(final Expression target, final Expression candidate, final Expression path) {
-        return FunctionUtils.threeArgPredicateFunc("JSON_CONTAINS", target, candidate, path);
+    public static SimplePredicate jsonContains(final Object target, final Object candidate, final Object path) {
+        FuncExpUtils.assertPathExp(path);
+        return LiteralFunctions.threeArgPredicate("JSON_CONTAINS", FuncExpUtils.jsonDocExp(target),
+                FuncExpUtils.jsonDocExp(candidate), path
+        );
     }
 
     /**
@@ -207,33 +233,93 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * *
      *
      * @param jsonDoc  non-null
-     * @param oneOrAll literal 'one' or 'all'
-     * @param paths    non-null,multi parameter(literal) {@link Expression} is allowed
+     * @param oneOrAll one of following <:ul>
+     *                 <li>literal 'one' or 'all'</li>
+     *                 <li>{@link Expression}</li>
+     *                 </ul>
+     * @param paths    non-null, one of following :
+     *                 <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link List} of {@link Expression} and {@link String}</li>
+     *                   <li>one dimension array  of {@link Expression} and {@link String}</li>
+     *                   <li>{@link String} literal</li>
+     *                 </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonContainsPath(Expression, Expression, List)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
      */
-    public static IPredicate jsonContainsPath(final Expression jsonDoc, final Expression oneOrAll
-            , final Expression paths) {
-        return FunctionUtils.threeArgPredicateFunc("JSON_CONTAINS_PATH", jsonDoc, oneOrAll, paths);
+    public static SimplePredicate jsonContainsPath(Object jsonDoc, final Object oneOrAll, final Object paths) {
+        FuncExpUtils.assertTextExp(oneOrAll);
+        jsonDoc = FuncExpUtils.jsonDocExp(jsonDoc);
+
+        final String name = "JSON_CONTAINS_PATH";
+        final SimplePredicate func;
+        if (paths instanceof List) {
+            final List<Object> argList = _Collections.arrayList(2 + ((List<?>) paths).size());
+            argList.add(jsonDoc);
+            argList.add(oneOrAll);
+            FuncExpUtils.addTextExpList(argList, "path", (List<?>) paths);
+            func = LiteralFunctions.multiArgPredicate(name, argList);
+        } else if (!paths.getClass().isArray()) {
+            FuncExpUtils.assertPathExp(paths);
+            func = LiteralFunctions.threeArgPredicate(name, jsonDoc, oneOrAll, paths);
+        } else if (paths.getClass().getComponentType().isArray()) {
+            throw CriteriaUtils.rejectMultiDimensionArray();
+        } else {
+            final List<Object> argList = _Collections.arrayList(2 + ((Object[]) paths).length);
+            argList.add(jsonDoc);
+            argList.add(oneOrAll);
+            FuncExpUtils.addAllText(argList, "path", (Object[]) paths);
+            func = LiteralFunctions.multiArgPredicate(name, argList);
+        }
+        return func;
     }
+
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
      * *
      *
-     * @param jsonDoc  non-null
-     * @param oneOrAll non-null
-     * @param pathList non-null,non-empty
+     * @param jsonDoc      non-null
+     * @param oneOrAll     one of following <:ul>
+     *                     <li>literal 'one' or 'all'</li>
+     *                     <li>{@link Expression}</li>
+     *                     </ul>
+     * @param path1        non-null, one of following :
+     *                     <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                     </ul>
+     * @param path2        non-null, one of following :
+     *                     <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                     </ul>
+     * @param pathVariadic non-null,each of pathVariadic is  one of following :
+     *                     <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                     </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonContainsPath(Expression, Expression, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
      */
-    public static IPredicate jsonContainsPath(final Expression jsonDoc, final Expression oneOrAll
-            , final List<Expression> pathList) {
-        return FunctionUtils.twoAndMultiArgFuncPredicate("JSON_CONTAINS_PATH", jsonDoc, oneOrAll, pathList);
+    public static SimplePredicate jsonContainsPath(Object jsonDoc, final Object oneOrAll, Object path1, Object path2, Object... pathVariadic) {
+        FuncExpUtils.assertTextExp(oneOrAll);
+        FuncExpUtils.assertPathExp(path1);
+        FuncExpUtils.assertPathExp(path2);
+
+        final List<Object> argList = _Collections.arrayList(4 + pathVariadic.length);
+
+        argList.add(FuncExpUtils.jsonDocExp(jsonDoc));
+        argList.add(oneOrAll);
+        argList.add(path1);
+        argList.add(path2);
+
+        FuncExpUtils.addAllText(argList, "path", pathVariadic);
+
+        return LiteralFunctions.multiArgPredicate("JSON_CONTAINS_PATH", argList);
     }
+
 
     /**
      * <p>

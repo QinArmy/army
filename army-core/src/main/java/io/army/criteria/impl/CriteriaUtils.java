@@ -768,6 +768,10 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+    static CriteriaException rejectMultiDimensionArray() {
+        return ContextStack.clearStackAndCriteriaError("reject multi dimension array");
+    }
+
     static CriteriaException errorSymbol(@Nullable Object symbol) {
         return ContextStack.clearStackAndCriteriaError(String.format("error symbol %s", symbol));
     }
