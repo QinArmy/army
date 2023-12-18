@@ -858,4 +858,53 @@ abstract class SqlWords {
     }//KeyWordOn
 
 
+    enum KeyWordsCharacterSet implements SQLs.WordsCharacterSet, SQLs.ArmyKeyWord {
+
+        CHARACTER_SET(" CHARACTER SET");
+
+
+        private final String spaceWord;
+
+        KeyWordsCharacterSet(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return SQLs.sqlKeyWordsToString(this);
+        }
+
+    }//KeyWordsCharacterSet
+
+    enum KeyWordsCollate implements SQLs.WordCollate, SQLs.ArmyKeyWord {
+
+        COLLATE(" COLLATE");
+
+
+        private final String spaceWord;
+
+        KeyWordsCollate(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return SQLs.sqlKeyWordsToString(this);
+        }
+
+    } // KeyWordsCollate
+
+
 }

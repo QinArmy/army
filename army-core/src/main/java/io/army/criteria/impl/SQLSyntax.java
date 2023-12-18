@@ -21,13 +21,13 @@ import java.util.function.Supplier;
  * @see SQLs
  * @since 0.6.0
  */
-abstract class SQLsSyntax extends Functions {
+abstract class SQLSyntax extends Functions {
 
 
     /**
      * package constructor
      */
-    SQLsSyntax() {
+    SQLSyntax() {
     }
 
 
@@ -389,12 +389,9 @@ abstract class SQLsSyntax extends Functions {
     }
 
     /**
-     * <p>
-     * Create named non-null literal expression. This expression can only be used in values insert statement.
+     * <p>Create named non-null literal expression. This expression can only be used in values insert statement.
      *
-     * <p>
-     * Note: this method couldn't be used in batch update(delete) statement.
-     *
+     * <p>Note: this method couldn't be used in batch update(delete) statement.
      *
      * @param type non-null
      * @param name non-null and non-empty
@@ -416,11 +413,9 @@ abstract class SQLsSyntax extends Functions {
     }
 
     /**
-     * <p>
-     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * <p>Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
      * ? , ? , ? ...
      * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     *
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty

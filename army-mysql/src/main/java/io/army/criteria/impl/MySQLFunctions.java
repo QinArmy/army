@@ -544,7 +544,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     private static SimpleExpression _castToChar(final Expression exp, final SQLs.WordAs as
             , final MySQLCastType charType, final @Nullable Expression n, SQLs.WordsCharacterSet characterSet
             , SQLElement charset) {
-        assert as == SQLs.AS && characterSet == MySQLs.CHARACTER_SET;
+        assert as == SQLs.AS && characterSet == SQLs.CHARACTER_SET;
 
         final String name = "CAST";
         if (charType != MySQLCastType.CHAR) {

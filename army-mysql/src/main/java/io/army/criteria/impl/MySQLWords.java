@@ -100,29 +100,6 @@ abstract class MySQLWords {
 
     }//KeyWordUsing
 
-    private enum KeyWordNested implements MySQLs.WordNested {
-
-        NESTED(" NESTED");
-
-        private final String spaceWord;
-
-        KeyWordNested(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return MySQLSyntax.keyWordsToString(this);
-        }
-
-    }//KeyWordNested
-
     enum KeyWordExistsPath implements MySQLs.WordExistsPath {
 
         EXISTS_PATH(" EXISTS PATH");
@@ -172,51 +149,5 @@ abstract class MySQLWords {
 
     }//KeyWordsAtTimeZone
 
-    enum KeyWordsCharacterSet implements SQLs.WordsCharacterSet {
 
-        CHARACTER_SET(" CHARACTER SET");
-
-
-        private final String spaceWord;
-
-        KeyWordsCharacterSet(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return MySQLSyntax.keyWordsToString(this);
-        }
-
-    }//KeyWordsCharacterSet
-
-    enum KeyWordsCollate implements SQLs.WordCollate {
-
-        COLLATE(" COLLATE");
-
-
-        private final String spaceWord;
-
-        KeyWordsCollate(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return MySQLSyntax.keyWordsToString(this);
-        }
-
-    }//KeyWordsCollate
 }

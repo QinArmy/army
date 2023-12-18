@@ -37,8 +37,7 @@ import static io.army.dialect.Database.PostgreSQL;
  * This class is util class used to create standard sql statement.
  */
 @SuppressWarnings({"unused"})
-public abstract class SQLs extends SQLsSyntax {
-
+public abstract class SQLs extends SQLSyntax {
 
     /**
      * private constructor
@@ -132,6 +131,10 @@ public abstract class SQLs extends SQLsSyntax {
     public static final IsComparisonWord DISTINCT_FROM = SqlWords.IsComparisonKeyWord.DISTINCT_FROM;
 
     public static final WordEscape ESCAPE = SqlWords.KeyWordEscape.ESCAPE;
+
+    public static final WordsCharacterSet CHARACTER_SET = SqlWords.KeyWordsCharacterSet.CHARACTER_SET;
+
+    public static final WordCollate COLLATE = SqlWords.KeyWordsCollate.COLLATE;
 
 
     /**

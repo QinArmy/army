@@ -132,7 +132,7 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
 
         final Select stmt;
         stmt = MySQLs.query()
-                .select(jsonValue(jsonDoc, "$.fname", s -> s.returning(MySQLCastType.CHAR, 3, CHARACTER_SET, "utf8mb4")).as("name"))
+                .select(jsonValue(jsonDoc, "$.fname", s -> s.returning(MySQLCastType.CHAR, 3, SQLs.CHARACTER_SET, "utf8mb4")).as("name"))
                 .comma(jsonValue(jsonDoc, "$.date", s -> s.returning(MySQLCastType.DATE).spaceNull().onEmpty()).as("date"))
                 .asQuery();
 

@@ -45,6 +45,16 @@ abstract class LiteralFunctions {
         return new TwoArgFunc(name, false, one, two, returnType);
     }
 
+    static SimpleExpression threeArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                         @Nullable Object three, TypeMeta returnType) {
+        return new ThreeArgFunc(name, true, one, two, three, returnType);
+    }
+
+    static SimpleExpression myThreeArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                           @Nullable Object three, TypeMeta returnType) {
+        return new ThreeArgFunc(name, false, one, two, three, returnType);
+    }
+
 
     static SimpleExpression multiArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new MultiArgFunc(name, true, argList, returnType);
@@ -159,6 +169,46 @@ abstract class LiteralFunctions {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two);
+        }
+
+
+    } // TwoArgFunc
+
+    private static final class ThreeArgFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final Object one;
+
+        private final Object two;
+
+        private final Object three;
+
+        private ThreeArgFunc(String name, boolean buildIn, @Nullable Object one, @Nullable Object two,
+                             @Nullable Object three, TypeMeta returnType) {
+            super(name, buildIn, returnType);
+            this.one = one;
+            this.two = two;
+            this.three = three;
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.appendLiteral(this.three, sqlBuilder, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three);
         }
 
 

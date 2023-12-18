@@ -8,14 +8,17 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.TypeDefs;
 import io.army.reactive.ReactiveLocalSession;
 import io.army.sqltype.MySQLType;
+import io.army.util.RowMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static io.army.criteria.impl.MySQLs.*;
 import static io.army.criteria.impl.SQLs.ASTERISK;
@@ -47,9 +50,7 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
                 .as("t")
                 .asQuery();
 
-        final Supplier<Map<String, Object>> constructor = HashMap::new;
-
-        session.queryObject(stmt, constructor)
+        session.queryObject(stmt, RowMaps::hashMap)
                 .doOnNext(row -> {
                     switch (((Number) row.get("rowId")).intValue()) {
                         case 1: {

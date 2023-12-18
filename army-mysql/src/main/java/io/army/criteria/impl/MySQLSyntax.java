@@ -3,11 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.IPredicate;
 import io.army.criteria.LogicalPredicate;
 import io.army.criteria.SQLIdentifier;
-import io.army.criteria.SimpleExpression;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
-import io.army.mapping.StringType;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
@@ -31,60 +29,6 @@ abstract class MySQLSyntax extends MySQLFunctions {
      */
     MySQLSyntax() {
     }
-
-
-    public static final MySQLs.Modifier ALL = MySQLWords.MySQLModifier.ALL;
-    public static final MySQLs.WordDistinct DISTINCT = MySQLWords.KeyWordDistinct.DISTINCT;
-
-    public static final MySQLs.Modifier DISTINCTROW = MySQLWords.MySQLModifier.DISTINCTROW;
-    public static final MySQLs.Modifier HIGH_PRIORITY = MySQLWords.MySQLModifier.HIGH_PRIORITY;
-
-    public static final MySQLs.Modifier STRAIGHT_JOIN = MySQLWords.MySQLModifier.STRAIGHT_JOIN;
-    public static final MySQLs.Modifier SQL_SMALL_RESULT = MySQLWords.MySQLModifier.SQL_SMALL_RESULT;
-    public static final MySQLs.Modifier SQL_BIG_RESULT = MySQLWords.MySQLModifier.SQL_BIG_RESULT;
-    public static final MySQLs.Modifier SQL_BUFFER_RESULT = MySQLWords.MySQLModifier.SQL_BUFFER_RESULT;
-
-    public static final MySQLs.Modifier SQL_NO_CACHE = MySQLWords.MySQLModifier.SQL_NO_CACHE;
-    public static final MySQLs.Modifier SQL_CALC_FOUND_ROWS = MySQLWords.MySQLModifier.SQL_CALC_FOUND_ROWS;
-    public static final MySQLs.Modifier LOW_PRIORITY = MySQLWords.MySQLModifier.LOW_PRIORITY;
-    public static final MySQLs.Modifier DELAYED = MySQLWords.MySQLModifier.DELAYED;
-
-    public static final MySQLs.Modifier QUICK = MySQLWords.MySQLModifier.QUICK;
-    public static final MySQLs.Modifier IGNORE = MySQLWords.MySQLModifier.IGNORE;
-    public static final MySQLs.Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
-    public static final MySQLs.Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
-
-
-    public static final MySQLs.WordUsing USING = MySQLWords.KeyWordUsing.USING;
-
-
-    public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
-
-    @Deprecated
-    public static final MySQLs.WordExistsPath EXISTS_PATH = MySQLWords.KeyWordExistsPath.EXISTS_PATH;
-
-    public static final SQLs.WordExists EXISTS = SqlWords.KeyWordExists.EXISTS;
-
-    public static final SQLs.WordColumns COLUMNS = SqlWords.KeyWordColumns.COLUMNS;
-
-    public static final SQLs.WordNested NESTED = SqlWords.KeyWordNested.NESTED;
-
-    public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
-
-    // public static final WordNested NESTED = KeyWordNested.NESTED;
-
-    public static final SQLs.WordError ERROR = SqlWords.KeyWordError.ERROR;
-
-    public static final MySQLs.WordsAtTimeZone AT_TIME_ZONE = MySQLWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
-
-    public static final SQLs.WordsCharacterSet CHARACTER_SET = MySQLWords.KeyWordsCharacterSet.CHARACTER_SET;
-
-    public static final SQLs.WordCollate COLLATE = MySQLWords.KeyWordsCollate.COLLATE;
-
-
-    public static final SimpleExpression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");
-
-    public static final SimpleExpression LITERAL_all = SQLs.literal(StringType.INSTANCE, "all");
 
 
     /**
