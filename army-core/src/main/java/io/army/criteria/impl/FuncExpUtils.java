@@ -167,7 +167,21 @@ abstract class FuncExpUtils {
     }
 
     static List<?> variadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super VariadicClause> consumer) {
-        final VariadicClause clause = new VariadicClause(required, literalClass);
+        final VariadicClause clause = new VariadicClause(required, null, literalClass);
+        CriteriaUtils.invokeConsumer(clause, consumer);
+        return clause.endClause();
+    }
+
+    static List<?> variadicList(final boolean required, ArrayList<Object> argList, @Nullable Class<?> literalClass,
+                                Consumer<? super VariadicClause> consumer) {
+        final VariadicClause clause = new VariadicClause(required, argList, literalClass);
+        CriteriaUtils.invokeConsumer(clause, consumer);
+        return clause.endClause();
+    }
+
+    static List<?> variadicExpList(final boolean required, ArrayList<Object> argList, MappingType type,
+                                   Consumer<? super PairVariadicClause> consumer) {
+        final PairVariadicClause clause = new PairVariadicClause(required, argList, type);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
@@ -192,11 +206,27 @@ abstract class FuncExpUtils {
         private final boolean required;
 
         private final Class<?> literalClass;
+
+        private final int startLength;
+
+        private final MappingType type;
+
         private List<Object> expList;
 
-        private VariadicClause(boolean required, @Nullable Class<?> literalClass) {
+        private VariadicClause(boolean required, @Nullable ArrayList<Object> expList, @Nullable Class<?> literalClass) {
             this.required = required;
             this.literalClass = literalClass;
+            this.startLength = 0;
+            this.type = null;
+            this.expList = expList;
+        }
+
+        private VariadicClause(boolean required, ArrayList<Object> expList, MappingType type) {
+            this.required = required;
+            this.literalClass = null;
+            this.startLength = expList.size();
+            this.type = type;
+            this.expList = expList;
         }
 
         @Override
@@ -212,8 +242,13 @@ abstract class FuncExpUtils {
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
-            final Class<?> literalClass = this.literalClass;
-            if (exp instanceof Expression || literalClass == null || literalClass.isInstance(exp)) {
+            final Class<?> literalClass;
+            final MappingType type;
+            if (exp instanceof Expression) {
+                list.add(exp);
+            } else if ((type = this.type) != null) {
+                list.add(SQLs.literal(type, exp));
+            } else if ((literalClass = this.literalClass) == null || literalClass.isInstance(exp)) {
                 list.add(exp);
             } else {
                 throw CriteriaUtils.mustExpressionOrType("exp", literalClass);
@@ -235,6 +270,8 @@ abstract class FuncExpUtils {
                     throw CriteriaUtils.dontAddAnyItem();
                 }
                 this.expList = list = Collections.emptyList();
+            } else if (this.required && (list.size() - this.startLength) == 0) {
+                throw CriteriaUtils.dontAddAnyItem();
             } else if (list instanceof ArrayList) {
                 this.expList = list = _Collections.unmodifiableList(list);
             } else {
@@ -272,6 +309,8 @@ abstract class FuncExpUtils {
             this.literalClass = null;
             this.startLength = expList.size();
             this.type = type;
+
+            this.expList = expList;
         }
 
 

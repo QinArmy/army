@@ -7,7 +7,10 @@ import io.army.mapping.*;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -918,171 +921,208 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * * <p>
-     * You should use {@link #jsonMergePreserve(Expression, Expression, Expression...)},if database is 8.0+.
-     * *
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * <p>You should use {@link #jsonMergePreserve(Expression, Expression, Expression...)},if database is 8.0+.
      *
-     * @param jsonDoc1 non-null
-     * @param jsonDoc2 non-null,multi parameter(literal) {@link Expression} is allowed.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc1 json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param jsonDoc2 json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param variadic each of variadic is one of following
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge">JSON_MERGE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static SimpleExpression jsonMerge(final Expression jsonDoc1, final Expression jsonDoc2, Expression... jsonDocArray) {
-        return _jsonMergeOperationFunction("JSON_MERGE", jsonDoc1, jsonDoc2, jsonDocArray);
+    public static SimpleExpression jsonMerge(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
+        return _jsonMergeOperationFunction("JSON_MERGE", jsonDoc1, jsonDoc2, variadic);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * * <p>
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      * You should use {@link #jsonMergePreserve(List)},if database is 8.0+.
-     * *
      *
-     * @param jsonDocList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDocList non-null,non-empty, each element of jsonDocList is one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                    </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge">JSON_MERGE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static SimpleExpression jsonMerge(final List<Expression> jsonDocList) {
-        final String name = "JSON_MERGE";
-        if (jsonDocList.size() < 2) {
-            throw CriteriaUtils.funcArgError(name, jsonDocList);
-        }
-        return FunctionUtils.multiArgFunc(name, jsonDocList, jsonDocList.get(0).typeMeta());
+    public static SimpleExpression jsonMerge(final List<?> jsonDocList) {
+        return _jsonMergeList("JSON_MERGE", jsonDocList);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
      *
-     * @param jsonDoc1 non-null
-     * @param jsonDoc2 non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc1 json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param jsonDoc2 json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param variadic each of variadic is one of following
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-preserve">JSON_MERGE_PRESERVE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static SimpleExpression jsonMergePreserve(final Expression jsonDoc1, final Expression jsonDoc2, Expression... jsonDocArray) {
-        return _jsonMergeOperationFunction("JSON_MERGE_PRESERVE", jsonDoc1, jsonDoc2, jsonDocArray);
+    public static SimpleExpression jsonMergePreserve(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
+        return _jsonMergeOperationFunction("JSON_MERGE_PRESERVE", jsonDoc1, jsonDoc2, variadic);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      *
-     * @param jsonDocList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDocList non-null,non-empty, each element of jsonDocList is one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                    </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-preserve">JSON_MERGE_PRESERVE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static SimpleExpression jsonMergePreserve(final List<Expression> jsonDocList) {
-        final String name = "JSON_MERGE_PRESERVE";
-        if (jsonDocList.size() < 2) {
-            throw CriteriaUtils.funcArgError(name, jsonDocList);
-        }
-        return FunctionUtils.multiArgFunc(name, jsonDocList, jsonDocList.get(0).typeMeta());
+    public static SimpleExpression jsonMergePreserve(final List<?> jsonDocList) {
+        return _jsonMergeList("JSON_MERGE_PRESERVE", jsonDocList);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      *
-     * @param jsonDoc1 non-null
-     * @param jsonDoc2 non-null,multi parameter(literal) {@link Expression} is allowed.
+     * @param jsonDoc1 json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param jsonDoc2 json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @param variadic each of variadic is one of following
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
+     */
+    public static SimpleExpression jsonMergePatch(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
+        return _jsonMergeOperationFunction("JSON_MERGE_PATCH", jsonDoc1, jsonDoc2, variadic);
+    }
+
+
+    /**
+     * <p>
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     *
+     * @param jsonDocList non-null,non-empty, each element of jsonDocList is one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                    </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static SimpleExpression jsonMergePatch(final Expression jsonDoc1, final Expression jsonDoc2, Expression... jsonDocArray) {
-        return _jsonMergeOperationFunction("JSON_MERGE_PATCH", jsonDoc1, jsonDoc2, jsonDocArray);
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
-     *
-     * @param jsonDocList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
-     */
-    public static SimpleExpression jsonMergePatch(final List<Expression> jsonDocList) {
-        final String name = "JSON_MERGE_PATCH";
-        if (jsonDocList.size() < 2) {
-            throw CriteriaUtils.funcArgError(name, jsonDocList);
-        }
-        return FunctionUtils.multiArgFunc(name, jsonDocList, jsonDocList.get(0).typeMeta());
+    public static SimpleExpression jsonMergePatch(final List<?> jsonDocList) {
+        return _jsonMergeList("JSON_MERGE_PATCH", jsonDocList);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      *
-     * @param jsonDoc   non-null
-     * @param firstPath non-null,multi parameter(literal) {@link Expression} is allowed.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc json expression
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
+     * @param path    non-null, one of following :
+     *                <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link String} literal</li>
+     *                </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
      */
-    public static SimpleExpression jsonRemove(final Expression jsonDoc, final Expression firstPath, Expression... paths) {
-        return FunctionUtils.twoAndMultiArgFunc("JSON_REMOVE", jsonDoc, firstPath, Arrays.asList(paths), jsonDoc.typeMeta());
+    public static SimpleExpression jsonRemove(final Object jsonDoc, Object path) {
+        FuncExpUtils.assertPathExp(path);
+
+        final Expression jsonDocExp;
+        jsonDocExp = FuncExpUtils.jsonDocExp(jsonDoc);
+        return LiteralFunctions.twoArgFunc("JSON_REMOVE", jsonDocExp, path, jsonDocExp.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      *
-     * @param jsonDoc  non-null
-     * @param pathList non-null,non-empty,multi parameter(literal) {@link Expression} is allowed.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc      json expression
+     *                     <ul>
+     *                          <li>{@link Expression} instance</li>
+     *                          <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                     </ul>
+     * @param path         non-null, one of following :
+     *                     <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                     </ul>
+     * @param pathVariadic non-null,each of pathVariadic is  one of following :
+     *                     <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                     </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
      */
-    public static SimpleExpression jsonRemove(final Expression jsonDoc, final List<Expression> pathList) {
-        final String name = "JSON_REMOVE";
-        if (pathList.size() == 0) {
-            throw CriteriaUtils.funcArgError(name, pathList);
-        }
-        return FunctionUtils.oneAndMultiArgFunc(name, jsonDoc, pathList, jsonDoc.typeMeta());
+    public static SimpleExpression jsonRemove(final Object jsonDoc, Object path, Object... pathVariadic) {
+        FuncExpUtils.assertPathExp(path);
+
+        final Expression jsonDocExp;
+        jsonDocExp = FuncExpUtils.jsonDocExp(jsonDoc);
+
+        final List<Object> argList = _Collections.arrayList(2 + pathVariadic.length);
+
+        argList.add(jsonDocExp);
+        argList.add(path);
+
+        FuncExpUtils.addAllTextExp(argList, "path", pathVariadic);
+        return LiteralFunctions.multiArgFunc("JSON_REMOVE", argList, jsonDocExp.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
+     * <p>JSON_REMOVE function dynamic method
+     * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      *
-     * @param jsonDoc   non-null
-     * @param firstPath non-null,wrap to literal expression
-     * @param paths     non-null, empty or paths,wrap to literal expressions
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc json expression
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
      */
-    public static SimpleExpression jsonRemove(final Expression jsonDoc, final String firstPath, String... paths) {
-        List<ArmyExpression> argList = new ArrayList<>(2 + paths.length);
-        argList.add((ArmyExpression) jsonDoc);
-        argList.add(((ArmyExpression) SQLs.literal(StringType.INSTANCE, firstPath)));
+    public static SimpleExpression jsonRemove(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
+        final Expression jsonDocExp;
+        jsonDocExp = FuncExpUtils.jsonDocExp(jsonDoc);
 
-        for (String path : paths) {
-            argList.add(((ArmyExpression) SQLs.literal(StringType.INSTANCE, path)));
-        }
-        return FunctionUtils.safeMultiArgFunc("JSON_REMOVE", argList, jsonDoc.typeMeta());
-    }
+        final ArrayList<Object> arrayList = _Collections.arrayList(4);
+        arrayList.add(jsonDocExp);
 
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * *
-     *
-     * @param jsonDoc   non-null,wrap to parameter expression
-     * @param firstPath non-null,wrap to literal expression
-     * @param paths     non-null, empty or paths,wrap to literal expressions
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
-     */
-    public static SimpleExpression jsonRemove(final String jsonDoc, final String firstPath, String... paths) {
-        return jsonRemove(SQLs.param(StringType.INSTANCE, jsonDoc), firstPath, paths);
+        final List<?> argList;
+        argList = FuncExpUtils.variadicList(true, arrayList, String.class, consumer);
+        return LiteralFunctions.multiArgFunc("JSON_REMOVE", argList, jsonDocExp.typeMeta());
     }
 
 
@@ -1091,12 +1131,16 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type: {@link StringType}
      * *
      *
-     * @param jsonVal non-null
+     * @param jsonVal json expression
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-unquote">JSON_UNQUOTE(json_val)</a>
      */
-    public static SimpleExpression jsonUnquote(final Expression jsonVal) {
-        return FunctionUtils.oneArgFunc("JSON_UNQUOTE", jsonVal, StringType.INSTANCE);
+    public static SimpleExpression jsonUnquote(final Object jsonVal) {
+        return LiteralFunctions.oneArgFunc("JSON_UNQUOTE", FuncExpUtils.jsonDocExp(jsonVal), StringType.INSTANCE);
     }
 
     /**
@@ -1366,15 +1410,37 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonMergePreserve(Expression, Expression, Expression...)
      * @see #jsonMergePatch(Expression, Expression, Expression...)
      */
-    private static SimpleExpression _jsonMergeOperationFunction(final String name, final Expression jsonDoc1
-            , final Expression jsonDoc2, Expression... jsonDocArray) {
-        final List<ArmyExpression> argList = new ArrayList<>(2 + jsonDocArray.length);
-        argList.add((ArmyExpression) jsonDoc1);
-        argList.add((ArmyExpression) jsonDoc2);
-        for (Expression jsonDoc : jsonDocArray) {
-            argList.add((ArmyExpression) jsonDoc);
+    private static SimpleExpression _jsonMergeOperationFunction(final String name, final Object jsonDoc1,
+                                                                final Object jsonDoc2, Object... jsonDocArray) {
+        final Expression jsonDocExp;
+        jsonDocExp = FuncExpUtils.jsonDocExp(jsonDoc1);
+
+        final List<Object> argList = _Collections.arrayList(2 + jsonDocArray.length);
+        argList.add(jsonDocExp);
+        argList.add(FuncExpUtils.jsonDocExp(jsonDoc2));
+        for (Object jsonDoc : jsonDocArray) {
+            argList.add(FuncExpUtils.jsonDocExp(jsonDoc));
         }
-        return FunctionUtils.safeMultiArgFunc(name, argList, jsonDoc1.typeMeta());
+        return LiteralFunctions.multiArgFunc(name, argList, jsonDocExp.typeMeta());
+    }
+
+    /**
+     * @see #jsonMerge(List)
+     */
+    private static SimpleExpression _jsonMergeList(final String name, final List<?> jsonDocList) {
+        final int size;
+        if ((size = jsonDocList.size()) < 2) {
+            throw CriteriaUtils.funcArgError(name, jsonDocList);
+        }
+        final List<Expression> argList = _Collections.arrayList(size);
+        for (Object json : jsonDocList) {
+            if (json instanceof Expression) {
+                argList.add((Expression) json);
+            } else {
+                argList.add(SQLs.literal(JsonType.TEXT, json));
+            }
+        }
+        return LiteralFunctions.multiArgFunc(name, argList, argList.get(0).typeMeta());
     }
 
     /**
