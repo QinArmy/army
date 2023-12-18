@@ -232,7 +232,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type: {@link BooleanType}
      * *
      *
-     * @param jsonDoc  non-null
+     * @param jsonDoc  json expression
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                 </ul>
      * @param oneOrAll one of following <:ul>
      *                 <li>literal 'one' or 'all'</li>
      *                 <li>{@link Expression}</li>
@@ -278,9 +282,12 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     * *
      *
-     * @param jsonDoc      non-null
+     * @param jsonDoc      json expression
+     *                     <ul>
+     *                          <li>{@link Expression} instance</li>
+     *                          <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                     </ul>
      * @param oneOrAll     one of following <:ul>
      *                     <li>literal 'one' or 'all'</li>
      *                     <li>{@link Expression}</li>
@@ -323,17 +330,46 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link StringType}
-     * *
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
-     * @param jsonDoc non-null
-     * @param paths   non-null,multi parameter(literal) {@link Expression} is allowed
+     * @param jsonDoc json expression
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that {@link JsonType#TEXT} can accept,here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
+     * @param paths   non-null, one of following :
+     *                <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link List} of {@link Expression} and {@link String}</li>
+     *                  <li>one dimension array  of {@link Expression} and {@link String}</li>
+     *                  <li>{@link String} literal</li>
+     *                </ul>
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonExtract(Expression, List)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
-    public static SimpleExpression jsonExtract(final Expression jsonDoc, final Expression paths) {
-        return FunctionUtils.twoOrMultiArgFunc("JSON_EXTRACT", jsonDoc, paths, StringType.INSTANCE);
+    public static SimpleExpression jsonExtract(Object jsonDoc, final Object paths) {
+        jsonDoc = FuncExpUtils.jsonDocExp(jsonDoc);
+
+        final String name = "JSON_EXTRACT";
+        final SimpleExpression func;
+        if (paths instanceof List) {
+            final List<Object> argList = _Collections.arrayList(1 + ((List<?>) paths).size());
+            argList.add(jsonDoc);
+            FuncExpUtils.addTextExpList(argList, "path", (List<?>) paths);
+            func = LiteralFunctions.multiArgFunc(name, argList, JsonType.TEXT);
+        } else if (!paths.getClass().isArray()) {
+            FuncExpUtils.assertPathExp(paths);
+            func = LiteralFunctions.twoArgFunc(name, jsonDoc, paths, JsonType.TEXT);
+        } else if (paths.getClass().getComponentType().isArray()) {
+            throw CriteriaUtils.rejectMultiDimensionArray();
+        } else {
+            final List<Object> argList = _Collections.arrayList(1 + ((Object[]) paths).length);
+            argList.add(jsonDoc);
+            FuncExpUtils.addAllText(argList, "path", (Object[]) paths);
+            func = LiteralFunctions.multiArgFunc(name, argList, JsonType.TEXT);
+        }
+        return func;
     }
 
     /**
@@ -344,7 +380,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param jsonDoc  non-null
      * @param pathList non-null,non-empty
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonExtract(Expression, Expression)
+     * @see #jsonExtract(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
     public static SimpleExpression jsonExtract(final Expression jsonDoc, final List<Expression> pathList) {

@@ -159,13 +159,21 @@ abstract class FuncExpUtils {
 
 
     static List<?> variadicList(final boolean required, Consumer<? super VariadicClause> consumer) {
-        final VariadicClause clause = new VariadicClause(required);
+        return variadicList(required, null, consumer);
+    }
+
+    static List<?> pariVariadicList(final boolean required, Consumer<? super PairVariadicClause> consumer) {
+        return pariVariadicList(required, null, consumer);
+    }
+
+    static List<?> variadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super VariadicClause> consumer) {
+        final VariadicClause clause = new VariadicClause(required, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
 
-    static List<?> pariVariadicList(final boolean required, Consumer<? super PairVariadicClause> consumer) {
-        final PairVariadicClause clause = new PairVariadicClause(required);
+    static List<?> pariVariadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super PairVariadicClause> consumer) {
+        final PairVariadicClause clause = new PairVariadicClause(required, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
@@ -176,10 +184,12 @@ abstract class FuncExpUtils {
 
         private final boolean required;
 
+        private final Class<?> literalClass;
         private List<Object> expList;
 
-        private VariadicClause(boolean required) {
+        private VariadicClause(boolean required, @Nullable Class<?> literalClass) {
             this.required = required;
+            this.literalClass = literalClass;
         }
 
         @Override
@@ -188,14 +198,19 @@ abstract class FuncExpUtils {
         }
 
         @Override
-        public VariadicClause comma(@Nullable Object exp) {
+        public VariadicClause comma(final @Nullable Object exp) {
             List<Object> list = this.expList;
             if (list == null) {
                 this.expList = list = _Collections.arrayList();
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
-            list.add(exp);
+            final Class<?> literalClass = this.literalClass;
+            if (exp instanceof Expression || literalClass == null || literalClass.isInstance(exp)) {
+                list.add(exp);
+            } else {
+                throw CriteriaUtils.mustExpressionOrType("exp", literalClass);
+            }
             return this;
         }
 
@@ -230,10 +245,13 @@ abstract class FuncExpUtils {
 
         private final boolean required;
 
+        private final Class<?> literalClass;
+
         private List<Object> expList;
 
-        private PairVariadicClause(boolean required) {
+        private PairVariadicClause(boolean required, @Nullable Class<?> literalClass) {
             this.required = required;
+            this.literalClass = literalClass;
         }
 
 
@@ -279,7 +297,13 @@ abstract class FuncExpUtils {
             }
 
             list.add(key);
-            list.add(value);
+
+            final Class<?> literalClass = this.literalClass;
+            if (value instanceof Expression || literalClass == null || literalClass.isInstance(value)) {
+                list.add(value);
+            } else {
+                throw CriteriaUtils.mustExpressionOrType("value", literalClass);
+            }
             return this;
         }
 
