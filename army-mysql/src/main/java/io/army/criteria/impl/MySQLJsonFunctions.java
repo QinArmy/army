@@ -244,7 +244,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                      <li>{@link Expression} instance</li>
      *                      <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                 </ul>
-     * @param oneOrAll one of following <:ul>
+     * @param oneOrAll one of following <ul>
      *                 <li>literal 'one' or 'all'</li>
      *                 <li>{@link Expression}</li>
      *                 </ul>
@@ -295,7 +295,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                          <li>{@link Expression} instance</li>
      *                          <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                     </ul>
-     * @param oneOrAll     one of following <:ul>
+     * @param oneOrAll     one of following <ul>
      *                     <li>literal 'one' or 'all'</li>
      *                     <li>{@link Expression}</li>
      *                     </ul>
@@ -493,7 +493,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                       <li>{@link Expression} instance</li>
      *                       <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                  </ul>
-     * @param oneOrAll  one of following <:ul>
+     * @param oneOrAll  one of following <ul>
      *                  <li>literal 'one' or 'all'</li>
      *                  <li>{@link Expression}</li>
      *                  </ul>
@@ -521,7 +521,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                        <li>{@link Expression} instance</li>
      *                        <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                   </ul>
-     * @param oneOrAll   one of following <:ul>
+     * @param oneOrAll   one of following <ul>
      *                   <li>literal 'one' or 'all'</li>
      *                   <li>{@link Expression}</li>
      *                   </ul>
@@ -552,7 +552,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                        <li>{@link Expression} instance</li>
      *                        <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                   </ul>
-     * @param oneOrAll   one of following <:ul>
+     * @param oneOrAll   one of following <ul>
      *                   <li>literal 'one' or 'all'</li>
      *                   <li>{@link Expression}</li>
      *                   </ul>
@@ -623,7 +623,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                          <li>{@link Expression} instance</li>
      *                          <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                     </ul>
-     * @param oneOrAll     one of following <:ul>
+     * @param oneOrAll     one of following <ul>
      *                     <li>literal 'one' or 'all'</li>
      *                     <li>{@link Expression}</li>
      *                     </ul>
@@ -922,7 +922,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /**
      * <p>The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
-     * <p>You should use {@link #jsonMergePreserve(Expression, Expression, Expression...)},if database is 8.0+.
+     * <p>You should use {@link #jsonMergePreserve(Object, Object, Object...)},if database is 8.0+.
      *
      * @param jsonDoc1 json expression
      *                 <ul>
@@ -1153,6 +1153,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
      */
     public static SimpleExpression jsonDepth(final Expression jsonDoc) {
+        // here continue
         return FunctionUtils.oneArgFunc("JSON_DEPTH", jsonDoc, IntegerType.INSTANCE);
     }
 
@@ -1332,11 +1333,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /*-------------------below private method -------------------*/
 
 
-    /**
-     * @see #jsonArrayAppend(Expression, List)
-     * @see #jsonArrayInsert(Expression, List)
-     * @see #jsonInsert(Expression, List)
-     */
+
     private static SimpleExpression _jsonPathValOperateFunc(final String name, final Expression jsonDoc
             , final List<Expression> pathValList) {
         if (jsonDoc instanceof SqlValueParam.MultiValue) {
@@ -1349,13 +1346,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         return FunctionUtils.oneAndMultiArgFunc(name, jsonDoc, pathValList, jsonDoc.typeMeta());
     }
 
-    /**
-     * @see #jsonArrayAppend(Expression, List)
-     * @see #jsonArrayInsert(Expression, List)
-     * @see #jsonInsert(Expression, List)
-     * @see #jsonReplace(Expression, List)
-     * @see #jsonSet(Expression, String, Object, Object...)
-     */
+
     private static SimpleExpression _jsonPathValOperateFunc(final String name, final Expression jsonDoc, final String firstPath
             , final Object firstValue, final Object... pathValuePair) {
         if (pathValuePair.length == 0 || (pathValuePair.length & 1) != 0) {
@@ -1406,9 +1397,9 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     }
 
     /**
-     * @see #jsonMerge(Expression, Expression, Expression...)
-     * @see #jsonMergePreserve(Expression, Expression, Expression...)
-     * @see #jsonMergePatch(Expression, Expression, Expression...)
+     * @see #jsonMerge(Object, Object, Object...)
+     * @see #jsonMergePreserve(Object, Object, Object...)
+     * @see #jsonMergePatch(Object, Object, Object...)
      */
     private static SimpleExpression _jsonMergeOperationFunction(final String name, final Object jsonDoc1,
                                                                 final Object jsonDoc2, Object... jsonDocArray) {
