@@ -45,7 +45,7 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
         SR set(F field, Expression value);
 
-        SR set(F field, Supplier<?> supplier);
+        <R extends AssignmentItem> SR set(F field, Supplier<R> supplier);
 
         <R extends AssignmentItem> SR set(F field, Function<F, R> function);
 

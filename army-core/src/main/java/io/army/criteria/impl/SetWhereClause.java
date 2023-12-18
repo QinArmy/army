@@ -58,8 +58,8 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
     }
 
     @Override
-    public final SR set(F field, Supplier<?> supplier) {
-        return this.onAddAssignmentItemPair(field, SQLs._assignmentItem(field, supplier.get()));
+    public final <R extends AssignmentItem> SR set(F field, Supplier<R> supplier) {
+        return this.onAddAssignmentItemPair(field, supplier.get());
     }
 
 

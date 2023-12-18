@@ -112,6 +112,16 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
+     */
+    public static SimpleExpression jsonObject() {
+        return LiteralFunctions.zeroArgFunc("JSON_OBJECT", JsonType.TEXT);
+    }
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     *
      * @param expMap non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>

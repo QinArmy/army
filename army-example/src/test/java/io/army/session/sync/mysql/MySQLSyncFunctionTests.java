@@ -36,7 +36,7 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
      * @see MySQLs#jsonTable(Object, Object, SQLs.WordColumns, Consumer)
      */
     @Test
-    public void jsonTableStatic(final SyncLocalSession session) {
+    public void jsonTableFuncStatic(final SyncLocalSession session) {
         final String jsonDocument;
         jsonDocument = "[{\"a\":\"3\"},{\"a\":2},{\"b\":1},{\"a\":0},{\"a\":[1,2]}]";
 

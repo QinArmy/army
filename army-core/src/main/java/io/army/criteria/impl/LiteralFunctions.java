@@ -20,6 +20,14 @@ abstract class LiteralFunctions {
         throw new UnsupportedOperationException();
     }
 
+    static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
+        return new ZeroArgFunc(name, true, returnType);
+    }
+
+    static SimpleExpression myZeroArgFunc(String name, TypeMeta returnType) {
+        return new ZeroArgFunc(name, false, returnType);
+    }
+
     static SimpleExpression oneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
         return new OneArgFunc(name, true, arg, returnType);
     }
@@ -36,6 +44,27 @@ abstract class LiteralFunctions {
     public static SimpleExpression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
         return new JsonMapFunc(name, map, returnType);
     }
+
+
+    private static final class ZeroArgFunc extends OperationExpression.SqlFunctionExpression
+            implements FunctionUtils.NoArgFunction {
+
+        private ZeroArgFunc(String name, boolean buildIn, TypeMeta returnType) {
+            super(name, buildIn, returnType);
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            // no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            // no-op
+        }
+
+
+    } // ZeroArgFunc
 
 
     private static final class OneArgFunc extends OperationExpression.SqlFunctionExpression {

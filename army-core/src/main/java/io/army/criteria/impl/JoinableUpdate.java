@@ -112,8 +112,8 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     }
 
     @Override
-    public final SR set(F field, Supplier<?> supplier) {
-        return this.onAddAssignmentItemPair(field, SQLs._assignmentItem(field, supplier.get()));
+    public final <R extends AssignmentItem> SR set(F field, Supplier<R> supplier) {
+        return this.onAddAssignmentItemPair(field, supplier.get());
     }
 
 
