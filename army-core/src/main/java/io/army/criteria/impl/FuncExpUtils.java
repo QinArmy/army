@@ -99,7 +99,7 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void addAllText(final List<Object> argList, String argName, final Object[] expArray) {
+    static void addAllTextExp(final List<Object> argList, String argName, final Object[] expArray) {
         for (Object exp : expArray) {
             if (exp instanceof String || exp instanceof Expression) {
                 argList.add(exp);
@@ -178,6 +178,13 @@ abstract class FuncExpUtils {
         return clause.endClause();
     }
 
+    static List<?> pariVariadicExpList(final boolean required, ArrayList<Object> argList, MappingType type,
+                                       Consumer<? super PairVariadicClause> consumer) {
+        final PairVariadicClause clause = new PairVariadicClause(required, argList, type);
+        CriteriaUtils.invokeConsumer(clause, consumer);
+        return clause.endClause();
+    }
+
 
     private static final class VariadicClause implements Clause._VariadicSpaceClause,
             Clause._VariadicCommaClause, Clause._VariadicConsumer {
@@ -240,18 +247,31 @@ abstract class FuncExpUtils {
     } // VariadicClause
 
 
-    private static final class PairVariadicClause implements Clause._PairVariadicSpaceClause,
+    static final class PairVariadicClause implements Clause._PairVariadicSpaceClause,
             Clause._PairVariadicCommaClause, Clause._PairVariadicConsumerClause {
 
         private final boolean required;
 
         private final Class<?> literalClass;
 
+        private final int startLength;
+
+        private final MappingType type;
+
         private List<Object> expList;
 
         private PairVariadicClause(boolean required, @Nullable Class<?> literalClass) {
             this.required = required;
             this.literalClass = literalClass;
+            this.startLength = 0;
+            this.type = null;
+        }
+
+        private PairVariadicClause(boolean required, ArrayList<Object> expList, MappingType type) {
+            this.required = required;
+            this.literalClass = null;
+            this.startLength = expList.size();
+            this.type = type;
         }
 
 
@@ -298,8 +318,13 @@ abstract class FuncExpUtils {
 
             list.add(key);
 
-            final Class<?> literalClass = this.literalClass;
-            if (value instanceof Expression || literalClass == null || literalClass.isInstance(value)) {
+            final Class<?> literalClass;
+            final MappingType type;
+            if (value instanceof Expression) {
+                list.add(value);
+            } else if ((type = this.type) != null) {
+                list.add(SQLs.literal(type, value));
+            } else if ((literalClass = this.literalClass) == null || literalClass.isInstance(value)) {
                 list.add(value);
             } else {
                 throw CriteriaUtils.mustExpressionOrType("value", literalClass);
@@ -309,14 +334,17 @@ abstract class FuncExpUtils {
 
         private List<?> endClause() {
             List<Object> list = this.expList;
+            final int pairLength;
             if (list == null) {
                 if (this.required) {
                     throw CriteriaUtils.dontAddAnyItem();
                 }
                 this.expList = list = Collections.emptyList();
+            } else if ((pairLength = (list.size() - this.startLength)) == 0 && this.required) {
+                throw CriteriaUtils.dontAddAnyItem();
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            } else if ((list.size() & 1) == 0) {
+            } else if ((pairLength & 1) == 0) {
                 this.expList = list = _Collections.unmodifiableList(list);
             } else {
                 // no bug ,never here

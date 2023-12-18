@@ -144,5 +144,30 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
         Assert.assertEquals(row.get("date"), LocalDate.parse("2023-12-18"));
     }
 
+    /**
+     * @see MySQLs#jsonSearch(Object, Object, Object, Object, Object)
+     * @see MySQLs#jsonSearch(Object, Object, Object, Object, Object, Object, Object...)
+     */
+    @Test
+    public void jsonSearchFunc(final SyncLocalSession session) {
+        final String jsonDoc = "[\"abc\", [{\"k\": \"10\"}, \"def\"], {\"x\":\"abc\"}, {\"y\":\"bcd\"}]";
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(jsonSearch(jsonDoc, "one", "abc", null, "$[0]").as("simple"))
+                .comma(jsonSearch(jsonDoc, "one", "abc", null, "$[0]", "$[1]").as("variadic"))
+                .comma(jsonSearch(jsonDoc, "all", "abc", null, "$[0]", "$[2].x").as("variadic2"))
+                .asQuery();
+
+        final Map<String, Object> row;
+        row = session.queryOneObject(stmt, RowMaps::hashMap);
+
+        Assert.assertNotNull(row);
+
+        Assert.assertEquals(row.get("simple"), "\"$[0]\"");
+        Assert.assertEquals(row.get("variadic"), "\"$[0]\"");
+        Assert.assertEquals(JSON.parseArray((String) row.getOrDefault("variadic2", "[]"), String.class), Arrays.asList("$[0]", "$[2].x"));
+    }
+
 
 }
