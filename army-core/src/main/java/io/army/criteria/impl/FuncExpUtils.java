@@ -49,7 +49,7 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void assertTextExp(final Object path) {
+    static void assertTextExp(final @Nullable Object path) {
         if (!(path instanceof String || path instanceof Expression)) {
             throw CriteriaUtils.mustExpressionOrType("text", String.class);
         }

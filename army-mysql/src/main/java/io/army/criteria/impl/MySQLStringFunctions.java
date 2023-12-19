@@ -8,8 +8,11 @@ import io.army.criteria.SimpleExpression;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLLocale;
 import io.army.mapping.IntegerType;
+import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
+import io.army.mapping.mysql.MySqlBitType;
+import io.army.sqltype.DataType;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
@@ -494,52 +497,94 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param bits non-null parameter or {@link Expression}
-     * @param on   non-null parameter or {@link Expression}
-     * @param off  non-null parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #exportSet(Expression, Expression, Expression, Expression)
-     * @see #exportSet(Expression, Expression, Expression, Expression, Expression)
+     * @param bits non-null ,one of following :
+     *             <ul>
+     *                  <li>{@link Expression}</li>
+     *                  <li>The literal that can be accepted by {@link io.army.mapping.mysql.MySqlBitType#beforeBind(DataType, MappingEnv, Object)}</li>
+     *             </ul>
+     * @param on   non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link String} literal</li>
+     *             </ul>
+     * @param off  non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link String} literal</li>
+     *             </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static SimpleExpression exportSet(final Expression bits, final Expression on, Expression off) {
-        return exportSet(bits, on, off, null, null);
+    public static SimpleExpression exportSet(final Object bits, final Object on, Object off) {
+        return _exportSet(bits, on, off, null, null);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param bits non-null parameter or {@link Expression}
-     * @param on   non-null parameter or {@link Expression}
-     * @param off  non-null parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #exportSet(Expression, Expression, Expression)
-     * @see #exportSet(Expression, Expression, Expression, Expression, Expression)
+     * @param bits      non-null ,one of following :
+     *                  <ul>
+     *                       <li>{@link Expression}</li>
+     *                       <li>The literal that can be accepted by {@link io.army.mapping.mysql.MySqlBitType#beforeBind(DataType, MappingEnv, Object)}</li>
+     *                  </ul>
+     * @param on        non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @param off       non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @param separator non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static SimpleExpression exportSet(final Expression bits, final Expression on, Expression off
-            , final @Nullable Expression separator) {
-        return exportSet(bits, on, off, separator, null);
+    public static SimpleExpression exportSet(Object bits, Object on, Object off, Object separator) {
+        ContextStack.assertNonNull(separator);
+        return _exportSet(bits, on, off, separator, null);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param bits non-null parameter or {@link Expression}
-     * @param on   non-null parameter or {@link Expression}
-     * @param off  non-null parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #exportSet(Expression, Expression, Expression)
-     * @see #exportSet(Expression, Expression, Expression, Expression)
+     * @param bits         non-null ,one of following :
+     *                     <ul>
+     *                          <li>{@link Expression}</li>
+     *                          <li>The literal that can be accepted by {@link io.army.mapping.mysql.MySqlBitType#beforeBind(DataType, MappingEnv, Object)}</li>
+     *                     </ul>
+     * @param on           non-null, one of following :
+     *                     <ul>
+     *                          <li>{@link Expression} instance</li>
+     *                          <li>{@link String} literal</li>
+     *                     </ul>
+     * @param off          non-null, one of following :
+     *                     <ul>
+     *                          <li>{@link Expression} instance</li>
+     *                          <li>{@link String} literal</li>
+     *                     </ul>
+     * @param separator    non-null, one of following :
+     *                     <ul>
+     *                          <li>{@link Expression} instance</li>
+     *                          <li>{@link String} literal</li>
+     *                     </ul>
+     * @param numberOfBits non-null, one of following :
+     *                     <ul>
+     *                          <li>{@link Expression} instance</li>
+     *                          <li>{@link Integer} literal</li>
+     *                     </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static SimpleExpression exportSet(final Expression bits, final Expression on, Expression off
-            , @Nullable final Expression separator, @Nullable final Expression numberOfBits) {
-        return FunctionUtils.multiArgFunc("EXPORT_SET", StringType.INSTANCE, bits, on, off, separator, numberOfBits);
+    public static SimpleExpression exportSet(Object bits, Object on, Object off, Object separator, Object numberOfBits) {
+        ContextStack.assertNonNull(separator);
+        ContextStack.assertNonNull(numberOfBits);
+        return _exportSet(bits, on, off, separator, numberOfBits);
     }
 
 
@@ -1215,6 +1260,36 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
             throw ContextStack.clearStackAndCriteriaError(String.format("variadic argument count must great than or equal %s", min));
         }
         return LiteralFunctions.multiArgFunc(name, argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * @see #exportSet(Object, Object, Object)
+     * @see #exportSet(Object, Object, Object, Object)
+     * @see #exportSet(Object, Object, Object, Object, Object)
+     */
+    private static SimpleExpression _exportSet(final Object bits, final Object on, Object off,
+                                               @Nullable final Object separator, @Nullable Object numberOfBits) {
+        FuncExpUtils.assertTextExp(on);
+        FuncExpUtils.assertTextExp(off);
+
+        final Expression bitExpr;
+        bitExpr = SQLs.literal(MySqlBitType.INSTANCE, bits);
+
+        final String name = "EXPORT_SET";
+
+        final SimpleExpression func;
+        if (separator == null && numberOfBits == null) {
+            func = LiteralFunctions.threeArgFunc(name, bitExpr, on, off, StringType.INSTANCE);
+        } else if (numberOfBits != null) {
+            FuncExpUtils.assertTextExp(separator);
+            FuncExpUtils.assertIntExp(numberOfBits);
+            func = LiteralFunctions.fiveArgFunc(name, bitExpr, on, off, separator, numberOfBits, StringType.INSTANCE);
+        } else {
+            FuncExpUtils.assertTextExp(separator);
+            func = LiteralFunctions.fourArgFunc(name, bitExpr, on, off, separator, StringType.INSTANCE);
+        }
+        return func;
     }
 
 

@@ -61,6 +61,31 @@ abstract class LiteralFunctions {
         return new ThreeArgFunc(name, false, one, two, three, returnType);
     }
 
+    static SimpleExpression fourArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                        @Nullable Object three, @Nullable Object four, TypeMeta returnType) {
+        final List<Object> argList = _Collections.arrayList(4);
+
+        argList.add(one);
+        argList.add(two);
+        argList.add(three);
+        argList.add(four);
+        return new MultiArgFunc(name, true, argList, returnType);
+    }
+
+    static SimpleExpression fiveArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                        @Nullable Object three, @Nullable Object four, @Nullable Object five,
+                                        TypeMeta returnType) {
+        final List<Object> argList = _Collections.arrayList(5);
+
+        argList.add(one);
+        argList.add(two);
+        argList.add(three);
+        argList.add(four);
+
+        argList.add(five);
+        return new MultiArgFunc(name, true, argList, returnType);
+    }
+
 
     static SimpleExpression multiArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new MultiArgFunc(name, true, argList, returnType);
