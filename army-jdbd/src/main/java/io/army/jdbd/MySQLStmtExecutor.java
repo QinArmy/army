@@ -356,12 +356,17 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
             case VARBINARY:
             case TINYBLOB:
             case BLOB:
-            case MEDIUMBLOB:
-                value = row.get(indexBasedZero, byte[].class);
-                break;
+            case MEDIUMBLOB: {
+                if (type instanceof MappingType.SqlStringType) {
+                    value = row.get(indexBasedZero, String.class);
+                } else {
+                    value = row.get(indexBasedZero, byte[].class);
+                }
+            }
+            break;
             case LONGBLOB:
             case GEOMETRY:
-                value = getLongBinary(row, indexBasedZero);
+                value = getLongBinary(row, indexBasedZero, type);
                 break;
             case NULL: {
                 if (!row.isNull(indexBasedZero)) {

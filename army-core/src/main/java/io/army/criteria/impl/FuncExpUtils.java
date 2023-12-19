@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Clause;
-import io.army.criteria.Expression;
+import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
@@ -61,6 +60,12 @@ abstract class FuncExpUtils {
         }
     }
 
+    static void assertNumberExp(final Object value) {
+        if (!(value instanceof Number || value instanceof Expression)) {
+            throw CriteriaUtils.mustExpressionOrType("number value", Number.class);
+        }
+    }
+
     static void appendJsonDoc(final Object jsonDoc, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (jsonDoc instanceof Expression) {
             ((ArmyExpression) jsonDoc).appendSql(sqlBuilder, context);
@@ -115,6 +120,14 @@ abstract class FuncExpUtils {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (literal instanceof Expression) {
             ((ArmyExpression) literal).appendSql(sqlBuilder, context);
+        } else if (literal instanceof SQLWords) {
+            if (!(literal instanceof SQLs.ArmyKeyWord)) {
+                String m = String.format("Illegal %s instance", SQLWords.class.getName());
+                throw new CriteriaException(m);
+            }
+            sqlBuilder.append(((SQLs.ArmyKeyWord) literal).spaceRender());
+        } else if (literal instanceof SQLIdentifier) {
+            context.identifier(((SQLIdentifier) literal).render(), sqlBuilder);
         } else {
             final MappingType type;
             type = _MappingFactory.getDefaultIfMatch(literal.getClass());
@@ -200,16 +213,16 @@ abstract class FuncExpUtils {
     }
 
 
-     static final class VariadicClause implements Clause._VariadicSpaceClause,
-             Clause._VariadicCommaClause, Clause._VariadicConsumer {
+    static final class VariadicClause implements Clause._VariadicSpaceClause,
+            Clause._VariadicCommaClause, Clause._VariadicConsumer {
 
-         private final boolean required;
+        private final boolean required;
 
-         private final Class<?> literalClass;
+        private final Class<?> literalClass;
 
-         private final int startLength;
+        private final int startLength;
 
-         private final MappingType type;
+        private final MappingType type;
 
         private List<Object> expList;
 

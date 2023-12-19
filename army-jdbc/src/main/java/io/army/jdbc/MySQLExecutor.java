@@ -217,7 +217,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case MEDIUMTEXT:
             case LONGTEXT:
             case JSON:
-                value = resultSet.getObject(indexBasedOne, String.class);
+                value = resultSet.getString(indexBasedOne);
                 break;
             case FLOAT:
                 value = resultSet.getObject(indexBasedOne, Float.class);
@@ -233,11 +233,16 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case TINYBLOB:
             case BLOB:
             case MEDIUMBLOB:
+
             case LONGBLOB:
-                //
-            case GEOMETRY:
-                value = resultSet.getObject(indexBasedOne, byte[].class);
-                break;
+            case GEOMETRY: {
+                if (type instanceof MappingType.SqlStringType) {
+                    value = resultSet.getString(indexBasedOne);
+                } else {
+                    value = resultSet.getBytes(indexBasedOne);
+                }
+            }
+            break;
             case NULL:
             case UNKNOWN:
                 value = resultSet.getObject(indexBasedOne);

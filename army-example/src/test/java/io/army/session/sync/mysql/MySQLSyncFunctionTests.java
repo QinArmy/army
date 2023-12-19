@@ -169,5 +169,65 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
         Assert.assertEquals(JSON.parseArray((String) row.getOrDefault("variadic2", "[]"), String.class), Arrays.asList("$[0]", "$[2].x"));
     }
 
+    /**
+     * @see MySQLs#elt(Object, Object, Object, Object, Object...)
+     * @see MySQLs#elt(Object, Consumer)
+     */
+    @Test
+    public void eltFunc(final SyncLocalSession session) {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(elt(1, "Aa", "Bb", "Cc", "Dd").as("str"))
+                .comma(elt(2, s -> s.space("Aa")
+                                .comma("Bb")
+                                .comma("Cc")
+                                .comma("Dd")
+                        ).as("strStatic")
+                )
+                .asQuery();
+
+        final Map<String, Object> row;
+        row = session.queryOneObject(stmt, RowMaps::hashMap);
+
+        Assert.assertNotNull(row);
+        Assert.assertEquals(row.get("str"), "Aa");
+        Assert.assertEquals(row.get("strStatic"), "Bb");
+    }
+
+    /**
+     * @see MySQLs#exportSet(Object, Object, Object, Object, Object)
+     */
+    @Test//(invocationCount = 10)
+    public void exportSetFunc(final SyncLocalSession session) {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(exportSet(6, "1", "0", ",", 10).as("bitStr"))
+                .asQuery();
+
+        final String row;
+        row = session.queryOne(stmt, String.class);
+
+        Assert.assertEquals(row, "0,1,1,0,0,0,0,0,0,0");
+
+    }
+
+    /**
+     * @see MySQLs#fromBase64(Object)
+     */
+    @Test
+    public void fromBase64Func(final SyncLocalSession session) {
+        final String source = "QinArmy's army,I love army. 秦军的 army";
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(fromBase64(toBase64(source)).as("source"))
+                .asQuery();
+
+        final String row;
+        row = session.queryOne(stmt, String.class);
+
+        Assert.assertEquals(row, source);
+
+    }
+
 
 }

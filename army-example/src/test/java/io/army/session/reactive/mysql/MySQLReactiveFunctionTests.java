@@ -95,5 +95,60 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
     }
 
+    /**
+     * @see MySQLs#exportSet(Object, Object, Object, Object, Object)
+     */
+    @Test//(invocationCount = 10)
+    public void exportSetFunc(final ReactiveLocalSession session) {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(exportSet(6, "1", "0", ",", 10).as("bitStr"))
+                .asQuery();
+
+        final String row;
+        row = session.queryOne(stmt, String.class)
+                .block();
+
+        Assert.assertEquals(row, "0,1,1,0,0,0,0,0,0,0");
+
+    }
+
+    /**
+     * @see MySQLs#format(Object, Object, Object)
+     */
+    @Test
+    public void formatFunc(final ReactiveLocalSession session) {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(format(12332.2, 2, "de_DE").as("numStr"))
+                .asQuery();
+
+        final String row;
+        row = session.queryOne(stmt, String.class)
+                .block();
+
+        Assert.assertEquals(row, "12.332,20");
+
+    }
+
+    /**
+     * @see MySQLs#fromBase64(Object)
+     */
+    @Test
+    public void fromBase64Func(final ReactiveLocalSession session) {
+        final String source = "QinArmy's army,I love army. 秦军的 army";
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(fromBase64(toBase64(source)).as("source"))
+                .asQuery();
+
+        final String row;
+        row = session.queryOne(stmt, String.class)
+                .block();
+
+        Assert.assertEquals(row, source);
+
+    }
+
 
 }

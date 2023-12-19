@@ -9,6 +9,7 @@ import io.army.struct.TextEnum;
 import io.army.util._TimeUtils;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
@@ -119,53 +120,55 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
         return sqlType;
     }
 
-    public static String toString(final MappingType type, final DataType dataType, final Object nonNull,
+    public static String toString(final MappingType type, final DataType dataType, final Object source,
                                   final ErrorHandler errorHandler) {
         final String value;
-        if (nonNull instanceof String) {
-            value = (String) nonNull;
-        } else if (nonNull instanceof BigDecimal) {
-            value = ((BigDecimal) nonNull).toPlainString();
-        } else if (nonNull instanceof Number) {
-            value = nonNull.toString();
-        } else if (nonNull instanceof Boolean) {
-            value = ((Boolean) nonNull) ? BooleanType.TRUE : BooleanType.FALSE;
-        } else if (nonNull instanceof Enum) {
-            if (nonNull instanceof CodeEnum) {
-                value = Integer.toString(((CodeEnum) nonNull).code());
-            } else if (nonNull instanceof TextEnum) {
-                value = ((TextEnum) nonNull).text();
+        if (source instanceof String) {
+            value = (String) source;
+        } else if (source instanceof BigDecimal) {
+            value = ((BigDecimal) source).toPlainString();
+        } else if (source instanceof Number) {
+            value = source.toString();
+        } else if (source instanceof Boolean) {
+            value = ((Boolean) source) ? BooleanType.TRUE : BooleanType.FALSE;
+        } else if (source instanceof Enum) {
+            if (source instanceof CodeEnum) {
+                value = Integer.toString(((CodeEnum) source).code());
+            } else if (source instanceof TextEnum) {
+                value = ((TextEnum) source).text();
             } else {
-                value = ((Enum<?>) nonNull).name();
+                value = ((Enum<?>) source).name();
             }
-        } else if (nonNull instanceof Character) {
-            value = nonNull.toString();
-        } else if (nonNull instanceof TemporalAccessor) {
-            if (nonNull instanceof LocalDate) {
+        } else if (source instanceof Character) {
+            value = source.toString();
+        } else if (source instanceof TemporalAccessor) {
+            if (source instanceof LocalDate) {
                 // TODO postgre format ?
-                value = nonNull.toString();
-            } else if (nonNull instanceof LocalDateTime) {
-                value = ((LocalDateTime) nonNull).format(_TimeUtils.DATETIME_FORMATTER_6);
-            } else if (nonNull instanceof LocalTime) {
-                value = ((LocalTime) nonNull).format(_TimeUtils.TIME_FORMATTER_6);
-            } else if (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime) {
-                value = _TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) nonNull);
-            } else if (nonNull instanceof OffsetTime) {
-                value = ((OffsetTime) nonNull).format(_TimeUtils.OFFSET_TIME_FORMATTER_6);
-            } else if (nonNull instanceof Instant) {
-                value = Long.toString(((Instant) nonNull).getEpochSecond());
+                value = source.toString();
+            } else if (source instanceof LocalDateTime) {
+                value = ((LocalDateTime) source).format(_TimeUtils.DATETIME_FORMATTER_6);
+            } else if (source instanceof LocalTime) {
+                value = ((LocalTime) source).format(_TimeUtils.TIME_FORMATTER_6);
+            } else if (source instanceof OffsetDateTime || source instanceof ZonedDateTime) {
+                value = _TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) source);
+            } else if (source instanceof OffsetTime) {
+                value = ((OffsetTime) source).format(_TimeUtils.OFFSET_TIME_FORMATTER_6);
+            } else if (source instanceof Instant) {
+                value = Long.toString(((Instant) source).getEpochSecond());
             } else {
-                value = nonNull.toString();
+                value = source.toString();
             }
-        } else if (nonNull instanceof TemporalAmount) {
+        } else if (source instanceof TemporalAmount) {
 //            if (nonNull instanceof Period) {
 //
 //            } else if (!(nonNull instanceof Duration)) {
 //                throw errorHandler.apply(type, nonNull);
 //            } //TODO handle
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
+        } else if (source instanceof byte[]) {
+            value = new String((byte[]) source, StandardCharsets.UTF_8);
         } else {
-            value = nonNull.toString();
+            value = source.toString();
         }
         return value;
     }

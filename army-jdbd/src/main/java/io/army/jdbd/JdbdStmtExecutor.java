@@ -926,13 +926,15 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Nullable
-    final Object getLongBinary(final DataRow row, final int indexBasedZero) {
+    final Object getLongBinary(final DataRow row, final int indexBasedZero, final MappingType type) {
         final Object value;
         if (row.isNull(indexBasedZero)) {
             value = null;
         } else if (row.isBigColumn(indexBasedZero)) {
             final io.jdbd.type.BlobPath path = row.getNonNull(indexBasedZero, io.jdbd.type.BlobPath.class);
             value = BlobPath.from(path.isDeleteOnClose(), path.value());
+        } else if (type instanceof MappingType.SqlStringType) {
+            value = row.get(indexBasedZero, String.class);
         } else {
             value = row.get(indexBasedZero, byte[].class);
         }

@@ -144,19 +144,19 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 } else {
                     throw _Exceptions.outRangeOfSqlType(MySQLType.DATETIME, value);
                 }
-                sqlBuilder.append("TIMESTAMP")
+                sqlBuilder.append("TIMESTAMP ")
                         .append(_Constant.QUOTE)
                         .append(timeText)
                         .append(_Constant.QUOTE);
             }
             break;
             case DATE: {
-                sqlBuilder.append("DATE");
+                sqlBuilder.append("DATE ");
                 _Literals.bindLocalDate(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIME: {
-                sqlBuilder.append("TIME")
+                sqlBuilder.append("TIME ")
                         .append(_Constant.QUOTE);
                 if (value instanceof LocalTime) {
                     sqlBuilder.append(_TimeUtils.format((LocalTime) value, typeMeta));
@@ -200,7 +200,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 if (!(value instanceof Long)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                sqlBuilder.append(Long.toBinaryString((Long) value));
+                sqlBuilder.append("0b")
+                        .append(Long.toBinaryString((Long) value));
             }
             break;
             case DOUBLE: {

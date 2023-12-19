@@ -253,9 +253,14 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 value = resultSet.getObject(indexBasedOne, Float.class);
                 break;
 
-            case BYTEA: // postgre client protocol body must less than 2^32 byte
-                value = resultSet.getObject(indexBasedOne, byte[].class);
-                break;
+            case BYTEA: { // postgre client protocol body must less than 2^32 byte
+                if (type instanceof MappingType.SqlStringType) {
+                    value = resultSet.getString(indexBasedOne);
+                } else {
+                    value = resultSet.getBytes(indexBasedOne);
+                }
+            }
+            break;
             case TIME:
                 value = resultSet.getObject(indexBasedOne, LocalTime.class);
                 break;
@@ -388,7 +393,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case ACLITEM_ARRAY:
             case PG_LSN_ARRAY:
             case PG_SNAPSHOT_ARRAY:
-
                 value = resultSet.getString(indexBasedOne);
                 break;
             case PG_LSN: {
