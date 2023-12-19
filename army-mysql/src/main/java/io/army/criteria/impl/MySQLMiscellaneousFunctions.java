@@ -26,7 +26,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param xmlFrag   non-null
      * @param xpathExpr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -39,7 +38,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param xmlTarget non-null
      * @param xpathExpr non-null
@@ -59,7 +57,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_get-lock">GET_LOCK(str,timeout)</a>
@@ -71,7 +68,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}, sql function return 0 or 1 or null.
-     *
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -85,7 +81,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
      *
-     *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_is-used-lock">IS_USED_LOCK(str)</a>
@@ -98,7 +93,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_release-all-locks">RELEASE_ALL_LOCKS()</a>
      */
@@ -109,7 +103,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -127,7 +120,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param count non-null
      * @param expr  non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -141,7 +133,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_charset">CHARSET(str)</a>
@@ -153,7 +144,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -167,7 +157,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_collation">COLLATION(str)</a>
@@ -180,7 +169,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_connection-id">CONNECTION_ID()</a>
      */
@@ -191,7 +179,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-role">CURRENT_ROLE()</a>
@@ -204,7 +191,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-user">CURRENT_USER()</a>
      */
@@ -215,7 +201,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_database">DATABASE()</a>
@@ -228,7 +213,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_icu-version">ICU_VERSION()</a>
      */
@@ -240,7 +224,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
@@ -251,7 +234,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
-     *
      *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -265,7 +247,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_roles-graphml">ROLES_GRAPHML()</a>
      */
@@ -276,7 +257,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_row-count">ROW_COUNT()</a>
@@ -289,7 +269,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_user">USER()</a>
      */
@@ -300,7 +279,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_version">VERSION()</a>
@@ -317,7 +295,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param cryptStr non-null
      * @param keyStr   non-null
      * @param rest     non-null,size in [0,4]
@@ -332,7 +309,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param str    non-null
      * @param keyStr non-null
@@ -349,7 +325,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param stringToCompress non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_compress">COMPRESS(string_to_compress)</a>
@@ -361,7 +336,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param stringToUnCompress non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -375,7 +349,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_md5">MD5(str)</a>
@@ -387,7 +360,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param len non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -401,7 +373,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_sha1">SHA1(str)</a>
@@ -414,7 +385,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_sha1">SHA(str)</a>
@@ -426,7 +396,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param str        non-null
      * @param hashLength non-null
@@ -442,7 +411,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param stmt    non-null,stmt must produce one one sql(couldn't be multi sql)
      * @param visible non-null
      * @param literal true:output literal
@@ -457,7 +425,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param statement parameter or literal expression
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
@@ -469,7 +436,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param stmt    non-null,stmt must produce one one sql(couldn't be multi sql)
      * @param visible non-null
@@ -486,7 +452,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param statement parameter or literal expression
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
@@ -498,7 +463,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param compressedString non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -512,7 +476,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -530,7 +493,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:the {@link  MappingType} of arg
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_any-value">ANY_VALUE(arg)</a>
      */
@@ -541,7 +503,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_bin-to-uuid">BIN_TO_UUID(binary_uuid, swap_flag)</a>
@@ -554,7 +515,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_bin-to-uuid">BIN_TO_UUID(binary_uuid, swap_flag)</a>
      */
@@ -565,7 +525,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link  MappingType} of field
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">DEFAULT(col_name)</a>
@@ -579,7 +538,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
      *
-     *
      * @param exp non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
@@ -591,7 +549,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     *
      *
      * @param expList non-null,non-empty
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -606,7 +563,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
      *
-     *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet-aton">INET_ATON(expr)</a>
@@ -618,7 +574,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
-     *
      *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -644,7 +599,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
      *
-     *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet6-ntoa">INET6_NTOA(expr)</a>
@@ -657,7 +611,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     *
      *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -672,7 +625,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
      *
-     *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-compat">IS_IPV4_COMPAT(expr)</a>
@@ -684,7 +636,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
-     *
      *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -698,7 +649,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
      *
-     *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv6">IS_IPV6(expr)</a>
@@ -711,7 +661,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
      *
-     *
      * @param stringUuid non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-uuid">IS_UUID(string_uuid)</a>
@@ -723,7 +672,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     *
      *
      * @param logName non-null
      * @param logPos  non-null
@@ -738,7 +686,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
      *
-     *
      * @param logName non-null
      * @param logPos  non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -751,7 +698,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     *
      *
      * @param logName non-null
      * @param logPos  non-null
@@ -767,7 +713,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of value
-     *
      *
      * @param name  non-null,parameter {@link Expression} or literal {@link Expression}
      *              ,couldn't be named parameter {@link Expression} or named literal {@link Expression}
@@ -793,7 +738,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
      *
-     *
      * @param duration non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_sleep">SLEEP(duration)</a>
@@ -806,7 +750,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     *
      *
      * @param logName non-null
      * @param logPos  non-null
@@ -821,7 +764,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
      *
-     *
      * @param logName non-null
      * @param logPos  non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -834,7 +776,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     *
      *
      * @param logName non-null
      * @param logPos  non-null
@@ -850,7 +791,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link StringType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid">UUID()</a>
      */
@@ -861,7 +801,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LongType}
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-short">UUID_SHORT()</a>
@@ -874,7 +813,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link VarBinaryType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid)</a>
      */
@@ -885,7 +823,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link VarBinaryType}
-     *
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid, swap_flag)</a>
@@ -898,12 +835,11 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of field
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_values">VALUES(col_name)</a>
      */
     public static SimpleExpression values(final FieldMeta<?> field) {
-        return FunctionUtils.oneArgFunc("VALUES", field, field);
+        return LiteralFunctions.oneArgFunc("VALUES", field, field);
     }
 
 
@@ -914,7 +850,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param count non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -928,7 +863,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param timeVal non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_format-pico-time">FORMAT_PICO_TIME(time_val)</a>
@@ -941,7 +875,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
      *
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_ps-current-thread-id">PS_CURRENT_THREAD_ID()</a>
      */
@@ -952,7 +885,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
-     *
      *
      * @param connectionId non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -969,7 +901,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
      *
-     *
      * @param set1 non-null
      * @param set2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -982,7 +913,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} set1
-     *
      *
      * @param set1 non-null
      * @param set2 non-null
@@ -997,7 +927,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
      *
-     *
      * @param gtidSet non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
@@ -1009,7 +938,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     *
      *
      * @param gtidSet non-null
      * @param timeout non-null
@@ -1024,7 +952,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
      *
-     *
      * @param gtidSet non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
@@ -1036,7 +963,6 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
-     *
      *
      * @param gtidSet non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.

@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
+import io.army.util._StringUtils;
 
 public enum MySQLCharset implements SQLWords {
 
@@ -56,21 +57,21 @@ public enum MySQLCharset implements SQLWords {
 
     utf8mb4(" utf8mb4");
 
-    private final String words;
+    private final String spaceWords;
 
-    MySQLCharset(String words) {
-        this.words = words;
+    MySQLCharset(String spaceWords) {
+        this.spaceWords = spaceWords;
     }
 
     @Override
     public final String spaceRender() {
-        return this.words;
+        return this.spaceWords;
     }
 
 
     @Override
     public final String toString() {
-        return String.format(" %s.%s", MySQLCharset.class.getName(), this.name());
+        return _StringUtils.enumToString(this);
     }
 
 

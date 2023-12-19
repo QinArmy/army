@@ -200,16 +200,16 @@ abstract class FuncExpUtils {
     }
 
 
-    private static final class VariadicClause implements Clause._VariadicSpaceClause,
-            Clause._VariadicCommaClause, Clause._VariadicConsumer {
+     static final class VariadicClause implements Clause._VariadicSpaceClause,
+             Clause._VariadicCommaClause, Clause._VariadicConsumer {
 
-        private final boolean required;
+         private final boolean required;
 
-        private final Class<?> literalClass;
+         private final Class<?> literalClass;
 
-        private final int startLength;
+         private final int startLength;
 
-        private final MappingType type;
+         private final MappingType type;
 
         private List<Object> expList;
 

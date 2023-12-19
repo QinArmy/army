@@ -302,13 +302,13 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * </ul>
      *
      * @param exp             non-null   {@link Expression}
-     * @param using           {@link MySQLs#USING}
+     * @param using           {@link SQLs#USING}
      * @param transcodingName non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_convert">CONVERT(expr USING transcoding_name)</a>
      */
-    public static SimpleExpression convert(final Expression exp, MySQLs.WordUsing using, final SQLElement transcodingName) {
-        assert using == MySQLs.USING;
+    public static SimpleExpression convert(final Expression exp, SQLs.WordUsing using, final SQLElement transcodingName) {
+        assert using == SQLs.USING;
         final String name = "CONVERT";
         if (!(transcodingName instanceof MySQLCharset || transcodingName instanceof SQLIdentifier)) {
             throw CriteriaUtils.funcArgError(name, transcodingName);
@@ -452,7 +452,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
     /**
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType)
-     * @see #convert(Expression, MySQLs.WordUsing, SQLElement)
+     * @see #convert(Expression, SQLs.WordUsing, SQLElement)
      */
     static MappingType _castReturnType(final MySQLCastType type) {
         final MappingType returnType;

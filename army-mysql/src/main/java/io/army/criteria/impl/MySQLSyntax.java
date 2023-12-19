@@ -30,16 +30,15 @@ abstract class MySQLSyntax extends MySQLFunctions {
     MySQLSyntax() {
     }
 
+    private static final Pattern CHARSET_NAME_PATTERN = Pattern.compile("a-zA-Z[_\\w]*]");
 
     /**
      * @see io.army.criteria.mysql.MySQLCharset
      */
     public static SQLIdentifier charset(String charsetName) {
-        final Pattern pattern;
-        pattern = Pattern.compile("a-zA-Z[_\\w]*]");
-        if (!pattern.matcher(charsetName).matches()) {
+        if (!CHARSET_NAME_PATTERN.matcher(charsetName).matches()) {
             String m = String.format("Illegal charset name[%s]", charsetName);
-            throw ContextStack.criteriaError(ContextStack.peek(), charsetName);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
         return SQLs._identifier(charsetName);
     }

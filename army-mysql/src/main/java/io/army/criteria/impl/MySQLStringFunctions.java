@@ -1,22 +1,23 @@
 package io.army.criteria.impl;
 
 
+import io.army.criteria.Clause;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
-import io.army.criteria.SQLElement;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.mysql.MySQLCastType;
-import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLocale;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
+import io.army.util._Collections;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * package class
@@ -35,195 +36,464 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /*-------------------below String Functions-------------------*/
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
-     * @param str nullable parameter or {@link Expression}
+     * <p>The {@link MappingType} of function return type:{@link IntegerType}
+     *
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ascii">ASCII(str)</a>
      */
-    public static SimpleExpression ascii(final Expression str) {
-        return FunctionUtils.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
+    public static SimpleExpression ascii(final Object str) {
+        return LiteralFunctions.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param n nullable parameter or {@link Expression}
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param n non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bin">BIN(n)</a>
      */
-    public static SimpleExpression bin(final Expression n) {
-        return FunctionUtils.oneArgFunc("BIN", n, StringType.INSTANCE);
+    public static SimpleExpression bin(final Object n) {
+        return LiteralFunctions.oneArgFunc("BIN", n, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
-     * @param str nullable parameter or {@link Expression}
+     * <p>The {@link MappingType} of function return type:{@link IntegerType}
+     *
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
      */
-    public static SimpleExpression binLength(final Expression str) {
-        return FunctionUtils.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
+    public static SimpleExpression binLength(final Object str) {
+        return LiteralFunctions.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param n parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param n non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static SimpleExpression Char(final Expression n) {
-        return FunctionUtils.oneOrMultiArgFunc("CHAR", n, StringType.INSTANCE);
+    public static SimpleExpression charFunc(final Object n) {
+        return LiteralFunctions.oneArgFunc("CHAR", n, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param list parameter or {@link Expression} list
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>CHAR function static method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static SimpleExpression charFunc(final List<Expression> list) {
-        return FunctionUtils.multiArgFunc("CHAR", list, StringType.INSTANCE);
+    public static SimpleExpression charFunc(final Consumer<Clause._VariadicSpaceClause> consumer) {
+        return MySQLFunctionUtils.charFunc(consumer, null);
     }
 
-
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param n           nullable parameter or non-empty {@link List} or {@link Expression}
-     * @param using       {@link MySQLs#USING}
-     * @param charsetName non-null, {@link MySQLCharset} or {@link MySQLs#charset(String)} ,output identifier
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>CHAR function static method with charsetName
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
+     * @param using    see {@link SQLs#USING}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static SimpleExpression charFunc(final Expression n, final MySQLs.WordUsing using, final SQLElement charsetName) {
-        assert using == MySQLs.USING;
-        final String funcName = "CHAR";
-        if (!(charsetName instanceof MySQLCharset || charsetName instanceof SQLs.SQLIdentifierImpl)) {
-            throw CriteriaUtils.funcArgError(funcName, charsetName);
-        }
-
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(n);
-        argList.add(MySQLs.USING);
-        argList.add(charsetName);
-        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
+    public static SimpleExpression charFunc(final Consumer<Clause._VariadicSpaceClause> consumer, SQLs.WordUsing using, String charsetName) {
+        Objects.requireNonNull(charsetName);
+        return MySQLFunctionUtils.charFunc(consumer, charsetName);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param list        parameter or {@link Expression} list
-     * @param using       {@link MySQLs#USING}
-     * @param charsetName non-null, {@link MySQLCharset} or {@link MySQLs#charset(String)} ,output identifier
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>CHAR function dynamic method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static SimpleExpression charFunc(final List<Expression> list, final MySQLs.WordUsing using
-            , final SQLElement charsetName) {//TODO 优化方法定义
-        assert using == MySQLs.USING;
-        final String name = "CHAR";
-        if (!(charsetName instanceof MySQLCharset || charsetName instanceof SQLs.SQLIdentifierImpl)) {
-            throw CriteriaUtils.funcArgError(name, charsetName);
-        }
-        final int size = list.size();
-        if (size == 0) {
-            throw CriteriaUtils.funcArgListIsEmpty(name);
-        }
-        final List<Object> argList = new ArrayList<>(size + 2);
-        argList.addAll(list);
-        argList.add(MySQLs.USING);
-        argList.add(charsetName);
-        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
+    public static SimpleExpression charFunc(SQLs.SymbolSpace space, final Consumer<Clause._VariadicConsumer> consumer) {
+        return MySQLFunctionUtils.charFunc(consumer, null);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>CHAR function dynamic method  with charsetName
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
+     * @param using    see {@link SQLs#USING}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
+     */
+    public static SimpleExpression charFunc(SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer, SQLs.WordUsing using, String charsetName) {
+        Objects.requireNonNull(charsetName);
+        return MySQLFunctionUtils.charFunc(consumer, charsetName);
+    }
+
+
+    /**
+     * <p>The {@link MappingType} of function return type:{@link IntegerType}
+     *
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR_LENGTH(str)</a>
      */
-    public static SimpleExpression charLength(final Expression str) {
-        return FunctionUtils.oneArgFunc("CHAR_LENGTH", str, IntegerType.INSTANCE);
+    public static SimpleExpression charLength(final Object str) {
+        return LiteralFunctions.oneArgFunc("CHAR_LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param str nullable parameter or {@link Collection} or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param str1 non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link String} literal</li>
+     *             </ul>
+     * @param str2 non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link String} literal</li>
+     *             </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
      */
-    public static SimpleExpression concat(final Expression str) {
-        return FunctionUtils.oneArgFunc("CONCAT", str, StringType.INSTANCE);
+    public static SimpleExpression concat(final Object str1, Object str2) {
+        FuncExpUtils.assertTextExp(str1);
+        FuncExpUtils.assertTextExp(str2);
+        return LiteralFunctions.twoArgFunc("CONCAT", str1, str2, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param separator nullable parameter or {@link Expression}
-     * @param str       nullable parameter or {@link Collection} or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param str1        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param str2        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param str3        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param strVariadic each of strVariadic is one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
+     */
+    public static SimpleExpression concat(final Object str1, Object str2, Object str3, Object... strVariadic) {
+        FuncExpUtils.assertTextExp(str1);
+        FuncExpUtils.assertTextExp(str2);
+        FuncExpUtils.assertTextExp(str3);
+
+        final List<Object> argList = _Collections.arrayList(3 + strVariadic.length);
+
+        argList.add(str1);
+        argList.add(str2);
+        argList.add(str3);
+
+        FuncExpUtils.addAllTextExp(argList, "str", strVariadic);
+        return LiteralFunctions.multiArgFunc("CONCAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>CONCAT function dynamic method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                 </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
+     */
+    public static SimpleExpression concat(Consumer<Clause._VariadicSpaceClause> consumer) {
+        final List<?> argList;
+        argList = FuncExpUtils.variadicList(true, String.class, consumer);
+        if (argList.size() < 2) {
+            throw ContextStack.clearStackAndCriteriaError("argument count must great than 1");
+        }
+        return LiteralFunctions.multiArgFunc("CONCAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>CONCAT function dynamic method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                 </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
+     */
+    public static SimpleExpression concat(SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
+        final List<?> argList;
+        argList = FuncExpUtils.variadicList(true, String.class, consumer);
+        if (argList.size() < 2) {
+            throw ContextStack.clearStackAndCriteriaError("argument count must great than 1");
+        }
+        return LiteralFunctions.multiArgFunc("CONCAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param separator non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @param str1      non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @param str2      non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
      */
-    public static SimpleExpression concatWs(final Expression separator, final Expression str) {
-        return FunctionUtils.twoOrMultiArgFunc("CONCAT_WS", separator, str, StringType.INSTANCE);
+    public static SimpleExpression concatWs(Object separator, Object str1, Object str2) {
+        return LiteralFunctions.threeArgFunc("CONCAT_WS", separator, str1, str2, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param list nullable parameter or {@link Collection} or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param separator   non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param str1        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param str2        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param str3        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param strVariadic each of strVariadic is one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
      */
-    public static SimpleExpression concatWs(List<Expression> list) {
-        return FunctionUtils.multiArgFunc("CONCAT_WS", list, StringType.INSTANCE);
+    public static SimpleExpression concatWs(Object separator, Object str1, Object str2, Object str3, Object... strVariadic) {
+        FuncExpUtils.assertTextExp(separator);
+        FuncExpUtils.assertTextExp(str1);
+        FuncExpUtils.assertTextExp(str2);
+        FuncExpUtils.assertTextExp(str3);
+
+        final List<Object> argList = _Collections.arrayList(4 + strVariadic.length);
+
+        argList.add(separator);
+        argList.add(str1);
+        argList.add(str2);
+        argList.add(str3);
+
+        FuncExpUtils.addAllTextExp(argList, "str", strVariadic);
+        return LiteralFunctions.multiArgFunc("CONCAT_WS", argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>CONCAT_WS function dynamic method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param separator non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @param consumer  each of clause is  one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
+     */
+    public static SimpleExpression concatWs(Object separator, Consumer<Clause._VariadicSpaceClause> consumer) {
+        FuncExpUtils.assertTextExp(separator);
+        return _oneAndVariadicString("CONCAT_WS", separator, 2, consumer);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param n   non-null parameter or {@link Expression}
-     * @param str non-null parameter or non-empty {@link List} or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>CONCAT_WS function dynamic method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param separator non-null, one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @param space     see {@link SQLs#SPACE}
+     * @param consumer  each of clause is  one of following :
+     *                  <ul>
+     *                       <li>{@link Expression} instance</li>
+     *                       <li>{@link String} literal</li>
+     *                  </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
+     */
+    public static SimpleExpression concatWs(Object separator, SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
+        FuncExpUtils.assertTextExp(separator);
+        return _oneAndVariadicString("CONCAT_WS", separator, 2, consumer);
+    }
+
+
+    /**
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param n           non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link Integer} literal</li>
+     *                    </ul>
+     * @param str1        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param str2        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param str3        non-null, one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @param strVariadic each of strVariadic is one of following :
+     *                    <ul>
+     *                         <li>{@link Expression} instance</li>
+     *                         <li>{@link String} literal</li>
+     *                    </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
      */
-    public static SimpleExpression elt(final Expression n, final Expression str) {
-        return FunctionUtils.twoOrMultiArgFunc("ELT", n, str, StringType.INSTANCE);
+    public static SimpleExpression elt(Object n, Object str1, Object str2, Object str3, Object... strVariadic) {
+        FuncExpUtils.assertIntExp(n);
+        FuncExpUtils.assertTextExp(str1);
+        FuncExpUtils.assertTextExp(str2);
+        FuncExpUtils.assertTextExp(str3);
+
+        final List<Object> argList = _Collections.arrayList(4 + strVariadic.length);
+
+        argList.add(n);
+        argList.add(str1);
+        argList.add(str2);
+        argList.add(str3);
+
+        FuncExpUtils.addAllTextExp(argList, "str", strVariadic);
+        return LiteralFunctions.multiArgFunc("ELT", argList, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
-     * @param n    non-null parameter or {@link Expression}
-     * @param list nullable parameter or {@link Collection} or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * <p>ELT function dynamic method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param n        non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link Integer} literal</li>
+     *                 </ul>
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                 </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
      */
-    public static SimpleExpression elt(final Expression n, List<Expression> list) {
-        return FunctionUtils.oneAndMultiArgFunc("ELT", n, list, StringType.INSTANCE);
+    public static SimpleExpression elt(Object n, Consumer<Clause._VariadicSpaceClause> consumer) {
+        FuncExpUtils.assertIntExp(n);
+        return _oneAndVariadicString("ELT", n, 3, consumer);
     }
 
+    /**
+     * <p>ELT function dynamic method.
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param n        non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link Integer} literal</li>
+     *                 </ul>
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer each of clause is  one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                 </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
+     */
+    public static SimpleExpression elt(Object n, SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
+        FuncExpUtils.assertIntExp(n);
+        return _oneAndVariadicString("ELT", n, 3, consumer);
+    }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
      * @param bits non-null parameter or {@link Expression}
      * @param on   non-null parameter or {@link Expression}
      * @param off  non-null parameter or {@link Expression}
@@ -239,7 +509,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param bits non-null parameter or {@link Expression}
      * @param on   non-null parameter or {@link Expression}
      * @param off  non-null parameter or {@link Expression}
@@ -256,7 +527,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param bits non-null parameter or {@link Expression}
      * @param on   non-null parameter or {@link Expression}
      * @param off  non-null parameter or {@link Expression}
@@ -274,7 +546,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList non-null literal or non-empty {@link List}  or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -287,7 +560,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList non-null literal or non-empty {@link List}  or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -300,7 +574,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -314,7 +589,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param str     nullable parameter or {@link Expression}
      * @param strList nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -327,7 +603,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param x non-null
      * @param d non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -342,7 +619,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param x      non-null
      * @param d      non-null
      * @param locale non-null
@@ -357,7 +635,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #toBase64(Expression)
@@ -370,7 +649,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #fromBase64(Expression)
@@ -383,7 +663,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param strOrNum nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #unhex(Expression)
@@ -396,7 +677,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #hex(Expression)
@@ -409,7 +691,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str    nullable parameter or {@link Expression}
      * @param pos    nullable parameter or {@link Expression}
      * @param len    nullable parameter or {@link Expression}
@@ -425,7 +708,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param str    nullable parameter or {@link Expression}
      * @param substr nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -438,7 +722,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lower">LOWER(str)</a>
@@ -450,7 +735,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #lower(Expression)
@@ -463,7 +749,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @param len nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -476,7 +763,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
@@ -488,7 +776,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param fileName non-null parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_load-file">LOAD_FILE(fileName)</a>
@@ -500,7 +789,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -515,7 +805,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @param pos    nullable parameter or {@link Expression}
@@ -530,7 +821,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str    nullable parameter or {@link Expression}
      * @param len    nullable parameter or {@link Expression}
      * @param padstr nullable parameter or {@link Expression}
@@ -545,7 +837,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str    nullable parameter or {@link Expression}
      * @param len    nullable parameter or {@link Expression}
      * @param padstr nullable parameter or {@link Expression}
@@ -561,7 +854,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #rtrim(Expression)
@@ -574,7 +868,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #ltrim(Expression)
@@ -587,7 +882,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param bits    non-null {@link Long} or {@link Integer} or {@link BitSet} or {@link Expression}
      * @param strList {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -600,7 +896,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param bits    non-null {@link Expression}
      * @param strList {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -613,7 +910,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @param pos nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -626,7 +924,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @param pos nullable parameter or {@link Expression}
      * @param len nullable parameter or {@link Expression}
@@ -640,7 +939,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param n nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_oct">OCT(N)</a>
@@ -652,7 +952,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
@@ -664,7 +965,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *     *
+     * *
+     *
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -679,7 +981,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_quote">QUOTE(str)</a>
@@ -691,7 +994,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str   nullable parameter or {@link Expression}
      * @param count nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -704,7 +1008,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str     nullable parameter or {@link Expression}
      * @param fromStr nullable parameter or {@link Expression}
      * @param toStr   nullable parameter or {@link Expression}
@@ -718,7 +1023,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_reverse">REVERSE(str)</a>
@@ -730,7 +1036,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @param len nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -743,7 +1050,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_soundex">SOUNDEX(str)</a>
@@ -756,7 +1064,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param n nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_space">SPACE(n)</a>
@@ -768,7 +1077,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str   nullable parameter or {@link Expression}
      * @param delim nullable parameter or {@link Expression}
      * @param count nullable parameter or {@link Expression}
@@ -782,7 +1092,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
@@ -794,7 +1105,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param remstr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -808,7 +1120,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param position non-null,should be below:
      *                 <ul>
      *                      <li>{@link SQLs#BOTH}</li>
@@ -839,7 +1152,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str)</a>
@@ -851,7 +1165,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *     *
+     * *
+     *
      * @param str  nullable parameter or {@link Expression}
      * @param type non-null {@link  MySQLCastType#CHAR} or {@link  MySQLCastType#BINARY}
      * @param n    non-null parameter or {@link Expression}
@@ -880,6 +1195,27 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
 
 
     /*-------------------below private method -------------------*/
+
+
+    /**
+     * @param min min value of variadic
+     * @see #concatWs(Object, Consumer)
+     * @see #concatWs(Object, SQLs.SymbolSpace, Consumer)
+     * @see #elt(Object, Consumer)
+     * @see #elt(Object, SQLs.SymbolSpace, Consumer)
+     */
+    private static SimpleExpression _oneAndVariadicString(final String name, Object one, final int min,
+                                                          Consumer<? super FuncExpUtils.VariadicClause> consumer) {
+        final ArrayList<Object> arrayList = _Collections.arrayList(1 + min + 2);
+        arrayList.add(one);
+
+        final List<?> argList;
+        argList = FuncExpUtils.variadicList(true, arrayList, String.class, consumer);
+        if (argList.size() < (1 + min)) {
+            throw ContextStack.clearStackAndCriteriaError(String.format("variadic argument count must great than or equal %s", min));
+        }
+        return LiteralFunctions.multiArgFunc(name, argList, StringType.INSTANCE);
+    }
 
 
 }

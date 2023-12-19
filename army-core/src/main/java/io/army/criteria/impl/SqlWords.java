@@ -16,7 +16,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//SymbolSpaceEnum
@@ -28,7 +28,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
     }
 
@@ -96,7 +96,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordSimilar
@@ -118,7 +118,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
 
@@ -141,7 +141,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
 
@@ -166,7 +166,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
 
@@ -404,7 +404,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
 
@@ -427,7 +427,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
 
@@ -450,7 +450,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordInterval
@@ -472,7 +472,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordPercent
@@ -494,7 +494,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     } //KeyWordUnknown
@@ -517,7 +517,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordAscDesc
@@ -539,7 +539,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordLateral
@@ -561,7 +561,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordFirst
@@ -583,7 +583,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordNext
@@ -606,7 +606,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordsNullsFirstLast
@@ -628,7 +628,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordRow
@@ -650,7 +650,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordRows
@@ -672,7 +672,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordNext
@@ -694,7 +694,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordOny
@@ -716,7 +716,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordAs
@@ -738,7 +738,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordAnd
@@ -761,7 +761,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordSymmetric
@@ -772,7 +772,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//SQLSymbolPoint
@@ -794,7 +794,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//SQLSymbolStar
@@ -817,7 +817,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordEscape
@@ -844,7 +844,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
 
@@ -877,7 +877,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//KeyWordsCharacterSet
@@ -901,10 +901,26 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     } // KeyWordsCollate
 
 
+    enum KeyWordUsing implements SQLs.WordUsing {
+
+        USING;
+
+        @Override
+        public final String spaceRender() {
+            return " USING";
+        }
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+
+    }//KeyWordUsing
 }

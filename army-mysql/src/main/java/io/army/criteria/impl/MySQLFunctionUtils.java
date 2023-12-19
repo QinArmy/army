@@ -101,9 +101,61 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         return new JsonValueFunc(jsonDoc, path, clause);
     }
 
-    static MySQLJsonTableColumns jsonTableColumns() {
-        return new MySQLJsonTableColumns();
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
+     */
+    static SimpleExpression charFunc(Consumer<? super FuncExpUtils.VariadicClause> consumer, @Nullable String charName) {
+        if (charName != null && !_StringUtils.hasText(charName)) {
+            throw ContextStack.clearStackAndCriteriaError("CHAR function charset_name must have text");
+        }
+        return new CharFunc(FuncExpUtils.variadicList(true, consumer), charName, StringType.INSTANCE);
     }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
+     */
+    private static final class CharFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final List<?> argList;
+
+        private final String charsetName;
+
+        /**
+         * @see #charFunc(Consumer, String)
+         */
+        private CharFunc(List<?> argList, @Nullable String charsetName, TypeMeta returnType) {
+            super("CHAR", returnType);
+            this.argList = argList;
+            this.charsetName = charsetName;
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            FuncExpUtils.appendLiteralList(this.argList, sqlBuilder, context);
+
+            final String charsetName = this.charsetName;
+            if (charsetName != null) {
+                sqlBuilder.append(SQLs.USING.spaceRender())
+                        .append(_Constant.SPACE);
+
+                context.identifier(charsetName, sqlBuilder);
+            }
+
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            FuncExpUtils.literalListToString(this.argList, builder);
+            final String charsetName = this.charsetName;
+            if (charsetName != null) {
+                builder.append(SQLs.USING.spaceRender())
+                        .append(_Constant.SPACE)
+                        .append(charsetName);
+            }
+        }
+
+    } // CharFunc
+
 
     /**
      * <p>Create jsonTable function.
@@ -116,7 +168,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         FuncExpUtils.assertPathExp(path);
 
         final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
-        tableColumns = MySQLFunctionUtils.jsonTableColumns();
+        tableColumns = new MySQLJsonTableColumns();
 
         CriteriaUtils.invokeConsumer(tableColumns, consumer);
         return new JsonTableFunc(jsonDoc, path, tableColumns.endClause());
@@ -325,8 +377,6 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
         return type;
     }
-
-
 
 
     private static abstract class MySQLWindowFunction extends WindowFunctionUtils.WindowFunction<MySQLWindow._PartitionBySpec>

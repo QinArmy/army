@@ -39,6 +39,7 @@ import static io.army.dialect.Database.PostgreSQL;
 @SuppressWarnings({"unused"})
 public abstract class SQLs extends SQLSyntax {
 
+
     /**
      * private constructor
      */
@@ -135,6 +136,8 @@ public abstract class SQLs extends SQLSyntax {
     public static final WordsCharacterSet CHARACTER_SET = SqlWords.KeyWordsCharacterSet.CHARACTER_SET;
 
     public static final WordCollate COLLATE = SqlWords.KeyWordsCollate.COLLATE;
+
+    public static final WordUsing USING = SqlWords.KeyWordUsing.USING;
 
 
     /**
@@ -423,8 +426,8 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    static String sqlKeyWordsToString(Enum<?> wordEnum) {
-        return _StringUtils.builder()
+    static String keyWordsToString(Enum<?> wordEnum) {
+        return _StringUtils.builder(20)
                 .append(SQLs.class.getSimpleName())
                 .append(_Constant.PERIOD)
                 .append(wordEnum.name())
@@ -626,6 +629,10 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public interface WordCollate extends SQLWords {
+
+    }
+
+    public interface WordUsing extends SQLWords {
 
     }
 

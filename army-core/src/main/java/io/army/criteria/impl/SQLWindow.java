@@ -799,7 +799,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//WindowRowModifier
@@ -819,7 +819,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
         @Override
         public final String toString() {
-            return SQLs.sqlKeyWordsToString(this);
+            return SQLs.keyWordsToString(this);
         }
 
     }//WindowExpModifier

@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SQLCommand;
 import io.army.criteria.mysql.*;
-import io.army.mapping.StringType;
 
 public abstract class MySQLs extends MySQLSyntax {
 
@@ -29,20 +28,14 @@ public abstract class MySQLs extends MySQLSyntax {
     public static final Modifier IGNORE = MySQLWords.MySQLModifier.IGNORE;
     public static final Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
     public static final Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
-    public static final WordUsing USING = MySQLWords.KeyWordUsing.USING;
     public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
-    @Deprecated
-    public static final WordExistsPath EXISTS_PATH = MySQLWords.KeyWordExistsPath.EXISTS_PATH;
     public static final SQLs.WordExists EXISTS = SqlWords.KeyWordExists.EXISTS;
+
     public static final SQLs.WordColumns COLUMNS = SqlWords.KeyWordColumns.COLUMNS;
     public static final SQLs.WordNested NESTED = SqlWords.KeyWordNested.NESTED;
     public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
     public static final SQLs.WordError ERROR = SqlWords.KeyWordError.ERROR;
     public static final WordsAtTimeZone AT_TIME_ZONE = MySQLWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
-    @Deprecated
-    public static final SimpleExpression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");
-    @Deprecated
-    public static final SimpleExpression LITERAL_all = SQLs.literal(StringType.INSTANCE, "all");
 
 
     /**
@@ -138,17 +131,6 @@ public abstract class MySQLs extends MySQLSyntax {
 
     }
 
-    public interface WordUsing extends SQLWords {
-
-    }
-
-    public interface WordNested extends SQLWords {
-
-    }
-
-    public interface WordExistsPath extends SQLWords {
-
-    }
 
     public interface WordsAtTimeZone extends SQLWords {
 

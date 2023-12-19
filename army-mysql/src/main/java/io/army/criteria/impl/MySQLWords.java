@@ -77,53 +77,6 @@ abstract class MySQLWords {
 
     }//WordDistinct
 
-    enum KeyWordUsing implements MySQLs.WordUsing {
-
-        USING(" USING");
-
-        private final String spaceWord;
-
-        KeyWordUsing(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return MySQLSyntax.keyWordsToString(this);
-        }
-
-    }//KeyWordUsing
-
-    enum KeyWordExistsPath implements MySQLs.WordExistsPath {
-
-        EXISTS_PATH(" EXISTS PATH");
-
-        private final String spaceWord;
-
-        KeyWordExistsPath(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return MySQLSyntax.keyWordsToString(this);
-        }
-
-
-    }//KeyWordExistsPath
-
     enum KeyWordsAtTimeZone implements MySQLs.WordsAtTimeZone {
 
         AT_TIME_ZONE(" AT TIME ZONE");
