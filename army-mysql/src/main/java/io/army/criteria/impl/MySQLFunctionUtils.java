@@ -935,7 +935,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
                     if (action instanceof Expression) {
                         ((ArmyExpression) action).appendSql(sqlBuilder, context);
-                    } else {\
+                    } else {
                         context.appendLiteral(JsonType.TEXT, action);
                     }
                 }

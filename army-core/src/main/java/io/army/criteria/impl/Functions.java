@@ -7,7 +7,6 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -864,6 +863,33 @@ abstract class Functions {
     }
 
     /**
+     * <p>User defined three argument function
+     * <p>The {@link MappingType} of function return type is returnType
+     *
+     * @param name       function name
+     * @param expr1      argument
+     * @param expr2      argument
+     * @param expr3      argument
+     * @param returnType function return type.
+     */
+    public static SimpleExpression myFunc(String name, Expression expr1, Expression expr2, Expression expr3, TypeMeta returnType) {
+        return LiteralFunctions.myThreeArgFunc(name, expr1, expr2, expr3, returnType);
+    }
+
+    /**
+     * <p>User defined three argument boolean function
+     * <p>The {@link MappingType} of function return type: {@link  BooleanType}
+     *
+     * @param name  function name
+     * @param expr1 argument
+     * @param expr2 argument
+     * @param expr3 argument
+     */
+    public static SimplePredicate myFunc(String name, Expression expr1, Expression expr2, Expression expr3) {
+        return LiteralFunctions.myThreeArgPredicate(name, expr1, expr2, expr3);
+    }
+
+    /**
      * <p>User defined multi-argument function
      * <p>The {@link MappingType} of function return type is returnType
      *
@@ -1097,7 +1123,7 @@ abstract class Functions {
     }
 
     /**
-     * @see #round(Expression)
+     * @see #round(Object)
      */
     static MappingType _numberOrDecimal(final MappingType type) {
         final MappingType returnType;
@@ -1184,15 +1210,6 @@ abstract class Functions {
 
 
     /*-------------------below private method-------------------*/
-
-    @Deprecated
-    private static String functionsKeyWordToString(final Enum<?> e) {
-        return _StringUtils.builder()
-                .append(Functions.class.getName())
-                .append(_Constant.PERIOD)
-                .append(e.name())
-                .toString();
-    }
 
 
     /**
