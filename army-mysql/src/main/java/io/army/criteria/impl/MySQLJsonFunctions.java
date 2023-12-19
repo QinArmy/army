@@ -1234,12 +1234,12 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *        stmt = MySQLs.query()
      *                .select(s -> s.space("t", PERIOD, ASTERISK))
      *                .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> {
-     *                               s.accept("rowId", FOR_ORDINALITY)
-     *                                .accept("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError());
+     *                               s.column("rowId", FOR_ORDINALITY)
+     *                                .column("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError());
      *                                if(needAjRow){
-     *                                     s.accept("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
+     *                                     s.column("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
      *                                }
-     *                                s.accept("bx", MySQLType.INT, EXISTS, PATH, "$.b")
+     *                                s.column("bx", MySQLType.INT, EXISTS, PATH, "$.b")
      *                        })
      *                )
      *                .as("t")

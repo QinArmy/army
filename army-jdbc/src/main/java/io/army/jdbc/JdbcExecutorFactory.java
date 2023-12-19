@@ -96,18 +96,27 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
         final ArmyEnvironment env = executorEnv.environment();
         this.env = env;
 
+        final int methodFlag = provider.methodFlag;
         if (this.env.getOrDefault(SyncKey.JDBC_FORBID_V18)) {
             this.useLargeUpdate = false;
             this.useSetObjectMethod = false;
             this.useExecuteLargeBatch = false;
-            this.useMultiStmt = false;
         } else {
-            final int methodFlag = provider.methodFlag;
             this.useLargeUpdate = (methodFlag & EXECUTE_LARGE_UPDATE_METHOD) != 0;
             this.useSetObjectMethod = (methodFlag & SET_OBJECT_METHOD) != 0;
             this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
-            this.useMultiStmt = (methodFlag & MULTI_STMT) != 0;
-            ;
+        }
+
+        switch (this.serverDatabase) {
+            case MySQL:
+                this.useMultiStmt = (methodFlag & MULTI_STMT) != 0;
+                break;
+            case PostgreSQL:
+                this.useMultiStmt = true;
+                break;
+            case H2:
+            default:
+                throw _Exceptions.unexpectedEnum(this.serverDatabase);
         }
 
         this.dataSourceCloseMethod = env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
