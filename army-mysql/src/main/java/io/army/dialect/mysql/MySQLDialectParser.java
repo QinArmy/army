@@ -113,8 +113,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void parseAssignmentInsert(final _AssignmentInsertContext context
-            , final _Insert._AssignmentInsert insert) {
+    protected void parseAssignmentInsert(final _AssignmentInsertContext context, final _Insert._AssignmentInsert insert) {
         assert context.parser() == this;
         final _MySQLInsert stmt = (_MySQLInsert) insert;
         //1. append insert common part
@@ -1224,21 +1223,24 @@ final class MySQLDialectParser extends MySQLParser {
     private void appendMySqlConflictClause(final _InsertContext context, final _MySQLInsert stmt) {
         final List<_ItemPair> itemPairList;
         itemPairList = stmt.updateSetClauseList();
-        if (itemPairList.size() > 0) {
-            if (stmt.rowAlias() != null) {
-                if (!this.asOf80) {
-                    String m = String.format("%s don't support row alias clause", this.dialect);
-                    throw new CriteriaException(m);
-                }
-                final String safeRowAlias;
-                safeRowAlias = context.safeRowAlias();
-                assert safeRowAlias != null;
-                context.sqlBuilder()
-                        .append(_Constant.SPACE_AS_SPACE)
-                        .append(safeRowAlias);
-            }
-            this.appendInsertConflictSetClause(context, SPACE_ON_DUPLICATE_KEY_UPDATE, itemPairList);
+        if (itemPairList.size() == 0) {
+            return;
         }
+
+        if (stmt.rowAlias() != null) {
+            if (!this.asOf80) {
+                String m = String.format("%s don't support row alias clause", this.dialect);
+                throw new CriteriaException(m);
+            }
+            final String safeRowAlias;
+            safeRowAlias = context.safeRowAlias();
+            assert safeRowAlias != null;
+            context.sqlBuilder()
+                    .append(_Constant.SPACE_AS_SPACE)
+                    .append(safeRowAlias);
+        }
+
+        this.appendInsertConflictSetClause(context, SPACE_ON_DUPLICATE_KEY_UPDATE, itemPairList);
 
     }
 

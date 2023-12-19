@@ -7,16 +7,18 @@ import io.army.criteria.SqlValueParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
+import io.army.struct.CodeEnum;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
 
@@ -87,7 +89,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
     /**
      * <p>
      * For {@link  io.army.meta.ChildTableMeta}
-     *     *
+     * *
+     *
      * @see #forChild(_SqlContext, _Insert._ChildValuesInsert, ValuesInsertContext)
      */
     private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ChildValuesInsert stmt,
@@ -130,12 +133,25 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
 
         final FieldMeta<?> discriminator = domainTable.discriminator();
-        final String spaceDiscriminator;
-        if (domainTable instanceof ChildTableMeta) {
-            spaceDiscriminator = _Constant.SPACE + Integer.toString(domainTable.discriminatorValue().code());
+
+        final String discriminatorLiteral;
+        final SingleParam discriminatorParam;
+        if (domainTable instanceof SimpleTableMeta) {
+            discriminatorLiteral = null;
+            discriminatorParam = null;
+        } else if (literalMode == LiteralMode.DEFAULT) {
+            assert discriminator != null;
+            final CodeEnum codeEnum = domainTable.discriminatorValue();
+            assert codeEnum != null;
+            discriminatorLiteral = null;
+            discriminatorParam = SingleParam.build(discriminator.mappingType(), codeEnum);
         } else {
-            spaceDiscriminator = _Constant.SPACE_ZERO;
+            final CodeEnum codeEnum = domainTable.discriminatorValue();
+            assert codeEnum != null;
+            discriminatorLiteral = Integer.toString(codeEnum.code());
+            discriminatorParam = null;
         }
+
         final List<Object> postIdList = rowWrapper.postIdList;
         final int generatedFieldSize;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
@@ -195,7 +211,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 //use ths.domainTable,not this.insertTable
                 generator.validate(domainTable, rowWrapper);// validate the values that is managed by army
             } else {
-                generatedMap = new HashMap<>(generatedFieldSize);
+                generatedMap = _Collections.hashMap(generatedFieldSize);
                 rowWrapper.generatedMap = generatedMap; // update domain value
                 //use ths.domainTable,not this.insertTable
                 generator.generate(domainTable, rowWrapper); // create the values that is managed by army
@@ -224,7 +240,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
                 if (field == discriminator) {
                     assert insertTable instanceof ParentTableMeta;
-                    sqlBuilder.append(spaceDiscriminator);
+                    if (discriminatorParam == null) {
+                        assert discriminatorLiteral != null;
+                        sqlBuilder.append(_Constant.SPACE)
+                                .append(discriminatorLiteral);
+                    } else {
+                        appendParam(discriminatorParam);
+                    }
                 } else if (postParentId && field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta) {
                     if (twoStmtMode) {
                         assert delayIdParam == null && postIdList != null;

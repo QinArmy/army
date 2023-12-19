@@ -7,15 +7,14 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
+import io.army.struct.CodeEnum;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,6 @@ final class AssignmentInsertContext extends InsertContext
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
      *
-     *
      * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser, Visible)
      * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
      */
@@ -74,7 +72,6 @@ final class AssignmentInsertContext extends InsertContext
     /**
      * <p>
      * For {@link  io.army.meta.ChildTableMeta}
-     *
      *
      * @see #forChild(_SqlContext, _Insert._ChildAssignmentInsert, AssignmentInsertContext)
      */
@@ -167,8 +164,13 @@ final class AssignmentInsertContext extends InsertContext
 
         final ArmyParser parser = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
+        final AssignmentWrapper rowWrapper = this.rowWrapper;
+        final TableMeta<?> insertTable = this.insertTable, domainTable = rowWrapper.domainTable;
 
-        final Map<FieldMeta<?>, Object> generatedMap = this.rowWrapper.generatedMap;
+        final FieldMeta<?> discriminator = domainTable.discriminator();
+
+
+        final Map<FieldMeta<?>, Object> generatedMap = rowWrapper.generatedMap;
 
         final List<FieldMeta<?>> fieldList = this.fieldList;
         final int fieldSize = fieldList.size();
@@ -189,6 +191,11 @@ final class AssignmentInsertContext extends InsertContext
             parser.safeObjectName(field, sqlBuilder)
                     .append(_Constant.SPACE_EQUAL);
 
+            if (field == discriminator) {
+                appendDiscriminator();
+                continue;
+            }
+
             if (!(field instanceof PrimaryFieldMeta)) {//child id must be managed by army
                 value = generatedMap.get(field);
                 assert value != null || mockEnv;
@@ -198,10 +205,10 @@ final class AssignmentInsertContext extends InsertContext
 
             assert idValue == null;
             final GeneratorType generatorType;
-            generatorType = this.insertTable.nonChildId().generatorType();
+            generatorType = insertTable.nonChildId().generatorType();
             if (generatorType == null) {
                 final _Expression expression;
-                expression = this.rowWrapper.nonChildPairMap.get(this.insertTable.nonChildId());
+                expression = rowWrapper.nonChildPairMap.get(insertTable.nonChildId());
                 assert expression instanceof SqlValueParam.SingleAnonymousValue; //validated by FieldValueGenerator
                 expression.appendSql(sqlBuilder, this);
                 idValue = expression;
@@ -211,13 +218,13 @@ final class AssignmentInsertContext extends InsertContext
                 this.appendInsertValue(literalMode, field, idValue);
                 idValue = Boolean.TRUE;
             } else if (generatorType == GeneratorType.POST) {
-                assert this.insertTable instanceof ChildTableMeta;
-                assert this.rowWrapper.delayIdParam == null;
-                assert field.tableMeta() == this.insertTable;
+                assert insertTable instanceof ChildTableMeta;
+                assert rowWrapper.delayIdParam == null;
+                assert field.tableMeta() == insertTable;
 
                 final DelayIdParam delayIdParam;
                 delayIdParam = new DelayIdParam((PrimaryFieldMeta<?>) field);
-                this.rowWrapper.delayIdParam = delayIdParam;
+                rowWrapper.delayIdParam = delayIdParam;
                 this.appendParam(delayIdParam);
                 idValue = delayIdParam;
             } else {
@@ -228,6 +235,41 @@ final class AssignmentInsertContext extends InsertContext
 
         }
 
+
+    }
+
+
+    private void appendDiscriminator() {
+        assert this.insertTable instanceof ParentTableMeta;
+
+        final TableMeta<?> domainTable = this.rowWrapper.domainTable;
+        final FieldMeta<?> discriminator = domainTable.discriminator();
+
+        final String discriminatorLiteral;
+        final SingleParam discriminatorParam;
+        if (domainTable instanceof SimpleTableMeta) {
+            discriminatorLiteral = null;
+            discriminatorParam = null;
+        } else if (this.literalMode == LiteralMode.DEFAULT) {
+            assert discriminator != null;
+            final CodeEnum codeEnum = domainTable.discriminatorValue();
+            assert codeEnum != null;
+            discriminatorLiteral = null;
+            discriminatorParam = SingleParam.build(discriminator.mappingType(), codeEnum);
+        } else {
+            final CodeEnum codeEnum = domainTable.discriminatorValue();
+            assert codeEnum != null;
+            discriminatorLiteral = Integer.toString(codeEnum.code());
+            discriminatorParam = null;
+        }
+
+        if (discriminatorParam == null) {
+            assert discriminatorLiteral != null;
+            this.sqlBuilder.append(_Constant.SPACE)
+                    .append(discriminatorLiteral);
+        } else {
+            appendParam(discriminatorParam);
+        }
 
     }
 

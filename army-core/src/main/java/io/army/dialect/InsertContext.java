@@ -98,7 +98,6 @@ abstract class InsertContext extends StatementContext
     /**
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
-     *
      */
     InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt,
                   ArmyParser parser, Visible visible) {
@@ -220,7 +219,6 @@ abstract class InsertContext extends StatementContext
     /**
      * <p>
      * For {@link  io.army.meta.ChildTableMeta}
-     *
      */
     InsertContext(@Nullable StatementContext outerContext, final _Insert._ChildInsert stmt,
                   final InsertContext parentContext) {
@@ -338,6 +336,11 @@ abstract class InsertContext extends StatementContext
     }
 
     @Override
+    public final String safeTableName() {
+        return this.safeTableName;
+    }
+
+    @Override
     public final String rowAlias() {
         return this.rowAlias;
     }
@@ -391,6 +394,13 @@ abstract class InsertContext extends StatementContext
         }
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
+
+        String safeAlias;
+        if (this.rowAlias != null
+                && ((safeAlias = this.safeTableAlias) != null || (safeAlias = this.safeTableName) != null)) {
+            sqlBuilder.append(safeAlias)
+                    .append(_Constant.PERIOD);
+        }
         this.parser.safeObjectName(field, sqlBuilder);
     }
 
@@ -770,7 +780,7 @@ abstract class InsertContext extends StatementContext
         final List<FieldMeta<?>> insertFieldChain;
         insertFieldChain = insertTable.fieldChain();
 
-        final ArrayList<FieldMeta<?>> fieldList = new ArrayList<>(6 + insertFieldChain.size());
+        final ArrayList<FieldMeta<?>> fieldList = _Collections.arrayList(6 + insertFieldChain.size());
 
         FieldMeta<?> reservedField;
         reservedField = insertTable.id();
@@ -964,7 +974,6 @@ abstract class InsertContext extends StatementContext
         /**
          * <p>
          * Must read row value not default value of column
-         *
          */
         @Nullable
         abstract _Expression getExpression(FieldMeta<?> field);

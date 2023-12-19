@@ -1021,10 +1021,10 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         Insert stmt;
         stmt = MySQLs.singleInsert()
-                .literalMode(LiteralMode.PREFERENCE)
+                .literalMode(LiteralMode.LITERAL)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
                 .partition("p1")
-                .set(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                .set(ChinaRegion_.name, SQLs::literal, randomRegion(random))
                 .set(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
                 .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 .as("cr")

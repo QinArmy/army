@@ -685,7 +685,6 @@ abstract class ArmyParser implements DialectParser {
     /**
      * <p>
      * Append  literal
-     *
      */
     public final void literal(final TypeMeta typeMeta, @Nullable Object value, final StringBuilder sqlBuilder) {
         final MappingType type;
@@ -1024,8 +1023,8 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected final void appendInsertConflictSetClause(final _InsertContext context, final String conflictWords
-            , final List<_ItemPair> itemPairList) {
+    protected final void appendInsertConflictSetClause(final _InsertContext context, final String conflictWords,
+                                                       final List<_ItemPair> itemPairList) {
         final int pairSize;
         pairSize = itemPairList.size();
         if (pairSize == 0) {
@@ -1044,9 +1043,13 @@ abstract class ArmyParser implements DialectParser {
         final TableMeta<?> insertTable;
         insertTable = context.insertTable();
         if (insertTable instanceof SingleTableMeta) {
-            // here ,safe table alias must be null
-            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) insertTable, null, context, false);
+            String safeAlias = context.safeTableAlias();
+            if (safeAlias == null) {
+                safeAlias = context.safeTableName();
+            }
+            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) insertTable, safeAlias, context, false);
         }
+
     }
 
 
@@ -1993,8 +1996,11 @@ abstract class ArmyParser implements DialectParser {
         } else {
             sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
         }
+        final boolean outputLeftItemAlias = safeTableAlias != null
+                && !(context instanceof _InsertContext)
+                && this.setClauseTableAlias;
 
-        if (safeTableAlias != null && this.setClauseTableAlias) {
+        if (outputLeftItemAlias) {
             sqlBuilder.append(safeTableAlias)
                     .append(_Constant.PERIOD);
         }
@@ -2011,25 +2017,27 @@ abstract class ArmyParser implements DialectParser {
             this.literal(field, updateTimeValue, sqlBuilder);
         }
 
-        if ((field = table.tryGetField(_MetaBridge.VERSION)) != null) {
-            final String versionColumnName;
-            versionColumnName = this.safeObjectName(field);
-            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-
-            if (safeTableAlias != null && this.setClauseTableAlias) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.PERIOD);
-            }
-            sqlBuilder.append(versionColumnName)
-                    .append(_Constant.SPACE_EQUAL_SPACE);
-            if (safeTableAlias != null) {  // no setClauseTableAlias
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.PERIOD);
-            }
-            sqlBuilder.append(versionColumnName)
-                    .append(" + 1");
-
+        if ((field = table.tryGetField(_MetaBridge.VERSION)) == null) {
+            return;
         }
+
+        final String versionColumnName;
+        versionColumnName = this.safeObjectName(field);
+        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+
+        if (outputLeftItemAlias) {
+            sqlBuilder.append(safeTableAlias)
+                    .append(_Constant.PERIOD);
+        }
+        sqlBuilder.append(versionColumnName)
+                .append(_Constant.SPACE_EQUAL_SPACE);
+
+        if (safeTableAlias != null) {  // no setClauseTableAlias
+            sqlBuilder.append(safeTableAlias)
+                    .append(_Constant.PERIOD);
+        }
+        sqlBuilder.append(versionColumnName)
+                .append(" + 1");
 
     }
 

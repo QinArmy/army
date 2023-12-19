@@ -2,6 +2,7 @@ package io.army.session.reactive.mysql;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
@@ -70,6 +71,7 @@ public class MySQLReactiveInsertTests extends MySQLReactiveSessionTestsSupport {
 
         final Insert stmt;
         stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .values(provinceList)
                 .asInsert()
