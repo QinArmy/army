@@ -320,12 +320,6 @@ public abstract class SQLs extends SQLSyntax {
         if (value instanceof Expression) {
             return (Expression) value;
         }
-
-        if (value instanceof RightOperand) {
-            String m = String.format("appropriate operator don't allow that operand is %s",
-                    value.getClass().getName());
-            throw new CriteriaException(m);
-        }
         return SQLs.literalValue(value);
     }
 

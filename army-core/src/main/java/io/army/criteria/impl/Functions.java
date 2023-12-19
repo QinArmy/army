@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.BooleanSupplier;
 import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -132,7 +131,7 @@ abstract class Functions {
      * <p>Create searched case function.
      */
     public static SQLFunction._CaseFuncWhenClause cases() {
-        return FunctionUtils.caseFunction(null);
+        return LiteralFunctions.caseFunc(null);
     }
 
     /**
@@ -142,242 +141,371 @@ abstract class Functions {
      */
     public static SQLFunction._CaseFuncWhenClause cases(Object expression) {
         ContextStack.assertNonNull(expression);
-        return FunctionUtils.caseFunction(expression);
+        return LiteralFunctions.caseFunc(expression);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  MappingType} of expr
+     * <p>The {@link MappingType} of function return type: {@link  MappingType} of expr
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_abs">ABS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ABS(numeric_type)</a>
      */
-    public static SimpleExpression abs(final Expression expr) {
-        return FunctionUtils.oneArgFunc("ABS", expr, expr.typeMeta());
+    public static SimpleExpression abs(final Object expr) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(expr);
+        return LiteralFunctions.oneArgFunc("ABS", expression, expression.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * <p>The {@link MappingType} of function return type: {@link  DoubleType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">ACOS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">acos ( double precision ) → double precision</a>
      */
-    public static SimpleExpression acos(final Expression expr) {
-        return FunctionUtils.oneArgFunc("ACOS", expr, DoubleType.INSTANCE);
+    public static SimpleExpression acos(final Object expr) {
+        return LiteralFunctions.oneArgFunc("ACOS", expr, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * <p>The {@link MappingType} of function return type: {@link  DoubleType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_asin">ASIN(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">asin ( double precision ) → double precision</a>
      */
-    public static SimpleExpression asin(final Expression expr) {
-        return FunctionUtils.oneArgFunc("ASIN", expr, DoubleType.INSTANCE);
+    public static SimpleExpression asin(final Object expr) {
+        return LiteralFunctions.oneArgFunc("ASIN", expr, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * <p>The {@link MappingType} of function return type: {@link  DoubleType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan">ATAN(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan ( double precision ) → double precision</a>
      */
-    public static SimpleExpression atan(final Expression expr) {
-        return FunctionUtils.oneArgFunc("ATAN", expr, DoubleType.INSTANCE);
+    public static SimpleExpression atan(final Object expr) {
+        return LiteralFunctions.oneArgFunc("ATAN", expr, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * <p>The {@link MappingType} of function return type: {@link  DoubleType}
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
+     * @param y non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan2">ATAN(X,y)</a>
      */
-    public static SimpleExpression atan(final Expression x, final Expression y) {
-        return FunctionUtils.twoArgFunc("ATAN", x, y, DoubleType.INSTANCE);
+    public static SimpleExpression atan(final Object x, final Object y) {
+        return LiteralFunctions.twoArgFunc("ATAN", x, y, DoubleType.INSTANCE);
     }
 
+
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>if {@link MappingType} of exp is number type,then {@link MappingType} of exp </li>
      *     <li>else {@link BigDecimalType} </li>
      * </ul>
      *
+     * @param exp non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ceil">CEIL(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ceil ( numeric ) → numeric,ceil ( double precision ) → double precision</a>
      */
-    public static SimpleExpression ceil(final Expression exp) {
-        return FunctionUtils.oneArgFunc("CEIL", exp, _returnType(exp, Functions::_numberOrDecimal));
+    public static SimpleExpression ceil(final Object exp) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(exp);
+        return LiteralFunctions.oneArgFunc("CEIL", expression, _returnType(expression, Functions::_numberOrDecimal));
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} or expr
      *
+     * @param expr     non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
+     * @param fromBase non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
+     * @param toBase   non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_conv">CONV(X)</a>
      */
-    public static SimpleExpression conv(final Expression expr, final Expression fromBase, final Expression toBase) {
-        return FunctionUtils.threeArgFunc("CONV", expr, fromBase, toBase, expr.typeMeta());
+    public static SimpleExpression conv(final Object expr, final Object fromBase, final Object toBase) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(expr);
+        return LiteralFunctions.threeArgFunc("CONV", expression, fromBase, toBase, expression.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * <p>The {@link MappingType} of function return type: {@link  DoubleType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cos">COS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cos ( double precision ) → double precision</a>
      */
-    public static SimpleExpression cos(final Expression expr) {
-        return FunctionUtils.oneArgFunc("COS", expr, DoubleType.INSTANCE);
+    public static SimpleExpression cos(final Object expr) {
+        return LiteralFunctions.oneArgFunc("COS", expr, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * <p>The {@link MappingType} of function return type: {@link  DoubleType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cot">COT(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cot ( double precision ) → double precision</a>
      */
-    public static SimpleExpression cot(final Expression expr) {
-        return FunctionUtils.oneArgFunc("COT", expr, DoubleType.INSTANCE);
+    public static SimpleExpression cot(final Object expr) {
+        return LiteralFunctions.oneArgFunc("COT", expr, DoubleType.INSTANCE);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_crc32">CRC32(expr)</a>
      */
-    public static SimpleExpression crc32(final Expression expr) {
-        return FunctionUtils.oneArgFunc("CRC32", expr, IntegerType.INSTANCE);
+    public static SimpleExpression crc32(final Object expr) {
+        return LiteralFunctions.oneArgFunc("CRC32", expr, IntegerType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * <p>The {@link MappingType} of function return type: {@link  DoubleType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_degrees">DEGREES(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">degrees ( double precision )</a>
      */
-    public static SimpleExpression degrees(final Expression expr) {
-        return FunctionUtils.oneArgFunc("DEGREES", expr, DoubleType.INSTANCE);
+    public static SimpleExpression degrees(final Object expr) {
+        return LiteralFunctions.oneArgFunc("DEGREES", expr, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_exp">EXP(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">exp ( numeric )</a>
      */
-    public static SimpleExpression exp(final Expression exp) {
-        return FunctionUtils.oneArgFunc("EXP", exp, _returnType(exp, Functions::_doubleOrDecimal));
+    public static SimpleExpression exp(final Object expr) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(expr);
+        return LiteralFunctions.oneArgFunc("EXP", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LongType}
+     * <p>The {@link MappingType} of function return type: {@link  LongType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_floor">FLOOR(x)</a>
      */
-    public static SimpleExpression floor(final Expression expr) {
-        return FunctionUtils.oneArgFunc("FLOOR", expr, LongType.INSTANCE);
+    public static SimpleExpression floor(final Object expr) {
+        return LiteralFunctions.oneArgFunc("FLOOR", expr, LongType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  StringType}
+     * <p>The {@link MappingType} of function return type: {@link  StringType}
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
+     * @param d non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_format">FORMAT(x,d)</a>
      */
-    public static SimpleExpression format(final Expression x, final Expression d) {
-        return FunctionUtils.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
+    public static SimpleExpression format(final Object x, final Object d) {
+        return LiteralFunctions.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  StringType}
+     * <p>The {@link MappingType} of function return type: {@link  StringType}
      *
+     * @param numOrStr non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>literal</li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_hex">HEX(n_or_s)</a>
      */
-    public static SimpleExpression hex(final Expression numOrStr) {
-        return FunctionUtils.oneArgFunc("HEX", numOrStr, StringType.INSTANCE);
+    public static SimpleExpression hex(final Object numOrStr) {
+        return LiteralFunctions.oneArgFunc("HEX", numOrStr, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ln">LN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ln ( numeric ) → numeric,ln ( double precision ) → double precision</a>
      */
-    public static SimpleExpression ln(final Expression x) {
-        return FunctionUtils.oneArgFunc("LN", x, _returnType(x, Functions::_doubleOrDecimal));
+    public static SimpleExpression ln(final Object x) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(x);
+        return LiteralFunctions.oneArgFunc("LN", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( numeric ) → numeric,log ( double precision ) → double precision</a>
      */
-    public static SimpleExpression log(final Expression x) {
-        return FunctionUtils.oneArgFunc("LOG", x, _returnType(x, Functions::_doubleOrDecimal));
+    public static SimpleExpression log(final Object x) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(x);
+        return LiteralFunctions.oneArgFunc("LOG", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  BigDecimalType}
+     * <p>The {@link MappingType} of function return type: {@link  BigDecimalType}
      *
+     * @param b non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(B,X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( b numeric, x numeric ) → numeric</a>
      */
-    public static SimpleExpression log(final Expression b, final Expression x) {
-        return FunctionUtils.twoArgFunc("LOG", b, x, BigDecimalType.INSTANCE);
+    public static SimpleExpression log(final Object b, final Object x) {
+        return LiteralFunctions.twoArgFunc("LOG", b, x, BigDecimalType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log10 ( numeric ) → numeric,log10 ( double precision ) → double precision</a>
      */
-    public static SimpleExpression log10(final Expression x) {
-        return FunctionUtils.oneArgFunc("LOG10", x, _returnType(x, Functions::_doubleOrDecimal));
+    public static SimpleExpression log10(final Object x) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(x);
+        return LiteralFunctions.oneArgFunc("LOG10", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of n.
+     * <p>The {@link MappingType} of function return type: the {@link MappingType} of n.
      *
+     * @param n non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
+     * @param m non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_mod">MOD(N,M), N % M, N MOD M</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">mod ( y numeric_type, x numeric_type ) → numeric_type</a>
      */
-    public static SimpleExpression mod(final Expression n, final Expression m) {
-        return FunctionUtils.twoArgFunc("MOD", n, m, n.typeMeta());
+    public static SimpleExpression mod(final Object n, final Object m) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(n);
+        return LiteralFunctions.twoArgFunc("MOD", expression, m, expression.typeMeta());
     }
 
     /**
@@ -388,28 +516,43 @@ abstract class Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">pi ( ) → double precision</a>
      */
     public static SimpleExpression pi() {
-        return FunctionUtils.zeroArgFunc("PI", DoubleType.INSTANCE);
+        return LiteralFunctions.zeroArgFunc("PI", DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link MappingType} of x
+     * <p>The {@link MappingType} of function return type: {@link MappingType} of x
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
+     * @param y non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pow">POW(x,y)</a>
      */
-    public static SimpleExpression pow(final Expression x, final Expression y) {
-        return FunctionUtils.twoArgFunc("POW", x, y, x.typeMeta());
+    public static SimpleExpression pow(final Object x, final Object y) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(x);
+        return LiteralFunctions.twoArgFunc("POW", expression, y, expression.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * <p>The {@link MappingType} of function return type: {@link DoubleType} .
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_radians">RADIANS(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">radians ( double precision ) → double precision</a>
      */
-    public static SimpleExpression radians(final Expression x) {
-        return FunctionUtils.oneArgFunc("RADIANS", x, DoubleType.INSTANCE);
+    public static SimpleExpression radians(final Object x) {
+        return LiteralFunctions.oneArgFunc("RADIANS", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -419,127 +562,186 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
     public static SimpleExpression rand() {
-        return FunctionUtils.zeroArgFunc("RAND", DoubleType.INSTANCE);
+        return LiteralFunctions.zeroArgFunc("RAND", DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * <p>The {@link MappingType} of function return type: {@link DoubleType} .
      *
+     * @param n non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
-    public static SimpleExpression rand(final Expression n) {
-        return FunctionUtils.oneArgFunc("RAND", n, DoubleType.INSTANCE);
+    public static SimpleExpression rand(final Object n) {
+        return LiteralFunctions.oneArgFunc("RAND", n, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>If the {@link MappingType} of exp is number type,then {@link MappingType} of exp</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( numeric ) → numeric</a>
      */
-    public static SimpleExpression round(final Expression x) {
-        return FunctionUtils.oneArgFunc("ROUND", x, _returnType(x, Functions::_numberOrDecimal));
+    public static SimpleExpression round(final Object x) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(x);
+        return LiteralFunctions.oneArgFunc("ROUND", expression, _returnType(expression, Functions::_numberOrDecimal));
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link BigDecimalType} .
+     * <p>The {@link MappingType} of function return type: {@link BigDecimalType} .
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
+     * @param d non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x,d)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( v numeric, s integer ) → numeric</a>
      */
-    public static SimpleExpression round(final Expression x, final Expression d) {
-        return FunctionUtils.twoArgFunc("ROUND", x, d, BigDecimalType.INSTANCE);
+    public static SimpleExpression round(final Object x, final Object d) {
+        return LiteralFunctions.twoArgFunc("ROUND", x, d, BigDecimalType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link IntegerType} .
+     * <p>The {@link MappingType} of function return type: {@link IntegerType} .
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sign">SIGN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sign ( numeric ) → numeric</a>
      */
-    public static SimpleExpression sign(final Expression x) {
-        return FunctionUtils.oneArgFunc("SIGN", x, IntegerType.INSTANCE);
+    public static SimpleExpression sign(final Object x) {
+        return LiteralFunctions.oneArgFunc("SIGN", x, IntegerType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * <p>The {@link MappingType} of function return type: {@link DoubleType} .
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sin">SIN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sin ( numeric ) → numeric</a>
      */
-    public static SimpleExpression sin(final Expression x) {
-        return FunctionUtils.oneArgFunc("SIN", x, DoubleType.INSTANCE);
+    public static SimpleExpression sin(final Object x) {
+        return LiteralFunctions.oneArgFunc("SIN", x, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
      *     <li>Else {@link BigDecimalType}</li>
      * </ul>
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sqrt">SQRT(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sqrt ( numeric ) → numeric,sqrt ( double precision ) → double precision</a>
      */
-    public static SimpleExpression sqrt(final Expression x) {
-        return FunctionUtils.oneArgFunc("SQRT", x, _returnType(x, Functions::_doubleOrDecimal));
+    public static SimpleExpression sqrt(final Object x) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(x);
+        return LiteralFunctions.oneArgFunc("SQRT", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * <p>The {@link MappingType} of function return type: {@link DoubleType} .
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_tan">TAN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">tan ( numeric ) → numeric</a>
      */
-    public static SimpleExpression tan(final Expression x) {
-        return FunctionUtils.oneArgFunc("TAN", x, DoubleType.INSTANCE);
+    public static SimpleExpression tan(final Object x) {
+        return LiteralFunctions.oneArgFunc("TAN", x, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * <p>The {@link MappingType} of function return type: {@link DoubleType} .
      *
+     * @param x non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
+     * @param d non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>literal</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_truncate">TRUNCATE(x,d)</a>
      */
-    public static SimpleExpression truncate(final Expression x, final Expression d) {
-        return FunctionUtils.twoArgFunc("TRUNCATE", x, d, DoubleType.INSTANCE);
+    public static SimpleExpression truncate(final Object x, final Object d) {
+        return LiteralFunctions.twoArgFunc("TRUNCATE", x, d, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * This function is standard sql92 functions
+     * <p>This function is standard sql92 functions
+     * <p>The {@link MappingType} of function return type:the {@link  MappingType} of expr1
      *
-     * <p>
-     * The {@link MappingType} of function return type:the {@link  MappingType} of expr1
-     *
+     * @param expr1 non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>literal</li>
+     *              </ul>
+     * @param expr2 non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>literal</li>
+     *              </ul>
      * @throws CriteriaException throw when any arg is multi-value expression
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_nullif">NULLIF(expr1,expr2)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-NULLIF">NULLIF(expr1,expr2)</a>
      */
-    public static SimpleExpression nullIf(final Expression expr1, final Expression expr2) {
-        return FunctionUtils.twoArgFunc("NULLIF", expr1, expr2, _returnType(expr1, Expressions::identityType));
+    public static SimpleExpression nullIf(final Object expr1, final Object expr2) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(expr1);
+        return LiteralFunctions.twoArgFunc("NULLIF", expression, expr2, _returnType(expression, Expressions::identityType));
     }
 
     /**
-     * <p>
-     * standard sql92 functions,The {@link MappingType} of function return type: {@link IntegerType} .
+     * <p>standard sql92 functions,The {@link MappingType} of function return type: {@link IntegerType} .
      *
+     * @param exp non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">length ( text ) → integer</a>
      */
-    public static SimpleExpression length(Expression exp) {
-        return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INSTANCE);
+    public static SimpleExpression length(Object exp) {
+        return LiteralFunctions.oneArgFunc("LENGTH", exp, IntegerType.INSTANCE);
     }
 
     public static SimpleExpression countAsterisk() {
@@ -547,16 +749,18 @@ abstract class Functions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LongType}
+     * <p>The {@link MappingType} of function return type: {@link  LongType}
      *
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>literal</li>
+     *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static SimpleExpression count(Expression expr) {
-        return FunctionUtils.oneArgFunc("COUNT", expr, LongType.INSTANCE);
+    public static SimpleExpression count(Object expr) {
+        return LiteralFunctions.oneArgFunc("COUNT", expr, LongType.INSTANCE);
     }
-
-
 
 
     /*################################## blow number function method ##################################*/
@@ -565,16 +769,22 @@ abstract class Functions {
 
     /*-------------------below Aggregate Function-------------------*/
 
-    public static SimpleExpression min(Expression exp) {
-        return FunctionUtils.oneArgFunc("min", exp, _returnType(exp, Expressions::identityType));
+    public static SimpleExpression min(Object exp) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(exp);
+        return LiteralFunctions.oneArgFunc("min", expression, _returnType(expression, Expressions::identityType));
     }
 
-    public static SimpleExpression max(Expression exp) {
-        return FunctionUtils.oneArgFunc("max", exp, _returnType(exp, Expressions::identityType));
+    public static SimpleExpression max(Object exp) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(exp);
+        return LiteralFunctions.oneArgFunc("max", expression, _returnType(expression, Expressions::identityType));
     }
 
-    public static SimpleExpression sum(Expression exp) {
-        return FunctionUtils.oneArgFunc("sum", exp, _returnType(exp, Functions::_sumType));
+    public static SimpleExpression sum(Object exp) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(exp);
+        return LiteralFunctions.oneArgFunc("sum", expression, _returnType(expression, Functions::_sumType));
     }
 
 
@@ -584,64 +794,96 @@ abstract class Functions {
 
     /*-------------------below custom function -------------------*/
 
-
+    /**
+     * <p>User defined no argument function
+     * <p>The {@link MappingType} of function return type is returnType
+     *
+     * @param name       function name
+     * @param returnType function return type.
+     */
     public static SimpleExpression myFunc(String name, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.zeroArgFunc(name, returnType);
+        return LiteralFunctions.myZeroArgFunc(name, returnType);
     }
 
-    public static IPredicate myFunc(String name) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.zeroArgFuncPredicate(name);
+    /**
+     * <p>User defined no argument boolean function
+     * <p>The {@link MappingType} of function return type: {@link  BooleanType}
+     *
+     * @param name function name
+     */
+    public static SimplePredicate myFunc(String name) {
+        return LiteralFunctions.myZeroArgPredicate(name);
     }
 
+    /**
+     * <p>User defined one argument function
+     * <p>The {@link MappingType} of function return type is returnType
+     *
+     * @param name       function name
+     * @param expr       argument
+     * @param returnType function return type.
+     */
     public static SimpleExpression myFunc(String name, Expression expr, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.oneArgFunc(name, expr, returnType);
+        return LiteralFunctions.myOneArgFunc(name, expr, returnType);
     }
 
-    public static IPredicate myFunc(String name, Expression expr) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.oneArgPredicateFunc(name, expr);
+    /**
+     * <p>User defined one argument boolean function
+     * <p>The {@link MappingType} of function return type: {@link  BooleanType}
+     *
+     * @param name function name
+     * @param expr argument
+     */
+    public static SimplePredicate myFunc(String name, Expression expr) {
+        return LiteralFunctions.myOneArgPredicate(name, expr);
     }
 
+    /**
+     * <p>User defined two argument function
+     * <p>The {@link MappingType} of function return type is returnType
+     *
+     * @param name       function name
+     * @param expr1      argument
+     * @param expr2      argument
+     * @param returnType function return type.
+     */
     public static SimpleExpression myFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.twoArgFunc(name, expr1, expr2, returnType);
+        return LiteralFunctions.myTwoArgFunc(name, expr1, expr2, returnType);
     }
 
-    public static IPredicate myFunc(String name, Expression expr1, Expression expr2) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.twoArgPredicateFunc(name, expr1, expr2);
+    /**
+     * <p>User defined two argument boolean function
+     * <p>The {@link MappingType} of function return type: {@link  BooleanType}
+     *
+     * @param name  function name
+     * @param expr1 argument
+     * @param expr2 argument
+     */
+    public static SimplePredicate myFunc(String name, Expression expr1, Expression expr2) {
+        return LiteralFunctions.myTwoArgPredicate(name, expr1, expr2);
     }
 
+    /**
+     * <p>User defined multi-argument function
+     * <p>The {@link MappingType} of function return type is returnType
+     *
+     * @param name       function name
+     * @param expList    argument
+     * @param returnType function return type.
+     */
     public static SimpleExpression myFunc(String name, List<Expression> expList, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+        return LiteralFunctions.myMultiArgFunc(name, expList, returnType);
     }
 
-    public static IPredicate myFunc(String name, List<Expression> expList) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.complexArgPredicate(name, _createSimpleMultiArgList(expList));
+    /**
+     * <p>User defined multi-argument boolean function
+     * <p>The {@link MappingType} of function return type: {@link  BooleanType}
+     *
+     * @param name function name
+     */
+    public static SimplePredicate myFunc(String name, List<Expression> expList) {
+        return LiteralFunctions.myMultiArgPredicate(name, expList);
     }
-
-    static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
 
 
     static CriteriaException _customFuncNameError(String name) {
