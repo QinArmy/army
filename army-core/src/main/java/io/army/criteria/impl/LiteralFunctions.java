@@ -71,6 +71,14 @@ abstract class LiteralFunctions {
 
     /*-------------------below predicate function methods -------------------*/
 
+    static SimplePredicate oneArgPredicate(String name, @Nullable Object one) {
+        return new OneArgPredicate(name, true, one);
+    }
+
+    static SimplePredicate myOneArgPredicate(String name, @Nullable Object one) {
+        return new OneArgPredicate(name, false, one);
+    }
+
     static SimplePredicate twoArgPredicate(String name, @Nullable Object one, @Nullable Object two) {
         return new TwoArgPredicate(name, true, one, two);
     }
@@ -238,6 +246,30 @@ abstract class LiteralFunctions {
     } // MultiArgFunc
 
     /*-------------------below predicate functions -------------------*/
+
+
+    private static final class OneArgPredicate extends OperationPredicate.SqlFunctionPredicate {
+
+        private final Object one;
+
+        private OneArgPredicate(String name, boolean buildIn, @Nullable Object one) {
+            super(name, buildIn);
+            this.one = one;
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+
+    } // OneArgPredicate
 
     private static final class TwoArgPredicate extends OperationPredicate.SqlFunctionPredicate {
 

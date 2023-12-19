@@ -8,7 +8,6 @@ import io.army.util._Collections;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -35,7 +34,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
     public static SimpleExpression jsonArray() {
-        return FunctionUtils.zeroArgFunc("JSON_ARRAY", JsonType.TEXT);
+        return LiteralFunctions.zeroArgFunc("JSON_ARRAY", JsonType.TEXT);
     }
 
     /**
@@ -44,30 +43,13 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param value non-null, one of following :
      *              <ul>
      *                <li>{@link Expression} instance</li>
-     *                <li>{@link List} instance</li>
-     *                <li>one dimension array</li>
      *                <li>literal</li>
      *              </ul>
      * @throws CriteriaException throw when argument error.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static SimpleExpression jsonArray(final Object value) {
-        final String name = "JSON_ARRAY";
-        final SimpleExpression func;
-        if (value instanceof List) {
-            final List<Object> argList = _Collections.arrayList(((List<?>) value).size());
-            FuncExpUtils.addTextExpList(argList, "element", (List<?>) value);
-            func = LiteralFunctions.multiArgFunc(name, argList, JsonType.TEXT);
-        } else if (!value.getClass().isArray()) {
-            func = LiteralFunctions.oneArgFunc(name, value, JsonType.TEXT);
-        } else if (value.getClass().getComponentType().isArray()) {
-            throw CriteriaUtils.rejectMultiDimensionArray();
-        } else {
-            final List<Object> argList = _Collections.arrayList(((Object[]) value).length);
-            FuncExpUtils.addAllTextExp(argList, "element", (Object[]) value);
-            func = LiteralFunctions.multiArgFunc(name, argList, JsonType.TEXT);
-        }
-        return func;
+    public static SimpleExpression jsonArray(Object value) {
+        return LiteralFunctions.oneArgFunc("JSON_ARRAY", value, JsonType.TEXT);
     }
 
     /**
@@ -100,6 +82,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * <p>JSON_ARRAY function static method.
      * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
+     * @param consumer clause consumer ,The value that clause accept is  one of following :
+     *                 <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>literal</li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
     public static SimpleExpression jsonArray(Consumer<Clause._VariadicSpaceClause> consumer) {
@@ -111,8 +98,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
      * @param space    see {@link SQLs#SPACE},for distinguishing both static and dynamic method.
-     * @param consumer non-null
-     * @throws CriteriaException throw when argument error
+     * @param consumer clause consumer ,The value that clause accept is  one of following :
+     *                 <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>literal</li>
+     *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
     public static SimpleExpression jsonArray(SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
@@ -162,7 +152,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link StringType}
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * *
      *
      * @param string non-null,each of variadic is  one of following :
@@ -175,7 +165,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      */
     public static SimpleExpression jsonQuote(final Object string) {
         FuncExpUtils.assertTextExp(string);
-        return LiteralFunctions.oneArgFunc("JSON_QUOTE", string, StringType.INSTANCE);
+        return LiteralFunctions.oneArgFunc("JSON_QUOTE", string, JsonType.TEXT);
     }
 
     /**
@@ -248,41 +238,18 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 <li>literal 'one' or 'all'</li>
      *                 <li>{@link Expression}</li>
      *                 </ul>
-     * @param paths    non-null, one of following :
+     * @param path     non-null, one of following :
      *                 <ul>
      *                   <li>{@link Expression} instance</li>
-     *                   <li>{@link List} of {@link Expression} and {@link String}</li>
-     *                   <li>one dimension array  of {@link Expression} and {@link String}</li>
      *                   <li>{@link String} literal</li>
      *                 </ul>
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
      */
-    public static SimplePredicate jsonContainsPath(Object jsonDoc, final Object oneOrAll, final Object paths) {
+    public static SimplePredicate jsonContainsPath(Object jsonDoc, Object oneOrAll, Object path) {
         FuncExpUtils.assertTextExp(oneOrAll);
-        jsonDoc = FuncExpUtils.jsonDocExp(jsonDoc);
-
-        final String name = "JSON_CONTAINS_PATH";
-        final SimplePredicate func;
-        if (paths instanceof List) {
-            final List<Object> argList = _Collections.arrayList(2 + ((List<?>) paths).size());
-            argList.add(jsonDoc);
-            argList.add(oneOrAll);
-            FuncExpUtils.addTextExpList(argList, "path", (List<?>) paths);
-            func = LiteralFunctions.multiArgPredicate(name, argList);
-        } else if (!paths.getClass().isArray()) {
-            FuncExpUtils.assertPathExp(paths);
-            func = LiteralFunctions.threeArgPredicate(name, jsonDoc, oneOrAll, paths);
-        } else if (paths.getClass().getComponentType().isArray()) {
-            throw CriteriaUtils.rejectMultiDimensionArray();
-        } else {
-            final List<Object> argList = _Collections.arrayList(2 + ((Object[]) paths).length);
-            argList.add(jsonDoc);
-            argList.add(oneOrAll);
-            FuncExpUtils.addAllTextExp(argList, "path", (Object[]) paths);
-            func = LiteralFunctions.multiArgPredicate(name, argList);
-        }
-        return func;
+        FuncExpUtils.assertPathExp(path);
+        return LiteralFunctions.threeArgPredicate("JSON_CONTAINS_PATH", FuncExpUtils.jsonDocExp(jsonDoc), oneOrAll, path);
     }
 
 
@@ -344,39 +311,18 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                     <li>{@link Expression} instance</li>
      *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                </ul>
-     * @param paths   non-null, one of following :
+     * @param path    non-null, one of following :
      *                <ul>
      *                  <li>{@link Expression} instance</li>
-     *                  <li>{@link List} of {@link Expression} and {@link String}</li>
-     *                  <li>one dimension array  of {@link Expression} and {@link String}</li>
      *                  <li>{@link String} literal</li>
      *                </ul>
      * @throws CriteriaException throw when argument error
      * @see #jsonExtract(Object, Object, Object, Object...)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
-    public static SimpleExpression jsonExtract(Object jsonDoc, final Object paths) {
-        jsonDoc = FuncExpUtils.jsonDocExp(jsonDoc);
-
-        final String name = "JSON_EXTRACT";
-        final SimpleExpression func;
-        if (paths instanceof List) {
-            final List<Object> argList = _Collections.arrayList(1 + ((List<?>) paths).size());
-            argList.add(jsonDoc);
-            FuncExpUtils.addTextExpList(argList, "path", (List<?>) paths);
-            func = LiteralFunctions.multiArgFunc(name, argList, JsonType.TEXT);
-        } else if (!paths.getClass().isArray()) {
-            FuncExpUtils.assertPathExp(paths);
-            func = LiteralFunctions.twoArgFunc(name, jsonDoc, paths, JsonType.TEXT);
-        } else if (paths.getClass().getComponentType().isArray()) {
-            throw CriteriaUtils.rejectMultiDimensionArray();
-        } else {
-            final List<Object> argList = _Collections.arrayList(1 + ((Object[]) paths).length);
-            argList.add(jsonDoc);
-            FuncExpUtils.addAllTextExp(argList, "path", (Object[]) paths);
-            func = LiteralFunctions.multiArgFunc(name, argList, JsonType.TEXT);
-        }
-        return func;
+    public static SimpleExpression jsonExtract(Object jsonDoc, Object path) {
+        FuncExpUtils.assertPathExp(path);
+        return LiteralFunctions.twoArgFunc("JSON_EXTRACT", FuncExpUtils.jsonDocExp(jsonDoc), path, JsonType.TEXT);
     }
 
     /**
@@ -541,7 +487,20 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
     public static SimpleExpression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr, @Nullable Object escapeChar) {
-        return jsonSearch(jsonDoc, oneOrAll, searchStr, escapeChar, Collections.emptyList());
+        FuncExpUtils.assertTextExp(oneOrAll);
+        FuncExpUtils.assertTextExp(searchStr);
+        if (escapeChar != null) {
+            FuncExpUtils.assertTextExp(escapeChar);
+        }
+
+        final List<Object> argList = _Collections.arrayList(4);
+
+        argList.add(FuncExpUtils.jsonDocExp(jsonDoc));
+        argList.add(oneOrAll);
+        argList.add(searchStr);
+        argList.add(escapeChar);
+
+        return LiteralFunctions.multiArgFunc("JSON_SEARCH", argList, JsonType.TEXT);
     }
 
     /**
@@ -567,11 +526,9 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                     <li>{@link Expression} instance</li>
      *                     <li>{@link String} literal</li>
      *                   </ul>
-     * @param paths      non-null, one of following :
+     * @param path       non-null, one of following :
      *                   <ul>
      *                     <li>{@link Expression} instance</li>
-     *                     <li>{@link List} of {@link Expression} and {@link String}</li>
-     *                     <li>one dimension array  of {@link Expression} and {@link String}</li>
      *                     <li>{@link String} literal</li>
      *                   </ul>
      * @throws CriteriaException throw when argument error
@@ -579,39 +536,22 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
     public static SimpleExpression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr,
-                                              @Nullable Object escapeChar, final Object paths) {
+                                              @Nullable Object escapeChar, final Object path) {
         FuncExpUtils.assertTextExp(oneOrAll);
         FuncExpUtils.assertTextExp(searchStr);
         if (escapeChar != null) {
             FuncExpUtils.assertTextExp(escapeChar);
         }
+        FuncExpUtils.assertPathExp(path);
 
-        final List<Object> argList;
-        if (paths instanceof List) {
-            argList = _Collections.arrayList(4 + ((List<?>) paths).size());
-        } else if (paths instanceof Object[]) {
-            argList = _Collections.arrayList(4 + ((Object[]) paths).length);
-        } else {
-            argList = _Collections.arrayList(4);
-        }
+        final List<Object> argList = _Collections.arrayList(5);
 
         argList.add(FuncExpUtils.jsonDocExp(jsonDoc));
         argList.add(oneOrAll);
         argList.add(searchStr);
         argList.add(escapeChar);
 
-        final SimpleExpression func;
-        if (paths instanceof List) {
-            FuncExpUtils.addTextExpList(argList, "path", (List<?>) paths);
-        } else if (!paths.getClass().isArray()) {
-            FuncExpUtils.assertPathExp(paths);
-            argList.add(paths);
-        } else if (paths.getClass().getComponentType().isArray()) {
-            throw CriteriaUtils.rejectMultiDimensionArray();
-        } else {
-            assert paths instanceof Object[];
-            FuncExpUtils.addAllTextExp(argList, "path", (Object[]) paths);
-        }
+        argList.add(path);
         return LiteralFunctions.multiArgFunc("JSON_SEARCH", argList, JsonType.TEXT);
     }
 
@@ -1034,7 +974,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                         <li>{@link Expression} instance</li>
      *                         <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                    </ul>
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
      */
     public static SimpleExpression jsonMergePatch(final List<?> jsonDocList) {
@@ -1136,7 +1076,6 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                     <li>{@link Expression} instance</li>
      *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
      *                </ul>
-     * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-unquote">JSON_UNQUOTE(json_val)</a>
      */
     public static SimpleExpression jsonUnquote(final Object jsonVal) {
@@ -1144,74 +1083,85 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link IntegerType}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link IntegerType}
      *
-     * @param jsonDoc non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
      */
-    public static SimpleExpression jsonDepth(final Expression jsonDoc) {
-        // here continue
-        return FunctionUtils.oneArgFunc("JSON_DEPTH", jsonDoc, IntegerType.INSTANCE);
+    public static SimpleExpression jsonDepth(final Object jsonDoc) {
+        return LiteralFunctions.oneArgFunc("JSON_DEPTH", FuncExpUtils.jsonDocExp(jsonDoc), IntegerType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link IntegerType}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link IntegerType}
      *
-     * @param jsonDoc non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
-    public static SimpleExpression jsonLength(final Expression jsonDoc) {
-        return FunctionUtils.oneArgFunc("JSON_LENGTH", jsonDoc, IntegerType.INSTANCE);
+    public static SimpleExpression jsonLength(final Object jsonDoc) {
+        return LiteralFunctions.oneArgFunc("JSON_LENGTH", FuncExpUtils.jsonDocExp(jsonDoc), IntegerType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link IntegerType}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link IntegerType}
      *
-     * @param jsonDoc non-null
-     * @param path    non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonDoc non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
+     * @param path    non-null, one of following :
+     *                <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link String} literal</li>
+     *                </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
-    public static SimpleExpression jsonLength(final Expression jsonDoc, final Expression path) {
-        return FunctionUtils.twoArgFunc("JSON_LENGTH", jsonDoc, path, IntegerType.INSTANCE);
+    public static SimpleExpression jsonLength(Object jsonDoc, Object path) {
+        FuncExpUtils.assertPathExp(path);
+        return LiteralFunctions.twoArgFunc("JSON_LENGTH", FuncExpUtils.jsonDocExp(jsonDoc), path, IntegerType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link StringType}
      *
-     * @param jsonVal non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param jsonVal non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-type">JSON_TYPE(json_val)</a>
      */
-    public static SimpleExpression jsonType(final Expression jsonVal) {
-        //TODO 是否要 enum
-        return FunctionUtils.oneArgFunc("JSON_TYPE", jsonVal, StringType.INSTANCE);
+    public static SimpleExpression jsonType(final Object jsonVal) {
+        return LiteralFunctions.oneArgFunc("JSON_TYPE", FuncExpUtils.jsonDocExp(jsonVal), StringType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link BooleanType}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link BooleanType}
      *
-     * @param val non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param val non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>the instance that  can be accepted by {@link JsonType#TEXT},here it will output literal. For example : {@code "[1,2]"} is equivalent to {@code SQLs.literal(JsonType.TEXT,"[1,2]") } </li>
+     *                </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-valid">JSON_VALID(val)</a>
      */
-    public static SimplePredicate jsonValid(final Expression val) {
-        return FunctionUtils.oneArgPredicateFunc("JSON_VALID", val);
+    public static SimplePredicate jsonValid(final Object val) {
+        return LiteralFunctions.oneArgPredicate("JSON_VALID", FuncExpUtils.jsonDocExp(val));
     }
 
     /*-------------------below JSON Table Functions-------------------*/
@@ -1260,7 +1210,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 </ul>
      * @param columns  see {@link MySQLs#COLUMNS}
      * @param consumer the consumer can accept jsonTable static columns clause.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @throws CriteriaException throw when argument error
      * @see #jsonTable(Object, Object, SQLs.WordColumns, SQLs.SymbolSpace, Consumer) dynamic method
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
@@ -1318,7 +1268,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param columns  see {@link MySQLs#COLUMNS}
      * @param space    see {@link SQLs#SPACE} for distinguishing both static method and dynamic method.
      * @param consumer the consumer can accept jsonTable dynamic columns clause.
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @throws CriteriaException throw when argument error
      * @see #jsonTable(Object, Object, SQLs.WordColumns, Consumer) static method
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
@@ -1332,69 +1282,6 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /*-------------------below private method -------------------*/
 
-
-
-    private static SimpleExpression _jsonPathValOperateFunc(final String name, final Expression jsonDoc
-            , final List<Expression> pathValList) {
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        final int size = pathValList.size();
-        if (size == 0 || (size & 1) != 0) {
-            throw CriteriaUtils.funcArgError(name, pathValList);
-        }
-        return FunctionUtils.oneAndMultiArgFunc(name, jsonDoc, pathValList, jsonDoc.typeMeta());
-    }
-
-
-    private static SimpleExpression _jsonPathValOperateFunc(final String name, final Expression jsonDoc, final String firstPath
-            , final Object firstValue, final Object... pathValuePair) {
-        if (pathValuePair.length == 0 || (pathValuePair.length & 1) != 0) {
-            throw CriteriaUtils.funcArgError(name, pathValuePair);
-        }
-        final List<ArmyExpression> argList = new ArrayList<>(3 + pathValuePair.length);
-        argList.add((ArmyExpression) jsonDoc);
-        argList.add((ArmyExpression) SQLs.literal(StringType.INSTANCE, firstPath));
-        argList.add((ArmyExpression) SQLs.paramValue(firstValue));
-
-        Object o;
-        for (int i = 0; i < pathValuePair.length; i++) {
-            o = pathValuePair[i];
-            if ((i & 1) == 0) { //even
-                if (o == null) {
-                    argList.add((ArmyExpression) SQLs.param(SQLs._NullType.INSTANCE, null));
-                } else {
-                    argList.add((ArmyExpression) SQLs.paramValue(o));
-                }
-            } else if (!(o instanceof String)) {
-                throw ContextStack.criteriaError(ContextStack.peek(), "path must be String type");
-            } else {
-                argList.add((ArmyExpression) SQLs.literal(StringType.INSTANCE, o));
-            }
-        }
-        return FunctionUtils.safeMultiArgFunc(name, argList, jsonDoc.typeMeta());
-    }
-
-
-    /**
-     * @see #jsonMerge(List)
-     */
-    private static SimpleExpression _jsonMergerFunc(final String name, final List<Expression> jsonDocList) {
-        final int size = jsonDocList.size();
-        if (size < 2) {
-            throw CriteriaUtils.funcArgError(name, jsonDocList);
-        }
-        final List<Object> argList = new ArrayList<>(size);
-        int index = 0;
-        for (Expression jsonDoc : jsonDocList) {
-            if (index > 0) {
-                argList.add(Functions.FuncWord.COMMA);
-            }
-            argList.add(jsonDoc);
-            index++;
-        }
-        return FunctionUtils.complexArgFunc(name, argList, jsonDocList.get(0).typeMeta());
-    }
 
     /**
      * @see #jsonMerge(Object, Object, Object...)
