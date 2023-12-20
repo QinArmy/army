@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static io.army.criteria.impl.MySQLs.format;
 import static io.army.criteria.impl.MySQLs.*;
-import static io.army.criteria.impl.SQLs.ASTERISK;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport {
@@ -161,7 +161,7 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
         final byte[] sourceBytes = source.getBytes(StandardCharsets.UTF_8);
 
         final Select stmt;
-        stmt = query()
+        stmt = MySQLs.query()
                 .select(unhex(hex(source)).as("source"))
                 .comma(unhex(hex(sourceBytes)).as("sourceBytes"))
                 .asQuery();
@@ -174,6 +174,28 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
         Assert.assertEquals(row.get("source"), sourceBytes);
         Assert.assertEquals(row.get("sourceBytes"), sourceBytes);
+
+    }
+
+    /**
+     * @see MySQLs#position(Object, SQLs.WordIn, Object)
+     */
+    @Test
+    public void positionFunc(final ReactiveLocalSession session) {
+        final String source = "QinArmy's army,I love army. 秦军的 army";
+        final String subStr = "秦军的 army";
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(position(subStr, IN, source).as("source"))
+                .asQuery();
+
+        final Integer row;
+        row = session.queryOne(stmt, Integer.class)
+                .block();
+
+        Assert.assertNotNull(row);
+        Assert.assertEquals(row.intValue(), source.indexOf(subStr) + 1);
 
     }
 

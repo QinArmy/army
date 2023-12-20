@@ -57,17 +57,11 @@ abstract class SqlWords {
 
     enum KeyWordIn implements SQLs.WordIn, SQLs.ArmyKeyWord {
 
-        IN(" IN");
-
-        private final String spaceWord;
-
-        KeyWordIn(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        IN;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return " IN";
         }
 
         @Override

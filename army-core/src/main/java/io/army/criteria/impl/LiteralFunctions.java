@@ -95,6 +95,10 @@ abstract class LiteralFunctions {
         return new MultiArgFunc(name, false, argList, returnType);
     }
 
+    static SimpleExpression compositeFunc(String name, List<?> argList, TypeMeta returnType) {
+        return new CompositeFunc(name, argList, returnType);
+    }
+
     public static SimpleExpression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
         return new JsonMapFunc(name, map, returnType);
     }
@@ -287,6 +291,32 @@ abstract class LiteralFunctions {
 
 
     } // MultiArgFunc
+
+
+    private static final class CompositeFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final List<?> argList;
+
+        private CompositeFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            FuncExpUtils.appendCompositeList(this.argList, sqlBuilder, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            FuncExpUtils.compositeListToString(this.argList, builder);
+        }
+
+
+    } // CompositeFunc
+
+
+
 
     /*-------------------below predicate functions -------------------*/
 

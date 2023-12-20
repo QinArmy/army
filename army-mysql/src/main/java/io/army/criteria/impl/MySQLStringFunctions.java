@@ -12,10 +12,7 @@ import io.army.sqltype.DataType;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -940,9 +937,10 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *                    <li>{@link Expression} instance</li>
      *                    <li>{@link String} literal</li>
      *               </ul>
+     * @return int {@link Expression} ,based one .
      * @throws CriteriaException throw when argument error
-     * @see #locate(Expression, Expression, Expression)
-     * @see #position(Expression, Expression)
+     * @see #locate(Object, Object, Object)
+     * @see #position(Object, SQLs.WordIn, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str)</a>
      */
     public static SimpleExpression locate(final Object substr, final Object str) {
@@ -971,7 +969,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *               </ul>
      * @throws CriteriaException throw when argument error
      * @see #locate(Object, Object, Object)
-     * @see #position(Object, Object)
+     * @see #position(Object, SQLs.WordIn, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str,pos)</a>
      */
     public static SimpleExpression locate(Object substr, Object str, Object pos) {
@@ -1176,86 +1174,114 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
         return _oneAndVariadicStringConsumer("MAKE_SET", bits, 2, consumer, StringType.INSTANCE);
     }
 
+
     /**
      * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param bits    non-null {@link Expression}
-     * @param strList {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_make-set">MAKE_SET(bits,str1,str2,...)</a>
-     */
-    public static SimpleExpression makeSet(final Expression bits, final List<Expression> strList) {
-        return FunctionUtils.oneAndMultiArgFunc("MAKE_SET", bits, strList, StringType.INSTANCE);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
-     *
-     * @param str nullable parameter or {@link Expression}
-     * @param pos nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @param pos non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link Integer} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos)</a>
      */
-    public static SimpleExpression subString(final Expression str, final Expression pos) {
-        return FunctionUtils.twoArgFunc("SUBSTRING", str, pos, StringType.INSTANCE);
+    public static SimpleExpression subString(final Object str, final Object pos) {
+        FuncExpUtils.assertTextExp(str);
+        FuncExpUtils.assertIntExp(pos);
+        return LiteralFunctions.twoArgFunc("SUBSTRING", str, pos, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @param pos nullable parameter or {@link Expression}
-     * @param len nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @param pos non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link Integer} literal</li>
+     *            </ul>
+     * @param len non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link Integer} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos,len)</a>
      */
-    public static SimpleExpression subString(final Expression str, final Expression pos, final Expression len) {
-        return FunctionUtils.threeArgFunc("SUBSTRING", str, pos, len, StringType.INSTANCE);
+    public static SimpleExpression subString(final Object str, final Object pos, final Object len) {
+        FuncExpUtils.assertTextExp(str);
+        FuncExpUtils.assertIntExp(pos);
+        FuncExpUtils.assertIntExp(len);
+        return LiteralFunctions.threeArgFunc("SUBSTRING", str, pos, len, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param n nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param n one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>{@link Integer} literal</li>
+     *               <li>{@link Long} literal</li>
+     *               <li>{@link java.math.BigInteger} instance</li>
+     *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_oct">OCT(N)</a>
      */
-    public static SimpleExpression oct(final Expression n) {
-        return FunctionUtils.oneArgFunc("OCT", n, StringType.INSTANCE);
+    public static SimpleExpression oct(final Object n) {
+        return LiteralFunctions.oneArgFunc("OCT", n, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link IntegerType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link IntegerType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
      */
-    public static SimpleExpression ord(final Expression str) {
-        return FunctionUtils.oneArgFunc("ORD", str, IntegerType.INSTANCE);
+    public static SimpleExpression ord(final Object str) {
+        FuncExpUtils.assertTextExp(str);
+        return LiteralFunctions.oneArgFunc("ORD", str, IntegerType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link IntegerType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link IntegerType}
      *
-     * @param substr nullable parameter or {@link Expression}
-     * @param str    nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #locate(Expression, Expression)
+     * @param substr non-null, one of following :
+     *               <ul>
+     *                    <li>{@link Expression} instance</li>
+     *                    <li>{@link String} literal</li>
+     *               </ul>
+     * @param in     see {@link SQLs#IN}
+     * @param str    non-null, one of following :
+     *               <ul>
+     *                    <li>{@link Expression} instance</li>
+     *                    <li>{@link String} literal</li>
+     *               </ul>
+     * @return int {@link Expression} ,based one .
+     * @throws CriteriaException throw when argument error
+     * @see #locate(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_position">POSITION(substr IN str)</a>
      */
-    public static SimpleExpression position(final Expression substr, final Expression str) {
-        return FunctionUtils.twoArgFunc("POSITION", substr, str, IntegerType.INSTANCE);
+    public static SimpleExpression position(final Object substr, SQLs.WordIn in, final Object str) {
+        FuncExpUtils.assertTextExp(substr);
+        FuncExpUtils.assertTextExp(str);
+        if (in != SQLs.IN) {
+            throw CriteriaUtils.unknownWords(in);
+        }
+        return LiteralFunctions.compositeFunc("POSITION", Arrays.asList(substr, in, str), IntegerType.INSTANCE);
     }
 
 

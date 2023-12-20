@@ -120,14 +120,6 @@ abstract class FuncExpUtils {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (literal instanceof Expression) {
             ((ArmyExpression) literal).appendSql(sqlBuilder, context);
-        } else if (literal instanceof SQLWords) {
-            if (!(literal instanceof SQLs.ArmyKeyWord)) {
-                String m = String.format("Illegal %s instance", SQLWords.class.getName());
-                throw new CriteriaException(m);
-            }
-            sqlBuilder.append(((SQLs.ArmyKeyWord) literal).spaceRender());
-        } else if (literal instanceof SQLIdentifier) {
-            context.identifier(((SQLIdentifier) literal).render(), sqlBuilder);
         } else {
             final MappingType type;
             type = _MappingFactory.getDefaultIfMatch(literal.getClass());
@@ -158,6 +150,58 @@ abstract class FuncExpUtils {
             }
             builder.append(literalList.get(i));
         }
+
+    }
+
+    static void appendCompositeList(final List<?> argList, final StringBuilder sqlBuilder, final _SqlContext context) {
+
+        for (final Object value : argList) {
+
+            if (value == null) {
+                sqlBuilder.append(_Constant.SPACE_NULL);
+            } else if (value instanceof Expression) {
+                ((ArmyExpression) value).appendSql(sqlBuilder, context);
+            } else if (value instanceof SQLWords) {
+                if (!(value instanceof SQLs.ArmyKeyWord)) {
+                    throw new CriteriaException(String.format("Illegal words %s", value));
+                }
+                sqlBuilder.append(((SQLWords) value).spaceRender());
+            } else if (value instanceof SQLIdentifier) {
+                sqlBuilder.append(_Constant.SPACE);
+                context.identifier(((SQLIdentifier) value).render(), sqlBuilder);
+            } else {
+                final MappingType type;
+                type = _MappingFactory.getDefaultIfMatch(value.getClass());
+                if (type == null) {
+                    throw CriteriaUtils.clearStackAndNonDefaultType(value);
+                }
+                context.appendLiteral(type, value);
+            }
+
+        } // for loop
+
+    }
+
+    static void compositeListToString(final List<?> argList, final StringBuilder builder) {
+        for (final Object value : argList) {
+
+            if (value == null) {
+                builder.append(_Constant.SPACE_NULL);
+            } else if (value instanceof Expression) {
+                builder.append(value);
+            } else if (value instanceof SQLWords) {
+                if (!(value instanceof SQLs.ArmyKeyWord)) {
+                    throw new CriteriaException(String.format("Illegal words %s", value));
+                }
+                builder.append(((SQLWords) value).spaceRender());
+            } else if (value instanceof SQLIdentifier) {
+                builder.append(_Constant.SPACE)
+                        .append(((SQLIdentifier) value).render());
+            } else {
+                builder.append(value);
+            }
+
+        } // for loop
 
     }
 

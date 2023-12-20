@@ -388,19 +388,6 @@ abstract class Functions {
         return LiteralFunctions.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
-    /**
-     * <p>The {@link MappingType} of function return type: {@link  StringType}
-     *
-     * @param numOrStr non-null, one of following :
-     *                 <ul>
-     *                      <li>{@link Expression} instance</li>
-     *                      <li>literal</li>
-     *                 </ul>
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_hex">HEX(n_or_s)</a>
-     */
-    public static SimpleExpression hex(final Object numOrStr) {
-        return LiteralFunctions.oneArgFunc("HEX", numOrStr, StringType.INSTANCE);
-    }
 
     /**
      * <p>The {@link MappingType} of function return type:
