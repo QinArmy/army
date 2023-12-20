@@ -3,6 +3,7 @@ package io.army.session.reactive.mysql;
 
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
+import io.army.criteria.TypeDef;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.TypeDefs;
@@ -197,6 +198,26 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
         Assert.assertNotNull(row);
         Assert.assertEquals(row.intValue(), source.indexOf(subStr) + 1);
 
+    }
+
+    /**
+     * @see MySQLs#weightString(Object, WordAs, TypeDef, Object)
+     */
+    @Test
+    public void weightStringFunc(final ReactiveLocalSession session) {
+        final String source = "QinArmy's army,I love army. 秦军的 army";
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(hex(weightString(source, AS, TypeDefs.space(MySQLType.CHAR, 40))).as("source"))
+                .asQuery();
+
+        final String row;
+        row = session.queryOne(stmt, String.class)
+                .block();
+
+        Assert.assertNotNull(row);
+        LOG.debug("weightStringFunc result :  {}", row);
     }
 
 

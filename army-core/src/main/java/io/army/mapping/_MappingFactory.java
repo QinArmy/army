@@ -47,7 +47,9 @@ public abstract class _MappingFactory {
     public static MappingType getDefaultIfMatch(final Class<?> javaType) {
         final MappingType type;
 
-        if (Enum.class.isAssignableFrom(javaType)) {
+        if (javaType == byte[].class) {
+            type = VarBinaryType.INSTANCE;
+        } else if (Enum.class.isAssignableFrom(javaType)) {
             if (CodeEnum.class.isAssignableFrom(javaType)) {
                 type = CodeEnumType.from(javaType);
             } else if (TextEnumType.class.isAssignableFrom(javaType)) {
@@ -59,8 +61,6 @@ public abstract class _MappingFactory {
             } else {
                 type = NameEnumType.from(javaType);
             }
-        } else if (javaType == byte[].class) {
-            type = VarBinaryType.INSTANCE;
         } else if (javaType.isArray()) {
             type = getDefaultArrayType(javaType);
         } else {

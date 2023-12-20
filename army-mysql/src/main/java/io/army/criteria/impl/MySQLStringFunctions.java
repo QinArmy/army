@@ -1550,7 +1550,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
 
 
     /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
+     * <p>The {@link MappingType} of function return type:{@link VarBinaryType}
      *
      * @param str non-null, one of following :
      *            <ul>
@@ -1562,11 +1562,11 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      */
     public static SimpleExpression weightString(Object str) {
         FuncExpUtils.assertTextExp(str);
-        return LiteralFunctions.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
+        return LiteralFunctions.oneArgFunc("WEIGHT_STRING", str, VarBinaryType.INSTANCE);
     }
 
     /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
+     * <p>The {@link MappingType} of function return type:{@link VarBinaryType}
      *
      * @param str  non-null, one of following :
      *             <ul>
@@ -1585,11 +1585,11 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      */
     public static SimpleExpression weightString(Object str, SQLs.WordAs as, TypeDef type) {
         _checkWeightStringArgs(str, as, type);
-        return LiteralFunctions.compositeFunc("WEIGHT_STRING", Arrays.asList(str, as, type), StringType.INSTANCE);
+        return LiteralFunctions.compositeFunc("WEIGHT_STRING", Arrays.asList(str, as, type), VarBinaryType.INSTANCE);
     }
 
     /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
+     * <p>The {@link MappingType} of function return type:{@link VarBinaryType}
      *
      * @param str   non-null, one of following :
      *              <ul>
@@ -1606,14 +1606,14 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @param flags non-null, one of following :
      *              <ul>
      *                   <li>{@link Expression} instance</li>
-     *                   <li> literal</li>
+     *                   <li>literal</li>
      *              </ul>
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
      */
     public static SimpleExpression weightString(Object str, SQLs.WordAs as, TypeDef type, Object flags) {
         _checkWeightStringArgs(str, as, type);
-        return LiteralFunctions.compositeFunc("WEIGHT_STRING", Arrays.asList(str, as, type, flags), StringType.INSTANCE);
+        return LiteralFunctions.compositeFunc("WEIGHT_STRING", Arrays.asList(str, as, type, flags), VarBinaryType.INSTANCE);
     }
 
 
