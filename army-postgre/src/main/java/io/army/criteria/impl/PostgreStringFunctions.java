@@ -188,7 +188,7 @@ abstract class PostgreStringFunctions extends Functions {
         } else if (!(form instanceof KeyWordNormalizeForm)) {
             throw CriteriaUtils.funcArgError(name, form);
         } else {
-            func = FunctionUtils.complexArgFunc(name, exp.typeMeta(), exp, Functions.FuncWord.COMMA, form);
+            func = FunctionUtils.complexArgFunc(name, exp.typeMeta(), exp, SqlWords.FuncWord.COMMA, form);
         }
         return func;
     }
@@ -500,7 +500,7 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, characters);
         }
         return FunctionUtils.complexArgFunc(name, string.typeMeta(),
-                from, string, Functions.FuncWord.COMMA, characters);
+                from, string, SqlWords.FuncWord.COMMA, characters);
     }
 
 
@@ -531,7 +531,7 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, from);
         }
         return FunctionUtils.complexArgFunc(name, string.typeMeta(),
-                position, from, string, Functions.FuncWord.COMMA, characters);
+                position, from, string, SqlWords.FuncWord.COMMA, characters);
     }
 
     /**

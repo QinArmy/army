@@ -150,7 +150,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
         }
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                argList.add(Functions.FuncWord.COMMA);
+                argList.add(SqlWords.FuncWord.COMMA);
             }
             argList.add(expList.get(i));
         }

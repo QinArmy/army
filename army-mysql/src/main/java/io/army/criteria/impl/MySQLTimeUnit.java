@@ -1,8 +1,8 @@
-package io.army.criteria.mysql;
+package io.army.criteria.impl;
 
-import io.army.criteria.SQLWords;
+import io.army.util._StringUtils;
 
-public enum MySQLTimeUnit implements SQLWords {
+public enum MySQLTimeUnit implements Functions.ArmyKeyWord {
 
     MICROSECOND(" MICROSECOND"),
     SECOND(" SECOND"),
@@ -43,7 +43,7 @@ public enum MySQLTimeUnit implements SQLWords {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", MySQLTimeUnit.class.getName(), this.name());
+        return _StringUtils.enumToString(this);
     }
 
     public final boolean isTimePart() {

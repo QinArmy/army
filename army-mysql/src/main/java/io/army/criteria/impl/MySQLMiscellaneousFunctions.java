@@ -729,7 +729,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(name);
-        argList.add(Functions.FuncWord.COMMA);
+        argList.add(SqlWords.FuncWord.COMMA);
         argList.add(value);
         return FunctionUtils.namedComplexArgFunc("NAME_CONST", argList, value.typeMeta(), (String) paramValue);
     }

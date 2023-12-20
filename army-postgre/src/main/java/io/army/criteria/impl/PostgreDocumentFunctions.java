@@ -1116,7 +1116,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         ContextStack.assertNonNull(contents);
         return _xmlElement(wordName, name, attributes, c -> {
             for (Expression content : contents) {
-                c.accept(FuncWord.COMMA);
+                c.accept(SqlWords.FuncWord.COMMA);
                 c.accept(content);
             }
         });
@@ -1133,7 +1133,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         ContextStack.assertNonNull(contents);
         return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contents) {
-                c.accept(FuncWord.COMMA);
+                c.accept(SqlWords.FuncWord.COMMA);
                 c.accept(content);
             }
         });
@@ -1152,7 +1152,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         ContextStack.assertNonNull(attributes);
         return _xmlElement(wordName, name, attributes, c -> {
             for (Expression content : contentList) {
-                c.accept(FuncWord.COMMA);
+                c.accept(SqlWords.FuncWord.COMMA);
                 c.accept(content);
             }
         });
@@ -1169,7 +1169,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
                                               List<Expression> contentList) {
         return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contentList) {
-                c.accept(FuncWord.COMMA);
+                c.accept(SqlWords.FuncWord.COMMA);
                 c.accept(content);
             }
         });
@@ -7114,7 +7114,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         argList.add(nameWord);
         argList.add(name);
         if (attributes != null) {
-            argList.add(FuncWord.COMMA);
+            argList.add(SqlWords.FuncWord.COMMA);
             argList.add(attributes);
         }
         consumer.accept(argList::add);
@@ -7142,7 +7142,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         if (content == null) {
             func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT, wordName, name);
         } else {
-            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT, wordName, name, FuncWord.COMMA, content);
+            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT, wordName, name, SqlWords.FuncWord.COMMA, content);
         }
         return func;
     }
@@ -7176,11 +7176,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         }
         final SimpleExpression func;
         if (option == null) {
-            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, FuncWord.COMMA, version,
+            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, SqlWords.FuncWord.COMMA, version,
                     textOrNoValue);
         } else {
-            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, FuncWord.COMMA, version,
-                    textOrNoValue, FuncWord.COMMA, standalone, option);
+            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, SqlWords.FuncWord.COMMA, version,
+                    textOrNoValue, SqlWords.FuncWord.COMMA, standalone, option);
         }
         return func;
     }
@@ -7280,7 +7280,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         final List<Object> argList = _Collections.arrayList(8);
         if (nameSpaces != null) {
             argList.add(nameSpaces);
-            argList.add(FuncWord.COMMA);
+            argList.add(SqlWords.FuncWord.COMMA);
         }
         argList.add(rowExp);
         argList.add(passing);

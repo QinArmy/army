@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
+import io.army.dialect._Constant;
 
 abstract class SqlWords {
 
@@ -421,19 +422,13 @@ abstract class SqlWords {
 
     }//KeyWordDistinct
 
-    enum KeyWordInterval implements SQLs.WordInterval {
+    enum KeyWordInterval implements SQLs.WordInterval, Functions.ArmyKeyWord {
 
-        INTERVAL(" INTERVAL");
-
-        private final String spaceWord;
-
-        KeyWordInterval(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        INTERVAL;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return " INTERVAL";
         }
 
         @Override
@@ -905,4 +900,32 @@ abstract class SqlWords {
 
 
     }//KeyWordUsing
+
+    enum FuncWord implements SQLs.ArmyKeyWord {
+
+        INTERVAL(" INTERVAL"),
+        COMMA(_Constant.SPACE_COMMA),
+        USING(_Constant.SPACE_USING),
+        AT_TIME_ZONE(" AT TIME ZONE"),
+        LEFT_PAREN(_Constant.SPACE_LEFT_PAREN),
+        RIGHT_PAREN(_Constant.SPACE_RIGHT_PAREN);
+
+        private final String spaceWords;
+
+        FuncWord(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", FuncWord.class.getSimpleName(), this.name());
+        }
+
+
+    } // Word
 }

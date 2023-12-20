@@ -861,7 +861,7 @@ abstract class FunctionUtils {
                     throw new CriteriaException(String.format("%s non-army row expression", o));
                 }
                 ((ArmySQLExpression) o).appendSql(sqlBuilder, context); // convert to ArmyExpression to avoid non-army expression
-            } else if (o == Functions.FuncWord.LEFT_PAREN) {
+            } else if (o == SqlWords.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
                 if (!(o instanceof SQLs.ArmyKeyWord)) {
@@ -892,7 +892,7 @@ abstract class FunctionUtils {
         for (Object o : argumentList) {
             if (o instanceof SQLExpression) {
                 builder.append(o);
-            } else if (o == Functions.FuncWord.LEFT_PAREN) {
+            } else if (o == SqlWords.FuncWord.LEFT_PAREN) {
                 builder.append(((SQLWords) o).spaceRender());
             } else if (o instanceof SQLWords) {
                 builder.append(_Constant.SPACE)

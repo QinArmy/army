@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
-import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
@@ -96,34 +95,17 @@ abstract class Functions {
 
     }
 
+    /**
+     * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
+     */
+    interface ArmyKeyWord extends SQLWords {
 
-    enum FuncWord implements SQLs.ArmyKeyWord {
+    }
 
-        INTERVAL(" INTERVAL"),
-        COMMA(_Constant.SPACE_COMMA),
-        USING(_Constant.SPACE_USING),
-        AT_TIME_ZONE(" AT TIME ZONE"),
-        LEFT_PAREN(_Constant.SPACE_LEFT_PAREN),
-        RIGHT_PAREN(_Constant.SPACE_RIGHT_PAREN);
-
-        private final String spaceWords;
-
-        FuncWord(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return String.format("%s.%s", FuncWord.class.getSimpleName(), this.name());
-        }
-
-
-    } // Word
+    /**
+     * package field
+     */
+    static final SQLWords COMMA = SqlWords.FuncWord.COMMA;
 
 
     /**
@@ -944,7 +926,7 @@ abstract class Functions {
         Expression expression;
         for (int i = 0; i < expSize; i++) {
             if (i > 0) {
-                argList.add(FuncWord.COMMA);
+                argList.add(SqlWords.FuncWord.COMMA);
             }
             expression = expList.get(i);
             if (expression instanceof SqlValueParam.MultiValue) {
@@ -968,7 +950,7 @@ abstract class Functions {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(g1);
-        argList.add(FuncWord.COMMA);
+        argList.add(SqlWords.FuncWord.COMMA);
         argList.add(g2);
         return FunctionUtils.complexArgFunc(name, argList, returnType);
     }
@@ -988,9 +970,9 @@ abstract class Functions {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(e1);
-        argList.add(FuncWord.COMMA);
+        argList.add(SqlWords.FuncWord.COMMA);
         argList.add(e2);
-        argList.add(FuncWord.COMMA);
+        argList.add(SqlWords.FuncWord.COMMA);
 
         argList.add(e3);
         return FunctionUtils.complexArgFunc(name, argList, returnType);
@@ -1041,7 +1023,7 @@ abstract class Functions {
         }
         final List<Object> argLit = new ArrayList<>(3);
         argLit.add(single);
-        argLit.add(FuncWord.COMMA);
+        argLit.add(SqlWords.FuncWord.COMMA);
         argLit.add(multi);
         return FunctionUtils.complexArgFunc(name, argLit, returnType);
     }
@@ -1062,7 +1044,7 @@ abstract class Functions {
             }
             argList = new ArrayList<>(((1 + exprSize) << 1) - 1);
             for (Object o : actualExprList) {
-                argList.add(FuncWord.COMMA);
+                argList.add(SqlWords.FuncWord.COMMA);
                 if (o instanceof Expression) {
                     argList.add(o);
                 } else {
@@ -1072,7 +1054,7 @@ abstract class Functions {
         } else {
             argList = new ArrayList<>(3);
             argList.add(expr);
-            argList.add(FuncWord.COMMA);
+            argList.add(SqlWords.FuncWord.COMMA);
             if (exprList instanceof Expression) {
                 argList.add(exprList);
             } else {

@@ -5,12 +5,12 @@ import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.mysql.MySQLTimeFormat;
-import io.army.criteria.mysql.MySQLTimeUnit;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLType;
 import io.army.util._Exceptions;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -30,23 +30,41 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /*-------------------below Date and Time Functions-------------------*/
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If unit is time part:{@link  LocalDateTimeType}</li>
-     *          <li>else :{@link  LocalDateType}</li>
-     *      </ul>
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If unit is time part:{@link  LocalDateTimeType}</li>
+     *     <li>else :{@link  LocalDateType}</li>
+     * </ul>
      *
-     *
-     * @param date nullable parameter or {@link Expression}
-     * @param expr nullable parameter or {@link Expression}
+     * @param date non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link java.time.LocalDate} instance</li>
+     *                  <li>date {@link String} literal,eg : {@code "2008-01-02"}</li>
+     *             </ul>
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link Integer} literal</li>
+     *             </ul>
      * @param unit non-null
+     * @throws CriteriaException throw when argument error
      * @see #addDate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,INTERVAL expr unit)</a>
      */
-    public static SimpleExpression addDate(final Expression date, final SQLs.WordInterval interval, final Expression expr
-            , final MySQLTimeUnit unit) {
-        return _dateIntervalFunc("ADDDATE", date, interval, expr, unit);
+    public static SimpleExpression addDate(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
+        date = FuncExpUtils.localDateLiteralExp(date);
+
+        FuncExpUtils.assertWord(interval, SQLs.INTERVAL);
+        FuncExpUtils.assertIntExp(expr);
+
+        final MappingType returnType;
+        if (unit.isTimePart()) {
+            returnType = LocalDateTimeType.INSTANCE;
+        } else {
+            returnType = LocalDateType.INSTANCE;
+        }
+        return LiteralFunctions.compositeFunc("ADDDATE", Arrays.asList(date, COMMA, interval, expr, unit), returnType);
     }
 
 
@@ -54,10 +72,9 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @param days nullable parameter or {@link Expression}
-     * @see #addDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     * @see #addDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,days)</a>
      */
     public static SimpleExpression addDate(final Expression date, final Expression days) {
@@ -67,11 +84,10 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If unit is time part:{@link  LocalDateTimeType}</li>
-     *          <li>else :{@link  LocalDateType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If unit is time part:{@link  LocalDateTimeType}</li>
+     *     <li>else :{@link  LocalDateType}</li>
+     * </ul>
      *
      * @param date nullable parameter or {@link Expression}
      * @param expr nullable parameter or {@link Expression}
@@ -88,7 +104,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @param days nullable parameter or {@link Expression}
      * @see #subDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
@@ -102,7 +117,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:the {@link  MappingType} of expr1.
      *
-     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_addtime">ADDTIME(expr1,expr2)</a>
      */
     public static SimpleExpression addTime(final Expression expr1, final Expression expr2) {
@@ -112,7 +126,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link  MappingType} of expr1.
-     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subtime">SUBTIME(expr1,expr2)</a>
      */
@@ -124,7 +137,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
      *
-     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_convert-tz">CONVERT_TZ(dt,from_tz,to_tz)</a>
      */
     public static SimpleExpression convertTz(Expression dt, Expression fromTz, Expression toTz) {
@@ -134,7 +146,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateType}
-     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
      */
@@ -146,7 +157,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalTimeType}
      *
-     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME()</a>
      */
     public static SimpleExpression currentTime() {
@@ -156,7 +166,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalTimeType}
-     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME(fsp)</a>
      */
@@ -168,7 +177,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
      *
-     *
      * @see #currentTimestamp(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-timestamp">CURRENT_TIMESTAMP()</a>
      */
@@ -179,7 +187,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
-     *
      *
      * @param fsp non-null parameter or {@link Expression}, fsp in [0,6]
      * @see #currentTimestamp()
@@ -194,7 +201,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateType}
      *
-     *
      * @param expr nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date">DATE(expr)</a>
      */
@@ -205,7 +211,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     *
      *
      * @param expr1 nullable parameter or {@link Expression}
      * @param expr2 nullable parameter or {@link Expression}
@@ -218,14 +223,13 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If date or expr is NULL, {@link SQLs._NullType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
-     *          <li>otherwise {@link StringType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If date or expr is NULL, {@link SQLs._NullType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
+     *     <li>otherwise {@link StringType}</li>
+     * </ul>
      *
      * @param date nullable parameter or {@link Expression}
      * @param expr nullable parameter or {@link Expression}
@@ -240,14 +244,13 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If date or expr is NULL, {@link SQLs._NullType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
-     *          <li>otherwise {@link StringType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If date or expr is NULL, {@link SQLs._NullType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
+     *     <li>otherwise {@link StringType}</li>
+     * </ul>
      *
      * @param date nullable parameter or {@link Expression}
      * @param expr nullable parameter or {@link Expression}
@@ -263,7 +266,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param date   nullable parameter or {@link Expression}
      * @param format nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-format">DATE_FORMAT(date,format)</a>
@@ -276,7 +278,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofmonth">DAYOFMONTH(date)</a>
      */
@@ -287,7 +288,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DayOfWeekType}
-     *
      *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayname">DAYNAME(date)</a>
@@ -300,7 +300,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link DayOfWeekType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofweek">DAYOFYEAR(date)</a>
      */
@@ -312,7 +311,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofyear">DAYOFYEAR(date)</a>
      */
@@ -323,14 +321,13 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>unit {@link MySQLTimeUnit#YEAR}:{@link YearType}</li>
-     *          <li>unit {@link MySQLTimeUnit#MONTH}:{@link MonthType}</li>
-     *          <li>unit {@link MySQLTimeUnit#WEEK}:{@link DayOfWeekType}</li>
-     *          <li>unit {@link MySQLTimeUnit#YEAR_MONTH}:{@link YearMonthType}</li>
-     *          <li>otherwise:{@link IntegerType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>unit {@link MySQLTimeUnit#YEAR}:{@link YearType}</li>
+     *     <li>unit {@link MySQLTimeUnit#MONTH}:{@link MonthType}</li>
+     *     <li>unit {@link MySQLTimeUnit#WEEK}:{@link DayOfWeekType}</li>
+     *     <li>unit {@link MySQLTimeUnit#YEAR_MONTH}:{@link YearMonthType}</li>
+     *     <li>otherwise:{@link IntegerType}</li>
+     * </ul>
      *
      * @param unit non-null
      * @param date nullable parameter or {@link Expression}
@@ -386,7 +383,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateType}
      *
-     *
      * @param n nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-days">FROM_DAYS(date)</a>
      */
@@ -397,7 +393,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
-     *
      *
      * @param unixTimestamp nullable parameter or {@link Expression}
      * @see #fromUnixTime(Expression, Expression)
@@ -412,7 +407,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
      *
-     *
      * @param unixTimestamp nullable parameter or {@link Expression}
      * @param format        nullable parameter or {@link Expression}
      * @see #fromUnixTime(Expression)
@@ -425,7 +419,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param type   non-null,should be below:
      *               <ul>
@@ -448,13 +441,12 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
                 throw CriteriaUtils.funcArgError(name, type);
         }
         Objects.requireNonNull(format);
-        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, type, Functions.FuncWord.COMMA, format);
+        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, type, SqlWords.FuncWord.COMMA, format);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param time nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_hour">HOUR(time)</a>
@@ -467,7 +459,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_last-day">LAST_DAY(date)</a>
      */
@@ -479,7 +470,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
      *
-     *
      * @see #now(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
@@ -490,7 +480,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
-     *
      *
      * @param fsp non-null parameter or {@link Expression}
      * @see #now()
@@ -504,7 +493,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
      *
-     *
      * @see #sysDate(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
@@ -515,7 +503,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
-     *
      *
      * @see #sysDate()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
@@ -528,7 +515,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
      *
-     *
      * @see #timestamp(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr)</a>
      */
@@ -540,7 +526,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
      *
-     *
      * @see #timestamp(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr1,expr2)</a>
      */
@@ -551,13 +536,12 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If unit is time part then {@link LocalDateTimeType}</li>
-     *          <li>Else if datetimeExpr {@link MappingType}  {@link LocalDateType}</li>
-     *          <li>Else if datetimeExpr {@link MappingType}  {@link LocalDateTimeType} or {@link ZonedDateTimeType} or {@link  OffsetDateTimeType} then {@link LocalDateTimeType }</li>
-     *          <li>Else {@link StringType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If unit is time part then {@link LocalDateTimeType}</li>
+     *     <li>Else if datetimeExpr {@link MappingType}  {@link LocalDateType}</li>
+     *     <li>Else if datetimeExpr {@link MappingType}  {@link LocalDateTimeType} or {@link ZonedDateTimeType} or {@link  OffsetDateTimeType} then {@link LocalDateTimeType }</li>
+     *     <li>Else {@link StringType}</li>
+     * </ul>
      *
      * @param unit         non-null,should be one of below:
      *                     <ul>
@@ -608,18 +592,17 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             default:
                 throw CriteriaUtils.funcArgError(name, unit);
         }
-        return FunctionUtils.complexArgFunc(name, returnType, unit, Functions.FuncWord.COMMA, interval
-                , Functions.FuncWord.COMMA, datetimeExpr);
+        return FunctionUtils.complexArgFunc(name, returnType, unit, SqlWords.FuncWord.COMMA, interval
+                , SqlWords.FuncWord.COMMA, datetimeExpr);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If {@link MySQLTimeUnit#MINUTE} or {@link MySQLTimeUnit#SECOND} or {@link MySQLTimeUnit#MICROSECOND} then {@link LongType}</li>
-     *          <li>Else {@link IntegerType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If {@link MySQLTimeUnit#MINUTE} or {@link MySQLTimeUnit#SECOND} or {@link MySQLTimeUnit#MICROSECOND} then {@link LongType}</li>
+     *     <li>Else {@link IntegerType}</li>
+     * </ul>
      *
      * @param unit          non-null
      * @param datetimeExpr1 nullable parameter or {@link  Expression}
@@ -665,14 +648,13 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
                 throw _Exceptions.unexpectedEnum(unit);
         }
 
-        return FunctionUtils.complexArgFunc(name, returnType, unit, Functions.FuncWord.COMMA, datetimeExpr1
-                , Functions.FuncWord.COMMA, datetimeExpr2);
+        return FunctionUtils.complexArgFunc(name, returnType, unit, SqlWords.FuncWord.COMMA, datetimeExpr1
+                , SqlWords.FuncWord.COMMA, datetimeExpr2);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
-     *
      *
      * @param time   nullable parameter or {@link Expression}
      * @param format nullable parameter or {@link Expression}
@@ -686,7 +668,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-days">TO_DAYS(date)</a>
      */
@@ -697,7 +678,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
-     *
      *
      * @param expr nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-seconds">TO_SECONDS(expr)</a>
@@ -710,7 +690,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
      *
-     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP()</a>
      */
     public static SimpleExpression unixTimestamp() {
@@ -720,7 +699,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LongType}
-     *
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP(date)</a>
      */
@@ -732,7 +710,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateType}
      *
-     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-date">UTC_DATE()</a>
      */
     public static SimpleExpression utcDate() {
@@ -743,7 +720,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalTimeType}
      *
-     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME()</a>
      */
     public static SimpleExpression utcTime() {
@@ -753,7 +729,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LocalTimeType}
-     *
      *
      * @param fsp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME(fsp)</a>
@@ -766,7 +741,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
      *
-     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP()</a>
      */
     public static SimpleExpression utcTimestamp() {
@@ -776,7 +750,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateTimeType}
-     *
      *
      * @param fsp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP(fsp)</a>
@@ -789,7 +762,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
@@ -800,7 +772,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param date nullable parameter or {@link Expression}
      * @param mode non-null parameter or {@link Expression}
@@ -814,7 +785,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link DayOfWeekType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekday">WEEKDAY(date)</a>
      */
@@ -825,7 +795,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekofyear">WEEKOFYEAR(date)</a>
@@ -838,7 +807,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link YearType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_year">YEAR(date)</a>
      */
@@ -850,7 +818,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date)</a>
      */
@@ -861,7 +828,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date,mode)</a>
@@ -875,7 +841,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalDateType}
      *
-     *
      * @param year      nullable parameter or {@link Expression}
      * @param dayOfYear nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_makedate">MAKEDATE(year,dayofyear)</a>
@@ -887,7 +852,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LocalTimeType}
-     *
      *
      * @param hour   nullable parameter or {@link Expression}
      * @param minute nullable parameter or {@link Expression}
@@ -902,7 +866,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param expr non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_microsecond">MICROSECOND(expr)</a>
      */
@@ -913,7 +876,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
-     *
      *
      * @param time non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_minute">MINUTE(expr)</a>
@@ -926,7 +888,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link MonthType}
      *
-     *
      * @param date non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month">MONTH(date)</a>
      */
@@ -938,7 +899,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link MonthType}
      *
-     *
      * @param date non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_monthname">MONTHNAME(date)</a>
      */
@@ -949,7 +909,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link YearMonthType}
-     *
      *
      * @param p non-null parameter or {@link Expression}
      * @param n non-null parameter or {@link Expression}
@@ -963,7 +922,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param p1 non-null parameter or {@link Expression}
      * @param p2 non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-diff">PERIOD_DIFF(P1,P2)</a>
@@ -976,7 +934,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param date non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_quarter">QUARTER(date)</a>
      */
@@ -988,7 +945,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalTimeType}
      *
-     *
      * @param expr nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time">TIME(expr)</a>
      */
@@ -999,7 +955,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link LocalTimeType} of expr1.
-     *
      *
      * @param expr1 nullable parameter or {@link Expression}
      * @param expr2 nullable parameter or {@link Expression}
@@ -1014,7 +969,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param time non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_second">SECOND(time)</a>
      */
@@ -1026,7 +980,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link LocalTimeType}
      *
-     *
      * @param seconds non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sec-to-time">SEC_TO_TIME(seconds)</a>
      */
@@ -1037,7 +990,6 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link LocalTimeType}
-     *
      *
      * @param str    non-null parameter or {@link Expression}
      * @param format non-null parameter or {@link Expression}
@@ -1076,21 +1028,20 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         if (!(expr instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, date);
         }
-        return FunctionUtils.complexArgFunc(name, returnType, date, Functions.FuncWord.COMMA, interval, expr, unit);
+        return FunctionUtils.complexArgFunc(name, returnType, date, SqlWords.FuncWord.COMMA, interval, expr, unit);
     }
 
 
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If date or expr is NULL, {@link SQLs._NullType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
-     *          <li>otherwise {@link StringType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If date or expr is NULL, {@link SQLs._NullType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
+     *     <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
+     *     <li>otherwise {@link StringType}</li>
+     * </ul>
      *
      * @param name DATE_ADD or DATE_SUB
      * @param date nullable parameter or {@link Expression}
@@ -1105,7 +1056,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         final TypeMeta type, returnType;
         type = date.typeMeta();
         returnType = _dateAddSubReturnType(type.mappingType(), unit);
-        return FunctionUtils.complexArgFunc(name, returnType, date, Functions.FuncWord.COMMA, interval, expr, unit);
+        return FunctionUtils.complexArgFunc(name, returnType, date, SqlWords.FuncWord.COMMA, interval, expr, unit);
     }
 
 

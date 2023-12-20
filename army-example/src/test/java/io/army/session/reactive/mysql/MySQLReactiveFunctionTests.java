@@ -4,6 +4,7 @@ package io.army.session.reactive.mysql;
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
 import io.army.criteria.TypeDef;
+import io.army.criteria.impl.MySQLTimeUnit;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.TypeDefs;
@@ -16,6 +17,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -218,6 +220,24 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
         Assert.assertNotNull(row);
         LOG.debug("weightStringFunc result :  {}", row);
+    }
+
+
+    /**
+     * @see MySQLs#addDate(Object, WordInterval, Object, MySQLTimeUnit)
+     */
+    @Test
+    public void addDateFunc(final ReactiveLocalSession session) {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(addDate("2008-01-02", INTERVAL, 31, MySQLTimeUnit.DAY).as("date"))
+                .asQuery();
+
+        final LocalDate row;
+        row = session.queryOne(stmt, LocalDate.class)
+                .block();
+
+        Assert.assertEquals(row, LocalDate.of(2008, 2, 2));
     }
 
 

@@ -10,6 +10,8 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +43,26 @@ abstract class FuncExpUtils {
             jsonExp = SQLs.literal(JsonType.TEXT, json);
         }
         return jsonExp;
+    }
+
+
+    static Object localDateLiteralExp(final Object date) {
+        if (date instanceof Expression || date instanceof LocalDate) {
+            return date;
+        }
+
+        if (!(date instanceof String)) {
+            String m = String.format("value must be %s or %s or %s", Expression.class.getName(),
+                    LocalDate.class.getName(), String.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+        try {
+            return LocalDate.parse((String) date);
+        } catch (DateTimeException e) {
+            throw ContextStack.clearStackAndCriteriaError("date format error");
+        }
+
     }
 
 

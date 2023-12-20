@@ -522,12 +522,7 @@ public abstract class SQLs extends SQLSyntax {
 
     }
 
-    /**
-     * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
-     */
-    interface ArmyKeyWord extends SQLWords {
 
-    }
 
     public interface _ArrayConstructorSpec extends ArrayExpression {
 
