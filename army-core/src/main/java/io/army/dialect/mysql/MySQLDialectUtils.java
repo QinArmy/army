@@ -11,6 +11,7 @@ abstract class MySQLDialectUtils {
 
     /**
      * @return a modifiable set
+     * @see <a href="https://dev.mysql.com/doc/refman/8.2/en/keywords.html">Keywords and Reserved Words</a>
      */
     static Set<String> create57KeywordsSet() {
         Set<String> keywords = new HashSet<>();
@@ -643,6 +644,7 @@ abstract class MySQLDialectUtils {
 
     /**
      * @return a modifiable set
+     * @see <a href="https://dev.mysql.com/doc/refman/8.2/en/keywords.html">Keywords and Reserved Words</a>
      */
     static Set<String> create80KeywordsSet() {
         Set<String> keywords = create57KeywordsSet();
@@ -742,7 +744,9 @@ abstract class MySQLDialectUtils {
     /*################################## blow private method ##################################*/
 
     /**
-     * M ySQL 8.0 Removed Keywords then Reserved Words
+     * MySQL 8.0 Removed Keywords then Reserved Words
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.2/en/keywords.html">Keywords and Reserved Words</a>
      */
     private static void createMySQL80RemovedKeywords(Set<String> keywords) {
 

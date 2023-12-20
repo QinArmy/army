@@ -6,10 +6,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.mysql.MySQLCastType;
-import io.army.mapping.IntegerType;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
+import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.DataType;
 import io.army.util._Collections;
@@ -726,12 +723,13 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     }
 
     /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
+     * <p>The {@link MappingType} of function return type:{@link VarBinaryType}
      *
      * @param str non-null, one of following :
      *            <ul>
      *                 <li>{@link Expression} instance</li>
      *                 <li>{@link String} literal</li>
+     *                 <li>byte[] literal</li>
      *            </ul>
      * @throws CriteriaException throw when argument error
      * @see #toBase64(Object)
@@ -739,7 +737,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      */
     public static SimpleExpression fromBase64(final Object str) {
         FuncExpUtils.assertTextExp(str);
-        return LiteralFunctions.oneArgFunc("FROM_BASE64", str, StringType.INSTANCE);
+        return LiteralFunctions.oneArgFunc("FROM_BASE64", str, VarBinaryType.INSTANCE);
     }
 
     /**
@@ -749,6 +747,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *            <ul>
      *                 <li>{@link Expression} instance</li>
      *                 <li>{@link String} literal</li>
+     *                 <li>byte[] literal</li>
      *            </ul>
      * @throws CriteriaException throw when argument error
      * @see #fromBase64(Object)
@@ -760,31 +759,37 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param strOrNum nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #unhex(Expression)
+     * @param strOrNum non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                      <li>{@link Number} literal</li>
+     *                      <li>byte[] literal</li>
+     *                 </ul>
+     * @see #unhex(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_hex">HEX(str), HEX(N)</a>
      */
-    public static SimpleExpression hex(final Expression strOrNum) {
-        return FunctionUtils.oneArgFunc("HEX", strOrNum, StringType.INSTANCE);
+    public static SimpleExpression hex(final Object strOrNum) {
+        return LiteralFunctions.oneArgFunc("HEX", strOrNum, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link VarBinaryType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #hex(Expression)
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *                 <li>byte[] literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument
+     * @see #hex(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_unhex">UNHEX(str)</a>
      */
-    public static SimpleExpression unhex(final Expression str) {
-        return FunctionUtils.oneArgFunc("UNHEX", str, StringType.INSTANCE);
+    public static SimpleExpression unhex(Object str) {
+        return LiteralFunctions.oneArgFunc("UNHEX", str, VarBinaryType.INSTANCE);
     }
 
     /**
@@ -799,8 +804,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_insert">INSERT(str,pos,len,newstr)</a>
      */
-    public static SimpleExpression insert(final Expression str, final Expression pos
-            , final Expression len, final Expression newStr) {
+    public static SimpleExpression insert(final Expression str, final Expression pos, final Expression len, final Expression newStr) {
         return FunctionUtils.multiArgFunc("INSERT", StringType.INSTANCE, str, pos, len, newStr);
     }
 

@@ -46,30 +46,33 @@ public abstract class _MappingFactory {
     @Nullable
     public static MappingType getDefaultIfMatch(final Class<?> javaType) {
         final MappingType type;
-        if (!Enum.class.isAssignableFrom(javaType)) {
-            if (javaType.isArray()) {
-                type = getDefaultArrayType(javaType);
-            } else {
-                final Function<Class<?>, MappingType> function;
-                function = DEFAULT_MAPPING_MAP.get(javaType);
-                if (function == null) {
-                    type = null;
-                } else {
-                    type = function.apply(javaType);
-                }
-            }
 
-        } else if (CodeEnum.class.isAssignableFrom(javaType)) {
-            type = CodeEnumType.from(javaType);
-        } else if (TextEnumType.class.isAssignableFrom(javaType)) {
-            type = TextEnumType.from(javaType);
-        } else if (Month.class.isAssignableFrom(javaType)) {
-            type = MonthType.DEFAULT;
-        } else if (DayOfWeek.class.isAssignableFrom(javaType)) {
-            type = DayOfWeekType.DEFAULT;
+        if (Enum.class.isAssignableFrom(javaType)) {
+            if (CodeEnum.class.isAssignableFrom(javaType)) {
+                type = CodeEnumType.from(javaType);
+            } else if (TextEnumType.class.isAssignableFrom(javaType)) {
+                type = TextEnumType.from(javaType);
+            } else if (Month.class.isAssignableFrom(javaType)) {
+                type = MonthType.DEFAULT;
+            } else if (DayOfWeek.class.isAssignableFrom(javaType)) {
+                type = DayOfWeekType.DEFAULT;
+            } else {
+                type = NameEnumType.from(javaType);
+            }
+        } else if (javaType == byte[].class) {
+            type = VarBinaryType.INSTANCE;
+        } else if (javaType.isArray()) {
+            type = getDefaultArrayType(javaType);
         } else {
-            type = NameEnumType.from(javaType);
+            final Function<Class<?>, MappingType> function;
+            function = DEFAULT_MAPPING_MAP.get(javaType);
+            if (function == null) {
+                type = null;
+            } else {
+                type = function.apply(javaType);
+            }
         }
+
         return type;
     }
 

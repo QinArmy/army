@@ -45,9 +45,11 @@ public abstract class FactoryUtils {
         final String url;
         url = mapDatabaseToJdbdUrl(database);
         final Map<String, Object> map = _Collections.hashMap();
+
         map.put(Driver.USER, "army_w");
         map.put(Driver.PASSWORD, "army123");
         map.put("factoryWorkerCount", 10);
+        // map.put("sslMode", "DISABLED");
 
         final DatabaseSessionFactory databaseSessionFactory;
         databaseSessionFactory = Driver.findDriver(url).forDeveloper(url, map);

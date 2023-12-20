@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -147,6 +148,32 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
                 .block();
 
         Assert.assertEquals(row, source);
+
+    }
+
+
+    /**
+     * @see MySQLs#toBase64(Object)
+     */
+    @Test
+    public void hexFunc(final ReactiveLocalSession session) {
+        final String source = "QinArmy's army,I love army. 秦军的 army";
+        final byte[] sourceBytes = source.getBytes(StandardCharsets.UTF_8);
+
+        final Select stmt;
+        stmt = query()
+                .select(unhex(hex(source)).as("source"))
+                .comma(unhex(hex(sourceBytes)).as("sourceBytes"))
+                .asQuery();
+
+        final Map<String, Object> row;
+        row = session.queryOneObject(stmt, RowMaps::hashMap)
+                .block();
+
+        Assert.assertNotNull(row);
+
+        Assert.assertEquals(row.get("source"), sourceBytes);
+        Assert.assertEquals(row.get("sourceBytes"), sourceBytes);
 
     }
 

@@ -6,6 +6,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.struct.CodeEnum;
+import io.army.struct.TextEnum;
 import io.army.util.ArrayUtils;
 import io.army.util.ClassUtils;
 import io.army.util._Collections;
@@ -30,6 +31,8 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     public static CodeEnumType from(final Class<?> enumClass) {
         if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
+            throw errorJavaType(CodeEnumType.class, enumClass);
+        } else if (TextEnum.class.isAssignableFrom(enumClass)) {
             throw errorJavaType(CodeEnumType.class, enumClass);
         }
         return INSTANCE_MAP.computeIfAbsent(ClassUtils.enumClass(enumClass), CONSTRUCTOR);
