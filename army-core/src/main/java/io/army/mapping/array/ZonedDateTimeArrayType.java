@@ -5,50 +5,49 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping.OffsetDateTimeType;
+import io.army.mapping.ZonedDateTimeType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
 import io.army.util._TimeUtils;
 
-import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 
-public final class OffsetDateTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public final class ZonedDateTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
-    public static OffsetDateTimeArrayType from(final Class<?> arrayClass) {
-        final OffsetDateTimeArrayType instance;
-        if (arrayClass == OffsetDateTime[].class) {
+    public static ZonedDateTimeArrayType from(final Class<?> arrayClass) {
+        final ZonedDateTimeArrayType instance;
+        if (arrayClass == ZonedDateTime[].class) {
             instance = LINEAR;
         } else if (!arrayClass.isArray()) {
-            throw errorJavaType(OffsetDateTimeArrayType.class, arrayClass);
-        } else if (ArrayUtils.underlyingComponent(arrayClass) == OffsetDateTime.class) {
-            instance = new OffsetDateTimeArrayType(arrayClass);
+            throw errorJavaType(ZonedDateTimeArrayType.class, arrayClass);
+        } else if (ArrayUtils.underlyingComponent(arrayClass) == ZonedDateTime.class) {
+            instance = new ZonedDateTimeArrayType(arrayClass);
         } else {
-            throw errorJavaType(OffsetDateTimeArrayType.class, arrayClass);
+            throw errorJavaType(ZonedDateTimeArrayType.class, arrayClass);
         }
         return instance;
     }
 
-    public static OffsetDateTimeArrayType fromUnlimited() {
+    public static ZonedDateTimeArrayType fromUnlimited() {
         return UNLIMITED;
     }
 
 
-    public static final OffsetDateTimeArrayType LINEAR = new OffsetDateTimeArrayType(OffsetDateTime[].class);
+    public static final ZonedDateTimeArrayType LINEAR = new ZonedDateTimeArrayType(ZonedDateTime[].class);
 
-    public static final OffsetDateTimeArrayType UNLIMITED = new OffsetDateTimeArrayType(Object.class);
+    public static final ZonedDateTimeArrayType UNLIMITED = new ZonedDateTimeArrayType(Object.class);
 
     private final Class<?> javaType;
 
     /**
      * private constructor
      */
-    private OffsetDateTimeArrayType(Class<?> javaType) {
+    private ZonedDateTimeArrayType(Class<?> javaType) {
         this.javaType = javaType;
     }
 
@@ -59,7 +58,7 @@ public final class OffsetDateTimeArrayType extends _ArmyNoInjectionMapping imple
 
     @Override
     public Class<?> underlyingJavaType() {
-        return OffsetDateTime.class;
+        return ZonedDateTime.class;
     }
 
     @Override
@@ -68,8 +67,8 @@ public final class OffsetDateTimeArrayType extends _ArmyNoInjectionMapping imple
         final Class<?> javaType = this.javaType;
         if (javaType == Object.class) {
             instance = this;
-        } else if (javaType == OffsetDateTime[].class) {
-            instance = OffsetDateTimeType.INSTANCE;
+        } else if (javaType == ZonedDateTime[].class) {
+            instance = ZonedDateTimeType.INSTANCE;
         } else {
             instance = from(javaType.getComponentType());
         }
@@ -87,19 +86,19 @@ public final class OffsetDateTimeArrayType extends _ArmyNoInjectionMapping imple
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return mapToDataType(this, meta);
+        return OffsetDateTimeArrayType.mapToDataType(this, meta);
     }
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
         return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false,
-                OffsetDateTimeArrayType::parseText, PARAM_ERROR_HANDLER
+                ZonedDateTimeArrayType::parseText, PARAM_ERROR_HANDLER
         );
     }
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return PostgreArrays.arrayBeforeBind(source, OffsetDateTimeArrayType::appendToText, dataType, this,
+        return PostgreArrays.arrayBeforeBind(source, ZonedDateTimeArrayType::appendToText, dataType, this,
                 PARAM_ERROR_HANDLER
         );
     }
@@ -107,41 +106,25 @@ public final class OffsetDateTimeArrayType extends _ArmyNoInjectionMapping imple
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         return PostgreArrays.arrayAfterGet(this, dataType, source, false,
-                OffsetDateTimeArrayType::parseText, ACCESS_ERROR_HANDLER
+                ZonedDateTimeArrayType::parseText, ACCESS_ERROR_HANDLER
         );
     }
 
 
     /*-------------------below static methods -------------------*/
 
-    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
-        final DataType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.TIMESTAMPTZ_ARRAY;
-                break;
-            case MySQL:
-            case SQLite:
-            case H2:
-            case Oracle:
-            default:
-                throw MAP_ERROR_HANDLER.apply(type, meta);
-        }
-        return dataType;
-    }
-
-    private static OffsetDateTime parseText(final String text, final int offset, final int end) {
+    private static ZonedDateTime parseText(final String text, final int offset, final int end) {
         final String timeStr;
         if (text.charAt(offset) == _Constant.DOUBLE_QUOTE) {
             timeStr = text.substring(offset + 1, end - 1);
         } else {
             timeStr = text.substring(offset, end);
         }
-        return OffsetDateTime.parse(timeStr, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
+        return ZonedDateTime.parse(timeStr, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
     }
 
     private static void appendToText(final Object element, final Consumer<String> appender) {
-        if (!(element instanceof OffsetDateTime)) {
+        if (!(element instanceof ZonedDateTime)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
@@ -149,7 +132,7 @@ public final class OffsetDateTimeArrayType extends _ArmyNoInjectionMapping imple
         doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
 
         appender.accept(doubleQuote);
-        appender.accept(((OffsetDateTime) element).format(_TimeUtils.OFFSET_DATETIME_FORMATTER_6));
+        appender.accept(((ZonedDateTime) element).format(_TimeUtils.OFFSET_DATETIME_FORMATTER_6));
         appender.accept(doubleQuote);
 
     }

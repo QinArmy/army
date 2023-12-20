@@ -1,11 +1,10 @@
 package io.army.mapping;
 
 import io.army.annotation.Mapping;
-import io.army.mapping.array.IntegerArrayType;
+import io.army.mapping.array.*;
 import io.army.meta.MetaException;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
-import io.army.util._Collections;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
@@ -18,19 +17,15 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.time.*;
+import java.time.temporal.Temporal;
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.UUID;
 
 public abstract class _MappingFactory {
 
     private _MappingFactory() {
         throw new UnsupportedOperationException();
     }
-
-
-    private static final Map<Class<?>, Function<Class<?>, MappingType>> DEFAULT_MAPPING_MAP = createDefaultMappingMap();
 
 
     public static MappingType getDefault(Class<?> javaType) throws MetaException {
@@ -54,25 +49,90 @@ public abstract class _MappingFactory {
                 type = CodeEnumType.from(javaType);
             } else if (TextEnumType.class.isAssignableFrom(javaType)) {
                 type = TextEnumType.from(javaType);
-            } else if (Month.class.isAssignableFrom(javaType)) {
+            } else if (Month.class == javaType) {
                 type = MonthType.DEFAULT;
-            } else if (DayOfWeek.class.isAssignableFrom(javaType)) {
+            } else if (DayOfWeek.class == javaType) {
                 type = DayOfWeekType.DEFAULT;
             } else {
                 type = NameEnumType.from(javaType);
             }
         } else if (javaType.isArray()) {
             type = getDefaultArrayType(javaType);
-        } else {
-            final Function<Class<?>, MappingType> function;
-            function = DEFAULT_MAPPING_MAP.get(javaType);
-            if (function == null) {
-                type = null;
+        } else if (javaType == String.class) {
+            type = StringType.INSTANCE;
+        } else if (javaType == Boolean.class || javaType == boolean.class) {
+            type = BooleanType.INSTANCE;
+        } else if (Number.class.isAssignableFrom(javaType)) {
+            if (javaType == Integer.class) {
+                type = IntegerType.INSTANCE;
+            } else if (javaType == Long.class) {
+                type = LongType.INSTANCE;
+            } else if (javaType == BigDecimal.class) {
+                type = BigDecimalType.INSTANCE;
+            } else if (javaType == BigInteger.class) {
+                type = BigIntegerType.INSTANCE;
+            } else if (javaType == Double.class) {
+                type = DoubleType.INSTANCE;
+            } else if (javaType == Float.class) {
+                type = FloatType.INSTANCE;
+            } else if (javaType == Short.class) {
+                type = ShortType.INSTANCE;
+            } else if (javaType == Byte.class) {
+                type = ByteType.INSTANCE;
             } else {
-                type = function.apply(javaType);
+                type = null;
             }
+        } else if (Temporal.class.isAssignableFrom(javaType)) {
+            if (javaType == LocalDateTime.class) {
+                type = LocalDateTimeType.INSTANCE;
+            } else if (javaType == LocalDate.class) {
+                type = LocalDateType.INSTANCE;
+            } else if (javaType == LocalTime.class) {
+                type = LocalTimeType.INSTANCE;
+            } else if (javaType == OffsetDateTime.class) {
+                type = OffsetDateTimeType.INSTANCE;
+            } else if (javaType == ZonedDateTime.class) {
+                type = ZonedDateTimeType.INSTANCE;
+            } else if (javaType == OffsetTime.class) {
+                type = OffsetTimeType.INSTANCE;
+            } else if (javaType == Instant.class) {
+                type = InstantType.INSTANCE;
+            } else if (javaType == Year.class) {
+                type = YearType.INSTANCE;
+            } else if (javaType == YearMonth.class) {
+                type = YearMonthType.INSTANCE;
+            } else {
+                type = null;
+            }
+        } else if (ZoneId.class.isAssignableFrom(javaType)) {
+            type = ZoneIdType.INSTANCE;
+        } else if (BitSet.class.isAssignableFrom(javaType)) {
+            type = BitSetType.INSTANCE;
+        } else if (javaType == Character.class || javaType == char.class) {
+            type = CharacterType.INSTANCE;
+        } else if (javaType == MonthDay.class) {
+            type = MonthDayType.INSTANCE;
+        } else if (javaType == UUID.class) {
+            type = UUIDType.INSTANCE;
+        } else if (javaType.isPrimitive()) {
+            if (javaType == int.class) {
+                type = IntegerType.INSTANCE;
+            } else if (javaType == long.class) {
+                type = LongType.INSTANCE;
+            } else if (javaType == double.class) {
+                type = DoubleType.INSTANCE;
+            } else if (javaType == float.class) {
+                type = FloatType.INSTANCE;
+            } else if (javaType == short.class) {
+                type = ShortType.INSTANCE;
+            } else if (javaType == byte.class) {
+                type = ByteType.INSTANCE;
+            } else {
+                type = null;
+            }
+        } else {
+            type = null;
         }
-
         return type;
     }
 
@@ -189,39 +249,6 @@ public abstract class _MappingFactory {
     }
 
 
-    private static Map<Class<?>, Function<Class<?>, MappingType>> createDefaultMappingMap() {
-        final Map<Class<?>, Function<Class<?>, MappingType>> map = _Collections.hashMap();
-
-        map.put(Byte.class, ByteType::from);
-        map.put(Short.class, ShortType::from);
-        map.put(Integer.class, IntegerType::from);
-        map.put(Long.class, LongType::from);
-
-        map.put(Float.class, FloatType::from);
-        map.put(Double.class, DoubleType::from);
-        map.put(BigDecimal.class, BigDecimalType::from);
-        map.put(BigInteger.class, BigIntegerType::from);
-
-        map.put(Boolean.class, BooleanType::from);
-        map.put(byte[].class, VarBinaryType::from);
-        map.put(String.class, StringType::from);
-        map.put(LocalDateTime.class, LocalDateTimeType::from);
-
-        map.put(LocalDate.class, LocalDateType::from);
-        map.put(LocalTime.class, LocalTimeType::from);
-        map.put(MonthDay.class, MonthDayType::from);
-        map.put(YearMonth.class, YearMonthType::from);
-
-        map.put(Year.class, YearType::from);
-        map.put(OffsetDateTime.class, OffsetDateTimeType::from);
-        map.put(OffsetTime.class, OffsetTimeType::from);
-        map.put(BitSet.class, BitSetType::from);
-
-        map.put(Character.class, CharacterType::from);
-        return Collections.unmodifiableMap(map);
-    }
-
-
     private static void assertFactoryMethod(final Method method) {
         final int modifiers;
         modifiers = method.getModifiers();
@@ -237,9 +264,94 @@ public abstract class _MappingFactory {
 
     @Nullable
     private static MappingType getDefaultArrayType(final Class<?> arrayJavaType) {
-        MappingType type;
-        if (ArrayUtils.underlyingComponent(arrayJavaType) == Integer.class) {
-            type = IntegerArrayType.from(arrayJavaType);
+        final Class<?> componentType;
+        componentType = ArrayUtils.underlyingComponent(arrayJavaType);
+
+        final MappingType type;
+        if (componentType == byte.class) {
+            type = VarBinaryArrayType.from(arrayJavaType);
+        } else if (Enum.class.isAssignableFrom(componentType)) {
+            if (CodeEnum.class.isAssignableFrom(componentType)) {
+                type = CodeEnumArrayType.from(arrayJavaType);
+            } else if (TextEnumType.class.isAssignableFrom(componentType)) {
+                type = TextEnumArrayType.from(arrayJavaType);
+            } else if (Month.class == componentType) {
+                type = MonthArrayType.from(arrayJavaType);
+            } else if (DayOfWeek.class == componentType) {
+                type = DayOfWeekArrayType.from(arrayJavaType);
+            } else {
+                type = NameEnumArrayType.from(arrayJavaType);
+            }
+        } else if (componentType == String.class) {
+            type = StringArrayType.from(arrayJavaType);
+        } else if (componentType == Boolean.class || componentType == boolean.class) {
+            type = BooleanArrayType.from(arrayJavaType);
+        } else if (Number.class.isAssignableFrom(componentType)) {
+            if (componentType == Integer.class) {
+                type = IntegerArrayType.from(arrayJavaType);
+            } else if (componentType == Long.class) {
+                type = LongArrayType.from(arrayJavaType);
+            } else if (componentType == BigDecimal.class) {
+                type = BigDecimalArrayType.from(arrayJavaType);
+            } else if (componentType == BigInteger.class) {
+                type = BigIntegerArrayType.from(arrayJavaType);
+            } else if (componentType == Double.class) {
+                type = DoubleArrayType.from(arrayJavaType);
+            } else if (componentType == Float.class) {
+                type = FloatArrayType.from(arrayJavaType);
+            } else if (componentType == Short.class) {
+                type = ShortArrayType.from(arrayJavaType);
+            } else if (componentType == Byte.class) {
+                type = ByteArrayType.from(arrayJavaType);
+            } else {
+                type = null;
+            }
+        } else if (Temporal.class.isAssignableFrom(componentType)) {
+            if (componentType == LocalDateTime.class) {
+                type = LocalDateTimeArrayType.from(arrayJavaType);
+            } else if (componentType == LocalDate.class) {
+                type = LocalDateArrayType.from(arrayJavaType);
+            } else if (componentType == LocalTime.class) {
+                type = LocalTimeArrayType.from(arrayJavaType);
+            } else if (componentType == OffsetDateTime.class) {
+                type = OffsetDateTimeArrayType.from(arrayJavaType);
+            } else if (componentType == ZonedDateTime.class) {
+                type = ZonedDateTimeArrayType.from(arrayJavaType);
+            } else if (componentType == OffsetTime.class) {
+                type = OffsetTimeArrayType.from(arrayJavaType);
+            } else if (componentType == Instant.class) {
+                type = InstantArrayType.from(arrayJavaType);
+            } else if (componentType == Year.class) {
+                type = YearArrayType.from(arrayJavaType);
+            } else if (componentType == YearMonth.class) {
+                type = YearMonthArrayType.from(arrayJavaType);
+            } else {
+                type = null;
+            }
+        } else if (ZoneId.class.isAssignableFrom(componentType)) {
+            type = ZoneIdArrayType.from(arrayJavaType);
+        } else if (BitSet.class.isAssignableFrom(componentType)) {
+            type = BitSetArrayType.from(arrayJavaType);
+        } else if (componentType == Character.class || componentType == char.class) {
+            type = CharacterArrayType.from(arrayJavaType);
+        } else if (componentType == MonthDay.class) {
+            type = MonthDayArrayType.from(arrayJavaType);
+        } else if (componentType == UUID.class) {
+            type = UUIDArrayType.from(arrayJavaType);
+        } else if (componentType.isPrimitive()) {
+            if (componentType == int.class) {
+                type = IntegerArrayType.from(arrayJavaType);
+            } else if (componentType == long.class) {
+                type = LongArrayType.from(arrayJavaType);
+            } else if (componentType == double.class) {
+                type = DoubleArrayType.from(arrayJavaType);
+            } else if (componentType == float.class) {
+                type = FloatArrayType.from(arrayJavaType);
+            } else if (componentType == short.class) {
+                type = ShortArrayType.from(arrayJavaType);
+            } else {
+                type = null;
+            }
         } else {
             type = null;
         }

@@ -1,8 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.mapping.MappingType;
 import io.army.mapping.NoCastIntegerType;
 import io.army.mapping.NoCastTextType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
@@ -30,39 +32,64 @@ abstract class SQLSyntax extends Functions {
     SQLSyntax() {
     }
 
+    /**
+     * <p>Get default {@link MappingType} of javaType,if not found,throw {@link CriteriaException}
+     *
+     * @return non-null
+     * @throws CriteriaException throw when not found default {@link MappingType} of javaType
+     */
+    public static MappingType mappingTypeOf(final Class<?> javaType) {
+        final MappingType type;
+        type = _MappingFactory.getDefaultIfMatch(javaType);
+        if (type == null) {
+            String m = String.format("Not found default %s of %s", MappingType.class.getName(), javaType.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return type;
+    }
+
+    /**
+     * <p>Get default {@link MappingType} of javaType,if not found,return null
+     *
+     * @return nullable
+     */
+    @Nullable
+    public static MappingType getMappingTypeOf(final Class<?> javaType) {
+        return _MappingFactory.getDefaultIfMatch(javaType);
+    }
+
 
     /**
      * <p>
      * Value must be below types:
-     *     <ul>
-     *         <li>{@link Boolean}</li>
-     *         <li>{@link String}</li>
-     *         <li>{@link Integer}</li>
-     *         <li>{@link Long}</li>
-     *         <li>{@link Short}</li>
-     *         <li>{@link Byte}</li>
-     *         <li>{@link Double}</li>
-     *         <li>{@link Float}</li>
-     *         <li>{@link java.math.BigDecimal}</li>
-     *         <li>{@link java.math.BigInteger}</li>
-     *         <li>{@code  byte[]}</li>
-     *         <li>{@link BitSet}</li>
-     *         <li>{@link io.army.struct.CodeEnum}</li>
-     *         <li>{@link io.army.struct.TextEnum}</li>
-     *         <li>{@link java.time.LocalTime}</li>
-     *         <li>{@link java.time.LocalDate}</li>
-     *         <li>{@link java.time.LocalDateTime}</li>
-     *         <li>{@link java.time.OffsetDateTime}</li>
-     *         <li>{@link java.time.ZonedDateTime}</li>
-     *         <li>{@link java.time.OffsetTime}</li>
-     *         <li>{@link java.time.ZoneId}</li>
-     *         <li>{@link java.time.Month}</li>
-     *         <li>{@link java.time.DayOfWeek}</li>
-     *         <li>{@link java.time.Year}</li>
-     *         <li>{@link java.time.YearMonth}</li>
-     *         <li>{@link java.time.MonthDay}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link Boolean}</li>
+     *     <li>{@link String}</li>
+     *     <li>{@link Integer}</li>
+     *     <li>{@link Long}</li>
+     *     <li>{@link Short}</li>
+     *     <li>{@link Byte}</li>
+     *     <li>{@link Double}</li>
+     *     <li>{@link Float}</li>
+     *     <li>{@link java.math.BigDecimal}</li>
+     *     <li>{@link java.math.BigInteger}</li>
+     *     <li>{@code  byte[]}</li>
+     *     <li>{@link BitSet}</li>
+     *     <li>{@link io.army.struct.CodeEnum}</li>
+     *     <li>{@link io.army.struct.TextEnum}</li>
+     *     <li>{@link java.time.LocalTime}</li>
+     *     <li>{@link java.time.LocalDate}</li>
+     *     <li>{@link java.time.LocalDateTime}</li>
+     *     <li>{@link java.time.OffsetDateTime}</li>
+     *     <li>{@link java.time.ZonedDateTime}</li>
+     *     <li>{@link java.time.OffsetTime}</li>
+     *     <li>{@link java.time.ZoneId}</li>
+     *     <li>{@link java.time.Month}</li>
+     *     <li>{@link java.time.DayOfWeek}</li>
+     *     <li>{@link java.time.Year}</li>
+     *     <li>{@link java.time.YearMonth}</li>
+     *     <li>{@link java.time.MonthDay}</li>
+     * </ul>
      *
      * @param value non null
      * @return parameter expression
@@ -76,7 +103,6 @@ abstract class SQLSyntax extends Functions {
     /**
      * <p>
      * Create parameter expression, parameter expression output parameter placeholder({@code ?})
-     *
      *
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will be invoked.
      * @throws io.army.criteria.CriteriaException throw when infer is codec {@link FieldMeta}.
@@ -97,7 +123,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Create encoding parameter expression, parameter expression output parameter placeholder({@code ?})
      *
-     *
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will be invoked.
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
@@ -116,7 +141,6 @@ abstract class SQLSyntax extends Functions {
     /**
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
-     *
      *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer is codec {@link FieldMeta}.</li>
@@ -138,7 +162,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
      *
-     *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer isn't codec {@link FieldMeta}.</li>
      *                           <li>name have no text</li>
@@ -158,7 +181,6 @@ abstract class SQLSyntax extends Functions {
     /**
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
-     *
      *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer is codec {@link FieldMeta}.</li>
@@ -180,7 +202,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
      *
-     *
      * @throws CriteriaException throw when <ul>
      *                           <li>infer isn't codec {@link FieldMeta}.</li>
      *                           <li>name have no text</li>
@@ -201,35 +222,34 @@ abstract class SQLSyntax extends Functions {
     /**
      * <p>
      * Value must be below types:
-     *     <ul>
-     *         <li>{@link Boolean}</li>
-     *         <li>{@link String}</li>
-     *         <li>{@link Integer}</li>
-     *         <li>{@link Long}</li>
-     *         <li>{@link Short}</li>
-     *         <li>{@link Byte}</li>
-     *         <li>{@link Double}</li>
-     *         <li>{@link Float}</li>
-     *         <li>{@link java.math.BigDecimal}</li>
-     *         <li>{@link java.math.BigInteger}</li>
-     *         <li>{@code  byte[]}</li>
-     *         <li>{@link BitSet}</li>
-     *         <li>{@link io.army.struct.CodeEnum}</li>
-     *         <li>{@link io.army.struct.TextEnum}</li>
-     *         <li>{@link java.time.LocalTime}</li>
-     *         <li>{@link java.time.LocalDate}</li>
-     *         <li>{@link java.time.LocalDateTime}</li>
-     *         <li>{@link java.time.OffsetDateTime}</li>
-     *         <li>{@link java.time.ZonedDateTime}</li>
-     *         <li>{@link java.time.OffsetTime}</li>
-     *         <li>{@link java.time.ZoneId}</li>
-     *         <li>{@link java.time.Month}</li>
-     *         <li>{@link java.time.DayOfWeek}</li>
-     *         <li>{@link java.time.Year}</li>
-     *         <li>{@link java.time.YearMonth}</li>
-     *         <li>{@link java.time.MonthDay}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link Boolean}</li>
+     *     <li>{@link String}</li>
+     *     <li>{@link Integer}</li>
+     *     <li>{@link Long}</li>
+     *     <li>{@link Short}</li>
+     *     <li>{@link Byte}</li>
+     *     <li>{@link Double}</li>
+     *     <li>{@link Float}</li>
+     *     <li>{@link java.math.BigDecimal}</li>
+     *     <li>{@link java.math.BigInteger}</li>
+     *     <li>{@code  byte[]}</li>
+     *     <li>{@link BitSet}</li>
+     *     <li>{@link io.army.struct.CodeEnum}</li>
+     *     <li>{@link io.army.struct.TextEnum}</li>
+     *     <li>{@link java.time.LocalTime}</li>
+     *     <li>{@link java.time.LocalDate}</li>
+     *     <li>{@link java.time.LocalDateTime}</li>
+     *     <li>{@link java.time.OffsetDateTime}</li>
+     *     <li>{@link java.time.ZonedDateTime}</li>
+     *     <li>{@link java.time.OffsetTime}</li>
+     *     <li>{@link java.time.ZoneId}</li>
+     *     <li>{@link java.time.Month}</li>
+     *     <li>{@link java.time.DayOfWeek}</li>
+     *     <li>{@link java.time.Year}</li>
+     *     <li>{@link java.time.YearMonth}</li>
+     *     <li>{@link java.time.MonthDay}</li>
+     * </ul>
      *
      * @param value non null
      * @return literal expression
@@ -244,14 +264,13 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Create literal expression with nonNullValue.
      * This method is similar to {@link SQLs#literalValue(Object)},except that two exceptions :
-     *     <ul>
-     *         <li>{@link String} map to {@link NoCastTextType} not {@link io.army.mapping.StringType}</li>
-     *         <li>{@link Integer} map to {@link NoCastIntegerType} not {@link io.army.mapping.IntegerType}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link String} map to {@link NoCastTextType} not {@link io.army.mapping.StringType}</li>
+     *     <li>{@link Integer} map to {@link NoCastIntegerType} not {@link io.army.mapping.IntegerType}</li>
+     * </ul>
      *
      * @param nonNullValue non-null value
-     *@see SQLs#literalValue(Object)
+     * @see SQLs#literalValue(Object)
      */
     public static LiteralExpression space(final Object nonNullValue) {
         final LiteralExpression expression;
@@ -269,7 +288,6 @@ abstract class SQLSyntax extends Functions {
     /**
      * <p>
      * Create literal expression,literal expression will output literal of value
-     *
      *
      * @param type  non-null
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
@@ -289,7 +307,6 @@ abstract class SQLSyntax extends Functions {
     /**
      * <p>
      * Create literal expression,literal expression will output literal of value
-     *
      *
      * @param type  non-null
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
@@ -313,7 +330,6 @@ abstract class SQLSyntax extends Functions {
      *
      * <p>
      * Note: this method couldn't be used in batch update(delete) statement.
-     *
      *
      * @param type non-null
      * @param name non-null and non-empty
@@ -341,7 +357,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Note: this method couldn't be used in batch update(delete) statement.
      *
-     *
      * @param type non-null
      * @param name non-null and non-empty
      * @return non-null named literal expression
@@ -367,7 +382,6 @@ abstract class SQLSyntax extends Functions {
      *
      * <p>
      * Note: this method couldn't be used in batch update(delete) statement.
-     *
      *
      * @param type non-null
      * @param name non-null and non-empty
@@ -435,7 +449,6 @@ abstract class SQLSyntax extends Functions {
      * LITERAL , LITERAL , LITERAL ...
      * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
      *
-     *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
      * @see #rowParam(TypeInfer, Collection)
@@ -452,7 +465,6 @@ abstract class SQLSyntax extends Functions {
      *
      * <p>
      * Named multi parameter expression is used in batch update(or delete) and values insert.
-     *
      *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
@@ -478,7 +490,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
      *
-     *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
      * @param size positive,the size of {@link Collection}
@@ -494,7 +505,6 @@ abstract class SQLSyntax extends Functions {
      * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
      * ? , ? , ? ...
      * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     *
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
@@ -513,7 +523,6 @@ abstract class SQLSyntax extends Functions {
      * Create multi literal expression, multi literal expression will output multi LITERAL like below:
      * LITERAL , LITERAL , LITERAL ...
      * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
-     *
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
@@ -535,7 +544,6 @@ abstract class SQLSyntax extends Functions {
      *
      * <p>
      * Named multi parameter expression is used in batch update(or delete) and values insert.
-     *
      *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
@@ -561,7 +569,6 @@ abstract class SQLSyntax extends Functions {
      *
      * <p>
      * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
-     *
      *
      * @param type non-null,the type of element of {@link Collection}
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
@@ -616,7 +623,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Get a {@link QualifiedField}. You don't need a {@link QualifiedField},if no self-join in statement.
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>current statement don't support this method,eg: single-table UPDATE statement</li>
      *                           <li>qualified field don't exists,here always is deferred,because army validate qualified field when statement end.</li>
@@ -630,7 +636,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Reference a derived field from current statement.
      *
-     *
      * @param derivedAlias   derived table alias,
      * @param selectionAlias derived field alias
      */
@@ -641,7 +646,6 @@ abstract class SQLSyntax extends Functions {
     /**
      * <p>
      * Reference a derived field from outer statement.
-     *
      *
      * @param derivedAlias   derived table alias,
      * @param selectionAlias derived field alias
@@ -659,7 +663,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * <strong>NOTE</strong> : override,if selection alias duplication.
      *
-     *
      * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link TypeMeta#mappingType()} of {@link Selection#typeMeta()} .
      * @throws CriteriaException then when <ul>
      *                           <li>current statement don't support this method,eg: UPDATE statement</li>
@@ -674,7 +677,6 @@ abstract class SQLSyntax extends Functions {
      * <p>
      * Reference a {@link  Selection} of current statement ,eg: ORDER BY clause.
      * The {@link Expression} returned don't support {@link Expression#as(String)} method.
-     *
      *
      * @param selectionOrdinal based 1 .
      * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link io.army.mapping.IntegerType#INSTANCE}
