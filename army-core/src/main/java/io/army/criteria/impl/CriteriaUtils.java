@@ -9,7 +9,6 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
-import io.army.sqltype.SqlType;
 import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -389,25 +388,6 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException cteNotEnd(CriteriaContext context, String currentCte, String newCte) {
-        String m = String.format("Cte[%s] not end,couldn't start Cte[%s]", currentCte, newCte);
-        return ContextStack.criteriaError(context, m);
-    }
-
-    static CriteriaException nonOptionalClause(CriteriaContext context, String clause) {
-        String m = String.format("%s clause isn't optional.", clause);
-        return ContextStack.criteriaError(context, m);
-    }
-
-    static CriteriaException limitBiConsumerError(CriteriaContext criteriaContext) {
-        String m = "You must specified limit clause";
-        return ContextStack.criteriaError(criteriaContext, m);
-    }
-
-    static CriteriaException ifLimitBiConsumerError(CriteriaContext criteriaContext) {
-        String m = "limit clause must specified non-negative parameters";
-        return ContextStack.criteriaError(criteriaContext, m);
-    }
 
     static CriteriaException dontSupportMultiParam(CriteriaContext context) {
         return ContextStack.criteriaError(context, "don't support multi-parameter(literal)");
@@ -419,14 +399,6 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
-    static <K> List<Object> paramListFromMap(final Function<K, ?> function, K key) {
-        final Object value;
-        value = function.apply(key);
-        if (!(value instanceof List)) {
-            throw ContextStack.clearStackAndCriteriaError(String.format("key %s don't return List", key));
-        }
-        return paramList((List<?>) value);
-    }
 
     static List<Object> paramList(final @Nullable List<?> paramList) {
         if (paramList == null) {
@@ -688,12 +660,6 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException nonEvenArgs(String name) {
-        String m = String.format("function[%s] the number of argument must be even.", name);
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
-
-
     static CriteriaException subDmlNoReturningClause(String cteName) {
         String m = String.format("cte[%s] no RETURNING clause,couldn't exists alias clause.", cteName);
         throw ContextStack.clearStackAndCriteriaError(m);
@@ -712,26 +678,6 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
-
-    static CriteriaException noPrecision(CriteriaContext context, SqlType type) {
-        String m = String.format("You don't specified precision for %s", type);
-        return ContextStack.criteriaError(context, m);
-    }
-
-    static CriteriaException dontSupportPrecision(CriteriaContext context, SqlType type) {
-        String m = String.format("%s don't support precision", type);
-        return ContextStack.criteriaError(context, m);
-    }
-
-    static CriteriaException dontSupportCharset(CriteriaContext context, SqlType type) {
-        String m = String.format("%s don't support charset", type);
-        return ContextStack.criteriaError(context, m);
-    }
-
-    static CriteriaException dontSupportPrecisionScale(CriteriaContext context, SqlType type) {
-        String m = String.format("%s don't support precision and scale", type);
-        return ContextStack.criteriaError(context, m);
-    }
 
 
     static CriteriaException derivedColumnAliasSizeNotMatch(String tableAlias, int selectionSize,

@@ -101,17 +101,17 @@ public abstract class TypeDefs implements TypeDef {
         return this.dataType.typeName();
     }
 
-    private static final class TypeDefLength extends TypeDefs implements _SelfDescribed {
+     static final class TypeDefLength extends TypeDefs implements _SelfDescribed {
 
-        private final int length;
+         private final int length;
 
-        private TypeDefLength(DataType dataType, int length) {
-            super(dataType);
-            this.length = length;
-        }
+         private TypeDefLength(DataType dataType, int length) {
+             super(dataType);
+             this.length = length;
+         }
 
-        @Override
-        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+         @Override
+         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             sqlBuilder.append(_Constant.SPACE);
 
             final DataType type = this.dataType;

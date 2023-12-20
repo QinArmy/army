@@ -97,17 +97,11 @@ abstract class SqlWords {
 
     enum KeyWordFrom implements SQLs.WordFrom, SQLs.ArmyKeyWord {
 
-        FROM(" FROM");
-
-        private final String spaceWords;
-
-        KeyWordFrom(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
+        FROM;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWords;
+            return " FROM";
         }
 
         @Override
@@ -141,7 +135,7 @@ abstract class SqlWords {
 
     }//KeyWordFor
 
-    enum WordTrimPosition implements SQLs.TrimPosition, SQLs.ArmyKeyWord, SQLWords {
+    enum WordTrimPosition implements SQLs.TrimPosition, SQLs.ArmyKeyWord {
 
         BOTH(" BOTH"),
         LEADING(" LEADING"),
@@ -164,7 +158,7 @@ abstract class SqlWords {
         }
 
 
-    }//WordTrimPosition
+    } // WordTrimPosition
 
 
     enum KeyWordPath implements SQLs.WordPath, SQLs.ArmyKeyWord {
@@ -695,17 +689,11 @@ abstract class SqlWords {
 
     enum KeyWordAs implements SQLs.WordAs, SQLs.ArmyKeyWord {
 
-        AS(" AS");
-
-        private final String spaceWord;
-
-        KeyWordAs(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        AS;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return " AS";
         }
 
         @Override
@@ -713,7 +701,7 @@ abstract class SqlWords {
             return SQLs.keyWordsToString(this);
         }
 
-    }//KeyWordAs
+    } // KeyWordAs
 
     enum KeyWordAnd implements SQLs.WordAnd, SQLs.ArmyKeyWord {
 

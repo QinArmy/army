@@ -1,14 +1,11 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.Clause;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.SimpleExpression;
-import io.army.criteria.mysql.MySQLCastType;
+import io.army.criteria.*;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
@@ -1286,148 +1283,215 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_quote">QUOTE(str)</a>
      */
-    public static SimpleExpression quote(final Expression str) {
-        return FunctionUtils.oneArgFunc("QUOTE", str, StringType.INSTANCE);
+    public static SimpleExpression quote(final Object str) {
+        FuncExpUtils.assertTextExp(str);
+        return LiteralFunctions.oneArgFunc("QUOTE", str, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str   nullable parameter or {@link Expression}
-     * @param count nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str   non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link String} literal</li>
+     *              </ul>
+     * @param count non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link Integer} literal</li>
+     *              </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_repeat">REPEAT(str,count)</a>
      */
-    public static SimpleExpression repeat(final Expression str, final Expression count) {
-        return FunctionUtils.twoArgFunc("REPEAT", str, count, StringType.INSTANCE);
+    public static SimpleExpression repeat(final Object str, final Object count) {
+        FuncExpUtils.assertTextExp(str);
+        FuncExpUtils.assertIntExp(count);
+        return LiteralFunctions.twoArgFunc("REPEAT", str, count, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str     nullable parameter or {@link Expression}
-     * @param fromStr nullable parameter or {@link Expression}
-     * @param toStr   nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str     non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>{@link String} literal</li>
+     *                </ul>
+     * @param fromStr non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>{@link String} literal</li>
+     *                </ul>
+     * @param toStr   non-null, one of following :
+     *                <ul>
+     *                     <li>{@link Expression} instance</li>
+     *                     <li>{@link String} literal</li>
+     *                </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_replace">REPLACE(str,from_str,to_str)</a>
      */
-    public static SimpleExpression replace(final Expression str, final Expression fromStr, final Expression toStr) {
-        return FunctionUtils.threeArgFunc("REPLACE", str, fromStr, toStr, StringType.INSTANCE);
+    public static SimpleExpression replace(final Object str, final Object fromStr, final Object toStr) {
+        FuncExpUtils.assertTextExp(str);
+        FuncExpUtils.assertTextExp(fromStr);
+        FuncExpUtils.assertTextExp(toStr);
+        return LiteralFunctions.threeArgFunc("REPLACE", str, fromStr, toStr, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_reverse">REVERSE(str)</a>
      */
-    public static SimpleExpression reverse(final Expression str) {
-        return FunctionUtils.oneArgFunc("REVERSE", str, StringType.INSTANCE);
+    public static SimpleExpression reverse(final Object str) {
+        FuncExpUtils.assertTextExp(str);
+        return LiteralFunctions.oneArgFunc("REVERSE", str, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @param len nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @param len non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link Integer} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_right">RIGHT(str,len)</a>
      */
-    public static SimpleExpression right(final Expression str, final Expression len) {
-        return FunctionUtils.twoArgFunc("RIGHT", str, len, StringType.INSTANCE);
+    public static SimpleExpression right(final Object str, final Object len) {
+        FuncExpUtils.assertTextExp(str);
+        FuncExpUtils.assertIntExp(len);
+        return LiteralFunctions.twoArgFunc("RIGHT", str, len, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_soundex">SOUNDEX(str)</a>
      */
-    public static SimpleExpression soundex(final Expression str) {
-        return FunctionUtils.oneArgFunc("SOUNDEX", str, StringType.INSTANCE);
+    public static SimpleExpression soundex(final Object str) {
+        FuncExpUtils.assertTextExp(str);
+        return LiteralFunctions.oneArgFunc("SOUNDEX", str, StringType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param n nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param n non-null, one of following :
+     *          <ul>
+     *               <li>{@link Expression} instance</li>
+     *               <li>{@link Integer} literal</li>
+     *          </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_space">SPACE(n)</a>
      */
-    public static SimpleExpression space(final Expression n) {
-        return FunctionUtils.oneArgFunc("SPACE", n, StringType.INSTANCE);
+    public static SimpleExpression space(final Object n) {
+        FuncExpUtils.assertIntExp(n);
+        return LiteralFunctions.oneArgFunc("SPACE", n, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str   nullable parameter or {@link Expression}
-     * @param delim nullable parameter or {@link Expression}
-     * @param count nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str   non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link String} literal</li>
+     *              </ul>
+     * @param delim non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link String} literal</li>
+     *              </ul>
+     * @param count non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link Integer} literal</li>
+     *              </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring-index">SUBSTRING_INDEX(str,delim,count)</a>
      */
-    public static SimpleExpression substringIndex(final Expression str, final Expression delim, final Expression count) {
-        return FunctionUtils.threeArgFunc("SUBSTRING_INDEX", str, delim, count, StringType.INSTANCE);
+    public static SimpleExpression substringIndex(Object str, Object delim, Object count) {
+        FuncExpUtils.assertTextExp(str);
+        FuncExpUtils.assertTextExp(delim);
+        FuncExpUtils.assertIntExp(count);
+        return LiteralFunctions.threeArgFunc("SUBSTRING_INDEX", str, delim, count, StringType.INSTANCE);
     }
 
+
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
      */
-    public static SimpleExpression trim(final Expression str) {
-        return FunctionUtils.oneArgFunc("TRIM", str, StringType.INSTANCE);
+    public static SimpleExpression trim(final Object str) {
+        FuncExpUtils.assertTextExp(str);
+        return LiteralFunctions.oneArgFunc("TRIM", str, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param remstr nullable parameter or {@link Expression}
-     * @param str    nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param remstr non-null, one of following :
+     *               <ul>
+     *                    <li>{@link Expression} instance</li>
+     *                    <li>{@link String} literal</li>
+     *               </ul>
+     * @param from   see {@link SQLs#FROM}
+     * @param str    non-null, one of following :
+     *               <ul>
+     *                    <li>{@link Expression} instance</li>
+     *                    <li>{@link String} literal</li>
+     *               </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
-    public static SimpleExpression trim(final Expression remstr, SQLs.WordFrom from, final Expression str) {
-        assert from == SQLs.FROM;
-        return FunctionUtils.complexArgFunc("TRIM", StringType.INSTANCE, remstr, from, str);
+    public static SimpleExpression trim(Object remstr, SQLs.WordFrom from, Object str) {
+        FuncExpUtils.assertTextExp(remstr);
+        FuncExpUtils.assertTextExp(str);
+        if (from != SQLs.FROM) {
+            throw CriteriaUtils.unknownWords(from);
+        }
+        return LiteralFunctions.compositeFunc("TRIM", Arrays.asList(remstr, from, str), StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
      * @param position non-null,should be below:
      *                 <ul>
@@ -1435,69 +1499,121 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *                      <li>{@link SQLs#LEADING}</li>
      *                      <li>{@link SQLs#TRAILING}</li>
      *                 </ul>
-     * @param remstr   nullable parameter or {@link Expression}
-     * @param str      nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param from     see {@link SQLs#FROM}
+     * @param str      non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                 </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
      */
-    public static SimpleExpression trim(final @Nullable SQLs.TrimPosition position, final @Nullable Expression remstr
-            , final @Nullable SQLs.WordFrom from, final Expression str) {//TODO 优化方法定义
-        final String name = "TRIM";
-        if (!(str instanceof ArmyExpression)) {
-            throw CriteriaUtils.funcArgError(name, str);
-        } else if (position != null && !(position instanceof SqlWords.WordTrimPosition)) {
-            throw CriteriaUtils.funcArgError(name, position);
-        } else if (remstr != null && from != SQLs.FROM) {
-            throw ContextStack.criteriaError(ContextStack.peek(), "remstr and from syntax error");
-        } else if (position != null && from != SQLs.FROM) {
-            throw ContextStack.criteriaError(ContextStack.peek(), "position and from syntax error");
-        }
-        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, position, remstr, from, str);
+    public static SimpleExpression trim(SQLs.TrimPosition position, SQLs.WordFrom from, Object str) {
+        FuncExpUtils.assertTrimPosition(position);
+        FuncExpUtils.assertWord(from, SQLs.FROM);
+        FuncExpUtils.assertTextExp(str);
+
+        return LiteralFunctions.compositeFunc("TRIM", Arrays.asList(position, from, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param position non-null,should be below:
+     *                 <ul>
+     *                      <li>{@link SQLs#BOTH}</li>
+     *                      <li>{@link SQLs#LEADING}</li>
+     *                      <li>{@link SQLs#TRAILING}</li>
+     *                 </ul>
+     * @param remstr   non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                 </ul>
+     * @param from     see {@link SQLs#FROM}
+     * @param str      non-null, one of following :
+     *                 <ul>
+     *                      <li>{@link Expression} instance</li>
+     *                      <li>{@link String} literal</li>
+     *                 </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
+     */
+    public static SimpleExpression trim(SQLs.TrimPosition position, Object remstr, SQLs.WordFrom from, Object str) {
+        FuncExpUtils.assertTrimPosition(position);
+        FuncExpUtils.assertTextExp(remstr);
+        FuncExpUtils.assertWord(from, SQLs.FROM);
+        FuncExpUtils.assertTextExp(str);
+
+        return LiteralFunctions.compositeFunc("TRIM", Arrays.asList(position, remstr, from, str), StringType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str nullable parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link String} literal</li>
+     *            </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str)</a>
      */
-    public static SimpleExpression weightString(final Expression str) {
-        return FunctionUtils.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
+    public static SimpleExpression weightString(Object str) {
+        FuncExpUtils.assertTextExp(str);
+        return LiteralFunctions.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
-     * *
+     * <p>The {@link MappingType} of function return type:{@link StringType}
      *
-     * @param str  nullable parameter or {@link Expression}
-     * @param type non-null {@link  MySQLCastType#CHAR} or {@link  MySQLCastType#BINARY}
-     * @param n    non-null parameter or {@link Expression}
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param str  non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link String} literal</li>
+     *             </ul>
+     * @param as   see {@link SQLs#AS}
+     * @param type non-null,one of following :
+     *             <ul>
+     *                  <li>{@link io.army.sqltype.MySQLType#CHAR}</li>
+     *                  <li>{@link io.army.sqltype.MySQLType#BINARY}</li>
+     *                  <li>{@link TypeDef}, see {@link TypeDefs#space(DataType, int)}</li>
+     *             </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
      */
-    public static SimpleExpression weightString(final Expression str, final SQLs.WordAs as
-            , final MySQLCastType type, final Expression n) {
-        assert as == SQLs.AS;
-        final String name = "WEIGHT_STRING";
-        switch (type) {
-            case CHAR:
-            case BINARY:
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, type);
-        }
-        if (!(str instanceof ArmyExpression)) {
-            throw CriteriaUtils.funcArgError(name, str);
-        } else if (!(n instanceof ArmyExpression)) {
-            throw CriteriaUtils.funcArgError(name, n);
-        }
-        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE
-                , str, as, type, Functions.FuncWord.LEFT_PAREN, n, Functions.FuncWord.RIGHT_PAREN);
+    public static SimpleExpression weightString(Object str, SQLs.WordAs as, TypeDef type) {
+        _checkWeightStringArgs(str, as, type);
+        return LiteralFunctions.compositeFunc("WEIGHT_STRING", Arrays.asList(str, as, type), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>The {@link MappingType} of function return type:{@link StringType}
+     *
+     * @param str   non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link String} literal</li>
+     *              </ul>
+     * @param as    see {@link SQLs#AS}
+     * @param type  non-null,one of following :
+     *              <ul>
+     *                   <li>{@link io.army.sqltype.MySQLType#CHAR}</li>
+     *                   <li>{@link io.army.sqltype.MySQLType#BINARY}</li>
+     *                   <li>{@link TypeDef}, see {@link TypeDefs#space(DataType, int)}</li>
+     *              </ul>
+     * @param flags non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li> literal</li>
+     *              </ul>
+     * @throws CriteriaException throw when argument error
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
+     */
+    public static SimpleExpression weightString(Object str, SQLs.WordAs as, TypeDef type, Object flags) {
+        _checkWeightStringArgs(str, as, type);
+        return LiteralFunctions.compositeFunc("WEIGHT_STRING", Arrays.asList(str, as, type, flags), StringType.INSTANCE);
     }
 
 
@@ -1572,6 +1688,38 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
 
         FuncExpUtils.addAllTextExp(argList, "str", strVariadic);
         return LiteralFunctions.multiArgFunc(name, argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * @see #weightString(Object, SQLs.WordAs, TypeDef)
+     * @see #weightString(Object, SQLs.WordAs, TypeDef, Object)
+     */
+    private static void _checkWeightStringArgs(Object str, SQLs.WordAs as, TypeDef type) {
+        FuncExpUtils.assertTextExp(str);
+        FuncExpUtils.assertWord(as, SQLs.AS);
+
+        final DataType dataType;
+        if (type instanceof MySQLType) {
+            dataType = (MySQLType) type;
+        } else if (type instanceof TypeDefs.TypeDefLength) {
+            dataType = ((TypeDefs) type).dataType;
+        } else {
+            throw CriteriaUtils.unknownWords(type);
+        }
+
+        if (!(dataType instanceof MySQLType)) {
+            throw CriteriaUtils.unknownWords(type);
+        }
+
+        switch ((MySQLType) dataType) {
+            case CHAR:
+            case BINARY:
+                break;
+            default:
+                throw CriteriaUtils.unknownWords(type);
+        }
+
     }
 
 

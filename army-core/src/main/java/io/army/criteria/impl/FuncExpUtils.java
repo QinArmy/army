@@ -1,9 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
+import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -57,6 +59,26 @@ abstract class FuncExpUtils {
     static void assertIntExp(final Object intValue) {
         if (!(intValue instanceof Integer || intValue instanceof Expression)) {
             throw CriteriaUtils.mustExpressionOrType("integer value", Integer.class);
+        }
+    }
+
+    static void assertWord(Object param, Object word) {
+        if (param != word) {
+            throw CriteriaUtils.unknownWords(param);
+        }
+    }
+
+    static void assertTrimPosition(SQLs.TrimPosition position) {
+        if (!(position instanceof SqlWords.WordTrimPosition)) {
+            throw CriteriaUtils.unknownWords(position);
+        }
+    }
+
+    static void assertIntOrLongExp(final Object value) {
+        if (!(value instanceof Integer || value instanceof Long || value instanceof Expression)) {
+            String m = String.format("value must be %s or %s or %s", Expression.class.getName(),
+                    Integer.class.getName(), Long.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
     }
 
@@ -169,6 +191,13 @@ abstract class FuncExpUtils {
             } else if (value instanceof SQLIdentifier) {
                 sqlBuilder.append(_Constant.SPACE);
                 context.identifier(((SQLIdentifier) value).render(), sqlBuilder);
+            } else if (value instanceof TypeDef) {
+                if (value instanceof SqlType) {
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(((SqlType) value).typeName());
+                } else {
+                    ((_SelfDescribed) value).appendSql(sqlBuilder, context);
+                }
             } else {
                 final MappingType type;
                 type = _MappingFactory.getDefaultIfMatch(value.getClass());
