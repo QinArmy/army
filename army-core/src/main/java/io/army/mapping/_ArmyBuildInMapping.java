@@ -1,7 +1,6 @@
 package io.army.mapping;
 
 
-import java.lang.ref.SoftReference;
 
 public abstract class _ArmyBuildInMapping extends MappingType {
 
@@ -17,14 +16,6 @@ public abstract class _ArmyBuildInMapping extends MappingType {
 
     }
 
-
-    protected static final class InstanceRef<T> extends SoftReference<T> {
-
-        public InstanceRef(T referent) {
-            super(referent);
-        }
-
-    }//InstanceRef
 
 
 }

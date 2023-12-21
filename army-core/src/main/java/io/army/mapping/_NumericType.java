@@ -1,12 +1,6 @@
 package io.army.mapping;
 
 
-import io.army.sqltype.DataType;
-import io.army.struct.CodeEnum;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 /**
  * <p>This class is base class class of below:
  *     <ul>
@@ -24,36 +18,6 @@ import java.math.BigInteger;
 abstract class _NumericType extends _ArmyNoInjectionMapping {
 
 
-    @Override
-    public final <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        final MappingType type;
-        if (targetType == String.class) {
-            type = StringType.INSTANCE;
-        } else if (targetType == Integer.class) {
-            type = IntegerType.INSTANCE;
-        } else if (targetType == Long.class) {
-            type = LongType.INSTANCE;
-        } else if (targetType == BigDecimal.class) {
-            type = BigDecimalType.INSTANCE;
-        } else if (targetType == BigInteger.class) {
-            type = BigIntegerType.INSTANCE;
-        } else if (targetType == DoubleType.class) {
-            type = DoubleType.INSTANCE;
-        } else if (targetType == Float.class) {
-            type = FloatType.INSTANCE;
-        } else if (targetType == Short.class) {
-            type = ShortType.INSTANCE;
-        } else if (targetType == Byte.class) {
-            type = ByteType.INSTANCE;
-        } else if (this instanceof IntegerType
-                && Enum.class.isAssignableFrom(targetType)
-                && CodeEnum.class.isAssignableFrom(targetType)) {
-            type = CodeEnumType.from(targetType);
-        } else {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return type;
-    }
 
     /**
      * <p>This class is base class class of below:

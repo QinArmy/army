@@ -143,10 +143,15 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                 } else switch (armyType) {
                     case INTEGER:
                     case BIGINT: { // compute result
-                        if (!CodeEnum.class.isAssignableFrom(targetType)) {
+                        if (DayOfWeek.class.isAssignableFrom(targetType)) {
+                            type = DayOfWeekType.DEFAULT;
+                        } else if (Month.class.isAssignableFrom(targetType)) {
+                            type = MonthType.DEFAULT;
+                        } else if (CodeEnum.class.isAssignableFrom(targetType)) {
+                            type = CodeEnumType.from(targetType);
+                        } else {
                             throw noMatchCompatibleMapping(this, targetType);
                         }
-                        type = CodeEnumType.from(targetType);
                     }
                     break;
                     default:
@@ -237,6 +242,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                 } else if (Enum.class.isAssignableFrom(targetType)) {
                     if (TextEnum.class.isAssignableFrom(targetType)) {
                         type = TextEnumType.from(targetType);
+                    } else if (DayOfWeek.class.isAssignableFrom(targetType)) {
+                        type = DayOfWeekType.DEFAULT;
+                    } else if (Month.class.isAssignableFrom(targetType)) {
+                        type = MonthType.DEFAULT;
                     } else {
                         type = NameEnumType.from(targetType);
                     }
@@ -252,6 +261,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                     throw noMatchCompatibleMapping(this, targetType);
                 } else if (TextEnumType.class.isAssignableFrom(targetType)) {
                     type = TextEnumType.from(targetType);
+                } else if (DayOfWeek.class.isAssignableFrom(targetType)) {
+                    type = DayOfWeekType.DEFAULT;
+                } else if (Month.class.isAssignableFrom(targetType)) {
+                    type = MonthType.DEFAULT;
                 } else {
                     type = NameEnumType.from(targetType);
                 }

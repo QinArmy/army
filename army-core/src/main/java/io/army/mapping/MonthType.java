@@ -107,30 +107,30 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
     }
 
 
-    static Month toMoth(final MappingType type, final DataType dataType, final Object nonNull,
+    static Month toMoth(final MappingType type, final DataType dataType, final Object source,
                         final ErrorHandler errorHandler) {
         final Month value;
-        if (nonNull instanceof Month) {
-            value = (Month) nonNull;
-        } else if (nonNull instanceof LocalDate
-                || nonNull instanceof YearMonth
-                || nonNull instanceof MonthDay
-                || nonNull instanceof LocalDateTime) {
-            value = Month.from((TemporalAccessor) nonNull);
-        } else if (nonNull instanceof OffsetDateTime) {
-            value = Month.from(((OffsetDateTime) nonNull));
-        } else if (nonNull instanceof ZonedDateTime) {
-            value = Month.from(((ZonedDateTime) nonNull));
-        } else if (!(nonNull instanceof String) || ((String) nonNull).length() == 0) {
-            throw errorHandler.apply(type, dataType, nonNull, null);
-        } else if (Character.isLetter(((String) nonNull).charAt(0))) {
+        if (source instanceof Month) {
+            value = (Month) source;
+        } else if (source instanceof LocalDate
+                || source instanceof YearMonth
+                || source instanceof MonthDay
+                || source instanceof LocalDateTime) {
+            value = Month.from((TemporalAccessor) source);
+        } else if (source instanceof OffsetDateTime) {
+            value = Month.from(((OffsetDateTime) source));
+        } else if (source instanceof ZonedDateTime) {
+            value = Month.from(((ZonedDateTime) source));
+        } else if (!(source instanceof String) || ((String) source).length() == 0) {
+            throw errorHandler.apply(type, dataType, source, null);
+        } else if (Character.isLetter(((String) source).charAt(0))) {
             try {
-                value = Month.valueOf((String) nonNull);
+                value = Month.valueOf((String) source);
             } catch (IllegalArgumentException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }

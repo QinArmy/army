@@ -307,5 +307,66 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
     }
 
+    /**
+     * @see MySQLs#dateAdd(Object, WordInterval, Object, MySQLTimeUnit)
+     * @see MySQLs#dateSub(Object, WordInterval, Object, MySQLTimeUnit)
+     */
+    @Test
+    public void dateAddFunc(final ReactiveLocalSession session) {
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(dateAdd("2018-05-01", INTERVAL, 1, MySQLTimeUnit.DAY).as("exp1"))
+                .comma(dateAdd(LocalDate.now(), INTERVAL, 1, MySQLTimeUnit.DAY).as("exp2"))
+
+                .comma(dateAdd("2020-12-31 23:59:59", INTERVAL, 1, MySQLTimeUnit.DAY).as("exp3"))
+                .comma(dateAdd(LocalDateTime.now(), INTERVAL, 1, MySQLTimeUnit.DAY).as("exp4"))
+
+                .comma(dateSub("2020-12-31 23:59:59+10:00", INTERVAL, 1, MySQLTimeUnit.DAY).as("exp5"))
+                .comma(dateSub(OffsetDateTime.now(), INTERVAL, 1, MySQLTimeUnit.DAY).as("exp6"))
+
+                .asQuery();
+
+        session.queryObject(stmt, RowMaps::hashMap)
+                .blockLast();
+
+    }
+
+    @Test
+    public void dayNameFunc(final ReactiveLocalSession session) {
+        final LocalDate today = LocalDate.now();
+        final DayOfWeek week = DayOfWeek.from(today);
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(dayName(today).as("dayName"))
+                .asQuery();
+
+        final DayOfWeek row;
+        row = session.queryOne(stmt, DayOfWeek.class)
+                .block();
+
+        Assert.assertEquals(row, week);
+
+    }
+
+    @Test
+    public void dayOfWeekFunc(final ReactiveLocalSession session) {
+        final LocalDate today = LocalDate.now();
+        final DayOfWeek week = DayOfWeek.from(today);
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(dayOfWeek(today).as("dayCode"))
+                .asQuery();
+
+        final DayOfWeek row;
+        row = session.queryOne(stmt, DayOfWeek.class)
+                .block();
+
+        Assert.assertEquals(row, week);
+
+    }
+
 
 }

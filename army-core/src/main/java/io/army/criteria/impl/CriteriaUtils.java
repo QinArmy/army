@@ -751,6 +751,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
+    static CriteriaException funcArgExpError() {
+        return ContextStack.clearStackAndCriteriaError("expr error");
+    }
+
     static RuntimeException funcArgError(String funcName, @Nullable Object errorArg) {
         if (errorArg == null) {
             return ContextStack.clearStackAndNullPointer();

@@ -5,13 +5,13 @@ import io.army.mapping.array.DayOfWeekArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
+import io.army.util._TimeUtils;
 
 import javax.annotation.Nullable;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
+import java.time.*;
 import java.time.temporal.TemporalAccessor;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -50,7 +50,7 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 
     @Override
     public Class<?> javaType() {
-        return DayOfWeekType.class;
+        return DayOfWeek.class;
     }
 
 
@@ -97,29 +97,94 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
         return toDayOfWeek(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
-    private static DayOfWeek toDayOfWeek(final MappingType type, final DataType dataType, final Object nonNull,
+
+    private static DayOfWeek toDayOfWeek(final MappingType type, final DataType dataType, final Object source,
                                          final ErrorHandler errorHandler) {
         final DayOfWeek value;
-        if (nonNull instanceof DayOfWeek) {
-            value = (DayOfWeek) nonNull;
-        } else if (nonNull instanceof LocalDate
-                || nonNull instanceof LocalDateTime) {
-            value = DayOfWeek.from((TemporalAccessor) nonNull);
-        } else if (!(nonNull instanceof String) || ((String) nonNull).length() == 0) {
-            throw errorHandler.apply(type, dataType, nonNull, null);
-        } else if (((String) nonNull).indexOf('-') < 0) {
+        final String sourceStr;
+        final int length;
+        final char ch;
+
+        if (source instanceof DayOfWeek) {
+            value = (DayOfWeek) source;
+        } else if (source instanceof LocalDate
+                || source instanceof LocalDateTime
+                || source instanceof OffsetDateTime
+                || source instanceof ZonedDateTime) {
+            value = DayOfWeek.from((TemporalAccessor) source);
+        } else if (source instanceof Integer) {
+            value = weekFromInt(type, dataType, (Integer) source, errorHandler);
+        } else if (source instanceof Long) {
+            final long v = (Long) source;
+            if (v < 1 || v > 7) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+            value = weekFromInt(type, dataType, (int) v, errorHandler);
+        } else if (!(source instanceof String) || (length = (sourceStr = (String) source).length()) == 0) {
+            throw errorHandler.apply(type, dataType, source, null);
+        } else if (sourceStr.indexOf('-') < 0) {
             try {
-                value = DayOfWeek.valueOf((String) nonNull);
+                // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayname
+                value = DayOfWeek.valueOf(sourceStr.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
         } else {
             try {
-                value = DayOfWeek.from(LocalDate.parse((String) nonNull));
-            } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                if (length > 24 && ((ch = sourceStr.charAt(length - 6)) == '-' || ch == '+')) {
+                    value = DayOfWeek.from(OffsetDateTime.parse(sourceStr, _TimeUtils.OFFSET_DATETIME_FORMATTER_6));
+                } else if (sourceStr.lastIndexOf(':') < 0) {
+                    value = DayOfWeek.from(LocalDate.parse(sourceStr));
+                } else {
+                    value = DayOfWeek.from(LocalDateTime.parse(sourceStr, _TimeUtils.DATETIME_FORMATTER_6));
+                }
+            } catch (DateTimeException e) {
+                throw errorHandler.apply(type, dataType, source, e);
             }
         }
+        return value;
+    }
+
+
+    private static DayOfWeek weekFromInt(final MappingType type, final DataType dataType, final int source,
+                                         final ErrorHandler errorHandler) {
+        if (errorHandler != ACCESS_ERROR_HANDLER) {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+
+        final DayOfWeek value;
+        if (dataType == MySQLType.INT || dataType == MySQLType.BIGINT) {
+            // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofweek
+            switch (source) {
+                case 1:
+                    value = DayOfWeek.SUNDAY;
+                    break;
+                case 2:
+                    value = DayOfWeek.MONDAY;
+                    break;
+                case 3:
+                    value = DayOfWeek.TUESDAY;
+                    break;
+                case 4:
+                    value = DayOfWeek.WEDNESDAY;
+                    break;
+                case 5:
+                    value = DayOfWeek.THURSDAY;
+                    break;
+                case 6:
+                    value = DayOfWeek.FRIDAY;
+                    break;
+                case 7:
+                    value = DayOfWeek.SATURDAY;
+                    break;
+                default:
+                    throw errorHandler.apply(type, dataType, source, null);
+
+            }
+        } else {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+
         return value;
     }
 

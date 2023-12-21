@@ -125,7 +125,7 @@ abstract class FuncExpUtils {
 
             final char ch;
             final Temporal temporal;
-            if (length > 6 && ((ch = str.charAt(length - 6)) == '-' || ch == '+')) {
+            if (length > 24 && ((ch = str.charAt(length - 6)) == '-' || ch == '+')) {
                 temporal = OffsetDateTime.parse(str, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
             } else {
                 temporal = LocalDateTime.parse((String) date, _TimeUtils.DATETIME_FORMATTER_6);
@@ -248,7 +248,7 @@ abstract class FuncExpUtils {
             final MappingType type;
             type = _MappingFactory.getDefaultIfMatch(literal.getClass());
             if (type == null) {
-                throw CriteriaUtils.clearStackAndNonDefaultType(literal);
+                throw _Exceptions.notFoundMappingType(literal);
             }
             context.appendLiteral(type, literal);
         }
@@ -295,16 +295,21 @@ abstract class FuncExpUtils {
                 context.identifier(((SQLIdentifier) value).render(), sqlBuilder);
             } else if (value instanceof TypeDef) {
                 if (value instanceof SqlType) {
+                    if (!value.getClass().getPackage().getName().equals("io.army.sqltype")) {
+                        throw new CriteriaException(String.format("Illegal SqlType %s", value));
+                    }
                     sqlBuilder.append(_Constant.SPACE)
                             .append(((SqlType) value).typeName());
-                } else {
+                } else if (value instanceof TypeDefs) {
                     ((_SelfDescribed) value).appendSql(sqlBuilder, context);
+                } else {
+                    throw new CriteriaException(String.format("Illegal TypeDef %s", value));
                 }
             } else {
                 final MappingType type;
                 type = _MappingFactory.getDefaultIfMatch(value.getClass());
                 if (type == null) {
-                    throw CriteriaUtils.clearStackAndNonDefaultType(value);
+                    throw _Exceptions.notFoundMappingType(value);
                 }
                 context.appendLiteral(type, value);
             }
