@@ -13,7 +13,7 @@ import io.army.meta.DatabaseObject;
  *
  * @since 0.6.0
  */
-public interface SQLElement {
+public interface SQLElement extends Item {
 
 
 }

@@ -139,6 +139,8 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordUsing USING = SqlWords.KeyWordUsing.USING;
 
+    public static final SQLWords COMMA = SqlWords.FuncWord.COMMA;
+
 
     /**
      * package field

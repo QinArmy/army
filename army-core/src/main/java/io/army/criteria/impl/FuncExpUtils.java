@@ -8,10 +8,11 @@ import io.army.mapping.*;
 import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 
 import javax.annotation.Nullable;
-import java.time.DateTimeException;
-import java.time.LocalDate;
+import java.time.*;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +66,85 @@ abstract class FuncExpUtils {
 
     }
 
+    static Object localTimeLiteralExp(final Object date) {
+        if (date instanceof Expression || date instanceof LocalTime) {
+            return date;
+        }
+
+        if (!(date instanceof String)) {
+            String m = String.format("value must be %s or %s or %s", Expression.class.getName(),
+                    LocalTime.class.getName(), String.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+        try {
+            return LocalTime.parse((String) date, _TimeUtils.TIME_FORMATTER_6);
+        } catch (DateTimeException e) {
+            throw ContextStack.clearStackAndCause(e, "format error");
+        }
+
+    }
+
+    static Object localDateTimeLiteralExp(final Object date) {
+        if (date instanceof Expression || date instanceof LocalDateTime) {
+            return date;
+        }
+
+        if (!(date instanceof String)) {
+            String m = String.format("value must be %s or %s or %s", Expression.class.getName(),
+                    LocalDateTime.class.getName(), String.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+        try {
+            return LocalDateTime.parse((String) date, _TimeUtils.DATETIME_FORMATTER_6);
+        } catch (DateTimeException e) {
+            throw ContextStack.clearStackAndCause(e, "format error");
+        }
+
+    }
+
+    static Object localOffsetDateTimeLiteralExp(final Object date) {
+        if (date instanceof Expression
+                || date instanceof LocalDateTime
+                || date instanceof OffsetDateTime
+                || date instanceof ZonedDateTime) {
+            return date;
+        }
+
+        if (!(date instanceof String)) {
+            String m = String.format("value must be %s or %s or %s", Expression.class.getName(),
+                    LocalDateTime.class.getName(), String.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+        try {
+            final String str = (String) date;
+            final int length;
+            length = str.length();
+
+            final char ch;
+            final Temporal temporal;
+            if (length > 6 && ((ch = str.charAt(length - 6)) == '-' || ch == '+')) {
+                temporal = OffsetDateTime.parse(str, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
+            } else {
+                temporal = LocalDateTime.parse((String) date, _TimeUtils.DATETIME_FORMATTER_6);
+            }
+            return temporal;
+
+        } catch (DateTimeException e) {
+            throw ContextStack.clearStackAndCause(e, "format error");
+        }
+
+    }
+
+
+    static void assertLiteralExp(final Object exp) {
+        if (!(exp instanceof Expression || !(exp instanceof Item))) {
+            String m = String.format("argument must be %s or literal.", Expression.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+    }
 
     static void assertPathExp(final Object path) {
         if (!(path instanceof String || path instanceof Expression)) {
@@ -248,6 +328,13 @@ abstract class FuncExpUtils {
             } else if (value instanceof SQLIdentifier) {
                 builder.append(_Constant.SPACE)
                         .append(((SQLIdentifier) value).render());
+            } else if (value instanceof TypeDef) {
+                if (value instanceof SqlType) {
+                    builder.append(_Constant.SPACE)
+                            .append(((SqlType) value).typeName());
+                } else {
+                    builder.append(value);
+                }
             } else {
                 builder.append(value);
             }

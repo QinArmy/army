@@ -102,11 +102,6 @@ abstract class Functions {
 
     }
 
-    /**
-     * package field
-     */
-    static final SQLWords COMMA = SqlWords.FuncWord.COMMA;
-
 
     /**
      * <p>Create searched case function.

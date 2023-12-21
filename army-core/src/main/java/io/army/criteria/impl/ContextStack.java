@@ -208,6 +208,15 @@ abstract class ContextStack {
         return new CriteriaException(msg);
     }
 
+    static CriteriaException clearStackAndCause(Exception cause, String msg) {
+        final Stack stack;
+        if ((stack = HOLDER.get()) != null) {
+            HOLDER.remove();
+            stack.clear();
+        }
+        return new CriteriaException(msg, cause);
+    }
+
 
     static RuntimeException clearStackAndNonArmyItem(final @Nullable Item exp) {
         final Stack stack;

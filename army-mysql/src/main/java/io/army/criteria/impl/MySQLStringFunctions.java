@@ -36,9 +36,11 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *                 <li>{@link Expression} instance</li>
      *                 <li>literal</li>
      *            </ul>
+     * @throws CriteriaException throw when argument
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ascii">ASCII(str)</a>
      */
     public static SimpleExpression ascii(final Object str) {
+        FuncExpUtils.assertLiteralExp(str);
         return LiteralFunctions.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
     }
 
@@ -50,9 +52,11 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *               <li>{@link Expression} instance</li>
      *               <li>literal</li>
      *          </ul>
+     * @throws CriteriaException throw when argument
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bin">BIN(n)</a>
      */
     public static SimpleExpression bin(final Object n) {
+        FuncExpUtils.assertLiteralExp(n);
         return LiteralFunctions.oneArgFunc("BIN", n, StringType.INSTANCE);
     }
 
@@ -64,9 +68,11 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *                 <li>{@link Expression} instance</li>
      *                 <li>literal</li>
      *            </ul>
+     * @throws CriteriaException throw when argument
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
      */
     public static SimpleExpression binLength(final Object str) {
+        FuncExpUtils.assertLiteralExp(str);
         return LiteralFunctions.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
     }
 
@@ -78,9 +84,11 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *               <li>{@link Expression} instance</li>
      *               <li>literal</li>
      *          </ul>
+     * @throws CriteriaException throw when argument
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
     public static SimpleExpression charFunc(final Object n) {
+        FuncExpUtils.assertLiteralExp(n);
         return LiteralFunctions.oneArgFunc("CHAR", n, StringType.INSTANCE);
     }
 

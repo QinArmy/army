@@ -3,6 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SQLCommand;
 import io.army.criteria.mysql.*;
+import io.army.mapping.LocalDateTimeType;
+import io.army.mapping.LocalDateType;
+import io.army.mapping.LocalTimeType;
+import io.army.mapping.MappingType;
 
 public abstract class MySQLs extends MySQLSyntax {
 
@@ -36,6 +40,31 @@ public abstract class MySQLs extends MySQLSyntax {
     public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
     public static final SQLs.WordError ERROR = SqlWords.KeyWordError.ERROR;
     public static final WordsAtTimeZone AT_TIME_ZONE = MySQLWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
+
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link  LocalDateType}
+     *
+     * @see MySQLs#currentDate()
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
+     */
+    public static final SimpleExpression CURRENT_DATE = LiteralFunctions.noParensFunc("CURRENT_DATE", LocalDateType.INSTANCE);
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link  LocalTimeType}
+     *
+     * @see MySQLs#currentTime()
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_TIME()</a>
+     */
+    public static final SimpleExpression CURRENT_TIME = LiteralFunctions.noParensFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link  LocalDateTimeType}
+     *
+     * @see MySQLs#currentTimestamp()
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_TIME()</a>
+     */
+    public static final SimpleExpression CURRENT_TIMESTAMP = LiteralFunctions.noParensFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
 
 
     /**

@@ -9,7 +9,9 @@ import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLType;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 
+import java.time.*;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -49,151 +51,251 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *             </ul>
      * @param unit non-null
      * @throws CriteriaException throw when argument error
-     * @see #addDate(Expression, Expression)
+     * @see #addDate(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,INTERVAL expr unit)</a>
      */
     public static SimpleExpression addDate(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
-        date = FuncExpUtils.localDateLiteralExp(date);
-
-        FuncExpUtils.assertWord(interval, SQLs.INTERVAL);
-        FuncExpUtils.assertIntExp(expr);
-
-        final MappingType returnType;
-        if (unit.isTimePart()) {
-            returnType = LocalDateTimeType.INSTANCE;
-        } else {
-            returnType = LocalDateType.INSTANCE;
-        }
-        return LiteralFunctions.compositeFunc("ADDDATE", Arrays.asList(date, COMMA, interval, expr, unit), returnType);
+        return _dateIntervalFunc("ADDDATE", date, interval, expr, unit);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link LocalDateType}
+     * <p>The {@link MappingType} of function return type:{@link LocalDateType}
      *
-     * @param date nullable parameter or {@link Expression}
-     * @param days nullable parameter or {@link Expression}
+     * @param date non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link java.time.LocalDate} instance</li>
+     *                  <li>date {@link String} literal,eg : {@code "2008-01-02"}</li>
+     *             </ul>
+     * @param days non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link Integer} literal</li>
+     *             </ul>
+     * @throws CriteriaException throw when argument error
      * @see #addDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,days)</a>
      */
-    public static SimpleExpression addDate(final Expression date, final Expression days) {
-        return FunctionUtils.twoArgFunc("ADDDATE", date, days, LocalDateType.INSTANCE);
+    public static SimpleExpression addDate(Object date, final Object days) {
+        date = FuncExpUtils.localDateLiteralExp(date);
+        FuncExpUtils.assertIntExp(days);
+        return LiteralFunctions.twoArgFunc("ADDDATE", date, days, LocalDateType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
+     * <p>The {@link MappingType} of function return type:
      * <ul>
      *     <li>If unit is time part:{@link  LocalDateTimeType}</li>
      *     <li>else :{@link  LocalDateType}</li>
      * </ul>
      *
-     * @param date nullable parameter or {@link Expression}
-     * @param expr nullable parameter or {@link Expression}
+     * @param date non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link java.time.LocalDate} instance</li>
+     *                  <li>date {@link String} literal,eg : {@code "2008-01-02"}</li>
+     *             </ul>
+     * @param expr non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link Integer} literal</li>
+     *             </ul>
      * @param unit non-null
-     *             @see #subDate(Expression, Expression)
+     * @see #subDate(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(date,INTERVAL expr unit)</a>
      */
-    public static SimpleExpression subDate(final Expression date, SQLs.WordInterval interval, final Expression expr
-            , final MySQLTimeUnit unit) {
+    public static SimpleExpression subDate(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
         return _dateIntervalFunc("SUBDATE", date, interval, expr, unit);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link LocalDateType}
+     * <p>The {@link MappingType} of function return type:{@link LocalDateType}
      *
-     * @param date nullable parameter or {@link Expression}
-     * @param days nullable parameter or {@link Expression}
-     * @see #subDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     * @param date non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link java.time.LocalDate} instance</li>
+     *                  <li>date {@link String} literal,eg : {@code "2008-01-02"}</li>
+     *             </ul>
+     * @param days non-null, one of following :
+     *             <ul>
+     *                  <li>{@link Expression} instance</li>
+     *                  <li>{@link Integer} literal</li>
+     *             </ul>
+     * @throws CriteriaException throw when argument error
+     * @see #subDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(expr,days)</a>
      */
-    public static SimpleExpression subDate(final Expression date, final Expression days) {
-        return FunctionUtils.twoArgFunc("SUBDATE", date, days, LocalDateType.INSTANCE);
+    public static SimpleExpression subDate(Object date, final Object days) {
+        date = FuncExpUtils.localDateLiteralExp(date);
+        FuncExpUtils.assertIntExp(days);
+        return LiteralFunctions.twoArgFunc("SUBDATE", date, days, LocalDateType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link  MappingType} of expr1.
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>expr1 is {@link Expression} : return the {@link  MappingType} of expr1.</li>
+     *     <li>expr1 is {@link LocalDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is {@link LocalTime} : return {@link  LocalTimeType} </li>
+     *     <li>expr1 is {@link OffsetDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is {@link ZonedDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is datetime literal : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is time literal : return {@link  LocalTimeType} </li>
+     *     <li>expr1 is datetime with zone literal: return {@link  LocalDateTimeType} </li>
+     * </ul>
      *
+     * @param expr1 non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link java.time.LocalTime} instance</li>
+     *                   <li>{@link java.time.LocalDateTime} instance</li>
+     *                   <li>{@link java.time.OffsetDateTime} instance,as of MySQL 8.0.19</li>
+     *                   <li>{@link java.time.ZonedDateTime} instance,as of MySQL 8.0.19</li>
+     *                   <li>{@link String} literal,eg : {@code "01:00:00"} , {@code "2007-12-31 23:59:59"}, {@code "2020-01-01 10:10:10+05:30"} (as of MySQL 8.0.19) </li>
+     *              </ul>
+     * @param expr2 non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link java.time.LocalTime} instance</li>
+     *                   <li>{@link String} literal,eg : {@code "01:00:00"}</li>
+     *              </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_addtime">ADDTIME(expr1,expr2)</a>
      */
-    public static SimpleExpression addTime(final Expression expr1, final Expression expr2) {
-        return FunctionUtils.twoArgFunc("ADDTIME", expr1, expr2, expr1.typeMeta());
+    public static SimpleExpression addTime(Object expr1, final Object expr2) {
+        return _addOrSubTime("ADDTIME", expr1, expr2);
     }
 
+
     /**
-     * <p>
-     * The {@link MappingType} of function return type:the {@link  MappingType} of expr1.
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>expr1 is {@link Expression} : return the {@link  MappingType} of expr1.</li>
+     *     <li>expr1 is {@link LocalDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is {@link LocalTime} : return {@link  LocalTimeType} </li>
+     *     <li>expr1 is {@link OffsetDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is {@link ZonedDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is datetime literal : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is time literal : return {@link  LocalTimeType} </li>
+     *     <li>expr1 is datetime with zone literal: return {@link  LocalDateTimeType} </li>
+     * </ul>
      *
+     * @param expr1 non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link java.time.LocalTime} instance</li>
+     *                   <li>{@link java.time.LocalDateTime} instance</li>
+     *                   <li>{@link java.time.OffsetDateTime} instance,as of MySQL 8.0.19</li>
+     *                   <li>{@link java.time.ZonedDateTime} instance,as of MySQL 8.0.19</li>
+     *                   <li>{@link String} literal,eg : {@code "01:00:00"} , {@code "2007-12-31 23:59:59"}, {@code "2020-01-01 10:10:10+05:30"} (as of MySQL 8.0.19) </li>
+     *              </ul>
+     * @param expr2 non-null, one of following :
+     *              <ul>
+     *                   <li>{@link Expression} instance</li>
+     *                   <li>{@link java.time.LocalTime} instance</li>
+     *                   <li>{@link String} literal,eg : {@code "01:00:00"}</li>
+     *              </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subtime">SUBTIME(expr1,expr2)</a>
      */
-    public static SimpleExpression subTime(final Expression expr1, final Expression expr2) {
-        return FunctionUtils.twoArgFunc("SUBTIME", expr1, expr2, expr1.typeMeta());
+    public static SimpleExpression subTime(Object expr1, Object expr2) {
+        return _addOrSubTime("SUBTIME", expr1, expr2);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
+     * <p>The {@link MappingType} of function return type: {@link  LocalDateTimeType}
      *
+     * @param dt     non-null, one of following :
+     *               <ul>
+     *                    <li>{@link Expression} instance</li>
+     *                    <li>{@link java.time.LocalDateTime} instance</li>
+     *                   <li>{@link java.time.OffsetDateTime} instance,as of MySQL 8.0.19</li>
+     *                   <li>{@link java.time.ZonedDateTime} instance,as of MySQL 8.0.19</li>
+     *                   <li>{@link String} literal,eg : {@code "01:00:00"} , {@code "2007-12-31 23:59:59"}, {@code "2020-01-01 10:10:10+05:30"} (as of MySQL 8.0.19) </li>
+     *               </ul>
+     * @param fromTz non-null, one of following :
+     *               <ul>
+     *                    <li>{@link Expression} instance</li>
+     *                    <li>{@link String} literal</li>
+     *               </ul>
+     * @param toTz   non-null, one of following :
+     *               <ul>
+     *                    <li>{@link Expression} instance</li>
+     *                    <li>{@link String} literal</li>
+     *               </ul>
+     * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_convert-tz">CONVERT_TZ(dt,from_tz,to_tz)</a>
      */
-    public static SimpleExpression convertTz(Expression dt, Expression fromTz, Expression toTz) {
-        return FunctionUtils.threeArgFunc("CONVERT_TZ", dt, fromTz, toTz, LocalDateTimeType.INSTANCE);
+    public static SimpleExpression convertTz(Object dt, final Object fromTz, final Object toTz) {
+        dt = FuncExpUtils.localOffsetDateTimeLiteralExp(dt);
+        FuncExpUtils.assertTextExp(fromTz);
+        FuncExpUtils.assertTextExp(toTz);
+        return LiteralFunctions.threeArgFunc("CONVERT_TZ", dt, fromTz, toTz, LocalDateTimeType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalDateType}
+     * <p>The {@link MappingType} of function return type: {@link  LocalDateType}
      *
+     * @see MySQLs#CURRENT_DATE
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
      */
     public static SimpleExpression currentDate() {
-        return FunctionUtils.zeroArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
+        return LiteralFunctions.zeroArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalTimeType}
+     * <p>The {@link MappingType} of function return type: {@link  LocalTimeType}
      *
+     * @see MySQLs#CURRENT_TIME
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME()</a>
      */
     public static SimpleExpression currentTime() {
-        return FunctionUtils.zeroArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
+        return LiteralFunctions.zeroArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalTimeType}
+     * <p>The {@link MappingType} of function return type: {@link  LocalTimeType}
      *
+     * @param fsp non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link Integer} literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME(fsp)</a>
      */
-    public static SimpleExpression currentTime(final Expression fsp) {
-        return FunctionUtils.oneArgFunc("CURRENT_TIME", fsp, LocalTimeType.INSTANCE);
+    public static SimpleExpression currentTime(final Object fsp) {
+        FuncExpUtils.assertIntExp(fsp);
+        return LiteralFunctions.oneArgFunc("CURRENT_TIME", fsp, LocalTimeType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
+     * <p>The {@link MappingType} of function return type: {@link  LocalDateTimeType}
      *
-     * @see #currentTimestamp(Expression)
+     * @see #currentTimestamp(Object)
+     * @see MySQLs#CURRENT_TIMESTAMP
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-timestamp">CURRENT_TIMESTAMP()</a>
      */
     public static SimpleExpression currentTimestamp() {
-        return FunctionUtils.zeroArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
+        return LiteralFunctions.zeroArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
      *
-     * @param fsp non-null parameter or {@link Expression}, fsp in [0,6]
+     * @param fsp non-null, one of following :
+     *            <ul>
+     *                 <li>{@link Expression} instance</li>
+     *                 <li>{@link Integer} literal</li>
+     *            </ul>
      * @see #currentTimestamp()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIMESTAMP(fsp)</a>
      */
-    public static SimpleExpression currentTimestamp(final Expression fsp) {
-        return FunctionUtils.oneArgFunc("CURRENT_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
+    public static SimpleExpression currentTimestamp(final Object fsp) {
+        FuncExpUtils.assertIntExp(fsp);
+        return LiteralFunctions.oneArgFunc("CURRENT_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
     }
 
 
@@ -1008,27 +1110,23 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
 
 
     /**
-     * @see #addDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
-     * @see #subDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     * @see #addDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
+     * @see #subDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      */
-    private static SimpleExpression _dateIntervalFunc(final String name, final Expression date
-            , final SQLs.WordInterval interval, final Expression expr, final MySQLTimeUnit unit) {
-        final TypeMeta returnType;
+    private static SimpleExpression _dateIntervalFunc(final String name, Object date, final SQLs.WordInterval interval,
+                                                      final Object expr, final MySQLTimeUnit unit) {
+        date = FuncExpUtils.localDateLiteralExp(date);
+
+        FuncExpUtils.assertWord(interval, SQLs.INTERVAL);
+        FuncExpUtils.assertIntExp(expr);
+
+        final MappingType returnType;
         if (unit.isTimePart()) {
             returnType = LocalDateTimeType.INSTANCE;
         } else {
             returnType = LocalDateType.INSTANCE;
         }
-
-        if (!(date instanceof ArmyExpression)) {
-            throw CriteriaUtils.funcArgError(name, date);
-        } else if (interval != SQLs.INTERVAL) {
-            throw CriteriaUtils.funcArgError(name, interval);
-        }
-        if (!(expr instanceof ArmyExpression)) {
-            throw CriteriaUtils.funcArgError(name, date);
-        }
-        return FunctionUtils.complexArgFunc(name, returnType, date, SqlWords.FuncWord.COMMA, interval, expr, unit);
+        return LiteralFunctions.compositeFunc(name, Arrays.asList(date, SQLs.COMMA, interval, expr, unit), returnType);
     }
 
 
@@ -1213,6 +1311,60 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             type = StringType.INSTANCE;
         }
         return type;
+    }
+
+
+    /**
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>expr1 is {@link Expression} : return the {@link  MappingType} of expr1.</li>
+     *     <li>expr1 is {@link LocalDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is {@link LocalTime} : return {@link  LocalTimeType} </li>
+     *     <li>expr1 is {@link OffsetDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is {@link ZonedDateTime} : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is datetime literal : return {@link  LocalDateTimeType} </li>
+     *     <li>expr1 is time literal : return {@link  LocalTimeType} </li>
+     *     <li>expr1 is datetime with zone literal: return {@link  LocalDateTimeType} </li>
+     * </ul>
+     *
+     * @see #addTime(Object, Object)
+     * @see #subTime(Object, Object)
+     */
+    private static SimpleExpression _addOrSubTime(final String name, Object expr1, final Object expr2) {
+        final TypeMeta returnType;
+        if (expr1 instanceof Expression) {
+            returnType = ((Expression) expr1).typeMeta();
+        } else if (expr1 instanceof String) {
+            final String str = (String) expr1;
+
+            try {
+                final int length;
+                final char ch;
+                if (str.indexOf('-') < 0) {
+                    expr1 = LocalTime.parse(str, _TimeUtils.TIME_FORMATTER_6);
+                    returnType = LocalTimeType.INSTANCE;
+                } else if ((length = str.length()) > 6 && ((ch = str.charAt(length - 6)) == '-' || ch == '+')) {
+                    expr1 = OffsetDateTime.parse(str, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
+                    returnType = OffsetDateTimeType.INSTANCE;
+                } else {
+                    expr1 = LocalDateTime.parse(str, _TimeUtils.DATETIME_FORMATTER_6);
+                    returnType = LocalDateTimeType.INSTANCE;
+                }
+            } catch (DateTimeException e) {
+                throw ContextStack.clearStackAndCause(e, "exp1 error");
+            }
+        } else if (expr1 instanceof LocalDateTime) {
+            returnType = LocalDateTimeType.INSTANCE;
+        } else if (expr1 instanceof LocalTime) {
+            returnType = LocalTimeType.INSTANCE;
+        } else if (expr1 instanceof OffsetDateTime) {
+            returnType = OffsetDateTimeType.INSTANCE;
+        } else if (expr1 instanceof ZonedDateTime) {
+            returnType = ZonedDateTimeType.INSTANCE;
+        } else {
+            throw ContextStack.clearStackAndCriteriaError("exp1 error");
+        }
+        return LiteralFunctions.twoArgFunc(name, expr1, FuncExpUtils.localTimeLiteralExp(expr2), returnType);
     }
 
 

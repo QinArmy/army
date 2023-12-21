@@ -150,6 +150,10 @@ abstract class LiteralFunctions {
         return new CaseFunction(caseValue);
     }
 
+    static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
+        return new NoParensFunctionExpression(name, returnType);
+    }
+
 
     private static final class ZeroArgFunc extends OperationExpression.SqlFunctionExpression
             implements FunctionUtils.NoArgFunction {
@@ -910,4 +914,26 @@ abstract class LiteralFunctions {
     }//CaseFunc
 
 
+    private static final class NoParensFunctionExpression extends OperationExpression.SqlFunctionExpression
+            implements FunctionUtils.NoParensFunction {
+
+        /**
+         * @see #noParensFunc(String, TypeMeta)
+         */
+        private NoParensFunctionExpression(String name, TypeMeta returnType) {
+            super(name, true, returnType); //no parens function must be build-in
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
+
+
+    }//NoParensFunction
 }

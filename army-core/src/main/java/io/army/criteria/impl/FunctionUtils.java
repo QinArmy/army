@@ -295,10 +295,6 @@ abstract class FunctionUtils {
         return new ZeroArgFunction(name, true, returnType);
     }
 
-    static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
-        return new NoParensFunctionExpression(name, returnType);
-    }
-
     static SimpleExpression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
         if (!(exp instanceof FunctionArg)) {
             throw CriteriaUtils.funcArgError(name, exp);
@@ -1189,29 +1185,6 @@ abstract class FunctionUtils {
 
 
     }//NamedNotation
-
-    private static final class NoParensFunctionExpression extends OperationExpression.SqlFunctionExpression
-            implements NoParensFunction {
-
-        /**
-         * @see #noParensFunc(String, TypeMeta)
-         */
-        private NoParensFunctionExpression(String name, TypeMeta returnType) {
-            super(name, true, returnType); //no parens function must be build-in
-        }
-
-        @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            //no-op
-        }
-
-
-    }//NoParensFunction
 
 
     private static final class ZeroArgFunction extends OperationExpression.SqlFunctionExpression

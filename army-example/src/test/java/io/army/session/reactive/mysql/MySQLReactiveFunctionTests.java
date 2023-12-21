@@ -11,13 +11,14 @@ import io.army.criteria.impl.TypeDefs;
 import io.army.reactive.ReactiveLocalSession;
 import io.army.sqltype.MySQLType;
 import io.army.util.RowMaps;
+import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -238,6 +239,72 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
                 .block();
 
         Assert.assertEquals(row, LocalDate.of(2008, 2, 2));
+    }
+
+    /**
+     * @see MySQLs#addTime(Object, Object)
+     */
+    @Test
+    public void addTimeFunc(final ReactiveLocalSession session) {
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(addTime("2007-12-31 00:59:59.999999", "00:01:01.000002").as("exp1"))
+                .comma(addTime("00:59:59.999999", "00:01:01.000002").as("exp2"))
+                .comma(addTime("2007-12-31 00:59:59.999999+10:00", "00:01:01.000002").as("exp3"))
+                .comma(addTime("2007-12-31 00:59:59.999999-10:00", "00:01:01.000002").as("exp4"))
+                .comma(addTime(LocalDateTime.parse("2007-12-31 00:59:59.999999", _TimeUtils.DATETIME_FORMATTER_6), "00:01:01.000002").as("exp5"))
+                .comma(addTime(LocalTime.parse("00:59:59.999999", _TimeUtils.TIME_FORMATTER_6), LocalTime.of(0, 0, 1)).as("exp6"))
+                .comma(addTime(OffsetDateTime.parse("2007-12-31 00:59:59.999999+10:00", _TimeUtils.OFFSET_DATETIME_FORMATTER_6), LocalTime.of(0, 0, 1)).as("exp7"))
+                .comma(addTime(ZonedDateTime.parse("2007-12-31 00:59:59.999999-10:00", _TimeUtils.OFFSET_DATETIME_FORMATTER_6), LocalTime.of(0, 0, 1)).as("exp8"))
+                .asQuery();
+
+        session.queryObject(stmt, RowMaps::hashMap)
+                .blockLast();
+
+    }
+
+    @Test
+    public void convertTzFunc(final ReactiveLocalSession session) {
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(convertTz("2004-01-01 12:00:00", "GMT", "MET").as("exp1"))
+                .comma(convertTz("2004-01-01 12:00:00", "+00:00", "+10:00").as("exp2"))
+                .comma(convertTz("2004-01-01 12:00:00+10:00", "+00:00", "+10:00").as("exp3"))
+                .comma(convertTz("2004-01-01 12:00:00-10:00", "+00:00", "+10:00").as("exp4"))
+                .comma(convertTz(LocalDateTime.now(), "+00:00", "+10:00").as("exp5"))
+                .comma(convertTz(OffsetDateTime.now(), "+00:00", "+10:00").as("exp6"))
+                .comma(convertTz(ZonedDateTime.now(), "+00:00", "+10:00").as("exp7"))
+                .asQuery();
+
+        session.queryObject(stmt, RowMaps::hashMap)
+                .blockLast();
+    }
+
+    /**
+     * @see MySQLs#CURRENT_DATE
+     * @see MySQLs#currentDate()
+     */
+    @Test
+    public void currentDateFunc(final ReactiveLocalSession session) {
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(CURRENT_DATE.as("exp1"))
+                .comma(currentDate().as("exp2"))
+
+                .comma(CURRENT_TIME.as("exp3"))
+                .comma(currentTime().as("exp4"))
+
+                .comma(CURRENT_TIMESTAMP.as("exp5"))
+                .comma(currentTimestamp().as("exp6"))
+
+                .asQuery();
+
+        session.queryObject(stmt, RowMaps::hashMap)
+                .blockLast();
+
     }
 
 

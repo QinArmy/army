@@ -261,18 +261,28 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 }
             }
             break;
-            case TIME:
-                value = resultSet.getObject(indexBasedOne, LocalTime.class);
-                break;
+            case TIME: {
+                if (type instanceof MappingType.SqlOffsetTimeType) {
+                    value = resultSet.getObject(indexBasedOne, OffsetTime.class);
+                } else {
+                    value = resultSet.getObject(indexBasedOne, LocalTime.class);
+                }
+            }
+            break;
             case DATE:
                 value = resultSet.getObject(indexBasedOne, LocalDate.class);
                 break;
             case TIMETZ:
                 value = resultSet.getObject(indexBasedOne, OffsetTime.class);
                 break;
-            case TIMESTAMP:
-                value = resultSet.getObject(indexBasedOne, LocalDateTime.class);
-                break;
+            case TIMESTAMP: {
+                if (type instanceof MappingType.SqlOffsetDateTimeType) {
+                    value = resultSet.getObject(indexBasedOne, OffsetDateTime.class);
+                } else {
+                    value = resultSet.getObject(indexBasedOne, LocalDateTime.class);
+                }
+            }
+            break;
             case TIMESTAMPTZ:
                 value = resultSet.getObject(indexBasedOne, OffsetDateTime.class);
                 break;

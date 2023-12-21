@@ -323,8 +323,12 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
                 value = row.get(indexBasedZero, LocalDate.class);
                 break;
             case TIME: {
-                if (type instanceof MappingType.SqlOffsetTimeType) {
+                if (type instanceof MappingType.SqlLocalTimeType) {
+                    value = row.get(indexBasedZero, LocalTime.class);
+                } else if (type instanceof MappingType.SqlOffsetTimeType) {
                     value = row.get(indexBasedZero, OffsetTime.class);
+                } else if (type instanceof MappingType.SqlDurationType) {
+                    value = row.get(indexBasedZero, Duration.class);
                 } else {
                     value = row.get(indexBasedZero, LocalTime.class);
                 }
