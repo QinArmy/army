@@ -12,6 +12,8 @@
     <artifactId>army-core</artifactId>
 
     <description>Army code module,provide standard criteria api etc.</description>
+    <url>https://github.com/QinArmy/army</url>
+
     <dependencies>
         <dependency>
             <groupId>io.qinarmy</groupId>

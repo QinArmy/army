@@ -12,6 +12,7 @@
     <artifactId>army-jdbc</artifactId>
 
     <description>Army jdbc module,provide jdbc executor.</description>
+    <url>https://github.com/QinArmy/army</url>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

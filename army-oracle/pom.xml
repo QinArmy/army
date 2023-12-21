@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>army-oracle</artifactId>
+    <url>https://github.com/QinArmy/army</url>
 
     <dependencies>
         <dependency>

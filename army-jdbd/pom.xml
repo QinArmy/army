@@ -13,6 +13,7 @@
 
     <name>army-jdbd</name>
     <description>Army jdbc module,provide jdbd executor.</description>
+    <url>https://github.com/QinArmy/army</url>
 
     <dependencies>
         <dependency>

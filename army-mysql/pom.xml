@@ -11,6 +11,8 @@
 
     <artifactId>army-mysql</artifactId>
 
+    <url>https://github.com/QinArmy/army</url>
+
     <dependencies>
         <dependency>
             <groupId>io.qinarmy</groupId>

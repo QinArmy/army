@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>army-sergeant</artifactId>
+    <url>https://github.com/QinArmy/army</url>
 
     <dependencies>
         <dependency>

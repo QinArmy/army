@@ -12,6 +12,8 @@
     <artifactId>army-reactive</artifactId>
 
     <description>Army reactive session module</description>
+    <url>https://github.com/QinArmy/army</url>
+
     <dependencies>
         <dependency>
             <groupId>io.qinarmy</groupId>

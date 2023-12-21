@@ -30,7 +30,7 @@
     <description>One better way to write SQL in Java ; one better blocking orm framework ; one better hight-level
         database driver ; one better reactive orm framework ;
     </description>
-    <url>https://army.qinarmy.io</url>
+    <url>https://github.com/QinArmy/army</url>
 
     <organization>
         <name>QinArmy</name>

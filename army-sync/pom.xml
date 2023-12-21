@@ -12,6 +12,7 @@
     <artifactId>army-sync</artifactId>
 
     <description>Army blocking session module</description>
+    <url>https://github.com/QinArmy/army</url>
 
     <dependencies>
         <dependency>

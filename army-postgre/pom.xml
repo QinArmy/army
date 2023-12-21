@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>army-postgre</artifactId>
+    <url>https://github.com/QinArmy/army</url>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
