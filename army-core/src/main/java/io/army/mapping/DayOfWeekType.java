@@ -103,7 +103,6 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
         final DayOfWeek value;
         final String sourceStr;
         final int length;
-        final char ch;
 
         if (source instanceof DayOfWeek) {
             value = (DayOfWeek) source;
@@ -122,7 +121,7 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
             value = weekFromInt(type, dataType, (int) v, errorHandler);
         } else if (!(source instanceof String) || (length = (sourceStr = (String) source).length()) == 0) {
             throw errorHandler.apply(type, dataType, source, null);
-        } else if (sourceStr.indexOf('-') < 0) {
+        } else if (length < 10) {
             try {
                 // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayname
                 value = DayOfWeek.valueOf(sourceStr.toUpperCase(Locale.ROOT));
@@ -131,6 +130,7 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
             }
         } else {
             try {
+                final char ch;
                 if (length > 24 && ((ch = sourceStr.charAt(length - 6)) == '-' || ch == '+')) {
                     value = DayOfWeek.from(OffsetDateTime.parse(sourceStr, _TimeUtils.OFFSET_DATETIME_FORMATTER_6));
                 } else if (sourceStr.lastIndexOf(':') < 0) {

@@ -398,4 +398,26 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
     }
 
 
+    /**
+     * @see MySQLs#dayName(Object)
+     */
+    @Test
+    public void monthNameFunc(final ReactiveLocalSession session) {
+        final LocalDate today = LocalDate.now();
+        final Month month = Month.from(today);
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(monthName(today).as("monthName"))
+                .asQuery();
+
+        final Month row;
+        row = session.queryOne(stmt, Month.class)
+                .block();
+
+        Assert.assertEquals(row, month);
+
+    }
+
+
 }

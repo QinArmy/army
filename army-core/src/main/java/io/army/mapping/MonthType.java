@@ -6,10 +6,12 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
+import io.army.util._TimeUtils;
 
 import javax.annotation.Nullable;
 import java.time.*;
 import java.time.temporal.TemporalAccessor;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
@@ -110,27 +112,56 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
     static Month toMoth(final MappingType type, final DataType dataType, final Object source,
                         final ErrorHandler errorHandler) {
         final Month value;
+
+        final String sourceStr;
+        final int length;
+
         if (source instanceof Month) {
             value = (Month) source;
         } else if (source instanceof LocalDate
                 || source instanceof YearMonth
                 || source instanceof MonthDay
-                || source instanceof LocalDateTime) {
+                || source instanceof LocalDateTime
+                || source instanceof OffsetDateTime
+                || source instanceof ZonedDateTime) {
             value = Month.from((TemporalAccessor) source);
-        } else if (source instanceof OffsetDateTime) {
-            value = Month.from(((OffsetDateTime) source));
-        } else if (source instanceof ZonedDateTime) {
-            value = Month.from(((ZonedDateTime) source));
-        } else if (!(source instanceof String) || ((String) source).length() == 0) {
+        } else if (source instanceof Integer) {
+            final int v = (Integer) source;
+            if (v < 1 || v > 12) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+            value = Month.of(v);
+        } else if (source instanceof Long) {
+            if (errorHandler != ACCESS_ERROR_HANDLER) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+            final long v = (Long) source;
+            if (v < 1 || v > 12) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+            value = Month.of((int) v);
+        } else if (!(source instanceof String) || (length = (sourceStr = (String) source).length()) == 0) {
             throw errorHandler.apply(type, dataType, source, null);
-        } else if (Character.isLetter(((String) source).charAt(0))) {
+        } else if (length < 10) {
             try {
-                value = Month.valueOf((String) source);
+                // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_monthname
+                value = Month.valueOf(sourceStr.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
                 throw errorHandler.apply(type, dataType, source, e);
             }
         } else {
-            throw errorHandler.apply(type, dataType, source, null);
+            try {
+                final char ch;
+                if (length > 24 && ((ch = sourceStr.charAt(length - 6)) == '-' || ch == '+')) {
+                    value = Month.from(OffsetDateTime.parse(sourceStr, _TimeUtils.OFFSET_DATETIME_FORMATTER_6));
+                } else if (sourceStr.lastIndexOf(':') < 0) {
+                    value = Month.from(LocalDate.parse(sourceStr));
+                } else {
+                    value = Month.from(LocalDateTime.parse(sourceStr, _TimeUtils.DATETIME_FORMATTER_6));
+                }
+            } catch (DateTimeException e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
         }
         return value;
     }
