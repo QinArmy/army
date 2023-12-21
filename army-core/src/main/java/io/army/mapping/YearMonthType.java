@@ -4,11 +4,11 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
+import io.army.util._TimeUtils;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
+import java.time.*;
+import java.time.temporal.TemporalAccessor;
 
 /**
  * <p>
@@ -82,31 +82,55 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
 
-    public static YearMonth toYearMonth(final MappingType type, final DataType dataType, final Object nonNull,
-                                        final ErrorHandler errorHandler) {
+    static YearMonth toYearMonth(final MappingType type, final DataType dataType, final Object source,
+                                 final ErrorHandler errorHandler) {
         final YearMonth value;
-        if (nonNull instanceof YearMonth) {
-            value = (YearMonth) nonNull;
-        } else if (nonNull instanceof LocalDate) {
-            value = YearMonth.from((LocalDate) nonNull);
-        } else if (nonNull instanceof LocalDateTime) {
-            value = YearMonth.from((LocalDateTime) nonNull);
-        } else if (nonNull instanceof String) {
-            final String text = (String) nonNull;
+        if (source instanceof YearMonth) {
+            value = (YearMonth) source;
+        } else if (source instanceof LocalDate
+                || source instanceof LocalDateTime
+                || source instanceof OffsetDateTime
+                || source instanceof ZonedDateTime) {
+            value = YearMonth.from((TemporalAccessor) source);
+        } else if (source instanceof Integer) {
+            value = yearMonthFromInt(type, dataType, (Integer) source, errorHandler);
+        } else if (source instanceof Long) {
+            final long v = (Long) source;
+            if (v > Integer.MAX_VALUE || v < Integer.MIN_VALUE) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+            value = yearMonthFromInt(type, dataType, (int) v, errorHandler);
+        } else if (source instanceof String) {
             try {
-                if (text.indexOf('-') == text.lastIndexOf('-')) {
-                    value = YearMonth.parse((String) nonNull);
+                final String sourceStr = (String) source;
+                final int length = sourceStr.length();
+                final char ch;
+                if (length > 24 && ((ch = sourceStr.charAt(length - 6)) == '-' || ch == '+')) {
+                    value = YearMonth.from(OffsetDateTime.parse(sourceStr, _TimeUtils.OFFSET_DATETIME_FORMATTER_6));
+                } else if (sourceStr.lastIndexOf(':') < 0) {
+                    value = YearMonth.from(LocalDate.parse(sourceStr));
                 } else {
-                    value = YearMonth.from(LocalDate.parse((String) nonNull));
+                    value = YearMonth.from(LocalDateTime.parse(sourceStr, _TimeUtils.DATETIME_FORMATTER_6));
                 }
             } catch (DateTimeException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
 
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
+    }
+
+
+    private static YearMonth yearMonthFromInt(final MappingType type, final DataType dataType, final int source,
+                                              final ErrorHandler errorHandler) {
+        // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-add
+        if (errorHandler != ACCESS_ERROR_HANDLER || (dataType != MySQLType.INT && dataType != MySQLType.BIGINT)) {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+        return YearMonth.of(source / 100, source % 100);
+
     }
 
 

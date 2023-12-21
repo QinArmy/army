@@ -125,13 +125,13 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
                 || source instanceof OffsetDateTime
                 || source instanceof ZonedDateTime) {
             value = Month.from((TemporalAccessor) source);
-        } else if (source instanceof Integer) {
+        } else if (source instanceof Integer) { // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month
             final int v = (Integer) source;
             if (v < 1 || v > 12) {
                 throw errorHandler.apply(type, dataType, source, null);
             }
             value = Month.of(v);
-        } else if (source instanceof Long) {
+        } else if (source instanceof Long) {  // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month
             if (errorHandler != ACCESS_ERROR_HANDLER) {
                 throw errorHandler.apply(type, dataType, source, null);
             }

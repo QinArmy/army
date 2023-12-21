@@ -129,6 +129,15 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                     type = FloatType.INSTANCE;
                 } else if (targetType == DoubleType.class) {
                     type = DoubleType.INSTANCE;
+                } else if (targetType == YearMonth.class) {    // for example :  https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-add
+                    switch (armyType) {
+                        case BIGINT:
+                        case INTEGER:
+                            type = YearMonthType.INSTANCE;
+                            break;
+                        default:
+                            throw noMatchCompatibleMapping(this, targetType);
+                    }
                 } else if (targetType == Year.class) {
                     switch (armyType) {
                         case SMALLINT:

@@ -12,7 +12,7 @@ import io.army.util._TimeUtils;
 import java.time.Duration;
 import java.time.LocalTime;
 
-final class DurationType extends _ArmyNoInjectionMapping implements MappingType.SqlDecimalType {
+public final class DurationType extends _ArmyNoInjectionMapping implements MappingType.SqlDurationType {
 
     public static DurationType from(final Class<?> javaType) {
         if (javaType == Duration.class) {
@@ -49,17 +49,20 @@ final class DurationType extends _ArmyNoInjectionMapping implements MappingType.
 
     @Override
     public Duration convert(MappingEnv env, Object source) throws CriteriaException {
-        return null;
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return null;
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Duration afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return null;
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
 

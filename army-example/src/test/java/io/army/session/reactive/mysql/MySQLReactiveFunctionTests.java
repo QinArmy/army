@@ -419,5 +419,24 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
     }
 
+    /**
+     * @see MySQLs#periodAdd(Object, Object)
+     */
+    @Test
+    public void periodAddFunc(final ReactiveLocalSession session) {
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(periodAdd(200801, 2).as("yearMonth"))
+                .asQuery();
+
+        final YearMonth row;
+        row = session.queryOne(stmt, YearMonth.class)
+                .block();
+
+        Assert.assertEquals(row, YearMonth.of(2008, 3));
+
+    }
+
 
 }
