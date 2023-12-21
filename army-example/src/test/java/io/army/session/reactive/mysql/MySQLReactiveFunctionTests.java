@@ -332,6 +332,9 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
     }
 
+    /**
+     * @see MySQLs#dayName(Object)
+     */
     @Test
     public void dayNameFunc(final ReactiveLocalSession session) {
         final LocalDate today = LocalDate.now();
@@ -350,6 +353,9 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
     }
 
+    /**
+     * @see MySQLs#dayOfWeek(Object)
+     */
     @Test
     public void dayOfWeekFunc(final ReactiveLocalSession session) {
         final LocalDate today = LocalDate.now();
@@ -365,6 +371,29 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
                 .block();
 
         Assert.assertEquals(row, week);
+
+    }
+
+    /**
+     * @see MySQLs#timestampAdd(MySQLTimeUnit, Object, Object)
+     */
+    @Test
+    public void timestampAddFunc(final ReactiveLocalSession session) {
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(timestampAdd(MySQLTimeUnit.MINUTE, 1, "2003-01-02").as("dateMinute"))
+                .comma(timestampAdd(MySQLTimeUnit.WEEK, 1, "2003-01-02").as("dateWeek"))
+                .asQuery();
+
+        final Map<String, Object> row;
+        row = session.queryOneObject(stmt, RowMaps::hashMap)
+                .block();
+
+        Assert.assertNotNull(row);
+        Assert.assertEquals(row.get("dateMinute"), LocalDateTime.parse("2003-01-02 00:01:00", _TimeUtils.DATETIME_FORMATTER_6));
+        Assert.assertEquals(row.get("dateWeek"), LocalDate.parse("2003-01-09"));
+
 
     }
 
