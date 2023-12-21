@@ -9,7 +9,7 @@ import io.army.mapping.BooleanType;
 import io.army.mapping.DoubleType;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
-import io.army.mapping.spatial.postgre.*;
+import io.army.mapping.postgre.spatial.postgre.*;
 
 import java.util.function.BiFunction;
 

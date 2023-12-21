@@ -1,4 +1,4 @@
-package io.army.mapping.spatial.postgre;
+package io.army.mapping.postgre.spatial.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
@@ -11,22 +11,24 @@ import io.army.sqltype.DataType;
 
 /**
  * <p>
- * This class representing Postgre line type {@link MappingType}
- * * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">line</a>
+ * This class representing Postgre path type {@link MappingType}
+*
+ * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">path</a>
  */
-public final class PostgreLineType extends PostgreGeometricType {
+public final class PostgrePathType extends PostgreGeometricType implements MappingType.SqlLineStringType {
 
-    public static final PostgreLineType INSTANCE = new PostgreLineType();
 
-    public static PostgreLineType from(final Class<?> javaType) {
+    public static final PostgrePathType INSTANCE = new PostgrePathType();
+
+    public static PostgrePathType from(final Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(PostgreLineType.class, javaType);
+            throw errorJavaType(PostgrePathType.class, javaType);
         }
         return INSTANCE;
     }
 
 
-    private PostgreLineType() {
+    private PostgrePathType() {
     }
 
     @Override
@@ -62,5 +64,4 @@ public final class PostgreLineType extends PostgreGeometricType {
         //TODO
         throw new UnsupportedOperationException();
     }
-
 }

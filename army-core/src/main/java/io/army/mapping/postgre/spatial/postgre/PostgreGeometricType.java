@@ -1,4 +1,4 @@
-package io.army.mapping.spatial.postgre;
+package io.army.mapping.postgre.spatial.postgre;
 
 import io.army.mapping._ArmyNoInjectionMapping;
 

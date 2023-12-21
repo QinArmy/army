@@ -1,4 +1,4 @@
-package io.army.mapping.spatial.postgre;
+package io.army.mapping.postgre.spatial.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
@@ -12,24 +12,23 @@ import io.army.sqltype.DataType;
 
 /**
  * <p>
- * This class representing Postgre circle type {@link MappingType}
-*
- * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">circle</a>
+ * This class representing Postgre polygon type {@link MappingType}
+ * * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">polygon</a>
  */
-public final class PostgreCircleType extends PostgreGeometricType {
+public final class PostgrePolygonType extends PostgreGeometricType {
 
 
-    public static final PostgreCircleType INSTANCE = new PostgreCircleType();
+    public static final PostgrePolygonType INSTANCE = new PostgrePolygonType();
 
-    public static PostgreCircleType from(final Class<?> javaType) {
+    public static PostgrePolygonType from(final Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(PostgreCircleType.class, javaType);
+            throw errorJavaType(PostgrePolygonType.class, javaType);
         }
         return INSTANCE;
     }
 
 
-    private PostgreCircleType() {
+    private PostgrePolygonType() {
     }
 
     @Override
@@ -65,6 +64,5 @@ public final class PostgreCircleType extends PostgreGeometricType {
         //TODO
         throw new UnsupportedOperationException();
     }
-
 
 }

@@ -1807,7 +1807,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
 
 
     /**
-     * @see #timestampAdd(MySQLTimeUnit, Expression, Expression)
+     * @see #timestampAdd(MySQLTimeUnit, Object, Object)
      */
     private static MappingType _timestampAdd(final MappingType type) {
         final MappingType returnType;
@@ -1825,9 +1825,9 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
 
 
     /**
-     * @see #strToDate(Expression, Expression)
+     * @see #strToDate(Object, Object)
      */
-    private static MappingType _strToDateReturnType(final ArmyExpression formatExp, final MappingType type) {
+    private static MappingType _strToDateReturnType(final Expression formatExp, final MappingType type) {
         final MappingType returnType;
         if (formatExp instanceof SqlValueParam.SingleAnonymousValue
                 && type instanceof StringType) {
@@ -1845,7 +1845,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
     }
 
     /**
-     * @see #_strToDateReturnType(ArmyExpression, MappingType)
+     * @see #_strToDateReturnType(Expression, MappingType)
      */
     private static MappingType _parseStrToDateReturnType(final String format) {
         final char[] array = format.toCharArray();

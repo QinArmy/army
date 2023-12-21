@@ -151,9 +151,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
      * @param string non-null,each of variadic is  one of following :
      *               <ul>
@@ -169,9 +167,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link BooleanType}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link BooleanType}
      *
      * @param target    json expression
      *                  <ul>
@@ -225,9 +221,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link BooleanType}
-     * *
+     * <p>The {@link MappingType} of function return type: {@link BooleanType}
      *
      * @param jsonDoc  json expression
      *                 <ul>
@@ -254,8 +248,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link BooleanType}
+     * <p>The {@link MappingType} of function return type: {@link BooleanType}
      *
      * @param jsonDoc      json expression
      *                     <ul>
@@ -303,8 +296,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
      * @param jsonDoc json expression
      *                <ul>
@@ -326,8 +318,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
      * @param jsonDoc      json expression
      *                     <ul>

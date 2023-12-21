@@ -1,4 +1,4 @@
-package io.army.mapping.spatial.postgre;
+package io.army.mapping.postgre.spatial.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
@@ -9,19 +9,26 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class PostgreBoxType extends PostgreGeometricType {
 
-    public static final PostgreBoxType INSTANCE = new PostgreBoxType();
+/**
+ * <p>
+ * This class representing Postgre point type {@link MappingType}
+ * * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">point</a>
+ */
+public final class PostgrePointType extends PostgreGeometricType implements MappingType.SqlPointType {
 
-    public static PostgreBoxType from(final Class<?> javaType) {
+
+    public static final PostgrePointType INSTANCE = new PostgrePointType();
+
+    public static PostgrePointType from(final Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(PostgreBoxType.class, javaType);
+            throw errorJavaType(PostgrePointType.class, javaType);
         }
         return INSTANCE;
     }
 
 
-    private PostgreBoxType() {
+    private PostgrePointType() {
     }
 
     @Override
@@ -57,4 +64,6 @@ public final class PostgreBoxType extends PostgreGeometricType {
         //TODO
         throw new UnsupportedOperationException();
     }
+
+
 }

@@ -1,8 +1,8 @@
 package io.army.mapping.postgre;
 
-import javax.annotation.Nullable;
-
 import io.army.type.DaoLayer;
+
+import javax.annotation.Nullable;
 
 /**
  * <p>
