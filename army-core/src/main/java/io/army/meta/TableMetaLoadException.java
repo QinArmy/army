@@ -1,25 +1,20 @@
 package io.army.meta;
 
-import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
+import io.army.ArmyException;
 
-public class TableMetaLoadException extends ArmyRuntimeException {
+import javax.annotation.Nullable;
 
-    @Deprecated
-    public TableMetaLoadException(ErrorCode errorCode, String format, Object... args) {
-        super(errorCode, format, args);
+public final class TableMetaLoadException extends ArmyException {
+
+    public TableMetaLoadException(String message) {
+        super(message);
     }
 
-    @Deprecated
-    public TableMetaLoadException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    public TableMetaLoadException(String message, @Nullable Throwable cause) {
+        super(message, cause);
     }
 
-    public TableMetaLoadException(String format) {
-        super(format);
-    }
-
-    public TableMetaLoadException(String format, Throwable e) {
-        super(e, format);
+    public TableMetaLoadException(Throwable cause) {
+        super(cause);
     }
 }

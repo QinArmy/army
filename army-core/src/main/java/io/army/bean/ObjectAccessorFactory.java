@@ -101,15 +101,6 @@ public abstract class ObjectAccessorFactory {
         }
     }
 
-    public static <T> Constructor<T> getPairConstructor(final Class<T> beanClass) {
-        try {
-            return beanClass.getConstructor(Object.class, Object.class);
-        } catch (NoSuchMethodException e) {
-            String m = String.format("%s don't declared public %s constructor."
-                    , beanClass.getName(), PairBean.class.getName());
-            throw new ObjectAccessException(m, e);
-        }
-    }
 
     public static <T> T createPair(Constructor<T> constructor, @Nullable Object first, @Nullable Object second) {
         try {

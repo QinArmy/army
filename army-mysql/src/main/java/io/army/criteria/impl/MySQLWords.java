@@ -53,19 +53,13 @@ abstract class MySQLWords {
 
     }//MySQLModifier
 
-    enum KeyWordDistinct implements MySQLs.WordDistinct {
+    enum KeyWordDistinct implements Functions.ArmyKeyWord, MySQLs.WordDistinct {
 
-        DISTINCT(" DISTINCT");
-
-        private final String spaceWord;
-
-        KeyWordDistinct(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        DISTINCT;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return " DISTINCT";
         }
 
 

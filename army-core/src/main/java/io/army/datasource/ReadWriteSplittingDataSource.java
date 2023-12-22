@@ -15,13 +15,7 @@ import java.util.function.Function;
 public interface ReadWriteSplittingDataSource<R> {
 
     /**
-     * <p>Select one writable DataSource
-     * <p>The implementation of this method perhaps support some of following :
-     * <ul>
-     *     <li>{@link Option#TIMEOUT_MILLIS} : transaction timeout</li>
-     *     <li>{@link Option#LOCK_TIMEOUT_MILLIS : max lock time}</li>
-     * </ul>
-     * above options can help application developer to select optimal DataSource.
+     * <p>Select one read write DataSource
      * <p>Above options is passed by application developer with following methods :
      * <ul>
      *     <li>{@link io.army.session.SessionFactory.SessionBuilderSpec#dataSourceOption(Option, Object)} </li>

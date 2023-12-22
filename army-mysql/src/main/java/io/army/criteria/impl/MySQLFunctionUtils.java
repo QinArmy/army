@@ -64,12 +64,13 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }
 
 
-    static MySQLWindowFunctions._ItemAggregateWindowFunc oneArgAggregate(String name, Expression arg,
+    static MySQLWindowFunctions._ItemAggregateWindowFunc oneArgAggregate(String name, Object arg,
                                                                          TypeMeta returnType) {
-        if (arg instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, arg);
-        }
-        return new OneArgAggregateWindowFunc(name, (ArmyExpression) arg, returnType);
+        return new OneArgAggregateWindowFunc(name, arg, returnType);
+    }
+
+    static MySQLWindowFunctions._AggregateWindowFunc compositeAggWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+        return new AggregateCompositeWindowFunc(name, argList, returnType);
     }
 
     static MySQLWindowFunctions._ItemAggregateWindowFunc oneArgAggregate(String name, @Nullable SQLWords option
@@ -424,21 +425,21 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
     private static class OneArgWindowFunction extends MySQLWindowFunction {
 
-        private final ArmyExpression argument;
+        private final Object argument;
 
-        private OneArgWindowFunction(String name, ArmyExpression argument, TypeMeta returnType) {
+        private OneArgWindowFunction(String name, Object argument, TypeMeta returnType) {
             super(name, returnType);
             this.argument = argument;
         }
 
         @Override
         final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.argument.appendSql(sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.argument, sqlBuilder, context);
         }
 
         @Override
         final void argToString(final StringBuilder builder) {
-            builder.append(this.argument);
+            FuncExpUtils.literalToString(this.argument, builder);
         }
 
 
@@ -607,7 +608,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     private static final class OneArgAggregateWindowFunc extends OneArgWindowFunction
             implements MySQLWindowFunctions._ItemAggregateWindowFunc {
 
-        private OneArgAggregateWindowFunc(String name, ArmyExpression argument, TypeMeta returnType) {
+        private OneArgAggregateWindowFunc(String name, Object argument, TypeMeta returnType) {
             super(name, argument, returnType);
         }
 
@@ -638,6 +639,41 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         }
 
     }//MultiArgAggregateWindowFunc
+
+
+    private static class CompositeWindowFunc extends MySQLWindowFunction {
+
+        private final List<?> argList;
+
+        private CompositeWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendCompositeList(this.argList, sqlBuilder, context);
+        }
+
+        @Override
+        final void argToString(StringBuilder builder) {
+            FuncExpUtils.compositeListToString(this.argList, builder);
+        }
+
+
+    } // CompositeWindowFunc
+
+
+    private static class AggregateCompositeWindowFunc extends CompositeWindowFunc
+            implements MySQLWindowFunctions._AggregateWindowFunc {
+
+
+        private AggregateCompositeWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, argList, returnType);
+        }
+
+
+    } // AggregateCompositeWindowFunc
 
 
     /**

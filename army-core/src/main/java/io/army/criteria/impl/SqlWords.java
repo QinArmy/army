@@ -399,19 +399,13 @@ abstract class SqlWords {
 
     }//KeyWordAll
 
-    enum KeyWordDistinct implements SQLWords, SQLs.WordDistinct {
+    enum KeyWordDistinct implements Functions.ArmyKeyWord, SQLs.WordDistinct {
 
-        DISTINCT(" DISTINCT");
-
-        private final String spaceWord;
-
-        KeyWordDistinct(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        DISTINCT;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return " DISTINCT";
         }
 
         @Override

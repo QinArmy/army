@@ -170,6 +170,12 @@ abstract class FuncExpUtils {
         }
     }
 
+    static void assertDistinct(SQLs.ArgDistinct distinct, SQLs.ArgDistinct dialect) {
+        if (distinct != SQLs.DISTINCT && distinct != dialect) {
+            throw CriteriaUtils.unknownWords(distinct);
+        }
+    }
+
     static void assertTrimPosition(SQLs.TrimPosition position) {
         if (!(position instanceof SqlWords.WordTrimPosition)) {
             throw CriteriaUtils.unknownWords(position);
@@ -257,6 +263,7 @@ abstract class FuncExpUtils {
 
     static void appendLiteralList(final List<?> literalList, final StringBuilder sqlBuilder, final _SqlContext context) {
         final int size = literalList.size();
+
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -272,9 +279,20 @@ abstract class FuncExpUtils {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
-            builder.append(literalList.get(i));
+            literalToString(literalList.get(i), builder);
         }
 
+    }
+
+    static void literalToString(final @Nullable Object literal, final StringBuilder builder) {
+        if (literal == null) {
+            builder.append(_Constant.SPACE_NULL);
+        } else if (literal instanceof Expression) {
+            builder.append(literal);
+        } else {
+            builder.append(_Constant.SPACE)
+                    .append(literal);
+        }
     }
 
     static void appendCompositeList(final List<?> argList, final StringBuilder sqlBuilder, final _SqlContext context) {

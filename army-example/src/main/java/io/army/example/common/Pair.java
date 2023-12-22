@@ -1,8 +1,7 @@
 package io.army.example.common;
 
-import io.army.bean.PairBean;
 
-public final class Pair<F, S> implements PairBean {
+public final class Pair<F, S> {
 
     public final F first;
 

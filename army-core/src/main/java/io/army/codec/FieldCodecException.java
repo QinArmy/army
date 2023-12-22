@@ -1,25 +1,19 @@
 package io.army.codec;
 
-import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
+import io.army.ArmyException;
 
-public class FieldCodecException extends ArmyRuntimeException {
+import javax.annotation.Nullable;
 
-    private static final long serialVersionUID = -5915519433310592529L;
-
-    public static FieldCodecException KeyError(String format, Object... args) {
-        return new FieldCodecException(ErrorCode.CODEC_KEY_ERROR, format, args);
+public final class FieldCodecException extends ArmyException {
+    public FieldCodecException(String message) {
+        super(message);
     }
 
-    public static FieldCodecException dataError(String format, Object... args) {
-        return new FieldCodecException(ErrorCode.CODEC_DATA_ERROR, format, args);
+    public FieldCodecException(String message, @Nullable Throwable cause) {
+        super(message, cause);
     }
 
-    protected FieldCodecException(ErrorCode errorCode, String format, Object... args) {
-        super(errorCode, format, args);
-    }
-
-    protected FieldCodecException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    public FieldCodecException(Throwable cause) {
+        super(cause);
     }
 }

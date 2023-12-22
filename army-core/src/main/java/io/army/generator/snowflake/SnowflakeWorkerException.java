@@ -1,12 +1,22 @@
 package io.army.generator.snowflake;
 
-import io.army.ArmyRuntimeException;
+import io.army.ArmyException;
+
+import javax.annotation.Nullable;
 
 
-public class SnowflakeWorkerException extends ArmyRuntimeException {
+public final class SnowflakeWorkerException extends ArmyException {
 
-    @Deprecated
-    public SnowflakeWorkerException(String format, Object... args) {
-        super(format);
+    public SnowflakeWorkerException(String message) {
+        super(message);
     }
+
+    public SnowflakeWorkerException(String message, @Nullable Throwable cause) {
+        super(message, cause);
+    }
+
+    public SnowflakeWorkerException(Throwable cause) {
+        super(cause);
+    }
+
 }
