@@ -25,22 +25,22 @@ import io.army.sqltype.SqlType;
  *
  * @since 0.6.0
  */
-public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
+public final class UnsignedSmallIntType extends _NumericType._UnsignedIntegerType {
 
 
-    public static UnsignedShortType from(final Class<?> fieldType) {
+    public static UnsignedSmallIntType from(final Class<?> fieldType) {
         if (fieldType != Integer.class) {
-            throw errorJavaType(UnsignedShortType.class, fieldType);
+            throw errorJavaType(UnsignedSmallIntType.class, fieldType);
         }
         return INSTANCE;
     }
 
-    public static final UnsignedShortType INSTANCE = new UnsignedShortType();
+    public static final UnsignedSmallIntType INSTANCE = new UnsignedSmallIntType();
 
     /**
      * private constructor
      */
-    private UnsignedShortType() {
+    private UnsignedSmallIntType() {
     }
 
     @Override

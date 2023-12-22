@@ -61,16 +61,15 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
 
     /**
      * <p>This class is base class class of below:
-     *     <ul>
+     * <ul>
      *
-     *         <li>{@link UnsignedByteType}</li>
-     *         <li>{@link UnsignedShortType}</li>
-     *         <li>{@link UnsignedMediumIntType}</li>
-     *         <li>{@link UnsignedIntegerType}</li>
-     *         <li>{@link UnsignedLongType}</li>
-     *         <li>{@link UnsignedBigIntegerType}</li>
-     *     </ul>
-     *
+     *     <li>{@link UnsignedTinyIntType}</li>
+     *     <li>{@link UnsignedSmallIntType}</li>
+     *     <li>{@link UnsignedMediumIntType}</li>
+     *     <li>{@link UnsignedSqlIntType}</li>
+     *     <li>{@link UnsignedBigintType}</li>
+     *     <li>{@link UnsignedBigIntegerType}</li>
+     * </ul>
      */
     static abstract class _UnsignedIntegerType extends _UnsignedNumericType implements SqlIntegerType {
 

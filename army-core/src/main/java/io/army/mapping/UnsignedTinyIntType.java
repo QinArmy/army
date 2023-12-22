@@ -10,24 +10,24 @@ import io.army.sqltype.SqlType;
 /**
  * <p>
  * This class representing the mapping from {@link Short} to (unsigned TINY)  INT.
-*
+ *
  * @see Short
  */
-public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
+public final class UnsignedTinyIntType extends _NumericType._UnsignedIntegerType {
 
-    public static UnsignedByteType from(final Class<?> fieldType) {
+    public static UnsignedTinyIntType from(final Class<?> fieldType) {
         if (fieldType != Short.class) {
-            throw errorJavaType(UnsignedByteType.class, fieldType);
+            throw errorJavaType(UnsignedTinyIntType.class, fieldType);
         }
         return INSTANCE;
     }
 
-    public static final UnsignedByteType INSTANCE = new UnsignedByteType();
+    public static final UnsignedTinyIntType INSTANCE = new UnsignedTinyIntType();
 
     /**
      * private constructor
      */
-    private UnsignedByteType() {
+    private UnsignedTinyIntType() {
     }
 
 

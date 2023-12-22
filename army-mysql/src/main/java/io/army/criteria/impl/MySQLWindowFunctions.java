@@ -1,14 +1,16 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.Expression;
+import io.army.criteria.SimpleExpression;
+import io.army.criteria.TypeInfer;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.mysql.MySQLWindow;
 import io.army.criteria.standard.SQLFunction;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
-import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -94,10 +96,17 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     }
 
     /**
+     * @param exp non-null ,one of following :
+     *            <ul>
+     *               <li>{@link Expression}</li>
+     *               <li>literal</li>
+     *            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc bitAnd(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("BIT_AND", exp, _bitwiseFuncType(exp));
+    public static _AggregateWindowFunc bitAnd(Object exp) {
+        final Expression expression;
+        expression = SQLs._nonNullLiteral(exp);
+        return MySQLFunctionUtils.oneArgAggregate("BIT_AND", expression, _bitwiseFuncType(expression));
     }
 
 
@@ -636,26 +645,22 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /*-------------------below private methos -------------------*/
 
     /**
-     * @see #bitAnd(Expression)
+     * @see #bitAnd(Object)
      * @see #bitOr(Expression)
      * @see #bitXor(Expression)
      */
     private static MappingType _bitwiseFuncType(final Expression expr) {
         final MappingType returnType;
 
-        final TypeMeta paramMeta = expr.typeMeta();
-        if (!(paramMeta.mappingType() instanceof StringType)) {
-            returnType = LongType.INSTANCE;
-        } else if (!(expr instanceof SqlValueParam.SingleAnonymousValue)) {
-            returnType = StringType.INSTANCE; //ODO optimize unknown,compatibility
+        TypeMeta paramMeta = expr.typeMeta();
+        if (!(paramMeta instanceof MappingType)) {
+            paramMeta = paramMeta.mappingType();
+        }
+
+        if (paramMeta instanceof MappingType.SqlIntegerType || paramMeta instanceof MappingType.SqlBitType) {
+            returnType = UnsignedLongType.INSTANCE;
         } else {
-            final Object value;
-            value = ((SqlValueParam.SingleAnonymousValue) expr).value();
-            if (value instanceof String && _StringUtils.isBinary((String) value)) {
-                returnType = StringType.INSTANCE;
-            } else {
-                returnType = LongType.INSTANCE;
-            }
+            returnType = VarBinaryType.INSTANCE;
         }
         return returnType;
     }

@@ -269,19 +269,19 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                 break;
 
             case TINYINT_UNSIGNED:
-                type = UnsignedByteType.INSTANCE;
+                type = UnsignedTinyIntType.INSTANCE;
                 break;
             case SMALLINT_UNSIGNED:
-                type = UnsignedShortType.INSTANCE;
+                type = UnsignedSmallIntType.INSTANCE;
                 break;
             case MEDIUMINT_UNSIGNED:
                 type = UnsignedMediumIntType.INSTANCE;
                 break;
             case INT_UNSIGNED:
-                type = UnsignedIntegerType.INSTANCE;
+                type = UnsignedSqlIntType.INSTANCE;
                 break;
             case BIGINT_UNSIGNED:
-                type = UnsignedLongType.INSTANCE;
+                type = UnsignedBigintType.INSTANCE;
                 break;
             case DECIMAL_UNSIGNED:
                 type = UnsignedBigDecimalType.INSTANCE;
@@ -1322,7 +1322,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
                     type = LongType.INSTANCE;
                     break;
                 case UNSIGNED:
-                    type = UnsignedLongType.INSTANCE;
+                    type = UnsignedBigintType.INSTANCE;
                     break;
                 case DATE:
                     type = LocalDateType.INSTANCE;
@@ -1406,7 +1406,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     private static final class JsonTableOrdinalityField extends FunctionField implements JsonTableColumn {
 
         private JsonTableOrdinalityField(String name) {
-            super(name, UnsignedIntegerType.INSTANCE);
+            super(name, UnsignedSqlIntType.INSTANCE);
         }
 
         @Override

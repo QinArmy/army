@@ -1,91 +1,56 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
+import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
-
 
 /**
- * <p>
- * This class is mapping class of {@link Long}.
- * This mapping type can convert below java type:
- * <ul>
- *     <li>{@link Byte}</li>
- *     <li>{@link Short}</li>
- *     <li>{@link Integer}</li>
- *     <li>{@link Long}</li>
- *     <li>{@link java.math.BigInteger}</li>
- *     <li>{@link java.math.BigDecimal},it has a zero fractional part</li>
- *     <li>{@link Boolean} true : 1 , false: 0</li>
- *     <li>{@link String} </li>
- * </ul>
- *  to (unsigned) int,if overflow,throw {@link io.army.ArmyException}
- *
- * @since 0.6.0
+ * @see UnsignedSqlIntType
+ * @see UnsignedLongType
  */
-public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType {
+public final class UnsignedIntegerType extends _ArmyNoInjectionMapping
+        implements MappingType.SqlIntegerType, MappingType.SqlUnsignedNumberType {
 
-    public static UnsignedIntegerType from(final Class<?> fieldType) {
-        if (fieldType != Long.class) {
-            throw errorJavaType(UnsignedIntegerType.class, fieldType);
-        }
-        return INSTANCE;
-    }
 
     public static final UnsignedIntegerType INSTANCE = new UnsignedIntegerType();
 
-    /**
-     * private constructor
-     */
+
     private UnsignedIntegerType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return Long.class;
+        return Integer.class;
     }
 
 
     @Override
     public LengthType lengthType() {
-        return LengthType.LONG;
-    }
-
-    @Override
-    public DataType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.serverDatabase()) {
-            case MySQL:
-                type = MySQLType.INT_UNSIGNED;
-                break;
-            case PostgreSQL:
-                type = PostgreType.BIGINT;
-                break;
-            case Oracle:
-            case H2:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return type;
+        return LengthType.DEFAULT;
     }
 
 
     @Override
-    public Long convert(MappingEnv env, Object source) throws CriteriaException {
-        return LongType.toLong(this, map(env.serverMeta()), source, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
+        return UnsignedSqlIntType.mapToDataType(this, meta);
     }
 
     @Override
-    public Long beforeBind(DataType dataType, MappingEnv env, Object source) {
-        return LongType.toLong(this, dataType, source, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public Long afterGet(DataType dataType, MappingEnv env, Object source) {
-        return LongType.toLong(this, dataType, source, 0L, 0xFFFF_FFFFL, ACCESS_ERROR_HANDLER);
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        //TODO
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        throw new UnsupportedOperationException();
     }
 
 

@@ -180,9 +180,9 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                 } else if (targetType == Integer.class || targetType == int.class) {
                     type = UnsignedMediumIntType.INSTANCE;
                 } else if (targetType == Long.class || targetType == long.class) {
-                    type = UnsignedIntegerType.INSTANCE;
+                    type = UnsignedSqlIntType.INSTANCE;
                 } else if (targetType == Short.class || targetType == short.class) {
-                    type = UnsignedByteType.INSTANCE;
+                    type = UnsignedTinyIntType.INSTANCE;
                 } else if (targetType == BigDecimal.class) {
                     type = UnsignedBigDecimalType.INSTANCE;
                 } else if (targetType == BigInteger.class) {
