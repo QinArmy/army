@@ -115,7 +115,7 @@ abstract class Functions {
      *
      * @param expression {@link Expression} instance or literal
      */
-    public static SQLFunction._CaseFuncWhenClause cases(Object expression) {
+    public static SQLFunction._CaseFuncWhenClause cases(Expression expression) {
         ContextStack.assertNonNull(expression);
         return LiteralFunctions.caseFunc(expression);
     }

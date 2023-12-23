@@ -63,16 +63,10 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * <p>The {@link MappingType} of function return type:{@link DoubleType}
      *
-     * @param exp non-null ,one of following :
-     *            <ul>
-     *               <li>{@link Expression}</li>
-     *               <li>literal</li>
-     *            </ul>
-     * @throws CriteriaException throw when argument error
+     * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc avg(Object exp) {
-        FuncExpUtils.assertLiteralExp(exp);
+    public static _AggregateWindowFunc avg(Expression exp) {
         return MySQLFunctionUtils.oneArgAggregate("AVG", exp, DoubleType.INSTANCE);
     }
 
@@ -81,32 +75,21 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * <p>The {@link MappingType} of function return type:{@link DoubleType}
      *
      * @param distinct non-null ,see {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
-     * @param exp      non-null ,one of following :
-     *                 <ul>
-     *                    <li>{@link Expression}</li>
-     *                    <li>literal</li>
-     *                 </ul>
+     * @param exp      non-null
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc avg(SQLs.ArgDistinct distinct, Object exp) {
+    public static _AggregateWindowFunc avg(SQLs.ArgDistinct distinct, Expression exp) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
-        FuncExpUtils.assertLiteralExp(exp);
         return MySQLFunctionUtils.compositeAggWindowFunc("AVG", Arrays.asList(distinct, exp), DoubleType.INSTANCE);
     }
 
     /**
-     * @param exp non-null ,one of following :
-     *            <ul>
-     *               <li>{@link Expression}</li>
-     *               <li>literal</li>
-     *            </ul>
+     * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc bitAnd(Object exp) {
-        final Expression expression;
-        expression = SQLs._nonNullLiteral(exp);
-        return MySQLFunctionUtils.oneArgAggregate("BIT_AND", expression, _bitwiseFuncType(expression));
+    public static _AggregateWindowFunc bitAnd(Expression exp) {
+        return MySQLFunctionUtils.oneArgAggregate("BIT_AND", exp, _bitwiseFuncType(exp));
     }
 
 
@@ -645,7 +628,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /*-------------------below private methos -------------------*/
 
     /**
-     * @see #bitAnd(Object)
+     * @see #bitAnd(Expression)
      * @see #bitOr(Expression)
      * @see #bitXor(Expression)
      */

@@ -3,6 +3,8 @@ package io.army.session;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
+import java.util.Properties;
+
 
 public abstract class DataSourceUtils {
 
@@ -11,11 +13,12 @@ public abstract class DataSourceUtils {
     }
 
 
-    public static DruidDataSource druidDataSourceProps(DruidDataSource ds, String url) {
+    public static DruidDataSource druidDataSourceProps(DruidDataSource ds, String url, Properties properties) {
+
+
         ds.setUrl(url);
-        ds.setUsername("army_w");
-        ds.setPassword("army123");
         ds.setDriverClassName(mapDriverName(url));
+        ds.setConnectProperties(properties);
 
         ds.setInitialSize(10);
         ds.setMaxActive(200);
