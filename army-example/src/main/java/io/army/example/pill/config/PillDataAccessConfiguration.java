@@ -4,10 +4,11 @@ import com.alibaba.druid.pool.DruidDataSource;
 import io.army.example.common.BaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.pill.service.sync.PillSyncBaseService;
-import io.army.example.util.DruidDataSourceUtils;
+import io.army.example.util.ExampleUtils;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.spring.sync.ArmySyncLocalTransactionManager;
 import io.army.spring.sync.ArmySyncSessionFactoryBean;
+import io.army.spring.sync.DruidDataSourceUtils;
 import io.army.sync.SyncSessionContext;
 import io.army.sync.SyncSessionFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,6 +21,7 @@ import org.springframework.core.env.Environment;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 @Configuration
 @Profile(BaseService.SYNC)
@@ -34,7 +36,11 @@ public class PillDataAccessConfiguration implements EnvironmentAware {
 
     @Bean(destroyMethod = "close")
     public DruidDataSource pillDataSource() {
-        return DruidDataSourceUtils.createDataSource(this.env, "pill", "primary");
+        final Properties properties = new Properties();
+        if (ExampleUtils.isMyLocal()) {
+            properties.put("sslMode", "DISABLED");
+        }
+        return DruidDataSourceUtils.createDataSource(this.env, properties, "pill", "primary");
     }
 
     @Bean

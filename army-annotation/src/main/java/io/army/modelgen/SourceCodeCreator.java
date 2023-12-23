@@ -6,7 +6,6 @@ import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 
 import javax.annotation.Nullable;
-
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
@@ -49,6 +48,21 @@ final class SourceCodeCreator {
 
             .appendOffset("+HH:MM:ss", "+00:00")
             .toFormatter(Locale.ENGLISH);
+
+
+    private static final boolean asOfJava9;
+
+
+    static {
+        boolean match;
+        try {
+            Class.forName("java.lang.Process", false, Thread.currentThread().getContextClassLoader());
+            match = true;
+        } catch (ClassNotFoundException e) {
+            match = false;
+        }
+        asOfJava9 = match;
+    }
 
 
     private final Filer filer;
@@ -275,9 +289,14 @@ final class SourceCodeCreator {
                 .append(";\n\n");
 
         builder.append("import io.army.meta.FieldMeta;\n")
-                .append("import javax.annotation.Generated;\n")
                 .append("import io.army.criteria.impl._TableMetaFactory;\n")
                 .append("import io.army.meta.PrimaryFieldMeta;\n");
+
+        if (asOfJava9) {
+            builder.append("import javax.annotation.processing.Generated;\n");
+        } else {
+            builder.append("import javax.annotation.Generated;\n");
+        }
 
         boolean hasIndex = false, hasUnique = false;
 

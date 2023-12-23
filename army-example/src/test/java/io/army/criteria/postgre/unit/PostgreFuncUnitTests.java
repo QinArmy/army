@@ -56,7 +56,7 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see SQLs#nullIf(Expression, Expression)
+     * @see SQLs#nullIf(Object, Object)
      */
     @Test
     public void nullIfFunc() {

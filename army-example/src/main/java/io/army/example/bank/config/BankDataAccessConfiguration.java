@@ -3,10 +3,11 @@ package io.army.example.bank.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
-import io.army.example.util.DruidDataSourceUtils;
+import io.army.example.util.ExampleUtils;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.spring.sync.ArmySyncLocalTransactionManager;
 import io.army.spring.sync.ArmySyncSessionFactoryBean;
+import io.army.spring.sync.DruidDataSourceUtils;
 import io.army.sync.SyncSessionContext;
 import io.army.sync.SyncSessionFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,6 +18,7 @@ import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
 import java.util.Collections;
+import java.util.Properties;
 
 @Configuration
 public class BankDataAccessConfiguration implements EnvironmentAware {
@@ -30,7 +32,11 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
 
     @Bean(destroyMethod = "close")
     public DruidDataSource bankDataSource() {
-        return DruidDataSourceUtils.createDataSource(this.env, "bank", "primary");
+        final Properties properties = new Properties();
+        if (ExampleUtils.isMyLocal()) {
+            properties.put("sslMode", "DISABLED");
+        }
+        return DruidDataSourceUtils.createDataSource(this.env, properties, "bank", "primary");
     }
 
     @Bean

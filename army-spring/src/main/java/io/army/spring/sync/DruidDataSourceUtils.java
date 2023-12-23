@@ -1,10 +1,11 @@
-package io.army.example.util;
+package io.army.spring.sync;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
 
-public abstract class DruidDataSourceUtils {
+import java.util.Properties;
+
+public abstract class DruidDataSourceUtils extends DataSourceUtils {
 
     private DruidDataSourceUtils() {
         throw new UnsupportedOperationException();
@@ -14,17 +15,21 @@ public abstract class DruidDataSourceUtils {
     /**
      * create {@link DruidDataSource}
      */
-    public static DruidDataSource createDataSource(Environment env, final String tag, String role) {
+    public static DruidDataSource createDataSource(Environment env, Properties properties, final String tag, String role) {
         DruidDataSource ds = new DruidDataSource();
-        setDataSourceProperties(ds, env, tag, role);
+        setDataSourceProperties(ds, env, properties, tag, role);
         return ds;
     }
 
 
-    public static void setDataSourceProperties(DruidDataSource ds, Environment env, final String tag, String role) {
+    public static void setDataSourceProperties(DruidDataSource ds, Environment env, Properties properties, final String tag, String role) {
+
         ds.setUrl(env.getRequiredProperty(String.format("spring.datasource.%s.%s.url", tag, role)));
-        ds.setUsername(env.getRequiredProperty(String.format("spring.datasource.%s.%s.username", tag, role)));
-        ds.setPassword(env.getRequiredProperty(String.format("spring.datasource.%s.%s.password", tag, role)));
+
+        properties.put("user", env.getRequiredProperty(String.format("spring.datasource.%s.%s.username", tag, role)));
+        properties.put("password", env.getRequiredProperty(String.format("spring.datasource.%s.%s.password", tag, role)));
+
+        ds.setConnectProperties(properties);
         ds.setDriverClassName(getDriver(env, tag));
 
         ds.setInitialSize(env.getProperty(String.format("spring.datasource.%s.%s.initialSize", tag, role), Integer.class, 10));
@@ -39,16 +44,6 @@ public abstract class DruidDataSourceUtils {
 
         ds.setRemoveAbandoned(env.getProperty(String.format("spring.datasource.%s.%s.removeAbandoned", tag, role), Boolean.class, Boolean.FALSE));
         ds.setMinEvictableIdleTimeMillis(env.getProperty(String.format("spring.datasource.%s.%s.minEvictableIdleTimeMillis", tag, role), Long.class, 30000L));
-    }
-
-
-    private static String getDriver(Environment env, String tag) {
-        String driver;
-        driver = env.getProperty(String.format("spring.datasource.%s.driver-class-name", tag));
-        if (!StringUtils.hasText(driver)) {
-            driver = env.getRequiredProperty("spring.datasource.driver-class-name");
-        }
-        return driver;
     }
 
 
