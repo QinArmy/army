@@ -6,6 +6,9 @@ import reactor.core.publisher.Mono;
 
 public interface ReactiveSessionContext extends SessionContext {
 
+    @Override
+    ReactiveSessionFactory sessionFactory();
+
     Mono<Boolean> hasCurrentSession();
 
     /**
@@ -13,10 +16,18 @@ public interface ReactiveSessionContext extends SessionContext {
      * by this implementation.
      *
      * @return The current session.
-     * @throws NoCurrentSessionException Typically indicates an issue
-     *                                   locating or creating the current session.
+     * @throws NoCurrentSessionException emit(not throw) when no session in current context.
      */
     Mono<ReactiveSession> currentSession();
+
+    /**
+     * Retrieve the current session according to the scoping defined
+     * by this implementation.
+     *
+     * @return The current session.
+     * @throws NoCurrentSessionException emit(not throw) when no session in current context.
+     */
+    <T extends ReactiveSession> Mono<T> currentSession(Class<T> sessionClass);
 
 
 }

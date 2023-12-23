@@ -6,7 +6,7 @@ package io.army.session;
  * <p>This interface is base interface of following :
  * <ul>
  *     <li>{@code  io.army.sync.SyncSessionContext}</li>
- *     <li>{@code }</li>
+ *     <li>{@code io.army.reactive.ReactiveSessionContext}</li>
  * </ul>
  *
  * @since 0.6.2

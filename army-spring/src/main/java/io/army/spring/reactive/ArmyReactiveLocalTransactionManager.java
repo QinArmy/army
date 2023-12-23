@@ -2,6 +2,7 @@ package io.army.spring.reactive;
 
 
 import io.army.reactive.ReactiveLocalSession;
+import io.army.reactive.ReactiveSessionContext;
 import io.army.reactive.ReactiveSessionFactory;
 import io.army.session.*;
 import io.army.spring.sync.SpringUtils;
@@ -30,9 +31,17 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
 
     private final ReactiveSessionFactory sessionFactory;
 
-    private boolean useReadOnlyTransaction = true;
+    private final ReactiveSessionContext sessionContext;
+
+    private boolean pseudoTransactionAllowed;
 
     private boolean useTransactionName;
+
+    private boolean useTransactionLabel;
+
+    private boolean useDataSourceTimeout;
+
+    private boolean useDatabaseSessionName;
 
 
     /**
@@ -40,25 +49,63 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
      */
     private ArmyReactiveLocalTransactionManager(ReactiveSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
+        this.sessionContext = SpringReactiveSessionContext.create(sessionFactory);
     }
 
-    public boolean isUseReadOnlyTransaction() {
-        return this.useReadOnlyTransaction;
+
+    public ReactiveSessionFactory getSessionFactory() {
+        return this.sessionFactory;
     }
 
-    public void setUseReadOnlyTransaction(boolean useReadOnlyTransaction) {
-        this.useReadOnlyTransaction = useReadOnlyTransaction;
+    public ReactiveSessionContext getSessionContext() {
+        return this.sessionContext;
     }
 
+
+    public boolean isPseudoTransactionAllowed() {
+        return pseudoTransactionAllowed;
+    }
+
+    public ArmyReactiveLocalTransactionManager setPseudoTransactionAllowed(boolean pseudoTransactionAllowed) {
+        this.pseudoTransactionAllowed = pseudoTransactionAllowed;
+        return this;
+    }
 
     public boolean isUseTransactionName() {
-        return this.useTransactionName;
+        return useTransactionName;
     }
 
-    public void setUseTransactionName(boolean useTransactionName) {
+    public ArmyReactiveLocalTransactionManager setUseTransactionName(boolean useTransactionName) {
         this.useTransactionName = useTransactionName;
+        return this;
     }
 
+    public boolean isUseTransactionLabel() {
+        return useTransactionLabel;
+    }
+
+    public ArmyReactiveLocalTransactionManager setUseTransactionLabel(boolean useTransactionLabel) {
+        this.useTransactionLabel = useTransactionLabel;
+        return this;
+    }
+
+    public boolean isUseDataSourceTimeout() {
+        return useDataSourceTimeout;
+    }
+
+    public ArmyReactiveLocalTransactionManager setUseDataSourceTimeout(boolean useDataSourceTimeout) {
+        this.useDataSourceTimeout = useDataSourceTimeout;
+        return this;
+    }
+
+    public boolean isUseDatabaseSessionName() {
+        return useDatabaseSessionName;
+    }
+
+    public ArmyReactiveLocalTransactionManager setUseDatabaseSessionName(boolean useDatabaseSessionName) {
+        this.useDatabaseSessionName = useDatabaseSessionName;
+        return this;
+    }
 
     @Override
     protected Object doGetTransaction(final TransactionSynchronizationManager manager)
@@ -87,28 +134,45 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
         final LocalTransactionObject txObject = (LocalTransactionObject) transaction;
         final ReactiveLocalSession currentSession = txObject.session;
 
-        final Mono<Void> mono;
+
         if (currentSession != null && currentSession.hasTransactionInfo()) {
             String m = String.format("%s don't support %s.%s", getClass().getName(),
                     Propagation.class.getName(), Propagation.NESTED.name());
-            mono = Mono.error(new TransactionUsageException(m));
-        } else if (currentSession == null) {
-            final ReactiveSessionFactory sessionFactory = this.sessionFactory;
-
-            mono = sessionFactory.localBuilder()
-                    .name(definition.getName())
-                    .readonly(definition.isReadOnly())
-                    .build()
-                    .flatMap(session -> {
-                        txObject.reset(session);
-                        manager.bindResource(sessionFactory, session);
-                        return startTransaction(session, definition);
-                    });
-        } else {
-            mono = Mono.defer(() -> startTransaction(currentSession, definition));
+            return Mono.error(new TransactionUsageException(m));
         }
 
-        return mono.onErrorMap(this::wrapErrorIfNeed);
+        Mono<Void> mono;
+
+        try {
+            final String txLabel;
+            txLabel = definition.getName();
+
+            final int timeoutMillis;
+            timeoutMillis = timeoutMillis(definition.getTimeout());
+
+            if (currentSession == null) {
+                final ReactiveSessionFactory sessionFactory = this.sessionFactory;
+
+                mono = sessionFactory.localBuilder()
+                        .name(txLabel)
+                        .readonly(definition.isReadOnly())
+                        .dataSourceOption(Option.NAME, this.useDatabaseSessionName ? txLabel : null)
+                        .dataSourceOption(Option.TIMEOUT_MILLIS, (timeoutMillis > 0 && this.useDataSourceTimeout) ? timeoutMillis : null)
+                        .build()
+                        .flatMap(session -> {
+                            txObject.reset(session);
+                            manager.bindResource(sessionFactory, session);
+                            return startTransaction(session, definition, timeoutMillis);
+                        });
+            } else {
+                mono = Mono.defer(() -> startTransaction(currentSession, definition, timeoutMillis));
+            }
+
+            mono = mono.onErrorMap(this::wrapErrorIfNeed);
+        } catch (Throwable e) {
+            mono = Mono.error(wrapErrorIfNeed(e));
+        }
+        return mono;
     }
 
 
@@ -198,11 +262,28 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
 
     /*################################## blow private method ##################################*/
 
+    private int timeoutMillis(final int timeoutSeconds) {
+
+        final long timeoutMillis;
+        if (timeoutSeconds == TransactionDefinition.TIMEOUT_DEFAULT) {
+            timeoutMillis = 0L;
+        } else if (timeoutSeconds > 0) {
+            timeoutMillis = timeoutSeconds * 1000L;
+        } else {
+            timeoutMillis = 0L;
+        }
+
+        if (timeoutMillis > Integer.MAX_VALUE) {
+            throw new TransactionUsageException("timeout milliseconds greater than Integer.MAX_VALUE");
+        }
+        return (int) timeoutMillis;
+    }
+
 
     /**
      * @see #doBegin(TransactionSynchronizationManager, Object, TransactionDefinition)
      */
-    private Mono<Void> startTransaction(final ReactiveLocalSession session, final TransactionDefinition definition) {
+    private Mono<Void> startTransaction(final ReactiveLocalSession session, final TransactionDefinition definition, final int timeoutMillis) {
 
         final String txLabel;
         txLabel = definition.getName();
@@ -220,27 +301,22 @@ public final class ArmyReactiveLocalTransactionManager extends AbstractReactiveT
                 .option(Option.READ_ONLY, readOnly);
 
         if (txLabel != null) {
-            builder.option(Option.LABEL, txLabel);
+            if (this.useTransactionLabel) {
+                builder.option(Option.LABEL, txLabel);
+            }
             if (this.useTransactionName) {
                 builder.option(Option.NAME, txLabel);
             }
         }
 
-        final int timeoutSeconds;
-        timeoutSeconds = definition.getTimeout();
-        if (timeoutSeconds > 0) {
-            final long timeoutMillis;
-            timeoutMillis = timeoutSeconds * 1000L;
-            if (timeoutMillis > Integer.MAX_VALUE) {
-                return Mono.error(new TransactionUsageException("timeout milliseconds greater than Integer.MAX_VALUE"));
-            }
-            builder.option(Option.TIMEOUT_MILLIS, (int) timeoutMillis);
+        if (timeoutMillis > 0L) {
+            builder.option(Option.TIMEOUT_MILLIS, timeoutMillis);
         }
 
         final boolean pseudoTransaction;
         pseudoTransaction = readOnly
                 && isolationLevel == TransactionDefinition.ISOLATION_DEFAULT
-                && this.useReadOnlyTransaction;
+                && this.pseudoTransactionAllowed;
 
         if (pseudoTransaction) {
             builder.option(Option.ISOLATION, Isolation.PSEUDO);
