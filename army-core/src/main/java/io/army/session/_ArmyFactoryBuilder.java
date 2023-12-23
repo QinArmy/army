@@ -20,6 +20,7 @@ import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
 import io.army.session.executor.ExecutorFactoryProvider;
+import io.army.util.HexUtils;
 import io.army.util._Collections;
 import io.army.util._FunctionUtils;
 import io.army.util._StringUtils;
@@ -29,10 +30,14 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+@SuppressWarnings("unchecked")
 public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B, R> {
 
     String name;
@@ -358,7 +363,25 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
             throws SessionFactoryException {
 
         final Class<?> providerClass;
-        final String className = env.getOrDefault(providerKey);
+        final String className, providerMd5, validateMd5;
+
+        className = env.getOrDefault(providerKey);
+        providerMd5 = env.getOrDefault(providerMd5Key);
+
+        final MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("md5");
+        } catch (NoSuchAlgorithmException e) {
+            // never here
+            throw new SessionFactoryException(e);
+        }
+        validateMd5 = HexUtils.hexEscapesText(false, digest.digest(className.getBytes(StandardCharsets.UTF_8)));
+        if (!validateMd5.equalsIgnoreCase(providerMd5)) {
+            String m = String.format("SessionFactory[%s] executor provider md5 not match", name);
+            throw new SessionFactoryException(m);
+        }
+
+
         try {
             providerClass = Class.forName(className);
         } catch (Throwable e) {
@@ -471,7 +494,6 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         return error;
 
     }
-
 
 
     protected static final class SessionFactoryAdviceComposite implements FactoryAdvice {

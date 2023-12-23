@@ -5,7 +5,6 @@ import io.army.dialect.Database;
 import io.army.sync.SyncSession;
 import io.army.sync.SyncSessionFactory;
 import io.army.util._Collections;
-import io.jdbd.session.DatabaseSession;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterMethod;
@@ -113,31 +112,9 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
     private Object[][] createDatabaseSession(final boolean local, final ITestNGMethod targetMethod,
                                              final ITestContext context) {
 
-        final int currentInvocationCount = targetMethod.getCurrentInvocationCount() + 1;
-
         final String methodName, keyOfSession;
         methodName = targetMethod.getMethodName();
         keyOfSession = keyNameOfSession(targetMethod);
-
-        final Class<?>[] parameterTypeArray;
-        parameterTypeArray = targetMethod.getParameterTypes();
-
-
-        int sessionIndex = -1, methodIndex = -1, readOnlyIndex = -1;
-
-        Class<?> parameterType;
-        for (int i = 0; i < parameterTypeArray.length; i++) {
-            parameterType = parameterTypeArray[i];
-            if (DatabaseSession.class.isAssignableFrom(parameterType)) {
-                sessionIndex = i;
-            } else if (parameterType == boolean.class) {
-                readOnlyIndex = i;
-            } else if (parameterType == String.class) {
-                methodIndex = i;
-            }
-        }
-
-        final boolean readOnly = (currentInvocationCount & 1) == 0;
 
         final SyncSessionFactory sessionFactory;
         sessionFactory = SYNC_FACTORY_MAP.get(this.database);
@@ -147,37 +124,17 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
         if (local) {
             session = sessionFactory.localBuilder()
                     .name(methodName)
-                    .readonly(readOnly)
                     .allowQueryInsert(true)
                     .build();
         } else {
             session = sessionFactory.rmBuilder()
                     .name(methodName)
-                    .readonly(readOnly)
                     .allowQueryInsert(true)
                     .build();
         }
 
         context.setAttribute(keyOfSession, session);
-
-        final Object[][] result;
-        if (sessionIndex > -1 && methodIndex > -1 && readOnlyIndex > -1) {
-            result = new Object[1][3];
-            result[0][sessionIndex] = session;
-            result[0][methodIndex] = methodName;
-            result[0][readOnlyIndex] = readOnly;
-        } else if (sessionIndex > -1 && readOnlyIndex > -1) {
-            result = new Object[1][2];
-            result[0][sessionIndex] = session;
-            result[0][readOnlyIndex] = readOnly;
-        } else if (sessionIndex > -1 && methodIndex > -1) {
-            result = new Object[1][2];
-            result[0][sessionIndex] = session;
-            result[0][methodIndex] = methodName;
-        } else {
-            result = new Object[][]{{session}};
-        }
-        return result;
+        return new Object[][]{{session}};
     }
 
     /*-------------------below protected static -------------------*/

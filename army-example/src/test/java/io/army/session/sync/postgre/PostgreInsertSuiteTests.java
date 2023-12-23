@@ -37,6 +37,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     @Test(groups = Groups.DOMAIN_INSERT)
     public void domainInsertParent(final SyncLocalSession session) {
+
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -52,7 +53,6 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         final long rows;
         rows = session.update(stmt);
-
         Assert.assertEquals(rows, regionList.size());
 
         for (ChinaRegion<?> region : regionList) {

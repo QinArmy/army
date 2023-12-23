@@ -6,6 +6,7 @@ import io.army.session.SessionFactory;
 import io.army.session.SessionFactoryException;
 import io.army.session.executor.ExecutorFactory;
 
+import javax.annotation.Nullable;
 import java.io.Closeable;
 
 /**
@@ -20,7 +21,11 @@ public interface SyncSessionFactory extends SessionFactory, Closeable {
 
     SyncLocalSession localSession();
 
+    SyncLocalSession localSession(@Nullable String name, boolean readOnly);
+
     SyncRmSession rmSession();
+
+    SyncRmSession rmSession(@Nullable String name, boolean readOnly);
 
     LocalSessionBuilder localBuilder();
 

@@ -9,6 +9,7 @@ import io.army.sync.executor.SyncExecutor;
 import io.army.sync.executor.SyncExecutorFactory;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 
@@ -68,9 +69,26 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
     }
 
     @Override
+    public SyncLocalSession localSession(@Nullable String name, boolean readOnly) {
+        return localBuilder()
+                .name(name)
+                .readonly(readOnly)
+                .build();
+    }
+
+    @Override
     public SyncRmSession rmSession() {
         return rmBuilder().build();
     }
+
+    @Override
+    public SyncRmSession rmSession(@Nullable String name, boolean readOnly) {
+        return rmBuilder()
+                .name(name)
+                .readonly(readOnly)
+                .build();
+    }
+
 
     @Override
     public LocalSessionBuilder localBuilder() {

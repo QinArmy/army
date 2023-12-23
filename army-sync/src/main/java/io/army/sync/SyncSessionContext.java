@@ -3,6 +3,8 @@ package io.army.sync;
 import io.army.session.NoCurrentSessionException;
 import io.army.session.SessionContext;
 
+import javax.annotation.Nullable;
+
 /**
  * <p>This interface representing current {@link SyncSession} context.
  * <p>This interface is designed for some framework,for example {@code  org.springframework.transaction.PlatformTransactionManager}
@@ -28,6 +30,12 @@ public interface SyncSessionContext extends SessionContext {
     SyncSession currentSession() throws NoCurrentSessionException;
 
     <T extends SyncSession> T currentSession(Class<T> sessionClass) throws NoCurrentSessionException;
+
+    @Nullable
+    SyncSession tryCurrentSession();
+
+    @Nullable
+    <T extends SyncSession> T tryCurrentSession(Class<T> sessionClass);
 
 
 }

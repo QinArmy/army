@@ -59,6 +59,10 @@ public final class ArmySyncLocalTransactionManager extends AbstractPlatformTrans
     }
 
 
+    public SyncSessionFactory getSessionFactory() {
+        return this.sessionFactory;
+    }
+
     public SyncSessionContext getSessionContext() {
         return this.sessionContext;
     }
