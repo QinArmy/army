@@ -23,13 +23,11 @@ public abstract class HikariDataSourceUtils extends DataSourceUtils {
     public static HikariConfig createHikariConfig(Environment env, Properties properties, final String tag, String role) {
         HikariConfig ds = new HikariConfig();
 
-        ds.setJdbcUrl(env.getRequiredProperty(String.format("spring.datasource.%s.%s.url", tag, role)));
+        final String url;
+        url = putJdbcProperties(env, properties, tag, role);
 
-        properties.put("user", env.getRequiredProperty(String.format("spring.datasource.%s.%s.username", tag, role)));
-        properties.put("password", env.getRequiredProperty(String.format("spring.datasource.%s.%s.password", tag, role)));
-
+        ds.setJdbcUrl(url);
         ds.setDataSourceProperties(properties);
-
         ds.setDriverClassName(getDriver(env, tag));
         ds.setConnectionTestQuery(env.getProperty(String.format("spring.datasource.%s.%s.connectionTestQuery", tag, role), "SELECT 1 "));
 

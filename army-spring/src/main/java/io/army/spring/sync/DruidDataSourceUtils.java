@@ -24,11 +24,10 @@ public abstract class DruidDataSourceUtils extends DataSourceUtils {
 
     public static void setDataSourceProperties(DruidDataSource ds, Environment env, Properties properties, final String tag, String role) {
 
-        ds.setUrl(env.getRequiredProperty(String.format("spring.datasource.%s.%s.url", tag, role)));
+        final String url;
+        url = putJdbcProperties(env, properties, tag, role);
 
-        properties.put("user", env.getRequiredProperty(String.format("spring.datasource.%s.%s.username", tag, role)));
-        properties.put("password", env.getRequiredProperty(String.format("spring.datasource.%s.%s.password", tag, role)));
-
+        ds.setUrl(url);
         ds.setConnectProperties(properties);
         ds.setDriverClassName(getDriver(env, tag));
 

@@ -3,14 +3,13 @@ package io.army.sync.dao;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>This interface is designed for dao layer.
  *
  * @since 0.6.0
  */
-public interface ArmyDaoSupport {
+public interface SyncDaoSupport {
 
     <T> void save(T domain);
 
@@ -26,6 +25,7 @@ public interface ArmyDaoSupport {
     <T> T findById(Class<T> domainClass, Object id);
 
     @Nullable
-    Map<String, Object> findByIdAsMap(Class<?> domainClass, Object id);
+    <T> T findByUnique(Class<T> domainClass, String fieldName, Object fieldValue);
+
 
 }

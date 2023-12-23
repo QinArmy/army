@@ -1,6 +1,7 @@
 package io.army.spring.sync;
 
 import io.army.session.NoCurrentSessionException;
+import io.army.session.SessionFactory;
 import io.army.sync.SyncSession;
 import io.army.sync.SyncSessionContext;
 import io.army.sync.SyncSessionFactory;
@@ -23,8 +24,9 @@ final class SpringSyncSessionContext implements SyncSessionContext {
         return this.factory;
     }
 
+
     @Override
-    public <T extends SyncSessionFactory> T sessionFactory(Class<T> factoryClass) {
+    public <T extends SessionFactory> T sessionFactory(Class<T> factoryClass) {
         return factoryClass.cast(this.factory);
     }
 

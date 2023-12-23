@@ -1,8 +1,11 @@
 package io.army.util;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Insert;
+import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.session.Session;
 
 import java.io.IOException;
@@ -69,6 +72,52 @@ public abstract class ArmyCriteria {
         final List<?> fieldList;
         fieldList = table.fieldList();
         return (List<FieldMeta<?>>) fieldList;
+    }
+
+    public static <P, T> Select queryDomainByUniqueStmt(final Session session, final Class<T> domainClass,
+                                                        final String filedName, final Object fieldValue) {
+        final TableMeta<T> domainTable;
+        domainTable = session.tableMeta(domainClass);
+
+        final FieldMeta<?> uniqueFiled;
+        if (_MetaBridge.ID.equals(filedName)) {
+            uniqueFiled = domainTable.id();
+        } else {
+            uniqueFiled = domainTable.getComplexFiled(filedName);
+            if (!(uniqueFiled instanceof UniqueFieldMeta)) {
+                String m = String.format("%s isn't %s", uniqueFiled, UniqueFieldMeta.class.getName());
+                throw new CriteriaException(m);
+            }
+        }
+
+        final Select stmt;
+        if (domainTable instanceof ChildTableMeta) {
+            final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) domainTable;
+            final ParentTableMeta<P> parent = child.parentMeta();
+
+            final PrimaryFieldMeta<?> childId;
+            if (uniqueFiled instanceof PrimaryFieldMeta) {
+                childId = (PrimaryFieldMeta<?>) uniqueFiled;
+            } else {
+                childId = child.id();
+            }
+
+            stmt = SQLs.query()
+                    .select("p", SQLs.PERIOD, parent, "c", SQLs.PERIOD, child)
+                    .from(child, SQLs.AS, "c")
+                    .join(parent, SQLs.AS, "p").on(childId.equal(parent.id()))
+                    .where(uniqueFiled.equal(SQLs::param, fieldValue))
+                    .asQuery();
+        } else {
+            stmt = SQLs.query()
+                    .select("t", SQLs.PERIOD, domainTable)
+                    .from(domainTable, SQLs.AS, "t")
+                    .where(uniqueFiled.equal(SQLs::param, fieldValue))
+                    .asQuery();
+        }
+
+        return stmt;
+
     }
 
 

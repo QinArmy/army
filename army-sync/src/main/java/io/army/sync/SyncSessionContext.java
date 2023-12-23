@@ -1,6 +1,7 @@
 package io.army.sync;
 
 import io.army.session.NoCurrentSessionException;
+import io.army.session.SessionContext;
 
 /**
  * <p>This interface representing current {@link SyncSession} context.
@@ -8,11 +9,11 @@ import io.army.session.NoCurrentSessionException;
  *
  * @since 0.6.0
  */
-public interface SyncSessionContext {
+public interface SyncSessionContext extends SessionContext {
 
+    @Override
     SyncSessionFactory sessionFactory();
 
-    <T extends SyncSessionFactory> T sessionFactory(Class<T> factoryClass);
 
     boolean hasCurrentSession();
 
