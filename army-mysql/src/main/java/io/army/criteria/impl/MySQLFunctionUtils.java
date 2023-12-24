@@ -10,8 +10,6 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.*;
-import io.army.mapping.mysql.MySqlBitType;
-import io.army.mapping.spatial.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLType;
@@ -231,152 +229,13 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         if (typeDef instanceof MySQLType) {
             dataType = (MySQLType) typeDef;
         } else if (!(typeDef instanceof TypeDefs)) {
-            throw ContextStack.clearStackAndCriteriaError("unknown TypeDef");
+            throw CriteriaUtils.unknownTypeDef();
         } else if (((TypeDefs) typeDef).dataType instanceof MySQLType) {
             dataType = (MySQLType) ((TypeDefs) typeDef).dataType;
         } else {
-            throw ContextStack.clearStackAndCriteriaError("unknown TypeDef");
+            throw CriteriaUtils.unknownTypeDef();
         }
-
-        final MappingType type;
-        switch (dataType) {
-            case BOOLEAN:
-                type = BooleanType.INSTANCE;
-                break;
-            case TINYINT:
-                type = ByteType.INSTANCE;
-                break;
-            case SMALLINT:
-                type = ShortType.INSTANCE;
-                break;
-            case MEDIUMINT:
-                type = MediumIntType.INSTANCE;
-                break;
-            case INT:
-                type = IntegerType.INSTANCE;
-                break;
-            case BIGINT:
-                type = LongType.INSTANCE;
-                break;
-            case DECIMAL:
-                type = BigDecimalType.INSTANCE;
-                break;
-            case DOUBLE:
-                type = DoubleType.INSTANCE;
-                break;
-            case FLOAT:
-                type = FloatType.INSTANCE;
-                break;
-
-            case TINYINT_UNSIGNED:
-                type = UnsignedTinyIntType.INSTANCE;
-                break;
-            case SMALLINT_UNSIGNED:
-                type = UnsignedSmallIntType.INSTANCE;
-                break;
-            case MEDIUMINT_UNSIGNED:
-                type = UnsignedMediumIntType.INSTANCE;
-                break;
-            case INT_UNSIGNED:
-                type = UnsignedSqlIntType.INSTANCE;
-                break;
-            case BIGINT_UNSIGNED:
-                type = UnsignedBigintType.INSTANCE;
-                break;
-            case DECIMAL_UNSIGNED:
-                type = UnsignedBigDecimalType.INSTANCE;
-                break;
-
-            case TIME:
-                type = LocalTimeType.INSTANCE;
-                break;
-            case DATE:
-                type = LocalDateType.INSTANCE;
-                break;
-            case DATETIME:
-                type = LocalDateTimeType.INSTANCE;
-                break;
-            case YEAR:
-                type = YearType.INSTANCE;
-                break;
-
-            case CHAR:
-                type = SqlCharType.INSTANCE;
-                break;
-            case VARCHAR:
-            case SET:
-            case ENUM:
-                type = StringType.INSTANCE;
-                break;
-            case TINYTEXT:
-                type = TinyTextType.INSTANCE;
-                break;
-            case TEXT:
-                type = TextType.INSTANCE;
-                break;
-            case MEDIUMTEXT:
-                type = MediumTextType.INSTANCE;
-                break;
-            case LONGTEXT:
-                type = LongText.STRING;
-                break;
-
-            case JSON:
-                type = JsonType.TEXT;
-                break;
-            case BIT:
-                type = MySqlBitType.INSTANCE;
-                break;
-
-            case BINARY:
-                type = BinaryType.INSTANCE;
-                break;
-            case VARBINARY:
-                type = VarBinaryType.INSTANCE;
-                break;
-            case TINYBLOB:
-                type = TinyBlobType.INSTANCE;
-                break;
-            case BLOB:
-                type = BlobType.INSTANCE;
-                break;
-            case MEDIUMBLOB:
-                type = MediumBlobType.INSTANCE;
-                break;
-            case LONGBLOB:
-                type = LongBlobType.BYTE_ARRAY;
-                break;
-
-            case GEOMETRY:
-                type = GeometryType.BINARY;
-                break;
-            case POINT:
-                type = PointType.BINARY;
-                break;
-            case LINESTRING:
-                type = LineStringType.BINARY;
-                break;
-            case POLYGON:
-                type = PolygonType.BINARY;
-                break;
-            case MULTIPOINT:
-                type = MultiPointType.BINARY;
-                break;
-            case MULTIPOLYGON:
-                type = MultiPolygonType.BINARY;
-                break;
-            case MULTILINESTRING:
-                type = MultiLineStringType.BINARY;
-                break;
-            case GEOMETRYCOLLECTION:
-                type = GeometryCollectionType.BINARY;
-                break;
-            case NULL:
-            case UNKNOWN:
-            default:
-                throw ContextStack.clearStackAndCriteriaError(String.format("error type %s", dataType));
-        }
-        return type;
+        return dataType.mapType(CriteriaUtils::unknownTypeDef);
     }
 
 

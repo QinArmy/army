@@ -298,7 +298,9 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
 
     ArmyException handleException(final Exception cause) {
         final ArmyException error;
-        if (cause instanceof SQLException) {
+        if (cause instanceof ArmyException) {
+            error = (ArmyException) cause;
+        } else if (cause instanceof SQLException) {
             // TODO convert to  ServerException
             error = new DataAccessException(cause.getMessage(), cause);
         } else {

@@ -239,7 +239,7 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    public static StandardQuery._SelectSpec<Select> query() {
+    public static StandardQuery._WithSpec<Select> query() {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD10);
     }
 

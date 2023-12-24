@@ -859,6 +859,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, "standard 1.0 api don't support WINDOW syntax.");
     }
 
+    static CriteriaException unknownTypeDef() {
+        return ContextStack.clearStackAndCriteriaError("unknown TypeDef");
+    }
+
 
     /**
      * @see #returningAll(TableMeta, String, List)

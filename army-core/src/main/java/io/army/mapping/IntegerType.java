@@ -96,7 +96,7 @@ public final class IntegerType extends _NumericType._IntegerType {
             if (v < min || v > max) {
                 throw errorHandler.apply(type, dataType, nonNull, null);
             }
-            value = (byte) v;
+            value = (int) v;
         } else if (nonNull instanceof BigDecimal) {
             try {
                 value = ((BigDecimal) nonNull).intValueExact();

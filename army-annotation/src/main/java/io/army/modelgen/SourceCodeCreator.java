@@ -7,6 +7,7 @@ import io.army.annotation.Table;
 
 import javax.annotation.Nullable;
 import javax.annotation.processing.Filer;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -23,6 +24,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import static java.time.temporal.ChronoField.*;
+import static javax.lang.model.SourceVersion.RELEASE_8;
 
 final class SourceCodeCreator {
 
@@ -50,30 +52,18 @@ final class SourceCodeCreator {
             .toFormatter(Locale.ENGLISH);
 
 
-    private static final boolean asOfJava9;
-
-
-    static {
-        boolean match;
-        try {
-            Class.forName("java.lang.Process", false, Thread.currentThread().getContextClassLoader());
-            match = true;
-        } catch (ClassNotFoundException e) {
-            match = false;
-        }
-        asOfJava9 = match;
-    }
-
-
     private final Filer filer;
 
     private final String codeCreateTime;
 
+    private final boolean asOfJava9;
+
     private final Map<String, StringBuilder> fieldPairMap = ArmyCollections.hashMap();
 
-    SourceCodeCreator(Filer filer) {
+    SourceCodeCreator(final SourceVersion sourceVersion, Filer filer) {
         this.filer = filer;
         this.codeCreateTime = OffsetDateTime.now().format(ISO_OFFSET_DATETIME_FORMATTER);
+        this.asOfJava9 = sourceVersion.compareTo(RELEASE_8) > 0;
     }
 
     void create(final TypeElement element, final Map<String, VariableElement> fieldMap
@@ -282,7 +272,7 @@ final class SourceCodeCreator {
     }
 
 
-    private static void appendImports(final TypeElement element, final StringBuilder builder, final MappingMode mode) {
+    private void appendImports(final TypeElement element, final StringBuilder builder, final MappingMode mode) {
 
         builder.append("package ")
                 .append(((PackageElement) element.getEnclosingElement()).getQualifiedName())
@@ -292,7 +282,7 @@ final class SourceCodeCreator {
                 .append("import io.army.criteria.impl._TableMetaFactory;\n")
                 .append("import io.army.meta.PrimaryFieldMeta;\n");
 
-        if (asOfJava9) {
+        if (this.asOfJava9) {
             builder.append("import javax.annotation.processing.Generated;\n");
         } else {
             builder.append("import javax.annotation.Generated;\n");

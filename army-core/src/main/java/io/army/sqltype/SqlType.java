@@ -1,9 +1,11 @@
 package io.army.sqltype;
 
+import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.mapping.MappingType;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public interface SqlType extends DataType {
 
@@ -32,24 +34,7 @@ public interface SqlType extends DataType {
     SqlType elementType();
 
 
-    default boolean isNoPrecision() {
-        throw new UnsupportedOperationException();
-    }
-
-    default boolean isSupportPrecision() {
-        throw new UnsupportedOperationException();
-    }
-
-    default boolean isSupportPrecisionScale() {
-        throw new UnsupportedOperationException();
-    }
-
-    default boolean isSupportCharset() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    default MappingType mappingType() {
+    default MappingType mapType(Supplier<? extends ArmyException> errorHandler) {
         throw new UnsupportedOperationException();
     }
 

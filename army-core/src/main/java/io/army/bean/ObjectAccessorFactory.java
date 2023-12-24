@@ -20,6 +20,9 @@ public abstract class ObjectAccessorFactory {
         throw new UnsupportedOperationException();
     }
 
+
+    public static final ObjectAccessor MAP_ACCESSOR = MapWriterAccessor.INSTANCE;
+
     private static final byte WRITE_METHOD = 1;
 
     private static final byte READ_METHOD = 2;
@@ -56,15 +59,11 @@ public abstract class ObjectAccessorFactory {
         return accessor;
     }
 
-    public static ObjectAccessor forMap() {
-        return MapWriterAccessor.INSTANCE;
-    }
-
 
     public static ReadAccessor readOnlyFromInstance(final Object instance) {
         final ReadAccessor accessor;
         if (instance instanceof Map) {
-            accessor = MapReadAccessor.INSTANCE;
+            accessor = MAP_ACCESSOR;
         } else {
             accessor = forBean(instance.getClass())
                     .getReadAccessor();
@@ -75,7 +74,7 @@ public abstract class ObjectAccessorFactory {
     public static ObjectAccessor fromInstance(final Object instance) {
         final ObjectAccessor accessor;
         if (instance instanceof Map) {
-            accessor = MapWriterAccessor.INSTANCE;
+            accessor = MAP_ACCESSOR;
         } else {
             accessor = forBean(instance.getClass());
         }
@@ -102,15 +101,6 @@ public abstract class ObjectAccessorFactory {
     }
 
 
-    public static <T> T createPair(Constructor<T> constructor, @Nullable Object first, @Nullable Object second) {
-        try {
-            return constructor.newInstance(first, second);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            String m = String.format("%s don't declared public default constructor."
-                    , constructor.getDeclaringClass().getName());
-            throw new ObjectAccessException(m, e);
-        }
-    }
 
 
     private static BeanAccessors createMethodAccessors(final Class<?> beanClass) {

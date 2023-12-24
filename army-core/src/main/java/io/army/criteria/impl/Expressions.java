@@ -46,9 +46,11 @@ abstract class Expressions {
             case PLUS:
                 inferFunc = Expressions::plusType;
                 break;
+            case DIVIDE:
+                inferFunc = Expressions::divideType;
+                break;
             case MINUS:
             case TIMES:
-            case DIVIDE:
             case MOD:
                 inferFunc = Expressions::mathExpType;
                 break;
@@ -524,6 +526,10 @@ abstract class Expressions {
         return DoubleType.INSTANCE;
     }
 
+    static MappingType divideType(MappingType left, MappingType right) {
+        return BigDecimalType.INSTANCE;
+    }
+
 
     static MappingType plusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
@@ -849,7 +855,7 @@ abstract class Expressions {
     /**
      * <p>
      * This class representing unary expression,unary expression always out outer bracket.
-     *
+     * <p>
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link UnaryExpOperator}.
      */
@@ -2341,11 +2347,10 @@ abstract class Expressions {
     /**
      * <p>
      * This class is base class of below:
-     *     <ul>
-     *         <li>{@link SimpleArrayConstructor}</li>
-     *         <li>{@link SubQueryArrayConstructor}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link SimpleArrayConstructor}</li>
+     *     <li>{@link SubQueryArrayConstructor}</li>
+     * </ul>
      */
     private static abstract class ArrayConstructor extends OperationExpression.OperationSimpleExpression
             implements ArmyArrayExpression, SQLs._ArrayConstructorSpec {

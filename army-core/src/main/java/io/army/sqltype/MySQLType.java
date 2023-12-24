@@ -1,6 +1,10 @@
 package io.army.sqltype;
 
+import io.army.ArmyException;
 import io.army.dialect.Database;
+import io.army.mapping.*;
+import io.army.mapping.mysql.MySqlBitType;
+import io.army.mapping.spatial.*;
 import io.army.type.BlobPath;
 import io.army.type.TextPath;
 import io.army.util._StringUtils;
@@ -9,6 +13,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
+import java.util.function.Supplier;
 
 /**
  * <p>This enum representing MySQL build-in data type
@@ -138,7 +143,6 @@ public enum MySQLType implements SqlType {
         return null;
     }
 
-
     @Override
     public final String typeName() {
         return this.typeName;
@@ -155,72 +159,150 @@ public enum MySQLType implements SqlType {
         return false;
     }
 
-
     @Override
-    public final boolean isNoPrecision() {
-        final boolean match;
+    public final MappingType mapType(final Supplier<? extends ArmyException> errorHandler) {
+        final MappingType type;
         switch (this) {
-            case VARCHAR:
-            case VARBINARY:
-                match = false;
+            case BOOLEAN:
+                type = BooleanType.INSTANCE;
                 break;
-            default:
-                match = true;
-        }
-        return match;
-    }
-
-    @Override
-    public final boolean isSupportPrecision() {
-        final boolean match;
-        switch (this) {
-            case VARCHAR:
-            case VARBINARY:
+            case TINYINT:
+                type = ByteType.INSTANCE;
+                break;
+            case SMALLINT:
+                type = ShortType.INSTANCE;
+                break;
+            case MEDIUMINT:
+                type = MediumIntType.INSTANCE;
+                break;
+            case INT:
+                type = IntegerType.INSTANCE;
+                break;
+            case BIGINT:
+                type = LongType.INSTANCE;
+                break;
             case DECIMAL:
+                type = BigDecimalType.INSTANCE;
+                break;
+            case DOUBLE:
+                type = DoubleType.INSTANCE;
+                break;
+            case FLOAT:
+                type = FloatType.INSTANCE;
+                break;
+
+            case TINYINT_UNSIGNED:
+                type = UnsignedTinyIntType.INSTANCE;
+                break;
+            case SMALLINT_UNSIGNED:
+                type = UnsignedSmallIntType.INSTANCE;
+                break;
+            case MEDIUMINT_UNSIGNED:
+                type = UnsignedMediumIntType.INSTANCE;
+                break;
+            case INT_UNSIGNED:
+                type = UnsignedSqlIntType.INSTANCE;
+                break;
+            case BIGINT_UNSIGNED:
+                type = UnsignedBigintType.INSTANCE;
+                break;
             case DECIMAL_UNSIGNED:
+                type = UnsignedBigDecimalType.INSTANCE;
+                break;
+
             case TIME:
+                type = LocalTimeType.INSTANCE;
+                break;
+            case DATE:
+                type = LocalDateType.INSTANCE;
+                break;
             case DATETIME:
-            case TEXT:
-            case BLOB:
-                match = true;
+                type = LocalDateTimeType.INSTANCE;
                 break;
-            default:
-                match = false;
-        }
-        return match;
-    }
-
-    @Override
-    public final boolean isSupportPrecisionScale() {
-        final boolean match;
-        switch (this) {
-            case DECIMAL:
-            case DECIMAL_UNSIGNED:
-                match = true;
+            case YEAR:
+                type = YearType.INSTANCE;
                 break;
-            default:
-                match = false;
-        }
-        return match;
-    }
 
-    @Override
-    public final boolean isSupportCharset() {
-        final boolean match;
-        switch (this) {
-            case VARCHAR:
             case CHAR:
+                type = SqlCharType.INSTANCE;
+                break;
+            case VARCHAR:
+            case SET:
+            case ENUM:
+
+            case NULL:
+            case UNKNOWN:
+                type = StringType.INSTANCE;
+                break;
             case TINYTEXT:
+                type = TinyTextType.INSTANCE;
+                break;
             case TEXT:
+                type = TextType.INSTANCE;
+                break;
             case MEDIUMTEXT:
+                type = MediumTextType.INSTANCE;
+                break;
             case LONGTEXT:
-                match = true;
+                type = LongText.STRING;
+                break;
+
+            case JSON:
+                type = JsonType.TEXT;
+                break;
+            case BIT:
+                type = MySqlBitType.INSTANCE;
+                break;
+
+            case BINARY:
+                type = BinaryType.INSTANCE;
+                break;
+            case VARBINARY:
+                type = VarBinaryType.INSTANCE;
+                break;
+            case TINYBLOB:
+                type = TinyBlobType.INSTANCE;
+                break;
+            case BLOB:
+                type = BlobType.INSTANCE;
+                break;
+            case MEDIUMBLOB:
+                type = MediumBlobType.INSTANCE;
+                break;
+            case LONGBLOB:
+                type = LongBlobType.BYTE_ARRAY;
+                break;
+
+            case GEOMETRY:
+                type = GeometryType.BINARY;
+                break;
+            case POINT:
+                type = PointType.BINARY;
+                break;
+            case LINESTRING:
+                type = LineStringType.BINARY;
+                break;
+            case POLYGON:
+                type = PolygonType.BINARY;
+                break;
+            case MULTIPOINT:
+                type = MultiPointType.BINARY;
+                break;
+            case MULTIPOLYGON:
+                type = MultiPolygonType.BINARY;
+                break;
+            case MULTILINESTRING:
+                type = MultiLineStringType.BINARY;
+                break;
+            case GEOMETRYCOLLECTION:
+                type = GeometryCollectionType.BINARY;
                 break;
             default:
-                match = false;
+                throw errorHandler.get();
         }
-        return match;
+        return type;
     }
+
 
     @Override
     public final String toString() {

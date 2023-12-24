@@ -32,7 +32,7 @@ final class AnnotationHandler {
 
 
     void createSourceFiles(Set<? extends Element> domainElementSet) throws IOException {
-        final SourceCodeCreator codeCreator = new SourceCodeCreator(this.env.getFiler());
+        final SourceCodeCreator codeCreator = new SourceCodeCreator(this.env.getSourceVersion(), this.env.getFiler());
         final List<String> errorMsgList = this.errorMsgList;
         final TypeElement[] outParent = new TypeElement[1];
 

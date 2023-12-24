@@ -219,12 +219,22 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case JSON:
                 value = resultSet.getString(indexBasedOne);
                 break;
-            case FLOAT:
-                value = resultSet.getObject(indexBasedOne, Float.class);
-                break;
-            case DOUBLE:
-                value = resultSet.getObject(indexBasedOne, Double.class);
-                break;
+            case FLOAT: {
+                if (type instanceof MappingType.SqlDecimalType) {
+                    value = resultSet.getObject(indexBasedOne, BigDecimal.class);
+                } else {
+                    value = resultSet.getObject(indexBasedOne, Float.class);
+                }
+            }
+            break;
+            case DOUBLE: {
+                if (type instanceof MappingType.SqlDecimalType) {
+                    value = resultSet.getObject(indexBasedOne, BigDecimal.class);
+                } else {
+                    value = resultSet.getObject(indexBasedOne, Double.class);
+                }
+            }
+            break;
             case BIGINT_UNSIGNED:
                 value = resultSet.getObject(indexBasedOne, BigInteger.class);
                 break;
