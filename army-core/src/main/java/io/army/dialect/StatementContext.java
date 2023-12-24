@@ -272,6 +272,12 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
     }
 
     @Override
+    public final boolean isUpdateTimeOutputParam() {
+        final ParamAccepter accepter = this.paramAccepter;
+        return accepter.paramList.size() > 0 || !accepter.hasLiteral;
+    }
+
+    @Override
     public final Visible visible() {
         return this.visible;
     }

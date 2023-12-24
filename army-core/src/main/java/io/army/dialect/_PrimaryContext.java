@@ -24,6 +24,8 @@ public interface _PrimaryContext extends _SqlContext {
 
     boolean hasLiteral();
 
+    boolean isUpdateTimeOutputParam();
+
 
     boolean hasOptimistic();
 
