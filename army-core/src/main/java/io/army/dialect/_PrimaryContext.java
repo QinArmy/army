@@ -22,6 +22,8 @@ public interface _PrimaryContext extends _SqlContext {
 
     boolean hasNamedLiteral();
 
+    boolean hasLiteral();
+
 
     boolean hasOptimistic();
 

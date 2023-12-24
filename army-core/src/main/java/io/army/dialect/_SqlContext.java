@@ -4,10 +4,9 @@ import io.army.criteria.NamedLiteral;
 import io.army.criteria.SQLParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
+import io.army.meta.TypeMeta;
 
 import javax.annotation.Nullable;
-
-import io.army.meta.TypeMeta;
 
 /**
  * <p>
@@ -23,7 +22,7 @@ public interface _SqlContext extends SqlContextSpec {
     Dialect dialect();
 
 
-    StringBuilder appendFuncName(boolean buildIn, String name);
+    void appendFuncName(boolean buildIn, String name);
 
 
 

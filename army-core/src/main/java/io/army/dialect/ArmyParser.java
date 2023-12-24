@@ -2010,7 +2010,7 @@ abstract class ArmyParser implements DialectParser {
         if (context instanceof InsertContext) {
             final InsertContext insertContext = (InsertContext) context;
             insertContext.appendInsertValue(insertContext.literalMode, field, updateTimeValue);
-        } else if (context.hasParam()) {
+        } else if (context.hasParam() || !context.hasLiteral()) {
             context.appendParam(SingleParam.build(field, updateTimeValue));
         } else {
             sqlBuilder.append(_Constant.SPACE);

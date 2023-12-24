@@ -2,9 +2,6 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
@@ -13,6 +10,7 @@ import io.army.stmt.StmtParams;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -89,7 +87,7 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
 
     @Override
-    public final StringBuilder appendFuncName(final boolean buildIn, final String name) {
+    public final void appendFuncName(final boolean buildIn, final String name) {
         if (!buildIn && (this.parser.isKeyWords(name) || !_DialectUtils.isSimpleIdentifier(name))) {
             String m = String.format("user defined function name[%s] for %s", name, this.parser.dialect);
             throw new CriteriaException(m);
@@ -109,7 +107,7 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
             default:
                 throw _Exceptions.unexpectedEnum(this.parser.funcNameMode);
         }
-        return sqlBuilder;
+
     }
 
     @Override
@@ -177,6 +175,9 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     @Override
     public final void appendLiteral(final TypeMeta typeMeta, final @Nullable Object value) {
+        if (!this.paramAccepter.hasLiteral) {
+            this.paramAccepter.setHasLiteral();
+        }
         this.parser.literal(typeMeta, value, this.sqlBuilder.append(_Constant.SPACE));
 
     }
@@ -263,6 +264,11 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
     @Override
     public final boolean hasNamedLiteral() {
         return this.paramAccepter.hasNamedLiteral;
+    }
+
+    @Override
+    public final boolean hasLiteral() {
+        return this.paramAccepter.hasLiteral;
     }
 
     @Override
@@ -361,6 +367,8 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
         private boolean hasNamedLiteral;
 
+        private boolean hasLiteral;
+
         private ParamAccepter(@Nullable Function<String, Object> nameValueFunc, @Nullable IntSupplier batchIndexFunc) {
             assert (nameValueFunc == null) == (batchIndexFunc == null);
             this.paramList = _Collections.arrayList();
@@ -370,9 +378,12 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
         private ParamAccepter(ParamAccepter outerConsumer, Function<String, Object> nameValueFunc,
                               IntSupplier batchIndexFunc) {
+
             this.paramList = outerConsumer.paramList;
             this.hasNamedParam = outerConsumer.hasNamedParam;
             this.hasNamedLiteral = outerConsumer.hasNamedLiteral;
+            this.hasLiteral = outerConsumer.hasLiteral;
+
             this.nameValueFunc = nameValueFunc;
             this.batchIndexFunc = batchIndexFunc;
         }
@@ -385,11 +396,19 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
         }
 
         final void setHasNamedLiteral() {
-            this.hasNamedLiteral = true;
+            this.hasLiteral = this.hasNamedLiteral = true;
             if (this instanceof ParamAccepterWithOuter) {
                 ((ParamAccepterWithOuter) this).outerAccepter.setHasNamedLiteral();
             }
         }
+
+        final void setHasLiteral() {
+            this.hasLiteral = true;
+            if (this instanceof ParamAccepterWithOuter) {
+                ((ParamAccepterWithOuter) this).outerAccepter.setHasLiteral();
+            }
+        }
+
 
     }//ParamConsumer
 
