@@ -108,8 +108,9 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
             assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
             assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
-
             assert info.valueOf(Option.START_MILLIS) != null;
+
+            assert option.isolation() == null == info.nonNullOf(Option.DEFAULT_ISOLATION);
             assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
 
         } else if (!this.readonly) {
@@ -171,6 +172,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
             assert lastInfo.nonNullOf(Option.START_MILLIS).equals(info.valueOf(Option.START_MILLIS));
+            assert lastInfo.nonNullOf(Option.DEFAULT_ISOLATION).equals(info.valueOf(Option.DEFAULT_ISOLATION));
             assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), lastInfo.valueOf(Option.TIMEOUT_MILLIS));
         }
 

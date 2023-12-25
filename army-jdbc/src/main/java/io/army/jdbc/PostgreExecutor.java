@@ -246,22 +246,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case DECIMAL:
                 value = resultSet.getObject(indexBasedOne, BigDecimal.class);
                 break;
-            case FLOAT8: {
-                if (type instanceof MappingType.SqlDecimalType) {
-                    value = resultSet.getObject(indexBasedOne, BigDecimal.class);
-                } else {
-                    value = resultSet.getObject(indexBasedOne, Double.class);
-                }
-            }
-            break;
-            case REAL: {
-                if (type instanceof MappingType.SqlDecimalType) {
-                    value = resultSet.getObject(indexBasedOne, BigDecimal.class);
-                } else {
-                    value = resultSet.getObject(indexBasedOne, Float.class);
-                }
-            }
-            break;
+            case FLOAT8:
+                value = resultSet.getObject(indexBasedOne, Double.class);
+                break;
+            case REAL:
+                value = resultSet.getObject(indexBasedOne, Float.class);
+                break;
 
             case BYTEA: { // postgre client protocol body must less than 2^32 byte
                 if (type instanceof MappingType.SqlStringType) {

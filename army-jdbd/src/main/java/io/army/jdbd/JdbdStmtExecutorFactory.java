@@ -269,6 +269,8 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
             jdbdOption = io.jdbd.session.Option.START_MILLIS;
         } else if (option == Option.TIMEOUT_MILLIS) {
             jdbdOption = io.jdbd.session.Option.TIMEOUT_MILLIS;
+        } else if (option == Option.DEFAULT_ISOLATION) {
+            jdbdOption = io.jdbd.session.Option.DEFAULT_ISOLATION;
         } else if (option == Option.XID) {
             jdbdOption = io.jdbd.session.Option.XID;
         } else if (option == Option.XA_STATES) {
@@ -310,6 +312,8 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
             armyOption = Option.START_MILLIS;
         } else if (option == io.jdbd.session.Option.TIMEOUT_MILLIS) {
             armyOption = Option.TIMEOUT_MILLIS;
+        } else if (option == io.jdbd.session.Option.DEFAULT_ISOLATION) {
+            armyOption = Option.DEFAULT_ISOLATION;
         } else if (option == io.jdbd.session.Option.XID) {
             armyOption = Option.XID;
         } else if (option == io.jdbd.session.Option.XA_STATES) {

@@ -731,6 +731,8 @@ public abstract class ExecutorSupport {
         map.put(Option.XA_STATES, XaStates.ACTIVE);
         map.put(Option.START_MILLIS, System.currentTimeMillis());
 
+        map.put(Option.DEFAULT_ISOLATION, option.isolation() == null);
+
         final Integer timeoutMillis;
         timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
         if (timeoutMillis != null) {
@@ -745,6 +747,8 @@ public abstract class ExecutorSupport {
         map.put(Option.XA_FLAGS, flags);
         map.put(Option.XA_STATES, XaStates.IDLE);
         map.put(Option.START_MILLIS, info.nonNullOf(Option.START_MILLIS));
+
+        map.put(Option.DEFAULT_ISOLATION, info.nonNullOf(Option.DEFAULT_ISOLATION));
 
         final Integer timeoutMillis;
         timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS);

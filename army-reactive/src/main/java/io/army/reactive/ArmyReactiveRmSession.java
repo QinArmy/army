@@ -168,6 +168,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
                         assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
                         assert info.valueOf(Option.START_MILLIS) != null;  // fail ,executor bug
+                        assert (option.isolation() == null) == info.nonNullOf(Option.DEFAULT_ISOLATION);
                         assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
 
                         TRANSACTION_INFO.set(this, info);
@@ -215,6 +216,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
                         assert info.valueOf(Option.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
                         assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
+                        assert lastInfo.nonNullOf(Option.DEFAULT_ISOLATION).equals(info.valueOf(Option.DEFAULT_ISOLATION));  // fail ,executor bug
                         assert lastInfo.nonNullOf(Option.START_MILLIS).equals(info.valueOf(Option.START_MILLIS));  // fail ,executor bug
                         assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), lastInfo.valueOf(Option.TIMEOUT_MILLIS));
 

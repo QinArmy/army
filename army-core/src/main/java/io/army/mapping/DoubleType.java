@@ -8,6 +8,8 @@ import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * This class is mapping class of {@link Double}.
@@ -85,26 +87,32 @@ public final class DoubleType extends _NumericType._FloatNumericType {
     }
 
 
-    private static double toDouble(final MappingType type, final DataType dataType, final Object nonNull,
+    private static double toDouble(final MappingType type, final DataType dataType, final Object source,
                                    final ErrorHandler errorHandler) {
         final double value;
-        if (nonNull instanceof Double) {
-            value = (Double) nonNull;
-        } else if (nonNull instanceof Float
-                || nonNull instanceof Integer
-                || nonNull instanceof Short
-                || nonNull instanceof Byte) {
-            value = ((Number) nonNull).doubleValue();
-        } else if (nonNull instanceof String) {
+        if (source instanceof Double) {
+            value = (Double) source;
+        } else if (source instanceof Float
+                || source instanceof Integer
+                || source instanceof Short
+                || source instanceof Byte) {
+            value = ((Number) source).doubleValue();
+        } else if (source instanceof String) {
             try {
-                value = Double.parseDouble((String) nonNull);
+                value = Double.parseDouble((String) source);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof Boolean) {
-            value = ((Boolean) nonNull) ? 1d : 0d;
+        } else if (source instanceof Boolean) {
+            value = ((Boolean) source) ? 1d : 0d;
+        } else if (source instanceof BigDecimal) {
+            try {
+                value = Double.parseDouble(((BigDecimal) source).toPlainString());
+            } catch (NumberFormatException e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
         } else {//TODO consider Long
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
 
         return value;

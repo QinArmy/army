@@ -118,6 +118,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
                         assert info.isReadOnly() == option.isReadOnly();
                         assert info.valueOf(Option.START_MILLIS) != null;
 
+                        assert (option.isolation() == null) == info.nonNullOf(Option.DEFAULT_ISOLATION);
                         assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
 
                         TRANSACTION_INFO.set(this, info);

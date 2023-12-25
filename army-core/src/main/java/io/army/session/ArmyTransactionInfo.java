@@ -47,12 +47,18 @@ final class ArmyTransactionInfo implements TransactionInfo {
 
 
         if (!pseudoTransaction) {
-            if (inTransaction && optionFunc != Option.EMPTY_FUNC && optionFunc.apply(Option.START_MILLIS) == null) {
+            if (inTransaction && optionFunc.apply(Option.START_MILLIS) == null) {
                 String m = String.format("inTransaction is true ,but %s is null", Option.START_MILLIS);
                 throw new IllegalArgumentException(m);
+            } else if (inTransaction && optionFunc.apply(Option.DEFAULT_ISOLATION) == null) {
+                String m = String.format("inTransaction is true , %s must be non-null", Option.DEFAULT_ISOLATION);
+                throw new IllegalArgumentException(m);
             }
-        } else if (optionFunc != Option.EMPTY_FUNC && optionFunc.apply(Option.START_MILLIS) == null) {
+        } else if (optionFunc.apply(Option.START_MILLIS) == null) {
             String m = String.format("pseudo transaction , %s must be non-null", Option.START_MILLIS);
+            throw new IllegalArgumentException(m);
+        } else if (optionFunc.apply(Option.DEFAULT_ISOLATION) == null) {
+            String m = String.format("pseudo transaction , %s must be non-null", Option.DEFAULT_ISOLATION);
             throw new IllegalArgumentException(m);
         } else if (inTransaction) {
             String m = String.format("inTransaction[%s] and Isolation[%s] not match.", inTransaction, isolation.name());

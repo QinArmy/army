@@ -5,7 +5,7 @@
     <parent>
         <artifactId>army</artifactId>
         <groupId>io.qinarmy</groupId>
-        <version>0.6.3</version><!--Army maven version-->
+        <version>0.6.3-SNAPSHOT</version><!--Army maven version-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -25,7 +25,7 @@
             <groupId>io.jdbd</groupId>
             <artifactId>jdbd-spi</artifactId>
             <scope>provided</scope>
-            <version>0.12.2</version>
+            <version>0.12.3-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

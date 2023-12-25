@@ -74,7 +74,12 @@ public interface SyncLocalSession extends SyncSession, LocalSession {
      *             START TRANSACTION ISOLATION LEVEL READ COMMITTED , READ WRITE
      *     </code>
      * </pre>
-     *
+     * <p><strong>NOTE</strong>:
+     * <ul>
+     *     <li>{@link TransactionInfo#valueOf(Option)} with {@link Option#START_MILLIS} always non-null.</li>
+     *     <li>{@link TransactionInfo#valueOf(Option)} with {@link Option#DEFAULT_ISOLATION} always non-null.</li>
+     *     <li>{@link TransactionInfo#valueOf(Option)} with {@link Option#TIMEOUT_MILLIS} always same with option</li>
+     * </ul>
      * @param option non-null,if {@link TransactionOption#isolation()} is {@link Isolation#PSEUDO},then start pseudo transaction.
      * @param mode   non-null,
      *               <ul>

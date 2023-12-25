@@ -74,6 +74,7 @@ public interface TransactionInfo extends TransactionOption {
         if (timeoutMillis != null) {
             map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
         }
+        map.put(Option.DEFAULT_ISOLATION, Boolean.TRUE);
         return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
     }
 
@@ -97,6 +98,7 @@ public interface TransactionInfo extends TransactionOption {
         map.put(Option.XID, xid);
         map.put(Option.XA_FLAGS, flags);
         map.put(Option.XA_STATES, XaStates.ACTIVE);
+        map.put(Option.DEFAULT_ISOLATION, Boolean.TRUE);
         return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
     }
 
@@ -120,6 +122,7 @@ public interface TransactionInfo extends TransactionOption {
         map.put(Option.XID, info.nonNullOf(Option.XID));
         map.put(Option.XA_FLAGS, flags);
         map.put(Option.XA_STATES, XaStates.IDLE);
+        map.put(Option.DEFAULT_ISOLATION, info.nonNullOf(Option.DEFAULT_ISOLATION));
         return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
     }
 

@@ -8,6 +8,8 @@ import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * This class is mapping class of {@link Float}.
@@ -20,7 +22,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Float},if overflow,throw {@link io.army.ArmyException}
- ** @since 0.6.0
+ * * @since 0.6.0
  */
 public final class FloatType extends _NumericType._FloatNumericType {
 
@@ -82,24 +84,30 @@ public final class FloatType extends _NumericType._FloatNumericType {
         return convertToFloat(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
-    private static float convertToFloat(final MappingType type, final DataType dataType, final Object nonNull,
+    private static float convertToFloat(final MappingType type, final DataType dataType, final Object source,
                                         final ErrorHandler errorHandler) {
         final float value;
-        if (nonNull instanceof Float) {
-            value = (Float) nonNull;
-        } else if (nonNull instanceof Short
-                || nonNull instanceof Byte) {
-            value = ((Number) nonNull).floatValue();
-        } else if (nonNull instanceof String) {
+        if (source instanceof Float) {
+            value = (Float) source;
+        } else if (source instanceof Short
+                || source instanceof Byte) {
+            value = ((Number) source).floatValue();
+        } else if (source instanceof String) {
             try {
-                value = Float.parseFloat((String) nonNull);
+                value = Float.parseFloat((String) source);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof Boolean) {
-            value = ((Boolean) nonNull) ? 1f : 0f;
+        } else if (source instanceof Boolean) {
+            value = ((Boolean) source) ? 1f : 0f;
+        } else if (source instanceof BigDecimal) {
+            try {
+                value = Float.parseFloat(((BigDecimal) source).toPlainString());
+            } catch (NumberFormatException e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }

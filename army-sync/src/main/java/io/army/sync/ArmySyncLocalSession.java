@@ -137,6 +137,9 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
             assert info.inTransaction(); // fail,executor bug
             assert info.isReadOnly() == option.isReadOnly();
             assert info.isolation().equals(option.isolation());
+            assert info.valueOf(Option.START_MILLIS) != null;
+
+            assert (option.isolation() == null) == info.nonNullOf(Option.DEFAULT_ISOLATION);
 
             final Integer timeoutMillis;
             timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);

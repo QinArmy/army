@@ -219,22 +219,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case JSON:
                 value = resultSet.getString(indexBasedOne);
                 break;
-            case FLOAT: {
-                if (type instanceof MappingType.SqlDecimalType) {
-                    value = resultSet.getObject(indexBasedOne, BigDecimal.class);
-                } else {
-                    value = resultSet.getObject(indexBasedOne, Float.class);
-                }
-            }
-            break;
-            case DOUBLE: {
-                if (type instanceof MappingType.SqlDecimalType) {
-                    value = resultSet.getObject(indexBasedOne, BigDecimal.class);
-                } else {
-                    value = resultSet.getObject(indexBasedOne, Double.class);
-                }
-            }
-            break;
+            case FLOAT:
+                value = resultSet.getObject(indexBasedOne, Float.class);
+                break;
+            case DOUBLE:
+                value = resultSet.getObject(indexBasedOne, Double.class);
+                break;
             case BIGINT_UNSIGNED:
                 value = resultSet.getObject(indexBasedOne, BigInteger.class);
                 break;
@@ -403,6 +393,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             final Map<Option<?>, Object> map = _Collections.hashMap(8);
             map.put(Option.START_MILLIS, System.currentTimeMillis());
+            map.put(Option.DEFAULT_ISOLATION, option.isolation() == null);
 
             final Integer timeoutMillis;
             timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
