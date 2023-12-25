@@ -526,8 +526,14 @@ abstract class Expressions {
         return DoubleType.INSTANCE;
     }
 
-    static MappingType divideType(MappingType left, MappingType right) {
-        return BigDecimalType.INSTANCE;
+    static MappingType divideType(final MappingType left, final MappingType right) {
+        final MappingType type;
+        if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
+            type = BigDecimalType.INSTANCE;
+        } else {
+            type = DoubleType.INSTANCE;
+        }
+        return type;
     }
 
 
