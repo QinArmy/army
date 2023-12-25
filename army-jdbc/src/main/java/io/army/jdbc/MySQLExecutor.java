@@ -393,7 +393,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             final Map<Option<?>, Object> map = _Collections.hashMap(8);
             map.put(Option.START_MILLIS, System.currentTimeMillis());
-            map.put(Option.DEFAULT_ISOLATION, option.isolation() == null);
+            map.put(Option.DEFAULT_ISOLATION, isolation == null);
 
             final Integer timeoutMillis;
             timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);

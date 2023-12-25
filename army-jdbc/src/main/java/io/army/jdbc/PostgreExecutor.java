@@ -569,8 +569,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(6);
+            final Map<Option<?>, Object> map = _Collections.hashMap(8);
+
             map.put(Option.START_MILLIS, System.currentTimeMillis());
+            map.put(Option.DEFAULT_ISOLATION, isolation == null);
 
             final Integer timeoutMillis;
             timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
