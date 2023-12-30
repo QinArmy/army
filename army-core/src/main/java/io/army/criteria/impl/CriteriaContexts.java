@@ -1479,9 +1479,10 @@ abstract class CriteriaContexts {
                         if (block.tableItem() != firstFieldTable) {
                             throw unknownQualifiedField(this, field);
                         }
-                    } else if (outerContext != null) {
+                    } else if (outerContext != null
+                            && outerContext.validateFieldFromSubContext(field)
+                            && !this.lateralRefOuter) {
                         this.lateralRefOuter = true;
-                        outerContext.validateFieldFromSubContext(field);
                     }
 
                 }// inner for
