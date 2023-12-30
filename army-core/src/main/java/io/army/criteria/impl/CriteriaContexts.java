@@ -181,7 +181,6 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * For Example , Postgre update/delete criteria context
-     *
      */
     static CriteriaContext primaryJoinableSingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryJoinableSingleDmlContext context;
@@ -198,7 +197,6 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * For Example ,Postgre update/delete criteria context
-     *
      */
     static CriteriaContext subJoinableSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
         final SubJoinableSingleDmlContext context;
@@ -273,7 +271,7 @@ abstract class CriteriaContexts {
      */
     private static void migrateToQueryContext(final SimpleQueryContext queryContext, final DispatcherContext migrated) {
         ((JoinableContext) queryContext).aliasFieldMap = migrated.aliasFieldMap;
-        ((JoinableContext) queryContext).refOuter = migrated.refOuter;
+        ((JoinableContext) queryContext).lateralRefOuter = migrated.refOuter;
         ((JoinableContext) queryContext).fieldsFromSubContext = migrated.fieldsFromSubContext;
 
         queryContext.refWindowNameMap = migrated.refWindowNameMap;
@@ -869,7 +867,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void validateFieldFromSubContext(QualifiedField<?> field) {
+        public boolean validateFieldFromSubContext(QualifiedField<?> field) {
             throw unknownQualifiedField(this, field);
         }
 
@@ -1086,7 +1084,7 @@ abstract class CriteriaContexts {
 
         private List<QualifiedField<?>> fieldsFromSubContext;
 
-        private boolean refOuter;
+        private boolean lateralRefOuter;
 
         private JoinableContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
             super(dialect, outerContext);
@@ -1232,8 +1230,14 @@ abstract class CriteriaContexts {
             if (outerContext == null || this instanceof PrimaryContext) {
                 throw notFoundOuterContext(this);
             }
-            this.refOuter = true;
-            return outerContext.refThis(derivedAlias, fieldName, true);
+
+            final DerivedField field;
+            field = outerContext.refThis(derivedAlias, fieldName, true);
+
+            if (!this.lateralRefOuter) {
+                this.lateralRefOuter = outerContext.getDerived(derivedAlias) != null;
+            }
+            return field;
         }
 
 
@@ -1269,7 +1273,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void validateFieldFromSubContext(final QualifiedField<?> field) {
+        public final boolean validateFieldFromSubContext(final QualifiedField<?> field) {
             if (this.isInWithClause()) {
                 throw unknownQualifiedField(null, field);
             }
@@ -1300,7 +1304,7 @@ abstract class CriteriaContexts {
                 }
                 list.add(field);
             }
-
+            return !notExists;
         }
 
         @Override
@@ -1358,7 +1362,7 @@ abstract class CriteriaContexts {
             final Map<String, Map<String, DerivedField>> aliasToDerivedField = this.aliasToDerivedField;
             if (aliasToDerivedField != null) {
                 aliasToDerivedField.clear();
-                this.aliasToDerivedField = null;//clear
+                this.aliasToDerivedField = null; // clear
             }
 
             return blockList;
@@ -1476,7 +1480,7 @@ abstract class CriteriaContexts {
                             throw unknownQualifiedField(this, field);
                         }
                     } else if (outerContext != null) {
-                        this.refOuter = true;
+                        this.lateralRefOuter = true;
                         outerContext.validateFieldFromSubContext(field);
                     }
 
@@ -1635,7 +1639,7 @@ abstract class CriteriaContexts {
                 String m = String.format("%s[%s] context not match.", DerivedTable.class.getSimpleName(), alias);
                 throw ContextStack.criteriaError(this, CriteriaException::new, m);
             } else if (context instanceof JoinableContext
-                    && ((JoinableContext) context).refOuter
+                    && ((JoinableContext) context).lateralRefOuter
                     && (!(block instanceof _ModifierTabularBlock) || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)) {
                 String m = String.format("DerivedTable[%s] isn't LATERAL,couldn't reference outer field.", alias);
                 throw ContextStack.criteriaError(this, NonLateralException::new, m);
@@ -1647,7 +1651,6 @@ abstract class CriteriaContexts {
         /**
          * <p>
          * add nested {@link TabularItem} to {@link #aliasToBlock}
-         *
          *
          * @see #onAddBlock(_TabularBlock)
          * @see #addTableBlock(_TabularBlock)
@@ -1804,7 +1807,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void validateFieldFromSubContext(final QualifiedField<?> field) {
+        public final boolean validateFieldFromSubContext(final QualifiedField<?> field) {
             final String fieldTableAlias = field.tableAlias();
             if (field.tableMeta() != this.insertTable
                     || !(fieldTableAlias.equals(this.rowAlias) || fieldTableAlias.equals(this.tableAlias))) {
@@ -1813,6 +1816,7 @@ abstract class CriteriaContexts {
                     this.getOrCreateColumnMap().get(field.fieldName()) != field.fieldMeta()) {
                 throw unknownQualifiedField(this, field);
             }
+            return false;
         }
 
         @Override
@@ -1911,12 +1915,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void validateFieldFromSubContext(final QualifiedField<?> field) {
+        public final boolean validateFieldFromSubContext(final QualifiedField<?> field) {
             if (this.isInWithClause()
                     || field.tableMeta() != this.table
                     || !field.tableAlias().equals(this.tableAlias)) {
                 throw unknownQualifiedField(this, field);
             }
+            return false;
         }
 
 
@@ -2476,12 +2481,11 @@ abstract class CriteriaContexts {
         /**
          * <p>
          * This method is triggered by :
-         *     <ul>
-         *         <li>{@link #refSelection(int)}</li>
-         *         <li>{@link #refSelection(String)}</li>
-         *         <li>{@link #endQueryContext()}</li>
-         *     </ul>
-         *
+         * <ul>
+         *     <li>{@link #refSelection(int)}</li>
+         *     <li>{@link #refSelection(String)}</li>
+         *     <li>{@link #endQueryContext()}</li>
+         * </ul>
          */
         private void callDeferSelectClauseIfNeed() {
             final Runnable deferSelectClause = this.deferSelectClause;
@@ -2739,12 +2743,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void validateFieldFromSubContext(final QualifiedField<?> field) {
+        public final boolean validateFieldFromSubContext(final QualifiedField<?> field) {
             final CriteriaContext outerContext = this.outerContext;
             if (outerContext == null) {
                 throw unknownQualifiedField(null, field);
             }
             outerContext.validateFieldFromSubContext(field);
+            return false;
         }
 
 
@@ -3002,7 +3007,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void validateFieldFromSubContext(final QualifiedField<?> field) {
+        public final boolean validateFieldFromSubContext(final QualifiedField<?> field) {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (this.isInWithClause()) {
@@ -3014,6 +3019,7 @@ abstract class CriteriaContexts {
                 this.fieldsFromSubContext = list;
             }
             list.add(field);
+            return false;
         }
 
 
@@ -3134,7 +3140,6 @@ abstract class CriteriaContexts {
      * <p>
      * This class is designed for codec field.
      *
-     *
      * @since 0.6.0
      */
     private static final class FieldSelectionField extends ImmutableDerivedField implements FieldSelection {
@@ -3155,7 +3160,6 @@ abstract class CriteriaContexts {
     /**
      * <p>
      * Package interface for {@link OperationExpression#as(String)}
-     *
      */
     interface SelectionReference extends Expression {
 

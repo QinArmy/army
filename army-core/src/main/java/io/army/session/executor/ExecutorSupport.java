@@ -3,6 +3,7 @@ package io.army.session.executor;
 import io.army.ArmyException;
 import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
@@ -112,7 +113,7 @@ public abstract class ExecutorSupport {
             } else {
                 compatibleType = type.compatibleFor(dataType, resultClass);
             }
-        } else if (accessor == RECORD_PSEUDO_ACCESSOR) {
+        } else if (accessor == RECORD_PSEUDO_ACCESSOR || accessor == ObjectAccessorFactory.MAP_ACCESSOR) {
             compatibleType = type;
         } else if (accessor.isWritable(fieldName, type.javaType())) {
             compatibleType = type;
@@ -720,6 +721,17 @@ public abstract class ExecutorSupport {
                 type = DataType.from(typeName);
         }
         return type;
+    }
+
+    protected static void localStartOptionMap(final Map<Option<?>, Object> map, final TransactionOption option) {
+        map.put(Option.START_MILLIS, System.currentTimeMillis());
+        map.put(Option.DEFAULT_ISOLATION, option.isolation() == null);
+
+        final Integer timeoutMillis;
+        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+        if (timeoutMillis != null) {
+            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+        }
     }
 
 

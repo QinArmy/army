@@ -392,16 +392,9 @@ abstract class MySQLExecutor extends JdbcExecutor {
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final Map<Option<?>, Object> map = _Collections.hashMap(8);
-            map.put(Option.START_MILLIS, System.currentTimeMillis());
-            map.put(Option.DEFAULT_ISOLATION, isolation == null);
-
-            final Integer timeoutMillis;
-            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-            if (timeoutMillis != null) {
-                map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-            }
-            if (consistentSnapshot != null && consistentSnapshot) {
-                map.put(WITH_CONSISTENT_SNAPSHOT, Boolean.TRUE);
+            localStartOptionMap(map, option);
+            if (consistentSnapshot != null) {
+                map.put(WITH_CONSISTENT_SNAPSHOT, consistentSnapshot);
             }
 
             final TransactionInfo info;

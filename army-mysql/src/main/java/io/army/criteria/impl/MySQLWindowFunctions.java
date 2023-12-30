@@ -118,8 +118,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link LongType}
+     * <p>The {@link MappingType} of function return type:{@link LongType}
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
@@ -128,13 +127,13 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     }
 
 
+
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link LongType}
+     * <p>The {@link MappingType} of function return type: {@link LongType}
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
      */
-    public static Expression count(final @Nullable SQLs.ArgDistinct distinct, final List<?> expList) {//TODO
+    public static Expression count(SQLs.ArgDistinct distinct, final List<?> expList) {//TODO
         assertDistinct(distinct);
         final String name = "COUNT";
         final int size = expList.size();

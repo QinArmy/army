@@ -4,13 +4,11 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
@@ -70,7 +68,8 @@ interface CriteriaContext {
     /**
      * <p>
      * This method flat {@link #selectItemList()} as list of {@link  Selection}.
-     *     *
+     * *
+     *
      * @return a unmodified list
      * @throws CriteriaException throw when context not end.
      */
@@ -96,7 +95,8 @@ interface CriteriaContext {
     /**
      * <p>
      * This method always is invoked by {@link SQLs#refOuter(String, String)}
-     *     *
+     * *
+     *
      * @see SQLs#refOuter(String, String)
      */
     DerivedField refOuter(String derivedAlias, String fieldName);
@@ -149,7 +149,7 @@ interface CriteriaContext {
     /**
      * <p>
      * should be invoked before {@link ContextStack#pop(CriteriaContext)}
-     *     */
+     */
     List<_TabularBlock> endContext();
 
     void endContextBeforeCommand();
@@ -163,8 +163,9 @@ interface CriteriaContext {
     /**
      * <p>
      * This method is invoked by sub context
-     *     */
-    void validateFieldFromSubContext(QualifiedField<?> field);
+     * @return true : lateral ref outer
+     */
+    boolean validateFieldFromSubContext(QualifiedField<?> field);
 
 
     /**
