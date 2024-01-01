@@ -1,8 +1,6 @@
 # Army is a better blocking/reactive orm framework
 
-[![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/s01.oss.sonatype.org/io.qinarmy/army.svg)](https://s01.oss.sonatype.org/content/repositories/snapshots/io/qinarmy/army/)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qinarmy/army/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.qinarmy/army)[![Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java support](https://img.shields.io/badge/Java-8+-green?logo=java&logoColor=white)](https://openjdk.java.net/)
+[![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/s01.oss.sonatype.org/io.qinarmy/army.svg)](https://s01.oss.sonatype.org/content/repositories/snapshots/io/qinarmy/army/)[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qinarmy/army/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.qinarmy/army)[![Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)[![Java support](https://img.shields.io/badge/Java-8+-green?logo=java&logoColor=white)](https://openjdk.java.net/)
 
 ## Design Philosophy
 
