@@ -31,8 +31,6 @@ public abstract class _MetaBridge {
 
     public static final String TABLE_META = "T";
 
-    public static final String CLASS_META = "CLASS";
-
     public static final String META_CLASS_NAME_SUFFIX = "_";
 
 

@@ -29,7 +29,7 @@ import static javax.lang.model.SourceVersion.RELEASE_8;
 
 final class SourceCodeCreator {
 
-    private static final String MEMBER_PRE = "    ";
+    private static final String MEMBER_PRE = "\t";
     private static final String COMMENT_PREFIX = MEMBER_PRE;
     private static final String FIELD_PREFIX = MEMBER_PRE + "public static final ";
     private static final String ANNOTATION_PRE = "        ";
@@ -98,6 +98,11 @@ final class SourceCodeCreator {
         int count = 0;
         boolean primary = false;
         //5. create field name definition and field definitions and append import statement
+
+        builder.append(MEMBER_PRE)
+                .append("/*-------------------following table filed names-------------------*/")
+                .append("\n\n");
+
         for (VariableElement field : fieldMap.values()) {
             fieldName = field.getSimpleName().toString();
 
@@ -122,11 +127,11 @@ final class SourceCodeCreator {
                     .append(upperCaseFieldName)
                     .append(" = \"")
                     .append(fieldName)
-                    .append("\";\n");
+                    .append("\";\n\n");
 
             count++;
             if ((count & 3) == 0) {
-                builder.append('\n');
+                builder.append("\n\n\n");
             }
 
             // field definitions
@@ -175,10 +180,10 @@ final class SourceCodeCreator {
             } else {
                 fieldBuilder.append(upperCaseFieldName);
             }
-            fieldBuilder.append(");\n");
+            fieldBuilder.append(");\n\n");
 
             if ((count & 3) == 0) {
-                fieldBuilder.append('\n');
+                fieldBuilder.append("\n\n\n");
             }
 
         }// for
@@ -186,6 +191,9 @@ final class SourceCodeCreator {
 
         //6. merge three builder
         builder.append("\n\n")
+                .append(MEMBER_PRE)
+                .append("/*-------------------following table filed metas-------------------*/")
+                .append("\n\n")
                 .append(fieldBuilder)
                 .append("\n\n}\n\n");
 
@@ -201,7 +209,7 @@ final class SourceCodeCreator {
         final List<Pair> builderList = this.pairList;
         builderList.add(new Pair(MetaUtils.getClassName(element) + _MetaBridge.META_CLASS_NAME_SUFFIX, builder));
 
-        if (builderList.size() > 99) {
+        if (builderList.size() > 49) {
             flush();
         }
 
@@ -233,7 +241,7 @@ final class SourceCodeCreator {
                                        final MappingMode mode, final StringBuilder builder) {
 
 
-        builder.append("\n\n//Army static metamodel class\n\n@Generated(value = \"")
+        builder.append("\n\n// Army static metamodel class\n\n@Generated(value = \"")
                 .append(ArmyMetaModelDomainProcessor.class.getName())
                 .append("\",\n")
                 .append(ANNOTATION_PRE)
@@ -391,8 +399,9 @@ final class SourceCodeCreator {
     }
 
 
-    private static String appendStaticBlock(final TypeElement element, final String simpleClassName
-            , @Nullable final TypeElement parentElement, int fieldCount, final StringBuilder builder) {
+    private static String appendStaticBlock(final TypeElement element, final String simpleClassName,
+                                            @Nullable final TypeElement parentElement, int fieldCount,
+                                            final StringBuilder builder) {
 
         final String parentClassName, methodName, tableMetaName;
         if (parentElement == null) {
@@ -455,12 +464,18 @@ final class SourceCodeCreator {
                 .append(";\n\n");
 
         if (paramSize > 0) {
-            builder.append(FIELD_PREFIX)
+            builder.append(MEMBER_PRE)
+                    .append("/** Due to ")
+                    .append(domainName)
+                    .append(" contains type parameter(s) , army generate static CLASS for army session query api. */\n")
+                    .append(FIELD_PREFIX)
                     .append("Class<")
                     .append(domainName)
-                    .append("> ")
-                    .append(_MetaBridge.CLASS_META)
-                    .append(";\n\n");
+                    .append("> CLASS = (Class<")
+                    .append(domainName)
+                    .append(">)((Class<?>)")
+                    .append(simpleClassName)
+                    .append(".class);\n\n");
         }
 
         builder.append(MEMBER_PRE)
@@ -548,21 +563,17 @@ final class SourceCodeCreator {
                 .append("\t\tthrow new IllegalStateException(m);\n")
                 .append(MEMBER_PRE)
                 .append("\t}\n")
-                .append(MEMBER_PRE);
-
-        if (paramSize > 0) {
-            builder.append("\tCLASS = (Class<")
-                    .append(domainName)
-                    .append(">)((Class<?>)")
-                    .append(simpleClassName)
-                    .append(".class);\n");
-        }
-        builder.append(MEMBER_PRE)
+                .append(MEMBER_PRE)
                 .append("}\n\n");
 
 
         if (paramSize > 0) {
+            // generate static constructor method.
             builder.append(MEMBER_PRE)
+                    .append("/** Due to ")
+                    .append(domainName)
+                    .append(" contains type parameter(s) , army generate static constructor method for army session query api. */\n")
+                    .append(MEMBER_PRE)
                     .append("public static ")
                     .append(domainName)
                     .append(" constructor(){\n")
