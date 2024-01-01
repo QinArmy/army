@@ -71,7 +71,7 @@ final class SourceCodeCreator {
                 final @Nullable TypeElement parentElement, final MappingMode mode,
                 final Map<String, IndexMode> indexModeMap) throws IOException {
         final int fieldCount = fieldMap.size();
-        final StringBuilder builder = new StringBuilder(fieldCount << 8);
+        final StringBuilder builder = new StringBuilder(1400 + fieldCount * 280);
         // 1. source army import part
         appendImports(element, builder, mode);
 
@@ -91,7 +91,7 @@ final class SourceCodeCreator {
 
         String fieldName, commentLine, upperCaseFieldName, methodName, metaTypeName;
 
-        final StringBuilder fieldBuilder = new StringBuilder(fieldCount << 7);
+        final StringBuilder fieldBuilder = new StringBuilder(fieldCount * 150);
 
 
         StringBuilder commentBuilder;
@@ -106,7 +106,7 @@ final class SourceCodeCreator {
         for (VariableElement field : fieldMap.values()) {
             fieldName = field.getSimpleName().toString();
 
-            commentBuilder = new StringBuilder()
+            commentBuilder = new StringBuilder(80)
                     .append(COMMENT_PREFIX)
                     .append("/** {@link ")
                     .append(simpleClassName)
