@@ -32,7 +32,7 @@ public class PostgreTabularFunctionUnitTests extends PostgreUnitTests {
                         ::withOrdinality
                 )
                 .as("a")
-                .where(SQLs.refThis("a", "lexeme")::equal, SQLs::literal, "cat")
+                .where(SQLs.refField("a", "lexeme")::equal, SQLs::literal, "cat")
                 .asQuery();
 
         printStmt(LOG, stmt);

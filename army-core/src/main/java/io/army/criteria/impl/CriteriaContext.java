@@ -87,20 +87,14 @@ interface CriteriaContext {
     void registerDeferSelectClause(Runnable deferSelectClause);
 
 
-    DerivedField refThis(String derivedAlias, String fieldAlias, boolean sub);
-
-
+    /**
+     * <p>This method is invoked by {@link SQLs#field(String, FieldMeta)}
+     */
+    @Nullable
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
 
-    /**
-     * <p>
-     * This method always is invoked by {@link SQLs#refOuter(String, String)}
-     * *
-     *
-     * @see SQLs#refOuter(String, String)
-     */
-    DerivedField refOuter(String derivedAlias, String fieldName);
-
+    @Nullable
+    DerivedField refField(String derivedAlias, String fieldName);
 
     Expression refSelection(String selectionAlias);
 
@@ -159,13 +153,6 @@ interface CriteriaContext {
      * @throws CriteriaException throw when context not end
      */
     List<? extends _SelectItem> selectItemList();
-
-    /**
-     * <p>
-     * This method is invoked by sub context
-     * @return true : lateral ref outer
-     */
-    boolean validateFieldFromSubContext(QualifiedField<?> field);
 
 
     /**

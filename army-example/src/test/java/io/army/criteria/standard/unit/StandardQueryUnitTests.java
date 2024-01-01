@@ -238,7 +238,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .where(ChinaProvince_.governor::equal, SQLs.field("bu", BankUser_.nickName))
                         .asQuery()
                 ).as("ps")
-                .join(BankUser_.T, AS, "bu").on(BankUser_.id::equal, SQLs.refThis("ps", ChinaProvince_.ID))
+                .join(BankUser_.T, AS, "bu").on(BankUser_.id::equal, SQLs.refField("ps", ChinaProvince_.ID))
                 .where(BankUser_.nickName::equal, SQLs::param, map.get("nickName"))
                 .asQuery();
 
@@ -252,7 +252,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         map.put("accountNo", "66688899");
 
         SQLs.query()
-                .select(s -> s.space(refThis("bu", BankUser_.ID)))
+                .select(s -> s.space(refField("bu", BankUser_.ID)))
                 .from(SQLs.subQuery()
                         .select(BankAccount_.id, BankAccount_.userId)
                         .from(BankAccount_.T, AS, "a")
@@ -261,10 +261,10 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .join(SQLs.subQuery()
                         .select(BankUser_.id, BankUser_.nickName)
                         .from(BankUser_.T, AS, "u")
-                        .where(BankUser_.id::equal, refOuter("ba", BankAccount_.USER_ID)) // here non-LATERAL ,but reference outer field.
+                        .where(BankUser_.id::equal, refField("ba", BankAccount_.USER_ID)) // here non-LATERAL ,but reference outer field.
                         .asQuery()
-                ).as("bu").on(refThis("bu", BankUser_.ID)::equal, refThis("ba", BankAccount_.USER_ID))
-                .where(refThis("bu", BankUser_.NICK_NAME)::equal, SQLs::param, map.get("nickName"))
+                ).as("bu").on(refField("bu", BankUser_.ID)::equal, refField("ba", BankAccount_.USER_ID))
+                .where(refField("bu", BankUser_.NICK_NAME)::equal, SQLs::param, map.get("nickName"))
                 .asQuery();
 
     }
@@ -277,7 +277,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
         final Select stmt;
         stmt = SQLs.query()
-                .select(s -> s.space(SQLs.refThis("us", "one"))
+                .select(s -> s.space(SQLs.refField("us", "one"))
                         .comma("us", PERIOD, ASTERISK)
                 ).from(SQLs.subQuery()
                         .select(SQLs.literalValue(1)::as, "one")
@@ -288,7 +288,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 )
                 .as("us")
-                .where(SQLs.refThis("us", "one")::equal, SQLs::param, "1")
+                .where(SQLs.refField("us", "one")::equal, SQLs::param, "1")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -298,8 +298,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void nestedJoin() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(s -> s.space(BankPerson_.id::as, "userId", refThis("cr", "id")::as, "regionId")
-                        .comma(SQLs.refThis("cr", "name")::as, "regionName")
+                .select(s -> s.space(BankPerson_.id::as, "userId", refField("cr", "id")::as, "regionId")
+                        .comma(SQLs.refField("cr", "name")::as, "regionName")
                 )
                 .from(s -> s.leftParen(BankPerson_.T, AS, "up")
                         .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
@@ -321,7 +321,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void dynamicJoin() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(s -> s.space(BankPerson_.id::as, "userId", refThis("cr", "id")::as, "regionId"))
+                .select(s -> s.space(BankPerson_.id::as, "userId", refField("cr", "id")::as, "regionId"))
                 .from(s -> s.leftParen(BankPerson_.T, AS, "up")
                         .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
                         .rightParen()

@@ -8,7 +8,7 @@ import java.util.function.Function;
  * This interface The statement that can present in UNION clause,this interface is base interface of below:
  * <ul>
  *     <li>{@link Query}</li>
- *     <li>{@link Values}</li>
+ *     <li>{@link ValuesQuery}</li>
  * </ul>
  *
  * @since 0.6.0

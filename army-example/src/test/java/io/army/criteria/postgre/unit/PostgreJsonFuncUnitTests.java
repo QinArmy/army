@@ -128,7 +128,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .join(Postgres.subQuery()
                         .select(SQLs.literalValue(5)::as, "id")
                         .asQuery()
-                ).as("b").on(SQLs.refThis("b", "id")::equal, ChinaRegion_.id)
+                ).as("b").on(SQLs.refField("b", "id")::equal, ChinaRegion_.id)
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -178,7 +178,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .join(Postgres.subQuery()
                         .select(SQLs.literalValue(5)::as, "id")
                         ::asQuery
-                ).as("b").on(SQLs.refThis("b", "id")::equal, ChinaRegion_.id)
+                ).as("b").on(SQLs.refField("b", "id")::equal, ChinaRegion_.id)
                 .asQuery();
 
         printStmt(LOG, stmt);

@@ -2066,7 +2066,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *            <li>{@link SQLs#row(Consumer)}</li>
      *            <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *            </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
      */
     public static SimpleExpression toJson(Object arg) {
@@ -2094,7 +2094,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *            <li>{@link SQLs#row(Consumer)}</li>
      *            <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *            </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
      */
     public static SimpleExpression toJsonb(Object arg) {
@@ -2147,7 +2147,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link SQLs#row(Consumer)}</li>
      *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
@@ -2175,7 +2175,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
      * @param lineFeed in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
@@ -2220,7 +2220,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *            <li>{@link SQLs#row(Consumer)}</li>
      *            <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *            </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2257,7 +2257,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *             <li>{@link SQLs#row(Consumer)}</li>
      *             <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *             </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2311,7 +2311,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#row(Consumer)}</li>
      *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2341,7 +2341,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#row(Consumer)}</li>
      *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)
      * @see SQLs#space(String, SQLs.SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)
@@ -2392,7 +2392,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *            <li>{@link SQLs#row(Consumer)}</li>
      *            <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *            </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2428,7 +2428,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *             <li>{@link SQLs#row(Consumer)}</li>
      *             <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *             </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2481,7 +2481,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#row(Consumer)}</li>
      *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2511,7 +2511,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#row(Consumer)}</li>
      *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
-     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)
      * @see SQLs#space(String, SQLs.SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)

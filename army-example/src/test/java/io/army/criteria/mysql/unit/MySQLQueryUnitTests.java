@@ -159,13 +159,13 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         stmt = MySQLs.query()
                 .withRecursive("cte").parens("n").as(s -> s.select(SQLs.literalValue(1)::as, "r")
                         .union()
-                        .select(cs -> cs.space(refThis("cte", "n").plus(SQLs::literal, 1)::as, "n"))
+                        .select(cs -> cs.space(refField("cte", "n").plus(SQLs::literal, 1)::as, "n"))
                         .from("cte")
-                        .where(refThis("cte", "n").less(SQLs::literal, 10))
+                        .where(refField("cte", "n").less(SQLs::literal, 10))
                         .asQuery()
                 )// with As clause end
                 .space()
-                .parens(s -> s.select(cs -> cs.space(refThis("cte", "n")))
+                .parens(s -> s.select(cs -> cs.space(refField("cte", "n")))
                         .from("cte")
                         .asQuery()
                 )
@@ -179,14 +179,14 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         final Select stmt;
         stmt = MySQLs.query()
                 .withRecursive("cte").parens("n")
-                .as(s -> s.select(cs -> cs.space(refThis("cte", "n")
+                .as(s -> s.select(cs -> cs.space(refField("cte", "n")
                                         .plus(SQLs::literal, 1)::as, "n")
                                 ).from("cte")
-                                .where(refThis("cte", "n").less(SQLs::literal, 10))
+                        .where(refField("cte", "n").less(SQLs::literal, 10))
                                 .asQuery()
                 )// with As clause end
                 .space() // WITH clause end
-                .select(s -> s.space(refThis("cte", "n")))
+                .select(s -> s.space(refField("cte", "n")))
                 .from("cte")
                 .asQuery();
 

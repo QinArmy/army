@@ -629,7 +629,12 @@ abstract class SQLSyntax extends Functions {
      *                           </ul>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-        return ContextStack.peek().field(tableAlias, field);
+        final QualifiedField<T> qualifiedField;
+        qualifiedField = ContextStack.peek().field(tableAlias, field);
+        if (qualifiedField == null) {
+            throw CriteriaContexts.unknownQualifiedField(tableAlias, field);
+        }
+        return qualifiedField;
     }
 
     /**
@@ -638,20 +643,16 @@ abstract class SQLSyntax extends Functions {
      *
      * @param derivedAlias   derived table alias,
      * @param selectionAlias derived field alias
+     * @throws CriteriaException            throw when current statement don't support derived field (eg: single-table UPDATE statement).
+     * @throws UnknownDerivedFieldException throw when derived filed is unknown.
      */
-    public static DerivedField refThis(String derivedAlias, String selectionAlias) {
-        return ContextStack.peek().refThis(derivedAlias, selectionAlias, false);
-    }
-
-    /**
-     * <p>
-     * Reference a derived field from outer statement.
-     *
-     * @param derivedAlias   derived table alias,
-     * @param selectionAlias derived field alias
-     */
-    public static DerivedField refOuter(String derivedAlias, String selectionAlias) {
-        return ContextStack.peek().refOuter(derivedAlias, selectionAlias);
+    public static DerivedField refField(String derivedAlias, String selectionAlias) {
+        final DerivedField field;
+        field = ContextStack.peek().refField(derivedAlias, selectionAlias);
+        if (field == null) {
+            throw CriteriaContexts.unknownDerivedField(derivedAlias, selectionAlias);
+        }
+        return field;
     }
 
 

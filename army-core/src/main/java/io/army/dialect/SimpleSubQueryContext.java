@@ -2,12 +2,11 @@ package io.army.dialect;
 
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Query;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
+
+import javax.annotation.Nullable;
 
 final class SimpleSubQueryContext extends MultiTableQueryContext implements _SubQueryContext {
 
@@ -78,9 +77,10 @@ final class SimpleSubQueryContext extends MultiTableQueryContext implements _Sub
             }
         } else if (outerContext instanceof _SubQueryContext) {
             if (tableAlias == null) {
-                ((_SubQueryContext) outerContext).appendThisField(field);
+                // TODO fix : 有可能在 select 子句中引入 外部 field
+                outerContext.appendField(field);
             } else {
-                ((_SubQueryContext) outerContext).appendThisField(tableAlias, field);
+                outerContext.appendField(tableAlias, field);
             }
         } else if (tableAlias != null) {
             outerContext.appendField(tableAlias, field);
