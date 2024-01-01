@@ -98,6 +98,122 @@ public class ChinaRegion<T extends ChinaRegion<T>> {
     private Integer population;
 }
 
+@Generated(value = "io.army.modelgen.ArmyMetaModelDomainProcessor",
+        date = "2024-01-02 06:57:14.131208+08:00",
+        comments = "china region")
+public abstract class ChinaRegion_ {
+
+    private ChinaRegion_(){
+        throw new UnsupportedOperationException();
+    }
+
+    public static final ParentTableMeta<ChinaRegion<?>> T;
+
+    /** Due to ChinaRegion&lt;?> contains type parameter(s) , army generate static CLASS for army session query api. */
+    public static final Class<ChinaRegion<?>> CLASS = (Class<ChinaRegion<?>>)((Class<?>)ChinaRegion.class);
+
+    static {
+        final ParentTableMeta<?> temp;
+        temp = _TableMetaFactory.getParentTableMeta(ChinaRegion.class);
+        @SuppressWarnings("unchecked")
+        ParentTableMeta<ChinaRegion<?>> tempMeta = (ParentTableMeta<ChinaRegion<?>>)temp;
+        T = tempMeta;
+
+        final int fieldSize = T.fieldList().size();
+        if(fieldSize != 10){
+            String m = String.format("Domain[%s] field count[%s] error,please check you whether create(delete) field or not,if yes then you must recompile.",
+                    ChinaRegion.class.getName(),fieldSize);
+            throw new IllegalStateException(m);
+        }
+    }
+
+    /** Due to ChinaRegion&lt;?> contains type parameter(s) , army generate static constructor method for army session query api. */
+    public static ChinaRegion<?> constructor(){
+        return new ChinaRegion<>();
+    }
+
+    /*-------------------following table filed names-------------------*/
+
+    /** {@link ChinaRegion#regionGdp } china region GDP */
+    public static final String REGION_GDP = "regionGdp";
+
+    /** {@link ChinaRegion#visible } visible for logic delete */
+    public static final String VISIBLE = "visible";
+
+    /** {@link ChinaRegion#regionType } @see io.army.example.bank.domain.user.RegionType */
+    public static final String REGION_TYPE = "regionType";
+
+    /** {@link ChinaRegion#createTime } create time */
+    public static final String CREATE_TIME = "createTime";
+
+
+
+
+    /** {@link ChinaRegion#name } china region name */
+    public static final String NAME = "name";
+
+    /** {@link ChinaRegion#updateTime } update time */
+    public static final String UPDATE_TIME = "updateTime";
+
+    /** {@link ChinaRegion#id } primary key */
+    public static final String ID = "id";
+
+    /** {@link ChinaRegion#version } version for optimistic lock */
+    public static final String VERSION = "version";
+
+
+
+
+    /** {@link ChinaRegion#parentId } china region parent level id */
+    public static final String PARENT_ID = "parentId";
+
+    /** {@link ChinaRegion#population } china region population */
+    public static final String POPULATION = "population";
+
+
+
+    /*-------------------following table filed metas-------------------*/
+
+    /** {@link ChinaRegion#regionGdp } china region GDP */
+    public static final FieldMeta<ChinaRegion<?>> regionGdp = T.getField(REGION_GDP);
+
+    /** {@link ChinaRegion#visible } visible for logic delete */
+    public static final FieldMeta<ChinaRegion<?>> visible = T.getField(VISIBLE);
+
+    /** {@link ChinaRegion#regionType } @see io.army.example.bank.domain.user.RegionType */
+    public static final FieldMeta<ChinaRegion<?>> regionType = T.getField(REGION_TYPE);
+
+    /** {@link ChinaRegion#createTime } create time */
+    public static final FieldMeta<ChinaRegion<?>> createTime = T.getField(CREATE_TIME);
+
+
+
+
+    /** {@link ChinaRegion#name } china region name */
+    public static final FieldMeta<ChinaRegion<?>> name = T.getField(NAME);
+
+    /** {@link ChinaRegion#updateTime } update time */
+    public static final FieldMeta<ChinaRegion<?>> updateTime = T.getField(UPDATE_TIME);
+
+    /** {@link ChinaRegion#id } primary key */
+    public static final PrimaryFieldMeta<ChinaRegion<?>> id = T.id();
+
+    /** {@link ChinaRegion#version } version for optimistic lock */
+    public static final FieldMeta<ChinaRegion<?>> version = T.getField(VERSION);
+
+
+
+
+    /** {@link ChinaRegion#parentId } china region parent level id */
+    public static final FieldMeta<ChinaRegion<?>> parentId = T.getField(PARENT_ID);
+
+    /** {@link ChinaRegion#population } china region population */
+    public static final FieldMeta<ChinaRegion<?>> population = T.getField(POPULATION);
+
+
+
+} // ChinaRegion_
+
 public class HowToStartTests {
 
     private static DatabaseSessionFactory sessionFactory;

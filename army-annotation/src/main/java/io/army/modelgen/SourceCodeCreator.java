@@ -252,8 +252,12 @@ final class SourceCodeCreator {
                 .append("comments = \"")
                 .append(element.getAnnotation(Table.class).comment())
                 .append("\")")
-                .append("\n")
-                .append("public abstract class ")
+                .append("\n");
+
+        if (element.getTypeParameters().size() > 0) {
+            builder.append("@SuppressWarnings(\"unchecked\")\n");
+        }
+        builder.append("public abstract class ")
                 .append(simpleClassName)
                 .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
                 .append(" {\n\n")
@@ -507,21 +511,12 @@ final class SourceCodeCreator {
                     .append(".class);\n")
                     .append(MEMBER_PRE)
                     .append('\t')
-                    .append("@SuppressWarnings(\"unchecked\")\n")
-                    .append(MEMBER_PRE)
-                    .append('\t')
-                    .append(tableMetaName)
-                    .append('<')
-                    .append(complexName)
-                    .append("> tempMeta = (")
-                    .append(tableMetaName)
-                    .append('<')
-                    .append(complexName)
-                    .append(">)temp;\n")
-                    .append(MEMBER_PRE)
-                    .append('\t')
                     .append(_MetaBridge.TABLE_META)
-                    .append(" = tempMeta;\n\n");
+                    .append(" = (")
+                    .append(tableMetaName)
+                    .append('<')
+                    .append(complexName)
+                    .append(">)temp;\n\n");
 
         } else {
             builder.append(_MetaBridge.TABLE_META)
