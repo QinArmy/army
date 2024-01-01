@@ -15,4 +15,7 @@ public class ChinaRegion<T extends ChinaRegion<T>> extends AbstractChinaRegion<T
         return new ChinaRegion<>();
     }
 
+    @SuppressWarnings("unchecked")
+    public static final Class<ChinaRegion<?>> CLASS = (Class<ChinaRegion<?>>) ((Class<?>) ChinaRegion.class);
+
 }
