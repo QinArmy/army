@@ -5,12 +5,18 @@
     <parent>
         <artifactId>army</artifactId>
         <groupId>io.qinarmy</groupId>
-        <version>0.6.3-SNAPSHOT</version><!--Army maven version-->
+        <version>0.6.3</version><!--Army maven version-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>army-postgre</artifactId>
+    <description>Army postgre module,provide postgre dialect api and dialect parser.</description>
     <url>https://github.com/QinArmy/army</url>
+
+    <organization>
+        <name>QinArmy</name>
+        <url>https://qinarmy.io</url>
+    </organization>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

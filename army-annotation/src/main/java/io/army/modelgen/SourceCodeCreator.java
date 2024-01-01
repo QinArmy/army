@@ -463,10 +463,12 @@ final class SourceCodeCreator {
                 .append(_MetaBridge.TABLE_META)
                 .append(";\n\n");
 
+        final String safeXmlDomainName;
         if (paramSize > 0) {
+            safeXmlDomainName = domainName.replace("<", "&lt;");
             builder.append(MEMBER_PRE)
                     .append("/** Due to ")
-                    .append(domainName)
+                    .append(safeXmlDomainName)
                     .append(" contains type parameter(s) , army generate static CLASS for army session query api. */\n")
                     .append(FIELD_PREFIX)
                     .append("Class<")
@@ -476,6 +478,8 @@ final class SourceCodeCreator {
                     .append(">)((Class<?>)")
                     .append(simpleClassName)
                     .append(".class);\n\n");
+        } else {
+            safeXmlDomainName = null;
         }
 
         builder.append(MEMBER_PRE)
@@ -571,7 +575,7 @@ final class SourceCodeCreator {
             // generate static constructor method.
             builder.append(MEMBER_PRE)
                     .append("/** Due to ")
-                    .append(domainName)
+                    .append(safeXmlDomainName)
                     .append(" contains type parameter(s) , army generate static constructor method for army session query api. */\n")
                     .append(MEMBER_PRE)
                     .append("public static ")

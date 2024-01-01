@@ -5,13 +5,19 @@
     <parent>
         <artifactId>army</artifactId>
         <groupId>io.qinarmy</groupId>
-        <version>0.6.3-SNAPSHOT</version><!--Army maven version-->
+        <version>0.6.3</version><!--Army maven version-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>army-spring</artifactId>
 
+    <description>Army spring module for integrating spring framework</description>
     <url>https://github.com/QinArmy/army</url>
+
+    <organization>
+        <name>QinArmy</name>
+        <url>https://qinarmy.io</url>
+    </organization>
 
     <dependencies>
         <dependency>
