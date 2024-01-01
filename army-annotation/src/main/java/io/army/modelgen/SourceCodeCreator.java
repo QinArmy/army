@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ final class SourceCodeCreator {
 
     private final boolean asOfJava9;
 
-    private final Map<String, StringBuilder> fieldPairMap = ArmyCollections.hashMap();
+    private final List<Pair> pairList = ArmyCollections.arrayList();
 
     SourceCodeCreator(final SourceVersion sourceVersion, Filer filer) {
         this.filer = filer;
@@ -66,9 +67,9 @@ final class SourceCodeCreator {
         this.asOfJava9 = sourceVersion.compareTo(RELEASE_8) > 0;
     }
 
-    void create(final TypeElement element, final Map<String, VariableElement> fieldMap
-            , final @Nullable TypeElement parentElement, final MappingMode mode
-            , final Map<String, IndexMode> indexModeMap) throws IOException {
+    void create(final TypeElement element, final Map<String, VariableElement> fieldMap,
+                final @Nullable TypeElement parentElement, final MappingMode mode,
+                final Map<String, IndexMode> indexModeMap) throws IOException {
         final int fieldCount = fieldMap.size();
         final StringBuilder builder = new StringBuilder(fieldCount << 8);
         // 1. source army import part
@@ -196,13 +197,12 @@ final class SourceCodeCreator {
 //        }
 
         //7. output source code.
-        if (this.fieldPairMap.putIfAbsent(MetaUtils.getClassName(element) + _MetaBridge.META_CLASS_NAME_SUFFIX, builder) != null) {
-            // no bug,never here
-            throw new AnnotationMetaException(String.format("%s duplication.", MetaUtils.getClassName(element)));
-        }
 
-        if (this.fieldPairMap.size() >= 100) {
-            this.flush();
+        final List<Pair> builderList = this.pairList;
+        builderList.add(new Pair(MetaUtils.getClassName(element) + _MetaBridge.META_CLASS_NAME_SUFFIX, builder));
+
+        if (builderList.size() > 99) {
+            flush();
         }
 
 
@@ -211,16 +211,18 @@ final class SourceCodeCreator {
     void flush() throws IOException {
         FileObject fileObject;
 
-        for (Map.Entry<String, StringBuilder> pari : this.fieldPairMap.entrySet()) {
-            fileObject = this.filer.createSourceFile(pari.getKey());
+        final Filer filer = this.filer;
+        final List<Pair> pairList = this.pairList;
+
+        for (final Pair pair : pairList) {
+            fileObject = filer.createSourceFile(pair.className);
 
             try (PrintWriter pw = new PrintWriter(fileObject.openOutputStream())) {
-                pw.println(pari.getValue());
+                pw.println(pair.builder);
             }
         }
 
-        this.fieldPairMap.clear();
-
+        pairList.clear();
     }
 
 
@@ -549,19 +551,28 @@ final class SourceCodeCreator {
                 .append(MEMBER_PRE);
 
         if (paramSize > 0) {
-            builder.append("\tfinal Class<?> clazz = ")
-                    .append(simpleClassName)
-                    .append(".class;\n")
-                    .append(MEMBER_PRE)
-                    .append('\t')
-                    .append(_MetaBridge.CLASS_META)
-                    .append(" = (Class<")
+            builder.append("\tCLASS = (Class<")
                     .append(domainName)
-                    .append(">)clazz;\n");
+                    .append(">)((Class<?>)")
+                    .append(simpleClassName)
+                    .append(".class);\n");
         }
         builder.append(MEMBER_PRE)
                 .append("}\n\n");
 
+
+        if (paramSize > 0) {
+            builder.append(MEMBER_PRE)
+                    .append("public static ")
+                    .append(domainName)
+                    .append(" constructor(){\n")
+                    .append(MEMBER_PRE)
+                    .append("\treturn new ")
+                    .append(simpleClassName)
+                    .append("<>();\n")
+                    .append(MEMBER_PRE)
+                    .append("}\n\n");
+        }
         return domainName;
     }
 
@@ -575,6 +586,20 @@ final class SourceCodeCreator {
         }
         builder.append('>');
     }
+
+
+    private static final class Pair {
+
+        private final String className;
+
+        private final StringBuilder builder;
+
+        private Pair(String className, StringBuilder builder) {
+            this.className = className;
+            this.builder = builder;
+        }
+
+    } // Pair
 
 
 }

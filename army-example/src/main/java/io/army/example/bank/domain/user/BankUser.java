@@ -14,13 +14,6 @@ import java.time.LocalDateTime;
 @SuppressWarnings("unchecked")
 public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
 
-    public static BankUser<?> create() {
-        return new BankUser<>();
-    }
-
-    @SuppressWarnings("unchecked")
-    public static final Class<BankUser<?>> CLASS = (Class<BankUser<?>>) ((Class<?>) BankUser.class);
-
 
     @Column
     @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})

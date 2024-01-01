@@ -4,7 +4,6 @@ package io.army.session.reactive.mysql;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.reactive.ReactiveLocalSession;
 import org.testng.annotations.Test;
@@ -26,7 +25,7 @@ public class MySQLReactiveQueryTests extends MySQLReactiveSessionTestsSupport {
                 .limit(SQLs::literal, 10)
                 .asQuery();
 
-        session.queryObject(stmt, ChinaRegion::create)
+        session.query(stmt, ChinaRegion_.CLASS)
                 .blockLast();
     }
 
@@ -40,7 +39,7 @@ public class MySQLReactiveQueryTests extends MySQLReactiveSessionTestsSupport {
                 .limit(SQLs::literal, 10)
                 .asQuery();
 
-        session.queryObject(stmt, ChinaRegion::create)
+        session.queryObject(stmt, ChinaRegion_::constructor)
                 .blockLast();
     }
 
