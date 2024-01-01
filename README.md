@@ -52,8 +52,6 @@
 ```java
 // mapping domain to table
 
-import java.util.HashMap;
-
 @Table(name = "china_region", indexes = {
         @Index(name = "china_region_uni_name_region_type", fieldList = {"name", "regionType"}, unique = true),
         @Index(name = "china_region_inx_parent_id", fieldList = "parentId")},
@@ -98,9 +96,12 @@ public class ChinaRegion<T extends ChinaRegion<T>> {
     private Integer population;
 }
 
+// io.army.modelgen.ArmyMetaModelDomainProcessor generate  static metamodel class
+
 @Generated(value = "io.army.modelgen.ArmyMetaModelDomainProcessor",
-        date = "2024-01-02 06:57:14.131208+08:00",
+        date = "2024-01-02 07:13:54.605524+08:00",
         comments = "china region")
+@SuppressWarnings("unchecked")
 public abstract class ChinaRegion_ {
 
     private ChinaRegion_(){
@@ -115,9 +116,7 @@ public abstract class ChinaRegion_ {
     static {
         final ParentTableMeta<?> temp;
         temp = _TableMetaFactory.getParentTableMeta(ChinaRegion.class);
-        @SuppressWarnings("unchecked")
-        ParentTableMeta<ChinaRegion<?>> tempMeta = (ParentTableMeta<ChinaRegion<?>>)temp;
-        T = tempMeta;
+        T = (ParentTableMeta<ChinaRegion<?>>) temp;
 
         final int fieldSize = T.fieldList().size();
         if(fieldSize != 10){
@@ -213,6 +212,7 @@ public abstract class ChinaRegion_ {
 
 
 } // ChinaRegion_
+
 
 public class HowToStartTests {
 
