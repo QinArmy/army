@@ -41,6 +41,7 @@ import java.sql.*;
 import java.time.*;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -737,7 +738,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final Stream<Xid> recover(final int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
+        public final Stream<Optional<Xid>> recover(final int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
 
             if (((~recoverSupportFlags()) & flags) != 0) {
                 throw _Exceptions.xaInvalidFlag(flags, "recover");
@@ -836,9 +837,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
         }
 
-
-        @Nullable
-        private Xid recordToXid(final DataRecord row) {
+        private Optional<Xid> recordToXid(final DataRecord row) {
             final int formatId, gtridLength, bqualLength;
 
             formatId = row.getNonNull(0, Integer.class); // formatID
@@ -855,7 +854,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             final String gtrid, bqual;
             if (gtridLength == 0) {
-                return null;  // non-jdbd create xid
+                return Optional.empty();  // non-jdbd create xid
             }
             gtrid = new String(idBytes, 0, gtridLength);
             if (bqualLength == 0) {
@@ -863,7 +862,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             } else {
                 bqual = new String(idBytes, gtridLength, bqualLength);
             }
-            return Xid.from(gtrid, bqual, formatId);
+            return Optional.of(Xid.from(gtrid, bqual, formatId));
         }
 
 

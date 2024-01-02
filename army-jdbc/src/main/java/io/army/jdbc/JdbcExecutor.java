@@ -63,10 +63,7 @@ import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.time.*;
 import java.time.temporal.Temporal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.*;
 import java.util.stream.Stream;
@@ -689,7 +686,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-    final Stream<Xid> jdbcRecover(final String sql, Function<DataRecord, Xid> function, StreamOption option) {
+    final Stream<Optional<Xid>> jdbcRecover(final String sql, Function<DataRecord, Optional<Xid>> function, StreamOption option) {
 
         printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
 
@@ -3198,7 +3195,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     } // MultiSmtBatchRowSpliterator
 
 
-    private static final class XidRowSpliterator extends ArmyDriverCurrentRecord implements Spliterator<Xid> {
+    private static final class XidRowSpliterator extends ArmyDriverCurrentRecord implements Spliterator<Optional<Xid>> {
 
         private final JdbcExecutor executor;
 
@@ -3208,7 +3205,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private final ResultSet resultSet;
 
-        private final Function<DataRecord, Xid> function;
+        private final Function<DataRecord, Optional<Xid>> function;
 
         private final ArmyResultRecordMeta meta;
 
@@ -3221,7 +3218,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
          * @see JdbcExecutor#jdbcRecover(String, Function, StreamOption)
          */
         private XidRowSpliterator(JdbcExecutor executor, StreamOption option, Statement statement, ResultSet resultSet,
-                                  DataType[] dataTypeArray, Function<DataRecord, Xid> function) throws SQLException {
+                                  DataType[] dataTypeArray, Function<DataRecord, Optional<Xid>> function) throws SQLException {
             this.executor = executor;
             this.option = option;
             this.statement = statement;
@@ -3276,7 +3273,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
         @Override
-        public boolean tryAdvance(Consumer<? super Xid> action) {
+        public boolean tryAdvance(Consumer<? super Optional<Xid>> action) {
             if (this.closed || this.canceled) {
                 return false;
             }
@@ -3292,7 +3289,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
         @Override
-        public void forEachRemaining(Consumer<? super Xid> action) {
+        public void forEachRemaining(Consumer<? super Optional<Xid>> action) {
             if (this.closed || this.canceled) {
                 return;
             }
@@ -3310,13 +3307,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         @Nullable
         @Override
-        public Spliterator<Xid> trySplit() {
+        public Spliterator<Optional<Xid>> trySplit() {
             final int splitSize = this.option.splitSize();
             if (this.closed || this.canceled || splitSize < 1) {
                 return null;
             }
 
-            final List<Xid> itemList;
+            final List<Optional<Xid>> itemList;
             itemList = _Collections.arrayList(Math.min(300, splitSize));
             try {
                 readRowStream(splitSize, itemList::add);
@@ -3328,7 +3325,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw e;
             }
 
-            final Spliterator<Xid> spliterator;
+            final Spliterator<Optional<Xid>> spliterator;
             if (itemList.size() == 0) {
                 spliterator = null;
             } else {
@@ -3361,7 +3358,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-        private boolean readRowStream(final int readSize, final @Nullable Consumer<? super Xid> action)
+        private boolean readRowStream(final int readSize, final @Nullable Consumer<? super Optional<Xid>> action)
                 throws SQLException {
 
             if (action == null) {
@@ -3369,7 +3366,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
 
             final ResultSet resultSet = this.resultSet;
-            final Function<DataRecord, Xid> function = this.function;
+            final Function<DataRecord, Optional<Xid>> function = this.function;
             final int maxValue = Integer.MAX_VALUE;
 
             long totalRowCount = this.rowCount;

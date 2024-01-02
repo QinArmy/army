@@ -19,6 +19,7 @@ package io.army.sync;
 import io.army.session.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -96,13 +97,13 @@ public interface SyncRmSession extends SyncSession, RmSession {
      */
     void forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
-    List<Xid> recoverList(int flags);
+    List<Optional<Xid>> recoverList(int flags);
 
-    List<Xid> recoverList(int flags, Function<Option<?>, ?> optionFunc);
+    List<Optional<Xid>> recoverList(int flags, Function<Option<?>, ?> optionFunc);
 
-    Stream<Xid> recover(int flags);
+    Stream<Optional<Xid>> recover(int flags);
 
-    Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option);
+    Stream<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option);
 
 
 }

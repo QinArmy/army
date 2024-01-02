@@ -28,6 +28,7 @@ import io.army.sync.SyncStmtOption;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -186,7 +187,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
         void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
-        Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) throws RmSessionException;
+        Stream<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) throws RmSessionException;
 
 
     }
