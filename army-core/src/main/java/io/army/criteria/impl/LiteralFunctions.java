@@ -43,41 +43,41 @@ abstract class LiteralFunctions {
         throw new UnsupportedOperationException();
     }
 
-    static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
+    static Expression zeroArgFunc(String name, TypeMeta returnType) {
         return new ZeroArgFunc(name, true, returnType);
     }
 
-    static SimpleExpression myZeroArgFunc(String name, TypeMeta returnType) {
+    static Expression myZeroArgFunc(String name, TypeMeta returnType) {
         return new ZeroArgFunc(name, false, returnType);
     }
 
-    static SimpleExpression oneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
+    static Expression oneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
         return new OneArgFunc(name, true, arg, returnType);
     }
 
-    static SimpleExpression myOneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
+    static Expression myOneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
         return new OneArgFunc(name, false, arg, returnType);
     }
 
-    static SimpleExpression twoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
+    static Expression twoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
         return new TwoArgFunc(name, true, one, two, returnType);
     }
 
-    static SimpleExpression myTwoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
+    static Expression myTwoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
         return new TwoArgFunc(name, false, one, two, returnType);
     }
 
-    static SimpleExpression threeArgFunc(String name, @Nullable Object one, @Nullable Object two,
+    static Expression threeArgFunc(String name, @Nullable Object one, @Nullable Object two,
                                          @Nullable Object three, TypeMeta returnType) {
         return new ThreeArgFunc(name, true, one, two, three, returnType);
     }
 
-    static SimpleExpression myThreeArgFunc(String name, @Nullable Object one, @Nullable Object two,
+    static Expression myThreeArgFunc(String name, @Nullable Object one, @Nullable Object two,
                                            @Nullable Object three, TypeMeta returnType) {
         return new ThreeArgFunc(name, false, one, two, three, returnType);
     }
 
-    static SimpleExpression fourArgFunc(String name, @Nullable Object one, @Nullable Object two,
+    static Expression fourArgFunc(String name, @Nullable Object one, @Nullable Object two,
                                         @Nullable Object three, @Nullable Object four, TypeMeta returnType) {
         final List<Object> argList = _Collections.arrayList(4);
 
@@ -88,7 +88,7 @@ abstract class LiteralFunctions {
         return new MultiArgFunc(name, true, argList, returnType);
     }
 
-    static SimpleExpression fiveArgFunc(String name, @Nullable Object one, @Nullable Object two,
+    static Expression fiveArgFunc(String name, @Nullable Object one, @Nullable Object two,
                                         @Nullable Object three, @Nullable Object four, @Nullable Object five,
                                         TypeMeta returnType) {
         final List<Object> argList = _Collections.arrayList(5);
@@ -103,19 +103,19 @@ abstract class LiteralFunctions {
     }
 
 
-    static SimpleExpression multiArgFunc(String name, List<?> argList, TypeMeta returnType) {
+    static Expression multiArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new MultiArgFunc(name, true, argList, returnType);
     }
 
-    static SimpleExpression myMultiArgFunc(String name, List<?> argList, TypeMeta returnType) {
+    static Expression myMultiArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new MultiArgFunc(name, false, argList, returnType);
     }
 
-    static SimpleExpression compositeFunc(String name, List<?> argList, TypeMeta returnType) {
+    static Expression compositeFunc(String name, List<?> argList, TypeMeta returnType) {
         return new CompositeFunc(name, argList, returnType);
     }
 
-    public static SimpleExpression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
+    public static Expression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
         return new JsonMapFunc(name, map, returnType);
     }
 

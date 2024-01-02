@@ -203,3 +203,6 @@
 
 45. 为什么 MySQLType 要保留 MULTIPOINT 等而不以 GEOMETRY 代替?
     * ddl 时 MySQL 能返回精确的 typeName
+46. 为什么 sql function 本质上被设计成 SimpleExpression 但 实际始终返回 Expression ?
+    * 设计 成 SimpleExpression 是为 sql 解析方便.
+    * 不返回 SimpleExpression 是为避免应用开发者 使用 SimpleExpression 的方法.

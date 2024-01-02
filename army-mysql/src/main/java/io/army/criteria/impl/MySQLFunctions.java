@@ -82,7 +82,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast">CAST(expr AS type [ARRAY])</a>
      */
-    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type) {
+    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type) {
         assert as == SQLs.AS;
         final List<Object> argList = new ArrayList<>(3);
         argList.add(exp);
@@ -137,7 +137,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS type)</a>
      */
-    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
+    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
             , final Expression n) {
         assert as == SQLs.AS;
         final String funcName = "CAST";
@@ -170,18 +170,18 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         return FunctionUtils.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
-    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
+    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , final Expression n, SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         Objects.requireNonNull(n);
         return _castToChar(exp, as, charType, n, characterSet, charset);
     }
 
-    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
+    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , final int n, SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         return _castToChar(exp, as, charType, SQLs.literal(IntegerType.INSTANCE, n), characterSet, charset);
     }
 
-    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
+    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         return _castToChar(exp, as, charType, null, characterSet, charset);
     }
@@ -202,7 +202,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS DECIMAL(M,D))</a>
      */
-    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
+    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
             , final Expression m, final Expression d) {
         assert as == SQLs.AS;
         final String funcName = "CAST";
@@ -231,7 +231,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         return FunctionUtils.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
-    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
+    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
             , final int m, final int d) {
         return cast(exp, as, type, SQLs.literal(IntegerType.INSTANCE, m), SQLs.literal(IntegerType.INSTANCE, d));
     }
@@ -248,7 +248,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static SimpleExpression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static Expression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime) {
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime, null);
     }
@@ -265,7 +265,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static SimpleExpression cast(Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static Expression cast(Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime, Expression precision) {
         Objects.requireNonNull(precision);
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime, precision);
@@ -284,7 +284,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static SimpleExpression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static Expression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime, int precision) {
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime
                 , SQLs.literal(IntegerType.INSTANCE, precision));
@@ -323,7 +323,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_convert">CONVERT(expr USING transcoding_name)</a>
      */
-    public static SimpleExpression convert(final Expression exp, SQLs.WordUsing using, final SQLElement transcodingName) {
+    public static Expression convert(final Expression exp, SQLs.WordUsing using, final SQLElement transcodingName) {
         assert using == SQLs.USING;
         final String name = "CONVERT";
         if (!(transcodingName instanceof MySQLCharset || transcodingName instanceof SQLIdentifier)) {
@@ -349,7 +349,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count">BIT_COUNT(N)</a>
      */
-    public static SimpleExpression bitCount(final Expression n) {
+    public static Expression bitCount(final Expression n) {
         return FunctionUtils.oneArgFunc("BIT_COUNT", n, IntegerType.INSTANCE);
     }
 
@@ -367,7 +367,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @throws CriteriaException throw when any arg is multi-value expression
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
      */
-    public static SimpleExpression ifFunc(final Expression predicate, final Expression expr1, final Expression expr2) {
+    public static Expression ifFunc(final Expression predicate, final Expression expr1, final Expression expr2) {
         return FunctionUtils.threeArgFunc("IF", predicate, expr1, expr2, expr1.typeMeta());
     }
 
@@ -381,7 +381,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @see #ifFunc(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
      */
-    public static SimpleExpression ifNull(final Expression expr1, final Expression expr2) {
+    public static Expression ifNull(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("IFNULL", expr1, expr2, expr1.typeMeta());
     }
 

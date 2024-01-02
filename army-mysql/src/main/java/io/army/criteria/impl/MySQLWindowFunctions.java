@@ -19,7 +19,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
-import io.army.criteria.SimpleExpression;
 import io.army.criteria.TypeInfer;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.MySQLFunction;
@@ -52,7 +51,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
     }
 
-    public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, SimpleExpression {
+    public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, Expression {
 
     }
 
