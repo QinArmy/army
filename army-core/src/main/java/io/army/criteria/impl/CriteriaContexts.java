@@ -1345,8 +1345,6 @@ abstract class CriteriaContexts {
         /*-------------------below package methods -------------------*/
 
 
-
-
         @Override
         final List<_TabularBlock> onEndContext() {
 
@@ -1707,8 +1705,8 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
 
-            if (validateLateralRef((DerivedTable) derivedTable, this.aliasToBlock.keySet())
-                    && (!(block instanceof _ModifierTabularBlock) || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)) {
+            if ((!(block instanceof _ModifierTabularBlock) || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)
+                    && validateLateralRef((DerivedTable) derivedTable, this.aliasToBlock.keySet())) {
                 String m = String.format("DerivedTable[%s] isn't LATERAL,couldn't reference outer field.", alias);
                 throw ContextStack.clearStackAndCriteriaError(NonLateralException::new, m);
             }

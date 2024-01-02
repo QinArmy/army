@@ -108,7 +108,7 @@ public class MySQLReactiveInsertTests extends MySQLReactiveSessionTestsSupport {
         stmt = MySQLs.singleInsert()
                 //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T)
-                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .defaultValue(ChinaRegion_.visible, SQLs.TRUE)
                 .values()
                 .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
                         .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))

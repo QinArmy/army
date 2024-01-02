@@ -22,7 +22,7 @@
 <dependency>
     <groupId>io.qinarmy</groupId>
     <artifactId>army-jdbc</artifactId>
-    <version>0.6.3</version><!--Army maven version-->
+    <version>0.6.4-SNAPSHOT</version><!--Army maven version-->
 </dependency>
 
 ```
