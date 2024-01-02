@@ -33,7 +33,7 @@ import io.army.sqltype.DataType;
 *
  * @see <a href="https://www.postgresql.org/docs/15/datatype-pg-lsn.html">pg_lsn</a>
  */
-public final class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     private PostgrePgLsnArrayType() {
@@ -50,33 +50,34 @@ public final class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping impleme
     }
 
     @Override
-    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return null;
-    }
-
-    @Override
     public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
-    public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return null;
-    }
-
-    @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return null;
-    }
-
-    @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public MappingType elementType() {
-        return null;
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
+        throw new UnsupportedOperationException();
+    }
+
+
+    @Override
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        throw new UnsupportedOperationException();
     }
 
 

@@ -21,7 +21,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.MediumTextType;
 import io.army.util.ArrayUtils;
 
-public final class MediumTextArrayType extends ArmyTextArrayType {
+public class MediumTextArrayType extends ArmyTextArrayType {
 
     public static MediumTextArrayType from(final Class<?> javaType) {
         final MediumTextArrayType instance;

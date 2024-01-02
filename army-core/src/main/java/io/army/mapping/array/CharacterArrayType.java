@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 /**
  * @see CharacterType
  */
-public final class CharacterArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class CharacterArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
     public static CharacterArrayType from(final Class<?> javaType) {
         final CharacterArrayType instance;

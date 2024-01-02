@@ -33,7 +33,7 @@ import io.army.util._TimeUtils;
 import java.time.OffsetTime;
 import java.util.function.Consumer;
 
-public final class OffsetTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class OffsetTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static OffsetTimeArrayType from(final Class<?> arrayClass) {

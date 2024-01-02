@@ -25,7 +25,7 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
 
-public final class JsonbArrayType extends ArmyJsonArrayType implements MappingType.SqlArrayType {
+public class JsonbArrayType extends ArmyJsonArrayType {
 
     public static JsonbArrayType from(final Class<?> arrayClass) {
         final JsonbArrayType instance;

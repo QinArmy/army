@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 /**
  * @see BitSetType
  */
-public final class BitSetArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class BitSetArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static BitSetArrayType from(final Class<?> javaType) {
         final BitSetArrayType instance;

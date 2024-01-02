@@ -32,7 +32,7 @@ import java.time.LocalDate;
 import java.time.MonthDay;
 import java.util.function.Consumer;
 
-public final class MonthDayArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class MonthDayArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static MonthDayArrayType from(final Class<?> arrayClass) {

@@ -30,7 +30,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static DoubleArrayType from(final Class<?> javaType) {
         final DoubleArrayType instance;

@@ -31,7 +31,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class LongArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class LongArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static LongArrayType from(final Class<?> arrayClass) {

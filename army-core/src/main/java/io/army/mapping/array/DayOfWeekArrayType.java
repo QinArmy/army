@@ -29,7 +29,7 @@ import io.army.util.ArrayUtils;
 
 import java.time.DayOfWeek;
 
-public final class DayOfWeekArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class DayOfWeekArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static DayOfWeekArrayType from(final Class<?> arrayClass) {

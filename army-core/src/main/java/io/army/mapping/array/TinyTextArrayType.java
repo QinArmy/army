@@ -21,7 +21,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.TinyTextType;
 import io.army.util.ArrayUtils;
 
-public final class TinyTextArrayType extends ArmyTextArrayType {
+public class TinyTextArrayType extends ArmyTextArrayType {
 
 
     public static TinyTextArrayType from(final Class<?> arrayType) {

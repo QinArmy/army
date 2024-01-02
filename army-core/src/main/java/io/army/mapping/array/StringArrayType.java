@@ -29,7 +29,7 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-public final class StringArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class StringArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
 
     public static StringArrayType from(final Class<?> arrayType) {

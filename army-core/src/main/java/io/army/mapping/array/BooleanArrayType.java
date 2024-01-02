@@ -31,7 +31,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static BooleanArrayType from(final Class<?> javaType) {
         final BooleanArrayType instance;

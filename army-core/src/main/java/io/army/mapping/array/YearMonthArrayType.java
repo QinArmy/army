@@ -25,7 +25,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class YearMonthArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class YearMonthArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static YearMonthArrayType from(Class<?> javaType) {

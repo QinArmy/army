@@ -26,6 +26,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
+@Deprecated
 public class IntervalArrayType extends _ArmyNoInjectionMapping {
 
     public static final IntervalArrayType LINEAR = new IntervalArrayType();

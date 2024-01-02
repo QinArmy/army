@@ -32,7 +32,7 @@ import io.army.util.ArrayUtils;
 /**
  * @see BlobType
  */
-public final class BlobArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class BlobArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
 
     public static BlobArrayType from(final Class<?> javaType) {

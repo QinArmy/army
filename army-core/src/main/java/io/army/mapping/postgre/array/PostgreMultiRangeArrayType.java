@@ -43,7 +43,7 @@ import java.util.function.Function;
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  * @since 0.6.0
  */
-public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType implements MappingType.SqlArrayType {
+public class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType implements MappingType.SqlArrayType {
 
 
     /**

@@ -29,7 +29,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class ByteArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class ByteArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static ByteArrayType from(final Class<?> javaType) {

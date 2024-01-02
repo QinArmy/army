@@ -27,7 +27,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 
-public final class MediumBlobArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class MediumBlobArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
     public static MediumBlobArrayType from(final Class<?> javaType) {
         final MediumBlobArrayType instance;

@@ -37,7 +37,7 @@ import io.army.util.ArrayUtils;
  * @see VarBinaryArrayType
  * @since 0.6.0
  */
-public final class BinaryArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class BinaryArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
 
     public static BinaryArrayType from(final Class<?> javaType) {

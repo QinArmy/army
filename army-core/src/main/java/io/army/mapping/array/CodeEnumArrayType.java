@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  *
  * @see CodeEnumType
  */
-public final class CodeEnumArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class CodeEnumArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static CodeEnumArrayType from(final Class<?> javaType) {

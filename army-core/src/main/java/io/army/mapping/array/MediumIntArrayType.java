@@ -29,7 +29,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class MediumIntArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class MediumIntArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static MediumIntArrayType from(final Class<?> arrayClass) {

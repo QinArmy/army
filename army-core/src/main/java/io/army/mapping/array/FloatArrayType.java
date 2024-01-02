@@ -30,7 +30,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class FloatArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class FloatArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static FloatArrayType from(final Class<?> arrayClass) {

@@ -31,7 +31,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class ShortArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class ShortArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static ShortArrayType from(final Class<?> arrayClass) {

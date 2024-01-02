@@ -25,7 +25,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class InstantArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class InstantArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static InstantArrayType from(Class<?> javaType) {
         throw new UnsupportedOperationException();

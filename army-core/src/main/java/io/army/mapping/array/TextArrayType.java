@@ -26,7 +26,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 
-public final class TextArrayType extends ArmyTextArrayType implements MappingType.SqlArrayType {
+public class TextArrayType extends ArmyTextArrayType implements MappingType.SqlArrayType {
 
 
     public static TextArrayType from(final Class<?> arrayType) {

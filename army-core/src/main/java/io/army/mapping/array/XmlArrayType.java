@@ -32,7 +32,7 @@ import io.army.util.ArrayUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class XmlArrayType extends _ArmyBuildInMapping {
+public class XmlArrayType extends _ArmyBuildInMapping {
 
 
     public static XmlArrayType from(final Class<?> javaType) {

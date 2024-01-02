@@ -25,7 +25,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class TextEnumArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class TextEnumArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
     public static TextEnumArrayType from(final Class<?> javaType) {
         throw new UnsupportedOperationException();

@@ -42,7 +42,7 @@ import java.util.function.Consumer;
  * @see Enum
  * @see NameEnumType
  */
-public final class NameEnumArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class NameEnumArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
 
     public static NameEnumArrayType from(final Class<?> arrayClass) {
         if (!arrayClass.isArray()) {
