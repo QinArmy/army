@@ -27,20 +27,7 @@ interface Operator {
 
     String spaceRender();
 
-    /**
-     * @throws UnsupportedOperationException throw when this is standard operator enum :
-     *                                       <ul>
-     *                                           <li>{@link UnaryExpOperator}</li>
-     *                                           <li>{@link UnaryExpOperator}</li>
-     *                                           <li>{@link SqlDualBooleanOperator} type</li>
-     *                                       </ul>
-     */
-    @Deprecated
-    Database database();
-
-    default String spaceRender(Database database) {
-        throw new UnsupportedOperationException();
-    }
+    String spaceRender(Database database);
 
 
     @Override

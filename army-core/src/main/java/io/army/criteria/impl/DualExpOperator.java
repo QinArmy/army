@@ -17,38 +17,39 @@
 package io.army.criteria.impl;
 
 import io.army.dialect.Database;
+import io.army.util._Exceptions;
 
- enum DualExpOperator implements Operator.SqlDualExpressionOperator {
+enum DualExpOperator implements Operator.SqlDualExpressionOperator {
 
-     /**
-      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
-      * double precision ^ double precision → double precision <br/>
-      * Exponentiation</a>
-      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-PRECEDENCE-TABLE">Operator Precedence (highest to lowest) </a>
-      */
-     EXPONENTIATION(" ^", 90),// postgre only
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
+     * double precision ^ double precision → double precision <br/>
+     * Exponentiation</a>
+     * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-PRECEDENCE-TABLE">Operator Precedence (highest to lowest) </a>
+     */
+    EXPONENTIATION(" ^", 90),// postgre only
 
-     BITWISE_XOR(" ^", 85),  // for MySQL , BITWISE_XOR > TIMES
+    BITWISE_XOR(" ^", 85),  // for MySQL , BITWISE_XOR > TIMES
 
-     MOD(" %", 80),
-     TIMES(" *", 80),
-     DIVIDE(" /", 80),
+    MOD(" %", 80),
+    TIMES(" *", 80),
+    DIVIDE(" /", 80),
 
-     /**
-      * Integer division. Discards from the division result any fractional part to the right of the decimal point.
-      *
-      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/arithmetic-functions.html#operator_div">MySQL Integer division</a>
-      */
-     DIV(" DIV", 80),
+    /**
+     * Integer division. Discards from the division result any fractional part to the right of the decimal point.
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/arithmetic-functions.html#operator_div">MySQL Integer division</a>
+     */
+    DIV(" DIV", 80),
 
-     PLUS(" +", 70),
-     MINUS(" -", 70),
+    PLUS(" +", 70),
+    MINUS(" -", 70),
 
-     LEFT_SHIFT(" <<", 60),
-     RIGHT_SHIFT(" >>", 60),
+    LEFT_SHIFT(" <<", 60),
+    RIGHT_SHIFT(" >>", 60),
 
-     BITWISE_AND(" &", 40),
-     BITWISE_OR(" |", 30),
+    BITWISE_AND(" &", 40),
+    BITWISE_OR(" |", 30),
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
@@ -105,24 +106,24 @@ import io.army.dialect.Database;
      */
     DOUBLE_AMP(" &&", 20),// postgre only
 
-     /**
-      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json -> integer → json<br>
-      * jsonb -> integer → jsonb<br/>
-      * Extracts n'th element of JSON array (array elements are indexed from zero, but negative integers count from the end).<br/>
-      * '[{"a":"foo"},{"b":"bar"},{"c":"baz"}]'::json -> 2 → {"c":"baz"}
-      * </a>
-      */
-     HYPHEN_GT(" ->", 20),// postgre mysql
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json -> integer → json<br>
+     * jsonb -> integer → jsonb<br/>
+     * Extracts n'th element of JSON array (array elements are indexed from zero, but negative integers count from the end).<br/>
+     * '[{"a":"foo"},{"b":"bar"},{"c":"baz"}]'::json -> 2 → {"c":"baz"}
+     * </a>
+     */
+    HYPHEN_GT(" ->", 20),// postgre mysql
 
-     /**
-      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json ->> integer → text<br>
-      * jsonb ->> integer → text<br/>
-      * Extracts n'th element of JSON array, as text.<br/>
-      * '[1,2,3]'::json ->> 2 → 3<br/>
-      * json ->> text → text<br/>
-      * jsonb ->> text → text<br/>
-      * </a>
-      */
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json ->> integer → text<br>
+     * jsonb ->> integer → text<br/>
+     * Extracts n'th element of JSON array, as text.<br/>
+     * '[1,2,3]'::json ->> 2 → 3<br/>
+     * json ->> text → text<br/>
+     * jsonb ->> text → text<br/>
+     * </a>
+     */
     HYPHEN_GT_GT(" ->>", 20),// postgre only
 
     /**
@@ -150,24 +151,57 @@ import io.army.dialect.Database;
     }
 
     @Override
+    public final String spaceRender(final Database database) {
+        switch (this) {
+            case PLUS:
+            case MINUS:
+            case MOD:
+            case TIMES:
+            case DIVIDE:
+            case LEFT_SHIFT:
+            case RIGHT_SHIFT:
+            case BITWISE_AND:
+            case BITWISE_OR:
+            case BITWISE_XOR:
+            default:
+                break;
+            case DIV: {
+                if (database != Database.MySQL) {
+                    throw _Exceptions.operatorError(this, database);
+                }
+            }
+            break;
+            case POUND:
+            case POUND_GT:
+            case HYPHEN_GT:
+            case DOUBLE_AMP:
+            case POUND_GT_GT:
+            case POUND_POUND:
+            case AT_TIME_ZONE:
+            case HYPHEN_GT_GT:
+            case LT_HYPHEN_GT:
+            case POUND_HYPHEN:
+            case EXPONENTIATION:
+            case DOUBLE_VERTICAL: {
+                if (database != Database.PostgreSQL) {
+                    throw _Exceptions.operatorError(this, database);
+                }
+            }
+            break;
+        }
+        return this.spaceOperator;
+    }
+
+
+    @Override
     public final int precedence() {
         return this.precedenceValue;
     }
 
     @Override
-    public final Database database() {
-        // no bug,never here
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
     public final String toString() {
         return CriteriaUtils.enumToString(this);
     }
-
-
-
 
 
 }

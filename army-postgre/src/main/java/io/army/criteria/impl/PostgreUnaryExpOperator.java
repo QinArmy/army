@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.dialect.Database;
+import io.army.util._Exceptions;
 
 enum PostgreUnaryExpOperator implements Operator.SqlUnaryExpOperator {
 
@@ -74,9 +75,13 @@ enum PostgreUnaryExpOperator implements Operator.SqlUnaryExpOperator {
     }
 
     @Override
-    public final Database database() {
-        return Database.PostgreSQL;
+    public final String spaceRender(Database database) {
+        if (database != Database.PostgreSQL) {
+            throw _Exceptions.operatorError(this, database);
+        }
+        return this.spaceOperator;
     }
+
 
     @Override
     public final String toString() {

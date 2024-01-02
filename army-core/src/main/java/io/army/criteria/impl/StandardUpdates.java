@@ -23,7 +23,10 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -308,20 +311,6 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
                     .comma(name);
         }
 
-        @Override
-        public final <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
-                                                                    String tableAlias) {
-            return this.createUpdateStmt(table, tableAlias);
-        }
-
-        @Override
-        public final <P> _StandardSetClause<I, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as,
-                                                                    String tableAlias) {
-            return this.createUpdateStmt(table, tableAlias);
-        }
-
-        abstract <T> _StandardSetClause<I, FieldMeta<T>> createUpdateStmt(TableMeta<?> updateTable, String tableAlias);
-
 
     }//SingleUpdateClause
 
@@ -330,12 +319,10 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         private StandardSimpleUpdateClause(StandardDialect dialect) {
             super(dialect, null);
         }
-
         @Override
-        <T> _StandardSetClause<Update, FieldMeta<T>> createUpdateStmt(TableMeta<?> updateTable, String tableAlias) {
-            return new StandardSimpleUpdate<>(this, updateTable, tableAlias);
+        public <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias) {
+            return new StandardSimpleUpdate<>(this, table, tableAlias);
         }
-
 
     }//StandardSimpleUpdateClause
 
@@ -346,11 +333,9 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        <T> _StandardSetClause<_BatchUpdateParamSpec, FieldMeta<T>> createUpdateStmt(TableMeta<?> updateTable,
-                                                                                     String tableAlias) {
-            return new StandardBatchUpdate<>(this, updateTable, tableAlias);
+        public <T> _StandardSetClause<_BatchUpdateParamSpec, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias) {
+            return new StandardBatchUpdate<>(this, table, tableAlias);
         }
-
 
     }//StandardBatchUpdateClause
 

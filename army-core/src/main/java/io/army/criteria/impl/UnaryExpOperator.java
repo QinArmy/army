@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 
 import io.army.dialect.Database;
+import io.army.util._Exceptions;
 
 /**
  * representing Unary SQL Operator
@@ -41,9 +42,17 @@ enum UnaryExpOperator implements Operator.SqlUnaryExpOperator {
     }
 
     @Override
-    public final Database database() {
-        // no bug,never here
-        throw new UnsupportedOperationException();
+    public final String spaceRender(final Database database) {
+        final String spaceSign;
+        switch (this) {
+            case NEGATE:
+            case BITWISE_NOT:
+                spaceSign = this.spaceOperator;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this);
+        }
+        return spaceSign;
     }
 
     @Override

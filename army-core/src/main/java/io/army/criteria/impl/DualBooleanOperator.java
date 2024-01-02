@@ -84,11 +84,6 @@ enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
     }
 
 
-    @Override
-    public final Database database() {
-        // no bug ,never here
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public final String toString() {

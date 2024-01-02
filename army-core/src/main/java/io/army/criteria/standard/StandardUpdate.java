@@ -20,7 +20,10 @@ import io.army.criteria.Item;
 import io.army.criteria.TableField;
 import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 
 /**
  * <p>
@@ -56,8 +59,6 @@ public interface StandardUpdate extends StandardStatement {
     interface _SingleUpdateClause<I extends Item> extends Item {
 
         <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
-
-        <P> _StandardSetClause<I, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as, String tableAlias);
 
 
     }

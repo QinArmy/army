@@ -300,7 +300,7 @@ public class HowToStartTests {
     public void batchUpdate() {
         final BatchUpdate stmt;
         stmt = SQLs.batchSingleUpdate()
-                .update(ChinaProvince_.T, AS, "p") // update only parent table field: ChinaRegion_.*
+                .update(ChinaRegion_.T, AS, "p") // update only parent table field: ChinaRegion_.*
                 .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
