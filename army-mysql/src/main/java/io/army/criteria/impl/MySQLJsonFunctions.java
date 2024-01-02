@@ -16,7 +16,10 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Clause;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.Expression;
+import io.army.criteria.SimplePredicate;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.mapping.*;
@@ -1295,7 +1298,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonMergePreserve(Object, Object, Object...)
      * @see #jsonMergePatch(Object, Object, Object...)
      */
-    private static SimpleExpression _jsonMergeOperationFunction(final String name, final Object jsonDoc1,
+    private static Expression _jsonMergeOperationFunction(final String name, final Object jsonDoc1,
                                                                 final Object jsonDoc2, Object... jsonDocArray) {
         final Expression jsonDocExp;
         jsonDocExp = FuncExpUtils.jsonDocExp(jsonDoc1);
@@ -1312,7 +1315,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * @see #jsonMerge(List)
      */
-    private static SimpleExpression _jsonMergeList(final String name, final List<?> jsonDocList) {
+    private static Expression _jsonMergeList(final String name, final List<?> jsonDocList) {
         final int size;
         if ((size = jsonDocList.size()) < 2) {
             throw CriteriaUtils.funcArgError(name, jsonDocList);
@@ -1336,7 +1339,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonInsert(Object, Consumer)
      * @see #jsonInsert(Object, SQLs.SymbolSpace, Consumer)
      */
-    private static SimpleExpression _jsonDocAndPairVariadic(final String name, final Object jsonDoc,
+    private static Expression _jsonDocAndPairVariadic(final String name, final Object jsonDoc,
                                                             Consumer<? super FuncExpUtils.PairVariadicClause> consumer) {
         final Expression jsonDocExpr;
         jsonDocExpr = FuncExpUtils.jsonDocExp(jsonDoc);

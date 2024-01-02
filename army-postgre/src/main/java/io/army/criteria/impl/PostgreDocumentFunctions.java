@@ -39,7 +39,7 @@ import java.util.function.Consumer;
  * This class hold tsvectory/ tsquery/xml /json/jsonb function method.
  * * @since 0.6.0
  */
-//@SuppressWarnings("unused")
+@SuppressWarnings("unused")
 abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
@@ -75,7 +75,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #arrayToTsVector(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">array_to_tsvector ( text[] ) → tsvector</a>
      */
-    public static <T> SimpleExpression arrayToTsVector(BiFunction<MappingType, T, Expression> funcRef, T value) {
+    public static <T> Expression arrayToTsVector(BiFunction<MappingType, T, Expression> funcRef, T value) {
         return arrayToTsVector(funcRef.apply(TextArrayType.from(String[].class), value));
     }
 
@@ -86,7 +86,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">array_to_tsvector ( text[] ) → tsvector</a>
      */
-    public static SimpleExpression arrayToTsVector(Expression exp) {
+    public static Expression arrayToTsVector(Expression exp) {
         return FunctionUtils.oneArgFunc("ARRAY_TO_TSVECTOR", exp, PostgreTsVectorType.INSTANCE);
     }
 
@@ -108,7 +108,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #plainToTsQuery(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">plainto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T> SimpleExpression plainToTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
+    public static <T> Expression plainToTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
         return plainToTsQuery(funcRefForQuery.apply(TextType.INSTANCE, query));
     }
 
@@ -119,7 +119,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">plainto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression plainToTsQuery(Expression query) {
+    public static Expression plainToTsQuery(Expression query) {
         return FunctionUtils.oneArgFunc("PLAINTO_TSQUERY", query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -151,7 +151,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #plainToTsQuery(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">plainto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T, U> SimpleExpression plainToTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+    public static <T, U> Expression plainToTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
                                                          BiFunction<MappingType, U, Expression> funcRefForQuery, U query) {
         return plainToTsQuery(funcRefForConfig.apply(StringType.INSTANCE, config),
                 funcRefForQuery.apply(TextType.INSTANCE, query)
@@ -165,7 +165,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">plainto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression plainToTsQuery(Expression config, Expression query) {
+    public static Expression plainToTsQuery(Expression config, Expression query) {
         return FunctionUtils.twoArgFunc("PLAINTO_TSQUERY", config, query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -187,7 +187,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #phraseToTsQuery(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">phraseto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T> SimpleExpression phraseToTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
+    public static <T> Expression phraseToTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
         return phraseToTsQuery(funcRefForQuery.apply(TextType.INSTANCE, query));
     }
 
@@ -198,7 +198,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">phraseto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression phraseToTsQuery(Expression query) {
+    public static Expression phraseToTsQuery(Expression query) {
         return FunctionUtils.oneArgFunc("PHRASETO_TSQUERY", query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -230,7 +230,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #phraseToTsQuery(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">phraseto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T, U> SimpleExpression phraseToTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+    public static <T, U> Expression phraseToTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
                                                           BiFunction<MappingType, U, Expression> funcRefForQuery, U query) {
         return phraseToTsQuery(funcRefForConfig.apply(StringType.INSTANCE, config),
                 funcRefForQuery.apply(TextType.INSTANCE, query)
@@ -244,7 +244,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">phraseto_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression phraseToTsQuery(Expression config, Expression query) {
+    public static Expression phraseToTsQuery(Expression config, Expression query) {
         return FunctionUtils.twoArgFunc("PHRASETO_TSQUERY", config, query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -266,7 +266,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #webSearchToTsQuery(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">websearch_to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T> SimpleExpression webSearchToTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
+    public static <T> Expression webSearchToTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
         return webSearchToTsQuery(funcRefForQuery.apply(TextType.INSTANCE, query));
     }
 
@@ -277,7 +277,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">websearch_to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression webSearchToTsQuery(Expression query) {
+    public static Expression webSearchToTsQuery(Expression query) {
         return FunctionUtils.oneArgFunc("WEBSEARCH_TO_TSQUERY", query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -309,7 +309,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #webSearchToTsQuery(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">websearch_to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T, U> SimpleExpression webSearchToTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+    public static <T, U> Expression webSearchToTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
                                                              BiFunction<MappingType, U, Expression> funcRefForQuery, U query) {
         return webSearchToTsQuery(funcRefForConfig.apply(StringType.INSTANCE, config),
                 funcRefForQuery.apply(TextType.INSTANCE, query)
@@ -323,7 +323,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">websearch_to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression webSearchToTsQuery(Expression config, Expression query) {
+    public static Expression webSearchToTsQuery(Expression config, Expression query) {
         return FunctionUtils.twoArgFunc("WEBSEARCH_TO_TSQUERY", config, query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -334,7 +334,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">querytree ( tsquery ) → text</a>
      */
-    public static SimpleExpression queryTree(Expression tsQuery) {
+    public static Expression queryTree(Expression tsQuery) {
         return FunctionUtils.oneArgFunc("QUERYTREE", tsQuery, TextType.INSTANCE);
     }
 
@@ -369,7 +369,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * setweight('fat:2,4 cat:3 rat:5B'::tsvector, 'A') → 'cat':3A 'fat':2A,4A 'rat':5A
      * </a>
      */
-    public static <T, U> SimpleExpression setWeight(BiFunction<MappingType, T, Expression> funcRefForVector, T vector,
+    public static <T, U> Expression setWeight(BiFunction<MappingType, T, Expression> funcRefForVector, T vector,
                                                     BiFunction<MappingType, U, Expression> funcRefForWeight, U weight) {
         return setWeight(funcRefForVector.apply(PostgreTsVectorType.INSTANCE, vector),
                 funcRefForWeight.apply(CharacterType.INSTANCE, weight)
@@ -386,7 +386,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * setweight('fat:2,4 cat:3 rat:5B'::tsvector, 'A') → 'cat':3A 'fat':2A,4A 'rat':5A
      * </a>
      */
-    public static SimpleExpression setWeight(Expression vector, Expression weight) {
+    public static Expression setWeight(Expression vector, Expression weight) {
         return FunctionUtils.twoArgFunc("SETWEIGHT", vector, weight, PostgreTsVectorType.INSTANCE);
     }
 
@@ -432,7 +432,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * setweight('fat:2,4 cat:3 rat:5,6B'::tsvector, 'A', '{cat,rat}') → 'cat':3A 'fat':2,4 'rat':5A,6A<br/>
      * </a>
      */
-    public static <T, U, V> SimpleExpression setWeight(BiFunction<MappingType, T, Expression> funcRefForVector, T vector,
+    public static <T, U, V> Expression setWeight(BiFunction<MappingType, T, Expression> funcRefForVector, T vector,
                                                        BiFunction<MappingType, U, Expression> funcRefForWeight, U weight,
                                                        BiFunction<MappingType, V, Expression> funcRefForLexemes, V lexemes) {
         return setWeight(funcRefForVector.apply(PostgreTsVectorType.INSTANCE, vector),
@@ -452,7 +452,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * setweight('fat:2,4 cat:3 rat:5,6B'::tsvector, 'A', '{cat,rat}') → 'cat':3A 'fat':2,4 'rat':5A,6A<br/>
      * </a>
      */
-    public static SimpleExpression setWeight(Expression vector, Expression weight, Expression lexemes) {
+    public static Expression setWeight(Expression vector, Expression weight, Expression lexemes) {
         return FunctionUtils.threeArgFunc("SETWEIGHT", vector, weight, lexemes, PostgreTsVectorType.INSTANCE);
     }
 
@@ -474,7 +474,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #strip(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">array_to_tsvector ( text[] ) → tsvector</a>
      */
-    public static <T> SimpleExpression strip(BiFunction<MappingType, T, Expression> funcRef, T value) {
+    public static <T> Expression strip(BiFunction<MappingType, T, Expression> funcRef, T value) {
         return strip(funcRef.apply(PostgreTsVectorType.INSTANCE, value));
     }
 
@@ -488,7 +488,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * strip('fat:2,4 cat:3 rat:5A'::tsvector) → 'cat' 'fat' 'rat'<br/>
      * </a>
      */
-    public static SimpleExpression strip(Expression tsVector) {
+    public static Expression strip(Expression tsVector) {
         return FunctionUtils.oneArgFunc("STRIP", tsVector, PostgreTsVectorType.INSTANCE);
     }
 
@@ -510,7 +510,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #toTsQuery(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T> SimpleExpression toTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
+    public static <T> Expression toTsQuery(BiFunction<MappingType, T, Expression> funcRefForQuery, T query) {
         return toTsQuery(funcRefForQuery.apply(TextType.INSTANCE, query));
     }
 
@@ -521,7 +521,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression toTsQuery(Expression query) {
+    public static Expression toTsQuery(Expression query) {
         return FunctionUtils.oneArgFunc("TO_TSQUERY", query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -553,7 +553,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #toTsQuery(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static <T, U> SimpleExpression toTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+    public static <T, U> Expression toTsQuery(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
                                                     BiFunction<MappingType, U, Expression> funcRefForQuery, U query) {
         return toTsQuery(funcRefForConfig.apply(StringType.INSTANCE, config),
                 funcRefForQuery.apply(TextType.INSTANCE, query)
@@ -567,7 +567,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">to_tsquery ( [ config regconfig, ] query text ) → tsquery</a>
      */
-    public static SimpleExpression toTsQuery(Expression config, Expression query) {
+    public static Expression toTsQuery(Expression config, Expression query) {
         return FunctionUtils.twoArgFunc("TO_TSQUERY", config, query, PostgreTsQueryType.INSTANCE);
     }
 
@@ -579,7 +579,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #toTsVector(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">to_tsvector ( [ config regconfig, ] document text ) → tsvector</a>
      */
-    public static SimpleExpression toTsVector(Expression document) {
+    public static Expression toTsVector(Expression document) {
         return FunctionUtils.oneArgFunc("TO_TSVECTOR", document, PostgreTsVectorType.INSTANCE);
     }
 
@@ -590,7 +590,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">to_tsvector ( [ config regconfig, ] document text ) → tsvector</a>
      */
-    public static SimpleExpression toTsVector(Expression config, Expression document) {
+    public static Expression toTsVector(Expression config, Expression document) {
         return FunctionUtils.twoArgFunc("TO_TSVECTOR", config, document, PostgreTsVectorType.INSTANCE);
     }
 
@@ -622,7 +622,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #jsonToTsVector(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static <T, U> SimpleExpression jsonToTsVector(BiFunction<MappingType, T, Expression> funcRefForDocument, T document,
+    public static <T, U> Expression jsonToTsVector(BiFunction<MappingType, T, Expression> funcRefForDocument, T document,
                                                          BiFunction<MappingType, U, Expression> funcRefForFilter, U filter) {
         return jsonToTsVector(funcRefForDocument.apply(JsonType.TEXT, document),
                 funcRefForFilter.apply(JsonbType.TEXT, filter)
@@ -636,7 +636,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static SimpleExpression jsonToTsVector(Expression document, Expression filter) {
+    public static Expression jsonToTsVector(Expression document, Expression filter) {
         return FunctionUtils.twoArgFunc("JSON_TO_TSVECTOR", document, filter, PostgreTsVectorType.INSTANCE);
     }
 
@@ -678,7 +678,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #jsonToTsVector(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static <T, U, V> SimpleExpression jsonToTsVector(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+    public static <T, U, V> Expression jsonToTsVector(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
                                                             BiFunction<MappingType, U, Expression> funcRefForDocument, U document,
                                                             BiFunction<MappingType, V, Expression> funcRefForFilter, V filter) {
         return jsonToTsVector(funcRefForConfig.apply(StringType.INSTANCE, config),
@@ -694,7 +694,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static SimpleExpression jsonToTsVector(Expression config, Expression document, Expression filter) {
+    public static Expression jsonToTsVector(Expression config, Expression document, Expression filter) {
         return FunctionUtils.threeArgFunc("JSON_TO_TSVECTOR", config, document, filter, PostgreTsVectorType.INSTANCE);
     }
 
@@ -726,7 +726,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #jsonbToTsVector(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static <T, U> SimpleExpression jsonbToTsVector(BiFunction<MappingType, T, Expression> funcRefForDocument, T document,
+    public static <T, U> Expression jsonbToTsVector(BiFunction<MappingType, T, Expression> funcRefForDocument, T document,
                                                           BiFunction<MappingType, U, Expression> funcRefForFilter, U filter) {
         return jsonbToTsVector(funcRefForDocument.apply(JsonType.TEXT, document),
                 funcRefForFilter.apply(JsonbType.TEXT, filter)
@@ -740,7 +740,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static SimpleExpression jsonbToTsVector(Expression document, Expression filter) {
+    public static Expression jsonbToTsVector(Expression document, Expression filter) {
         return FunctionUtils.twoArgFunc("JSONB_TO_TSVECTOR", document, filter, PostgreTsVectorType.INSTANCE);
     }
 
@@ -782,7 +782,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #jsonbToTsVector(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static <T, U, V> SimpleExpression jsonbToTsVector(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+    public static <T, U, V> Expression jsonbToTsVector(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
                                                              BiFunction<MappingType, U, Expression> funcRefForDocument, U document,
                                                              BiFunction<MappingType, V, Expression> funcRefForFilter, V filter) {
         return jsonbToTsVector(funcRefForConfig.apply(StringType.INSTANCE, config),
@@ -798,7 +798,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
      */
-    public static SimpleExpression jsonbToTsVector(Expression config, Expression document, Expression filter) {
+    public static Expression jsonbToTsVector(Expression config, Expression document, Expression filter) {
         return FunctionUtils.threeArgFunc("JSONB_TO_TSVECTOR", config, document, filter, PostgreTsVectorType.INSTANCE);
     }
 
@@ -810,7 +810,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_delete ( vector tsvector, lexeme text ) → tsvector</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_delete ( vector tsvector, lexemes text[] ) → tsvector</a>
      */
-    public static SimpleExpression tsDelete(Expression tsVector, Expression lexeme) {
+    public static Expression tsDelete(Expression tsVector, Expression lexeme) {
         return FunctionUtils.twoArgFunc("TS_DELETE", tsVector, lexeme, PostgreTsVectorType.INSTANCE);
     }
 
@@ -821,7 +821,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_filter ( vector tsvector, weights "char"[] ) → tsvector</a>
      */
-    public static SimpleExpression tsFilter(Expression tsVector, Expression lexeme) {
+    public static Expression tsFilter(Expression tsVector, Expression lexeme) {
         return FunctionUtils.twoArgFunc("TS_FILTER", tsVector, lexeme, PostgreTsVectorType.INSTANCE);
     }
 
@@ -834,7 +834,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document json, query tsquery [, options text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document jsonb, query tsquery [, options text ] ) → text</a>
      */
-    public static SimpleExpression tsHeadline(Expression config, Expression document, Expression query, Expression options) {
+    public static Expression tsHeadline(Expression config, Expression document, Expression query, Expression options) {
         return FunctionUtils.fourArgFunc("TS_HEADLINE", config, document, query, options, TextType.INSTANCE);
     }
 
@@ -847,7 +847,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document json, query tsquery [, options text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document jsonb, query tsquery [, options text ] ) → text</a>
      */
-    public static SimpleExpression tsHeadline(Expression exp1, Expression exp2, Expression exp3) {
+    public static Expression tsHeadline(Expression exp1, Expression exp2, Expression exp3) {
         return FunctionUtils.threeArgFunc("TS_HEADLINE", exp1, exp2, exp3, TextType.INSTANCE);
     }
 
@@ -860,7 +860,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document json, query tsquery [, options text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document jsonb, query tsquery [, options text ] ) → text</a>
      */
-    public static SimpleExpression tsHeadline(Expression document, Expression query) {
+    public static Expression tsHeadline(Expression document, Expression query) {
         return FunctionUtils.twoArgFunc("TS_HEADLINE", document, query, TextType.INSTANCE);
     }
 
@@ -871,7 +871,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
      */
-    public static SimpleExpression tsRank(Expression weights, Expression vector, Expression query, Expression normalization) {
+    public static Expression tsRank(Expression weights, Expression vector, Expression query, Expression normalization) {
         return FunctionUtils.fourArgFunc("TS_RANK", weights, vector, query, normalization, FloatType.INSTANCE);
     }
 
@@ -882,7 +882,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
      */
-    public static SimpleExpression tsRank(Expression exp1, Expression exp2, Expression exp3) {
+    public static Expression tsRank(Expression exp1, Expression exp2, Expression exp3) {
         return FunctionUtils.threeArgFunc("TS_RANK", exp1, exp2, exp3, FloatType.INSTANCE);
     }
 
@@ -893,7 +893,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
      */
-    public static SimpleExpression tsRank(Expression vector, Expression query) {
+    public static Expression tsRank(Expression vector, Expression query) {
         return FunctionUtils.twoArgFunc("TS_RANK", vector, query, FloatType.INSTANCE);
     }
 
@@ -904,7 +904,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank_cd ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
      */
-    public static SimpleExpression tsRankCd(Expression weights, Expression vector, Expression query, Expression normalization) {
+    public static Expression tsRankCd(Expression weights, Expression vector, Expression query, Expression normalization) {
         return FunctionUtils.fourArgFunc("TS_RANK_CD", weights, vector, query, normalization, FloatType.INSTANCE);
     }
 
@@ -915,7 +915,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank_cd ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
      */
-    public static SimpleExpression tsRankCd(Expression exp1, Expression exp2, Expression exp3) {
+    public static Expression tsRankCd(Expression exp1, Expression exp2, Expression exp3) {
         return FunctionUtils.threeArgFunc("TS_RANK_CD", exp1, exp2, exp3, FloatType.INSTANCE);
     }
 
@@ -926,7 +926,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank_cd ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
      */
-    public static SimpleExpression tsRankCd(Expression vector, Expression query) {
+    public static Expression tsRankCd(Expression vector, Expression query) {
         return FunctionUtils.twoArgFunc("TS_RANK_CD", vector, query, FloatType.INSTANCE);
     }
 
@@ -937,7 +937,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rewrite ( query tsquery, target tsquery, substitute tsquery ) → tsquery</a>
      */
-    public static SimpleExpression tsRewrite(Expression query, Expression target, Expression substitute) {
+    public static Expression tsRewrite(Expression query, Expression target, Expression substitute) {
         return FunctionUtils.threeArgFunc("TS_REWRITE", query, target, substitute, PostgreTsQueryType.INSTANCE);
     }
 
@@ -948,7 +948,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rewrite ( query tsquery, select text ) → tsquery</a>
      */
-    public static SimpleExpression tsRewrite(Expression query, Expression select) {
+    public static Expression tsRewrite(Expression query, Expression select) {
         return FunctionUtils.twoArgFunc("TS_REWRITE", query, select, PostgreTsQueryType.INSTANCE);
     }
 
@@ -959,7 +959,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">tsquery_phrase ( query1 tsquery, query2 tsquery ) → tsquery</a>
      */
-    public static SimpleExpression tsQueryPhrase(Expression query1, Expression query2) {
+    public static Expression tsQueryPhrase(Expression query1, Expression query2) {
         return FunctionUtils.twoArgFunc("TSQUERY_PHRASE", query1, query2, PostgreTsQueryType.INSTANCE);
     }
 
@@ -970,7 +970,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">tsquery_phrase ( query1 tsquery, query2 tsquery, distance integer ) → tsquery</a>
      */
-    public static SimpleExpression tsQueryPhrase(Expression query1, Expression query2, Expression distance) {
+    public static Expression tsQueryPhrase(Expression query1, Expression query2, Expression distance) {
         return FunctionUtils.threeArgFunc("TSQUERY_PHRASE", query1, query2, distance, PostgreTsQueryType.INSTANCE);
     }
 
@@ -981,7 +981,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">tsvector_to_array ( tsvector ) → text[]</a>
      */
-    public static SimpleExpression tsVectorToArray(Expression tsVector) {
+    public static Expression tsVectorToArray(Expression tsVector) {
         return FunctionUtils.oneArgFunc("TSVECTOR_TO_ARRAY", tsVector, TextArrayType.from(String[].class));
     }
 
@@ -1005,7 +1005,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLPARSE ( { DOCUMENT | CONTENT } value)<br/>
      * </a>
      */
-    public static SimpleExpression xmlParse(final SQLs.DocumentValueOption option, BiFunction<MappingType, String, Expression> funcRef, String value) {
+    public static Expression xmlParse(final SQLs.DocumentValueOption option, BiFunction<MappingType, String, Expression> funcRef, String value) {
         return xmlParse(option, funcRef.apply(TextType.INSTANCE, value));
     }
 
@@ -1014,7 +1014,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLPARSE ( { DOCUMENT | CONTENT } value)<br/>
      * </a>
      */
-    public static SimpleExpression xmlParse(final SQLs.DocumentValueOption option, final Expression value) {
+    public static Expression xmlParse(final SQLs.DocumentValueOption option, final Expression value) {
         final String name = "XMLPARSE";
         if (!(option == Postgres.DOCUMENT || option == Postgres.CONTENT)) {
             throw CriteriaUtils.funcArgError(name, option);
@@ -1029,7 +1029,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLSERIALIZE ( { DOCUMENT | CONTENT } value AS type )<br/>
      * </a>
      */
-    public static SimpleExpression xmlSerialize(final SQLs.DocumentValueOption option, final Expression value, final SQLs.WordAs as,
+    public static Expression xmlSerialize(final SQLs.DocumentValueOption option, final Expression value, final SQLs.WordAs as,
                                                 final MappingType type) {
         final String name = "XMLSERIALIZE";
         if (!(option == Postgres.DOCUMENT || option == Postgres.CONTENT)) {
@@ -1065,7 +1065,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlcomment ( text ) → xml</a>
      */
-    public static SimpleExpression xmlComment(Expression exp) {
+    public static Expression xmlComment(Expression exp) {
         return FunctionUtils.oneArgFunc("XMLCOMMENT", exp, XmlType.TEXT);
     }
 
@@ -1076,7 +1076,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
      */
-    public static SimpleExpression xmlConcat(Expression xmls) {
+    public static Expression xmlConcat(Expression xmls) {
         return FunctionUtils.oneOrMultiArgFunc("XMLCONCAT", xmls, XmlType.TEXT);
     }
 
@@ -1087,7 +1087,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
      */
-    public static SimpleExpression xmlConcat(Expression xml1, Expression... xml2) {
+    public static Expression xmlConcat(Expression xml1, Expression... xml2) {
         return FunctionUtils.oneAndRestFunc("XMLCONCAT", XmlType.TEXT, xml1, xml2);
     }
 
@@ -1098,7 +1098,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
      */
-    public static SimpleExpression xmlConcat(List<Expression> xmlList) {
+    public static Expression xmlConcat(List<Expression> xmlList) {
         return FunctionUtils.multiArgFunc("XMLCONCAT", xmlList, XmlType.TEXT);
     }
 
@@ -1126,7 +1126,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
+    public static Expression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
                                               Expression... contents) {
         ContextStack.assertNonNull(attributes);
         ContextStack.assertNonNull(contents);
@@ -1145,7 +1145,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, Expression... contents) {
+    public static Expression xmlElement(Postgres.WordName wordName, String name, Expression... contents) {
         ContextStack.assertNonNull(contents);
         return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contents) {
@@ -1163,7 +1163,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
+    public static Expression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
                                               List<Expression> contentList) {
         ContextStack.assertNonNull(attributes);
         return _xmlElement(wordName, name, attributes, c -> {
@@ -1181,7 +1181,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name,
+    public static Expression xmlElement(Postgres.WordName wordName, String name,
                                               List<Expression> contentList) {
         return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contentList) {
@@ -1200,7 +1200,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlPi(Postgres.WordName wordName, String name) {
+    public static Expression xmlPi(Postgres.WordName wordName, String name) {
         return _xmlPi(wordName, name, null);
     }
 
@@ -1213,7 +1213,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlPi(Postgres.WordName wordName, String name,
+    public static Expression xmlPi(Postgres.WordName wordName, String name,
                                          BiFunction<MappingType, String, Expression> funcRef, String content) {
         final Expression contentExp;
         contentExp = funcRef.apply(StringType.INSTANCE, content);
@@ -1230,7 +1230,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlPi(Postgres.WordName wordName, String name, Expression content) {
+    public static Expression xmlPi(Postgres.WordName wordName, String name, Expression content) {
         ContextStack.assertNonNull(content);
         return _xmlPi(wordName, name, content);
     }
@@ -1246,7 +1246,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, WordsNoValue noValue) {
+    public static Expression xmlRoot(Expression xml, WordVersion version, WordsNoValue noValue) {
         return _xmlRoot(xml, version, noValue, Postgres.STANDALONE, null);
     }
 
@@ -1261,7 +1261,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, Expression text) {
+    public static Expression xmlRoot(Expression xml, WordVersion version, Expression text) {
         return _xmlRoot(xml, version, text, Postgres.STANDALONE, null);
     }
 
@@ -1276,7 +1276,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, WordsNoValue noValue,
+    public static Expression xmlRoot(Expression xml, WordVersion version, WordsNoValue noValue,
                                            WordStandalone standalone, StandaloneOption option) {
         ContextStack.assertNonNull(option);
         return _xmlRoot(xml, version, noValue, standalone, option);
@@ -1293,7 +1293,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, Expression text,
+    public static Expression xmlRoot(Expression xml, WordVersion version, Expression text,
                                            WordStandalone standalone, StandaloneOption option) {
         ContextStack.assertNonNull(option);
         return _xmlRoot(xml, version, text, standalone, option);
@@ -1307,7 +1307,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlagg ( xml ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlAgg(Expression xml) {
+    public static Expression xmlAgg(Expression xml) {
         return FunctionUtils.oneArgFunc("XMLAGG", xml, XmlType.TEXT);
     }
 
@@ -1319,7 +1319,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlagg ( xml ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlAgg(Expression xml, Consumer<Statement._SimpleOrderByClause> consumer) {
+    public static Expression xmlAgg(Expression xml, Consumer<Statement._SimpleOrderByClause> consumer) {
         final FunctionUtils.OrderByOptionClause clause;
         clause = FunctionUtils.orderByOptionClause();
         consumer.accept(clause);
@@ -1448,7 +1448,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">xpath ( xpath text, xml xml [, nsarray text[] ] ) → xml[]<br/>
      * </a>
      */
-    public static SimpleExpression xpath(Expression xpath, Expression xml) {
+    public static Expression xpath(Expression xpath, Expression xml) {
         return FunctionUtils.twoArgFunc("XPATH", xpath, xml, XmlArrayType.TEXT_LINEAR);
     }
 
@@ -1460,7 +1460,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">xpath ( xpath text, xml xml [, nsarray text[] ] ) → xml[]<br/>
      * </a>
      */
-    public static SimpleExpression xpath(Expression xpath, Expression xml, Expression nsArray) {
+    public static Expression xpath(Expression xpath, Expression xml, Expression nsArray) {
         return FunctionUtils.threeArgFunc("XPATH", xpath, xml, nsArray, XmlArrayType.TEXT_LINEAR);
     }
 
@@ -1774,7 +1774,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #tableToXml(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml</a>
      */
-    public static SimpleExpression tableToXml(TableMeta<?> table, Expression nulls, Expression tableForest,
+    public static Expression tableToXml(TableMeta<?> table, Expression nulls, Expression tableForest,
                                               Expression targetNs) {
         return tableToXml(PostgreFunctionUtils.tableNameExp(table), nulls, tableForest, targetNs);
     }
@@ -1786,7 +1786,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml</a>
      */
-    public static SimpleExpression tableToXml(Expression table, Expression nulls, Expression tableForest,
+    public static Expression tableToXml(Expression table, Expression nulls, Expression tableForest,
                                               Expression targetNs) {
         return FunctionUtils.fourArgFunc("TABLE_TO_XML", table, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1799,7 +1799,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param query will output literal sql
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml</a>
      */
-    public static SimpleExpression queryToXml(Select query, Visible visible, Expression nulls, Expression tableForest,
+    public static Expression queryToXml(Select query, Visible visible, Expression nulls, Expression tableForest,
                                               Expression targetNs) {
         return queryToXml(PostgreFunctionUtils.queryStringExp(query, visible), nulls, tableForest, targetNs);
     }
@@ -1812,7 +1812,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param query will output literal sql
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml</a>
      */
-    public static SimpleExpression queryToXml(Select query, Expression nulls, Expression tableForest,
+    public static Expression queryToXml(Select query, Expression nulls, Expression tableForest,
                                               Expression targetNs) {
         return queryToXml(PostgreFunctionUtils.queryStringExp(query, Visible.ONLY_VISIBLE), nulls, tableForest, targetNs);
     }
@@ -1824,7 +1824,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml</a>
      */
-    public static SimpleExpression queryToXml(Expression query, Expression nulls, Expression tableForest,
+    public static Expression queryToXml(Expression query, Expression nulls, Expression tableForest,
                                               Expression targetNs) {
         return FunctionUtils.fourArgFunc("QUERY_TO_XML", query, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1836,7 +1836,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">cursor_to_xml</a>
      */
-    public static SimpleExpression cursorToXml(Expression cursor, Expression nulls, Expression tableForest,
+    public static Expression cursorToXml(Expression cursor, Expression nulls, Expression tableForest,
                                                Expression targetNs) {
         return FunctionUtils.fourArgFunc("CURSOR_TO_XML", cursor, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1851,7 +1851,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #tableToXmlSchema(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xmlschema</a>
      */
-    public static SimpleExpression tableToXmlSchema(TableMeta<?> table, Expression nulls, Expression tableForest,
+    public static Expression tableToXmlSchema(TableMeta<?> table, Expression nulls, Expression tableForest,
                                                     Expression targetNs) {
         return tableToXmlSchema(PostgreFunctionUtils.tableNameExp(table), nulls, tableForest, targetNs);
     }
@@ -1863,7 +1863,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xmlschema</a>
      */
-    public static SimpleExpression tableToXmlSchema(Expression table, Expression nulls, Expression tableForest,
+    public static Expression tableToXmlSchema(Expression table, Expression nulls, Expression tableForest,
                                                     Expression targetNs) {
         return FunctionUtils.fourArgFunc("TABLE_TO_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1876,7 +1876,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param query will output literal sql
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xmlschema</a>
      */
-    public static SimpleExpression queryToXmlSchema(Select query, Visible visible, Expression nulls, Expression tableForest,
+    public static Expression queryToXmlSchema(Select query, Visible visible, Expression nulls, Expression tableForest,
                                                     Expression targetNs) {
         return queryToXmlSchema(PostgreFunctionUtils.queryStringExp(query, visible), nulls, tableForest, targetNs);
     }
@@ -1889,7 +1889,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param query will output literal sql
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xmlschema</a>
      */
-    public static SimpleExpression queryToXmlSchema(Select query, Expression nulls, Expression tableForest,
+    public static Expression queryToXmlSchema(Select query, Expression nulls, Expression tableForest,
                                                     Expression targetNs) {
         return queryToXmlSchema(PostgreFunctionUtils.queryStringExp(query, Visible.ONLY_VISIBLE), nulls, tableForest,
                 targetNs);
@@ -1903,7 +1903,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xmlschema</a>
      */
-    public static SimpleExpression queryToXmlSchema(Expression query, Expression nulls, Expression tableForest,
+    public static Expression queryToXmlSchema(Expression query, Expression nulls, Expression tableForest,
                                                     Expression targetNs) {
         return FunctionUtils.fourArgFunc("QUERY_TO_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1915,7 +1915,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">cursor_to_xmlschema</a>
      */
-    public static SimpleExpression cursorToXmlSchema(Expression cursor, Expression nulls, Expression tableForest,
+    public static Expression cursorToXmlSchema(Expression cursor, Expression nulls, Expression tableForest,
                                                      Expression targetNs) {
         return FunctionUtils.fourArgFunc("CURSOR_TO_XMLSCHEMA", cursor, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1930,7 +1930,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #tableToXmlAndXmlSchema(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml_and_xmlschema</a>
      */
-    public static SimpleExpression tableToXmlAndXmlSchema(TableMeta<?> table, Expression nulls, Expression tableForest,
+    public static Expression tableToXmlAndXmlSchema(TableMeta<?> table, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
         return tableToXmlAndXmlSchema(PostgreFunctionUtils.tableNameExp(table), nulls, tableForest, targetNs);
     }
@@ -1942,7 +1942,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml_and_xmlschema</a>
      */
-    public static SimpleExpression tableToXmlAndXmlSchema(Expression table, Expression nulls, Expression tableForest,
+    public static Expression tableToXmlAndXmlSchema(Expression table, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
         return FunctionUtils.fourArgFunc("TABLE_TO_XML_AND_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1955,7 +1955,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param query will output literal sql
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml_and_xmlschema</a>
      */
-    public static SimpleExpression queryToXmlAndXmlSchema(Select query, Visible visible, Expression nulls, Expression tableForest,
+    public static Expression queryToXmlAndXmlSchema(Select query, Visible visible, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
         return queryToXmlAndXmlSchema(PostgreFunctionUtils.queryStringExp(query, visible), nulls, tableForest, targetNs);
     }
@@ -1968,7 +1968,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param query will output literal sql
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml_and_xmlschema</a>
      */
-    public static SimpleExpression queryToXmlAndXmlSchema(Select query, Expression nulls, Expression tableForest,
+    public static Expression queryToXmlAndXmlSchema(Select query, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
         return queryToXmlAndXmlSchema(PostgreFunctionUtils.queryStringExp(query, Visible.ONLY_VISIBLE), nulls, tableForest, targetNs);
     }
@@ -1980,7 +1980,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml_and_xmlschema</a>
      */
-    public static SimpleExpression queryToXmlAndXmlSchema(Expression query, Expression nulls, Expression tableForest,
+    public static Expression queryToXmlAndXmlSchema(Expression query, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
         return FunctionUtils.fourArgFunc("QUERY_TO_XML_AND_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -1993,7 +1993,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">schema_to_xml</a>
      */
-    public static SimpleExpression schemaToXml(Expression schema, Expression nulls, Expression tableForest,
+    public static Expression schemaToXml(Expression schema, Expression nulls, Expression tableForest,
                                                Expression targetNs) {
         return FunctionUtils.fourArgFunc("SCHEMA_TO_XML", schema, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -2005,7 +2005,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">schema_to_xmlschema</a>
      */
-    public static SimpleExpression schemaToXmlSchema(Expression schema, Expression nulls, Expression tableForest,
+    public static Expression schemaToXmlSchema(Expression schema, Expression nulls, Expression tableForest,
                                                      Expression targetNs) {
         return FunctionUtils.fourArgFunc("SCHEMA_TO_XMLSCHEMA", schema, nulls, tableForest, targetNs, XmlType.TEXT);
     }
@@ -2017,7 +2017,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">schema_to_xml_and_xmlschema</a>
      */
-    public static SimpleExpression schemaToXmlAndXmlSchema(Expression schema, Expression nulls, Expression tableForest,
+    public static Expression schemaToXmlAndXmlSchema(Expression schema, Expression nulls, Expression tableForest,
                                                            Expression targetNs) {
         return FunctionUtils.fourArgFunc("SCHEMA_TO_XML_AND_XMLSCHEMA", schema, nulls, tableForest, targetNs,
                 XmlType.TEXT);
@@ -2030,7 +2030,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xml</a>
      */
-    public static SimpleExpression databaseToXml(Expression nulls, Expression tableForest, Expression targetNs) {
+    public static Expression databaseToXml(Expression nulls, Expression tableForest, Expression targetNs) {
         return FunctionUtils.threeArgFunc("DATABASE_TO_XML", nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
@@ -2041,7 +2041,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xmlschema</a>
      */
-    public static SimpleExpression databaseToXmlSchema(Expression nulls, Expression tableForest, Expression targetNs) {
+    public static Expression databaseToXmlSchema(Expression nulls, Expression tableForest, Expression targetNs) {
         return FunctionUtils.threeArgFunc("DATABASE_TO_XMLSCHEMA", nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
@@ -2052,7 +2052,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xml_and_xmlschema</a>
      */
-    public static SimpleExpression databaseToXmlAndXmlSchema(Expression nulls, Expression tableForest,
+    public static Expression databaseToXmlAndXmlSchema(Expression nulls, Expression tableForest,
                                                              Expression targetNs) {
         return FunctionUtils.threeArgFunc("DATABASE_TO_XML_AND_XMLSCHEMA", nulls, tableForest, targetNs,
                 XmlType.TEXT);
@@ -2085,7 +2085,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
      */
-    public static SimpleExpression toJson(Object arg) {
+    public static Expression toJson(Object arg) {
         return FunctionUtils.oneArgRowElementFunc("to_json", arg, JsonType.TEXT);
     }
 
@@ -2113,7 +2113,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refField(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
      */
-    public static SimpleExpression toJsonb(Object arg) {
+    public static Expression toJsonb(Object arg) {
         return FunctionUtils.oneArgRowElementFunc("to_jsonb", arg, JsonbType.TEXT);
     }
 
@@ -2127,7 +2127,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Converts an SQL array to a JSON array. The behavior is the same as to_json except that line feeds will be added between top-level array elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression arrayToJson(Expression array) {
+    public static Expression arrayToJson(Expression array) {
         return FunctionUtils.oneArgFunc("array_to_json", array, JsonType.TEXT);
     }
 
@@ -2141,7 +2141,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Converts an SQL array to a JSON array. The behavior is the same as to_json except that line feeds will be added between top-level array elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression arrayToJson(Expression array, Expression lineFeed) {
+    public static Expression arrayToJson(Expression array, Expression lineFeed) {
         return FunctionUtils.twoArgFunc("array_to_json", array, lineFeed, JsonType.TEXT);
     }
 
@@ -2168,7 +2168,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression rowToJson(RowElement record) {
+    public static Expression rowToJson(RowElement record) {
         return FunctionUtils.oneArgRowElementFunc("row_to_json", record, JsonType.TEXT);
     }
 
@@ -2196,7 +2196,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression rowToJson(RowElement record, Expression lineFeed) {
+    public static Expression rowToJson(RowElement record, Expression lineFeed) {
         return FunctionUtils.twoArgRowElementFunc("row_to_json", record, lineFeed, JsonType.TEXT);
     }
 
@@ -2212,7 +2212,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray() {
+    public static Expression jsonBuildArray() {
         return FunctionUtils.zeroArgFunc("json_build_array", JsonType.TEXT);
     }
 
@@ -2241,7 +2241,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Object arg) {
+    public static Expression jsonBuildArray(Object arg) {
         return FunctionUtils.oneArgRowElementFunc("json_build_array", arg, JsonType.TEXT);
     }
 
@@ -2278,7 +2278,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Object arg1, Object arg2) {
+    public static Expression jsonBuildArray(Object arg1, Object arg2) {
         return FunctionUtils.twoArgRowElementFunc("json_build_array", arg1, arg2, JsonType.TEXT);
     }
 
@@ -2332,7 +2332,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Object arg1, Object arg2, Object arg3, Object... variadic) {
+    public static Expression jsonBuildArray(Object arg1, Object arg2, Object arg3, Object... variadic) {
         return FunctionUtils.threeAndRestRowElementFunc("json_build_array", JsonType.TEXT, arg1, arg2, arg3, variadic);
     }
 
@@ -2366,7 +2366,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Consumer<Consumer<Object>> consumer) {
+    public static Expression jsonBuildArray(Consumer<Consumer<Object>> consumer) {
         return FunctionUtils.rowElementFunc("json_build_array", false, consumer, JsonType.TEXT);
     }
 
@@ -2384,7 +2384,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray() {
+    public static Expression jsonbBuildArray() {
         return FunctionUtils.zeroArgFunc("jsonb_build_array", JsonbType.TEXT);
     }
 
@@ -2413,7 +2413,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Object arg) {
+    public static Expression jsonbBuildArray(Object arg) {
         return FunctionUtils.oneArgRowElementFunc("jsonb_build_array", arg, JsonbType.TEXT);
     }
 
@@ -2449,7 +2449,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Object arg1, Object arg2) {
+    public static Expression jsonbBuildArray(Object arg1, Object arg2) {
         return FunctionUtils.twoArgRowElementFunc("jsonb_build_array", arg1, arg2, JsonbType.TEXT);
     }
 
@@ -2502,7 +2502,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Object arg1, Object arg2, Object arg3, Object... variadic) {
+    public static Expression jsonbBuildArray(Object arg1, Object arg2, Object arg3, Object... variadic) {
         return FunctionUtils.threeAndRestRowElementFunc("jsonb_build_array", JsonbType.TEXT, arg1, arg2, arg3, variadic);
     }
 
@@ -2536,25 +2536,25 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Consumer<Consumer<Object>> consumer) {
+    public static Expression jsonbBuildArray(Consumer<Consumer<Object>> consumer) {
         return FunctionUtils.rowElementFunc("jsonb_build_array", false, consumer, JsonbType.TEXT);
     }
 
-    public static SimpleExpression jsonBuildObject() {
+    public static Expression jsonBuildObject() {
         return FunctionUtils.zeroArgFunc("json_build_object", JsonType.TEXT);
     }
 
-    public static SimpleExpression jsonbBuildObject() {
+    public static Expression jsonbBuildObject() {
         return FunctionUtils.zeroArgFunc("jsonb_build_object", JsonbType.TEXT);
     }
 
 
-    public static SimpleExpression jsonBuildObject(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+    public static Expression jsonBuildObject(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         return FunctionUtils.oneArgObjectElementFunc("json_build_object", ContextStack.peek().row(tableAlias, period, table),
                 JsonType.TEXT);
     }
 
-    public static SimpleExpression jsonBuildObject(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+    public static Expression jsonBuildObject(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
         return FunctionUtils.oneArgObjectElementFunc("json_build_object", ContextStack.peek().row(derivedAlias, period, asterisk),
                 JsonType.TEXT);
     }
@@ -2578,7 +2578,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static Expression jsonBuildObject(Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return FunctionUtils.objectElementFunc("json_build_object", false, consumer, JsonType.TEXT);
     }
 
@@ -2602,16 +2602,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static Expression jsonBuildObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return FunctionUtils.objectElementFunc(space, "json_build_object", false, consumer, JsonType.TEXT);
     }
 
-    public static SimpleExpression jsonbBuildObject(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+    public static Expression jsonbBuildObject(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         return FunctionUtils.oneArgObjectElementFunc("jsonb_build_object", ContextStack.peek().row(tableAlias, period, table),
                 JsonbType.TEXT);
     }
 
-    public static SimpleExpression jsonbBuildObject(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+    public static Expression jsonbBuildObject(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
         return FunctionUtils.oneArgObjectElementFunc("jsonb_build_object", ContextStack.peek().row(derivedAlias, period, asterisk),
                 JsonbType.TEXT);
     }
@@ -2635,7 +2635,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static Expression jsonbBuildObject(Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return FunctionUtils.objectElementFunc("jsonb_build_object", false, consumer, JsonbType.TEXT);
     }
 
@@ -2659,7 +2659,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static Expression jsonbBuildObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return FunctionUtils.objectElementFunc(space, "jsonb_build_object", false, consumer, JsonbType.TEXT);
     }
 
@@ -2675,7 +2675,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonObject(Expression pairArray) {
+    public static Expression jsonObject(Expression pairArray) {
         return FunctionUtils.oneArgFunc("json_object", pairArray, JsonType.TEXT);
     }
 
@@ -2699,7 +2699,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonObject(BiFunction<MappingType, String[], Expression> funcRef,
+    public static Expression jsonObject(BiFunction<MappingType, String[], Expression> funcRef,
                                               Consumer<Statement._StringObjectSpaceClause> consumer) {
         return FunctionUtils.staticStringObjectStringFunc("json_object", false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonType.TEXT);
@@ -2724,7 +2724,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonObject(SQLs.SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
+    public static Expression jsonObject(SQLs.SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
                                               final Consumer<Statement._StringObjectConsumer> consumer) {
         return FunctionUtils.dynamicStringObjectStringFunc("json_object", space, false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonType.TEXT);
@@ -2742,7 +2742,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonbObject(Expression pairArray) {
+    public static Expression jsonbObject(Expression pairArray) {
         return FunctionUtils.oneArgFunc("jsonb_object", pairArray, JsonbType.TEXT);
     }
 
@@ -2765,7 +2765,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonbObject(BiFunction<MappingType, String[], Expression> funcRef,
+    public static Expression jsonbObject(BiFunction<MappingType, String[], Expression> funcRef,
                                                Consumer<Statement._StringObjectSpaceClause> consumer) {
         return FunctionUtils.staticStringObjectStringFunc("jsonb_object", false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonbType.TEXT);
@@ -2790,7 +2790,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonbObject(SQLs.SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
+    public static Expression jsonbObject(SQLs.SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
                                                final Consumer<Statement._StringObjectConsumer> consumer) {
         return FunctionUtils.dynamicStringObjectStringFunc("jsonb_object", space, false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonbType.TEXT);
@@ -2807,7 +2807,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * json_object('{a,b}', '{1,2}') → {"a": "1", "b": "2"}<br/>
      * </a>
      */
-    public static SimpleExpression jsonObject(Expression keyArray, Expression valueArray) {
+    public static Expression jsonObject(Expression keyArray, Expression valueArray) {
         return FunctionUtils.twoArgFunc("json_object", keyArray, valueArray, JsonType.TEXT);
     }
 
@@ -2821,7 +2821,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * json_object('{a,b}', '{1,2}') → {"a": "1", "b": "2"}<br/>
      * </a>
      */
-    public static SimpleExpression jsonbObject(Expression keyArray, Expression valueArray) {
+    public static Expression jsonbObject(Expression keyArray, Expression valueArray) {
         return FunctionUtils.twoArgFunc("jsonb_object", keyArray, valueArray, JsonbType.TEXT);
     }
 
@@ -3051,7 +3051,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns the number of elements in the top-level JSON array.<br/>
      * </a>
      */
-    public static SimpleExpression jsonArrayLength(Expression json) {
+    public static Expression jsonArrayLength(Expression json) {
         return FunctionUtils.oneArgFunc("JSON_ARRAY_LENGTH", json, IntegerType.INSTANCE);
     }
 
@@ -3062,7 +3062,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns the number of elements in the top-level JSON array.<br/>
      * </a>
      */
-    public static SimpleExpression jsonbArrayLength(Expression jsonb) {
+    public static Expression jsonbArrayLength(Expression jsonb) {
         return FunctionUtils.oneArgFunc("JSONB_ARRAY_LENGTH", jsonb, IntegerType.INSTANCE);
     }
 
@@ -3336,7 +3336,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPath(Expression fromJson, Expression firstPath, Expression... rest) {
+    public static Expression jsonExtractPath(Expression fromJson, Expression firstPath, Expression... rest) {
         final String name = "JSON_EXTRACT_PATH";
         return FunctionUtils.oneAndAtLeastFunc(name, JsonType.TEXT, fromJson, firstPath, rest);
     }
@@ -3351,7 +3351,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPath(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
+    public static Expression jsonExtractPath(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
         final String name = "JSON_EXTRACT_PATH";
         return FunctionUtils.oneAndConsumer(name, true, fromJson, consumer, JsonType.TEXT);
     }
@@ -3385,7 +3385,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static <T> SimpleExpression jsonExtractPath(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
+    public static <T> Expression jsonExtractPath(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
                                                        BiFunction<MappingType, List<String>, Expression> funcRefForPath,
                                                        String firstPath, String... rest) {
         return jsonExtractPath(funcRefForJson.apply(JsonType.TEXT, json), funcRefForPath, firstPath, rest);
@@ -3409,7 +3409,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                    String firstPath, String... rest) {
         final String name = "JSON_EXTRACT_PATH";
         final List<String> pathElemList;
@@ -3433,7 +3433,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                    Consumer<Consumer<String>> consumer) {
         return FunctionUtils.oneAndMulti("JSON_EXTRACT_PATH", fromJson,
                 funcRef.apply(NoCastTextType.INSTANCE, CriteriaUtils.stringList(null, true, consumer)),
@@ -3453,7 +3453,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPath(Expression fromJson, Expression firstPath, Expression... rest) {
+    public static Expression jsonbExtractPath(Expression fromJson, Expression firstPath, Expression... rest) {
         final String name = "JSONB_EXTRACT_PATH";
         return FunctionUtils.oneAndAtLeastFunc(name, JsonbType.TEXT, fromJson, firstPath, rest);
     }
@@ -3468,7 +3468,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPath(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
+    public static Expression jsonbExtractPath(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
         final String name = "JSONB_EXTRACT_PATH";
         return FunctionUtils.oneAndConsumer(name, true, fromJson, consumer, JsonbType.TEXT);
     }
@@ -3502,7 +3502,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static <T> SimpleExpression jsonbExtractPath(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
+    public static <T> Expression jsonbExtractPath(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
                                                         BiFunction<MappingType, List<String>, Expression> funcRefForPath,
                                                         String firstPath, String... rest) {
         return jsonbExtractPath(funcRefForJson.apply(JsonbType.TEXT, json), funcRefForPath, firstPath, rest);
@@ -3526,7 +3526,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonbExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                     String firstPath, String... rest) {
         final String name = "JSONB_EXTRACT_PATH";
         final List<String> pathElemList;
@@ -3551,7 +3551,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path. (This is functionally equivalent to the #> operator, but writing the path out as a variadic list can be more convenient in some cases.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonbExtractPath(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                     Consumer<Consumer<String>> consumer) {
         return FunctionUtils.oneAndMulti("JSONB_EXTRACT_PATH", fromJson,
                 funcRef.apply(NoCastTextType.INSTANCE, CriteriaUtils.stringList(null, true, consumer)),
@@ -3571,7 +3571,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPathText(Expression fromJson, Expression firstPath, Expression... rest) {
+    public static Expression jsonExtractPathText(Expression fromJson, Expression firstPath, Expression... rest) {
         final String name = "JSON_EXTRACT_PATH_TEXT";
         return FunctionUtils.oneAndAtLeastFunc(name, TextType.INSTANCE, fromJson, firstPath, rest);
     }
@@ -3605,7 +3605,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static <T> SimpleExpression jsonExtractPathText(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
+    public static <T> Expression jsonExtractPathText(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
                                                            BiFunction<MappingType, List<String>, Expression> funcRefForPath,
                                                            String firstPath, String... rest) {
         return jsonExtractPathText(funcRefForJson.apply(JsonType.TEXT, json), funcRefForPath, firstPath, rest);
@@ -3629,7 +3629,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                        String firstPath, String... rest) {
         final String name = "JSON_EXTRACT_PATH_TEXT";
         final List<String> pathElemList;
@@ -3647,7 +3647,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPathText(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
+    public static Expression jsonExtractPathText(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
         return FunctionUtils.oneAndConsumer("JSON_EXTRACT_PATH_TEXT", true, fromJson, consumer, TextType.INSTANCE);
     }
 
@@ -3667,7 +3667,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                        Consumer<Consumer<String>> consumer) {
         return FunctionUtils.oneAndMulti("JSON_EXTRACT_PATH_TEXT", fromJson,
                 funcRef.apply(NoCastTextType.INSTANCE, CriteriaUtils.stringList(null, true, consumer)),
@@ -3687,7 +3687,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPathText(Expression fromJson, Expression firstPath, Expression... rest) {
+    public static Expression jsonbExtractPathText(Expression fromJson, Expression firstPath, Expression... rest) {
         final String name = "JSONB_EXTRACT_PATH_TEXT";
         return FunctionUtils.oneAndAtLeastFunc(name, TextType.INSTANCE, fromJson, firstPath, rest);
     }
@@ -3721,7 +3721,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static <T> SimpleExpression jsonbExtractPathText(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
+    public static <T> Expression jsonbExtractPathText(BiFunction<MappingType, T, Expression> funcRefForJson, T json,
                                                             BiFunction<MappingType, List<String>, Expression> funcRefForPath,
                                                             String firstPath, String... rest) {
         return jsonbExtractPathText(funcRefForJson.apply(JsonbType.TEXT, json), funcRefForPath, firstPath, rest);
@@ -3746,7 +3746,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonbExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                         String firstPath, String... rest) {
         final String name = "JSONB_EXTRACT_PATH_TEXT";
         final List<String> pathElemList;
@@ -3764,7 +3764,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPathText(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
+    public static Expression jsonbExtractPathText(Expression fromJson, Consumer<Consumer<Expression>> consumer) {
         return FunctionUtils.oneAndConsumer("JSONB_EXTRACT_PATH_TEXT", true, fromJson, consumer, TextType.INSTANCE);
     }
 
@@ -3782,7 +3782,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Extracts JSON sub-object at the specified path as text. (This is functionally equivalent to the #>> operator.)<br/>
      * </a>
      */
-    public static SimpleExpression jsonbExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
+    public static Expression jsonbExtractPathText(Expression fromJson, BiFunction<MappingType, List<String>, Expression> funcRef,
                                                         Consumer<Consumer<String>> consumer) {
         return FunctionUtils.oneAndMulti("JSONB_EXTRACT_PATH_TEXT", fromJson,
                 funcRef.apply(NoCastTextType.INSTANCE, CriteriaUtils.stringList(null, true, consumer)),
@@ -4246,7 +4246,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbSet(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                    T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
                                                    U newValue, Expression createIfMissing) {
         return jsonbSet(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
@@ -4266,7 +4266,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbSet(Expression jsonb, Expression path, Expression newValue,
+    public static Expression jsonbSet(Expression jsonb, Expression path, Expression newValue,
                                             Expression createIfMissing) {
         return FunctionUtils.fourArgFunc("JSONB_SET", jsonb, path, newValue, createIfMissing, JsonbType.TEXT);
     }
@@ -4301,7 +4301,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbSet(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                    T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
                                                    U newValue) {
         return jsonbSet(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
@@ -4320,7 +4320,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbSet(Expression jsonb, Expression path, Expression newValue) {
+    public static Expression jsonbSet(Expression jsonb, Expression path, Expression newValue) {
         return FunctionUtils.threeArgFunc("JSONB_SET", jsonb, path, newValue, JsonbType.TEXT);
     }
 
@@ -4357,7 +4357,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                       T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
                                                       U newValue, Expression createIfMissing) {
         return jsonbSetLax(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
@@ -4377,7 +4377,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbSetLax(Expression jsonb, Expression path, Expression newValue,
+    public static Expression jsonbSetLax(Expression jsonb, Expression path, Expression newValue,
                                                Expression createIfMissing) {
         return FunctionUtils.fourArgFunc("JSONB_SET_LAX", jsonb, path, newValue, createIfMissing, JsonbType.TEXT);
     }
@@ -4412,7 +4412,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                       T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
                                                       U newValue) {
         return jsonbSetLax(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
@@ -4431,7 +4431,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbSetLax(Expression jsonb, Expression path, Expression newValue) {
+    public static Expression jsonbSetLax(Expression jsonb, Expression path, Expression newValue) {
         return FunctionUtils.threeArgFunc("JSONB_SET_LAX", jsonb, path, newValue, JsonbType.TEXT);
     }
 
@@ -4472,7 +4472,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                       T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
                                                       U newValue, Expression createIfMissing, NullTreatMode nullTreatMode) {
         return jsonbSetLax(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
@@ -4501,7 +4501,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbSetLax(Expression jsonb, Expression path, Expression newValue,
+    public static Expression jsonbSetLax(Expression jsonb, Expression path, Expression newValue,
                                                Expression createIfMissing, Expression nullTreatMode) {
 
         return FunctionUtils.fiveArgFunc("JSONB_SET_LAX", jsonb, path, newValue,
@@ -4546,7 +4546,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbInsert(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbInsert(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                       T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
                                                       U newValue, Expression insertAfter) {
         return jsonbInsert(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
@@ -4566,7 +4566,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbInsert(Expression jsonb, Expression path, Expression newValue,
+    public static Expression jsonbInsert(Expression jsonb, Expression path, Expression newValue,
                                                Expression insertAfter) {
         return FunctionUtils.fourArgFunc("JSONB_INSERT", jsonb, path, newValue, insertAfter, JsonbType.TEXT);
     }
@@ -4601,7 +4601,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbInsert(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbInsert(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                       T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
                                                       U newValue) {
         return jsonbInsert(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
@@ -4622,7 +4622,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbInsert(Expression jsonb, Expression path, Expression newValue) {
+    public static Expression jsonbInsert(Expression jsonb, Expression path, Expression newValue) {
         return FunctionUtils.threeArgFunc("JSONB_INSERT", jsonb, path, newValue, JsonbType.TEXT);
     }
 
@@ -4639,7 +4639,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonStripNulls(Expression json) {
+    public static Expression jsonStripNulls(Expression json) {
         return FunctionUtils.oneArgFunc("JSON_STRIP_NULLS", json, JsonType.TEXT);
     }
 
@@ -4654,7 +4654,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbStripNulls(Expression json) {
+    public static Expression jsonbStripNulls(Expression json) {
         return FunctionUtils.oneArgFunc("JSONB_STRIP_NULLS", json, JsonbType.TEXT);
     }
 
@@ -5436,7 +5436,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                            T path) {
         return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
@@ -5452,7 +5452,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryArray(Expression target, Expression path) {
+    public static Expression jsonbPathQueryArray(Expression target, Expression path) {
         return FunctionUtils.twoArgFunc("JSONB_PATH_QUERY_ARRAY", target, path, JsonbType.TEXT);
     }
 
@@ -5478,7 +5478,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                            T path, Expression vars) {
         return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
@@ -5515,7 +5515,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                               T path, BiFunction<MappingType, U, Expression> funcRefForVars, U vars) {
         return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
                 funcRefForVars.apply(JsonbType.TEXT, vars)
@@ -5533,7 +5533,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryArray(Expression target, Expression path, Expression vars) {
+    public static Expression jsonbPathQueryArray(Expression target, Expression path, Expression vars) {
         return FunctionUtils.threeArgFunc("JSONB_PATH_QUERY_ARRAY", target, path, vars, JsonbType.TEXT);
     }
 
@@ -5560,7 +5560,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                            T path, Expression vars, Expression silent) {
         return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
@@ -5598,7 +5598,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryArray(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                               T path, BiFunction<MappingType, U, Expression> funcRefForVars, U vars,
                                                               Expression silent) {
         return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
@@ -5618,7 +5618,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryArray(Expression target, Expression path, Expression vars, Expression silent) {
+    public static Expression jsonbPathQueryArray(Expression target, Expression path, Expression vars, Expression silent) {
         return FunctionUtils.fourArgFunc("JSONB_PATH_QUERY_ARRAY", target, path, vars, silent, JsonbType.TEXT);
     }
 
@@ -5647,7 +5647,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                            T path) {
         return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
@@ -5663,7 +5663,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryFirst(Expression target, Expression path) {
+    public static Expression jsonbPathQueryFirst(Expression target, Expression path) {
         return FunctionUtils.twoArgFunc("JSONB_PATH_QUERY_FIRST", target, path, JsonbType.TEXT);
     }
 
@@ -5689,7 +5689,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                            T path, Expression vars) {
         return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
@@ -5726,7 +5726,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                               T path, BiFunction<MappingType, U, Expression> funcRefForVars, U vars) {
         return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
                 funcRefForVars.apply(JsonbType.TEXT, vars)
@@ -5744,7 +5744,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryFirst(Expression target, Expression path, Expression vars) {
+    public static Expression jsonbPathQueryFirst(Expression target, Expression path, Expression vars) {
         return FunctionUtils.threeArgFunc("JSONB_PATH_QUERY_FIRST", target, path, vars, JsonbType.TEXT);
     }
 
@@ -5771,7 +5771,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                            T path, Expression vars, Expression silent) {
         return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
@@ -5808,7 +5808,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                               T path, BiFunction<MappingType, U, Expression> funcRefForVars, U vars,
                                                               Expression silent) {
         return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
@@ -5828,7 +5828,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryFirst(Expression target, Expression path, Expression vars,
+    public static Expression jsonbPathQueryFirst(Expression target, Expression path, Expression vars,
                                                        Expression silent) {
         return FunctionUtils.fourArgFunc("JSONB_PATH_QUERY_FIRST", target, path, vars, silent, JsonbType.TEXT);
     }
@@ -6659,7 +6659,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                              T path) {
         return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
@@ -6675,7 +6675,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, Expression path) {
+    public static Expression jsonbPathQueryArrayTz(Expression target, Expression path) {
         return FunctionUtils.twoArgFunc("JSONB_PATH_QUERY_ARRAY_TZ", target, path, JsonbType.TEXT);
     }
 
@@ -6701,7 +6701,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                              T path, Expression vars) {
         return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
@@ -6738,7 +6738,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                                 T path, BiFunction<MappingType, U, Expression> funcRefForVars,
                                                                 U vars) {
         return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
@@ -6757,7 +6757,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, Expression path, Expression vars) {
+    public static Expression jsonbPathQueryArrayTz(Expression target, Expression path, Expression vars) {
         return FunctionUtils.threeArgFunc("JSONB_PATH_QUERY_ARRAY_TZ", target, path, vars, JsonbType.TEXT);
     }
 
@@ -6784,7 +6784,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                              T path, Expression vars, Expression silent) {
         return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
@@ -6822,7 +6822,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                                 T path, BiFunction<MappingType, U, Expression> funcRefForVars,
                                                                 U vars, Expression silent) {
         return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
@@ -6842,7 +6842,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, Expression path, Expression vars, Expression silent) {
+    public static Expression jsonbPathQueryArrayTz(Expression target, Expression path, Expression vars, Expression silent) {
         return FunctionUtils.fourArgFunc("JSONB_PATH_QUERY_ARRAY_TZ", target, path, vars, silent, JsonbType.TEXT);
     }
 
@@ -6871,7 +6871,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                              T path) {
         return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
@@ -6887,7 +6887,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, Expression path) {
+    public static Expression jsonbPathQueryFirstTz(Expression target, Expression path) {
         return FunctionUtils.twoArgFunc("JSONB_PATH_QUERY_FIRST_TZ", target, path, JsonbType.TEXT);
     }
 
@@ -6913,7 +6913,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                              T path, Expression vars) {
         return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
@@ -6950,7 +6950,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                                 T path, BiFunction<MappingType, U, Expression> funcRefForVars, U vars) {
         return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
                 funcRefForVars.apply(JsonbType.TEXT, vars)
@@ -6968,7 +6968,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, Expression path, Expression vars) {
+    public static Expression jsonbPathQueryFirstTz(Expression target, Expression path, Expression vars) {
         return FunctionUtils.threeArgFunc("JSONB_PATH_QUERY_FIRST_TZ", target, path, vars, JsonbType.TEXT);
     }
 
@@ -6995,7 +6995,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T> Expression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                              T path, Expression vars, Expression silent) {
         return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
@@ -7032,7 +7032,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T, U> SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
+    public static <T, U> Expression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                                 T path, BiFunction<MappingType, U, Expression> funcRefForVars, U vars,
                                                                 Expression silent) {
         return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path),
@@ -7052,7 +7052,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, Expression path, Expression vars,
+    public static Expression jsonbPathQueryFirstTz(Expression target, Expression path, Expression vars,
                                                          Expression silent) {
         return FunctionUtils.fourArgFunc("JSONB_PATH_QUERY_FIRST_TZ", target, path, vars, silent, JsonbType.TEXT);
     }
@@ -7068,7 +7068,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPretty(Expression jsonb) {
+    public static Expression jsonbPretty(Expression jsonb) {
         return FunctionUtils.oneArgFunc("JSONB_PRETTY", jsonb, TextType.INSTANCE);
     }
 
@@ -7083,7 +7083,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonTypeOf(Expression json) {
+    public static Expression jsonTypeOf(Expression json) {
         return FunctionUtils.oneArgFunc("JSON_TYPEOF", json, TextType.INSTANCE);
     }
 
@@ -7098,7 +7098,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbTypeOf(Expression json) {
+    public static Expression jsonbTypeOf(Expression json) {
         return FunctionUtils.oneArgFunc("JSONB_TYPEOF", json, TextType.INSTANCE);
     }
 
@@ -7115,7 +7115,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see #xmlElement(Postgres.WordName, String, List)
      * @see #xmlElement(Postgres.WordName, String, XmlAttributes, List)
      */
-    private static SimpleExpression _xmlElement(final Postgres.WordName nameWord, final @Nullable String name,
+    private static Expression _xmlElement(final Postgres.WordName nameWord, final @Nullable String name,
                                                 final @Nullable XmlAttributes attributes,
                                                 Consumer<Consumer<Object>> consumer) {
         final String funcName = "XMLELEMENT";
@@ -7147,14 +7147,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    private static SimpleExpression _xmlPi(Postgres.WordName wordName, String name, @Nullable Expression content) {
+    private static Expression _xmlPi(Postgres.WordName wordName, String name, @Nullable Expression content) {
         final String funcName = "XMLPI";
         if (wordName != Postgres.NAME) {
             throw CriteriaUtils.funcArgError(funcName, wordName);
         } else if (!_DialectUtils.isSimpleIdentifier(name)) {
             throw CriteriaUtils.funcArgError(funcName, name);
         }
-        final SimpleExpression func;
+        final Expression func;
         if (content == null) {
             func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT, wordName, name);
         } else {
@@ -7175,7 +7175,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    private static SimpleExpression _xmlRoot(final Expression xml, final WordVersion version,
+    private static Expression _xmlRoot(final Expression xml, final WordVersion version,
                                              final Object textOrNoValue, final WordStandalone standalone,
                                              final @Nullable StandaloneOption option) {
         final String name = "XMLROOT";
@@ -7190,7 +7190,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         } else if (!(option == null || option == Postgres.YES || option == Postgres.NO || option == Postgres.NO_VALUE)) {
             throw CriteriaUtils.funcArgError(name, option);
         }
-        final SimpleExpression func;
+        final Expression func;
         if (option == null) {
             func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, SqlWords.FuncWord.COMMA, version,
                     textOrNoValue);

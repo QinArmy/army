@@ -115,6 +115,11 @@ abstract class LiteralFunctions {
         return new CompositeFunc(name, argList, returnType);
     }
 
+    static Expression noParensFunc(String name, TypeMeta returnType) {
+        return new NoParensFunctionExpression(name, returnType);
+    }
+
+
     public static Expression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
         return new JsonMapFunc(name, map, returnType);
     }
@@ -166,9 +171,6 @@ abstract class LiteralFunctions {
         return new CaseFunction(caseValue);
     }
 
-    static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
-        return new NoParensFunctionExpression(name, returnType);
-    }
 
 
     private static final class ZeroArgFunc extends OperationExpression.SqlFunctionExpression

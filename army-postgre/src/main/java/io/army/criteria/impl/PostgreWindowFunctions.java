@@ -73,7 +73,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public interface _PgAggWindowFuncSpec extends _OverSpec,
             SQLFunction._OuterClauseBeforeOver,
             SQLFunction.AggregateFunction,
-            SimpleExpression {
+            Expression {
 
     }
 
@@ -94,7 +94,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * This interface representing postgre aggregate function.
      *
      */
-    public interface _PostgreAggregateFunction<R extends SimpleExpression> extends SimpleExpression,
+    public interface _PostgreAggregateFunction<R extends Expression> extends Expression,
             _PgAggFuncFilterClause<R>,
             SQLFunction.AggregateFunction {
 

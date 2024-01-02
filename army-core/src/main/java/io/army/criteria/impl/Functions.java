@@ -892,17 +892,16 @@ abstract class Functions {
     }
 
 
-    static CriteriaException _customFuncNameError(String name) {
-        String m = String.format("custom function name[%s] error.", name);
-        return ContextStack.criteriaError(ContextStack.peek(), m);
-    }
-
 
     /*################################## blow static inner class  ##################################*/
 
 
     /*-------------------below package method -------------------*/
 
+    static CriteriaException _customFuncNameError(String name) {
+        String m = String.format("custom function name[%s] error.", name);
+        return ContextStack.criteriaError(ContextStack.peek(), m);
+    }
 
     static TypeMeta _returnType(final Expression left, final Expression right,
                                 final BinaryOperator<MappingType> function) {

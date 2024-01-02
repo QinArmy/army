@@ -206,3 +206,4 @@
 46. 为什么 sql function 本质上被设计成 SimpleExpression 但 实际始终返回 Expression ?
     * 设计 成 SimpleExpression 是为 sql 解析方便.
     * 不返回 SimpleExpression 是为避免应用开发者 使用 SimpleExpression 的方法.
+    * boolean function 保留 SimplePredicate 则是为了 避免 type bug,因为 IPredicate 是 Expression 子接口

@@ -18,7 +18,6 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.Expression;
-import io.army.criteria.SimpleExpression;
 import io.army.criteria.SimplePredicate;
 import io.army.criteria.TypeInfer;
 import io.army.mapping.BooleanType;
@@ -54,7 +53,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * area(box '(2,2),(0,0)') → 4
      * </a>
      */
-    public static SimpleExpression area(Expression geometricType) {
+    public static Expression area(Expression geometricType) {
         return FunctionUtils.oneArgFunc("AREA", geometricType, DoubleType.INSTANCE);
     }
 
@@ -67,7 +66,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * center(box '(1,2),(0,0)') → (0.5,1)
      * </a>
      */
-    public static SimpleExpression center(Expression geometricType) {
+    public static Expression center(Expression geometricType) {
         return FunctionUtils.oneArgFunc("CENTER", geometricType, PostgrePointType.INSTANCE);
     }
 
@@ -80,7 +79,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * diagonal(box '(1,2),(0,0)') → [(1,2),(0,0)]
      * </a>
      */
-    public static SimpleExpression diagonal(Expression box) {
+    public static Expression diagonal(Expression box) {
         return FunctionUtils.oneArgFunc("DIAGONAL", box, PostgreLsegType.INSTANCE);
     }
 
@@ -92,7 +91,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * diameter(circle '&lt;(0,0),2>') → 4
      * </a>
      */
-    public static SimpleExpression diameter(Expression circle) {
+    public static Expression diameter(Expression circle) {
         return FunctionUtils.oneArgFunc("DIAMETER", circle, DoubleType.INSTANCE);
     }
 
@@ -105,7 +104,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * height(box '(1,2),(0,0)') → 2
      * </a>
      */
-    public static SimpleExpression height(Expression box) {
+    public static Expression height(Expression box) {
         return FunctionUtils.oneArgFunc("HEIGHT", box, DoubleType.INSTANCE);
     }
 
@@ -124,7 +123,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * Returns the number of lexemes in the tsvector.<br/>
      * </a>
      */
-    public static SimpleExpression length(Expression geometricType) {
+    public static Expression length(Expression geometricType) {
         return FunctionUtils.oneArgFunc("LENGTH", geometricType, _returnType(geometricType, PostgreExpressions::lengthFuncType));
     }
 
@@ -137,7 +136,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * npoints(path '[(0,0),(1,1),(2,0)]') → 3
      * </a>
      */
-    public static SimpleExpression npoints(Expression geometricType) {
+    public static Expression npoints(Expression geometricType) {
         return FunctionUtils.oneArgFunc("NPOINTS", geometricType, IntegerType.INSTANCE);
     }
 
@@ -161,7 +160,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * pclose(path '[(0,0),(1,1),(2,0)]') → ((0,0),(1,1),(2,0))
      * </a>
      */
-    public static SimpleExpression pclose(BiFunction<MappingType, String, Expression> funcRef, String path) {
+    public static Expression pclose(BiFunction<MappingType, String, Expression> funcRef, String path) {
         return pclose(funcRef.apply(PostgrePathType.INSTANCE, path));
     }
 
@@ -174,7 +173,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * pclose(path '[(0,0),(1,1),(2,0)]') → ((0,0),(1,1),(2,0))
      * </a>
      */
-    public static SimpleExpression pclose(Expression path) {
+    public static Expression pclose(Expression path) {
         return FunctionUtils.oneArgFunc("PCLOSE", path, PostgrePathType.INSTANCE);
     }
 
@@ -198,7 +197,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * popen(path '((0,0),(1,1),(2,0))') → [(0,0),(1,1),(2,0)]
      * </a>
      */
-    public static SimpleExpression popen(BiFunction<MappingType, String, Expression> funcRef, String path) {
+    public static Expression popen(BiFunction<MappingType, String, Expression> funcRef, String path) {
         return popen(funcRef.apply(PostgrePathType.INSTANCE, path));
     }
 
@@ -211,7 +210,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * popen(path '((0,0),(1,1),(2,0))') → [(0,0),(1,1),(2,0)]
      * </a>
      */
-    public static SimpleExpression popen(Expression path) {
+    public static Expression popen(Expression path) {
         return FunctionUtils.oneArgFunc("POPEN", path, PostgrePathType.INSTANCE);
     }
 
@@ -224,7 +223,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * radius(circle '&lt;(0,0),2>') → 2
      * </a>
      */
-    public static SimpleExpression radius(Expression circle) {
+    public static Expression radius(Expression circle) {
         return FunctionUtils.oneArgFunc("RADIUS", circle, DoubleType.INSTANCE);
     }
 
@@ -237,7 +236,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * slope(point '(0,0)', point '(2,1)') → 0.5
      * </a>
      */
-    public static SimpleExpression slope(Expression point1, Expression point2) {
+    public static Expression slope(Expression point1, Expression point2) {
         return FunctionUtils.twoArgFunc("SLOPE", point1, point2, DoubleType.INSTANCE);
     }
 
@@ -251,7 +250,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * width(box '(1,2),(0,0)') → 1
      * </a>
      */
-    public static SimpleExpression width(Expression box) {
+    public static Expression width(Expression box) {
         return FunctionUtils.oneArgFunc("WIDTH", box, DoubleType.INSTANCE);
     }
 
@@ -272,7 +271,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * box(polygon '((0,0),(1,1),(2,0))') → (2,1),(0,0)
      * </a>
      */
-    public static SimpleExpression box(Expression exp) {
+    public static Expression box(Expression exp) {
         return FunctionUtils.oneArgFunc("BOX", exp, PostgreBoxType.INSTANCE);
     }
 
@@ -285,7 +284,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * box(point '(0,1)', point '(1,0)') → (1,1),(0,0)
      * </a>
      */
-    public static SimpleExpression box(Expression exp1, Expression exp2) {
+    public static Expression box(Expression exp1, Expression exp2) {
         return FunctionUtils.twoArgFunc("BOX", exp1, exp2, PostgreBoxType.INSTANCE);
     }
 
@@ -298,7 +297,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * bound_box(box '(1,1),(0,0)', box '(4,4),(3,3)') → (4,4),(0,0)
      * </a>
      */
-    public static SimpleExpression boundBox(Expression exp1, Expression exp2) {
+    public static Expression boundBox(Expression exp1, Expression exp2) {
         return FunctionUtils.twoArgFunc("BOUND_BOX", exp1, exp2, PostgreBoxType.INSTANCE);
     }
 
@@ -314,7 +313,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * circle(polygon '((0,0),(1,3),(2,0))') → &lt;(1,1),1.6094757082487299>
      * </a>
      */
-    public static SimpleExpression circle(Expression exp) {
+    public static Expression circle(Expression exp) {
         return FunctionUtils.oneArgFunc("CIRCLE", exp, PostgreCircleType.INSTANCE);
     }
 
@@ -348,7 +347,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * circle(point '(0,0)', 2.0) → &lt;(0,0),2>
      * </a>
      */
-    public static <T> SimpleExpression circle(BiFunction<MappingType, String, Expression> funcRefForPoint, String point,
+    public static <T> Expression circle(BiFunction<MappingType, String, Expression> funcRefForPoint, String point,
                                               BiFunction<MappingType, T, Expression> funcRefForRadius, T radius) {
         return circle(funcRefForPoint.apply(PostgrePointType.INSTANCE, point),
                 funcRefForRadius.apply(DoubleType.INSTANCE, radius)
@@ -375,7 +374,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * circle(point '(0,0)', 2.0) → &lt;(0,0),2>
      * </a>
      */
-    public static <T> SimpleExpression circle(Expression point, BiFunction<MappingType, T, Expression> funcRef,
+    public static <T> Expression circle(Expression point, BiFunction<MappingType, T, Expression> funcRef,
                                               T radius) {
         return circle(point, funcRef.apply(DoubleType.INSTANCE, radius));
     }
@@ -389,7 +388,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * circle(point '(0,0)', 2.0) → &lt;(0,0),2>
      * </a>
      */
-    public static SimpleExpression circle(Expression point, Expression radius) {
+    public static Expression circle(Expression point, Expression radius) {
         return FunctionUtils.twoArgFunc("CIRCLE", point, radius, PostgreCircleType.INSTANCE);
     }
 
@@ -402,7 +401,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * line(point '(-1,0)', point '(1,0)') → {0,-1,0}
      * </a>
      */
-    public static SimpleExpression line(Expression point1, Expression point2) {
+    public static Expression line(Expression point1, Expression point2) {
         return FunctionUtils.twoArgFunc("LINE", point1, point2, PostgreLineType.INSTANCE);
     }
 
@@ -415,7 +414,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * lseg(box '(1,0),(-1,0)') → [(1,0),(-1,0)]
      * </a>
      */
-    public static SimpleExpression lseg(Expression exp) {
+    public static Expression lseg(Expression exp) {
         return FunctionUtils.oneArgFunc("LSEG", exp, PostgreLsegType.INSTANCE);
     }
 
@@ -440,7 +439,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * lseg(point '(-1,0)', point '(1,0)') → [(-1,0),(1,0)]
      * </a>
      */
-    public static SimpleExpression lseg(BiFunction<MappingType, String, Expression> funcRef, String point1,
+    public static Expression lseg(BiFunction<MappingType, String, Expression> funcRef, String point1,
                                         String point2) {
         return lseg(funcRef.apply(PostgrePointType.INSTANCE, point1),
                 funcRef.apply(PostgrePointType.INSTANCE, point2)
@@ -456,7 +455,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * lseg(point '(-1,0)', point '(1,0)') → [(-1,0),(1,0)]
      * </a>
      */
-    public static SimpleExpression lseg(Expression point1, Expression point2) {
+    public static Expression lseg(Expression point1, Expression point2) {
         return FunctionUtils.twoArgFunc("LSEG", point1, point2, PostgreLsegType.INSTANCE);
     }
 
@@ -469,7 +468,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * path(polygon '((0,0),(1,1),(2,0))') → ((0,0),(1,1),(2,0))
      * </a>
      */
-    public static SimpleExpression path(Expression exp) {
+    public static Expression path(Expression exp) {
         return FunctionUtils.oneArgFunc("PATH", exp, PostgrePathType.INSTANCE);
     }
 
@@ -492,7 +491,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * point(polygon '((0,0),(1,1),(2,0))') → (1,0.3333333333333333)
      * </a>
      */
-    public static SimpleExpression point(Expression exp) {
+    public static Expression point(Expression exp) {
         return FunctionUtils.oneArgFunc("POINT", exp, PostgrePointType.INSTANCE);
     }
 
@@ -517,7 +516,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * point(23.4, -44.5) → (23.4,-44.5)
      * </a>
      */
-    public static <T> SimpleExpression point(BiFunction<MappingType, T, Expression> funcRef, T x, T y) {
+    public static <T> Expression point(BiFunction<MappingType, T, Expression> funcRef, T x, T y) {
         return point(funcRef.apply(DoubleType.INSTANCE, x),
                 funcRef.apply(DoubleType.INSTANCE, y)
         );
@@ -532,7 +531,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * point(23.4, -44.5) → (23.4,-44.5)
      * </a>
      */
-    public static SimpleExpression point(Expression x, Expression y) {
+    public static Expression point(Expression x, Expression y) {
         return FunctionUtils.twoArgFunc("POINT", x, y, PostgrePointType.INSTANCE);
     }
 
@@ -554,7 +553,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * polygon(path '((0,0),(1,1),(2,0))') → ((0,0),(1,1),(2,0))
      * </a>
      */
-    public static SimpleExpression polygon(Expression exp) {
+    public static Expression polygon(Expression exp) {
         return FunctionUtils.oneArgFunc("POLYGON", exp, PostgrePolygonType.INSTANCE);
     }
 
@@ -567,7 +566,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * polygon(4, circle '&lt;(3,0),1>') → ((2,0),(3,1),(4,1.2246063538223773e-16),(3,-1))
      * </a>
      */
-    public static SimpleExpression polygon(Expression exp1, Expression exp2) {
+    public static Expression polygon(Expression exp1, Expression exp2) {
         return FunctionUtils.twoArgFunc("POLYGON", exp1, exp2, PostgrePolygonType.INSTANCE);
     }
 

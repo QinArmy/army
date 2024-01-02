@@ -17,7 +17,10 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.*;
+import io.army.criteria.Clause;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.Expression;
+import io.army.criteria.TypeDef;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.DataType;
@@ -1651,7 +1654,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #elt(Object, Consumer)
      * @see #elt(Object, SQLs.SymbolSpace, Consumer)
      */
-    private static SimpleExpression _oneAndVariadicStringConsumer(final String name, Object one, final int min,
+    private static Expression _oneAndVariadicStringConsumer(final String name, Object one, final int min,
                                                                   Consumer<? super FuncExpUtils.VariadicClause> consumer,
                                                                   TypeMeta returnType) {
         final ArrayList<Object> arrayList = _Collections.arrayList(1 + min + 2);
@@ -1671,14 +1674,14 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #exportSet(Object, Object, Object, Object)
      * @see #exportSet(Object, Object, Object, Object, Object)
      */
-    private static SimpleExpression _exportSet(Object bits, Object on, Object off,
+    private static Expression _exportSet(Object bits, Object on, Object off,
                                                @Nullable Object separator, @Nullable Object numberOfBits) {
         FuncExpUtils.assertTextExp(on);
         FuncExpUtils.assertTextExp(off);
 
         final String name = "EXPORT_SET";
 
-        final SimpleExpression func;
+        final Expression func;
         if (separator == null && numberOfBits == null) {
             func = LiteralFunctions.threeArgFunc(name, bits, on, off, StringType.INSTANCE);
         } else if (numberOfBits != null) {
@@ -1697,7 +1700,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #elt(Object, Object, Object, Object, Object...)
      * @see #field(Object, Object, Object, Object, Object...)
      */
-    private static SimpleExpression _oneAndThreeStrVariadic(final String name, TypeMeta returnType, Object one,
+    private static Expression _oneAndThreeStrVariadic(final String name, TypeMeta returnType, Object one,
                                                             Object str1, Object str2, Object str3, Object... strVariadic) {
         FuncExpUtils.assertTextExp(str1);
         FuncExpUtils.assertTextExp(str2);

@@ -150,7 +150,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .select(ChinaRegion_.id, ChinaRegion_.name)
                 .from(ChinaRegion_.T, AS, "c")
                 .groupBy(ChinaRegion_.regionType)
-                .having(min(ChinaRegion_.regionGdp)::greater, SQLs::literal, map::get, "minGdp")
+                .having(min(ChinaRegion_.regionGdp).greater(SQLs.literalValue(map.get("minGdp"))))
                 .spaceAnd(ChinaRegion_.createTime.between(SQLs::literal, now.minusDays(49), AND, now))
                 .asQuery();
         printStmt(LOG, stmt);
