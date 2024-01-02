@@ -52,7 +52,6 @@ import static io.army.dialect.Database.PostgreSQL;
  * <p>
  * This class is util class used to create standard sql statement.
  */
-@SuppressWarnings({"unused"})
 public abstract class SQLs extends SQLSyntax {
 
 
@@ -66,18 +65,31 @@ public abstract class SQLs extends SQLSyntax {
     public static final WordAll ALL = SqlWords.KeyWordAll.ALL;
 
     public static final WordDistinct DISTINCT = SqlWords.KeyWordDistinct.DISTINCT;
+
     public static final WordLateral LATERAL = SqlWords.KeyWordLateral.LATERAL;
+
     public static final WordFirst FIRST = SqlWords.KeyWordFirst.FIRST;
+
     public static final WordNext NEXT = SqlWords.KeyWordNext.NEXT;
+
     public static final WordPercent PERCENT = SqlWords.KeyWordPercent.PERCENT;
+
     public static final Statement.NullsFirstLast NULLS_FIRST = SqlWords.KeyWordsNullsFirstLast.NULLS_FIRST;
+
     public static final Statement.NullsFirstLast NULLS_LAST = SqlWords.KeyWordsNullsFirstLast.NULLS_LAST;
+
     public static final WordOnly ONLY = SqlWords.KeyWordOny.ONLY;
+
     public static final WordRow ROW = SqlWords.KeyWordRow.ROW;
+
     public static final WordRows ROWS = SqlWords.KeyWordRows.ROWS;
+
     public static final WordInterval INTERVAL = SqlWords.KeyWordInterval.INTERVAL;
+
     public static final WordsWithTies WITH_TIES = SqlWords.KeyWordWithTies.WITH_TIES;
+
     public static final BooleanTestWord UNKNOWN = SqlWords.KeyWordUnknown.UNKNOWN;
+
     /**
      * package field
      */
@@ -96,9 +108,13 @@ public abstract class SQLs extends SQLSyntax {
     public static final TrimPosition BOTH = SqlWords.WordTrimPosition.BOTH;
     public static final TrimPosition LEADING = SqlWords.WordTrimPosition.LEADING;
     public static final TrimPosition TRAILING = SqlWords.WordTrimPosition.TRAILING;
+
     public static final WordIn IN = SqlWords.KeyWordIn.IN;
+
     public static final WordFor FOR = SqlWords.KeyWordFor.FOR;
+
     public static final WordFrom FROM = SqlWords.KeyWordFrom.FROM;
+
     public static final WordSimilar SIMILAR = SqlWords.KeyWordSimilar.SIMILAR;
 
     public static final WordOn ON = SqlWords.KeyWordOn.ON;
