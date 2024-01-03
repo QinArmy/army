@@ -32,6 +32,18 @@ public interface Clause extends Item {
         _VariadicCommaClause space(@Nullable Object exp);
     }
 
+    interface _VariadicExprCommaClause {
+
+        _VariadicExprCommaClause comma(Expression exp);
+
+    }
+
+    interface _VariadicExprSpaceClause {
+
+        _VariadicExprCommaClause space(Expression exp);
+
+    }
+
     interface _VariadicConsumer {
 
         _VariadicConsumer accept(@Nullable Object exp);

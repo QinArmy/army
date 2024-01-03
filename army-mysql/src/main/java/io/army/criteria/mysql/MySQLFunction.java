@@ -41,8 +41,9 @@ public interface MySQLFunction extends SQLFunction {
     }
 
 
-    interface _GroupConcatOrderBySpec extends Statement._StaticOrderByClause<_GroupConcatSeparatorClause>
-            , _GroupConcatSeparatorClause {
+    interface _GroupConcatOrderBySpec extends Statement._StaticOrderByClause<_GroupConcatSeparatorClause>,
+            Statement._DynamicOrderByClause<_GroupConcatSeparatorClause>,
+            _GroupConcatSeparatorClause {
 
     }
 

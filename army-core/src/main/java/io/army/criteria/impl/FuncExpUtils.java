@@ -339,6 +339,8 @@ abstract class FuncExpUtils {
                 } else {
                     throw new CriteriaException(String.format("Illegal TypeDef %s", value));
                 }
+            } else if (value instanceof Clause) {
+                ((_SelfDescribed) value).appendSql(sqlBuilder, context);
             } else {
                 final MappingType type;
                 type = _MappingFactory.getDefaultIfMatch(value.getClass());
@@ -420,6 +422,15 @@ abstract class FuncExpUtils {
         return clause.endClause();
     }
 
+    static VariadicExpressionClause variadicExpClause(boolean required, @Nullable SQLWords separator, ArrayList<Object> expList) {
+        return new VariadicExpressionClause(required, separator, expList);
+    }
+
+    static VariadicExpressionClause variadicExpClause(boolean required) {
+        return new VariadicExpressionClause(required, null, null);
+    }
+
+
     static List<?> pariVariadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super PairVariadicClause> consumer) {
         final PairVariadicClause clause = new PairVariadicClause(required, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
@@ -432,6 +443,87 @@ abstract class FuncExpUtils {
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
+
+
+    private static List<?> endSingleClause(final boolean required, final int startLength, @Nullable List<Object> expList,
+                                           final Consumer<List<Object>> setter) {
+        if (expList == null) {
+            if (required) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            expList = Collections.emptyList();
+        } else if (required && (expList.size() - startLength) == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        } else if (expList instanceof ArrayList) {
+            expList = _Collections.unmodifiableList(expList);
+        } else {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+
+        setter.accept(expList);
+        return expList;
+    }
+
+
+    static final class VariadicExpressionClause implements Clause._VariadicExprSpaceClause,
+            Clause._VariadicExprCommaClause {
+
+        private final boolean required;
+
+        private final SQLWords separator;
+
+        private final int startLength;
+
+        private List<Object> expList;
+
+        private VariadicExpressionClause(boolean required, @Nullable SQLWords separator, @Nullable ArrayList<Object> expList) {
+            this.required = required;
+            this.separator = separator;
+            this.expList = expList;
+
+            if (expList == null) {
+                this.startLength = 0;
+            } else {
+                this.startLength = expList.size();
+            }
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause space(Expression exp) {
+            return comma(exp);
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause comma(final @Nullable Expression exp) {
+            if (exp == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            List<Object> expList = this.expList;
+            if (expList == null) {
+                this.expList = expList = _Collections.arrayList();
+            } else if (!(expList instanceof ArrayList)) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+
+            final SQLWords separator = this.separator;
+            if (separator != null && expList.size() > this.startLength) {
+                expList.add(separator);
+            }
+            expList.add(exp);
+            return this;
+        }
+
+        List<?> endClause() {
+            return FuncExpUtils.endSingleClause(this.required, this.startLength, this.expList, this::setExpList);
+        }
+
+
+        private void setExpList(List<Object> expList) {
+            this.expList = expList;
+        }
+
+
+    } // VariadicExpressionClause
 
 
     static final class VariadicClause implements Clause._VariadicSpaceClause,
@@ -498,20 +590,12 @@ abstract class FuncExpUtils {
 
 
         private List<?> endClause() {
-            List<Object> list = this.expList;
-            if (list == null) {
-                if (this.required) {
-                    throw CriteriaUtils.dontAddAnyItem();
-                }
-                this.expList = list = Collections.emptyList();
-            } else if (this.required && (list.size() - this.startLength) == 0) {
-                throw CriteriaUtils.dontAddAnyItem();
-            } else if (list instanceof ArrayList) {
-                this.expList = list = _Collections.unmodifiableList(list);
-            } else {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            }
-            return list;
+            return FuncExpUtils.endSingleClause(this.required, this.startLength, this.expList, this::setExpList);
+        }
+
+
+        private void setExpList(List<Object> expList) {
+            this.expList = expList;
         }
 
 

@@ -22,6 +22,7 @@ import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.TypeDefs;
 import io.army.criteria.mysql.MySQLCastType;
+import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sqltype.MySQLType;
 import io.army.sync.SyncLocalSession;
 import io.army.util.RowMaps;
@@ -38,8 +39,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static io.army.criteria.impl.MySQLs.*;
-import static io.army.criteria.impl.SQLs.ASTERISK;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
@@ -242,6 +242,31 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
         row = session.queryOne(stmt, String.class);
 
         Assert.assertEquals(row, source);
+
+    }
+
+    /**
+     * @see MySQLs#groupConcat(SQLs.ArgDistinct, Consumer, Consumer)
+     */
+    @Test
+    public void groupConcatFunc(final SyncLocalSession session) {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(groupConcat(s -> s.space(ChinaRegion_.name)
+                                .comma(ChinaRegion_.createTime)
+                                .comma(ChinaRegion_.regionGdp), s -> s.orderBy(ChinaRegion_.name).separator(",")
+                        ).as("nameGroup")
+                ).from(ChinaRegion_.T, AS, "t")
+                .groupBy(ChinaRegion_.name, ChinaRegion_.createTime)
+                .limit(SQLs::literal, 1)
+                .asQuery();
+
+        final String row;
+        row = session.queryOne(stmt, String.class);
+
+        Assert.assertNotNull(row);
+
+        LOG.debug("{} row : {}", session.name(), row);
 
     }
 

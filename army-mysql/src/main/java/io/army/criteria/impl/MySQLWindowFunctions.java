@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 
+import io.army.criteria.Clause;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.TypeInfer;
@@ -26,12 +27,10 @@ import io.army.criteria.mysql.MySQLWindow;
 import io.army.criteria.standard.SQLFunction;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
+import io.army.util._Collections;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -142,35 +141,55 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     }
 
 
+    /**
+     * <p>The {@link MappingType} of function return type: {@link LongType}
+     *
+     * @param distinct see {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
+     */
+    public static Expression count(SQLs.ArgDistinct distinct, Expression expr) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+        return LiteralFunctions.compositeFunc("COUNT", Arrays.asList(distinct, expr), LongType.INSTANCE);
+    }
 
     /**
      * <p>The {@link MappingType} of function return type: {@link LongType}
      *
+     * @param distinct see {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
      */
-    public static Expression count(SQLs.ArgDistinct distinct, final List<?> expList) {//TODO
-        assertDistinct(distinct);
-        final String name = "COUNT";
-        final int size = expList.size();
-        if (size == 0) {
-            throw CriteriaUtils.funcArgError(name, expList);
-        }
-        final List<Object> argList = new ArrayList<>(((1 + size) << 1) - 1);
-        if (distinct != null) {
-            argList.add(distinct);
-        }
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                argList.add(SqlWords.FuncWord.COMMA);
-            }
-            argList.add(expList.get(i));
-        }
-        return FunctionUtils.complexArgFunc(name, argList, LongType.INSTANCE);
+    public static Expression count(SQLs.ArgDistinct distinct, Expression expr1, Expression expr2, Expression... expVariadic) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+        final List<Object> argList = _Collections.arrayList(3 + expVariadic.length);
+
+        argList.add(distinct);
+        argList.add(expr1);
+        argList.add(expr2);
+
+        Collections.addAll(argList, expr1);
+
+        return LiteralFunctions.compositeFunc("COUNT", argList, LongType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link StringType}
+     * <p>The {@link MappingType} of function return type: {@link LongType}
+     *
+     * @param distinct see {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
+     */
+    public static Expression count(SQLs.ArgDistinct distinct, Consumer<Consumer<Expression>> consumer) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+
+        final List<Object> argList = _Collections.arrayList(3);
+        argList.add(distinct);
+
+        consumer.accept(argList::add);
+        return LiteralFunctions.compositeFunc("COUNT", argList, LongType.INSTANCE);
+    }
+
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link StringType}
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
      * [ORDER BY {unsigned_integer | col_name | expr}
@@ -178,12 +197,11 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * [SEPARATOR str_val])</a>
      */
     public static Expression groupConcat(Expression exp) {
-        return FunctionUtils.oneArgFunc("GROUP_CONCAT", exp, StringType.INSTANCE);
+        return LiteralFunctions.oneArgFunc("GROUP_CONCAT", exp, StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link StringType}
+     * <p>The {@link MappingType} of function return type: {@link StringType}
      *
      * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @param exp      expression or multi-value expression
@@ -194,14 +212,34 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(@Nullable SQLs.ArgDistinct distinct, Expression exp) {
-        assertDistinct(distinct);
-        return FunctionUtils.complexArgFunc("GROUP_CONCAT", StringType.INSTANCE, distinct, exp);
+    public static Expression groupConcat(SQLs.ArgDistinct distinct, Expression exp) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(distinct, exp), StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>The {@link MappingType} of function return type: {@link StringType}
+     *
+     * @param exp expression or multi-value expression
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
+     * [ORDER BY {unsigned_integer | col_name | expr}
+     * [ASC | DESC] [,col_name ...]]
+     * [SEPARATOR str_val])</a>
+     * @see SQLs#rowParam(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
+     */
+    public static Expression groupConcat(Expression exp, Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+
+        final MySQLFunctionUtils.GroupConcatInnerClause clause;
+        clause = MySQLFunctionUtils.groupConcatClause();
+        consumer.accept(clause);
+
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(exp, clause), StringType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link StringType}
+     * <p>The {@link MappingType} of function return type: {@link StringType}
      *
      * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @param exp      expression or multi-value expression
@@ -212,35 +250,168 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(@Nullable SQLs.ArgDistinct distinct, Expression exp
-            , Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
-        assertDistinct(distinct);
+    public static Expression groupConcat(SQLs.ArgDistinct distinct, Expression exp,
+                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
         final MySQLFunctionUtils.GroupConcatInnerClause clause;
         clause = MySQLFunctionUtils.groupConcatClause();
         consumer.accept(clause);
 
-        return MySQLFunctionUtils.groupConcatFunc(distinct, exp, clause);
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(distinct, exp, clause), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>GROUP_CONCAT function static method.
+     * <p>The {@link MappingType} of function return type: {@link StringType}
+     *
+     * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
+     * [ORDER BY {unsigned_integer | col_name | expr}
+     * [ASC | DESC] [,col_name ...]]
+     * [SEPARATOR str_val])</a>
+     * @see SQLs#rowParam(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
+     */
+    public static Expression groupConcat(Consumer<Clause._VariadicExprSpaceClause> expConsumer,
+                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+
+
+        final ArrayList<Object> argList = _Collections.arrayList(3);
+
+        final FuncExpUtils.VariadicExpressionClause expClause;
+        expClause = FuncExpUtils.variadicExpClause(true, SQLs.COMMA, argList);
+        expConsumer.accept(expClause);
+
+        if (argList.size() == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+
+        final MySQLFunctionUtils.GroupConcatInnerClause clause;
+        clause = MySQLFunctionUtils.groupConcatClause();
+        consumer.accept(clause);
+
+        argList.add(clause);
+
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link StringType}
+     * <p>GROUP_CONCAT function static method.
+     * <p>The {@link MappingType} of function return type: {@link StringType}
+     *
+     * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
+     * [ORDER BY {unsigned_integer | col_name | expr}
+     * [ASC | DESC] [,col_name ...]]
+     * [SEPARATOR str_val])</a>
+     * @see SQLs#rowParam(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
+     */
+    public static Expression groupConcat(SQLs.ArgDistinct distinct, Consumer<Clause._VariadicExprSpaceClause> expConsumer,
+                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+
+        final ArrayList<Object> argList = _Collections.arrayList(4);
+
+        argList.add(distinct);
+
+        final FuncExpUtils.VariadicExpressionClause expClause;
+        expClause = FuncExpUtils.variadicExpClause(true, SQLs.COMMA, argList);
+        expConsumer.accept(expClause);
+
+
+        if (argList.size() < 2) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+
+        final MySQLFunctionUtils.GroupConcatInnerClause clause;
+        clause = MySQLFunctionUtils.groupConcatClause();
+        consumer.accept(clause);
+
+        argList.add(clause);
+
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>GROUP_CONCAT function static method.
+     * <p>The {@link MappingType} of function return type: {@link StringType}
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
      * [ORDER BY {unsigned_integer | col_name | expr}
      * [ASC | DESC] [,col_name ...]]
      * [SEPARATOR str_val])</a>
+     * @see SQLs#rowParam(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(@Nullable SQLs.ArgDistinct distinct
-            , List<Expression> argList, Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+    public static Expression groupConcat(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
+                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
-        assertDistinct(distinct);
+
+        final ArrayList<Object> argList = _Collections.arrayList(4);
+
+        expConsumer.accept(exp -> {
+            if (argList.size() > 0) {
+                argList.add(SQLs.COMMA);
+            }
+            argList.add(exp);
+        });
+
+
+        if (argList.size() == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+
         final MySQLFunctionUtils.GroupConcatInnerClause clause;
         clause = MySQLFunctionUtils.groupConcatClause();
         consumer.accept(clause);
-        return MySQLFunctionUtils.groupConcatFunc(distinct, argList, clause);
+
+        argList.add(clause);
+
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>GROUP_CONCAT function static method.
+     * <p>The {@link MappingType} of function return type: {@link StringType}
+     *
+     * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
+     * [ORDER BY {unsigned_integer | col_name | expr}
+     * [ASC | DESC] [,col_name ...]]
+     * [SEPARATOR str_val])</a>
+     * @see SQLs#rowParam(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
+     */
+    public static Expression groupConcat(SQLs.ArgDistinct distinct, SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
+                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+
+        final ArrayList<Object> argList = _Collections.arrayList(4);
+
+        argList.add(distinct);
+
+        expConsumer.accept(exp -> {
+            if (argList.size() > 1) {
+                argList.add(SQLs.COMMA);
+            }
+            argList.add(exp);
+        });
+
+
+        if (argList.size() < 2) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+
+        final MySQLFunctionUtils.GroupConcatInnerClause clause;
+        clause = MySQLFunctionUtils.groupConcatClause();
+        consumer.accept(clause);
+
+        argList.add(clause);
+
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
     }
 
 

@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
  * package class
  */
 @SuppressWarnings("unused")
-abstract class MySQLSyntax extends MySQLFunctions {
+abstract class MySQLSyntax extends MySQLOtherFunctions {
 
     /**
      * package constructor

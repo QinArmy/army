@@ -627,7 +627,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
      * @see #groupConcatClause()
      */
     static final class GroupConcatInnerClause
-            extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause, Item>
+            extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause, MySQLFunction._GroupConcatSeparatorClause>
             implements MySQLFunction._GroupConcatOrderBySpec, ArmyFuncClause, _SelfDescribed {
 
 
@@ -656,7 +656,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             final String stringValue = this.stringValue;
             if (stringValue != null) {
                 sqlBuilder.append(" SEPARATOR ");
-                context.identifier(stringValue, sqlBuilder);
+                context.appendLiteral(StringType.INSTANCE, stringValue);
             }
         }
 
@@ -664,9 +664,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         public Clause separator(final @Nullable String strVal) {
             this.endOrderByClauseIfNeed();
             if (this.stringValue != null) {
-                throw ContextStack.criteriaError(this.context, "duplicate separator");
+                throw ContextStack.clearStackAndCriteriaError("duplicate separator");
             } else if (strVal == null) {
-                throw ContextStack.nullPointer(this.context);
+                throw ContextStack.clearStackAndNullPointer();
             }
             this.stringValue = strVal;
             return this;
