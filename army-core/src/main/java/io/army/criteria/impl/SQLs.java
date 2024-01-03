@@ -443,14 +443,6 @@ public abstract class SQLs extends SQLSyntax {
         };
     }
 
-    static <I extends Item> Function<TypeInfer, I> _ToPredicate(final Function<IPredicate, I> function) {
-        return t -> {
-            if (!(t instanceof IPredicate)) {
-                throw ContextStack.castCriteriaApi(ContextStack.peek());
-            }
-            return function.apply((IPredicate) t);
-        };
-    }
 
     static SQLIdentifier _identifier(@Nullable String identifier) {
         if (identifier == null) {

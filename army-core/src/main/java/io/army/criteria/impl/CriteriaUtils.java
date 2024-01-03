@@ -141,9 +141,14 @@ abstract class CriteriaUtils {
     }
 
 
-    static <T> void invokeConsumer(T data, Consumer<? super T> consumer) {
+    static <T> T invokeConsumer(final T data, final Consumer<? super T> consumer) {
         try {
             consumer.accept(data);
+
+            if (data instanceof ArmyClause) {
+                ((ArmyClause) data).endClause();
+            }
+            return data;
         } catch (Exception e) {
             throw ContextStack.clearStackAnd(CriteriaException::new, e);
         } catch (Error e) {
@@ -402,7 +407,6 @@ abstract class CriteriaUtils {
                 , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);
         return ContextStack.criteriaError(criteriaContext, m);
     }
-
 
 
     static CriteriaException dontSupportMultiParam(CriteriaContext context) {
@@ -693,7 +697,6 @@ abstract class CriteriaUtils {
         String m = String.format("unknown %s[ordinal:%s]", Selection.class.getName(), selectionOrdinal);
         return ContextStack.criteriaError(context, m);
     }
-
 
 
     static CriteriaException derivedColumnAliasSizeNotMatch(String tableAlias, int selectionSize,

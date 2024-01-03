@@ -394,6 +394,10 @@ abstract class FuncExpUtils {
     }
 
 
+    static VariadicClause variadicClause(final boolean required, @Nullable SQLWords separator, ArrayList<Object> arrayList) {
+        return new VariadicClause(required, separator, arrayList, null, null);
+    }
+
     static List<?> variadicList(final boolean required, Consumer<? super VariadicClause> consumer) {
         return variadicList(required, null, consumer);
     }
@@ -403,30 +407,24 @@ abstract class FuncExpUtils {
     }
 
     static List<?> variadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super VariadicClause> consumer) {
-        final VariadicClause clause = new VariadicClause(required, null, literalClass);
+        final VariadicClause clause = new VariadicClause(required, null, null, null, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
 
     static List<?> variadicList(final boolean required, ArrayList<Object> argList, @Nullable Class<?> literalClass,
                                 Consumer<? super VariadicClause> consumer) {
-        final VariadicClause clause = new VariadicClause(required, argList, literalClass);
+        final VariadicClause clause = new VariadicClause(required, null, argList, null, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
 
-    static List<?> variadicExpList(final boolean required, ArrayList<Object> argList, MappingType type,
-                                   Consumer<? super PairVariadicClause> consumer) {
-        final PairVariadicClause clause = new PairVariadicClause(required, argList, type);
-        CriteriaUtils.invokeConsumer(clause, consumer);
-        return clause.endClause();
-    }
 
-    static VariadicExpressionClause variadicExpClause(boolean required, @Nullable SQLWords separator, ArrayList<Object> expList) {
+    static VariadicExpressionClause variadicExpressionClause(boolean required, @Nullable SQLWords separator, ArrayList<Object> expList) {
         return new VariadicExpressionClause(required, separator, expList);
     }
 
-    static VariadicExpressionClause variadicExpClause(boolean required) {
+    static VariadicExpressionClause variadicExpressionClause(boolean required) {
         return new VariadicExpressionClause(required, null, null);
     }
 
@@ -531,29 +529,32 @@ abstract class FuncExpUtils {
 
         private final boolean required;
 
+        private final SQLWords separator;
+
+        private final MappingType type;
+
         private final Class<?> literalClass;
 
         private final int startLength;
 
-        private final MappingType type;
 
         private List<Object> expList;
 
-        private VariadicClause(boolean required, @Nullable ArrayList<Object> expList, @Nullable Class<?> literalClass) {
+        private VariadicClause(boolean required, @Nullable SQLWords separator, @Nullable ArrayList<Object> expList,
+                               @Nullable MappingType type, @Nullable Class<?> literalClass) {
             this.required = required;
+            this.separator = separator;
+            this.type = type;
             this.literalClass = literalClass;
-            this.startLength = 0;
-            this.type = null;
+
+            if (expList == null) {
+                this.startLength = 0;
+            } else {
+                this.startLength = expList.size();
+            }
             this.expList = expList;
         }
 
-        private VariadicClause(boolean required, ArrayList<Object> expList, MappingType type) {
-            this.required = required;
-            this.literalClass = null;
-            this.startLength = expList.size();
-            this.type = type;
-            this.expList = expList;
-        }
 
         @Override
         public Clause._VariadicCommaClause space(@Nullable Object exp) {
@@ -568,6 +569,12 @@ abstract class FuncExpUtils {
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
+
+            final SQLWords separator = this.separator;
+            if (separator != null && list.size() > this.startLength) {
+                list.add(separator);
+            }
+
             final Class<?> literalClass;
             final MappingType type;
             if (exp instanceof Expression) {

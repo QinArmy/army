@@ -29,7 +29,6 @@ import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -81,7 +80,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc avg(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("AVG", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("AVG", exp, DoubleType.INSTANCE);
     }
 
 
@@ -95,7 +94,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      */
     public static _AggregateWindowFunc avg(SQLs.ArgDistinct distinct, Expression exp) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
-        return MySQLFunctionUtils.compositeAggWindowFunc("AVG", Arrays.asList(distinct, exp), DoubleType.INSTANCE);
+        return MySQLFunctions.compositeAggWindowFunc("AVG", Arrays.asList(distinct, exp), DoubleType.INSTANCE);
     }
 
     /**
@@ -103,7 +102,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc bitAnd(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("BIT_AND", exp, _bitwiseFuncType(exp));
+        return MySQLFunctions.oneArgAggregate("BIT_AND", exp, _bitwiseFuncType(exp));
     }
 
 
@@ -111,14 +110,14 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc bitOr(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("BIT_OR", exp, _bitwiseFuncType(exp));
+        return MySQLFunctions.oneArgAggregate("BIT_OR", exp, _bitwiseFuncType(exp));
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc bitXor(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("BIT_XOR", exp, _bitwiseFuncType(exp));
+        return MySQLFunctions.oneArgAggregate("BIT_XOR", exp, _bitwiseFuncType(exp));
     }
 
     /**
@@ -137,7 +136,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc count(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("COUNT", exp, LongType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("COUNT", exp, LongType.INSTANCE);
     }
 
 
@@ -231,11 +230,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      */
     public static Expression groupConcat(Expression exp, Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
-        final MySQLFunctionUtils.GroupConcatInnerClause clause;
-        clause = MySQLFunctionUtils.groupConcatClause();
-        consumer.accept(clause);
-
-        return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(exp, clause), StringType.INSTANCE);
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(exp, MySQLFunctions.groupConcatClause(consumer)), StringType.INSTANCE);
     }
 
     /**
@@ -254,18 +249,15 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
                                          Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
-        final MySQLFunctionUtils.GroupConcatInnerClause clause;
-        clause = MySQLFunctionUtils.groupConcatClause();
-        consumer.accept(clause);
-
-        return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(distinct, exp, clause), StringType.INSTANCE);
+        return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(distinct, exp, MySQLFunctions.groupConcatClause(consumer)),
+                StringType.INSTANCE
+        );
     }
 
     /**
      * <p>GROUP_CONCAT function static method.
      * <p>The {@link MappingType} of function return type: {@link StringType}
      *
-     * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
      * [ORDER BY {unsigned_integer | col_name | expr}
      * [ASC | DESC] [,col_name ...]]
@@ -279,19 +271,13 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
         final ArrayList<Object> argList = _Collections.arrayList(3);
 
-        final FuncExpUtils.VariadicExpressionClause expClause;
-        expClause = FuncExpUtils.variadicExpClause(true, SQLs.COMMA, argList);
-        expConsumer.accept(expClause);
+        CriteriaUtils.invokeConsumer(FuncExpUtils.variadicExpressionClause(true, SQLs.COMMA, argList), expConsumer);
 
         if (argList.size() == 0) {
             throw CriteriaUtils.dontAddAnyItem();
         }
 
-        final MySQLFunctionUtils.GroupConcatInnerClause clause;
-        clause = MySQLFunctionUtils.groupConcatClause();
-        consumer.accept(clause);
-
-        argList.add(clause);
+        argList.add(MySQLFunctions.groupConcatClause(consumer));
 
         return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
     }
@@ -317,28 +303,22 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
         argList.add(distinct);
 
-        final FuncExpUtils.VariadicExpressionClause expClause;
-        expClause = FuncExpUtils.variadicExpClause(true, SQLs.COMMA, argList);
-        expConsumer.accept(expClause);
-
+        CriteriaUtils.invokeConsumer(FuncExpUtils.variadicExpressionClause(true, SQLs.COMMA, argList), expConsumer);
 
         if (argList.size() < 2) {
             throw CriteriaUtils.dontAddAnyItem();
         }
 
-        final MySQLFunctionUtils.GroupConcatInnerClause clause;
-        clause = MySQLFunctionUtils.groupConcatClause();
-        consumer.accept(clause);
-
-        argList.add(clause);
+        argList.add(MySQLFunctions.groupConcatClause(consumer));
 
         return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
     }
 
     /**
-     * <p>GROUP_CONCAT function static method.
+     * <p>GROUP_CONCAT function dynamic method.
      * <p>The {@link MappingType} of function return type: {@link StringType}
      *
+     * @param space see {@link SQLs#SPACE}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
      * [ORDER BY {unsigned_integer | col_name | expr}
      * [ASC | DESC] [,col_name ...]]
@@ -352,31 +332,31 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
         final ArrayList<Object> argList = _Collections.arrayList(4);
 
-        expConsumer.accept(exp -> {
+        final Consumer<Expression> expAcceptor;
+        expAcceptor = exp -> {
             if (argList.size() > 0) {
                 argList.add(SQLs.COMMA);
             }
             argList.add(exp);
-        });
+        };
+
+        CriteriaUtils.invokeConsumer(expAcceptor, expConsumer);
 
 
         if (argList.size() == 0) {
             throw CriteriaUtils.dontAddAnyItem();
         }
 
-        final MySQLFunctionUtils.GroupConcatInnerClause clause;
-        clause = MySQLFunctionUtils.groupConcatClause();
-        consumer.accept(clause);
-
-        argList.add(clause);
+        argList.add(MySQLFunctions.groupConcatClause(consumer));
 
         return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
     }
 
     /**
-     * <p>GROUP_CONCAT function static method.
+     * <p>GROUP_CONCAT function dynamic method.
      * <p>The {@link MappingType} of function return type: {@link StringType}
      *
+     * @param space    see {@link SQLs#SPACE}
      * @param distinct {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT([DISTINCT] expr [,expr ...]
      * [ORDER BY {unsigned_integer | col_name | expr}
@@ -393,79 +373,67 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
         argList.add(distinct);
 
-        expConsumer.accept(exp -> {
+        final Consumer<Expression> expAcceptor;
+        expAcceptor = exp -> {
             if (argList.size() > 1) {
                 argList.add(SQLs.COMMA);
             }
             argList.add(exp);
-        });
+        };
 
+        CriteriaUtils.invokeConsumer(expAcceptor, expConsumer);
 
         if (argList.size() < 2) {
             throw CriteriaUtils.dontAddAnyItem();
         }
 
-        final MySQLFunctionUtils.GroupConcatInnerClause clause;
-        clause = MySQLFunctionUtils.groupConcatClause();
-        consumer.accept(clause);
-
-        argList.add(clause);
+        argList.add(MySQLFunctions.groupConcatClause(consumer));
 
         return LiteralFunctions.compositeFunc("GROUP_CONCAT", argList, StringType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link JsonListType}
+     * <p>The {@link MappingType} of function return type:{@link JsonType#TEXT}
      *
      * @param exp parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-arrayagg">JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc jsonArrayAgg(Expression exp) {
-        final TypeMeta returnType;//TODO validate JsonListType
-        returnType = Functions._returnType((ArmyExpression) exp, JsonListType::from);
-        return MySQLFunctionUtils.oneArgAggregate("JSON_ARRAYAGG", exp, returnType);
+        return MySQLFunctions.oneArgAggregate("JSON_ARRAYAGG", exp, JsonType.TEXT);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link JsonMapType}
+     * <p>The {@link MappingType} of function return type:{@link JsonType#TEXT}
      *
      * @param key   non-null parameter or {@link Expression},but couldn't be null.
      * @param value non-null parameter or {@link Expression},but couldn't be null.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-objectagg">JSON_OBJECTAGG(key, value) [over_clause]</a>
      */
     public static _AggregateWindowFunc jsonObjectAgg(Expression key, Expression value) {
-        final TypeMeta returnType;//TODO validate JsonMapType
-        returnType = Functions._returnType((ArmyExpression) key, (ArmyExpression) value, JsonMapType::from);
-        final List<Expression> argList;
-        argList = Arrays.asList(key, value);
-        final String name = "JSON_OBJECTAGG";
-        return MySQLFunctionUtils.multiArgAggregateWindowFunc(name, null, argList, returnType);
+        return MySQLFunctions.multiArgAggregateWindowFunc("JSON_OBJECTAGG", Arrays.asList(key, value), JsonType.TEXT);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
+     * <p>The {@link MappingType} of function return type: the {@link  MappingType} of expr.
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc max(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("MAX", exp, exp.typeMeta());
+        return MySQLFunctions.oneArgAggregate("MAX", exp, exp.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
+     * <p>The {@link MappingType} of function return type: the {@link  MappingType} of expr.
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc max(@Nullable SQLs.ArgDistinct distinct, Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("MAX", distinct, exp, exp.typeMeta());
+    public static _AggregateWindowFunc max(SQLs.ArgDistinct distinct, Expression exp) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+        return MySQLFunctions.compositeAggWindowFunc("MAX", Arrays.asList(distinct, exp), exp.typeMeta());
     }
 
 
@@ -477,7 +445,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc min(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("MIN", exp, exp.typeMeta());
+        return MySQLFunctions.oneArgAggregate("MIN", exp, exp.typeMeta());
     }
 
 
@@ -488,107 +456,100 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param exp non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc min(@Nullable SQLs.ArgDistinct distinct, Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("MIN", distinct, exp, exp.typeMeta());
+    public static _AggregateWindowFunc min(SQLs.ArgDistinct distinct, Expression exp) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+        return MySQLFunctions.compositeAggWindowFunc("MIN", Arrays.asList(distinct, exp), exp.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_std">STD(xpr) [over_clause]</a>
      */
     public static _AggregateWindowFunc std(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("STD", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("STD", exp, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev">STDDEV(xpr) [over_clause]</a>
      */
     public static _AggregateWindowFunc stdDev(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("STDDEV", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("STDDEV", exp, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-pop">STDDEV_POP(xpr) [over_clause]</a>
      */
     public static _AggregateWindowFunc stdDevPop(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("STDDEV_POP", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("STDDEV_POP", exp, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-samp">STDDEV_SAMP(xpr) [over_clause]</a>
      */
     public static _AggregateWindowFunc stdDevSamp(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("STDDEV_SAMP", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("STDDEV_SAMP", exp, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * <p>The {@link MappingType} of function return type: the {@link MappingType} of expr.
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc sum(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("SUM", exp, exp.typeMeta());
+        return MySQLFunctions.oneArgAggregate("SUM", exp, exp.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * <p>The {@link MappingType} of function return type: the {@link MappingType} of expr.
      *
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc sum(@Nullable SQLs.ArgDistinct distinct, Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("SUM", distinct, exp, exp.typeMeta());
+    public static _AggregateWindowFunc sum(SQLs.ArgDistinct distinct, Expression exp) {
+        FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
+        return MySQLFunctions.compositeAggWindowFunc("SUM", Arrays.asList(distinct, exp), exp.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-pop">VAR_POP(xpr) [over_clause]</a>
      */
     public static _AggregateWindowFunc varPop(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("VAR_POP", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("VAR_POP", exp, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VAR_SAMP(xpr) [over_clause]</a>
      */
     public static _AggregateWindowFunc varSamp(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("VAR_SAMP", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("VAR_SAMP", exp, DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VARIANCE(expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc variance(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("VARIANCE", exp, DoubleType.INSTANCE);
+        return MySQLFunctions.oneArgAggregate("VARIANCE", exp, DoubleType.INSTANCE);
     }
 
 
@@ -602,7 +563,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      */
     public static _OverSpec cumeDist() {
-        return MySQLFunctionUtils.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE);
+        return MySQLFunctions.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE);
     }
 
     /**
@@ -612,7 +573,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
     public static _OverSpec denseRank() {
-        return MySQLFunctionUtils.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
+        return MySQLFunctions.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
     }
 
 
@@ -624,7 +585,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
      */
     public static _OverSpec firstValue(Expression expr) {
-        return MySQLFunctionUtils.noArgWindowFunc("FIRST_VALUE", expr.typeMeta());
+        return MySQLFunctions.noArgWindowFunc("FIRST_VALUE", expr.typeMeta());
     }
 
     /**
@@ -635,7 +596,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
      */
     public static _OverSpec lastValue(Expression expr) {
-        return MySQLFunctionUtils.noArgWindowFunc("LAST_VALUE", expr.typeMeta());
+        return MySQLFunctions.noArgWindowFunc("LAST_VALUE", expr.typeMeta());
     }
 
     /**
@@ -646,7 +607,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(Expression expr) {
-        return MySQLFunctionUtils.oneArgWindowFunc("LAG", expr, expr.typeMeta());
+        return MySQLFunctions.oneArgWindowFunc("LAG", expr, expr.typeMeta());
     }
 
     /**
@@ -665,7 +626,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(Expression expr, Expression n) {
-        return MySQLFunctionUtils.twoArgWindowFunc("LAG", expr, n, expr.typeMeta());
+        return MySQLFunctions.twoArgWindowFunc("LAG", expr, n, expr.typeMeta());
     }
 
 
@@ -686,7 +647,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(Expression expr, Expression n, Expression defaultValue) {
-        return MySQLFunctionUtils.threeArgWindow("LAG", expr, n, defaultValue, expr.typeMeta());
+        return MySQLFunctions.threeArgWindow("LAG", expr, n, defaultValue, expr.typeMeta());
     }
 
     /**
@@ -697,13 +658,12 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(Expression expr) {
-        return MySQLFunctionUtils.oneArgWindowFunc("LEAD", expr, expr.typeMeta());
+        return MySQLFunctions.oneArgWindowFunc("LEAD", expr, expr.typeMeta());
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * <p>The {@link MappingType} of function return type: the {@link MappingType} of expr.
      *
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @param n    nullable,probably is below:
@@ -717,12 +677,11 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(Expression expr, Expression n) {
-        return MySQLFunctionUtils.twoArgWindowFunc("LEAD", expr, n, expr.typeMeta());
+        return MySQLFunctions.twoArgWindowFunc("LEAD", expr, n, expr.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * <p>The {@link MappingType} of function return type: the {@link MappingType} of expr.
      *
      * @param expr         non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @param n            nullable,probably is below:
@@ -737,7 +696,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(Expression expr, Expression n, Expression defaultValue) {
-        return MySQLFunctionUtils.threeArgWindow("LEAD", expr, n, defaultValue, expr.typeMeta());
+        return MySQLFunctions.threeArgWindow("LEAD", expr, n, defaultValue, expr.typeMeta());
     }
 
     /**
@@ -749,12 +708,11 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
      */
     public static _FromFirstLastOverSpec nthValue(Expression expr, Expression n) {
-        return MySQLFunctionUtils.twoArgFromFirstWindowFunc("NTH_VALUE", expr, n, expr.typeMeta());
+        return MySQLFunctions.twoArgFromFirstWindowFunc("NTH_VALUE", expr, n, expr.typeMeta());
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link LongType}
+     * <p>The {@link MappingType} of function return type: {@link LongType}
      *
      * @param n positive number or {@link  Expression}.in any of the following forms:
      *          <ul>
@@ -773,38 +731,35 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
      */
     public static _OverSpec ntile(Expression n) {
-        return MySQLFunctionUtils.oneArgWindowFunc("NTILE", n, LongType.INSTANCE);
+        return MySQLFunctions.oneArgWindowFunc("NTILE", n, LongType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType}.
+     * <p>The {@link MappingType} of function return type: {@link DoubleType}.
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
      */
     public static _OverSpec percentRank() {
-        return MySQLFunctionUtils.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
+        return MySQLFunctions.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link LongType}.
+     * <p>The {@link MappingType} of function return type: {@link LongType}.
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
     public static _OverSpec rank() {
-        return MySQLFunctionUtils.noArgWindowFunc("RANK", LongType.INSTANCE);
+        return MySQLFunctions.noArgWindowFunc("RANK", LongType.INSTANCE);
     }
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link LongType}.
+     * <p>The {@link MappingType} of function return type: {@link LongType}.
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      */
     public static _OverSpec rowNumber() {
-        return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
+        return MySQLFunctions.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
     }
 
 

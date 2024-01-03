@@ -43,9 +43,9 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-abstract class MySQLFunctionUtils extends DialectFunctionUtils {
+abstract class MySQLFunctions extends DialectFunctionUtils {
 
-    private MySQLFunctionUtils() {
+    private MySQLFunctions() {
     }
 
 
@@ -53,22 +53,18 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         return new NoArgWindowFunction(name, returnType);
     }
 
-    static MySQLWindowFunctions._OverSpec oneArgWindowFunc(
-            String name, Expression arg, TypeMeta returnType) {
-        if (arg instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, arg);
-        }
-        return new OneArgWindowFunction(name, (ArmyExpression) arg, returnType);
+    static MySQLWindowFunctions._OverSpec oneArgWindowFunc(String name, Expression arg, TypeMeta returnType) {
+        return new OneArgWindowFunction(name, arg, returnType);
     }
 
     static MySQLWindowFunctions._OverSpec twoArgWindowFunc(
             String name, Expression one, Expression two, TypeMeta returnType) {
-        return new MultiArgWindowFunction(name, null, twoExpList(name, one, two), returnType);
+        return new MultiArgWindowFunction0(name, null, twoExpList(name, one, two), returnType);
     }
 
     static MySQLWindowFunctions._OverSpec threeArgWindow(String name, Expression one, Expression two, Expression three,
                                                          TypeMeta returnType) {
-        return new MultiArgWindowFunction(name, null, threeExpList(name, one, two, three), returnType);
+        return new MultiArgWindowFunction0(name, null, threeExpList(name, one, two, three), returnType);
     }
 
 
@@ -87,23 +83,9 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
         return new AggregateCompositeWindowFunc(name, argList, returnType);
     }
 
-    static MySQLWindowFunctions._ItemAggregateWindowFunc oneArgAggregate(String name, @Nullable SQLWords option
-            , Expression arg, TypeMeta returnType) {
-        assert option == null || option == SQLs.DISTINCT || option == MySQLs.DISTINCT;
-        if (arg instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, arg);
-        }
-        return new OneArgOptionAggregateWindowFunc(name, option, (ArmyExpression) arg, returnType);
-    }
-
     static MySQLWindowFunctions._ItemAggregateWindowFunc multiArgAggregateWindowFunc(
-            String name, @Nullable SQLWords option, List<Expression> argList, TypeMeta returnType) {
-        assert option == null || option == SQLs.DISTINCT || option == MySQLs.DISTINCT;
-        final List<ArmyExpression> expList = new ArrayList<>(argList.size());
-        for (Expression arg : argList) {
-            expList.add((ArmyExpression) arg);
-        }
-        return new MultiArgAggregateWindowFunc(name, option, expList, returnType);
+            String name, List<Expression> argList, TypeMeta returnType) {
+        return new MultiArgAggregateWindowFunc(name, argList, returnType);
     }
 
 
@@ -119,57 +101,22 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    static SimpleExpression charFunc(Consumer<? super FuncExpUtils.VariadicClause> consumer, @Nullable String charName) {
+    static Expression charFunc(Consumer<? super FuncExpUtils.VariadicClause> consumer, @Nullable String charName) {
         if (charName != null && !_StringUtils.hasText(charName)) {
             throw ContextStack.clearStackAndCriteriaError("CHAR function charset_name must have text");
         }
-        return new CharFunc(FuncExpUtils.variadicList(true, consumer), charName, StringType.INSTANCE);
+        final ArrayList<Object> argList = _Collections.arrayList(4);
+
+        final FuncExpUtils.VariadicClause clause;
+        clause = FuncExpUtils.variadicClause(true, SQLs.COMMA, argList);
+        CriteriaUtils.invokeConsumer(clause, consumer);
+
+        if (charName != null) {
+            argList.add(SQLs.USING);
+            argList.add(SQLs._identifier(charName));
+        }
+        return LiteralFunctions.compositeFunc("CHAR", argList, StringType.INSTANCE);
     }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
-     */
-    private static final class CharFunc extends OperationExpression.SqlFunctionExpression {
-
-        private final List<?> argList;
-
-        private final String charsetName;
-
-        /**
-         * @see #charFunc(Consumer, String)
-         */
-        private CharFunc(List<?> argList, @Nullable String charsetName, TypeMeta returnType) {
-            super("CHAR", returnType);
-            this.argList = argList;
-            this.charsetName = charsetName;
-        }
-
-        @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            FuncExpUtils.appendLiteralList(this.argList, sqlBuilder, context);
-
-            final String charsetName = this.charsetName;
-            if (charsetName != null) {
-                sqlBuilder.append(SQLs.USING.spaceRender())
-                        .append(_Constant.SPACE);
-
-                context.identifier(charsetName, sqlBuilder);
-            }
-
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            FuncExpUtils.literalListToString(this.argList, builder);
-            final String charsetName = this.charsetName;
-            if (charsetName != null) {
-                builder.append(SQLs.USING.spaceRender())
-                        .append(_Constant.SPACE)
-                        .append(charsetName);
-            }
-        }
-
-    } // CharFunc
 
 
     /**
@@ -182,7 +129,7 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
         FuncExpUtils.assertPathExp(path);
 
-        final MySQLFunctionUtils.MySQLJsonTableColumns tableColumns;
+        final MySQLFunctions.MySQLJsonTableColumns tableColumns;
         tableColumns = new MySQLJsonTableColumns();
 
         CriteriaUtils.invokeConsumer(tableColumns, consumer);
@@ -190,24 +137,8 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }
 
 
-    static GroupConcatInnerClause groupConcatClause() {
-        return new GroupConcatInnerClause();
-    }
-
-    static Expression groupConcatFunc(final @Nullable SQLs.ArgDistinct distinct, final Expression exp
-            , @Nullable GroupConcatInnerClause clause) {
-        return new GroupConcatFunction(distinct, Collections.singletonList((ArmyExpression) exp), clause);
-    }
-
-    static Expression groupConcatFunc(final @Nullable SQLs.ArgDistinct distinct, final List<Expression> expList
-            , @Nullable GroupConcatInnerClause clause) {
-        final int expSize = expList.size();
-        if (expSize == 0) {
-            throw CriteriaUtils.funcArgError("GROUP_CONCAT", expList);
-        }
-        final List<ArmyExpression> argList = new ArrayList<>(expSize);
-        appendExpList(argList, expList);
-        return new GroupConcatFunction(distinct, argList, clause);
+    static Clause groupConcatClause(Consumer<? super MySQLFunction._GroupConcatOrderBySpec> consumer) {
+        return CriteriaUtils.invokeConsumer(new GroupConcatInnerClause(), consumer);
     }
 
 
@@ -358,14 +289,15 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }//OneOptionArgWindowFunction
 
 
-    private static class MultiArgWindowFunction extends MySQLWindowFunction {
+    @Deprecated
+    private static class MultiArgWindowFunction0 extends MySQLWindowFunction {
 
         private final SQLWords option;
 
         private final List<ArmyExpression> argList;
 
-        private MultiArgWindowFunction(String name, @Nullable SQLWords option, List<ArmyExpression> argList,
-                                       TypeMeta returnType) {
+        private MultiArgWindowFunction0(String name, @Nullable SQLWords option, List<ArmyExpression> argList,
+                                        TypeMeta returnType) {
             super(name, returnType);
             assert argList.size() > 0;
             this.option = option;
@@ -386,7 +318,30 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }//MultiArgWindowFunction
 
 
-    private static final class FromFirstLastMultiArgWindowFunc extends MultiArgWindowFunction
+    private static class MultiArgWindowFunction extends MySQLWindowFunction {
+
+        private final List<? extends Expression> argList;
+
+        private MultiArgWindowFunction(String name, List<? extends Expression> argList, TypeMeta returnType) {
+            super(name, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendLiteral(this.argList, sqlBuilder, context);
+        }
+
+        @Override
+        final void argToString(StringBuilder builder) {
+            FuncExpUtils.literalListToString(this.argList, builder);
+        }
+
+
+    } // MultiArgWindowFunction
+
+
+    private static final class FromFirstLastMultiArgWindowFunc extends MultiArgWindowFunction0
             implements MySQLWindowFunctions._FromFirstLastOverSpec {
 
         private FromFirstLast fromFirstLast;
@@ -490,12 +445,10 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
 
     }//OneArgAggregateWindowFunc
 
+    @Deprecated
     private static final class OneArgOptionAggregateWindowFunc extends OneOptionArgWindowFunction
             implements MySQLWindowFunctions._ItemAggregateWindowFunc {
 
-        /**
-         * @see #oneArgAggregate(String, SQLWords, Expression, TypeMeta)
-         */
         private OneArgOptionAggregateWindowFunc(String name, @Nullable SQLWords option, ArmyExpression argument,
                                                 TypeMeta returnType) {
             super(name, option, argument, returnType);
@@ -505,15 +458,27 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }//OneArgAggregateWindowFunc
 
 
-    private static final class MultiArgAggregateWindowFunc extends MultiArgWindowFunction
+    @Deprecated
+    private static final class MultiArgAggregateWindowFunc0 extends MultiArgWindowFunction0
             implements MySQLWindowFunctions._ItemAggregateWindowFunc {
 
-        private MultiArgAggregateWindowFunc(String name, @Nullable SQLWords option, List<ArmyExpression> argList,
-                                            TypeMeta returnType) {
+        private MultiArgAggregateWindowFunc0(String name, @Nullable SQLWords option, List<ArmyExpression> argList,
+                                             TypeMeta returnType) {
             super(name, option, argList, returnType);
         }
 
     }//MultiArgAggregateWindowFunc
+
+
+    private static final class MultiArgAggregateWindowFunc extends MultiArgWindowFunction
+            implements MySQLWindowFunctions._ItemAggregateWindowFunc {
+
+        private MultiArgAggregateWindowFunc(String name, List<? extends Expression> argList, TypeMeta returnType) {
+            super(name, argList, returnType);
+        }
+
+
+    } // MultiArgAggregateWindowFunc
 
 
     private static class CompositeWindowFunc extends MySQLWindowFunction {
@@ -624,11 +589,11 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
     }//GroupConcatFunction
 
     /**
-     * @see #groupConcatClause()
+     * @see #groupConcatClause(Consumer)
      */
-    static final class GroupConcatInnerClause
+    private static final class GroupConcatInnerClause
             extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause, MySQLFunction._GroupConcatSeparatorClause>
-            implements MySQLFunction._GroupConcatOrderBySpec, ArmyFuncClause, _SelfDescribed {
+            implements MySQLFunction._GroupConcatOrderBySpec, ArmyClause {
 
 
         private String stringValue;
@@ -682,6 +647,12 @@ abstract class MySQLFunctionUtils extends DialectFunctionUtils {
             this.endOrderByClauseIfNeed();
             this.stringValue = supplier.get();
             return this;
+        }
+
+
+        @Override
+        public void endClause() {
+            this.endOrderByClauseIfNeed();
         }
 
 

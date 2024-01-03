@@ -434,7 +434,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
      */
     public static Expression statementDigest(final PrimaryStatement stmt, final Visible visible, final boolean literal) {
-        return MySQLFunctionUtils.statementDigest(stmt, visible, literal);
+        return MySQLFunctions.statementDigest(stmt, visible, literal);
     }
 
     /**
@@ -461,7 +461,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      */
     public static Expression statementDigestText(final PrimaryStatement stmt, final Visible visible
             , final boolean literal) {
-        return MySQLFunctionUtils.statementDigestText(stmt, visible, literal);
+        return MySQLFunctions.statementDigestText(stmt, visible, literal);
     }
 
     /**

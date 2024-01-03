@@ -123,7 +123,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
     public static Expression charFunc(final Consumer<Clause._VariadicSpaceClause> consumer) {
-        return MySQLFunctionUtils.charFunc(consumer, null);
+        return MySQLFunctions.charFunc(consumer, null);
     }
 
     /**
@@ -140,7 +140,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      */
     public static Expression charFunc(final Consumer<Clause._VariadicSpaceClause> consumer, SQLs.WordUsing using, String charsetName) {
         Objects.requireNonNull(charsetName);
-        return MySQLFunctionUtils.charFunc(consumer, charsetName);
+        return MySQLFunctions.charFunc(consumer, charsetName);
     }
 
     /**
@@ -156,7 +156,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
     public static Expression charFunc(SQLs.SymbolSpace space, final Consumer<Clause._VariadicConsumer> consumer) {
-        return MySQLFunctionUtils.charFunc(consumer, null);
+        return MySQLFunctions.charFunc(consumer, null);
     }
 
     /**
@@ -174,7 +174,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      */
     public static Expression charFunc(SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer, SQLs.WordUsing using, String charsetName) {
         Objects.requireNonNull(charsetName);
-        return MySQLFunctionUtils.charFunc(consumer, charsetName);
+        return MySQLFunctions.charFunc(consumer, charsetName);
     }
 
 

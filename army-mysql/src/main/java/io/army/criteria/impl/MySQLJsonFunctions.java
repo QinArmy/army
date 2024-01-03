@@ -691,7 +691,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      */
     public static Expression jsonValue(final Object jsonDoc, final Object path,
                                              final Consumer<MySQLFunction._JsonValueReturningSpec> consumer) {
-        return MySQLFunctionUtils.jsonValueFunc(jsonDoc, path, consumer);
+        return MySQLFunctions.jsonValueFunc(jsonDoc, path, consumer);
     }
 
 
@@ -1227,7 +1227,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     public static _TabularFunction jsonTable(Object expr, Object pathExp, SQLs.WordColumns columns,
                                              Consumer<MySQLFunction._JsonTableColumnSpaceClause> consumer) {
 
-        return MySQLFunctionUtils.jsonTable(expr, pathExp, consumer);
+        return MySQLFunctions.jsonTable(expr, pathExp, consumer);
     }
 
     /**
@@ -1286,7 +1286,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
                                              SQLs.SymbolSpace space,
                                              Consumer<MySQLFunction._JsonTableColumnConsumerClause> consumer) {
 
-        return MySQLFunctionUtils.jsonTable(expr, pathExp, consumer);
+        return MySQLFunctions.jsonTable(expr, pathExp, consumer);
     }
 
 
