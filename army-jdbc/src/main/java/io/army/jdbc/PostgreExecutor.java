@@ -853,10 +853,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final Stream<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option)
+        public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option)
                 throws RmSessionException {
 
-            final Stream<Optional<Xid>> stream;
+            final Stream<Xid> stream;
             if (flags == RmSession.TM_END_RSCAN) {
                 final String sql = "SELECT gid FROM pg_prepared_xacts where database = current_database()";
                 stream = jdbcRecover(sql, this::recordToXid, option);
@@ -993,12 +993,13 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
 
 
-        private Optional<Xid> recordToXid(final DataRecord row) {
+        @Nullable
+        private Xid recordToXid(final DataRecord row) {
 
             final String xidStr;
             xidStr = row.getNonNull(0, String.class);
 
-            Optional<Xid> optional;
+            Xid xid;
             try {
                 final int leftHyphen, rightHyphen;
                 leftHyphen = xidStr.indexOf('_');
@@ -1021,12 +1022,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
                     bqual = new String(bqualBytes, StandardCharsets.UTF_8);
                 }
 
-                optional = Optional.of(Xid.from(gtrid, bqual, formatId));
+                xid = Xid.from(gtrid, bqual, formatId);
             } catch (Exception e) {
-                optional = Optional.empty();
+                xid = null;
             }
 
-            return optional;
+            return xid;
         }
 
 

@@ -59,8 +59,10 @@ public interface FactoryBuilderSpec<B, R> {
 
     /**
      * <p>Required.
+     * <p>dataSource can be the instance of {@link io.army.datasource.ReadWriteSplittingDataSource}.
      *
      * @return <strong>this</strong>
+     * @see io.army.datasource.ReadWriteSplittingDataSource
      */
     B datasource(Object dataSource);
 

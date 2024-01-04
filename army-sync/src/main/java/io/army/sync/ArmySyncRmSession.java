@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -353,23 +352,24 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
     @Override
-    public final List<Optional<Xid>> recoverList(int flags) {
+    public final List<Xid> recoverList(int flags) {
         return this.recoverList(flags, Option.EMPTY_FUNC);
     }
 
     @Override
-    public final List<Optional<Xid>> recoverList(int flags, Function<Option<?>, ?> optionFunc) {
-        return recover(flags, optionFunc, ArmyStreamOptions.DEFAULT)
-                .collect(Collectors.toCollection(_Collections::arrayList));
+    public final List<Xid> recoverList(int flags, Function<Option<?>, ?> optionFunc) {
+        try (Stream<Xid> stream = recover(flags, optionFunc, ArmyStreamOptions.DEFAULT)) {
+            return stream.collect(Collectors.toCollection(_Collections::arrayList));
+        }
     }
 
     @Override
-    public final Stream<Optional<Xid>> recover(int flags) {
+    public final Stream<Xid> recover(int flags) {
         return this.recover(flags, Option.EMPTY_FUNC, ArmyStreamOptions.DEFAULT);
     }
 
     @Override
-    public final Stream<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
+    public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }

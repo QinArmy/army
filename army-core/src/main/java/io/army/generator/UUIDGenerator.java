@@ -32,12 +32,25 @@ public final class UUIDGenerator implements FieldGenerator {
         return INSTANCE;
     }
 
+    /**
+     * private constructor
+     */
+    private UUIDGenerator() {
+    }
+
     @Override
     public Object next(FieldMeta<?> field, ReadWrapper domain) throws GeneratorException {
-        if (field.javaType() != String.class) {
-            throw errorFiled(field);
+        final Object value;
+        final Class<?> javaType = field.javaType();
+        if (javaType == String.class) {
+            value = UUID.randomUUID().toString();
+        } else if (javaType == UUID.class) {
+            value = UUID.randomUUID();
+        } else {
+            String m = String.format("%s java type %s isn't supported.", field, javaType.getName());
+            throw new GeneratorException(m);
         }
-        return UUID.randomUUID().toString();
+        return value;
     }
 
     private static IllegalArgumentException errorFiled(FieldMeta<?> field) {
