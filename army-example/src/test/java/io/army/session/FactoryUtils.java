@@ -54,6 +54,10 @@ public abstract class FactoryUtils {
 
         if (isMyLocal()) {
             properties.put("sslMode", "DISABLED");
+            if (database == Database.MySQL) {
+                properties.put("allowMultiQueries", "true");
+            }
+
         }
 
         final DruidDataSource dataSource;

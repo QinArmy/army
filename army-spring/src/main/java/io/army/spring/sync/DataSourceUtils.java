@@ -38,7 +38,7 @@ abstract class DataSourceUtils {
         properties.put("password", env.getRequiredProperty(String.format("spring.datasource.%s.%s.password", tag, role)));
 
         if (url.startsWith("jdbc:mysql:") && !properties.containsKey("allowMultiQueries")) {
-            properties.put("allowMultiQueries", env.getProperty(String.format("spring.datasource.%s.%s.allowMultiQueries", tag, role), Boolean.class, Boolean.FALSE));
+            properties.put("allowMultiQueries", env.getProperty(String.format("spring.datasource.%s.%s.allowMultiQueries", tag, role), String.class, "false"));
         }
         return url;
     }

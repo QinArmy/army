@@ -252,7 +252,7 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
     public void groupConcatFunc(final SyncLocalSession session) {
         final Select stmt;
         stmt = MySQLs.query()
-                .select(groupConcat(s -> s.space(ChinaRegion_.name)
+                .select(groupConcat(SQLs.DISTINCT, s -> s.space(ChinaRegion_.name)
                                 .comma(ChinaRegion_.createTime)
                                 .comma(ChinaRegion_.regionGdp), s -> s.orderBy(ChinaRegion_.name).separator(",")
                         ).as("nameGroup")

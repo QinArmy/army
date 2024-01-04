@@ -998,13 +998,13 @@ public abstract class _Exceptions {
     }
 
 
-    public static NonUniqueException nonUnique(List<?> list) {
+    public static NonSingleRowException nonUnique(List<?> list) {
         String m = String.format("select result[%s] more than 1.", list.size());
-        return new NonUniqueException(m);
+        return new NonSingleRowException(m);
     }
 
-    public static NonUniqueException nonUnique(Class<?> resultClass) {
-        return new NonUniqueException(String.format("return %s row count more than 1", resultClass.getName()));
+    public static NonSingleRowException nonUnique(Class<?> resultClass) {
+        return new NonSingleRowException(String.format("return %s row count more than 1", resultClass.getName()));
     }
 
 

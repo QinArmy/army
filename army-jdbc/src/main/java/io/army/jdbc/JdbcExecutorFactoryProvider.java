@@ -193,6 +193,8 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
                     statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
 
                     methodFlag |= JdbcExecutorFactory.MULTI_STMT;
+
+                    LOG.debug("{} drive support multi-statement.", serverDatabase.name());
                 } catch (SQLException e) {
                     LOG.debug("{} driver don't support multi-statement.", serverDatabase.name());
                 }

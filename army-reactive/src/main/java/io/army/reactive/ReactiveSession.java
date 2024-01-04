@@ -80,7 +80,7 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
      * @param statement   simple(non-batch) query statement
      * @param resultClass result class ,for example : {@code  String.class}, {@code Long.class}
      * @param <R>         the java type of row
-     * @throws NonUniqueException emit(not throw) when server response row count more than one row.
+     * @throws NonSingleRowException emit(not throw) when server response row count more than one row.
      */
     <R> Mono<Optional<R>> queryOneNullable(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
 
