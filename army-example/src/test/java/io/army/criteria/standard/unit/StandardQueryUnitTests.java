@@ -280,7 +280,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .where(BankUser_.id::equal, refField("ba", BankAccount_.USER_ID)) // here non-LATERAL ,but reference outer field.
                         .asQuery()
                 ).as("bu").on(refField("bu", BankUser_.ID)::equal, refField("ba", BankAccount_.USER_ID))
-                .where(refField("bu", BankUser_.NICK_NAME)::equal, SQLs::param, map.get("nickName"))
+                .where(refField("bu", BankUser_.NICK_NAME).equal(SQLs.paramValue(map.get("nickName"))))
                 .asQuery();
 
     }
@@ -304,7 +304,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 )
                 .as("us")
-                .where(SQLs.refField("us", "one")::equal, SQLs::param, "1")
+                .where(SQLs.refField("us", "one").equal(SQLs.paramValue(1)))
                 .asQuery();
 
         printStmt(LOG, stmt);

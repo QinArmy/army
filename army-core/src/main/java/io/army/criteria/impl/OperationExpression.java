@@ -47,7 +47,6 @@ abstract class OperationExpression extends OperationSQLExpression
      * <p>
      * Private constructor
      *
-     *
      * @see OperationSimpleExpression#OperationSimpleExpression()
      * @see OperationCompoundExpression#OperationCompoundExpression()
      * @see PredicateExpression#PredicateExpression()
@@ -408,6 +407,182 @@ abstract class OperationExpression extends OperationSQLExpression
 
         }
 
+
+        /*-------------------below array operator method -------------------*/
+
+        @Override
+        public final SimpleExpression atElement(int index) {
+            return Expressions.arrayElementExp(this, index);
+        }
+
+        @Override
+        public final SimpleExpression atElement(int index1, int index2) {
+            return Expressions.arrayElementExp(this, index1, index2);
+        }
+
+        @Override
+        public final SimpleExpression atElement(int index1, int index2, int index3, int... restIndex) {
+            return Expressions.arrayElementExp(this, index1, index2, index3, restIndex);
+        }
+
+        @Override
+        public final <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value) {
+            return Expressions.arrayElementExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value));
+        }
+
+        @Override
+        public final <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2) {
+            return Expressions.arrayElementExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef.apply(NoCastIntegerType.INSTANCE, value2)
+            );
+        }
+
+        @Override
+        public final <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2, T value3) {
+            return Expressions.arrayElementExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef.apply(NoCastIntegerType.INSTANCE, value2),
+                    funcRef.apply(NoCastIntegerType.INSTANCE, value3),
+                    new Expression[0]
+            );
+        }
+
+        @Override
+        public final <T, U> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2) {
+            return Expressions.arrayElementExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2)
+            );
+        }
+
+        @Override
+        public final <T, U, V> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2, BiFunction<MappingType, V, Expression> funcRef3, V value3) {
+            return Expressions.arrayElementExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2),
+                    funcRef3.apply(NoCastIntegerType.INSTANCE, value3),
+                    new Expression[0]
+            );
+        }
+
+        @Override
+        public final SimpleExpression atElement(Expression index) {
+            return Expressions.arrayElementExp(this, index);
+        }
+
+        @Override
+        public final SimpleExpression atElement(Expression index1, Expression index2) {
+            return Expressions.arrayElementExp(this, index1, index2);
+        }
+
+        @Override
+        public final SimpleExpression atElement(Expression index1, Expression index2, Expression index3, Expression... restIndex) {
+            return Expressions.arrayElementExp(this, index1, index2, index3, restIndex);
+        }
+
+        @Override
+        public final ArrayExpression atArray(int index) {
+            return Expressions.arrayElementArrayExp(this, index);
+        }
+
+        @Override
+        public final ArrayExpression atArray(int index1, int index2) {
+            return Expressions.arrayElementArrayExp(this, index1, index2);
+        }
+
+        @Override
+        public final ArrayExpression atArray(int index1, int index2, int index3, int... restIndex) {
+            return Expressions.arrayElementArrayExp(this, index1, index2, index3, restIndex);
+        }
+
+        @Override
+        public final ArrayExpression atArray(ArraySubscript index) {
+            return Expressions.arrayElementArrayExp(this, index);
+        }
+
+        @Override
+        public final ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2) {
+            return Expressions.arrayElementArrayExp(this, index1, index2);
+        }
+
+        @Override
+        public final ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2, ArraySubscript index3, ArraySubscript... restIndex) {
+            return Expressions.arrayElementArrayExp(this, index1, index2, index3, restIndex);
+        }
+
+        @Override
+        public final <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value) {
+            return Expressions.arrayElementArrayExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value));
+        }
+
+        @Override
+        public final <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2) {
+            return Expressions.arrayElementArrayExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef.apply(NoCastIntegerType.INSTANCE, value2)
+            );
+        }
+
+        @Override
+        public final <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2, T value3) {
+            return Expressions.arrayElementArrayExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef.apply(NoCastIntegerType.INSTANCE, value2),
+                    funcRef.apply(NoCastIntegerType.INSTANCE, value3),
+                    new ArraySubscript[0]
+            );
+        }
+
+        @Override
+        public final <T, U> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2) {
+            return Expressions.arrayElementArrayExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2)
+            );
+        }
+
+        @Override
+        public final <T, U, V> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2, BiFunction<MappingType, V, Expression> funcRef3, V value3) {
+            return Expressions.arrayElementArrayExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
+                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2),
+                    funcRef3.apply(NoCastIntegerType.INSTANCE, value3),
+                    new ArraySubscript[0]
+            );
+        }
+
+
+
+        /*-------------------below json operator method -------------------*/
+
+        @Override
+        public final JsonExpression arrayElement(int index) {
+            return Expressions.jsonArrayElement(this, index);
+        }
+
+        @Override
+        public final JsonExpression objectAttr(String keyName) {
+            return Expressions.jsonObjectAttr(this, keyName);
+        }
+
+        @Override
+        public final JsonExpression atPath(String jsonPath) {
+            return Expressions.jsonPathExtract(this, jsonPath);
+        }
+
+        @Override
+        public final JsonExpression atPath(Expression jsonPath) {
+            return Expressions.jsonPathExtract(this, jsonPath);
+        }
+
+        @Override
+        public final <T> JsonExpression atPath(BiFunction<MappingType, T, Expression> funcRef, T jsonPath) {
+            return Expressions.jsonPathExtract(this, funcRef.apply(JsonPathType.INSTANCE, jsonPath));
+        }
+
+
+    } // OperationSimpleExpression
+
+    static abstract class OperationDefiniteExpression extends OperationSimpleExpression implements DefiniteExpression {
+
+
+        OperationDefiniteExpression() {
+        }
+
+
         @Override
         public final <T> CompoundPredicate equal(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, funcRef.apply(this, value));
@@ -694,173 +869,8 @@ abstract class OperationExpression extends OperationSQLExpression
             return this.whiteSpace(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
         }
 
-        /*-------------------below array operator method -------------------*/
 
-        @Override
-        public final SimpleExpression atElement(int index) {
-            return Expressions.arrayElementExp(this, index);
-        }
-
-        @Override
-        public final SimpleExpression atElement(int index1, int index2) {
-            return Expressions.arrayElementExp(this, index1, index2);
-        }
-
-        @Override
-        public final SimpleExpression atElement(int index1, int index2, int index3, int... restIndex) {
-            return Expressions.arrayElementExp(this, index1, index2, index3, restIndex);
-        }
-
-        @Override
-        public final <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value) {
-            return Expressions.arrayElementExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value));
-        }
-
-        @Override
-        public final <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2) {
-            return Expressions.arrayElementExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef.apply(NoCastIntegerType.INSTANCE, value2)
-            );
-        }
-
-        @Override
-        public final <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2, T value3) {
-            return Expressions.arrayElementExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef.apply(NoCastIntegerType.INSTANCE, value2),
-                    funcRef.apply(NoCastIntegerType.INSTANCE, value3),
-                    new Expression[0]
-            );
-        }
-
-        @Override
-        public final <T, U> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2) {
-            return Expressions.arrayElementExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2)
-            );
-        }
-
-        @Override
-        public final <T, U, V> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2, BiFunction<MappingType, V, Expression> funcRef3, V value3) {
-            return Expressions.arrayElementExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2),
-                    funcRef3.apply(NoCastIntegerType.INSTANCE, value3),
-                    new Expression[0]
-            );
-        }
-
-        @Override
-        public final SimpleExpression atElement(Expression index) {
-            return Expressions.arrayElementExp(this, index);
-        }
-
-        @Override
-        public final SimpleExpression atElement(Expression index1, Expression index2) {
-            return Expressions.arrayElementExp(this, index1, index2);
-        }
-
-        @Override
-        public final SimpleExpression atElement(Expression index1, Expression index2, Expression index3, Expression... restIndex) {
-            return Expressions.arrayElementExp(this, index1, index2, index3, restIndex);
-        }
-
-        @Override
-        public final ArrayExpression atArray(int index) {
-            return Expressions.arrayElementArrayExp(this, index);
-        }
-
-        @Override
-        public final ArrayExpression atArray(int index1, int index2) {
-            return Expressions.arrayElementArrayExp(this, index1, index2);
-        }
-
-        @Override
-        public final ArrayExpression atArray(int index1, int index2, int index3, int... restIndex) {
-            return Expressions.arrayElementArrayExp(this, index1, index2, index3, restIndex);
-        }
-
-        @Override
-        public final ArrayExpression atArray(ArraySubscript index) {
-            return Expressions.arrayElementArrayExp(this, index);
-        }
-
-        @Override
-        public final ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2) {
-            return Expressions.arrayElementArrayExp(this, index1, index2);
-        }
-
-        @Override
-        public final ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2, ArraySubscript index3, ArraySubscript... restIndex) {
-            return Expressions.arrayElementArrayExp(this, index1, index2, index3, restIndex);
-        }
-
-        @Override
-        public final <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value) {
-            return Expressions.arrayElementArrayExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value));
-        }
-
-        @Override
-        public final <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2) {
-            return Expressions.arrayElementArrayExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef.apply(NoCastIntegerType.INSTANCE, value2)
-            );
-        }
-
-        @Override
-        public final <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2, T value3) {
-            return Expressions.arrayElementArrayExp(this, funcRef.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef.apply(NoCastIntegerType.INSTANCE, value2),
-                    funcRef.apply(NoCastIntegerType.INSTANCE, value3),
-                    new ArraySubscript[0]
-            );
-        }
-
-        @Override
-        public final <T, U> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2) {
-            return Expressions.arrayElementArrayExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2)
-            );
-        }
-
-        @Override
-        public final <T, U, V> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2, BiFunction<MappingType, V, Expression> funcRef3, V value3) {
-            return Expressions.arrayElementArrayExp(this, funcRef1.apply(NoCastIntegerType.INSTANCE, value1),
-                    funcRef2.apply(NoCastIntegerType.INSTANCE, value2),
-                    funcRef3.apply(NoCastIntegerType.INSTANCE, value3),
-                    new ArraySubscript[0]
-            );
-        }
-
-
-
-        /*-------------------below json operator method -------------------*/
-
-        @Override
-        public final JsonExpression arrayElement(int index) {
-            return Expressions.jsonArrayElement(this, index);
-        }
-
-        @Override
-        public final JsonExpression objectAttr(String keyName) {
-            return Expressions.jsonObjectAttr(this, keyName);
-        }
-
-        @Override
-        public final JsonExpression atPath(String jsonPath) {
-            return Expressions.jsonPathExtract(this, jsonPath);
-        }
-
-        @Override
-        public final JsonExpression atPath(Expression jsonPath) {
-            return Expressions.jsonPathExtract(this, jsonPath);
-        }
-
-        @Override
-        public final <T> JsonExpression atPath(BiFunction<MappingType, T, Expression> funcRef, T jsonPath) {
-            return Expressions.jsonPathExtract(this, funcRef.apply(JsonPathType.INSTANCE, jsonPath));
-        }
-
-
-    }//OperationSimpleExpression
+    } // OperationDefiniteExpression
 
 
     static abstract class SqlFunctionExpression extends OperationSimpleExpression
@@ -1006,7 +1016,6 @@ abstract class OperationExpression extends OperationSQLExpression
          * <p>
          * <strong>Private constructor</strong>
          *
-         *
          * @see #bracketExp(Expression)
          */
         private BracketsExpression(ArmyExpression expression) {
@@ -1063,7 +1072,6 @@ abstract class OperationExpression extends OperationSQLExpression
     /**
      * <p>
      * This class representing sql {@code NULL} key word.
-     *
      *
      * @see SQLs#NULL
      */

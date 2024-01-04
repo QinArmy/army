@@ -35,7 +35,7 @@ import java.util.function.BiFunction;
  *     <li>{@code   CriteriaContexts.MutableDerivedField}</li>
  * </ul>
  */
-abstract class OperationDataField extends OperationExpression.OperationSimpleExpression implements SqlField,
+abstract class OperationDataField extends OperationExpression.OperationDefiniteExpression implements SqlField,
         _Selection {
 
     @Override

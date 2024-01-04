@@ -175,9 +175,9 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         stmt = MySQLs.query()
                 .withRecursive("cte").parens("n").as(s -> s.select(SQLs.literalValue(1)::as, "r")
                         .union()
-                        .select(cs -> cs.space(refField("cte", "n").plus(SQLs::literal, 1)::as, "n"))
+                        .select(cs -> cs.space(refField("cte", "n").plus(SQLs.literalValue(1))::as, "n"))
                         .from("cte")
-                        .where(refField("cte", "n").less(SQLs::literal, 10))
+                        .where(refField("cte", "n").less(SQLs.literalValue(10)))
                         .asQuery()
                 )// with As clause end
                 .space()
@@ -196,9 +196,9 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         stmt = MySQLs.query()
                 .withRecursive("cte").parens("n")
                 .as(s -> s.select(cs -> cs.space(refField("cte", "n")
-                                        .plus(SQLs::literal, 1)::as, "n")
+                                        .plus(SQLs.literalValue(1))::as, "n")
                                 ).from("cte")
-                        .where(refField("cte", "n").less(SQLs::literal, 10))
+                        .where(refField("cte", "n").less(SQLs.literalValue(10)))
                                 .asQuery()
                 )// with As clause end
                 .space() // WITH clause end

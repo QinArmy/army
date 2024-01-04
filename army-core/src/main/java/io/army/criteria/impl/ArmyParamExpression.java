@@ -40,7 +40,7 @@ import java.util.Objects;
  * @see ArmyRowLiteralExpression
  * @since 0.6.0
  */
-abstract class ArmyParamExpression extends OperationExpression.OperationSimpleExpression
+abstract class ArmyParamExpression extends OperationExpression.OperationDefiniteExpression
         implements ParamExpression {
 
     /**
