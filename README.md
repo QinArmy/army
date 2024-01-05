@@ -396,6 +396,51 @@ public class HowToStartTests {
     }
 
 
+    @Test
+    public void subDomainInsertChild() {
+        assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+
+        final Insert stmt;
+
+        stmt = Postgres.singleInsert() // postgre dialect api
+                .literalMode(LiteralMode.LITERAL)
+                .with("parent").as(s -> s.literalMode(LiteralMode.LITERAL)
+                        .insertInto(ChinaRegion_.T)
+                        .values(provinceList)
+                        .returning(ChinaRegion_.id)
+                        .asReturningInsert()
+                ).comma("parent_row_id").as(s -> s.select(ss -> ss.space(Postgres.rowNumber().over().as("rowNumber"))
+                                        .comma(SQLs.refField("parent", ChinaRegion_.ID))
+                                )
+                                .from("parent")
+                                .asQuery()
+                )
+                .space()
+                .insertInto(ChinaProvince_.T)
+                .defaultValue(ChinaProvince_.id, Postgres.scalarSubQuery()
+                        .select(s -> s.space(SQLs.refField("p", ChinaRegion_.ID)))
+                        .from("parent_row_id", AS, "p")
+                        .where(SQLs.refField("p", "rowNumber")::equal, BATCH_NO_LITERAL)
+                        .asQuery()
+                )
+                .values(provinceList)
+                .asInsert();
+
+        Assert.assertFalse(stmt instanceof _ReturningDml);
+
+        try (SyncLocalSession session = sessionFactory.localSession()) {
+            final long rows;
+            rows = session.update(stmt);
+            LOG.debug("{} rows : {}", session.name(), rows);
+            Assert.assertEquals(rows, provinceList.size());
+        }
+
+    }
+
+
 }
 
 
