@@ -915,7 +915,7 @@ abstract class CriteriaUtils {
 
     static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
                                                                String groupAlias) {
-        final String m = String.format("unknown derived field group[%s].", groupAlias);
+        final String m = String.format("unknown derived field group[%s]. please check whether or not use static SELECT clause.", groupAlias);
         final UnknownFieldGroupException e;
         if (currentContext == null) {
             e = ContextStack.clearStackAnd(UnknownFieldGroupException::new, m);

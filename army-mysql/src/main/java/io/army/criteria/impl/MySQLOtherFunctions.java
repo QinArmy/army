@@ -368,7 +368,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
      */
     public static Expression ifFunc(final Expression predicate, final Expression expr1, final Expression expr2) {
-        return FunctionUtils.threeArgFunc("IF", predicate, expr1, expr2, expr1.typeMeta());
+        return LiteralFunctions.threeArgFunc("IF", predicate, expr1, expr2, expr1.typeMeta());
     }
 
 
