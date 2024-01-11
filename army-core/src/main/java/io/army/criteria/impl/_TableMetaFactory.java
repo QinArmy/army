@@ -142,6 +142,13 @@ public abstract class _TableMetaFactory {
         return TableFieldMeta.codecFieldMetaSet();
     }
 
+    public static IllegalStateException tableFiledSizeError(Class<?> domainClass, int fieldSize) {
+        String m = String.format("Domain[%s] field count[%s] error,please check you whether create(delete) field or not,if yes then you must recompile.",
+                domainClass.getName(), fieldSize);
+        return new IllegalStateException(m);
+    }
+
+
     /*################################## blow private method ##################################*/
 
     /**
