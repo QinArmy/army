@@ -79,14 +79,15 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
      */
     @Test
     public void arrayToJsonFunc() {
+        final IntegerArrayType arrayType = IntegerArrayType.from(int[][].class);
         final String arrayLiteral;
         arrayLiteral = "{{1,5},{99,100}}";
         final int[][] intArray = {{1, 5}, {99, 100}};
         final Select stmt;
         stmt = Postgres.query()
-                .select(arrayToJson(SQLs.literal(IntegerArrayType.PRIMITIVE_LINEAR, intArray))::as, "json1")
-                .comma(arrayToJson(SQLs.literal(IntegerArrayType.PRIMITIVE_LINEAR, arrayLiteral))::as, "json2")
-                .comma(arrayToJson(SQLs.literal(IntegerArrayType.PRIMITIVE_LINEAR, arrayLiteral), TRUE)::as, "json3")
+                .select(arrayToJson(SQLs.literal(arrayType, intArray))::as, "json1")
+                .comma(arrayToJson(SQLs.literal(arrayType, arrayLiteral))::as, "json2")
+                .comma(arrayToJson(SQLs.literal(arrayType, arrayLiteral), TRUE)::as, "json3")
                 .asQuery();
 
         printStmt(LOG, stmt);

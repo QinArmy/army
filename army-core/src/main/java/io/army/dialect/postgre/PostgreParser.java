@@ -106,7 +106,11 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void bindLiteralNull(final MappingType type, final DataType dataType, final StringBuilder sqlBuilder) {
-        switch ((PostgreType) dataType) {
+        if (!(dataType instanceof SqlType)) {
+            sqlBuilder.append(_Constant.NULL)
+                    .append("::")
+                    .append(dataType.typeName());
+        } else switch ((PostgreType) dataType) {
             case UNKNOWN:
             case REF_CURSOR:
                 throw ExecutorSupport.mapMethodError(type, dataType);

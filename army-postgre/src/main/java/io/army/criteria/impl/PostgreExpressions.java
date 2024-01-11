@@ -99,19 +99,18 @@ abstract class PostgreExpressions {
 
     /**
      * <p>
-     *     <ul>
-     *         <li>numeric_type + numeric_type → numeric_type</li>
-     *         <li>date + integer </li>
-     *         <li>date + interval → timestamp or date </li>
-     *         <li>date + time → timestamp</li>
-     *         <li>timestamp + interval → timestamp</li>
-     *         <li>time + interval → time</li>
-     *         <li>interval + interval → interval</li>
-     *         <li>geometric_type + point → geometric_type</li>
-     *         <li>path + path → path</li>
-     *         <li>inet + bigint → inet</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>numeric_type + numeric_type → numeric_type</li>
+     *     <li>date + integer </li>
+     *     <li>date + interval → timestamp or date </li>
+     *     <li>date + time → timestamp</li>
+     *     <li>timestamp + interval → timestamp</li>
+     *     <li>time + interval → time</li>
+     *     <li>interval + interval → interval</li>
+     *     <li>geometric_type + point → geometric_type</li>
+     *     <li>path + path → path</li>
+     *     <li>inet + bigint → inet</li>
+     * </ul>
      *
      * @see Postgres#plus(Expression, Expression)
      * @see Expressions#plusType(MappingType, MappingType)
@@ -246,17 +245,16 @@ abstract class PostgreExpressions {
 
     /**
      * <p>
-     *     <ul>
-     *         <li>bit || bit → bit</li>
-     *         <li>text || text → text</li>
-     *         <li>text || anynonarray → text </li>
-     *         <li>tsvector || tsvector → tsvector</li>
-     *         <li>tsquery || tsquery → tsquery</li>
-     *         <li>anycompatiblearray || anycompatiblearray → anycompatiblearray</li>
-     *         <li>anycompatible || anycompatiblearray → anycompatiblearray</li>
-     *         <li>anycompatiblearray || anycompatible → anycompatiblearray</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>bit || bit → bit</li>
+     *     <li>text || text → text</li>
+     *     <li>text || anynonarray → text </li>
+     *     <li>tsvector || tsvector → tsvector</li>
+     *     <li>tsquery || tsquery → tsquery</li>
+     *     <li>anycompatiblearray || anycompatiblearray → anycompatiblearray</li>
+     *     <li>anycompatible || anycompatiblearray → anycompatiblearray</li>
+     *     <li>anycompatiblearray || anycompatible → anycompatiblearray</li>
+     * </ul>
      *
      * @see Postgres#doubleVertical(Expression, Expression)
      */
@@ -288,10 +286,9 @@ abstract class PostgreExpressions {
 
     /**
      * <p>
-     *     <ul>
-     *         <li>tsquery && tsquery → tsquery</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>tsquery && tsquery → tsquery</li>
+     * </ul>
      *
      * @see Postgres#ampAmp(Expression, Expression)
      */
@@ -332,10 +329,10 @@ abstract class PostgreExpressions {
     static MappingType poundGtType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if ((left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType)
-                && (right instanceof MappingType.SqlArrayType && right instanceof MappingType.SqlStringType)) {
+                && (right instanceof MappingType.SqlArrayType || right instanceof MappingType.SqlStringType)) {
             returnType = left;
         } else {
-            returnType = StringType.INSTANCE;
+            returnType = TextType.INSTANCE;
         }
         return returnType;
     }
@@ -346,11 +343,10 @@ abstract class PostgreExpressions {
     static MappingType poundHyphenType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (left instanceof MappingType.SqlJsonbType
-                && right instanceof MappingType.SqlStringType
-                && right instanceof MappingType.SqlArrayType) {
+                && (right instanceof MappingType.SqlStringType || right instanceof MappingType.SqlArrayType)) {
             returnType = left;
         } else {
-            returnType = StringType.INSTANCE;
+            returnType = TextType.INSTANCE;
         }
         return returnType;
     }
@@ -359,14 +355,7 @@ abstract class PostgreExpressions {
      * @see Postgres#poundGtGt(Expression, Expression)
      */
     static MappingType poundGtGtType(final MappingType left, final MappingType right) {
-        final MappingType returnType;
-        if (left instanceof MappingType.SqlJsonDocumentType
-                && (right instanceof MappingType.SqlArrayType && right instanceof MappingType.SqlStringType)) {
-            returnType = TextType.INSTANCE;
-        } else {
-            returnType = StringType.INSTANCE;
-        }
-        return returnType;
+        return TextType.INSTANCE;
     }
 
 
@@ -593,7 +582,6 @@ abstract class PostgreExpressions {
             super(operator, operand, inferFunc);
         }
     }//PostgreUnaryExpression
-
 
 
     private static final class PostgreUnaryPredicate extends OperationPredicate.OperationCompoundPredicate {

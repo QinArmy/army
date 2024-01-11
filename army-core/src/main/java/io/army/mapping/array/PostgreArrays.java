@@ -159,6 +159,17 @@ public abstract class PostgreArrays extends ArrayMappings {
             return (String) source;
         }
 
+        if (source instanceof List) {
+            final StringBuilder builder = new StringBuilder();
+            try {
+                listToArrayText((List<?>) source, consumer, builder);
+            } catch (Exception e) {
+                throw handler.apply(type, dataType, source, e);
+            }
+            return builder.toString();
+        }
+
+
         final Class<?> javaType = type.javaType(), sourceType = source.getClass();
         if (!sourceType.isArray()) {
             throw handler.apply(type, dataType, source, null);
@@ -175,7 +186,8 @@ public abstract class PostgreArrays extends ArrayMappings {
             if (ArrayUtils.dimensionOf(sourceType) != ArrayUtils.dimensionOf(javaType)) {
                 throw handler.apply(type, dataType, source, null);
             }
-        } else if (!javaType.isInstance(source)) {
+        } else if (!javaType.isInstance(source)
+                && !ClassUtils.isWrapperClass(((MappingType.SqlArrayType) type).underlyingJavaType(), sourceComponentType)) {
             throw handler.apply(type, dataType, source, null);
         }
 
@@ -457,7 +469,8 @@ public abstract class PostgreArrays extends ArrayMappings {
     /**
      * <p>
      * parse postgre array text.
-     *     *
+     * *
+     *
      * @param function       before end index possibly with trailing whitespace.
      * @param dimensionIndex based one
      * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>

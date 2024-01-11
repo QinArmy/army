@@ -88,9 +88,10 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
         jsonField = SQLs.literal(JsonbType.TEXT, json);
         final Select stmt;
         stmt = Postgres.query()
-                .select(SQLs.refField("func", "value")::as, "json1")
-                .comma(SQLs.refField("func2", "value")::as, "json2")
-                .comma(SQLs.refField("func2", "ordinal")::as, "json3")
+                .select(s -> s.space(SQLs.refField("func", "value")::as, "json1")
+                        .comma(SQLs.refField("func2", "value")::as, "json2")
+                        .comma(SQLs.refField("func2", "ordinal")::as, "json3")
+                )
                 .from(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path)))
                 .as("func").parens("value")
                 .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::withOrdinality)
@@ -120,7 +121,7 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
         final Expression jsonField;
         jsonField = SQLs.literal(JsonbType.TEXT, json);
         Postgres.query()
-                .select(SQLs.refField("func", "myFunc")::as, "json1") // func.myFunc not exists
+                .select(s -> s.space(SQLs.refField("func", "myFunc")::as, "json1")) // func.myFunc not exists
                 .from(jsonbPathQueryTz(jsonField, SQLs::literal, path))
                 .as("func").parens("value")
                 .asQuery();

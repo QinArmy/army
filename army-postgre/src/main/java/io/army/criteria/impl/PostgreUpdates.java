@@ -866,6 +866,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
         private PostgreUpdateClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
             super(spec, context);
+            ContextStack.push(context);
         }
 
         @Override

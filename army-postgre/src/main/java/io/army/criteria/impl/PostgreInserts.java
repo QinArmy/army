@@ -62,7 +62,6 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
-     *
      */
     static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return new PrimaryInsertIntoClause();
@@ -71,7 +70,6 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is primary statement for multi-statement and don't support {@link io.army.meta.ChildTableMeta}.
-     *
      */
     static <I extends Item> PostgreInsert._ComplexOptionSpec<I> fromDispatcher(ArmyStmtSpec spec,
                                                                                Function<PrimaryStatement, I> function) {
@@ -81,7 +79,6 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is sub insert statement in dynamic with clause.
-     *
      */
     static <I extends Item> PostgreInsert._DynamicSubOptionSpec<I> dynamicSubInsert(
             CriteriaContext outContext, Function<SubStatement, I> function) {
@@ -91,7 +88,6 @@ abstract class PostgreInserts extends InsertSupports {
     /**
      * <p>
      * create new single-table INSERT statement that is sub insert statement in static with clause.
-     *
      */
     static <I extends Item> PostgreInsert._StaticSubOptionSpec<I> staticSubInsert(ArmyStmtSpec spec,
                                                                                   Function<SubStatement, I> function) {
@@ -946,7 +942,7 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public boolean isIgnorableConflict() {
             //true,Postgre support DO NOTHING and conflict_target and WHERE
-            return true;
+            return this.doNothing || this.updatePredicateList.size() > 0;
         }
 
         @Override

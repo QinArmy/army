@@ -127,7 +127,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
     @Override
     public final SimplePredicate or(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = _Collections.emptyList();
+        final List<IPredicate> list = _Collections.arrayList();
         consumer.accept(list::add);
         final SimplePredicate predicate;
         switch (list.size()) {

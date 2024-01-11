@@ -37,9 +37,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-                <annotationProcessors>
-                    io.army.modelgen.ArmyMetaModelDomainProcessor
-                </annotationProcessors>
+                <annotationProcessors>io.army.modelgen.ArmyMetaModelDomainProcessor</annotationProcessors>
             </configuration>
         </plugin>
     </plugins>

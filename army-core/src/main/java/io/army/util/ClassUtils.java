@@ -90,5 +90,31 @@ public abstract class ClassUtils {
         return clazz;
     }
 
+    public static boolean isWrapperClass(final Class<?> wrapperClass, final Class<?> primitiveClass) {
+        final boolean match;
+        if (primitiveClass == int.class) {
+            match = wrapperClass == Integer.class;
+        } else if (primitiveClass == long.class) {
+            match = wrapperClass == Long.class;
+        } else if (primitiveClass == boolean.class) {
+            match = wrapperClass == Boolean.class;
+        } else if (primitiveClass == short.class) {
+            match = wrapperClass == Short.class;
+        } else if (primitiveClass == byte.class) {
+            match = wrapperClass == Byte.class;
+        } else if (primitiveClass == double.class) {
+            match = wrapperClass == Double.class;
+        } else if (primitiveClass == float.class) {
+            match = wrapperClass == Float.class;
+        } else if (primitiveClass == char.class) {
+            match = wrapperClass == Character.class;
+        } else if (primitiveClass == void.class) {
+            match = wrapperClass == Void.class;
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
 
 }
