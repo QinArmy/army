@@ -71,12 +71,6 @@ public abstract class Postgres extends PostgreSyntax {
 
     public static final PassingOption BY_VALUE = PostgreWords.WordPassingOption.BY_VALUE;
 
-    public static final SQLs.NullOption NOT_NULL = SqlWords.KeyWordNotNull.NOT_NULL;
-
-    public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
-
-    public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
-
     public static final NullTreatMode RAISE_EXCEPTION = PostgreWords.NullTreatModeExpression.RAISE_EXCEPTION;
 
     public static final NullTreatMode USE_JSON_NULL = PostgreWords.NullTreatModeExpression.USE_JSON_NULL;

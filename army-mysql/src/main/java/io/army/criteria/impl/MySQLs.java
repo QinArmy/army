@@ -48,13 +48,7 @@ public abstract class MySQLs extends MySQLSyntax {
     public static final Modifier IGNORE = MySQLWords.MySQLModifier.IGNORE;
     public static final Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
     public static final Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
-    public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
-    public static final SQLs.WordExists EXISTS = SqlWords.KeyWordExists.EXISTS;
 
-    public static final SQLs.WordColumns COLUMNS = SqlWords.KeyWordColumns.COLUMNS;
-    public static final SQLs.WordNested NESTED = SqlWords.KeyWordNested.NESTED;
-    public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
-    public static final SQLs.WordError ERROR = SqlWords.KeyWordError.ERROR;
     public static final WordsAtTimeZone AT_TIME_ZONE = MySQLWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
 
 
@@ -64,7 +58,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see MySQLs#currentDate()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
      */
-    public static final Expression CURRENT_DATE = LiteralFunctions.noParensFunc("CURRENT_DATE", LocalDateType.INSTANCE);
+    public static final SimpleExpression CURRENT_DATE = LiteralFunctions.noParensFunc("CURRENT_DATE", LocalDateType.INSTANCE);
 
     /**
      * <p>The {@link MappingType} of function return type: {@link  LocalTimeType}
@@ -72,7 +66,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see MySQLs#currentTime()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_TIME()</a>
      */
-    public static final Expression CURRENT_TIME = LiteralFunctions.noParensFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
+    public static final SimpleExpression CURRENT_TIME = LiteralFunctions.noParensFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
 
     /**
      * <p>The {@link MappingType} of function return type: {@link  LocalDateTimeType}
@@ -80,7 +74,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see MySQLs#currentTimestamp()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_TIME()</a>
      */
-    public static final Expression CURRENT_TIMESTAMP = LiteralFunctions.noParensFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
+    public static final SimpleExpression CURRENT_TIMESTAMP = LiteralFunctions.noParensFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
 
 
     /**

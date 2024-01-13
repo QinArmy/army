@@ -19,7 +19,6 @@ package io.army.criteria.mysql;
 import io.army.criteria.Clause;
 import io.army.criteria.Statement;
 import io.army.criteria.TypeItem;
-import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.standard.SQLFunction;
 
@@ -113,7 +112,7 @@ public interface MySQLFunction extends SQLFunction {
 
         /**
          * @param name          column name
-         * @param forOrdinality see {@link MySQLs#FOR_ORDINALITY}
+         * @param forOrdinality see {@link SQLs#FOR_ORDINALITY}
          */
         _JsonTableColumnCommaClause comma(String name, SQLs.WordsForOrdinality forOrdinality);
 

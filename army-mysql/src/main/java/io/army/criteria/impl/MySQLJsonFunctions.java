@@ -1215,7 +1215,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                       <li>{@link Expression} instance</li>
      *                       <li>{@link String} instance. For example : {@code "$[*]"} is equivalent to {@code SQLs.literal(StringType.INSTANCE,"$[*]") }</li>
      *                 </ul>
-     * @param columns  see {@link MySQLs#COLUMNS}
+     * @param columns  see {@link SQLs#COLUMNS}
      * @param consumer the consumer can accept jsonTable static columns clause.
      * @throws CriteriaException throw when argument error
      * @see #jsonTable(Object, Object, SQLs.WordColumns, SQLs.SymbolSpace, Consumer) dynamic method
@@ -1272,7 +1272,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                       <li>{@link Expression} instance</li>
      *                       <li>{@link String} instance. For example : {@code "$[*]"} is equivalent to {@code SQLs.literal(StringType.INSTANCE,"$[*]") }</li>
      *                 </ul>
-     * @param columns  see {@link MySQLs#COLUMNS}
+     * @param columns  see {@link SQLs#COLUMNS}
      * @param space    see {@link SQLs#SPACE} for distinguishing both static method and dynamic method.
      * @param consumer the consumer can accept jsonTable dynamic columns clause.
      * @throws CriteriaException throw when argument error

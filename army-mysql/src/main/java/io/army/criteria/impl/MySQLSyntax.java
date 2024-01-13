@@ -16,9 +16,7 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.IPredicate;
-import io.army.criteria.LogicalPredicate;
-import io.army.criteria.SQLIdentifier;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
@@ -57,6 +55,43 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
             throw ContextStack.clearStackAndCriteriaError(m);
         }
         return SQLs._identifier(charsetName);
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/charset-mysql.html">Collation</a>
+     */
+    public static SimpleResultExpression collate(Expression expr, String collation) {
+        return Expressions.collateExp(expr, collation);
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/charset-mysql.html">String Literals</a>
+     */
+    public static DefiniteExpression textLiteral(String charsetName, String literal) {
+        return MySQLExpressions.textLiteral(charsetName, literal, null);
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-literals.html">String Literals</a>
+     */
+    public static DefiniteExpression textLiteral(String charsetName, String literal, SQLs.WordCollate collate, String collationName) {
+        ContextStack.assertNonNull(collationName);
+        return MySQLExpressions.textLiteral(charsetName, literal, collationName);
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-literals.html">String Literals</a>
+     */
+    public static DefiniteExpression encodingTextLiteral(String charsetName, TableField field, String literal) {
+        return MySQLExpressions.encodingTextLiteral(charsetName, field, literal, null);
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-literals.html">String Literals</a>
+     */
+    public static DefiniteExpression encodingTextLiteral(String charsetName, TableField field, String literal, SQLs.WordCollate collate, String collationName) {
+        ContextStack.assertNonNull(collationName);
+        return MySQLExpressions.encodingTextLiteral(charsetName, field, literal, collationName);
     }
 
     /*################################## blow join-order hint ##################################*/

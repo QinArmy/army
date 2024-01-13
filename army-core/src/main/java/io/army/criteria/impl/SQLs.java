@@ -159,11 +159,28 @@ public abstract class SQLs extends SQLSyntax {
 
 
     public static final QuantifiedWord SOME = SqlWords.QueryOperator.SOME;
+
     public static final QuantifiedWord ANY = SqlWords.QueryOperator.ANY;
 
     public static final IsComparisonWord DISTINCT_FROM = SqlWords.IsComparisonKeyWord.DISTINCT_FROM;
 
     public static final WordEscape ESCAPE = SqlWords.KeyWordEscape.ESCAPE;
+
+
+    public static final WordPath PATH = SqlWords.KeyWordPath.PATH;
+
+    public static final WordExists EXISTS = SqlWords.KeyWordExists.EXISTS;
+
+    public static final WordColumns COLUMNS = SqlWords.KeyWordColumns.COLUMNS;
+
+    public static final WordNested NESTED = SqlWords.KeyWordNested.NESTED;
+
+    public static final WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
+
+    public static final WordError ERROR = SqlWords.KeyWordError.ERROR;
+
+
+    public static final NullOption NOT_NULL = SqlWords.KeyWordNotNull.NOT_NULL;
 
     public static final WordsCharacterSet CHARACTER_SET = SqlWords.KeyWordsCharacterSet.CHARACTER_SET;
 
@@ -179,8 +196,6 @@ public abstract class SQLs extends SQLSyntax {
      */
     static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
 
-
-    static UnaryOperator<Item> ERROR_FUNC = SQLs::castCriteria;
 
     static final UnaryOperator<Select> SIMPLE_SELECT = SQLs::identity;
 

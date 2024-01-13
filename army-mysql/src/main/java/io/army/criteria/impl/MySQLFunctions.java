@@ -818,7 +818,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
         @Override
         public final ColumnEventClause spaceError() {
-            this.temp = MySQLs.ERROR;
+            this.temp = SQLs.ERROR;
             return this;
         }
 
@@ -862,8 +862,8 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
                 if (action == SQLs.NULL) {
                     sqlBuilder.append(_Constant.SPACE_NULL);
-                } else if (action == MySQLs.ERROR) {
-                    sqlBuilder.append(MySQLs.ERROR.spaceRender());
+                } else if (action == SQLs.ERROR) {
+                    sqlBuilder.append(SQLs.ERROR.spaceRender());
                 } else {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
                     if (action instanceof Expression) {
@@ -908,8 +908,8 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
                 if (action == SQLs.NULL) {
                     builder.append(_Constant.SPACE_NULL);
-                } else if (action == MySQLs.ERROR) {
-                    builder.append(MySQLs.ERROR.spaceRender());
+                } else if (action == SQLs.ERROR) {
+                    builder.append(SQLs.ERROR.spaceRender());
                 } else {
                     builder.append(_Constant.SPACE_DEFAULT)
                             .append(action);
@@ -1260,7 +1260,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             sqlBuilder.append(_Constant.SPACE);
             context.identifier(this.name, sqlBuilder);
-            sqlBuilder.append(MySQLs.FOR_ORDINALITY.spaceRender());
+            sqlBuilder.append(SQLs.FOR_ORDINALITY.spaceRender());
         }
 
         @Override
@@ -1268,7 +1268,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(MySQLs.FOR_ORDINALITY.spaceRender())
+                    .append(SQLs.FOR_ORDINALITY.spaceRender())
                     .toString();
         }
 
@@ -1319,9 +1319,9 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             }
 
             if (this.exists) {
-                sqlBuilder.append(MySQLs.EXISTS.spaceRender());
+                sqlBuilder.append(SQLs.EXISTS.spaceRender());
             }
-            sqlBuilder.append(MySQLs.PATH.spaceRender());
+            sqlBuilder.append(SQLs.PATH.spaceRender());
 
             final Object pathExp = this.pathExp;
             if (pathExp instanceof String) {
@@ -1349,10 +1349,10 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
                     .append(this.typeItem);
 
             if (this.exists) {
-                builder.append(MySQLs.EXISTS.spaceRender());
+                builder.append(SQLs.EXISTS.spaceRender());
             }
 
-            builder.append(MySQLs.PATH.spaceRender())
+            builder.append(SQLs.PATH.spaceRender())
                     .append(this.pathExp);
 
             final ColumnEventClause eventClause = this.eventClause;
@@ -1385,10 +1385,10 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             sqlBuilder.append(_Constant.SPACE)
-                    .append(MySQLs.NESTED.spaceRender());
+                    .append(SQLs.NESTED.spaceRender());
 
             if (this.path) {
-                sqlBuilder.append(MySQLs.PATH.spaceRender());
+                sqlBuilder.append(SQLs.PATH.spaceRender());
             }
             final Object pathExp = this.pathExp;
             if (pathExp instanceof String) {
@@ -1407,7 +1407,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         public String toString() {
             final StringBuilder builder = new StringBuilder();
             builder.append(_Constant.SPACE)
-                    .append(MySQLs.NESTED.spaceRender())
+                    .append(SQLs.NESTED.spaceRender())
                     .append(this.pathExp);
 
             JsonTableFunc.jsonTableColumnsToString(this.columnList, builder);
@@ -1746,7 +1746,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
          */
         private static void appendJsonTableColumns(final List<JsonTableColumn> columnList,
                                                    final StringBuilder sqlBuilder, final _SqlContext context) {
-            sqlBuilder.append(MySQLs.COLUMNS.spaceRender())
+            sqlBuilder.append(SQLs.COLUMNS.spaceRender())
                     .append(_Constant.LEFT_PAREN);
 
             final int columnSize = columnList.size();
@@ -1766,7 +1766,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
          */
         private static void jsonTableColumnsToString(final List<JsonTableColumn> columnList, final StringBuilder builder) {
 
-            builder.append(MySQLs.COLUMNS.spaceRender())
+            builder.append(SQLs.COLUMNS.spaceRender())
                     .append(_Constant.LEFT_PAREN);
 
             final int columnSize = columnList.size();

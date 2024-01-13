@@ -162,7 +162,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         return new NamedLiteral(name, (TableField) infer);
     }
 
-    private static CriteriaException nameHaveNoText() {
+    static CriteriaException nameHaveNoText() {
         return ContextStack.clearStackAndCriteriaError("name must have text for single-literal.");
     }
 

@@ -648,7 +648,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             } else if (nullOption == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
-            return this.onAdd(name, type, Postgres.PATH, null, wordDefault, defaultExp, nullOption);
+            return this.onAdd(name, type, SQLs.PATH, null, wordDefault, defaultExp, nullOption);
         }
 
         @Override
@@ -681,7 +681,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             if (nullOption == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
-            return this.onAdd(name, type, Postgres.PATH, null, SQLs.DEFAULT, null, nullOption);
+            return this.onAdd(name, type, SQLs.PATH, null, SQLs.DEFAULT, null, nullOption);
         }
 
         @Override
@@ -690,7 +690,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             if (defaultExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
-            return this.onAdd(name, type, Postgres.PATH, null, SQLs.DEFAULT, defaultExp, null);
+            return this.onAdd(name, type, SQLs.PATH, null, SQLs.DEFAULT, defaultExp, null);
         }
 
         @Override
@@ -699,12 +699,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             if (columnExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
-            return this.onAdd(name, type, Postgres.PATH, columnExp, SQLs.DEFAULT, null, null);
+            return this.onAdd(name, type, SQLs.PATH, columnExp, SQLs.DEFAULT, null, null);
         }
 
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type) {
-            return this.onAdd(name, type, Postgres.PATH, null, SQLs.DEFAULT, null, null);
+            return this.onAdd(name, type, SQLs.PATH, null, SQLs.DEFAULT, null, null);
         }
 
         @Override
@@ -713,7 +713,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (!_DialectUtils.isSimpleIdentifier(name)) {
                 throw CriteriaUtils.funcColumnNameIsNotSimpleIdentifier(this.outerContext, XMLTABLE, name);
-            } else if (forOrdinality != Postgres.FOR_ORDINALITY) {
+            } else if (forOrdinality != SQLs.FOR_ORDINALITY) {
                 throw CriteriaUtils.funcArgError(XMLTABLE, forOrdinality);
             }
             return this.onAddColumn(new XmlTableOrdinalityColumn(name));
@@ -785,7 +785,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw CriteriaUtils.funcColumnNameIsNotSimpleIdentifier(this.outerContext, XMLTABLE, name);
             } else if (type == null) {
                 throw ContextStack.nullPointer(this.outerContext);
-            } else if (path != Postgres.PATH) {
+            } else if (path != SQLs.PATH) {
                 throw CriteriaUtils.funcArgError(XMLTABLE, path);
             } else if (!(columnExp == null || columnExp instanceof OperationExpression)) {
                 throw CriteriaUtils.funcArgError(XMLTABLE, columnExp);
@@ -793,7 +793,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw CriteriaUtils.funcArgError(XMLTABLE, wordDefault);
             } else if (!(defaultExp == null || defaultExp instanceof OperationExpression)) {
                 throw CriteriaUtils.funcArgError(XMLTABLE, defaultExp);
-            } else if (!(nullOption == null || nullOption == SQLs.NULL || nullOption == Postgres.NOT_NULL)) {
+            } else if (!(nullOption == null || nullOption == SQLs.NULL || nullOption == SQLs.NOT_NULL)) {
                 throw CriteriaUtils.funcArgError(XMLTABLE, nullOption);
             }
             if (type instanceof MappingType.SqlArrayType && type.javaType() == Object.class) {
@@ -901,7 +901,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
             final ArmyExpression columnExp = this.columnExp, defaultExp = this.defaultExp;
             if (columnExp != null) {
-                sqlBuilder.append(Postgres.PATH.spaceRender());
+                sqlBuilder.append(SQLs.PATH.spaceRender());
                 columnExp.appendSql(sqlBuilder, context);
             }
 
@@ -932,7 +932,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             sqlBuilder.append(_Constant.SPACE);
 
             context.identifier(this.name, sqlBuilder);
-            sqlBuilder.append(Postgres.FOR_ORDINALITY.spaceRender());
+            sqlBuilder.append(SQLs.FOR_ORDINALITY.spaceRender());
 
         }
 
