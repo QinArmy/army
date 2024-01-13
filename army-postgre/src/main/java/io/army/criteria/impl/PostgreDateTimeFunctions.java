@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
+import io.army.criteria.SimpleExpression;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
 import io.army.type.Interval;
@@ -54,7 +55,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">clock_timestamp ( ) → timestamp with time zone</a>
      */
-    public static Expression clockTimestamp() {
+    public static SimpleExpression clockTimestamp() {
         return FunctionUtils.zeroArgFunc("CLOCK_TIMESTAMP", OffsetDateTimeType.INSTANCE);
     }
 
@@ -65,7 +66,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_time ( integer ) → time with time zone</a>
      */
-    public static Expression currentTime(Expression integer) {
+    public static SimpleExpression currentTime(Expression integer) {
         return FunctionUtils.oneArgFunc("CURRENT_TIME", integer, OffsetTimeType.INSTANCE);
     }
 
@@ -76,7 +77,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_timestamp ( integer ) → timestamp with time zone</a>
      */
-    public static Expression currentTimestamp(Expression integer) {
+    public static SimpleExpression currentTimestamp(Expression integer) {
         return FunctionUtils.oneArgFunc("CURRENT_TIMESTAMP", integer, OffsetDateTimeType.INSTANCE);
     }
 
@@ -87,7 +88,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_bin ( interval, timestamp, timestamp ) → timestamp</a>
      */
-    public static Expression dateBin(Expression interval, Expression timestamp1, Expression timestamp2) {
+    public static SimpleExpression dateBin(Expression interval, Expression timestamp1, Expression timestamp2) {
         return FunctionUtils.threeArgFunc("DATE_BIN", interval, timestamp1, timestamp2, LocalDateTimeType.INSTANCE);
     }
 
@@ -103,7 +104,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * date_part ( text, interval ) → double precision
      * </a>
      */
-    public static Expression datePart(final String field, final Expression source) {
+    public static SimpleExpression datePart(final String field, final Expression source) {
         final String name = "DATE_PART";
         try {
             PostgreWords.WordExtractTimeField.valueOf(field.toUpperCase(Locale.ROOT));
@@ -125,7 +126,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * date_part ( text, interval ) → double precision
      * </a>
      */
-    public static Expression datePart(Expression field, Expression source) {
+    public static SimpleExpression datePart(Expression field, Expression source) {
         return FunctionUtils.twoArgFunc("DATE_PART", field, source, DoubleType.INSTANCE);
     }
 
@@ -160,7 +161,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * date_trunc ( text, interval ) → interval
      * </a>
      */
-    public static Expression dateTrunc(String field, Expression source) {
+    public static SimpleExpression dateTrunc(String field, Expression source) {
         if (isErrorDateTruncField(field)) {
             throw errorDateTruncField(field);
         }
@@ -192,7 +193,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see #dateTrunc(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
      */
-    public static Expression dateTrunc(String field, Expression source, String timeZone) {
+    public static SimpleExpression dateTrunc(String field, Expression source, String timeZone) {
         if (PostgreDateTimeFunctions.isErrorDateTruncField(field)) {
             throw PostgreDateTimeFunctions.errorDateTruncField(field);
         }
@@ -213,7 +214,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * date_trunc ( text, interval ) → interval
      * </a>
      */
-    public static Expression dateTrunc(Expression field, Expression source) {
+    public static SimpleExpression dateTrunc(Expression field, Expression source) {
         return FunctionUtils.twoArgFunc("DATE_TRUNC", field, source,
                 _returnType(source, PostgreDateTimeFunctions::intervalOrDateTime)
         );
@@ -226,7 +227,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
      */
-    public static Expression dateTrunc(Expression field, Expression source, Expression timeZone) {
+    public static SimpleExpression dateTrunc(Expression field, Expression source, Expression timeZone) {
         return FunctionUtils.threeArgFunc("DATE_TRUNC", field, source, timeZone, OffsetDateTimeType.INSTANCE);
     }
 
@@ -239,7 +240,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * extract ( field from interval ) → numeric
      * </a>
      */
-    public static Expression extract(ExtractTimeField field, SQLs.WordFrom from, Expression timestampOrInterval) {
+    public static SimpleExpression extract(ExtractTimeField field, SQLs.WordFrom from, Expression timestampOrInterval) {
         final String name = "EXTRACT";
         if (!(field instanceof PostgreWords.WordExtractTimeField)) {
             throw CriteriaUtils.funcArgError(name, from);
@@ -256,7 +257,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_days ( interval ) → interval</a>
      */
-    public static Expression justifyDays(Expression exp) {
+    public static SimpleExpression justifyDays(Expression exp) {
         return FunctionUtils.oneArgFunc("JUSTIFY_DAYS", exp, IntervalType.from(Interval.class));
     }
 
@@ -267,7 +268,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_hours ( interval ) → interval</a>
      */
-    public static Expression justifyHours(Expression exp) {
+    public static SimpleExpression justifyHours(Expression exp) {
         return FunctionUtils.oneArgFunc("JUSTIFY_HOURS", exp, IntervalType.from(Interval.class));
     }
 
@@ -278,7 +279,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_interval ( interval ) → interval</a>
      */
-    public static Expression justifyInterval(Expression exp) {
+    public static SimpleExpression justifyInterval(Expression exp) {
         return FunctionUtils.oneArgFunc("JUSTIFY_INTERVAL", exp, IntervalType.from(Interval.class));
     }
 
@@ -290,7 +291,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see Postgres#LOCALTIME
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtime ( integer ) → time</a>
      */
-    public static Expression localtime(Expression integer) {
+    public static SimpleExpression localtime(Expression integer) {
         return FunctionUtils.oneArgFunc("LOCALTIME", integer, LocalTimeType.INSTANCE);
     }
 
@@ -302,7 +303,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see Postgres#LOCALTIMESTAMP
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtimestamp ( integer ) → timestamp</a>
      */
-    public static Expression localtimestamp(Expression integer) {
+    public static SimpleExpression localtimestamp(Expression integer) {
         return FunctionUtils.oneArgFunc("LOCALTIMESTAMP", integer, LocalDateTimeType.INSTANCE);
     }
 
@@ -313,7 +314,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_date ( year int, month int, day int ) → date</a>
      */
-    public static Expression makeDate(Expression year, Expression month, Expression day) {
+    public static SimpleExpression makeDate(Expression year, Expression month, Expression day) {
         return FunctionUtils.threeArgFunc("MAKE_DATE", year, month, day, LocalDateType.INSTANCE);
     }
 
@@ -329,7 +330,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years) {
+    public static SimpleExpression makeInterval(Expression years) {
         return FunctionUtils.oneNotationFunc("MAKE_INTERVAL",
                 PostgreDateTimeFunctions::isErrorMakeIntervalNotation,
                 years, IntervalType.from(Interval.class));
@@ -348,7 +349,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months) {
+    public static SimpleExpression makeInterval(Expression years, Expression months) {
         return FunctionUtils.twoNotationFunc("MAKE_INTERVAL",
                 PostgreDateTimeFunctions::isErrorMakeIntervalNotation,
                 years, months, IntervalType.from(Interval.class));
@@ -368,7 +369,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks) {
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks) {
         return FunctionUtils.threeNotationFunc("MAKE_INTERVAL",
                 PostgreDateTimeFunctions::isErrorMakeIntervalNotation,
                 years, months, weeks, IntervalType.from(Interval.class));
@@ -389,7 +390,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days) {
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days) {
         return FunctionUtils.fourNotationFunc("MAKE_INTERVAL",
                 PostgreDateTimeFunctions::isErrorMakeIntervalNotation,
                 years, months, weeks, days, IntervalType.from(Interval.class));
@@ -411,7 +412,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
                                                 Expression hours) {
         return FunctionUtils.fiveNotationFunc("MAKE_INTERVAL",
                 PostgreDateTimeFunctions::isErrorMakeIntervalNotation,
@@ -435,7 +436,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
                                                 Expression hours, Expression mins) {
         return FunctionUtils.sixNotationFunc("MAKE_INTERVAL",
                 PostgreDateTimeFunctions::isErrorMakeIntervalNotation,
@@ -460,7 +461,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
                                                 Expression hours, Expression mins, Expression secs) {
 
         return FunctionUtils.sevenNotationFunc("MAKE_INTERVAL",
@@ -476,7 +477,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_time ( hour int, min int, sec double precision ) → time</a>
      */
-    public static Expression makeTime(Expression hour, Expression min, Expression sec) {
+    public static SimpleExpression makeTime(Expression hour, Expression min, Expression sec) {
         return FunctionUtils.threeArgFunc("MAKE_TIME", hour, min, sec, LocalTimeType.INSTANCE);
     }
 
@@ -487,7 +488,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamp ( year int, month int, day int, hour int, min int, sec double precision ) → timestamp</a>
      */
-    public static Expression makeTimestamp(Expression year, Expression month, Expression day, Expression hour,
+    public static SimpleExpression makeTimestamp(Expression year, Expression month, Expression day, Expression hour,
                                                  Expression min, Expression sec) {
         return FunctionUtils.sixArgFunc("MAKE_TIMESTAMP", year, month, day, hour, min, sec, LocalDateTimeType.INSTANCE);
     }
@@ -499,7 +500,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamptz ( year int, month int, day int, hour int, min int, sec double precision [, timezone text ] ) → timestamp with time zone</a>
      */
-    public static Expression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
+    public static SimpleExpression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
                                                    Expression min, Expression sec) {
         return FunctionUtils.sixArgFunc("MAKE_TIMESTAMPTZ", year, month, day, hour, min, sec,
                 OffsetDateTimeType.INSTANCE);
@@ -512,7 +513,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamptz ( year int, month int, day int, hour int, min int, sec double precision [, timezone text ] ) → timestamp with time zone</a>
      */
-    public static Expression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
+    public static SimpleExpression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
                                                    Expression min, Expression sec, Expression timeZone) {
         return FunctionUtils.sevenArgFunc("MAKE_TIMESTAMPTZ",
                 year, month, day, hour, min, sec, timeZone,
@@ -526,7 +527,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">now ( ) → timestamp with time zone</a>
      */
-    public static Expression now() {
+    public static SimpleExpression now() {
         return FunctionUtils.zeroArgFunc("NOW", OffsetDateTimeType.INSTANCE);
     }
 
@@ -537,7 +538,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">statement_timestamp ( ) → timestamp with time zone</a>
      */
-    public static Expression statementTimestamp() {
+    public static SimpleExpression statementTimestamp() {
         return FunctionUtils.zeroArgFunc("STATEMENT_TIMESTAMP", OffsetDateTimeType.INSTANCE);
     }
 
@@ -548,7 +549,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">timeofday ( ) → text</a>
      */
-    public static Expression timeOfDay() {
+    public static SimpleExpression timeOfDay() {
         return FunctionUtils.zeroArgFunc("TIMEOFDAY", StringType.INSTANCE);
     }
 
@@ -559,7 +560,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">transaction_timestamp ( ) → timestamp with time zone</a>
      */
-    public static Expression transactionTimestamp() {
+    public static SimpleExpression transactionTimestamp() {
         return FunctionUtils.zeroArgFunc("TRANSACTION_TIMESTAMP", OffsetDateTimeType.INSTANCE);
     }
 
@@ -570,7 +571,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">to_timestamp ( double precision ) → timestamp with time zone</a>
      */
-    public static Expression toTimestamp(Expression exp) {
+    public static SimpleExpression toTimestamp(Expression exp) {
         return FunctionUtils.oneArgFunc("TO_TIMESTAMP", exp, OffsetDateTimeType.INSTANCE);
     }
 
@@ -581,7 +582,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep ( double precision )</a>
      */
-    public static Expression pgSleep(Expression seconds) {
+    public static SimpleExpression pgSleep(Expression seconds) {
         return FunctionUtils.oneArgFunc("PG_SLEEP", seconds, StringType.INSTANCE);
     }
 
@@ -592,7 +593,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_for ( interval )</a>
      */
-    public static Expression pgSleepFor(Expression interval) {
+    public static SimpleExpression pgSleepFor(Expression interval) {
         return FunctionUtils.oneArgFunc("PG_SLEEP_FOR", interval, StringType.INSTANCE);
     }
 
@@ -603,7 +604,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_until ( timestamp with time zone )</a>
      */
-    public static Expression pgSleepUntil(Expression timestampTz) {
+    public static SimpleExpression pgSleepUntil(Expression timestampTz) {
         return FunctionUtils.oneArgFunc("PG_SLEEP_UNTIL", timestampTz, StringType.INSTANCE);
     }
 

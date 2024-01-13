@@ -94,7 +94,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * This interface representing postgre aggregate function.
      *
      */
-    public interface _PostgreAggregateFunction<R extends Expression> extends Expression,
+    public interface _PostgreAggregateFunction<R extends Expression> extends SimpleExpression,
             _PgAggFuncFilterClause<R>,
             SQLFunction.AggregateFunction {
 

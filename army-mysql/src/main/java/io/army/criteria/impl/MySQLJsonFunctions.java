@@ -16,10 +16,7 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.Clause;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.SimplePredicate;
+import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.mapping.*;
@@ -52,7 +49,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static Expression jsonArray() {
+    public static SimpleExpression jsonArray() {
         return LiteralFunctions.zeroArgFunc("JSON_ARRAY", JsonType.TEXT);
     }
 
@@ -67,7 +64,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static Expression jsonArray(Object value) {
+    public static SimpleExpression jsonArray(Object value) {
         return LiteralFunctions.oneArgFunc("JSON_ARRAY", value, JsonType.TEXT);
     }
 
@@ -92,7 +89,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static Expression jsonArray(Object value1, Object value2, Object... variadic) {
+    public static SimpleExpression jsonArray(Object value1, Object value2, Object... variadic) {
         return LiteralFunctions.multiArgFunc("JSON_ARRAY", FuncExpUtils.twoAndVariadic(value1, value2, variadic), JsonType.TEXT);
     }
 
@@ -108,7 +105,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static Expression jsonArray(Consumer<Clause._VariadicSpaceClause> consumer) {
+    public static SimpleExpression jsonArray(Consumer<Clause._VariadicSpaceClause> consumer) {
         return LiteralFunctions.multiArgFunc("JSON_ARRAY", FuncExpUtils.variadicList(false, consumer), JsonType.TEXT);
     }
 
@@ -124,7 +121,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
      */
-    public static Expression jsonArray(SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
+    public static SimpleExpression jsonArray(SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
         return LiteralFunctions.multiArgFunc("JSON_ARRAY", FuncExpUtils.variadicList(false, consumer), JsonType.TEXT);
     }
 
@@ -133,7 +130,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    public static Expression jsonObject() {
+    public static SimpleExpression jsonObject() {
         return LiteralFunctions.zeroArgFunc("JSON_OBJECT", JsonType.TEXT);
     }
 
@@ -143,7 +140,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param expMap non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    public static Expression jsonObject(final Map<String, ?> expMap) {
+    public static SimpleExpression jsonObject(final Map<String, ?> expMap) {
         return LiteralFunctions.jsonMapFunc("JSON_OBJECT", expMap, JsonType.TEXT);
     }
 
@@ -154,7 +151,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    public static Expression jsonObject(final Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static SimpleExpression jsonObject(final Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return LiteralFunctions.multiArgFunc("JSON_OBJECT", FuncExpUtils.pariVariadicList(false, consumer), JsonType.TEXT);
     }
 
@@ -164,7 +161,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
-    public static Expression jsonObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static SimpleExpression jsonObject(SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return LiteralFunctions.multiArgFunc("JSON_OBJECT", FuncExpUtils.pariVariadicList(false, consumer), JsonType.TEXT);
     }
 
@@ -180,7 +177,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-quote">JSON_QUOTE(string)</a>
      */
-    public static Expression jsonQuote(final Object string) {
+    public static SimpleExpression jsonQuote(final Object string) {
         FuncExpUtils.assertTextExp(string);
         return LiteralFunctions.oneArgFunc("JSON_QUOTE", string, JsonType.TEXT);
     }
@@ -331,7 +328,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonExtract(Object, Object, Object, Object...)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
-    public static Expression jsonExtract(Object jsonDoc, Object path) {
+    public static SimpleExpression jsonExtract(Object jsonDoc, Object path) {
         FuncExpUtils.assertPathExp(path);
         return LiteralFunctions.twoArgFunc("JSON_EXTRACT", FuncExpUtils.jsonDocExp(jsonDoc), path, JsonType.TEXT);
     }
@@ -363,7 +360,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonExtract(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
-    public static Expression jsonExtract(Object jsonDoc, Object path1, Object path2, Object... pathVariadic) {
+    public static SimpleExpression jsonExtract(Object jsonDoc, Object path1, Object path2, Object... pathVariadic) {
         FuncExpUtils.assertPathExp(path1);
         FuncExpUtils.assertPathExp(path2);
 
@@ -391,7 +388,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonKeys(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
      */
-    public static Expression jsonKeys(final Object jsonDoc) {
+    public static SimpleExpression jsonKeys(final Object jsonDoc) {
         return LiteralFunctions.oneArgFunc("JSON_KEYS", FuncExpUtils.jsonDocExp(jsonDoc), JsonType.TEXT);
     }
 
@@ -412,7 +409,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonKeys(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
      */
-    public static Expression jsonKeys(final Object jsonDoc, final Object path) {
+    public static SimpleExpression jsonKeys(final Object jsonDoc, final Object path) {
         FuncExpUtils.assertPathExp(path);
         return LiteralFunctions.twoArgFunc("JSON_KEYS", FuncExpUtils.jsonDocExp(jsonDoc), path, JsonType.TEXT);
     }
@@ -462,7 +459,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonSearch(Object, Object, Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
-    public static Expression jsonSearch(final Object jsonDoc, final Object oneOrAll, final Object searchStr) {
+    public static SimpleExpression jsonSearch(final Object jsonDoc, final Object oneOrAll, final Object searchStr) {
         FuncExpUtils.assertTextExp(oneOrAll);
         FuncExpUtils.assertTextExp(searchStr);
         return LiteralFunctions.threeArgFunc("JSON_SEARCH", FuncExpUtils.jsonDocExp(jsonDoc),
@@ -496,7 +493,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonSearch(Object, Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
-    public static Expression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr, @Nullable Object escapeChar) {
+    public static SimpleExpression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr, @Nullable Object escapeChar) {
         FuncExpUtils.assertTextExp(oneOrAll);
         FuncExpUtils.assertTextExp(searchStr);
         if (escapeChar != null) {
@@ -545,7 +542,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonSearch(Object, Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
-    public static Expression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr,
+    public static SimpleExpression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr,
                                               @Nullable Object escapeChar, final Object path) {
         FuncExpUtils.assertTextExp(oneOrAll);
         FuncExpUtils.assertTextExp(searchStr);
@@ -607,7 +604,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonSearch(Object, Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
-    public static Expression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr,
+    public static SimpleExpression jsonSearch(final Object jsonDoc, Object oneOrAll, Object searchStr,
                                               @Nullable Object escapeChar, Object path1, Object path2,
                                               Object... pathVariadic) {
         FuncExpUtils.assertTextExp(oneOrAll);
@@ -652,7 +649,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
-    public static Expression jsonValue(final Object jsonDoc, final Object path) {
+    public static SimpleExpression jsonValue(final Object jsonDoc, final Object path) {
         FuncExpUtils.assertPathExp(path);
         return LiteralFunctions.twoArgFunc("JSON_VALUE", FuncExpUtils.jsonDocExp(jsonDoc), path, JsonType.TEXT);
     }
@@ -689,7 +686,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
-    public static Expression jsonValue(final Object jsonDoc, final Object path,
+    public static SimpleExpression jsonValue(final Object jsonDoc, final Object path,
                                              final Consumer<MySQLFunction._JsonValueReturningSpec> consumer) {
         return MySQLFunctions.jsonValueFunc(jsonDoc, path, consumer);
     }
@@ -711,7 +708,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-append">JSON_ARRAY_APPEND(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonArrayAppend(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static SimpleExpression jsonArrayAppend(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_ARRAY_APPEND", jsonDoc, consumer);
     }
 
@@ -728,7 +725,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-append">JSON_ARRAY_APPEND(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonArrayAppend(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static SimpleExpression jsonArrayAppend(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_ARRAY_APPEND", jsonDoc, consumer);
     }
 
@@ -745,7 +742,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-insert">JSON_ARRAY_INSERT(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonArrayInsert(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static SimpleExpression jsonArrayInsert(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_ARRAY_INSERT", jsonDoc, consumer);
     }
 
@@ -763,7 +760,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-insert">JSON_ARRAY_INSERT(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonArrayInsert(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static SimpleExpression jsonArrayInsert(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_ARRAY_INSERT", jsonDoc, consumer);
     }
 
@@ -780,7 +777,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-insert">JSON_INSERT(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonInsert(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static SimpleExpression jsonInsert(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_INSERT", jsonDoc, consumer);
     }
 
@@ -798,7 +795,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-insert">JSON_INSERT(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonInsert(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static SimpleExpression jsonInsert(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_INSERT", jsonDoc, consumer);
     }
 
@@ -815,7 +812,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-replace">JSON_REPLACE(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonReplace(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static SimpleExpression jsonReplace(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_REPLACE", jsonDoc, consumer);
     }
 
@@ -832,7 +829,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-replace">JSON_REPLACE(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonReplace(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static SimpleExpression jsonReplace(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_REPLACE", jsonDoc, consumer);
     }
 
@@ -848,7 +845,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-set">JSON_SET(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonSet(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
+    public static SimpleExpression jsonSet(final Object jsonDoc, Consumer<Clause._PairVariadicSpaceClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_SET", jsonDoc, consumer);
     }
 
@@ -865,7 +862,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param consumer non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-set">JSON_SET(json_doc, path, val[, path, val] ...)</a>
      */
-    public static Expression jsonSet(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
+    public static SimpleExpression jsonSet(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._PairVariadicConsumerClause> consumer) {
         return _jsonDocAndPairVariadic("JSON_SET", jsonDoc, consumer);
     }
 
@@ -891,7 +888,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge">JSON_MERGE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMerge(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
+    public static SimpleExpression jsonMerge(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
         return _jsonMergeOperationFunction("JSON_MERGE", jsonDoc1, jsonDoc2, variadic);
     }
 
@@ -906,7 +903,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                    </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge">JSON_MERGE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMerge(final List<?> jsonDocList) {
+    public static SimpleExpression jsonMerge(final List<?> jsonDocList) {
         return _jsonMergeList("JSON_MERGE", jsonDocList);
     }
 
@@ -931,7 +928,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-preserve">JSON_MERGE_PRESERVE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMergePreserve(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
+    public static SimpleExpression jsonMergePreserve(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
         return _jsonMergeOperationFunction("JSON_MERGE_PRESERVE", jsonDoc1, jsonDoc2, variadic);
     }
 
@@ -946,7 +943,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                    </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-preserve">JSON_MERGE_PRESERVE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMergePreserve(final List<?> jsonDocList) {
+    public static SimpleExpression jsonMergePreserve(final List<?> jsonDocList) {
         return _jsonMergeList("JSON_MERGE_PRESERVE", jsonDocList);
     }
 
@@ -970,7 +967,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                 </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMergePatch(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
+    public static SimpleExpression jsonMergePatch(final Object jsonDoc1, final Object jsonDoc2, Object... variadic) {
         return _jsonMergeOperationFunction("JSON_MERGE_PATCH", jsonDoc1, jsonDoc2, variadic);
     }
 
@@ -987,7 +984,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMergePatch(final List<?> jsonDocList) {
+    public static SimpleExpression jsonMergePatch(final List<?> jsonDocList) {
         return _jsonMergeList("JSON_MERGE_PATCH", jsonDocList);
     }
 
@@ -1007,7 +1004,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
      */
-    public static Expression jsonRemove(final Object jsonDoc, Object path) {
+    public static SimpleExpression jsonRemove(final Object jsonDoc, Object path) {
         FuncExpUtils.assertPathExp(path);
 
         final Expression jsonDocExp;
@@ -1036,7 +1033,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
      */
-    public static Expression jsonRemove(final Object jsonDoc, Object path, Object... pathVariadic) {
+    public static SimpleExpression jsonRemove(final Object jsonDoc, Object path, Object... pathVariadic) {
         FuncExpUtils.assertPathExp(path);
 
         final Expression jsonDocExp;
@@ -1063,7 +1060,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
      */
-    public static Expression jsonRemove(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
+    public static SimpleExpression jsonRemove(final Object jsonDoc, SQLs.SymbolSpace space, Consumer<Clause._VariadicConsumer> consumer) {
         final Expression jsonDocExp;
         jsonDocExp = FuncExpUtils.jsonDocExp(jsonDoc);
 
@@ -1088,7 +1085,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-unquote">JSON_UNQUOTE(json_val)</a>
      */
-    public static Expression jsonUnquote(final Object jsonVal) {
+    public static SimpleExpression jsonUnquote(final Object jsonVal) {
         return LiteralFunctions.oneArgFunc("JSON_UNQUOTE", FuncExpUtils.jsonDocExp(jsonVal), StringType.INSTANCE);
     }
 
@@ -1102,7 +1099,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
      */
-    public static Expression jsonDepth(final Object jsonDoc) {
+    public static SimpleExpression jsonDepth(final Object jsonDoc) {
         return LiteralFunctions.oneArgFunc("JSON_DEPTH", FuncExpUtils.jsonDocExp(jsonDoc), IntegerType.INSTANCE);
     }
 
@@ -1117,7 +1114,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *                </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
-    public static Expression jsonLength(final Object jsonDoc) {
+    public static SimpleExpression jsonLength(final Object jsonDoc) {
         return LiteralFunctions.oneArgFunc("JSON_LENGTH", FuncExpUtils.jsonDocExp(jsonDoc), IntegerType.INSTANCE);
     }
 
@@ -1138,7 +1135,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
-    public static Expression jsonLength(Object jsonDoc, Object path) {
+    public static SimpleExpression jsonLength(Object jsonDoc, Object path) {
         FuncExpUtils.assertPathExp(path);
         return LiteralFunctions.twoArgFunc("JSON_LENGTH", FuncExpUtils.jsonDocExp(jsonDoc), path, IntegerType.INSTANCE);
     }
@@ -1154,7 +1151,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-type">JSON_TYPE(json_val)</a>
      */
-    public static Expression jsonType(final Object jsonVal) {
+    public static SimpleExpression jsonType(final Object jsonVal) {
         return LiteralFunctions.oneArgFunc("JSON_TYPE", FuncExpUtils.jsonDocExp(jsonVal), StringType.INSTANCE);
     }
 
@@ -1298,7 +1295,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonMergePreserve(Object, Object, Object...)
      * @see #jsonMergePatch(Object, Object, Object...)
      */
-    private static Expression _jsonMergeOperationFunction(final String name, final Object jsonDoc1,
+    private static SimpleExpression _jsonMergeOperationFunction(final String name, final Object jsonDoc1,
                                                                 final Object jsonDoc2, Object... jsonDocArray) {
         final Expression jsonDocExp;
         jsonDocExp = FuncExpUtils.jsonDocExp(jsonDoc1);
@@ -1315,7 +1312,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /**
      * @see #jsonMerge(List)
      */
-    private static Expression _jsonMergeList(final String name, final List<?> jsonDocList) {
+    private static SimpleExpression _jsonMergeList(final String name, final List<?> jsonDocList) {
         final int size;
         if ((size = jsonDocList.size()) < 2) {
             throw CriteriaUtils.funcArgError(name, jsonDocList);
@@ -1339,7 +1336,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonInsert(Object, Consumer)
      * @see #jsonInsert(Object, SQLs.SymbolSpace, Consumer)
      */
-    private static Expression _jsonDocAndPairVariadic(final String name, final Object jsonDoc,
+    private static SimpleExpression _jsonDocAndPairVariadic(final String name, final Object jsonDoc,
                                                             Consumer<? super FuncExpUtils.PairVariadicClause> consumer) {
         final Expression jsonDocExpr;
         jsonDocExpr = FuncExpUtils.jsonDocExp(jsonDoc);

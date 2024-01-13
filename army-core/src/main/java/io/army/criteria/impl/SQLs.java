@@ -360,6 +360,18 @@ public abstract class SQLs extends SQLSyntax {
         return SQLs.literalValue(value);
     }
 
+    static Expression _nullableLiteral(final @Nullable Object value) {
+        final Expression expression;
+        if (value == null) {
+            expression = SQLs.NULL;
+        } else if (value instanceof Expression) {
+            expression = (Expression) value;
+        } else {
+            expression = SQLs.literalValue(value);
+        }
+        return expression;
+    }
+
 
     /**
      * <p>
@@ -547,7 +559,6 @@ public abstract class SQLs extends SQLSyntax {
     public interface WordContent extends DocumentValueOption {
 
     }
-
 
 
     public interface _ArrayConstructorSpec extends ArrayExpression {

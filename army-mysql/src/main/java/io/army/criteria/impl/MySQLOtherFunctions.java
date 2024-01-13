@@ -28,8 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * <p>
- * Package class ,This class is MySQL function utils for application developer.
+ * <p>Package class ,This class is MySQL function utils for application developer.
  *
  * @since 0.6.0
  */
@@ -49,30 +48,29 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
-     *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
-     *          <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
-     *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
-     *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
+     *     <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
+     *     <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
+     *     <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
+     *     <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
+     *     <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
+     * </ul>
      *
      * @param exp  non-null {@link Expression}
      * @param as   {@link SQLs#AS}
@@ -82,7 +80,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast">CAST(expr AS type [ARRAY])</a>
      */
-    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type) {
+    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type) {
         assert as == SQLs.AS;
         final List<Object> argList = new ArrayList<>(3);
         argList.add(exp);
@@ -94,30 +92,29 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
-     *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
-     *          <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
-     *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
-     *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
-     *      </ul>
-     *
+     * <ul>
+     *     <li>If type is {@link MySQLCastType#BINARY }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
+     *     <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
+     *     <li>Else if type is {@link MySQLCastType#SIGNED }then {@link LongType}</li>
+     *     <li>Else if type is {@link MySQLCastType#UNSIGNED }then {@link UnsignedBigIntegerType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
+     *     <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
+     *     <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
+     *     <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
+     *     <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
+     *     <li>Else if type is {@link MySQLCastType#Point }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#LineString }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#Polygon }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link VarBinaryType}</li>
+     *     <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link VarBinaryType}</li>
+     * </ul>
      *
      * @param exp  non-null {@link Expression}
      * @param as   {@link SQLs#AS}
@@ -137,7 +134,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS type)</a>
      */
-    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
+    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
             , final Expression n) {
         assert as == SQLs.AS;
         final String funcName = "CAST";
@@ -170,18 +167,18 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
         return FunctionUtils.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
-    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
+    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , final Expression n, SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         Objects.requireNonNull(n);
         return _castToChar(exp, as, charType, n, characterSet, charset);
     }
 
-    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
+    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , final int n, SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         return _castToChar(exp, as, charType, SQLs.literal(IntegerType.INSTANCE, n), characterSet, charset);
     }
 
-    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
+    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , SQLs.WordsCharacterSet characterSet, SQLElement charset) {
         return _castToChar(exp, as, charType, null, characterSet, charset);
     }
@@ -190,7 +187,6 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BigDecimalType}
-     *
      *
      * @param exp  non-null  {@link Expression}
      * @param as   {@link SQLs#AS}
@@ -202,7 +198,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS DECIMAL(M,D))</a>
      */
-    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
+    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
             , final Expression m, final Expression d) {
         assert as == SQLs.AS;
         final String funcName = "CAST";
@@ -231,7 +227,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
         return FunctionUtils.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
-    public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
+    public static SimpleExpression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType type
             , final int m, final int d) {
         return cast(exp, as, type, SQLs.literal(IntegerType.INSTANCE, m), SQLs.literal(IntegerType.INSTANCE, d));
     }
@@ -240,7 +236,6 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
      *
-     *
      * @param timestampValue    non-null {@link Expression}
      * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
      * @param timezoneSpecifier non-null
@@ -248,7 +243,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static Expression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static SimpleExpression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime) {
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime, null);
     }
@@ -257,7 +252,6 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
      *
-     *
      * @param timestampValue    non-null {@link Expression}
      * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
      * @param timezoneSpecifier non-null
@@ -265,7 +259,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static Expression cast(Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static SimpleExpression cast(Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime, Expression precision) {
         Objects.requireNonNull(precision);
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime, precision);
@@ -276,7 +270,6 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
      *
-     *
      * @param timestampValue    non-null {@link Expression}
      * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
      * @param timezoneSpecifier non-null
@@ -284,7 +277,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static Expression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static SimpleExpression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime, int precision) {
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime
                 , SQLs.literal(IntegerType.INSTANCE, precision));
@@ -323,7 +316,7 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_convert">CONVERT(expr USING transcoding_name)</a>
      */
-    public static Expression convert(final Expression exp, SQLs.WordUsing using, final SQLElement transcodingName) {
+    public static SimpleExpression convert(final Expression exp, SQLs.WordUsing using, final SQLElement transcodingName) {
         assert using == SQLs.USING;
         final String name = "CONVERT";
         if (!(transcodingName instanceof MySQLCharset || transcodingName instanceof SQLIdentifier)) {
@@ -344,12 +337,11 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link IntegerType}
      *
-     *
      * @param n nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count">BIT_COUNT(N)</a>
      */
-    public static Expression bitCount(final Expression n) {
+    public static SimpleExpression bitCount(final Expression n) {
         return FunctionUtils.oneArgFunc("BIT_COUNT", n, IntegerType.INSTANCE);
     }
 
@@ -358,30 +350,31 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
     /*-------------------below Flow Control Functions-------------------*/
 
 
-
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link  MappingType} of expr1
-     *
+     * <p>The {@link MappingType} of function return type: the {@link  MappingType} of expr1
      *
      * @throws CriteriaException throw when any arg is multi-value expression
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
      */
-    public static Expression ifFunc(final Expression predicate, final Expression expr1, final Expression expr2) {
-        return LiteralFunctions.threeArgFunc("IF", predicate, expr1, expr2, expr1.typeMeta());
+    public static SimpleExpression ifFunc(final Expression predicate, final @Nullable Object expr1, final @Nullable Object expr2) {
+        final Expression expression1, expression2;
+        expression1 = SQLs._nullableLiteral(expr1);
+        expression2 = SQLs._nullableLiteral(expr2);
+
+
+        return LiteralFunctions.threeArgFunc("IF", predicate, expression1, expression2, expression1.typeMeta());
     }
 
 
+
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link  MappingType} of expr1
-     *
+     * <p>The {@link MappingType} of function return type: the {@link  MappingType} of expr1
      *
      * @throws CriteriaException throw when any arg is multi-value expression
-     * @see #ifFunc(Expression, Expression, Expression)
+     * @see #ifFunc(Expression, Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
      */
-    public static Expression ifNull(final Expression expr1, final Expression expr2) {
+    public static SimpleExpression ifNull(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("IFNULL", expr1, expr2, expr1.typeMeta());
     }
 

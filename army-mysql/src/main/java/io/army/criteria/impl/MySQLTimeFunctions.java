@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
+import io.army.criteria.SimpleExpression;
 import io.army.criteria.SqlValueParam;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
@@ -67,7 +68,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addDate(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,INTERVAL expr unit)</a>
      */
-    public static Expression addDate(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
+    public static SimpleExpression addDate(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
         return _dateIntervalFunc("ADDDATE", date, interval, expr, unit);
     }
 
@@ -90,7 +91,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,days)</a>
      */
-    public static Expression addDate(Object date, final Object days) {
+    public static SimpleExpression addDate(Object date, final Object days) {
         date = FuncExpUtils.localDateLiteralExp(date);
         FuncExpUtils.assertIntExp(days);
         return LiteralFunctions.twoArgFunc("ADDDATE", date, days, LocalDateType.INSTANCE);
@@ -118,7 +119,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #subDate(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(date,INTERVAL expr unit)</a>
      */
-    public static Expression subDate(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
+    public static SimpleExpression subDate(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
         return _dateIntervalFunc("SUBDATE", date, interval, expr, unit);
     }
 
@@ -140,7 +141,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #subDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(expr,days)</a>
      */
-    public static Expression subDate(Object date, final Object days) {
+    public static SimpleExpression subDate(Object date, final Object days) {
         date = FuncExpUtils.localDateLiteralExp(date);
         FuncExpUtils.assertIntExp(days);
         return LiteralFunctions.twoArgFunc("SUBDATE", date, days, LocalDateType.INSTANCE);
@@ -177,7 +178,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_addtime">ADDTIME(expr1,expr2)</a>
      */
-    public static Expression addTime(Object expr1, final Object expr2) {
+    public static SimpleExpression addTime(Object expr1, final Object expr2) {
         return _addOrSubTime("ADDTIME", expr1, expr2);
     }
 
@@ -213,7 +214,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subtime">SUBTIME(expr1,expr2)</a>
      */
-    public static Expression subTime(Object expr1, Object expr2) {
+    public static SimpleExpression subTime(Object expr1, Object expr2) {
         return _addOrSubTime("SUBTIME", expr1, expr2);
     }
 
@@ -241,7 +242,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_convert-tz">CONVERT_TZ(dt,from_tz,to_tz)</a>
      */
-    public static Expression convertTz(Object dt, final Object fromTz, final Object toTz) {
+    public static SimpleExpression convertTz(Object dt, final Object fromTz, final Object toTz) {
         dt = FuncExpUtils.localOffsetDateTimeLiteralExp(dt);
         FuncExpUtils.assertTextExp(fromTz);
         FuncExpUtils.assertTextExp(toTz);
@@ -254,7 +255,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see MySQLs#CURRENT_DATE
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
      */
-    public static Expression currentDate() {
+    public static SimpleExpression currentDate() {
         return LiteralFunctions.zeroArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
     }
 
@@ -264,7 +265,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see MySQLs#CURRENT_TIME
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME()</a>
      */
-    public static Expression currentTime() {
+    public static SimpleExpression currentTime() {
         return LiteralFunctions.zeroArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
     }
 
@@ -279,7 +280,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME(fsp)</a>
      */
-    public static Expression currentTime(final Object fsp) {
+    public static SimpleExpression currentTime(final Object fsp) {
         FuncExpUtils.assertIntExp(fsp);
         return LiteralFunctions.oneArgFunc("CURRENT_TIME", fsp, LocalTimeType.INSTANCE);
     }
@@ -292,7 +293,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see MySQLs#CURRENT_TIMESTAMP
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-timestamp">CURRENT_TIMESTAMP()</a>
      */
-    public static Expression currentTimestamp() {
+    public static SimpleExpression currentTimestamp() {
         return LiteralFunctions.zeroArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
@@ -309,7 +310,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #currentTimestamp()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIMESTAMP(fsp)</a>
      */
-    public static Expression currentTimestamp(final Object fsp) {
+    public static SimpleExpression currentTimestamp(final Object fsp) {
         FuncExpUtils.assertIntExp(fsp);
         return LiteralFunctions.oneArgFunc("CURRENT_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
     }
@@ -330,7 +331,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date">DATE(expr)</a>
      */
-    public static Expression date(Object expr) {
+    public static SimpleExpression date(Object expr) {
         expr = mysqlTimeTypeLiteralExp(expr);
         if (expr instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -362,7 +363,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_datediff">DATEDIFF(expr1,expr2)</a>
      */
-    public static Expression dateDiff(Object expr1, Object expr2) {
+    public static SimpleExpression dateDiff(Object expr1, Object expr2) {
         expr1 = mysqlTimeTypeLiteralExp(expr1);
         if (expr1 instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -402,7 +403,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_ADD(date,INTERVAL expr unit)</a>
      */
-    public static Expression dateAdd(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
+    public static SimpleExpression dateAdd(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
         return _dateAddOrSub("DATE_ADD", date, interval, expr, unit);
     }
 
@@ -434,7 +435,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_SUB(date,INTERVAL expr unit)</a>
      */
-    public static Expression dateSub(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
+    public static SimpleExpression dateSub(Object date, SQLs.WordInterval interval, Object expr, MySQLTimeUnit unit) {
         return _dateAddOrSub("DATE_SUB", date, interval, expr, unit);
     }
 
@@ -460,7 +461,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #timeFormat(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-format">DATE_FORMAT(date,format)</a>
      */
-    public static Expression dateFormat(Object date, final Object format) {
+    public static SimpleExpression dateFormat(Object date, final Object format) {
         date = mysqlTimeTypeLiteralExp(date);
         FuncExpUtils.assertTextExp(format);
         return LiteralFunctions.twoArgFunc("DATE_FORMAT", date, format, StringType.INSTANCE);
@@ -481,7 +482,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofmonth">DAYOFMONTH(date)</a>
      */
-    public static Expression dayOfMonth(Object date) {
+    public static SimpleExpression dayOfMonth(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -525,7 +526,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayname">DAYNAME(date)</a>
      */
-    public static Expression dayName(Object date) {
+    public static SimpleExpression dayName(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -570,7 +571,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #weekDay(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofweek">DAYOFYEAR(date)</a>
      */
-    public static Expression dayOfWeek(Object date) {
+    public static SimpleExpression dayOfWeek(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -593,7 +594,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofyear">DAYOFYEAR(date)</a>
      */
-    public static Expression dayOfYear(Object date) {
+    public static SimpleExpression dayOfYear(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -618,7 +619,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_extract">EXTRACT(date)</a>
      */
-    public static Expression extract(final MySQLTimeUnit unit, final SQLs.WordFrom from, Object date) {
+    public static SimpleExpression extract(final MySQLTimeUnit unit, final SQLs.WordFrom from, Object date) {
         FuncExpUtils.assertWord(from, SQLs.FROM);
         ContextStack.assertNonNull(unit);
 
@@ -639,7 +640,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-days">FROM_DAYS(date)</a>
      */
-    public static Expression fromDays(Object n) {
+    public static SimpleExpression fromDays(Object n) {
         FuncExpUtils.assertIntExp(n);
         return LiteralFunctions.oneArgFunc("FROM_DAYS", n, LocalDateType.INSTANCE);
     }
@@ -664,7 +665,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #fromUnixTime(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-unixtime">FROM_UNIXTIME(unix_timestamp[,format])</a>
      */
-    public static Expression fromUnixTime(Object unixTimestamp) {
+    public static SimpleExpression fromUnixTime(Object unixTimestamp) {
         if (unixTimestamp instanceof String && ((String) unixTimestamp).indexOf(':') > 0) {
             unixTimestamp = mysqlTimeTypeLiteralExp(unixTimestamp);
         }
@@ -698,7 +699,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #fromUnixTime(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-unixtime">FROM_UNIXTIME(unix_timestamp[,format])</a>
      */
-    public static Expression fromUnixTime(Object unixTimestamp, final Object format) {
+    public static SimpleExpression fromUnixTime(Object unixTimestamp, final Object format) {
         if (unixTimestamp instanceof String && ((String) unixTimestamp).indexOf(':') > 0) {
             unixTimestamp = mysqlTimeTypeLiteralExp(unixTimestamp);
         }
@@ -723,7 +724,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_get-format">GET_FORMAT({DATE|TIME|DATETIME}, {'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'})</a>
      */
-    public static Expression getFormat(final MySQLType type, final Object format) {
+    public static SimpleExpression getFormat(final MySQLType type, final Object format) {
         final String name = "GET_FORMAT";
         switch (type) {
             case TIME:
@@ -752,7 +753,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_hour">HOUR(time)</a>
      */
-    public static Expression hour(Object time) {
+    public static SimpleExpression hour(Object time) {
         time = mysqlTimeTypeLiteralExp(time);
         return LiteralFunctions.oneArgFunc("HOUR", time, IntegerType.INSTANCE);
     }
@@ -771,7 +772,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_last-day">LAST_DAY(date)</a>
      */
-    public static Expression lastDay(Object date) {
+    public static SimpleExpression lastDay(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -786,7 +787,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #now(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
-    public static Expression now() {
+    public static SimpleExpression now() {
         return LiteralFunctions.zeroArgFunc("NOW", LocalDateTimeType.INSTANCE);
     }
 
@@ -802,7 +803,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #now()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
-    public static Expression now(Object fsp) {
+    public static SimpleExpression now(Object fsp) {
         FuncExpUtils.assertIntExp(fsp);
         return LiteralFunctions.oneArgFunc("NOW", fsp, LocalDateTimeType.INSTANCE);
     }
@@ -813,7 +814,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #sysDate(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
-    public static Expression sysDate() {
+    public static SimpleExpression sysDate() {
         return LiteralFunctions.zeroArgFunc("SYSDATE", LocalDateTimeType.INSTANCE);
     }
 
@@ -829,7 +830,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #sysDate()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
-    public static Expression sysDate(final Object fsp) {
+    public static SimpleExpression sysDate(final Object fsp) {
         FuncExpUtils.assertIntExp(fsp);
         return LiteralFunctions.oneArgFunc("SYSDATE", fsp, LocalDateTimeType.INSTANCE);
     }
@@ -849,7 +850,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #timestamp(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr)</a>
      */
-    public static Expression timestamp(Object expr) {
+    public static SimpleExpression timestamp(Object expr) {
         expr = mysqlTimeTypeLiteralExp(expr);
         if (expr instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -879,7 +880,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #timestamp(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr1,expr2)</a>
      */
-    public static Expression timestamp(Object expr1, Object expr2) {
+    public static SimpleExpression timestamp(Object expr1, Object expr2) {
         expr1 = mysqlTimeTypeLiteralExp(expr1);
         if (expr1 instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -916,7 +917,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestampadd">TIMESTAMPADD(unit,interval,datetime_expr)</a>
      */
-    public static Expression timestampAdd(final MySQLTimeUnit unit, final Object interval, Object datetimeExpr) {
+    public static SimpleExpression timestampAdd(final MySQLTimeUnit unit, final Object interval, Object datetimeExpr) {
         ContextStack.assertNonNull(unit);
         FuncExpUtils.assertIntExp(interval);
 
@@ -979,7 +980,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestampdiff">TIMESTAMPDIFF(unit,datetime_expr1,datetime_expr2)</a>
      */
-    public static Expression timestampDiff(final MySQLTimeUnit unit, Object datetimeExpr1, Object datetimeExpr2) {
+    public static SimpleExpression timestampDiff(final MySQLTimeUnit unit, Object datetimeExpr1, Object datetimeExpr2) {
         ContextStack.assertNonNull(unit);
         datetimeExpr1 = mysqlTimeTypeLiteralExp(datetimeExpr1);
         datetimeExpr2 = mysqlTimeTypeLiteralExp(datetimeExpr2);
@@ -1010,7 +1011,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #dateFormat(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time-format">TIME_FORMAT(time,format)</a>
      */
-    public static Expression timeFormat(Object time, final Object format) {
+    public static SimpleExpression timeFormat(Object time, final Object format) {
         time = FuncExpUtils.localTimeLiteralExp(time);
         FuncExpUtils.assertTextExp(format);
         return LiteralFunctions.twoArgFunc("TIME_FORMAT", time, format, StringType.INSTANCE);
@@ -1028,7 +1029,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-days">TO_DAYS(date)</a>
      */
-    public static Expression toDays(Object date) {
+    public static SimpleExpression toDays(Object date) {
         date = FuncExpUtils.localDateLiteralExp(date);
         return LiteralFunctions.oneArgFunc("TO_DAYS", date, IntegerType.INSTANCE);
     }
@@ -1048,7 +1049,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-seconds">TO_SECONDS(expr)</a>
      */
-    public static Expression toSeconds(Object expr) {
+    public static SimpleExpression toSeconds(Object expr) {
         expr = mysqlTimeTypeLiteralExp(expr);
         if (expr instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1061,7 +1062,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP()</a>
      */
-    public static Expression unixTimestamp() {
+    public static SimpleExpression unixTimestamp() {
         return LiteralFunctions.zeroArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
     }
 
@@ -1080,7 +1081,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP(date)</a>
      */
-    public static Expression unixTimestamp(Object date) {
+    public static SimpleExpression unixTimestamp(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1093,7 +1094,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-date">UTC_DATE()</a>
      */
-    public static Expression utcDate() {
+    public static SimpleExpression utcDate() {
         return LiteralFunctions.zeroArgFunc("UTC_DATE", LocalDateType.INSTANCE);
     }
 
@@ -1102,7 +1103,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME()</a>
      */
-    public static Expression utcTime() {
+    public static SimpleExpression utcTime() {
         return LiteralFunctions.zeroArgFunc("UTC_DATE", LocalTimeType.INSTANCE);
     }
 
@@ -1117,7 +1118,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME(fsp)</a>
      */
-    public static Expression utcTime(final Object fsp) {
+    public static SimpleExpression utcTime(final Object fsp) {
         FuncExpUtils.assertIntExp(fsp);
         return LiteralFunctions.oneArgFunc("UTC_TIME", fsp, LocalTimeType.INSTANCE);
     }
@@ -1127,7 +1128,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP()</a>
      */
-    public static Expression utcTimestamp() {
+    public static SimpleExpression utcTimestamp() {
         return LiteralFunctions.zeroArgFunc("UTC_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
@@ -1142,7 +1143,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP(fsp)</a>
      */
-    public static Expression utcTimestamp(final Object fsp) {
+    public static SimpleExpression utcTimestamp(final Object fsp) {
         FuncExpUtils.assertIntExp(fsp);
         return LiteralFunctions.oneArgFunc("UTC_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
     }
@@ -1162,7 +1163,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
-    public static Expression week(Object date) {
+    public static SimpleExpression week(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1190,7 +1191,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
-    public static Expression week(Object date, final Object mode) {
+    public static SimpleExpression week(Object date, final Object mode) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1236,7 +1237,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #dayOfWeek(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekday">WEEKDAY(date)</a>
      */
-    public static Expression weekDay(Object date) {
+    public static SimpleExpression weekDay(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1259,7 +1260,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekofyear">WEEKOFYEAR(date)</a>
      */
-    public static Expression weekOfYear(Object date) {
+    public static SimpleExpression weekOfYear(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1282,7 +1283,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_year">YEAR(date)</a>
      */
-    public static Expression year(Object date) {
+    public static SimpleExpression year(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1305,7 +1306,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date)</a>
      */
-    public static Expression yearWeek(Object date) {
+    public static SimpleExpression yearWeek(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1333,7 +1334,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date,mode)</a>
      */
-    public static Expression yearWeek(Object date, final Object mode) {
+    public static SimpleExpression yearWeek(Object date, final Object mode) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1359,7 +1360,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_makedate">MAKEDATE(year,dayofyear)</a>
      */
-    public static Expression makeDate(Object year, final Object dayOfYear) {
+    public static SimpleExpression makeDate(Object year, final Object dayOfYear) {
         if (!(year instanceof Year)) {
             FuncExpUtils.assertIntExp(year);
         }
@@ -1388,7 +1389,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_maketime">MAKETIME(hour,minute,second)</a>
      */
-    public static Expression makeTime(Object hour, Object minute, Object second) {
+    public static SimpleExpression makeTime(Object hour, Object minute, Object second) {
         FuncExpUtils.assertIntExp(hour);
         FuncExpUtils.assertIntExp(minute);
         FuncExpUtils.assertIntExp(second);
@@ -1412,7 +1413,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_microsecond">MICROSECOND(expr)</a>
      */
-    public static Expression microSecond(Object expr) {
+    public static SimpleExpression microSecond(Object expr) {
         expr = mysqlTimeTypeLiteralExp(expr);
         return LiteralFunctions.oneArgFunc("MICROSECOND", expr, LongType.INSTANCE);
     }
@@ -1433,7 +1434,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_minute">MINUTE(expr)</a>
      */
-    public static Expression minute(Object time) {
+    public static SimpleExpression minute(Object time) {
         time = mysqlTimeTypeLiteralExp(time);
         return LiteralFunctions.oneArgFunc("MINUTE", time, IntegerType.INSTANCE);
     }
@@ -1474,7 +1475,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month">MONTH(date)</a>
      */
-    public static Expression month(Object date) {
+    public static SimpleExpression month(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1518,7 +1519,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_monthname">MONTHNAME(date)</a>
      */
-    public static Expression monthName(Object date) {
+    public static SimpleExpression monthName(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1542,7 +1543,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-add">PERIOD_ADD(p,n)</a>
      */
-    public static Expression periodAdd(final Object p, final Object n) {
+    public static SimpleExpression periodAdd(final Object p, final Object n) {
         FuncExpUtils.assertIntExp(p);
         FuncExpUtils.assertIntExp(n);
         return LiteralFunctions.twoArgFunc("PERIOD_ADD", p, n, IntegerType.INSTANCE);
@@ -1564,7 +1565,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-diff">PERIOD_DIFF(P1,P2)</a>
      */
-    public static Expression periodDiff(final Object p1, final Object p2) {
+    public static SimpleExpression periodDiff(final Object p1, final Object p2) {
         FuncExpUtils.assertIntExp(p1);
         FuncExpUtils.assertIntExp(p2);
         return LiteralFunctions.twoArgFunc("PERIOD_DIFF", p1, p2, IntegerType.INSTANCE);
@@ -1585,7 +1586,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_quarter">QUARTER(date)</a>
      */
-    public static Expression quarter(Object date) {
+    public static SimpleExpression quarter(Object date) {
         date = mysqlTimeTypeLiteralExp(date);
         if (date instanceof LocalTime) {
             throw CriteriaUtils.funcArgExpError();
@@ -1608,7 +1609,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time">TIME(expr)</a>
      */
-    public static Expression time(Object expr) {
+    public static SimpleExpression time(Object expr) {
         expr = mysqlTimeTypeLiteralExp(expr);
         if (expr instanceof LocalDate) {
             throw CriteriaUtils.funcArgExpError();
@@ -1640,7 +1641,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timediff">TIMEDIFF(expr1,expr2)</a>
      */
-    public static Expression timeDiff(Object expr1, Object expr2) {
+    public static SimpleExpression timeDiff(Object expr1, Object expr2) {
         expr1 = mysqlTimeTypeLiteralExp(expr1);
         if (expr1 instanceof LocalDate) {
             throw CriteriaUtils.funcArgExpError();
@@ -1668,7 +1669,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_second">SECOND(time)</a>
      */
-    public static Expression second(Object time) {
+    public static SimpleExpression second(Object time) {
         time = mysqlTimeTypeLiteralExp(time);
         if (time instanceof LocalDate) {
             throw CriteriaUtils.funcArgExpError();
@@ -1687,7 +1688,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sec-to-time">SEC_TO_TIME(seconds)</a>
      */
-    public static Expression secToTime(final Object seconds) {
+    public static SimpleExpression secToTime(final Object seconds) {
         FuncExpUtils.assertIntExp(seconds);
         return LiteralFunctions.oneArgFunc("SEC_TO_TIME", seconds, LocalTimeType.INSTANCE);
     }
@@ -1708,7 +1709,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_str-to-date">STR_TO_DATE(str,format)</a>
      */
-    public static Expression strToDate(final Object str, final Object format) {
+    public static SimpleExpression strToDate(final Object str, final Object format) {
         FuncExpUtils.assertTextExp(str);
         FuncExpUtils.assertTextExp(format);
         return LiteralFunctions.twoArgFunc("STR_TO_DATE", str, format, StringType.INSTANCE);
@@ -1722,7 +1723,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      * @see #subDate(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      */
-    private static Expression _dateIntervalFunc(final String name, Object date, final SQLs.WordInterval interval,
+    private static SimpleExpression _dateIntervalFunc(final String name, Object date, final SQLs.WordInterval interval,
                                                       final Object expr, final MySQLTimeUnit unit) {
         date = FuncExpUtils.localDateLiteralExp(date);
 
@@ -1756,7 +1757,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #dateSub(Object, SQLs.WordInterval, Object, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_ADD(date,INTERVAL expr unit), DATE_SUB(date,INTERVAL expr unit)</a>
      */
-    private static Expression _dateAddOrSub(final String name, Object date, final SQLs.WordInterval interval,
+    private static SimpleExpression _dateAddOrSub(final String name, Object date, final SQLs.WordInterval interval,
                                                   final Object expr, final MySQLTimeUnit unit) {
 
         FuncExpUtils.assertWord(interval, SQLs.INTERVAL);
@@ -1952,7 +1953,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addTime(Object, Object)
      * @see #subTime(Object, Object)
      */
-    private static Expression _addOrSubTime(final String name, Object expr1, final Object expr2) {
+    private static SimpleExpression _addOrSubTime(final String name, Object expr1, final Object expr2) {
         final TypeMeta returnType;
         expr1 = mysqlTimeTypeLiteralExp(expr1);
         if (expr1 instanceof Expression) {

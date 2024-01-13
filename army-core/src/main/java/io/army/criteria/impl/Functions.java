@@ -1101,6 +1101,7 @@ abstract class Functions {
         return returnType;
     }
 
+
     /**
      * @see #round(Object)
      */

@@ -17,10 +17,7 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.Clause;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.TypeInfer;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.mysql.MySQLWindow;
@@ -49,7 +46,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
     }
 
-    public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, Expression {
+    public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, SimpleExpression {
 
     }
 
@@ -146,7 +143,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param distinct see {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
      */
-    public static Expression count(SQLs.ArgDistinct distinct, Expression expr) {
+    public static SimpleExpression count(SQLs.ArgDistinct distinct, Expression expr) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
         return LiteralFunctions.compositeFunc("COUNT", Arrays.asList(distinct, expr), LongType.INSTANCE);
     }
@@ -157,7 +154,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param distinct see {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
      */
-    public static Expression count(SQLs.ArgDistinct distinct, Expression expr1, Expression expr2, Expression... expVariadic) {
+    public static SimpleExpression count(SQLs.ArgDistinct distinct, Expression expr1, Expression expr2, Expression... expVariadic) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
         final List<Object> argList = _Collections.arrayList(3 + expVariadic.length);
 
@@ -176,13 +173,19 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param distinct see {@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
      */
-    public static Expression count(SQLs.ArgDistinct distinct, Consumer<Consumer<Expression>> consumer) {
+    public static SimpleExpression count(SQLs.ArgDistinct distinct, Consumer<Consumer<Expression>> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
         final List<Object> argList = _Collections.arrayList(3);
         argList.add(distinct);
 
-        consumer.accept(argList::add);
+        try {
+            consumer.accept(argList::add);
+        } catch (Exception e) {
+            throw ContextStack.clearStackAndCause(e, "Invoking Expression consumer error");
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
         return LiteralFunctions.compositeFunc("COUNT", argList, LongType.INSTANCE);
     }
 
@@ -195,7 +198,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * [ASC | DESC] [,col_name ...]]
      * [SEPARATOR str_val])</a>
      */
-    public static Expression groupConcat(Expression exp) {
+    public static SimpleExpression groupConcat(Expression exp) {
         return LiteralFunctions.oneArgFunc("GROUP_CONCAT", exp, StringType.INSTANCE);
     }
 
@@ -211,7 +214,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(SQLs.ArgDistinct distinct, Expression exp) {
+    public static SimpleExpression groupConcat(SQLs.ArgDistinct distinct, Expression exp) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
         return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(distinct, exp), StringType.INSTANCE);
     }
@@ -228,7 +231,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(Expression exp, Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+    public static SimpleExpression groupConcat(Expression exp, Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
         return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(exp, MySQLFunctions.groupConcatClause(consumer)), StringType.INSTANCE);
     }
@@ -245,7 +248,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(SQLs.ArgDistinct distinct, Expression exp,
+    public static SimpleExpression groupConcat(SQLs.ArgDistinct distinct, Expression exp,
                                          Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
@@ -265,7 +268,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(Consumer<Clause._VariadicExprSpaceClause> expConsumer,
+    public static SimpleExpression groupConcat(Consumer<Clause._VariadicExprSpaceClause> expConsumer,
                                          Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
 
@@ -295,7 +298,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(SQLs.ArgDistinct distinct, Consumer<Clause._VariadicExprSpaceClause> expConsumer,
+    public static SimpleExpression groupConcat(SQLs.ArgDistinct distinct, Consumer<Clause._VariadicExprSpaceClause> expConsumer,
                                          Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
@@ -326,7 +329,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
+    public static SimpleExpression groupConcat(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
                                          Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
 
@@ -365,7 +368,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowParam(TypeInfer, Collection)
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    public static Expression groupConcat(SQLs.ArgDistinct distinct, SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
+    public static SimpleExpression groupConcat(SQLs.ArgDistinct distinct, SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
                                          Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 

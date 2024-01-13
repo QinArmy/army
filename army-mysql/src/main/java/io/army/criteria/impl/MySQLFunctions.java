@@ -101,7 +101,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    static Expression charFunc(Consumer<? super FuncExpUtils.VariadicClause> consumer, @Nullable String charName) {
+    static SimpleExpression charFunc(Consumer<? super FuncExpUtils.VariadicClause> consumer, @Nullable String charName) {
         if (charName != null && !_StringUtils.hasText(charName)) {
             throw ContextStack.clearStackAndCriteriaError("CHAR function charset_name must have text");
         }
