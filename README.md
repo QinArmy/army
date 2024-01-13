@@ -11,6 +11,10 @@
 2. We need standard,we need dialect,it's real world.
 3. We need blocking way,we need reactive way,it's real world.
 
+## Army convention
+
+1. The interface( or class) that start with underline is army framework private interface( or class)
+
 ### [Army document](https://army.qinarmy.io "Army document pages")
 
 ### How to start ?
