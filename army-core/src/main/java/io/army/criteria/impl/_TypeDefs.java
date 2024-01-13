@@ -30,11 +30,11 @@ import io.army.sqltype.SqlType;
 
 import java.util.Locale;
 
-public abstract class TypeDefs implements TypeDef {
+public abstract class _TypeDefs implements TypeDef {
 
-    public static TypeDef space(final DataType type, final int precision) {
+    public static TypeDef space(final DataType type, final boolean charset, final long precision) {
         if (precision < 0) {
-            throw ContextStack.clearStackAndCriteriaError(String.format("precision %s error", type));
+            throw new CriteriaException(String.format("precision %s error", type));
         }
         if (!(type instanceof SqlType)) {
             return new TypeDefLength(type, precision);
@@ -44,7 +44,25 @@ public abstract class TypeDefs implements TypeDef {
         } else if (type instanceof PostgreType) {
             checkPostgreTypePrecision((PostgreType) type);
         } else {
-            throw ContextStack.clearStackAndCriteriaError(String.format("unknown %s", type));
+            throw new CriteriaException(String.format("unknown %s", type));
+        }
+        return new TypeDefLength(type, precision);
+    }
+
+
+    public static TypeDef space(final DataType type, final int precision, final int scale) {
+        if (precision < 0) {
+            throw new CriteriaException(String.format("precision %s error", type));
+        }
+        if (!(type instanceof SqlType)) {
+            return new TypeDefLength(type, precision);
+        }
+        if (type instanceof MySQLType) {
+            checkMySqlTypePrecision((MySQLType) type);
+        } else if (type instanceof PostgreType) {
+            checkPostgreTypePrecision((PostgreType) type);
+        } else {
+            throw new CriteriaException(String.format("unknown %s", type));
         }
         return new TypeDefLength(type, precision);
     }
@@ -102,13 +120,17 @@ public abstract class TypeDefs implements TypeDef {
     }
 
 
-    private static CriteriaException dontSupportPrecision(SqlType type) {
-        return ContextStack.clearStackAndCriteriaError(String.format("%s don't support precision", type));
+    public static CriteriaException dontSupportPrecision(SqlType type) {
+        return new CriteriaException(String.format("%s don't support precision", type));
+    }
+
+    public static CriteriaException precisionError(SqlType type, long precision) {
+        return new CriteriaException(String.format("%s precision[%s] error", type, precision));
     }
 
     final DataType dataType;
 
-    private TypeDefs(DataType dataType) {
+    private _TypeDefs(DataType dataType) {
         this.dataType = dataType;
     }
 
@@ -117,17 +139,17 @@ public abstract class TypeDefs implements TypeDef {
         return this.dataType.typeName();
     }
 
-     static final class TypeDefLength extends TypeDefs implements _SelfDescribed {
+    static final class TypeDefLength extends _TypeDefs implements _SelfDescribed {
 
-         private final int length;
+        private final long length;
 
-         private TypeDefLength(DataType dataType, int length) {
-             super(dataType);
-             this.length = length;
-         }
+        private TypeDefLength(DataType dataType, long length) {
+            super(dataType);
+            this.length = length;
+        }
 
-         @Override
-         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             sqlBuilder.append(_Constant.SPACE);
 
             final DataType type = this.dataType;

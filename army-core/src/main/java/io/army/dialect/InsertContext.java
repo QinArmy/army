@@ -110,6 +110,11 @@ abstract class InsertContext extends StatementContext
 
     private List<FieldMeta<?>> conditionFieldList;
 
+    /**
+     * @see #outputFieldTableAlias(boolean)
+     */
+    private boolean outputFieldTableAlias;
+
 
     /**
      * <p>
@@ -357,6 +362,17 @@ abstract class InsertContext extends StatementContext
     }
 
     @Override
+    public final String safeTableAliasOrSafeTableName() {
+        String safeAlias;
+        safeAlias = this.safeTableAlias;
+        if (safeAlias == null) {
+            safeAlias = this.safeTableName;
+        }
+        assert safeAlias != null; // failure ,bug
+        return safeAlias;
+    }
+
+    @Override
     public final String rowAlias() {
         return this.rowAlias;
     }
@@ -369,6 +385,12 @@ abstract class InsertContext extends StatementContext
     @Override
     public final LiteralMode literalMode() {
         return this.literalMode;
+    }
+
+
+    @Override
+    public final void outputFieldTableAlias(final boolean output) {
+        this.outputFieldTableAlias = output;
     }
 
     @Override
@@ -412,7 +434,7 @@ abstract class InsertContext extends StatementContext
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
 
         String safeAlias;
-        if (this.rowAlias != null
+        if ((this.outputFieldTableAlias || this.rowAlias != null)
                 && ((safeAlias = this.safeTableAlias) != null || (safeAlias = this.safeTableName) != null)) {
             sqlBuilder.append(safeAlias)
                     .append(_Constant.PERIOD);

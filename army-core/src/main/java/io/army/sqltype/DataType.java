@@ -44,6 +44,15 @@ public interface DataType extends TypeDef {
     boolean isArray();
 
 
+    default TypeDef parens(long precision) {
+        throw new UnsupportedOperationException();
+    }
+
+    default TypeDef parens(int precision, int scale) {
+        throw new UnsupportedOperationException();
+    }
+
+
     /**
      * <p>This method is equivalent to {@code   DataType.from(typeName,false)} :
      * <p><strong>NOTE</strong>: only when {@link ArmyType} couldn't express appropriate type,you use this method.<br/>

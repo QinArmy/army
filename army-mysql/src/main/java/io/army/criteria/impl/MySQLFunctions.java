@@ -26,6 +26,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.*;
+import io.army.mapping.optional.JsonPathType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLType;
@@ -175,10 +176,10 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         final MySQLType dataType;
         if (typeDef instanceof MySQLType) {
             dataType = (MySQLType) typeDef;
-        } else if (!(typeDef instanceof TypeDefs)) {
+        } else if (!(typeDef instanceof _TypeDefs)) {
             throw CriteriaUtils.unknownTypeDef();
-        } else if (((TypeDefs) typeDef).dataType instanceof MySQLType) {
-            dataType = (MySQLType) ((TypeDefs) typeDef).dataType;
+        } else if (((_TypeDefs) typeDef).dataType instanceof MySQLType) {
+            dataType = (MySQLType) ((_TypeDefs) typeDef).dataType;
         } else {
             throw CriteriaUtils.unknownTypeDef();
         }
@@ -1688,7 +1689,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
             final Object pathExp = this.pathExp;
             if (pathExp instanceof String) {
-                context.appendLiteral(StringType.INSTANCE, pathExp);
+                context.appendLiteral(JsonPathType.INSTANCE, pathExp);
             } else if (pathExp instanceof Expression) {
                 ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
             } else {

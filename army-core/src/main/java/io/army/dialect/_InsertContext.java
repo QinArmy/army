@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 import io.army.criteria.LiteralMode;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
 
@@ -37,6 +38,11 @@ public interface _InsertContext extends _DmlContext, _SetClauseContext {
     @Nullable
     String safeTableName();
 
+    /**
+     * For conflict clause
+     */
+    String safeTableAliasOrSafeTableName();
+
     @Nullable
     String rowAlias();
 
@@ -50,6 +56,13 @@ public interface _InsertContext extends _DmlContext, _SetClauseContext {
 
     @Override
     _InsertContext parentContext();
+
+    /**
+     * just for {@link #appendField(FieldMeta)} in on conflict clause.
+     *
+     * @param output default false
+     */
+    void outputFieldTableAlias(boolean output);
 
     @Override
     SimpleStmt build();

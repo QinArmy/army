@@ -1602,7 +1602,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *             <ul>
      *                  <li>{@link io.army.sqltype.MySQLType#CHAR}</li>
      *                  <li>{@link io.army.sqltype.MySQLType#BINARY}</li>
-     *                  <li>{@link TypeDef}, see {@link TypeDefs#space(DataType, int)}</li>
+     *                  <li>{@link TypeDef}, see {@link _TypeDefs#space(DataType, int)}</li>
      *             </ul>
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
@@ -1625,7 +1625,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *              <ul>
      *                   <li>{@link io.army.sqltype.MySQLType#CHAR}</li>
      *                   <li>{@link io.army.sqltype.MySQLType#BINARY}</li>
-     *                   <li>{@link TypeDef}, see {@link TypeDefs#space(DataType, int)}</li>
+     *                   <li>{@link TypeDef}, see {@link _TypeDefs#space(DataType, int)}</li>
      *              </ul>
      * @param flags non-null, one of following :
      *              <ul>
@@ -1726,8 +1726,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
         final DataType dataType;
         if (type instanceof MySQLType) {
             dataType = (MySQLType) type;
-        } else if (type instanceof TypeDefs.TypeDefLength) {
-            dataType = ((TypeDefs) type).dataType;
+        } else if (type instanceof _TypeDefs.TypeDefLength) {
+            dataType = ((_TypeDefs) type).dataType;
         } else {
             throw CriteriaUtils.unknownWords(type);
         }

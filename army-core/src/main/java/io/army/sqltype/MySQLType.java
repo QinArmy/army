@@ -17,6 +17,8 @@
 package io.army.sqltype;
 
 import io.army.ArmyException;
+import io.army.criteria.TypeDef;
+import io.army.criteria.impl._TypeDefs;
 import io.army.dialect.Database;
 import io.army.mapping.*;
 import io.army.mapping.mysql.MySqlBitType;
@@ -173,6 +175,68 @@ public enum MySQLType implements SqlType {
     public final boolean isArray() {
         // false ,MySQL don't support array
         return false;
+    }
+
+    @Override
+    public final TypeDef parens(final long precision) {
+        final boolean charset;
+        final TypeDef typeDef;
+        switch (this) {
+
+            case CHAR:
+            case VARCHAR:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT: {
+                if (precision > Integer.MAX_VALUE) {
+                    throw _TypeDefs.precisionError(this, precision);
+                }
+                typeDef = _TypeDefs.space(this, true, precision);
+            }
+            break;
+            case LONGTEXT: {
+                if (precision >= (1L << 32)) {
+                    throw _TypeDefs.precisionError(this, precision);
+                }
+                typeDef = _TypeDefs.space(this, true, precision);
+            }
+            break;
+
+            case DECIMAL:
+            case DECIMAL_UNSIGNED:
+
+            case TIME:
+            case DATETIME:
+
+            case BINARY:
+            case VARBINARY:
+            case TINYBLOB:
+            case BLOB:
+            case MEDIUMBLOB:
+            case LONGBLOB: {
+                if (precision >= (1L << 32)) {
+                    throw _TypeDefs.precisionError(this, precision);
+                }
+                typeDef = _TypeDefs.space(this, false, precision);
+            }
+            break;
+
+            case BIT: {
+                if (precision > Integer.MAX_VALUE) {
+                    throw _TypeDefs.precisionError(this, precision);
+                }
+                typeDef = _TypeDefs.space(this, false, precision);
+            }
+            break;
+            default:
+                throw _TypeDefs.dontSupportPrecision(this);
+        }
+        return typeDef;
+    }
+
+    @Override
+    public final TypeDef parens(int precision, int scale) {
+        return _TypeDefs.space(this, precision, scale);
     }
 
     @Override

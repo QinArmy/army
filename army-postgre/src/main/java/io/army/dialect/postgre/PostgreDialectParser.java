@@ -37,8 +37,7 @@ import java.util.List;
 /**
  * <p>
  * This class is the implementation of {@link DialectParser} for  PostgreSQL dialect criteria api.
- * <p>
- * Below is chinese signature:<br/>
+ * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @since 0.6.0
@@ -557,7 +556,7 @@ final class PostgreDialectParser extends PostgreParser {
         assert insertTable == stmt.table();
         this.safeObjectName(insertTable, sqlBuilder);
 
-        // 3. row alias
+        // 3. table alias
         final String safeTableAlias;
         if ((safeTableAlias = context.safeTableAlias()) != null) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE)
@@ -656,7 +655,9 @@ final class PostgreDialectParser extends PostgreParser {
                 || (constraintName == null && targetItemSize == 0)) { // For ON CONFLICT DO UPDATE, a conflict_target must be provided.
             throw _Exceptions.castCriteriaApi();
         } else {
+            context.outputFieldTableAlias(true);
             this.insertDoUpdateSetClause(context, clause);
+            context.outputFieldTableAlias(false);
         }
 
     }
@@ -707,7 +708,7 @@ final class PostgreDialectParser extends PostgreParser {
                 sqlBuilder.append(_Constant.SPACE_WHERE);
             }
             if (insertTable instanceof SingleTableMeta) {
-                this.visiblePredicate((SingleTableMeta<?>) insertTable, context.safeTableAlias(), context, visibleIsFirstPredicate);
+                this.visiblePredicate((SingleTableMeta<?>) insertTable, context.safeTableAliasOrSafeTableName(), context, visibleIsFirstPredicate);
             } else {
                 this.parentVisiblePredicate(context, visibleIsFirstPredicate);
             }
@@ -785,6 +786,13 @@ final class PostgreDialectParser extends PostgreParser {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_RETURNING);
+
+        final boolean invokingOutFileTableAlias = context instanceof _InsertContext
+                && ((_InsertContext) context).tableAlias() != null;
+        if (invokingOutFileTableAlias) {
+            ((_InsertContext) context).outputFieldTableAlias(true);
+        }
+
         for (int i = 0; i < selectionSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -792,6 +800,9 @@ final class PostgreDialectParser extends PostgreParser {
             selectionList.get(i).appendSelectItem(sqlBuilder, context);
         }
 
+        if (invokingOutFileTableAlias) {
+            ((_InsertContext) context).outputFieldTableAlias(false);
+        }
 
     }
 

@@ -20,7 +20,6 @@ import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.criteria.impl.TypeDefs;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sqltype.MySQLType;
@@ -60,7 +59,7 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
         stmt = MySQLs.query()
                 .select(s -> s.space("t", PERIOD, ASTERISK))
                 .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> s.space("rowId", FOR_ORDINALITY)
-                                .comma("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
+                                .comma("ac", MySQLType.VARCHAR.parens(100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
                                 .comma("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
                                 .comma("bx", MySQLType.INT, EXISTS, PATH, "$.b")
                         )

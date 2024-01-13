@@ -23,7 +23,6 @@ import io.army.criteria.TypeDef;
 import io.army.criteria.impl.MySQLTimeUnit;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.criteria.impl.TypeDefs;
 import io.army.reactive.ReactiveLocalSession;
 import io.army.sqltype.MySQLType;
 import io.army.util.RowMaps;
@@ -63,7 +62,7 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
         stmt = MySQLs.query()
                 .select(s -> s.space("t", PERIOD, ASTERISK))
                 .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> s.space("rowId", FOR_ORDINALITY)
-                                .comma("ac", TypeDefs.space(MySQLType.VARCHAR, 100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
+                                .comma("ac", MySQLType.VARCHAR.parens(100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
                                 .comma("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
                                 .comma("bx", MySQLType.INT, EXISTS, PATH, "$.b")
                         )
@@ -228,7 +227,7 @@ public class MySQLReactiveFunctionTests extends MySQLReactiveSessionTestsSupport
 
         final Select stmt;
         stmt = MySQLs.query()
-                .select(hex(weightString(source, AS, TypeDefs.space(MySQLType.CHAR, 40))).as("source"))
+                .select(hex(weightString(source, AS, MySQLType.CHAR.parens(40))).as("source"))
                 .asQuery();
 
         final String row;
