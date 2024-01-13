@@ -2561,13 +2561,9 @@ abstract class Expressions {
         }
 
         @Override
-        public MappingType typeMeta() {
-            TypeMeta typeMeta;
-            typeMeta = this.exp.typeMeta();
-            if (!(typeMeta instanceof MappingType)) {
-                typeMeta = typeMeta.mappingType();
-            }
-            return (MappingType) typeMeta;
+        public TypeMeta typeMeta() {
+            // here , allow FieldMeta , because COLLATE is not operator
+            return this.exp.typeMeta();
         }
 
 

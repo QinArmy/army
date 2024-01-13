@@ -395,6 +395,9 @@ public abstract class ExecutorSupport {
             case "character varying":
                 type = PostgreType.VARCHAR;
                 break;
+            case "bpchar":
+                type = PostgreType.BPCHAR;
+                break;
             case "text":
             case "txid_snapshot":  // TODO txid_snapshot is text?
                 type = PostgreType.TEXT;

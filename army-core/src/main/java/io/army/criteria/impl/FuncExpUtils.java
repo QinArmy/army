@@ -334,7 +334,7 @@ abstract class FuncExpUtils {
                     }
                     sqlBuilder.append(_Constant.SPACE)
                             .append(((SqlType) value).typeName());
-                } else if (value instanceof _TypeDefs) {
+                } else if (value instanceof TypeDefs) {
                     ((_SelfDescribed) value).appendSql(sqlBuilder, context);
                 } else {
                     throw new CriteriaException(String.format("Illegal TypeDef %s", value));

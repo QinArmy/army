@@ -149,6 +149,11 @@ public interface _Constant {
 
     String SPACE_SEPARATOR = " SEPARATOR";
 
+    String SPACE_CHARACTER_SET_SPACE = " CHARACTER SET ";
+
+    String SPACE_COLLATE_SPACE = " COLLATE ";
+
+
     String UNDERSCORE_ARRAY = "_ARRAY";
 
     String SPACE_SEMICOLON = " ;";

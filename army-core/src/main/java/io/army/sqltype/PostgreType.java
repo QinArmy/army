@@ -16,6 +16,8 @@
 
 package io.army.sqltype;
 
+import io.army.criteria.TypeDef;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -27,7 +29,7 @@ import java.time.*;
 import java.util.BitSet;
 
 /**
- * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
+ * @see <a href="https://www.postgresql.org/docs/current/datatype.html">Postgre Data Types</a>
  */
 public enum PostgreType implements SqlType {
 
@@ -63,6 +65,13 @@ public enum PostgreType implements SqlType {
     BYTEA("BYTEA", ArmyType.MEDIUMBLOB, byte[].class),
 
     CHAR("CHAR", ArmyType.CHAR, String.class),
+
+    /**
+     * <p>As of postgre 16 .
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/datatype-character.html">bpchar</a>
+     */
+    BPCHAR("BPCHAR", ArmyType.CHAR, String.class),
     VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class),
     MONEY("MONEY", ArmyType.DIALECT_TYPE, String.class),
 
@@ -260,6 +269,45 @@ public enum PostgreType implements SqlType {
     @Override
     public final boolean isArray() {
         return this.armyType == ArmyType.ARRAY;
+    }
+
+    @Override
+    public final TypeDef._TypeDefCollateClause parens(final long precision) {
+        final TypeDef._TypeDefCollateClause typeDef;
+        switch (this) {
+            case CHAR:
+            case BPCHAR:
+            case VARCHAR:
+                typeDef = _SQLConsultant.precision(this, true, precision, 10485760);
+                break;
+            case DECIMAL:
+                typeDef = _SQLConsultant.precision(this, false, precision, 131072);
+                break;
+            case BIT:
+            case VARBIT:
+                typeDef = _SQLConsultant.precision(this, false, precision, Integer.MAX_VALUE);
+                break;
+            case TIME:
+            case TIMETZ:
+            case TIMESTAMP:
+            case TIMESTAMPTZ:
+                typeDef = _SQLConsultant.precision(this, false, precision, 6);
+                break;
+            default:
+                throw _SQLConsultant.dontSupportPrecision(this);
+        }
+        return typeDef;
+    }
+
+    @Override
+    public final TypeDef parens(final int precision, final int scale) {
+        final TypeDef typeDef;
+        if (this == PostgreType.DECIMAL) {
+            typeDef = _SQLConsultant.precisionAndScale(this, precision, scale, 131072 + 16383, 16383);
+        } else {
+            throw _SQLConsultant.dontSupportPrecisionAndScale(this);
+        }
+        return typeDef;
     }
 
 

@@ -238,6 +238,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             }
             break;
             case CHAR:
+            case BPCHAR:
             case VARCHAR:
             case TEXT:
             case JSON:

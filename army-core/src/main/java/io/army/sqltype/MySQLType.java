@@ -18,7 +18,7 @@ package io.army.sqltype;
 
 import io.army.ArmyException;
 import io.army.criteria.TypeDef;
-import io.army.criteria.impl._TypeDefs;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.dialect.Database;
 import io.army.mapping.*;
 import io.army.mapping.mysql.MySqlBitType;
@@ -67,6 +67,10 @@ public enum MySQLType implements SqlType {
     YEAR("YEAR", ArmyType.YEAR, Year.class),
     DATETIME("DATETIME", ArmyType.TIMESTAMP, LocalDateTime.class),
 
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/data-types.html">char</a>
+     */
     CHAR("CHAR", ArmyType.CHAR, String.class),
     VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class),
 
@@ -178,65 +182,66 @@ public enum MySQLType implements SqlType {
     }
 
     @Override
-    public final TypeDef parens(final long precision) {
-        final boolean charset;
-        final TypeDef typeDef;
+    public final _TypeDefCharacterSetSpec parens(final long precision) {
+        final _TypeDefCharacterSetSpec typeDef;
         switch (this) {
-
             case CHAR:
-            case VARCHAR:
             case TINYTEXT:
+                typeDef = _SQLConsultant.precision(this, true, precision, 0xFFL);
+                break;
+            case VARCHAR:
             case TEXT:
-            case MEDIUMTEXT: {
-                if (precision > Integer.MAX_VALUE) {
-                    throw _TypeDefs.precisionError(this, precision);
-                }
-                typeDef = _TypeDefs.space(this, true, precision);
-            }
-            break;
-            case LONGTEXT: {
-                if (precision >= (1L << 32)) {
-                    throw _TypeDefs.precisionError(this, precision);
-                }
-                typeDef = _TypeDefs.space(this, true, precision);
-            }
-            break;
-
+                typeDef = _SQLConsultant.precision(this, true, precision, 0xFFFFL);
+                break;
+            case MEDIUMTEXT:
+                typeDef = _SQLConsultant.precision(this, true, precision, 0xFFFF_FFL);
+                break;
+            case LONGTEXT:
+                typeDef = _SQLConsultant.precision(this, true, precision, 0xFFFF_FFFFL);
+                break;
             case DECIMAL:
             case DECIMAL_UNSIGNED:
-
+                typeDef = _SQLConsultant.precision(this, false, precision, 65L);
+                break;
             case TIME:
             case DATETIME:
-
+                typeDef = _SQLConsultant.precision(this, true, precision, 6L);
+                break;
             case BINARY:
-            case VARBINARY:
             case TINYBLOB:
+                typeDef = _SQLConsultant.precision(this, false, precision, 0xFFL);
+                break;
+            case VARBINARY:
             case BLOB:
+                typeDef = _SQLConsultant.precision(this, false, precision, 0xFFFFL);
+                break;
             case MEDIUMBLOB:
-            case LONGBLOB: {
-                if (precision >= (1L << 32)) {
-                    throw _TypeDefs.precisionError(this, precision);
-                }
-                typeDef = _TypeDefs.space(this, false, precision);
-            }
-            break;
-
-            case BIT: {
-                if (precision > Integer.MAX_VALUE) {
-                    throw _TypeDefs.precisionError(this, precision);
-                }
-                typeDef = _TypeDefs.space(this, false, precision);
-            }
-            break;
+                typeDef = _SQLConsultant.precision(this, false, precision, 0xFFFF_FFL);
+                break;
+            case LONGBLOB:
+                typeDef = _SQLConsultant.precision(this, false, precision, 0xFFFF_FFFFL);
+                break;
+            case BIT:
+                typeDef = _SQLConsultant.precision(this, false, precision, 64L);
+                break;
             default:
-                throw _TypeDefs.dontSupportPrecision(this);
+                throw _SQLConsultant.dontSupportPrecision(this);
         }
         return typeDef;
     }
 
     @Override
-    public final TypeDef parens(int precision, int scale) {
-        return _TypeDefs.space(this, precision, scale);
+    public final TypeDef parens(final int precision, final int scale) {
+        final TypeDef typeDef;
+        switch (this) {
+            case DECIMAL:
+            case DECIMAL_UNSIGNED:
+                typeDef = _SQLConsultant.precisionAndScale(this, precision, scale, 65, 30);
+                break;
+            default:
+                throw _SQLConsultant.dontSupportPrecisionAndScale(this);
+        }
+        return typeDef;
     }
 
     @Override

@@ -16,6 +16,8 @@
 
 package io.army.sqltype;
 
+import io.army.criteria.TypeDef;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.dialect.Database;
 
 import javax.annotation.Nullable;
@@ -72,6 +74,18 @@ public enum OracleDataType implements SqlType {
     public boolean isArray() {
         return false;
     }
+
+
+    @Override
+    public final TypeDef parens(long precision) {
+        throw _SQLConsultant.dontSupportPrecision(this);
+    }
+
+    @Override
+    public final TypeDef parens(int precision, int scale) {
+        throw _SQLConsultant.dontSupportPrecisionAndScale(this);
+    }
+
 
 
 }

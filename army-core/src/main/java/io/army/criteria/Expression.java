@@ -55,7 +55,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
-     * @see SimpleExpression#equal(BiFunction, Object)
+     * @see DefiniteExpression#equal(BiFunction, Object)
      * @see SqlField#equal(BiFunction)
      */
     CompoundPredicate equal(Expression operand);
@@ -250,11 +250,9 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
 
 
     /**
-     * <p>
-     * This method is designed for dialect operator.
+     * <p>This method is designed for dialect operator.
      *
-     * <p>
-     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <p><strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      *
      *
      * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.

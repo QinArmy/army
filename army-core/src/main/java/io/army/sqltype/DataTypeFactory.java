@@ -16,6 +16,8 @@
 
 package io.army.sqltype;
 
+import io.army.criteria.TypeDef;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
@@ -30,7 +32,7 @@ abstract class DataTypeFactory {
     }
 
 
-    static DataType typeFrom(String typeName, final boolean caseSensitivity) {
+    static DataType.CustomType typeFrom(String typeName, final boolean caseSensitivity) {
         if (!_StringUtils.hasText(typeName)) {
             throw new IllegalArgumentException("typeName must have text");
         }
@@ -41,7 +43,7 @@ abstract class DataTypeFactory {
     }
 
 
-    private static final class ArmyDataType implements DataType {
+    private static final class ArmyDataType implements DataType.CustomType {
 
         private static final ConcurrentMap<String, ArmyDataType> INSTANCE_MAP = _Collections.concurrentHashMap();
 
@@ -72,6 +74,17 @@ abstract class DataTypeFactory {
         @Override
         public boolean isUnknown() {
             return false;
+        }
+
+
+        @Override
+        public TypeDef._TypeDefCharacterSetSpec parens(final long precision) {
+            return _SQLConsultant.precision(this, true, precision, 0xFFFF_FFFFL);
+        }
+
+        @Override
+        public TypeDef parens(final int precision, final int scale) {
+            return _SQLConsultant.precisionAndScale(this, precision, scale, Integer.MAX_VALUE, Integer.MAX_VALUE);
         }
 
         @Override

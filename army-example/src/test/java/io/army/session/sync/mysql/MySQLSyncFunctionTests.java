@@ -59,7 +59,7 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
         stmt = MySQLs.query()
                 .select(s -> s.space("t", PERIOD, ASTERISK))
                 .from(jsonTable(jsonDocument, "$[*]", COLUMNS, s -> s.space("rowId", FOR_ORDINALITY)
-                                .comma("ac", MySQLType.VARCHAR.parens(100), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
+                                .comma("ac", MySQLType.VARCHAR.parens(100).characterSet("utf8mb4"), PATH, "$.a", o -> o.spaceDefault("111").onEmpty().spaceDefault("999").onError())
                                 .comma("aj", MySQLType.JSON, PATH, "$.a", o -> o.spaceDefault("{\"x\":333}").onEmpty())
                                 .comma("bx", MySQLType.INT, EXISTS, PATH, "$.b")
                         )

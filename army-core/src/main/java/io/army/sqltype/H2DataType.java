@@ -16,9 +16,14 @@
 
 package io.army.sqltype;
 
+import io.army.ArmyException;
+import io.army.criteria.TypeDef;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.dialect.Database;
+import io.army.mapping.MappingType;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public enum H2DataType implements SqlType {
 
@@ -57,6 +62,11 @@ public enum H2DataType implements SqlType {
         return null;
     }
 
+    @Override
+    public MappingType mapType(Supplier<? extends ArmyException> errorHandler) {
+        return SqlType.super.mapType(errorHandler);
+    }
+
 
     @Override
     public String typeName() {
@@ -68,9 +78,20 @@ public enum H2DataType implements SqlType {
         throw new UnsupportedOperationException();
     }
 
+
     @Override
     public boolean isArray() {
         return false;
+    }
+
+    @Override
+    public final TypeDef parens(long precision) {
+        throw _SQLConsultant.dontSupportPrecision(this);
+    }
+
+    @Override
+    public final TypeDef parens(int precision, int scale) {
+        throw _SQLConsultant.dontSupportPrecisionAndScale(this);
     }
 
 

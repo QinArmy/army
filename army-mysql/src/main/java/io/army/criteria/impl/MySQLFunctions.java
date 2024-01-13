@@ -176,10 +176,10 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         final MySQLType dataType;
         if (typeDef instanceof MySQLType) {
             dataType = (MySQLType) typeDef;
-        } else if (!(typeDef instanceof _TypeDefs)) {
+        } else if (!(typeDef instanceof TypeDefs)) {
             throw CriteriaUtils.unknownTypeDef();
-        } else if (((_TypeDefs) typeDef).dataType instanceof MySQLType) {
-            dataType = (MySQLType) ((_TypeDefs) typeDef).dataType;
+        } else if (((TypeDefs) typeDef).dataType instanceof MySQLType) {
+            dataType = (MySQLType) ((TypeDefs) typeDef).dataType;
         } else {
             throw CriteriaUtils.unknownTypeDef();
         }

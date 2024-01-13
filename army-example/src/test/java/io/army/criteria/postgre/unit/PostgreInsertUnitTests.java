@@ -43,7 +43,7 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
         final Insert stmt;
         stmt = Postgres.singleInsert()
                 .ignoreReturnIds()
-                .insertInto(ChinaRegion_.T).as("cr")
+                .insertInto(ChinaRegion_.T).as("c")
                 .overridingSystemValue()
                 .values(this::createReginList)
                 .onConflict()

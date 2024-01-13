@@ -16,12 +16,9 @@
 
 package io.army.criteria;
 
-import io.army.criteria.impl._TypeDefs;
 
 /**
  * <p>This interface is base interface of {@link io.army.sqltype.DataType} :
- *
- * @see _TypeDefs
  * @since 0.6.0
  */
 public interface TypeDef extends TypeItem {
@@ -32,6 +29,19 @@ public interface TypeDef extends TypeItem {
      * @return SQL type's name in database
      */
     String typeName();
+
+
+    interface _TypeDefCollateClause extends TypeDef {
+
+        TypeDef collate(String collationName);
+
+    }
+
+    interface _TypeDefCharacterSetSpec extends _TypeDefCollateClause {
+
+        _TypeDefCollateClause characterSet(String charsetName);
+
+    }
 
 
 }

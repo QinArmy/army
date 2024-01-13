@@ -50,7 +50,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static SQLs._ArrayConstructorSpec array() {
@@ -78,7 +77,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static SQLs._ArrayConstructorSpec array(Object one, Object two) {
@@ -89,7 +87,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three) {
@@ -99,7 +96,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -113,7 +109,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three, Object four, Object five,
@@ -126,7 +121,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * Dynamic array constructor, if empty,then array is {@link TextArrayType#LINEAR} type.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
@@ -165,7 +159,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * create empty row. non-empty row see {@link SQLs#row(Object)}
      *
-     *
      * @see SQLs#row(Object)
      * @see SQLs#row(SubQuery)
      * @see SQLs#row(Consumer)
@@ -183,7 +176,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of exp
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
      */
@@ -430,7 +422,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * @param left  not {@link SQLs#DEFAULT} etc.
      * @param right not {@link SQLs#DEFAULT} etc.
      * @see Expression#space(BiFunction, Object)
-     * @see SimpleExpression#space(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#space(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE">bit || bit → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">text || text → text <br/>
      * text || anynonarray → text <br/>
@@ -453,7 +445,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision<br/>
      * Square root
      * </a>
@@ -474,7 +465,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision<br/>
      * Cube root
@@ -508,7 +498,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type @> geometric_type → boolean<br/>
      * Does first object contain second? Available for these pairs of types: (box, point), (box, box), (path, point), (polygon, point), (polygon, polygon), (circle, point), (circle, circle).
      * </a>
@@ -525,7 +515,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb @? jsonpath → boolean<br/>
      * Does JSON path return any item for the specified JSON value?<br/>
      * '{"a":[1,2,3,4,5]}'::jsonb @? '$.a[*] ? (@ > 2)' → t
@@ -537,7 +527,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&#64; geometric_type → boolean<br/>
      * Is first object contained in or on second? Available for these pairs of types: (point, box), (point, lseg), (point, line), (point, path), (point, polygon), (point, circle), (box, box), (lseg, box), (lseg, line), (polygon, polygon), (circle, circle).
      * </a>
@@ -554,7 +544,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&amp; geometric_type → boolean<br/>
      * Do these objects overlap? (One point in common makes this true.) Available for box, polygon, circle.</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet &amp;&amp; inet → boolean<br/>
@@ -571,7 +561,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt; geometric_type → boolean<br/>
      * Is first object strictly left of second? Available for point, box, polygon, circle.<br/>
      * inet &lt;&lt; inet → boolean<br/>
@@ -596,7 +586,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type >> geometric_type → boolean<br/>
      * Is first object strictly right of second? Available for point, box, polygon, circle.</a>
      */
@@ -606,7 +596,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet &lt;&lt;= inet → boolean<br/>
      * Is subnet contained by or equal to subnet?<br/>
      * inet '192.168.1/24' &lt;&lt;= inet '192.168.1/24' → t
@@ -618,7 +608,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet >>= inet → boolean<br/>
      * Does subnet contain or equal subnet?<br/>
      * inet '192.168.1/24' >>= inet '192.168.1/24' → t
@@ -630,7 +620,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt; geometric_type → boolean<br/>
      * Does first object not extend to the right of second? Available for box, polygon, circle.</a>
      */
@@ -640,7 +630,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&gt; geometric_type → boolean<br/>
      * Does first object not extend to the left of second? Available for box, polygon, circle.</a>
      */
@@ -650,7 +640,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt;| geometric_type → boolean<br/>
      * Is first object strictly below second? Available for point, box, polygon, circle.</a>
      */
@@ -660,7 +650,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |>> geometric_type → boolean<br/>
      * Is first object strictly above second? Available for point, box, polygon, circle.</a>
      */
@@ -670,7 +660,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt;| geometric_type → boolean<br/>
      * Does first object not extend above second? Available for box, polygon, circle.</a>
      */
@@ -680,7 +670,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |&amp;> geometric_type → boolean<br/>
      * Does first object not extend below second? Available for box, polygon, circle.</a>
      */
@@ -691,7 +681,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box &lt;^ box → boolean<br/>
      * Is first object below second (allows edges to touch)?</a>
      */
@@ -701,7 +691,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box >^ box → boolean<br/>
      * Is first object above second (allows edges to touch)?</a>
      */
@@ -711,7 +701,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ? text → boolean<br/>
      * Does the text string exist as a top-level key or array element within the JSON value?<br/>
      * '{"a":1, "b":2}'::jsonb ? 'b' → t<br/>
@@ -724,7 +714,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ?# geometric_type → boolean<br/>
      * Is first object above second (allows edges to touch)?</a>
      */
@@ -734,7 +724,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ?&amp; text[] → boolean<br/>
      * Do all of the strings in the text array exist as top-level keys or array elements?<br/>
      * '["a", "b", "c"]'::jsonb ?&amp; array['a', 'b'] → t
@@ -746,7 +736,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?- point → boolean<br/>
      * Are points horizontally aligned (that is, have same y coordinate)?</a>
      */
@@ -756,7 +746,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?| point → boolean<br/>
      * Are points vertically aligned (that is, have same x coordinate)?</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ?| text[] → boolean<br/>
@@ -770,7 +760,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * @see Expression#whiteSpace(BiFunction, Object)
-     * @see SimpleExpression#whiteSpace(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#whiteSpace(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">line ?-| line → boolean<br/>
      * lseg ?-| lseg → boolean</a>
      */
@@ -824,10 +814,9 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * The {@link MappingType} of operator return type: {@link  BooleanType} .
      *
-     *
      * @param left not {@link SQLs#DEFAULT} etc.
      * @see Expression#space(BiFunction, Object)
-     * @see SimpleExpression#space(BiFunction, BiFunction, Object)
+     * @see DefiniteExpression#space(BiFunction, BiFunction, Object)
      * @see Postgres#startsWith(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
      */
@@ -839,7 +828,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     *
      *
      * @see Postgres#regexpLike(Expression, Expression)
      * @see Postgres#regexpLike(Expression, Expression, Expression)
@@ -854,7 +842,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
      *
-     *
      * @see Postgres#regexpLike(Expression, Expression)
      * @see Postgres#regexpLike(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~ text → boolean<br/>
@@ -868,7 +855,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~* text → boolean<br/>
      * String matches regular expression, case insensitively</a>
      */
@@ -879,7 +865,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link BooleanType}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~* text → boolean<br/>
      * String does not match regular expression, case insensitively</a>
@@ -893,7 +878,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * OVERLAPS operator
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
     public static Postgres._PeriodOverlapsClause period(final Expression start, final Expression endOrLength) {
@@ -905,7 +889,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * OVERLAPS operator
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
     public static <T> Postgres._PeriodOverlapsClause period(Expression start, BiFunction<Expression, T, Expression> valueOperator, T value) {
@@ -915,7 +898,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * OVERLAPS operator
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
@@ -927,7 +909,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * <p>
      * OVERLAPS operator
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
     public static Postgres._PeriodOverlapsClause period(TypeInfer type, BiFunction<TypeInfer, Object, Expression> valueOperator, Object start, Object endOrLength) {
@@ -938,14 +919,13 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * <p>
      * AT TIME ZONE operator,The {@link MappingType} of operator return type:
-     *     <ol>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalDateTimeType},then {@link OffsetDateTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetDateTimeType},then {@link LocalDateTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalTimeType},then {@link OffsetTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetTimeType},then {@link LocalTimeType}</li>
-     *         <li>Else raise {@link CriteriaException}</li>
-     *     </ol>
-     *
+     * <ol>
+     *     <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalDateTimeType},then {@link OffsetDateTimeType}</li>
+     *     <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetDateTimeType},then {@link LocalDateTimeType}</li>
+     *     <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalTimeType},then {@link OffsetTimeType}</li>
+     *     <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetTimeType},then {@link LocalTimeType}</li>
+     *     <li>Else raise {@link CriteriaException}</li>
+     * </ol>
      *
      * @param source non-multi value parameter/literal
      * @param zone   non-multi value parameter/literal
@@ -1080,7 +1060,8 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     }
 
     /**
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-COLLATE-EXPRS">Collation Expressions<br/></a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-COLLATE-EXPRS">Collation Expressions</a>
+     * @see <a href="https://www.postgresql.org/docs/16/collation.html">collation</a>
      */
     public static SimpleResultExpression collate(Expression expr, String collation) {
         return Expressions.collateExp(expr, collation);

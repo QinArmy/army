@@ -22,7 +22,7 @@ import io.army.criteria.TypeDef;
  * <p>This is base interface of following:
  * <ul>
  *     <li>{@link SqlType}</li>
- *     <li>{@link ArmyType}</li>
+ *     <li>{@link CustomType}</li>
  * </ul>
  *
  * @since 0.6.0
@@ -44,12 +44,19 @@ public interface DataType extends TypeDef {
     boolean isArray();
 
 
-    default TypeDef parens(long precision) {
-        throw new UnsupportedOperationException();
-    }
+    TypeDef parens(long precision);
 
-    default TypeDef parens(int precision, int scale) {
-        throw new UnsupportedOperationException();
+    TypeDef parens(int precision, int scale);
+
+
+    /**
+     * <p>This interface representing user-defined type or unrecognized database build-in type.
+     */
+    interface CustomType extends DataType {
+
+        @Override
+        TypeDef._TypeDefCharacterSetSpec parens(long precision);
+
     }
 
 
@@ -62,7 +69,7 @@ public interface DataType extends TypeDef {
      * @return {@link DataType} instance
      * @see #from(String, boolean)
      */
-    static DataType from(String typeName) {
+    static CustomType from(String typeName) {
         return DataTypeFactory.typeFrom(typeName, false);
     }
 
@@ -76,7 +83,7 @@ public interface DataType extends TypeDef {
      * @return {@link DataType} that representing user-defined type.
      * @throws IllegalArgumentException throw when typeName have no text.
      */
-    static DataType from(String typeName, boolean caseSensitivity) {
+    static CustomType from(String typeName, boolean caseSensitivity) {
         return DataTypeFactory.typeFrom(typeName, caseSensitivity);
     }
 

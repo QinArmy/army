@@ -22,6 +22,8 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.dialect.Database;
+import io.army.sqltype.DataType;
+import io.army.sqltype.SqlType;
 import io.army.util.ClassUtils;
 
 import javax.annotation.Nullable;
@@ -88,6 +90,27 @@ public abstract class _SQLConsultant {
         }
     }
 
+    public static TypeDef._TypeDefCharacterSetSpec precision(final DataType dataType, final boolean textType,
+                                                             final long precision, final long maxValue) {
+        return TypeDefs.precision(dataType, textType, precision, maxValue);
+    }
+
+    public static TypeDef precisionAndScale(final DataType dataType, final int precision, int scale, int maxPrecision, int maxScale) {
+        return TypeDefs.precisionAndScale(dataType, precision, scale, maxPrecision, maxScale);
+    }
+
+
+    public static CriteriaException dontSupportPrecision(SqlType type) {
+        return ContextStack.clearStackAndCriteriaError(String.format("%s don't support precision", type));
+    }
+
+    public static CriteriaException dontSupportPrecisionAndScale(SqlType type) {
+        return ContextStack.clearStackAndCriteriaError(String.format("%s don't support precision and scale", type));
+    }
+
+
+    /*-------------------below protected methods -------------------*/
+
     protected static CriteriaException instanceNotMatch(Statement statement, Class<?> statementClass) {
         String m = String.format("%s isn't instance of %s"
                 , ClassUtils.safeClassName(statement), statementClass.getName());
@@ -96,10 +119,10 @@ public abstract class _SQLConsultant {
 
 
     static CriteriaException illegalNestedItems(@Nullable _NestedItems nestedItem, @Nullable Database database) {
-        String m = String.format("Illegal %s %s for %s"
-                , _NestedItems.class.getName()
-                , ClassUtils.safeClassName(nestedItem)
-                , database == null ? "standard" : database);
+        String m = String.format("Illegal %s %s for %s",
+                _NestedItems.class.getName(),
+                ClassUtils.safeClassName(nestedItem),
+                database == null ? "standard" : database);
         throw new CriteriaException(m);
     }
 
