@@ -63,11 +63,8 @@ interface SqlContextSpec {
 
 
     /**
-     * <p>
-     * just append column name, no preceding space ,no preceding table alias
-     *
-     * <p>
-     * This method is designed for postgre EXCLUDED in INSERT statement.
+     * <p>just append column name, no preceding space ,no preceding table alias
+     * <p>This method is designed for postgre EXCLUDED in INSERT statement.
      *
      */
     void appendFieldOnly(FieldMeta<?> field);

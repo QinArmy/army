@@ -787,9 +787,8 @@ final class PostgreDialectParser extends PostgreParser {
         sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_RETURNING);
 
-        final boolean invokingOutFileTableAlias = context instanceof _InsertContext
-                && ((_InsertContext) context).tableAlias() != null;
-        if (invokingOutFileTableAlias) {
+        if (context instanceof _InsertContext
+                && ((_InsertContext) context).tableAlias() != null) {
             ((_InsertContext) context).outputFieldTableAlias(true);
         }
 
@@ -800,9 +799,6 @@ final class PostgreDialectParser extends PostgreParser {
             selectionList.get(i).appendSelectItem(sqlBuilder, context);
         }
 
-        if (invokingOutFileTableAlias) {
-            ((_InsertContext) context).outputFieldTableAlias(false);
-        }
 
     }
 

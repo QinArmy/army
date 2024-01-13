@@ -987,9 +987,6 @@ abstract class ArmyParser implements DialectParser {
                 if (_DialectUtils.isIllegalChildPostInsert(childStmt)) {
                     throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
                 }
-            } else if (insert instanceof _Insert._DomainInsert
-                    && _DialectUtils.isCannotReturnId((_Insert._DomainInsert) insert)) {
-                throw _Exceptions.cannotReturnPostId((_Insert._DomainInsert) insert);
             }
         }
 

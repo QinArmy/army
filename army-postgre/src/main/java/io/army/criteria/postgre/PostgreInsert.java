@@ -21,6 +21,7 @@ import io.army.criteria.dialect.ReturningInsert;
 import io.army.meta.*;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -109,39 +110,45 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
 
-    interface _ConflictTargetCommaSpec<T, I extends Item, Q extends Item>
-            extends Statement._RightParenClause<_ConflictTargetWhereSpec<T, I, Q>> {
+    interface ConflictTargetCommaClause<T> {
 
-        _ConflictCollateSpec<T, I, Q> comma(IndexFieldMeta<T> indexColumn);
+        _ConflictCollateSpec<T> comma(IndexFieldMeta<T> indexColumn);
 
-        _ConflictCollateSpec<T, I, Q> comma(Expression indexExpression);
+        _ConflictCollateSpec<T> comma(Expression indexExpression);
     }
 
 
-    interface _ConflictOpClassSpec<T, I extends Item, Q extends Item>
-            extends _ConflictTargetCommaSpec<T, I, Q> {
+    interface _ConflictOpClassSpec<T> extends ConflictTargetCommaClause<T> {
 
         /**
          * @param operatorClass operator class
          */
-        _ConflictTargetCommaSpec<T, I, Q> space(String operatorClass);
+        ConflictTargetCommaClause<T> space(String operatorClass);
 
         /**
          * @param supplier provide operator class
          */
-        _ConflictTargetCommaSpec<T, I, Q> ifSpace(Supplier<String> supplier);
+        ConflictTargetCommaClause<T> ifSpace(Supplier<String> supplier);
     }
 
 
-    interface _ConflictCollateSpec<T, I extends Item, Q extends Item>
-            extends _ConflictOpClassSpec<T, I, Q> {
+    interface _ConflictCollateSpec<T> extends _ConflictOpClassSpec<T> {
 
 
-        _ConflictOpClassSpec<T, I, Q> collation(String collationName);
+        _ConflictOpClassSpec<T> collation(String collationName);
 
-        _ConflictOpClassSpec<T, I, Q> collation(Supplier<String> supplier);
+        _ConflictOpClassSpec<T> collation(Supplier<String> supplier);
 
-        _ConflictOpClassSpec<T, I, Q> ifCollation(Supplier<String> supplier);
+        _ConflictOpClassSpec<T> ifCollation(Supplier<String> supplier);
+
+    }
+
+
+    interface _ConflictTargetOptionSpaceClause<T> {
+
+        _ConflictCollateSpec<T> space(IndexFieldMeta<T> indexColumn);
+
+        _ConflictCollateSpec<T> space(Expression indexExpression);
 
     }
 
@@ -149,9 +156,7 @@ public interface PostgreInsert extends PostgreStatement {
     interface _ConflictTargetOptionSpec<T, I extends Item, Q extends Item>
             extends _ConflictDoNothingClause<I, Q> {
 
-        _ConflictCollateSpec<T, I, Q> leftParen(IndexFieldMeta<T> indexColumn);
-
-        _ConflictCollateSpec<T, I, Q> leftParen(Expression indexExpression);
+        _ConflictTargetWhereSpec<T, I, Q> parens(Consumer<_ConflictTargetOptionSpaceClause<T>> consumer);
 
         _ConflictActionClause<T, I, Q> onConstraint(String constraintName);
 

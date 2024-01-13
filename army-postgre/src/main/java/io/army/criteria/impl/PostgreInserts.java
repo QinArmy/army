@@ -543,8 +543,8 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static final class ConflictTargetItem<T, I extends Item, Q extends Item>
-            implements PostgreInsert._ConflictCollateSpec<T, I, Q>
-            , _ConflictTargetItem {
+            implements PostgreInsert._ConflictCollateSpec<T>,
+            _ConflictTargetItem {
 
         private final OnConflictClause<T, I, Q> clause;
 
@@ -584,7 +584,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ConflictOpClassSpec<T, I, Q> collation(final @Nullable String collationName) {
+        public PostgreInsert._ConflictOpClassSpec<T> collation(final @Nullable String collationName) {
             if (collationName == null) {
                 throw ContextStack.nullPointer(this.clause.valuesClause.context);
             } else if (this.collationName != null || this.operatorClass != null) {
@@ -595,12 +595,12 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ConflictOpClassSpec<T, I, Q> collation(Supplier<String> supplier) {
+        public PostgreInsert._ConflictOpClassSpec<T> collation(Supplier<String> supplier) {
             return this.collation(supplier.get());
         }
 
         @Override
-        public PostgreInsert._ConflictOpClassSpec<T, I, Q> ifCollation(Supplier<String> supplier) {
+        public PostgreInsert._ConflictOpClassSpec<T> ifCollation(Supplier<String> supplier) {
             final String collation;
             collation = supplier.get();
             if (collation != null) {
@@ -610,7 +610,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ConflictTargetCommaSpec<T, I, Q> space(final @Nullable String operatorClass) {
+        public PostgreInsert.ConflictTargetCommaClause<T> space(final @Nullable String operatorClass) {
             if (this.operatorClass != null) {
                 throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             } else if (operatorClass == null) {
@@ -623,7 +623,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ConflictTargetCommaSpec<T, I, Q> ifSpace(Supplier<String> supplier) {
+        public PostgreInsert.ConflictTargetCommaClause<T> ifSpace(Supplier<String> supplier) {
             if (this.operatorClass != null) {
                 throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             }
@@ -640,18 +640,13 @@ abstract class PostgreInserts extends InsertSupports {
 
 
         @Override
-        public PostgreInsert._ConflictCollateSpec<T, I, Q> comma(IndexFieldMeta<T> indexColumn) {
-            return this.clause.leftParen(indexColumn); // create and add
+        public PostgreInsert._ConflictCollateSpec<T> comma(IndexFieldMeta<T> indexColumn) {
+            return this.clause.addIndexExpression(indexColumn); // create and add
         }
 
         @Override
-        public PostgreInsert._ConflictCollateSpec<T, I, Q> comma(Expression indexExpression) {
-            return this.clause.leftParen(indexExpression); // create and add
-        }
-
-        @Override
-        public PostgreInsert._ConflictTargetWhereSpec<T, I, Q> rightParen() {
-            return this.clause.targetItemClauseEnd();
+        public PostgreInsert._ConflictCollateSpec<T> comma(Expression indexExpression) {
+            return this.clause.addIndexExpression(indexExpression); // create and add
         }
 
         private CriteriaException nonSafeOperatorClassName(String operatorClassName) {
@@ -770,9 +765,10 @@ abstract class PostgreInserts extends InsertSupports {
             extends WhereClause.WhereClauseClause<
             PostgreInsert._ConflictActionClause<T, I, Q>,
             PostgreInsert._ConflictTargetWhereAndSpec<T, I, Q>>
-            implements PostgreInsert._ConflictTargetOptionSpec<T, I, Q>
-            , PostgreInsert._ConflictTargetWhereSpec<T, I, Q>
-            , PostgreInsert._ConflictTargetWhereAndSpec<T, I, Q> {
+            implements PostgreInsert._ConflictTargetOptionSpec<T, I, Q>,
+            PostgreInsert._ConflictTargetWhereSpec<T, I, Q>,
+            PostgreInsert._ConflictTargetWhereAndSpec<T, I, Q>,
+            PostgreInsert._ConflictTargetOptionSpaceClause<T> {
 
         private final PostgreComplexValuesClause<T, I, Q> valuesClause;
 
@@ -792,15 +788,21 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ConflictCollateSpec<T, I, Q> leftParen(final IndexFieldMeta<T> indexColumn) {
+        public PostgreInsert._ConflictTargetWhereSpec<T, I, Q> parens(Consumer<PostgreInsert._ConflictTargetOptionSpaceClause<T>> consumer) {
+            CriteriaUtils.invokeConsumer(this, consumer);
+            return targetItemClauseEnd();
+        }
+
+
+        @Override
+        public PostgreInsert._ConflictCollateSpec<T> space(IndexFieldMeta<T> indexColumn) {
             return this.addIndexExpression(indexColumn);
         }
 
         @Override
-        public PostgreInsert._ConflictCollateSpec<T, I, Q> leftParen(final Expression indexExpression) {
+        public PostgreInsert._ConflictCollateSpec<T> space(Expression indexExpression) {
             return this.addIndexExpression(indexExpression);
         }
-
 
         @Override
         public PostgreInsert._ConflictActionClause<T, I, Q> onConstraint(final @Nullable String constraintName) {
@@ -842,7 +844,7 @@ abstract class PostgreInserts extends InsertSupports {
                     .conflictClauseEnd(new ConflictActionClauseResult(this, itemPairList, predicateList));
         }
 
-        private PostgreInsert._ConflictCollateSpec<T, I, Q> addIndexExpression(final Expression indexExpression) {
+        private PostgreInsert._ConflictCollateSpec<T> addIndexExpression(final Expression indexExpression) {
             if (!(indexExpression instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);
             } else if (indexExpression instanceof FieldMeta
