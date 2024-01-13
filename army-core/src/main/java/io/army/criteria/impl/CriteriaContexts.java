@@ -821,14 +821,14 @@ abstract class CriteriaContexts {
 
         @Override
         public <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-            String m = "current context don't support field(tableAlias,field)";
+            String m = "current context don't support SQLs.field(tableAlias,field)";
             throw ContextStack.criteriaError(this, m);
         }
 
 
         @Override
         public DerivedField refField(String derivedAlias, String fieldName) {
-            String m = "current context don't support refOuter(derivedAlias,fieldName)";
+            String m = "current context don't support SQLs.refField(derivedAlias,fieldName)";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -2809,6 +2809,31 @@ abstract class CriteriaContexts {
             final CriteriaContext leftContext = this.leftContext;
             assert leftContext != null;
             return leftContext;
+        }
+
+
+        @Override
+        public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
+            final CriteriaContext outerContext = this.outerContext;
+            final QualifiedField<T> qualifiedField;
+            if (outerContext == null) {
+                qualifiedField = null;
+            } else {
+                qualifiedField = outerContext.field(tableAlias, field);
+            }
+            return qualifiedField;
+        }
+
+        @Override
+        public final DerivedField refField(final String derivedAlias, final String fieldName) {
+            final CriteriaContext outerContext = this.outerContext;
+            final DerivedField field;
+            if (outerContext == null) {
+                field = null;
+            } else {
+                field = outerContext.refField(derivedAlias, fieldName);
+            }
+            return field;
         }
 
         @Override

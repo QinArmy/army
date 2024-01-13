@@ -32,9 +32,6 @@ public interface SyncSessionContext extends SessionContext {
     @Override
     SyncSessionFactory sessionFactory();
 
-
-    boolean hasCurrentSession();
-
     /**
      * Retrieve the current session according to the scoping defined
      * by this implementation.

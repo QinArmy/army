@@ -19,6 +19,7 @@ package io.army.criteria.mysql.unit;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
+import io.army.criteria.Visible;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
@@ -49,7 +50,7 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
             return hintList;
         };
 
-        Insert stmt;
+        final Insert stmt;
         stmt = MySQLs.singleReplace()
                 .literalMode(LiteralMode.PREFERENCE)
                 .replace(hintSupplier, Collections.singletonList(MySQLs.DELAYED))
@@ -62,7 +63,7 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
                 .values(this::createBankUserList)
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
     }
 
     @Test
@@ -78,6 +79,7 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
 
         Insert stmt;
         stmt = MySQLs.singleReplace()
+                .ignoreReturnIds()
                 .literalMode(LiteralMode.PREFERENCE)
                 .replace(hintSupplier, Collections.singletonList(MySQLs.LOW_PRIORITY))
                 .into(ChinaRegion_.T)
@@ -89,7 +91,7 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
                 .values(this::createReginList)
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
 
     }
 

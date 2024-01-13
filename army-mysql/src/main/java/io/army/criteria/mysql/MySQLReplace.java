@@ -125,6 +125,7 @@ public interface MySQLReplace extends MySQLStatement {
     }
 
     interface _PrimaryOptionSpec extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_PrimaryNullOptionSpec>,
             _PrimaryNullOptionSpec {
 
     }

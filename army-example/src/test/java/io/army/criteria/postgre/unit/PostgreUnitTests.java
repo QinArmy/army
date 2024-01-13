@@ -26,13 +26,19 @@ abstract class PostgreUnitTests extends CriteriaUnitTests {
 
 
     static void printStmt(Logger logger, PrimaryStatement statement) {
+        printStmt(logger, statement, Visible.ONLY_VISIBLE);
+    }
+
+
+    static void printStmt(Logger logger, PrimaryStatement statement, Visible visible) {
 
         for (PostgreDialect dialect : PostgreDialect.values()) {
             // statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
-            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, visible, true));
             // break;
         }
 
     }
+
 
 }

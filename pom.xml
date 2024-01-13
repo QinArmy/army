@@ -23,7 +23,6 @@
         <module>army-annotation</module>
         <module>army-example</module>
         <module>army-postgre</module>
-        <module>army-sergeant</module>
     </modules>
 
     <name>army</name>
@@ -141,11 +140,6 @@
             <dependency>
                 <groupId>io.qinarmy</groupId>
                 <artifactId>army-mysql</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.qinarmy</groupId>
-                <artifactId>army-sergeant</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- 模块 end  -->

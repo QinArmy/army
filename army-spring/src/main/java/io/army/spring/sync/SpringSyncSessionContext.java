@@ -49,11 +49,6 @@ final class SpringSyncSessionContext implements SyncSessionContext {
     }
 
     @Override
-    public boolean hasCurrentSession() {
-        return TransactionSynchronizationManager.getResource(this.factory) instanceof SyncSession;
-    }
-
-    @Override
     public SyncSession currentSession() throws NoCurrentSessionException {
         final Object session;
         session = TransactionSynchronizationManager.getResource(this.factory);

@@ -34,8 +34,6 @@ public final class SyncKey<T> extends ArmyKey<T> {
      */
     public static final SyncKey<String> EXECUTOR_PROVIDER_MD5 = new SyncKey<>("sync.executor.provider_md5", String.class, "0e6c8da4cf23b959d280ff0b1122db5c");
 
-    public static final SyncKey<String> SESSION_CONTEXT = new SyncKey<>("sync.session.context", String.class, null);
-
     private SyncKey(String name, Class<T> javaType, @Nullable T defaultValue) {
         super(name, javaType, defaultValue);
     }

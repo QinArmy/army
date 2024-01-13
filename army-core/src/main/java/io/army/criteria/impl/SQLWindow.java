@@ -558,10 +558,10 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
         if (windowName != null) {
             sqlBuilder.append(_Constant.SPACE);
             parser.identifier(windowName, sqlBuilder)
-                    .append(_Constant.SPACE_AS);
+                    .append(_Constant.SPACE_AS_SPACE);
         }// anonymous window
 
-        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+        sqlBuilder.append(_Constant.LEFT_PAREN);
         //3.reference window name
         final String refWindowName = this.refWindowName;
         if (refWindowName != null) {
