@@ -335,17 +335,10 @@ abstract class TableMetaUtils {
 
 
     static String columnName(final Column column, final Field field) throws MetaException {
-        final String customColumnName = column.name().toLowerCase(Locale.ROOT), fieldName = field.getName();
+        final String customColumnName = column.name(), fieldName = field.getName();
         final String columnName;
         if (customColumnName.isEmpty()) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
-        } else if (_MetaBridge.RESERVED_FIELDS.contains(fieldName)) {
-            columnName = _MetaBridge.camelToLowerCase(fieldName);
-            if (_StringUtils.hasText(customColumnName) && !customColumnName.equals(columnName)) {
-                String m = String.format("Mapped class[%s] reserved filed[%s] column name must use default value.",
-                        field.getDeclaringClass().getName(), fieldName);
-                throw new MetaException(m);
-            }
         } else if (!customColumnName.trim().equals(customColumnName)) {
             String m = String.format("Mapped class [%s] required prop[%s] column name contain space.",
                     field.getDeclaringClass().getName(),

@@ -19,7 +19,6 @@ package io.army.dialect;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
@@ -143,31 +142,27 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         sqlBuilder.append(safeParentAlias);
 
 
+        final String safeIdColumnName;
+        safeIdColumnName = parser.safeObjectName(parentTable.id());
+
         //below where clause
         sqlBuilder.append(_Constant.SPACE_WHERE)
                 .append(_Constant.SPACE)
+
                 .append(safeParentAlias)
                 .append(_Constant.PERIOD)
-                .append(_MetaBridge.ID)
+                .append(safeIdColumnName)
+
                 .append(_Constant.SPACE_EQUAL_SPACE)
 
                 .append(this.safeTargetTableAlias)
                 .append(_Constant.PERIOD)
-                .append(_MetaBridge.ID)
+                .append(safeIdColumnName)
 
-                .append(_Constant.SPACE_AND_SPACE)
-                .append(safeParentAlias)
-                .append(_Constant.PERIOD);
-
-        final FieldMeta<?> discriminator = parentTable.discriminator();
-        parser.safeObjectName(discriminator, sqlBuilder)
-                .append(_Constant.SPACE_EQUAL_SPACE)
-                .append(childTable.discriminatorValue().code())
-                //below sub query right paren
                 .append(_Constant.SPACE_RIGHT_PAREN);
 
 
-    }//parentColumnFromSubQuery
+    } // parentColumnFromSubQuery
 
 
     private void childColumnFromSubQuery(final FieldMeta<?> childField) {
@@ -197,16 +192,20 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         } else {
             sqlBuilder.append(_Constant.SPACE);
         }
+
+        final String safeIdColumnName;
+        safeIdColumnName = parser.safeObjectName(childTable.id());
+
         sqlBuilder.append(safeChildAlias)
                 .append(_Constant.SPACE_WHERE)
                 .append(_Constant.SPACE)
                 .append(safeChildAlias)
                 .append(_Constant.PERIOD)
-                .append(_MetaBridge.ID)
+                .append(safeIdColumnName)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(this.safeTargetTableAlias)
                 .append(_Constant.PERIOD)
-                .append(_MetaBridge.ID)
+                .append(safeIdColumnName)
                 .append(_Constant.SPACE_RIGHT_PAREN);
 
 
