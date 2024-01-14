@@ -1090,12 +1090,12 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             final String charset = this.charsetName, collate = this.collateName;
 
             if (charset != null) {
-                sqlBuilder.append(SQLs.SPACE_CHARACTER_SET_SPACE);
+                sqlBuilder.append(_Constant.SPACE_CHARACTER_SET_SPACE);
                 context.parser().identifier(charset, sqlBuilder);
             }
 
             if (collate != null) {
-                sqlBuilder.append(SQLs.SPACE_COLLATE_SPACE);
+                sqlBuilder.append(_Constant.SPACE_COLLATE_SPACE);
                 context.parser().identifier(collate, sqlBuilder);
             }
 
@@ -1135,12 +1135,12 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             final String charset = this.charsetName, collate = this.collateName;
 
             if (charset != null) {
-                builder.append(SQLs.SPACE_CHARACTER_SET_SPACE)
+                builder.append(_Constant.SPACE_CHARACTER_SET_SPACE)
                         .append(charset);
             }
 
             if (collate != null) {
-                builder.append(SQLs.SPACE_COLLATE_SPACE)
+                builder.append(_Constant.SPACE_COLLATE_SPACE)
                         .append(charset);
             }
 
@@ -1306,13 +1306,14 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             sqlBuilder.append(_Constant.SPACE);
             context.identifier(this.name, sqlBuilder);
-            sqlBuilder.append(_Constant.SPACE);
 
             final TypeItem typeItem = this.typeItem;
 
             if (typeItem instanceof MappingType) {
+                sqlBuilder.append(_Constant.SPACE);
                 context.parser().typeName((MappingType) typeItem, sqlBuilder);
             } else if (typeItem instanceof MySQLType) {
+                sqlBuilder.append(_Constant.SPACE);
                 sqlBuilder.append(((MySQLType) typeItem).typeName());
             } else {
                 ((_SelfDescribed) typeItem).appendSql(sqlBuilder, context);
@@ -1325,7 +1326,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
             final Object pathExp = this.pathExp;
             if (pathExp instanceof String) {
-                context.appendLiteral(StringType.INSTANCE, pathExp);
+                context.appendLiteral(JsonPathType.INSTANCE, pathExp);
             } else if (pathExp instanceof Expression) {
                 ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
             } else {

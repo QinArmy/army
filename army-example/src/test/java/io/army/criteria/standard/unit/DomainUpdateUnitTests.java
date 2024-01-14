@@ -69,18 +69,18 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
         final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(ChinaProvince_.T, AS, "p")
-                .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
+                .set(ChinaRegion_.name, SQLs::literal, "武侠江湖")
                 .set(ChinaRegion_.name, ChinaProvince_.provincialCapital) // test SET child field in parent SET clause
-                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
-                .set(ChinaProvince_.provincialCapital, SQLs::param, "光明顶")
-                .set(ChinaProvince_.governor, SQLs::param, "张无忌")
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::literal, gdpAmount)
+                .set(ChinaProvince_.provincialCapital, SQLs::literal, "光明顶")
+                .set(ChinaProvince_.governor, SQLs::literal, "张无忌")
                 .where(ChinaProvince_.id.equal(SQLs::literal, 1))
-                .and(ChinaRegion_.name::equal, SQLs::param, "江湖")
+                .and(ChinaRegion_.name::equal, SQLs::literal, "江湖")
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
-                .and(ChinaProvince_.governor.equal(SQLs::param, "石教主").or(consumer -> {
-                            consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "钟教主"));
-                            consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "老钟"));
-                            consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "方腊"));
+                .and(ChinaProvince_.governor.equal(SQLs::literal, "石教主").or(consumer -> {
+                    consumer.accept(ChinaProvince_.governor.equal(SQLs::literal, "钟教主"));
+                    consumer.accept(ChinaProvince_.governor.equal(SQLs::literal, "老钟"));
+                    consumer.accept(ChinaProvince_.governor.equal(SQLs::literal, "方腊"));
                         })
                 )
                 .asUpdate();

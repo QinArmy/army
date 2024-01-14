@@ -16,7 +16,10 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.DefiniteExpression;
+import io.army.criteria.IPredicate;
+import io.army.criteria.LogicalPredicate;
+import io.army.criteria.TableField;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
@@ -25,7 +28,6 @@ import io.army.util._StringUtils;
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -44,25 +46,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
     MySQLSyntax() {
     }
 
-    private static final Pattern CHARSET_NAME_PATTERN = Pattern.compile("a-zA-Z[_\\w]*]");
 
-    /**
-     * @see io.army.criteria.mysql.MySQLCharset
-     */
-    public static SQLIdentifier charset(String charsetName) {
-        if (!CHARSET_NAME_PATTERN.matcher(charsetName).matches()) {
-            String m = String.format("Illegal charset name[%s]", charsetName);
-            throw ContextStack.clearStackAndCriteriaError(m);
-        }
-        return SQLs._identifier(charsetName);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/charset-mysql.html">Collation</a>
-     */
-    public static SimpleResultExpression collate(Expression expr, String collation) {
-        return Expressions.collateExp(expr, collation);
-    }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/charset-mysql.html">String Literals</a>

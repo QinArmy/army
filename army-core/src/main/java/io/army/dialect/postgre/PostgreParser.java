@@ -317,7 +317,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             default:
                 throw _Exceptions.unexpectedEnum((PostgreType) dataType);
 
-        }// switch
+        } // switch
 
 
     }
@@ -655,9 +655,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
         sqlBuilder = childContext.sqlBuilder();
         assert parentContext.sqlBuilder() == sqlBuilder; // must assert
 
+        final String safeIdColumnName;
+        safeIdColumnName = safeObjectName(domainTable.id());
+
         if (sqlBuilder.length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
+
 
         // append child table update cte statement
         final String childCte;
@@ -665,19 +669,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
         sqlBuilder.append(_Constant.WITH)
                 .append(_Constant.SPACE)
                 .append(childCte)
-                .append(_Constant.SPACE_LEFT_PAREN)
-                .append(_Constant.SPACE)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_Constant.SPACE_RIGHT_PAREN)
                 .append(_Constant.SPACE_AS)
                 .append(_Constant.SPACE_LEFT_PAREN)
                 .append(_Constant.SPACE)
                 .append(_Constant.UPDATE)
                 .append(_Constant.SPACE_ONLY)
                 .append(_Constant.SPACE)
-                .append(safeChildTableName)// child table name.
+                .append(safeChildTableName) // child table name.
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeChildTableAlias);
 
@@ -690,7 +688,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
         // child cte WHERE clause
         this.childDomainCteWhereClause(stmt.wherePredicateList(), childContext);
-        this.discriminator(domainTable, safeParentAlias, context);
+        this.discriminator(domainTable, safeParentAlias, childContext);
         childContext.appendConditionFields();
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
@@ -702,13 +700,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(_Constant.SPACE)
                 .append(safeChildTableAlias)
                 .append(_Constant.PERIOD)
-                .append(_Constant.DOUBLE_QUOTE)
+                .append(safeIdColumnName);
+
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                 .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_Constant.SPACE_AS_SPACE)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
                 .append(_Constant.SPACE_RIGHT_PAREN);
 
         // child cte end
@@ -717,10 +712,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
         sqlBuilder.append(_Constant.SPACE)
                 .append(_Constant.UPDATE)
                 .append(_Constant.SPACE_ONLY)
-                .append(_Constant.SPACE);
-
-
-        sqlBuilder.append(safeParentTableName)// parent table name.
+                .append(_Constant.SPACE)
+                .append(safeParentTableName) // parent table name.
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeParentAlias);
 
@@ -739,30 +732,23 @@ abstract class PostgreParser extends _ArmyDialectParser {
                     .append(_Constant.SPACE_ON_SPACE)
                     .append(safeChildTableAlias)
                     .append(_Constant.PERIOD)
-                    .append(_Constant.DOUBLE_QUOTE)
-                    .append(_MetaBridge.ID)
-                    .append(_Constant.DOUBLE_QUOTE)
+                    .append(safeIdColumnName)
                     .append(_Constant.SPACE_EQUAL_SPACE)
                     .append(childCte)
                     .append(_Constant.PERIOD)
-                    .append(_Constant.DOUBLE_QUOTE)
-                    .append(_MetaBridge.ID)
-                    .append(_Constant.DOUBLE_QUOTE);
+                    .append(_MetaBridge.ID);
 
         }
 
         sqlBuilder.append(_Constant.SPACE_WHERE)
+                .append(_Constant.SPACE)
                 .append(safeParentAlias)
                 .append(_Constant.PERIOD)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
+                .append(safeIdColumnName)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(childCte)
                 .append(_Constant.PERIOD)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE);
+                .append(_MetaBridge.ID);
 
 
     }

@@ -24,8 +24,8 @@ import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 
-abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _SingleTableContext
-        , _DmlContext._DomainUpdateSpec {
+abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _SingleTableContext,
+        _DmlContext._DomainUpdateSpec {
 
 
     private final String safeRelatedAlias;
@@ -34,10 +34,10 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
 
     DomainDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
-        if (!(this.targetTable instanceof ParentTableMeta && this.domainTable instanceof ChildTableMeta)) {
+        if (!(this.domainTable instanceof ChildTableMeta)) {
             this.safeRelatedAlias = null;
         } else if (this.safeTargetTableName == null) {
-            this.safeRelatedAlias = parser.identifier(stmt.tableAlias());
+            this.safeRelatedAlias = parser.identifier(this.domainTableAlias);
         } else {
             this.safeRelatedAlias = parser.safeObjectName(this.domainTable);
         }
@@ -47,7 +47,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
     DomainDmlStmtContext(_SingleDml stmt, DomainDmlStmtContext parentContext) {
         super(stmt, parentContext);
         if (this.safeTargetTableName == null) {
-            this.safeRelatedAlias = parentContext.safeTableAlias;
+            this.safeRelatedAlias = parentContext.safeTargetTableAlias;
         } else {
             this.safeRelatedAlias = this.parser.safeObjectName(parentContext.targetTable);
         }
@@ -55,7 +55,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
 
     @Override
     public final void appendField(final String tableAlias, final FieldMeta<?> field) {
-        if (!this.tableAlias.equals(tableAlias)) {
+        if (!this.domainTableAlias.equals(tableAlias)) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
         this.appendField(field);
@@ -72,7 +72,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
             if (this.safeTargetTableName != null) {
                 sqlBuilder.append(this.safeTargetTableName);
             } else {
-                sqlBuilder.append(this.safeTableAlias);
+                sqlBuilder.append(this.safeTargetTableAlias);
             }
             sqlBuilder.append(_Constant.PERIOD);
             this.parser.safeObjectName(field, sqlBuilder);
@@ -151,7 +151,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_EQUAL_SPACE)
 
-                .append(this.safeTableAlias)
+                .append(this.safeTargetTableAlias)
                 .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
 
@@ -204,13 +204,13 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_EQUAL_SPACE)
-                .append(this.safeTableAlias)
+                .append(this.safeTargetTableAlias)
                 .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_RIGHT_PAREN);
 
 
-    }//childColumnFromSubQuery
+    } // childColumnFromSubQuery
 
 
 }

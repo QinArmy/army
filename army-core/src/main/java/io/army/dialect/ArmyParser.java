@@ -2565,7 +2565,7 @@ abstract class ArmyParser implements DialectParser {
 
         final String safeTableAlias;
         if (this.supportSingleUpdateAlias) {
-            safeTableAlias = context.safeTableAlias;
+            safeTableAlias = context.safeTargetTableAlias;
         } else {
             safeTableAlias = null;
         }
@@ -2604,7 +2604,7 @@ abstract class ArmyParser implements DialectParser {
             } else {
                 sqlBuilder.append(_Constant.SPACE);
             }
-            sqlBuilder.append(context.safeTableAlias);
+            sqlBuilder.append(context.safeTargetTableAlias);
         }
 
     }
@@ -2790,7 +2790,7 @@ abstract class ArmyParser implements DialectParser {
             } else {
                 childBuilder.append(_Constant.SPACE);
             }
-            childBuilder.append(childContext.safeTableAlias);
+            childBuilder.append(childContext.safeTargetTableAlias);
         }
         //4. append child WHERE clause
         final List<_Predicate> whereList;
@@ -2837,7 +2837,7 @@ abstract class ArmyParser implements DialectParser {
 
         final String safeTableAlias;
         if (this.supportSingleDeleteAlias) {
-            safeTableAlias = context.safeTableAlias;
+            safeTableAlias = context.safeTargetTableAlias;
         } else {
             safeTableAlias = null;
         }

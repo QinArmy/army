@@ -37,7 +37,7 @@ abstract class SingleDmlContext extends SingleTableDmlContext {
 
     @Override
     public final void appendField(final String tableAlias, final FieldMeta<?> field) {
-        if (this.tableAlias.equals(tableAlias)) {
+        if (this.targetTableAlias.equals(tableAlias)) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
         this.appendField(field);
@@ -51,7 +51,7 @@ abstract class SingleDmlContext extends SingleTableDmlContext {
         final StringBuilder sqlBuilder = this.sqlBuilder;
         sqlBuilder.append(_Constant.SPACE);
         if (this.safeTargetTableName == null) {
-            sqlBuilder.append(this.safeTableAlias);
+            sqlBuilder.append(this.safeTargetTableAlias);
         } else {
             sqlBuilder.append(this.safeTargetTableName);
         }
