@@ -93,12 +93,15 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
 
     @AfterMethod
     public final void closeSessionAfterTest(final ITestResult testResult) {
+        ReactiveSession session;
         for (Object parameter : testResult.getParameters()) {
-            if (parameter instanceof ReactiveSession) {
-                ((ReactiveSession) parameter).close()
-                        .block();
-                LOG.debug("{} have closed", parameter);
+            if (!(parameter instanceof ReactiveSession)) {
+                continue;
             }
+            session = (ReactiveSession) parameter;
+            session.close()
+                    .block();
+            LOG.debug("session[name : {} , hash : {}] have closed", session.name(), System.identityHashCode(session));
         }
     }
 

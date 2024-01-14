@@ -89,11 +89,14 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
 
     @AfterMethod
     public final void closeSessionAfterTest(final ITestResult testResult) {
+        SyncSession session;
         for (Object parameter : testResult.getParameters()) {
-            if (parameter instanceof SyncSession) {
-                ((SyncSession) parameter).close();
-                LOG.debug("{} have closed", parameter);
+            if (!(parameter instanceof SyncSession)) {
+                continue;
             }
+            session = (SyncSession) parameter;
+            session.close();
+            LOG.debug("session[name : {} , hash : {}] have closed", session.name(), System.identityHashCode(session));
         }
 
     }
@@ -155,7 +158,6 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
 
 
     /*-------------------below static class  -------------------*/
-
 
 
 }
