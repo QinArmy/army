@@ -933,7 +933,7 @@ public abstract class _Exceptions {
 
     public static SessionClosedException sessionClosed(Session session) {
         String m;
-        m = String.format("%s of %s have closed.", session.sessionFactory(), session);
+        m = String.format("%s have closed.", session);
         return new SessionClosedException(m);
     }
 

@@ -2902,6 +2902,11 @@ abstract class ArmyParser implements DialectParser {
         context.appendFieldList();
         //4. values clause
         context.appendValueList();
+
+        if (this.supportReturningClause) {
+            context.appendReturnIdIfNeed();
+        }
+
     }
 
 

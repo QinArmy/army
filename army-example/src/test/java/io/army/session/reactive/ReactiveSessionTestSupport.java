@@ -22,21 +22,25 @@ import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
 import io.army.session.FactoryUtils;
 import io.army.util._Collections;
-import org.testng.ITestContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ITestNGMethod;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
 
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
-    private static final Database[] DATABASE_VALUES = new Database[]{Database.MySQL};
+    private static final List<Database> DATABASE_LIST = Collections.singletonList(Database.MySQL);
 
     private static final ConcurrentMap<Database, ReactiveSessionFactory> FACTORY_MAP = _Collections.concurrentHashMap();
 
@@ -57,7 +61,7 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
             return;
         }
 
-        for (Database db : DATABASE_VALUES) {
+        for (Database db : DATABASE_LIST) {
             FACTORY_MAP.computeIfAbsent(db, FactoryUtils::createArmyBankReactiveFactory);
 
         }// for loop
@@ -77,7 +81,7 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
             return;
         }
 
-        for (Database db : Database.values()) {
+        for (Database db : DATABASE_LIST) {
             factory = FACTORY_MAP.remove(db);
             if (factory != null) {
                 factory.close()
@@ -88,95 +92,50 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
 
 
     @AfterMethod
-    public final void closeSessionAfterTest(final Method method, final ITestContext context) {
-        boolean match = false;
-        for (Class<?> parameterType : method.getParameterTypes()) {
-            if (ReactiveSession.class.isAssignableFrom(parameterType)) {
-                match = true;
-                break;
+    public final void closeSessionAfterTest(final ITestResult testResult) {
+        for (Object parameter : testResult.getParameters()) {
+            if (parameter instanceof ReactiveSession) {
+                ((ReactiveSession) parameter).close()
+                        .block();
+                LOG.debug("{} have closed", parameter);
             }
-        }
-        if (!match) {
-            return;
-        }
-
-        final String key;
-        key = method.getDeclaringClass().getName() + '.' + method.getName() + "#reactiveSession";
-
-        final Object value;
-        value = context.getAttribute(key);
-        if (value instanceof ReactiveSession) {
-            context.removeAttribute(key);
-            ((ReactiveSession) value).close()
-                    .block();
-        } else if (value instanceof TestSessionHolder && ((TestSessionHolder) value).close) {
-            context.removeAttribute(key);
-            ((TestSessionHolder) value).session.close()
-                    .block();
         }
     }
 
 
     @DataProvider(name = "localSessionProvider", parallel = true)
-    public final Object[][] createLocalSession(final ITestNGMethod targetMethod, final ITestContext context) {
-        return createDataSession(true, targetMethod, context);
+    public final Object[][] createLocalSession(final ITestNGMethod targetMethod) {
+        return createDataSession(true, targetMethod);
     }
 
     @DataProvider(name = "rmSessionProvider", parallel = true)
-    public final Object[][] createRmSession(final ITestNGMethod targetMethod, final ITestContext context) {
-        return createDataSession(false, targetMethod, context);
+    public final Object[][] createRmSession(final ITestNGMethod targetMethod) {
+        return createDataSession(false, targetMethod);
     }
 
 
-    private Object[][] createDataSession(final boolean local, final ITestNGMethod targetMethod,
-                                         final ITestContext context) {
+    private Object[][] createDataSession(final boolean local, final ITestNGMethod targetMethod) {
         final Database database = this.database;
-
-        if (database != null) {
+        final Object[][] dataArray;
+        if (database == null) {
+            dataArray = new Object[DATABASE_LIST.size()][];
+            for (int i = 0; i < dataArray.length; i++) {
+                dataArray[i] = createDatabaseSession(local, DATABASE_LIST.get(i), targetMethod);
+            }
+        } else {
             final Object[] sessionInfo;
-            sessionInfo = createDatabaseSession(local, database, targetMethod, context);
-            return new Object[][]{sessionInfo};
+            sessionInfo = createDatabaseSession(local, database, targetMethod);
+            dataArray = new Object[][]{sessionInfo};
         }
 
-        final int length = DATABASE_VALUES.length;
-
-        final Object[][] dataArray = new Object[length][];
-
-        for (int i = 0; i < length; i++) {
-            dataArray[i] = createDatabaseSession(local, DATABASE_VALUES[i], targetMethod, context);
-        }
         return dataArray;
     }
 
 
-    private Object[] createDatabaseSession(final boolean local, final Database database, final ITestNGMethod targetMethod,
-                                           final ITestContext context) {
+    private Object[] createDatabaseSession(final boolean local, final Database database, final ITestNGMethod targetMethod) {
 
-        final int currentInvocationCount = targetMethod.getCurrentInvocationCount() + 1;
-
-        final String methodName, keyOfSession;
+        final String methodName;
         methodName = targetMethod.getMethodName();
-        keyOfSession = keyNameOfSession(targetMethod);
-
-        final Class<?>[] parameterTypeArray;
-        parameterTypeArray = targetMethod.getParameterTypes();
-
-
-        int sessionIndex = -1, methodIndex = -1, readOnlyIndex = -1;
-
-        Class<?> parameterType;
-        for (int i = 0; i < parameterTypeArray.length; i++) {
-            parameterType = parameterTypeArray[i];
-            if (ReactiveSession.class.isAssignableFrom(parameterType)) {
-                sessionIndex = i;
-            } else if (parameterType == boolean.class) {
-                readOnlyIndex = i;
-            } else if (parameterType == String.class) {
-                methodIndex = i;
-            }
-        }
-
-        final boolean readOnly = (currentInvocationCount & 1) == 0;
 
         final ReactiveSessionFactory sessionFactory;
         sessionFactory = FACTORY_MAP.get(database);
@@ -185,65 +144,21 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
         final ReactiveSession session;
         if (local) {
             session = sessionFactory.localBuilder()
-                    .name(methodName)
-                    .readonly(readOnly)
+                    .name(methodName + '#' + database.name())
                     .allowQueryInsert(true)
                     .build()
                     .block();
         } else {
             session = sessionFactory.rmBuilder()
-                    .name(methodName)
-                    .readonly(readOnly)
+                    .name(methodName + '#' + database.name())
                     .allowQueryInsert(true)
                     .build()
                     .block();
         }
-
-        context.setAttribute(keyOfSession, session);
-
-        final Object[] result;
-        if (sessionIndex > -1 && methodIndex > -1 && readOnlyIndex > -1) {
-            result = new Object[3];
-            result[sessionIndex] = session;
-            result[methodIndex] = methodName;
-            result[readOnlyIndex] = readOnly;
-        } else if (sessionIndex > -1 && readOnlyIndex > -1) {
-            result = new Object[2];
-            result[sessionIndex] = session;
-            result[readOnlyIndex] = readOnly;
-        } else if (sessionIndex > -1 && methodIndex > -1) {
-            result = new Object[2];
-            result[sessionIndex] = session;
-            result[methodIndex] = methodName;
-        } else {
-            result = new Object[]{session};
-        }
-        return result;
+        return new Object[]{session};
     }
 
     /*-------------------below protected static -------------------*/
-
-    protected static String keyNameOfSession(final ITestNGMethod targetMethod) {
-        return targetMethod.getRealClass().getName() + '.' + targetMethod.getMethodName() + "#reactiveSession";
-    }
-
-    /*-------------------below static class  -------------------*/
-
-    /**
-     * for {@link #closeSessionAfterTest(Method, ITestContext)}
-     */
-    protected static final class TestSessionHolder {
-
-        public final ReactiveSession session;
-
-        public final boolean close;
-
-        public TestSessionHolder(ReactiveSession session, boolean close) {
-            this.session = session;
-            this.close = close;
-        }
-
-    }// TestSessionHolder
 
 
 }

@@ -20,19 +20,26 @@ import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
 import io.army.sync.SyncSession;
 import io.army.sync.SyncSessionFactory;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
-import org.testng.ITestContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ITestNGMethod;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
+
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
+
+    private static final List<Database> DATABASE_LIST = ArrayUtils.of(Database.MySQL, Database.PostgreSQL);
 
     private static final ConcurrentMap<Database, SyncSessionFactory> SYNC_FACTORY_MAP = _Collections.concurrentHashMap();
 
@@ -53,15 +60,8 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
             return;
         }
 
-        for (Database db : Database.values()) {
-            switch (db) {
-                case MySQL:
-                case PostgreSQL:
-                    SYNC_FACTORY_MAP.computeIfAbsent(db, FactoryUtils::createArmyBankSyncFactory);
-                    break;
-                default:
-                    // no-op
-            } // switch
+        for (Database db : DATABASE_LIST) {
+            SYNC_FACTORY_MAP.computeIfAbsent(db, FactoryUtils::createArmyBankSyncFactory);
         }// for loop
 
     }
@@ -78,7 +78,7 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
             return;
         }
 
-        for (Database db : Database.values()) {
+        for (Database db : DATABASE_LIST) {
             syncFactory = SYNC_FACTORY_MAP.remove(db);
             if (syncFactory != null) {
                 syncFactory.close();
@@ -88,94 +88,74 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
 
 
     @AfterMethod
-    public final void closeSessionAfterTest(final Method method, final ITestContext context) {
-        boolean match = false;
-        for (Class<?> parameterType : method.getParameterTypes()) {
-            if (SyncSession.class.isAssignableFrom(parameterType)) {
-                match = true;
-                break;
+    public final void closeSessionAfterTest(final ITestResult testResult) {
+        for (Object parameter : testResult.getParameters()) {
+            if (parameter instanceof SyncSession) {
+                ((SyncSession) parameter).close();
+                LOG.debug("{} have closed", parameter);
             }
         }
-        if (!match) {
-            return;
-        }
 
-        final String key;
-        key = method.getDeclaringClass().getName() + '.' + method.getName() + "#syncSession";
-
-        final Object value;
-        value = context.getAttribute(key);
-        if (value instanceof SyncSession) {
-            context.removeAttribute(key);
-            ((SyncSession) value).close();
-        } else if (value instanceof TestSessionHolder && ((TestSessionHolder) value).close) {
-            context.removeAttribute(key);
-            ((TestSessionHolder) value).session.close();
-        }
     }
 
     @DataProvider(name = "localSessionProvider", parallel = true)
-    public final Object[][] createLocalSession(final ITestNGMethod targetMethod, final ITestContext context) {
-        return createDatabaseSession(true, targetMethod, context);
+    public final Object[][] createLocalSession(final ITestNGMethod targetMethod) {
+        return createDataSession(true, targetMethod);
     }
 
     @DataProvider(name = "rmSessionProvider", parallel = true)
-    public final Object[][] createRmSession(final ITestNGMethod targetMethod, final ITestContext context) {
-        return createDatabaseSession(false, targetMethod, context);
+    public final Object[][] createRmSession(final ITestNGMethod targetMethod) {
+        return createDataSession(false, targetMethod);
     }
 
 
-    private Object[][] createDatabaseSession(final boolean local, final ITestNGMethod targetMethod,
-                                             final ITestContext context) {
+    private Object[][] createDataSession(final boolean local, final ITestNGMethod targetMethod) {
+        final Database database = this.database;
+        final Object[][] dataArray;
+        if (database == null) {
+            dataArray = new Object[DATABASE_LIST.size()][];
+            for (int i = 0; i < dataArray.length; i++) {
+                dataArray[i] = createDatabaseSession(local, DATABASE_LIST.get(i), targetMethod);
+            }
+        } else {
+            final Object[] sessionInfo;
+            sessionInfo = createDatabaseSession(local, database, targetMethod);
+            dataArray = new Object[][]{sessionInfo};
+        }
 
-        final String methodName, keyOfSession;
+        return dataArray;
+    }
+
+
+    private Object[] createDatabaseSession(final boolean local, final Database database, final ITestNGMethod targetMethod) {
+
+        final String methodName;
         methodName = targetMethod.getMethodName();
-        keyOfSession = keyNameOfSession(targetMethod);
 
         final SyncSessionFactory sessionFactory;
-        sessionFactory = SYNC_FACTORY_MAP.get(this.database);
+        sessionFactory = SYNC_FACTORY_MAP.get(database);
         assert sessionFactory != null;
 
         final SyncSession session;
         if (local) {
             session = sessionFactory.localBuilder()
-                    .name(methodName)
+                    .name(methodName + '#' + database.name())
                     .allowQueryInsert(true)
                     .build();
         } else {
             session = sessionFactory.rmBuilder()
-                    .name(methodName)
+                    .name(methodName + '#' + database.name())
                     .allowQueryInsert(true)
                     .build();
         }
-
-        context.setAttribute(keyOfSession, session);
-        return new Object[][]{{session}};
+        return new Object[]{session};
     }
 
     /*-------------------below protected static -------------------*/
 
-    protected static String keyNameOfSession(final ITestNGMethod targetMethod) {
-        return targetMethod.getRealClass().getName() + '.' + targetMethod.getMethodName() + "#syncSession";
-    }
 
     /*-------------------below static class  -------------------*/
 
-    /**
-     * for {@link #closeSessionAfterTest(Method, ITestContext)}
-     */
-    protected static final class TestSessionHolder {
-
-        public final SyncSession session;
-
-        public final boolean close;
-
-        public TestSessionHolder(SyncSession session, boolean close) {
-            this.session = session;
-            this.close = close;
-        }
-
-    }// TestSessionHolder
 
 
 }

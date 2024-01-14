@@ -16,6 +16,8 @@
 
 package io.army;
 
+import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson;
 import io.army.example.pill.domain.PillUser;
@@ -24,12 +26,15 @@ import io.army.example.pill.struct.PillUserType;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
+import org.testng.Assert;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -313,6 +318,31 @@ public abstract class ArmyTestDataSupport {
             list.add(u);
         }
         return list;
+    }
+
+
+    protected static void assertChinaRegionAfterNoConflictInsert(final List<? extends ChinaRegion<?>> regionList) {
+        Long id, lastId = null;
+        for (ChinaRegion<?> chinaRegion : regionList) {
+            id = chinaRegion.getId();
+            Assert.assertNotNull(id);
+            if (lastId != null) {
+                Assert.assertTrue(id > lastId);
+            }
+            lastId = id;
+        }
+
+    }
+
+    /**
+     * @return a unmodified list
+     */
+    protected static List<Dialect> createDialectList(final List<Database> databaseList) {
+        final List<Dialect> dialectList = _Collections.arrayList();
+        for (Database database : databaseList) {
+            dialectList.addAll(Arrays.asList(database.dialects()));
+        }
+        return Collections.unmodifiableList(dialectList);
     }
 
     private static StringBuilder randomSuffix(final Random random, final String value) {

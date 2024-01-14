@@ -209,7 +209,7 @@ abstract class InsertContext extends StatementContext
             this.appendReturningClause = false;
         } else if (needReturnId) {
             this.returningList = _Collections.emptyList();
-            if (targetStmt instanceof _Statement._ReturningListSpec) {
+            if (parser.supportReturningClause) {
                 this.returnSelectionList = _Collections.singletonList(idField);
                 this.idSelectionIndex = 0;
                 this.appendReturningClause = true;
@@ -673,6 +673,11 @@ abstract class InsertContext extends StatementContext
                 .append(_Constant.SPACE);
 
         final ArmyParser dialect = this.parser;
+        final String safeTableAlias = this.safeTableAlias;
+        if (safeTableAlias != null) {
+            sqlBuilder.append(safeTableAlias)
+                    .append(_Constant.PERIOD);
+        }
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);
 

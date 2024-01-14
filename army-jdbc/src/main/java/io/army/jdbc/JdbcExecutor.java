@@ -586,9 +586,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             int batchSize = 0;
             if (this.factory.useMultiStmt) {
                 if (statement.execute(multiStmtSql)) {
-                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
-                    // no bug never here
-                    throw new IllegalStateException("sql error");
+                    sessionIsolation = readIsolationAndClose(statement.getResultSet());
                 } else if (statement.getUpdateCount() == -1) {
                     throw multiStatementLessThanExpected(0, stmtCount); // no result
                 }
@@ -634,6 +632,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final Isolation finalIsolation;
             if (isolation == null) {
+                if (sessionIsolation == null) {
+                    throw new AssertionError();
+                }
                 assert sessionIsolation != null;
                 finalIsolation = sessionIsolation;
             } else {
@@ -1774,10 +1775,16 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final PrimaryFieldMeta<?> idField = stmt.idField();
             final MappingType type = idField.mappingType();
             final int idSelectionIndex = stmt.idSelectionIndex();
-            final int idColumnIndexBaseOne = idSelectionIndex + 1;
+            final int idColumnIndexBaseOne;
+            if (idSelectionIndex < 0) {
+                assert stmt.selectionList().size() == 0;
+                idColumnIndexBaseOne = 1;
+            } else {
+                idColumnIndexBaseOne = idSelectionIndex + 1;
+            }
 
             final DataType sqlType;
-            sqlType = getDataType(idResultSet.getMetaData(), idColumnIndexBaseOne);
+            sqlType = getDataType(resultSet.getMetaData(), idColumnIndexBaseOne);
 
             final MappingEnv env = this.factory.mappingEnv;
 
