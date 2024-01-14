@@ -655,8 +655,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         sqlBuilder = childContext.sqlBuilder();
         assert parentContext.sqlBuilder() == sqlBuilder; // must assert
 
-        final String safeIdColumnName;
-        safeIdColumnName = safeObjectName(domainTable.id());
 
         if (sqlBuilder.length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
@@ -694,6 +692,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
             this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
         }
 
+        final String safeIdColumnName;
+        safeIdColumnName = safeObjectName(domainTable.id());
 
         // RETURNING clause
         sqlBuilder.append(_Constant.SPACE_RETURNING)
@@ -753,6 +753,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-delete.html">Postgre DELETE syntax</a>
+     */
     @Override
     protected final void parseDomainChildDelete(final _SingleDelete stmt, final _DeleteContext context) {
 
@@ -789,12 +792,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         sqlBuilder.append(_Constant.WITH)
                 .append(_Constant.SPACE)
                 .append(deleteCte)
-                .append(_Constant.SPACE_LEFT_PAREN)
-                .append(_Constant.SPACE)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_Constant.SPACE_RIGHT_PAREN)
                 .append(_Constant.SPACE_AS)
                 .append(_Constant.SPACE_LEFT_PAREN)
                 .append(_Constant.SPACE)
@@ -817,18 +814,18 @@ abstract class PostgreParser extends _ArmyDialectParser {
             this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
         }
 
+        final String safeIdColumnName;
+        safeIdColumnName = safeObjectName(domainTable.id());
+
         // RETURNING clause
         sqlBuilder.append(_Constant.SPACE_RETURNING)
                 .append(_Constant.SPACE)
                 .append(safeChildTableAlias)
                 .append(_Constant.PERIOD)
-                .append(_Constant.DOUBLE_QUOTE)
+                .append(safeIdColumnName);
+
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                 .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_Constant.SPACE_AS_SPACE)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
                 .append(_Constant.SPACE_RIGHT_PAREN);
 
         // child cte end
@@ -843,20 +840,17 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeParentAlias)
                 .append(_Constant.SPACE_USING)   // parent part USING clause
+                .append(_Constant.SPACE)
                 .append(deleteCte)
                 .append(_Constant.SPACE_WHERE)
                 .append(_Constant.SPACE)
                 .append(safeParentAlias)
                 .append(_Constant.PERIOD)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE)
+                .append(safeIdColumnName)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(deleteCte)
                 .append(_Constant.PERIOD)
-                .append(_Constant.DOUBLE_QUOTE)
-                .append(_MetaBridge.ID)
-                .append(_Constant.DOUBLE_QUOTE);
+                .append(_MetaBridge.ID);
     }
 
     @Override

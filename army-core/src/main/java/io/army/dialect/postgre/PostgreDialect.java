@@ -24,10 +24,16 @@ import io.army.util._StringUtils;
 public enum PostgreDialect implements Dialect {
 
     POSTGRE11(11),
+
     POSTGRE12(12),
+
     POSTGRE13(13),
+
     POSTGRE14(14),
-    POSTGRE15(15);
+
+    POSTGRE15(15),
+
+    POSTGRE16(16);
 
 
     private final byte version;
@@ -82,6 +88,9 @@ public enum PostgreDialect implements Dialect {
                 break;
             case 15:
                 dialect = PostgreDialect.POSTGRE15;
+                break;
+            case 16:
+                dialect = PostgreDialect.POSTGRE16;
                 break;
             default:
                 throw Database.unsupportedVersion(meta);

@@ -184,6 +184,11 @@ public abstract class _MockDialects implements DialectEnv {
                         .major(15)
                         .minor(0);
                 break;
+            case POSTGRE16:
+                builder.version("16.0.0")
+                        .major(16)
+                        .minor(0);
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(dialect);
         }

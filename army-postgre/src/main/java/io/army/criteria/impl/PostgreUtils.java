@@ -47,7 +47,7 @@ abstract class PostgreUtils extends CriteriaUtils {
     /**
      * reference last dialect
      */
-    static final PostgreDialect DIALECT = PostgreDialect.POSTGRE15;
+    static final PostgreDialect DIALECT = PostgreDialect.POSTGRE16;
 
 
     static boolean isUnionQuery(final SubQuery query) {

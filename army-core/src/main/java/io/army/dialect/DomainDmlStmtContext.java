@@ -17,6 +17,8 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._Delete;
+import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.*;
 import io.army.util._Exceptions;
@@ -29,7 +31,10 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
 
     private final String safeRelatedAlias;
 
+    private final boolean childCteModeChildFiledSimplyOutput;
+
     private boolean existsChildFiledInSetClause;
+
 
     DomainDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
@@ -41,6 +46,16 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
             this.safeRelatedAlias = parser.safeObjectName(this.domainTable);
         }
 
+        if (stmt instanceof _Delete) {
+            this.childCteModeChildFiledSimplyOutput = parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE;
+        } else {
+            this.childCteModeChildFiledSimplyOutput = parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE
+                    && this.domainTable instanceof ChildTableMeta
+                    && stmt instanceof _DomainUpdate
+                    && ((_DomainUpdate) stmt).childItemPairList().size() > 0;
+        }
+
+
     }
 
     DomainDmlStmtContext(_SingleDml stmt, DomainDmlStmtContext parentContext) {
@@ -50,6 +65,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         } else {
             this.safeRelatedAlias = this.parser.safeObjectName(parentContext.targetTable);
         }
+        this.childCteModeChildFiledSimplyOutput = true;
     }
 
     @Override
@@ -88,7 +104,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 this.parentColumnFromSubQuery(field);
             }
         } else if (targetTable instanceof ParentTableMeta && fieldTable == this.domainTable) {
-            if (this.parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE) {
+            if (this.childCteModeChildFiledSimplyOutput) {
                 assert this.safeRelatedAlias != null;
                 sqlBuilder.append(_Constant.SPACE)
                         .append(this.safeRelatedAlias)

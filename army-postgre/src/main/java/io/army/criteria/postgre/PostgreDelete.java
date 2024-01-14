@@ -23,8 +23,7 @@ import io.army.meta.TableMeta;
 import javax.annotation.Nullable;
 
 /**
- * <p>
- * This interface representing Postgre DELETE syntax.
+ * <p>This interface representing Postgre DELETE syntax.
  *
  * @see <a href="https://www.postgresql.org/docs/current/sql-delete.html">Postgre DELETE syntax</a>
  * @since 0.6.0

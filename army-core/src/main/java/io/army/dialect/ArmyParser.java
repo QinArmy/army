@@ -1619,6 +1619,11 @@ abstract class ArmyParser implements DialectParser {
 
         final String safeChildTableAlias = context.saTableAliasOf(child);
         final String safeParentTableAlias = context.saTableAliasOf(parent);
+
+        final String safeIdColumnName;
+        safeIdColumnName = safeObjectName(child.id());
+
+
         final StringBuilder builder = context.sqlBuilder();
 
         // 1. child table name
@@ -1638,11 +1643,11 @@ abstract class ArmyParser implements DialectParser {
         builder.append(_Constant.SPACE_ON_SPACE)
                 .append(safeChildTableAlias)
                 .append(_Constant.PERIOD)
-                .append(_MetaBridge.ID)
+                .append(safeIdColumnName)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(safeParentTableAlias)
                 .append(_Constant.PERIOD)
-                .append(_MetaBridge.ID);
+                .append(safeIdColumnName);
     }
 
     protected final void groupByClause(final List<? extends GroupByItem> groupByList, final _SqlContext context) {
