@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.PERIOD;
+
 @Test(dataProvider = "localSessionProvider")
 public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
@@ -26,6 +29,7 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
+                //.literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
                         .comma(ChinaRegion_.parentId)
@@ -55,6 +59,7 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
+                //.literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
                         .comma(ChinaRegion_.parentId)
@@ -98,7 +103,7 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
-                .literalMode(LiteralMode.PREFERENCE)
+                // .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
@@ -126,6 +131,7 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
+                // .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
@@ -145,7 +151,6 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
                 .insertInto(ChinaCity_.T)
                 .values()
-
                 .parens(s -> s.space(ChinaCity_.mayorName, SQLs::param, randomPerson(random)))
                 .comma()
                 .parens(s -> s.space(ChinaCity_.mayorName, SQLs::param, randomPerson(random)))
@@ -163,6 +168,8 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
         }
 
     }
+
+    /*-------------------below dynamic VALUES insert -------------------*/
 
     @Test
     public void dynamicValuesInsertParent(final SyncLocalSession session) {
@@ -187,6 +194,122 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
                 .asInsert();
 
         Assert.assertEquals(session.update(stmt), rowCount);
+
+    }
+
+    @Test
+    public void dynamicValuesInsertChild(final SyncLocalSession session) {
+        final Random random = ThreadLocalRandom.current();
+
+        final int rowCount = 2;
+
+        final Insert stmt;
+        stmt = SQLs.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values(r -> {
+                    for (int i = 0; i < rowCount; i++) {
+                        r.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::literal, 0)
+                        );
+                    }
+                })
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaCity_.T)
+                .values(r -> {
+                    for (int i = 0; i < rowCount; i++) {
+                        r.parens(s -> s.space(ChinaCity_.mayorName, SQLs::param, randomPerson(random)));
+                    }
+                })
+                .asInsert();
+
+        session.startTransaction();
+        try {
+            Assert.assertEquals(session.update(stmt), rowCount);
+            session.commit();
+        } catch (RuntimeException e) {
+            session.rollback();
+            throw e;
+        }
+
+    }
+
+
+    /*-------------------below query insert -------------------*/
+
+    @Test(dependsOnMethods = {"domainInsertParent", "staticValuesInsertParent", "dynamicValuesInsertParent"})
+    public void queryInsertParent(final SyncLocalSession session) {
+        final Insert stmt;
+        stmt = SQLs.singleInsert()
+                .migration()
+                .insertInto(HistoryChinaRegion_.T)
+                .space()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.NONE)
+                .and(SQLs::notExists, SQLs.subQuery()
+                        .select(HistoryChinaRegion_.id)
+                        .from(HistoryChinaRegion_.T, AS, "hc")
+                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
+                        ::asQuery
+                )
+                .asQuery()
+                .asInsert();
+
+        session.update(stmt);
+
+    }
+
+
+    @Test(dependsOnMethods = {"domainInsertChild", "staticValuesInsertChild", "dynamicValuesInsertChild"})
+    public void queryInsertChild(final SyncLocalSession session) {
+        final Insert stmt;
+        stmt = SQLs.singleInsert()
+                .migration()
+                .insertInto(HistoryChinaRegion_.T)
+                .space()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
+                .where(SQLs::notExists, SQLs.subQuery()
+                        .select(HistoryChinaRegion_.id)
+                        .from(HistoryChinaRegion_.T, AS, "hc")
+                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
+                        ::asQuery
+                )
+                .asQuery()
+                .asInsert()
+
+                .child()
+
+                .insertInto(HistoryChinaProvince_.T)
+                .space()
+                .select("p", PERIOD, ChinaProvince_.T)
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
+                .where(SQLs::notExists, SQLs.subQuery()
+                        .select(HistoryChinaProvince_.id)
+                        .from(HistoryChinaProvince_.T, AS, "hp")
+                        .join(HistoryChinaRegion_.T, AS, "hc").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
+                        .where(HistoryChinaProvince_.id::equal, ChinaProvince_.id)
+                        ::asQuery
+                )
+                .asQuery()
+                .asInsert();
+
+        session.startTransaction();
+        try {
+            session.update(stmt);
+            session.commit();
+        } catch (RuntimeException e) {
+            session.rollback();
+            throw e;
+        }
 
     }
 

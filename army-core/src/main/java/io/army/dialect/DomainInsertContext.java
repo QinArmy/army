@@ -42,7 +42,7 @@ import java.util.function.ObjIntConsumer;
 /**
  * <p>
  * This class representing standard value insert context.
-*/
+ */
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
 
 
@@ -108,10 +108,10 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final int fieldSize = fieldList.size();
 
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser parser = this.parser;
         final LiteralMode literalMode = this.literalMode;
         final boolean migration = this.migration;
-        final boolean mockEnv = dialect.mockEnv;
+        final boolean mockEnv = parser.mockEnv;
 
         final NullMode nullMode = this.nullMode;
         final boolean twoStmtMode = this.twoStmtMode;
@@ -121,7 +121,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final TableMeta<?> insertTable = this.insertTable, domainTable = wrapper.domainTable;
         final boolean postParentId = insertTable.nonChildId().generatorType() == GeneratorType.POST;
         final FieldMeta<?> discriminator = domainTable.discriminator();
-
 
         final String discriminatorLiteral;
         final SingleParam discriminatorParam;
@@ -137,7 +136,12 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         } else {
             final CodeEnum codeEnum = domainTable.discriminatorValue();
             assert codeEnum != null;
-            discriminatorLiteral = Integer.toString(codeEnum.code());
+            assert discriminator != null;
+
+            final StringBuilder codeBuilder = new StringBuilder(10);
+            parser.literal(discriminator.mappingType(), codeEnum, codeBuilder);
+            discriminatorLiteral = codeBuilder.toString();
+
             discriminatorParam = null;
         }
 
@@ -152,7 +156,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                 defaultValueMap = wrapper.nonChildDefaultMap;
             }
         } else {
-            generator = dialect.generator;
+            generator = parser.generator;
             defaultValueMap = wrapper.nonChildDefaultMap;
         }
         FieldMeta<?> field;

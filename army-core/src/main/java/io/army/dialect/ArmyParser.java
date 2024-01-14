@@ -699,8 +699,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * <p>
-     * Append  literal
+     * <p>Append  literal
      */
     public final void literal(final TypeMeta typeMeta, @Nullable Object value, final StringBuilder sqlBuilder) {
         final MappingType type;

@@ -57,7 +57,7 @@ public interface StandardInsert extends StandardStatement {
 
     interface _ColumnListSpec<T, I extends Item>
             extends InsertStatement._ColumnListParensClause<T, _ComplexColumnDefaultSpec<T, I>>,
-            _ValuesColumnDefaultSpec<T, I> {
+            _ComplexColumnDefaultSpec<T, I> {
 
     }
 

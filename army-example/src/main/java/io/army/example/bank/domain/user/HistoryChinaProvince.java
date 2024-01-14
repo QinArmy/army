@@ -28,10 +28,10 @@ import io.army.annotation.Table;
 public class HistoryChinaProvince extends HistoryChinaRegion<HistoryChinaProvince> {
 
 
-    @Column(precision = 30, nullable = false, comment = "china provincial capital")
+    @Column(precision = 80, nullable = false, comment = "china provincial capital")
     private String provincialCapital;
 
-    @Column(precision = 30, nullable = false, defaultValue = "''", comment = "china provincial governor")
+    @Column(precision = 80, nullable = false, defaultValue = "''", comment = "china provincial governor")
     private String governor;
 
 

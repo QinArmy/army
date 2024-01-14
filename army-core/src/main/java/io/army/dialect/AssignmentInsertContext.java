@@ -270,12 +270,18 @@ final class AssignmentInsertContext extends InsertContext
             assert discriminator != null;
             final CodeEnum codeEnum = domainTable.discriminatorValue();
             assert codeEnum != null;
+
             discriminatorLiteral = null;
             discriminatorParam = SingleParam.build(discriminator.mappingType(), codeEnum);
         } else {
             final CodeEnum codeEnum = domainTable.discriminatorValue();
             assert codeEnum != null;
-            discriminatorLiteral = Integer.toString(codeEnum.code());
+            assert discriminator != null;
+
+            final StringBuilder codeBuilder = new StringBuilder(10);
+            this.parser.literal(discriminator.mappingType(), codeEnum, codeBuilder);
+            discriminatorLiteral = codeBuilder.toString();
+
             discriminatorParam = null;
         }
 
