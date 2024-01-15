@@ -30,6 +30,7 @@ import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.function.Consumer;
 
 abstract class WindowFunctions {
@@ -39,15 +40,35 @@ abstract class WindowFunctions {
     }
 
 
-    static WindowFunc._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
+    static Windows._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
         return new ZeroArgStandardWindowFunc(name, returnType);
     }
 
-    static WindowFunc._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
-        if (!(one instanceof FunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        }
+    static Windows._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
         return new OneArgStandardWindowFunc(name, one, returnType);
+    }
+
+    static Windows._OverSpec twoArgWindowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
+        return new TwoArgStandardWindowFunc(name, one, two, returnType);
+    }
+
+    static Windows._OverSpec compositeWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+        return new CompositeStandardWindowFunc(name, argList, returnType);
+    }
+
+
+    /*-------------------below Aggregate functions-------------------*/
+
+    static Windows._AggWindowFunc oneArgWindowAggFunc(String name, Expression one, TypeMeta returnType) {
+        return new OneArgStandardAggWidowFunc(name, one, returnType);
+    }
+
+    static Windows._AggWindowFunc twoArgAggWindow(String name, Expression one, Expression two, TypeMeta returnType) {
+        return new TwoArgStandardAggWidowFunc(name, one, two, returnType);
+    }
+
+    static Windows._AggWindowFunc compositeWindowAggFunc(String name, List<?> argList, TypeMeta returnType) {
+        return new CompositeStandardWindowAggFunc(name, argList, returnType);
     }
 
 
@@ -239,7 +260,7 @@ abstract class WindowFunctions {
     }//GlobalWindow
 
     private static abstract class StandardWindowFunction extends WindowFunction<Window._StandardPartitionBySpec>
-            implements WindowFunc._OverSpec {
+            implements Windows._OverSpec {
 
         private StandardWindowFunction(String name, TypeMeta returnType) {
             super(name, returnType);
@@ -292,7 +313,7 @@ abstract class WindowFunctions {
 
     }//ZeroArgStandardWindowFunc
 
-    private static final class OneArgStandardWindowFunc extends StandardWindowFunction {
+    private static class OneArgStandardWindowFunc extends StandardWindowFunction {
 
         private final ArmyExpression one;
 
@@ -302,17 +323,105 @@ abstract class WindowFunctions {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        final void argToString(StringBuilder builder) {
             builder.append(this.one);
         }
 
 
-    }//OneArgStandardWindowFunc
+    } // OneArgStandardWindowFunc
+
+
+    private static class TwoArgStandardWindowFunc extends StandardWindowFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private TwoArgStandardWindowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+        }
+
+        @Override
+        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.one.appendSql(sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            this.two.appendSql(sqlBuilder, context);
+        }
+
+        @Override
+        final void argToString(StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
+
+    } // TwoArgStandardWindowFunc
+
+
+    private static final class OneArgStandardAggWidowFunc extends OneArgStandardWindowFunc
+            implements Windows._AggWindowFunc {
+
+
+        private OneArgStandardAggWidowFunc(String name, Expression one, TypeMeta returnType) {
+            super(name, one, returnType);
+        }
+
+
+    } // OneArgStandardAggWidowFunc
+
+
+    private static final class TwoArgStandardAggWidowFunc extends TwoArgStandardWindowFunc
+            implements Windows._AggWindowFunc {
+
+
+        private TwoArgStandardAggWidowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
+            super(name, one, two, returnType);
+        }
+
+
+    } // TwoArgStandardAggWidowFunc
+
+
+    private static class CompositeStandardWindowFunc extends StandardWindowFunction {
+
+        private final List<?> argList;
+
+        private CompositeStandardWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, returnType);
+            this.argList = argList;
+        }
+
+
+        @Override
+        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            FuncExpUtils.appendCompositeList(this.name, this.argList, sqlBuilder, context);
+        }
+
+        @Override
+        final void argToString(StringBuilder builder) {
+            FuncExpUtils.compositeListToString(this.argList, builder);
+        }
+
+
+    } // CompositeStandardWindowFunc
+
+    private static final class CompositeStandardWindowAggFunc extends CompositeStandardWindowFunc
+            implements Windows._AggWindowFunc {
+
+        private CompositeStandardWindowAggFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, argList, returnType);
+        }
+
+
+    } // CompositeStandardWindowAggFunc
 
 
 }

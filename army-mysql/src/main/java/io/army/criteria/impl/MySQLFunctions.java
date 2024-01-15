@@ -50,7 +50,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
     }
 
 
-    static MySQLWindowFunctions._OverSpec noArgWindowFunc(String name, TypeMeta returnType) {
+    static MySQLWindowFunctions._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
         return new NoArgWindowFunction(name, returnType);
     }
 
@@ -493,7 +493,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
         @Override
         final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendCompositeList(this.argList, sqlBuilder, context);
+            FuncExpUtils.appendCompositeList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override

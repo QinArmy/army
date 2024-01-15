@@ -985,7 +985,7 @@ abstract class Functions {
     /**
      * <p>The {@link MappingType} of function return type: {@link  LongType}
      *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr)</a>
      */
     public static SimpleExpression countAsterisk() {
         return CountAsteriskFunction.INSTANCE;
@@ -995,7 +995,7 @@ abstract class Functions {
      * <p>The {@link MappingType} of function return type: {@link  LongType}
      *
      * @param expr non-null
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr)</a>
      */
     public static SimpleExpression count(Expression expr) {
         return LiteralFunctions.oneArgFunc("COUNT", expr, LongType.INSTANCE);
@@ -1085,7 +1085,7 @@ abstract class Functions {
      */
     public static SimpleExpression sum(SQLs.ArgDistinct distinct, Expression exp) {
         FuncExpUtils.assertDistinct(distinct, SQLs.DISTINCT);
-        return LiteralFunctions.compositeFunc("SUM", Arrays.asList(distinct, exp), DoubleType.INSTANCE);
+        return LiteralFunctions.compositeFunc("SUM", Arrays.asList(distinct, exp), _returnType(exp, Functions::_sumType));
     }
 
     /**
@@ -1568,6 +1568,32 @@ abstract class Functions {
             returnType = type;
         } else {
             returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * <ul>
+     *     <li>If expr is integer number type ,then {@link UnsignedLongType}</li>
+     *     <li>else {@link VarBinaryType}</li>
+     * </ul>
+     *
+     * @see Windows#bitAnd(Expression)
+     * @see Windows#bitOr(Expression)
+     * @see Windows#bitXor(Expression)
+     */
+    static MappingType _bitwiseFuncType(final Expression expr) {
+        final MappingType returnType;
+
+        TypeMeta paramMeta = expr.typeMeta();
+        if (!(paramMeta instanceof MappingType)) {
+            paramMeta = paramMeta.mappingType();
+        }
+
+        if (paramMeta instanceof MappingType.SqlIntegerType || paramMeta instanceof MappingType.SqlBitType) {
+            returnType = UnsignedLongType.INSTANCE;
+        } else {
+            returnType = VarBinaryType.INSTANCE;
         }
         return returnType;
     }

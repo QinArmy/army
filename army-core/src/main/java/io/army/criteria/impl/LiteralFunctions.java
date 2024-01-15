@@ -326,7 +326,7 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            FuncExpUtils.appendCompositeList(this.argList, sqlBuilder, context);
+            FuncExpUtils.appendCompositeList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override

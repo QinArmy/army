@@ -22,6 +22,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.sqltype.SqlType;
+import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
@@ -311,7 +312,8 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void appendCompositeList(final List<?> argList, final StringBuilder sqlBuilder, final _SqlContext context) {
+    static void appendCompositeList(final String name, final List<?> argList, final StringBuilder sqlBuilder,
+                                    final _SqlContext context) {
 
         for (final Object value : argList) {
 
@@ -321,7 +323,7 @@ abstract class FuncExpUtils {
                 ((ArmyExpression) value).appendSql(sqlBuilder, context);
             } else if (value instanceof SQLWords) {
                 if (!(value instanceof SQLs.ArmyKeyWord)) {
-                    throw new CriteriaException(String.format("Illegal words %s", value));
+                    throw new CriteriaException(String.format("SQL function[%s] illegal words %s", name, value));
                 }
                 sqlBuilder.append(((SQLWords) value).spaceRender());
             } else if (value instanceof SQLIdentifier) {
@@ -330,14 +332,14 @@ abstract class FuncExpUtils {
             } else if (value instanceof TypeDef) {
                 if (value instanceof SqlType) {
                     if (!value.getClass().getPackage().getName().equals("io.army.sqltype")) {
-                        throw new CriteriaException(String.format("Illegal SqlType %s", value));
+                        throw new CriteriaException(String.format("SQL function[%s] illegal SqlType %s", name, value));
                     }
                     sqlBuilder.append(_Constant.SPACE)
                             .append(((SqlType) value).typeName());
                 } else if (value instanceof TypeDefs) {
                     ((_SelfDescribed) value).appendSql(sqlBuilder, context);
                 } else {
-                    throw new CriteriaException(String.format("Illegal TypeDef %s", value));
+                    throw new CriteriaException(String.format("SQL function[%s] illegal TypeDef %s", name, value));
                 }
             } else if (value instanceof Clause) {
                 ((_SelfDescribed) value).appendSql(sqlBuilder, context);
@@ -345,7 +347,9 @@ abstract class FuncExpUtils {
                 final MappingType type;
                 type = _MappingFactory.getDefaultIfMatch(value.getClass());
                 if (type == null) {
-                    throw _Exceptions.notFoundMappingType(value);
+                    String m = String.format("SQL function[%s] not found default %s for %s.", name,
+                            MappingType.class.getName(), ClassUtils.safeClassName(value));
+                    throw new CriteriaException(m);
                 }
                 context.appendLiteral(type, value);
             }

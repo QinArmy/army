@@ -23,7 +23,6 @@ import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.mysql.MySQLWindow;
 import io.army.criteria.standard.SQLFunction;
 import io.army.mapping.*;
-import io.army.meta.TypeMeta;
 import io.army.util._Collections;
 
 import java.util.*;
@@ -249,7 +248,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
     public static SimpleExpression groupConcat(SQLs.ArgDistinct distinct, Expression exp,
-                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+                                               Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
         return LiteralFunctions.compositeFunc("GROUP_CONCAT", Arrays.asList(distinct, exp, MySQLFunctions.groupConcatClause(consumer)),
@@ -269,7 +268,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
     public static SimpleExpression groupConcat(Consumer<Clause._VariadicExprSpaceClause> expConsumer,
-                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+                                               Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
 
         final ArrayList<Object> argList = _Collections.arrayList(3);
@@ -299,7 +298,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
     public static SimpleExpression groupConcat(SQLs.ArgDistinct distinct, Consumer<Clause._VariadicExprSpaceClause> expConsumer,
-                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+                                               Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
         final ArrayList<Object> argList = _Collections.arrayList(4);
@@ -330,7 +329,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
     public static SimpleExpression groupConcat(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
-                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+                                               Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
 
         final ArrayList<Object> argList = _Collections.arrayList(4);
@@ -369,7 +368,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
     public static SimpleExpression groupConcat(SQLs.ArgDistinct distinct, SQLs.SymbolSpace space, Consumer<Consumer<Expression>> expConsumer,
-                                         Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
+                                               Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
         FuncExpUtils.assertDistinct(distinct, MySQLs.DISTINCT);
 
         final ArrayList<Object> argList = _Collections.arrayList(4);
@@ -566,7 +565,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      */
     public static _OverSpec cumeDist() {
-        return MySQLFunctions.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE);
+        return MySQLFunctions.zeroArgWindowFunc("CUME_DIST", DoubleType.INSTANCE);
     }
 
     /**
@@ -576,7 +575,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
     public static _OverSpec denseRank() {
-        return MySQLFunctions.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
+        return MySQLFunctions.zeroArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
     }
 
 
@@ -588,7 +587,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
      */
     public static _OverSpec firstValue(Expression expr) {
-        return MySQLFunctions.noArgWindowFunc("FIRST_VALUE", expr.typeMeta());
+        return MySQLFunctions.oneArgWindowFunc("FIRST_VALUE", expr, expr.typeMeta());
     }
 
     /**
@@ -599,7 +598,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
      */
     public static _OverSpec lastValue(Expression expr) {
-        return MySQLFunctions.noArgWindowFunc("LAST_VALUE", expr.typeMeta());
+        return MySQLFunctions.oneArgWindowFunc("LAST_VALUE", expr, expr.typeMeta());
     }
 
     /**
@@ -743,7 +742,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
      */
     public static _OverSpec percentRank() {
-        return MySQLFunctions.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
+        return MySQLFunctions.zeroArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
     }
 
     /**
@@ -752,7 +751,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
     public static _OverSpec rank() {
-        return MySQLFunctions.noArgWindowFunc("RANK", LongType.INSTANCE);
+        return MySQLFunctions.zeroArgWindowFunc("RANK", LongType.INSTANCE);
     }
 
 
@@ -762,34 +761,13 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      */
     public static _OverSpec rowNumber() {
-        return MySQLFunctions.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
+        return MySQLFunctions.zeroArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
     }
 
 
 
 
     /*-------------------below private methos -------------------*/
-
-    /**
-     * @see #bitAnd(Expression)
-     * @see #bitOr(Expression)
-     * @see #bitXor(Expression)
-     */
-    private static MappingType _bitwiseFuncType(final Expression expr) {
-        final MappingType returnType;
-
-        TypeMeta paramMeta = expr.typeMeta();
-        if (!(paramMeta instanceof MappingType)) {
-            paramMeta = paramMeta.mappingType();
-        }
-
-        if (paramMeta instanceof MappingType.SqlIntegerType || paramMeta instanceof MappingType.SqlBitType) {
-            returnType = UnsignedLongType.INSTANCE;
-        } else {
-            returnType = VarBinaryType.INSTANCE;
-        }
-        return returnType;
-    }
 
 
 }
