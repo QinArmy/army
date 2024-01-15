@@ -209,7 +209,7 @@ abstract class InsertContext extends StatementContext
             this.appendReturningClause = false;
         } else if (needReturnId) {
             this.returningList = _Collections.emptyList();
-            if (parser.supportReturningClause) {
+            if (parser.supportReturningClause) { // here don't use io.army.criteria.impl.inner._Statement._ReturningListSpec, because of standard insert
                 this.returnSelectionList = _Collections.singletonList(idField);
                 this.idSelectionIndex = 0;
                 this.appendReturningClause = true;

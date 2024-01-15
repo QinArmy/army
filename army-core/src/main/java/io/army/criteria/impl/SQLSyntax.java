@@ -754,6 +754,18 @@ abstract class SQLSyntax extends Functions {
         return SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, value);
     }
 
+    public static ItemPair timesEqual(final SqlField field, final Expression value) {
+        return SQLs._itemPair(field, AssignOperator.TIMES_EQUAL, value);
+    }
+
+    public static ItemPair divideEqual(final SqlField field, final Expression value) {
+        return SQLs._itemPair(field, AssignOperator.DIVIDE_EQUAL, value);
+    }
+
+    public static ItemPair modeEqual(final SqlField field, final Expression value) {
+        return SQLs._itemPair(field, AssignOperator.MODE_EQUAL, value);
+    }
+
 
 //    public static <I extends Item, R extends Expression> SQLFunction._CaseFuncWhenClause<R> Case(
 //            Function<_ItemExpression<I>, R> endFunc, Function<TypeInfer, I> asFunc) {

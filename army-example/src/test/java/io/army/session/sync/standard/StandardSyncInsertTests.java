@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
-@Test(dataProvider = "localSessionProvider")
+@Test(dataProvider = "localSessionProvider", groups = "standardInsert")
 public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
 
@@ -50,21 +50,21 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
     }
 
 
-    @Test
+    @Test//(invocationCount = 3)
     public void domainInsertChild(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final List<ChinaProvince> regionList = createProvinceList();
+        final List<ChinaProvince> regionList = createProvinceList(3);
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
-                //.literalMode(LiteralMode.PREFERENCE)
+                //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T)
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
                         .comma(ChinaRegion_.parentId)
                 )
-                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .defaultValue(ChinaRegion_.parentId, SQLs::literal, 0)
                 .values(regionList)
@@ -266,7 +266,9 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
     }
 
 
-    @Test(dependsOnMethods = {"domainInsertChild", "staticValuesInsertChild", "dynamicValuesInsertChild"})
+    @Test(dependsOnMethods = {"domainInsertParent", "staticValuesInsertParent", "dynamicValuesInsertParent",
+            "queryInsertParent", "domainInsertChild", "staticValuesInsertChild", "dynamicValuesInsertChild"})
+    // dependsOn queryInsertParent to avoid deadlock
     public void queryInsertChild(final SyncLocalSession session) {
         final Insert stmt;
         stmt = SQLs.singleInsert()

@@ -198,15 +198,15 @@ public abstract class ArmyTestDataSupport {
     }
 
     protected final List<ChinaProvince> createProvinceList() {
+        return createProvinceList(3);
+    }
+
+    protected final List<ChinaProvince> createProvinceList(final int rowCount) {
         final Random random = ThreadLocalRandom.current();
         final List<ChinaProvince> list = _Collections.arrayList();
         ChinaProvince c;
-        final int rowSize = 5;
-        final LocalDateTime now = LocalDateTime.now();
-        for (int i = 0; i < rowSize; i++) {
+        for (int i = 0; i < rowCount; i++) {
             c = new ChinaProvince()
-                    .setCreateTime(now)
-                    .setUpdateTime(now)
 
                     .setName(randomProvince(random))
                     .setRegionType(RegionType.CITY)

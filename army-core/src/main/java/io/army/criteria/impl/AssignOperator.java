@@ -25,7 +25,12 @@ import io.army.util._Exceptions;
 enum AssignOperator {
 
     PLUS_EQUAL(" +="),
-    MINUS_EQUAL(" -=");
+    MINUS_EQUAL(" -="),
+
+    TIMES_EQUAL(" *="),
+    DIVIDE_EQUAL(" /="),
+
+    MODE_EQUAL(" %=");
 
     private final String signText;
 
@@ -57,9 +62,19 @@ enum AssignOperator {
             case MINUS_EQUAL:
                 sqlBuilder.append(DualExpOperator.MINUS.spaceOperator);
                 break;
+            case TIMES_EQUAL:
+                sqlBuilder.append(DualExpOperator.TIMES.spaceOperator);
+                break;
+            case DIVIDE_EQUAL:
+                sqlBuilder.append(DualExpOperator.DIVIDE.spaceOperator);
+                break;
+            case MODE_EQUAL:
+                sqlBuilder.append(DualExpOperator.MOD.spaceOperator);
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(this);
         }
+
     }
 
 
