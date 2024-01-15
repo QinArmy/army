@@ -17,15 +17,15 @@ import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider", groups = "standardInsert")
-public class StandardSyncInsertTests extends StandardSyncSessionSupport {
+public class StandardInsertTests extends StandardSessionSupport {
 
 
-    @Test
+    @Test//(invocationCount = 3)
     public void domainInsertParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final List<ChinaRegion<?>> regionList = createReginList();
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(10);
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
@@ -35,8 +35,8 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
                         .comma(ChinaRegion_.parentId)
                 )
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
-                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
-                .defaultValue(ChinaRegion_.parentId, SQLs::literal, 0)
+                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
                 .values(regionList)
                 .asInsert();
 
@@ -55,7 +55,7 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final List<ChinaProvince> regionList = createProvinceList(3);
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
@@ -251,7 +251,7 @@ public class StandardSyncInsertTests extends StandardSyncSessionSupport {
                 .space()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.NONE)
+                .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
                 .and(SQLs::notExists, SQLs.subQuery()
                         .select(HistoryChinaRegion_.id)
                         .from(HistoryChinaRegion_.T, AS, "hc")

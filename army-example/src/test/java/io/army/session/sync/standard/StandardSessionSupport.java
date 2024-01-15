@@ -4,9 +4,9 @@ package io.army.session.sync.standard;
 import io.army.session.SyncSessionTestSupport;
 
 
-abstract class StandardSyncSessionSupport extends SyncSessionTestSupport {
+abstract class StandardSessionSupport extends SyncSessionTestSupport {
 
-    StandardSyncSessionSupport() {
+    StandardSessionSupport() {
         super(null);
     }
 

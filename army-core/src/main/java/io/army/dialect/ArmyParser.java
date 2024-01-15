@@ -1736,8 +1736,8 @@ abstract class ArmyParser implements DialectParser {
      * @see #parseDomainParentDeleteWithId(_Predicate, DomainDeleteContext)
      * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
      */
-    protected final void discriminator(final TableMeta<?> table, final @Nullable String safeTableAlias
-            , final _SqlContext context) {
+    protected final void discriminator(final TableMeta<?> table, final @Nullable String safeTableAlias,
+                                       final _SqlContext context) {
         final FieldMeta<?> field;
         if (table instanceof ChildTableMeta) {
             field = ((ChildTableMeta<?>) table).discriminator();
@@ -1758,8 +1758,9 @@ abstract class ArmyParser implements DialectParser {
         sqlBuilder.append(_Constant.PERIOD);
 
         this.safeObjectName(field, sqlBuilder)
-                .append(_Constant.SPACE_EQUAL_SPACE)
-                .append(table.discriminatorValue().code());
+                .append(_Constant.SPACE_EQUAL_SPACE);
+
+        literal(field.mappingType(), table.discriminatorValue(), sqlBuilder);
     }
 
 
