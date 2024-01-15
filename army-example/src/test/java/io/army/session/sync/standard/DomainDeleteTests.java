@@ -5,6 +5,7 @@ import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
+import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.sync.SyncLocalSession;
@@ -23,8 +24,7 @@ import static io.army.criteria.impl.SQLs.AS;
 @Test(dataProvider = "localSessionProvider"
         // , dependsOnGroups = "standardInsert"
 )
-public class StandardDeleteTests extends StandardSessionSupport {
-
+public class DomainDeleteTests extends StandardSessionSupport {
 
     @Test
     public void deleteParent(final SyncLocalSession session) {
@@ -33,7 +33,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
         final Select queryStmt;
         queryStmt = SQLs.query()
                 .select(ChinaRegion_.id)
-                .from(ChinaRegion_.T, AS, "cc")
+                .from(ChinaRegion_.T, AS, "c")
                 .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
                 .orderBy(ChinaRegion_.id::desc)
                 .limit(SQLs::param, 2)
@@ -44,10 +44,10 @@ public class StandardDeleteTests extends StandardSessionSupport {
 
 
         final Delete stmt;
-        stmt = SQLs.singleDelete()
+        stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
-                .and(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                .where(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .asDelete();
 
         final long rows;
@@ -63,7 +63,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
         final Select queryStmt;
         queryStmt = SQLs.query()
                 .select(ChinaRegion_.id)
-                .from(ChinaRegion_.T, AS, "cc")
+                .from(ChinaRegion_.T, AS, "c")
                 .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
                 .orderBy(ChinaRegion_.id::desc)
                 .limit(SQLs::param, 3)
@@ -77,12 +77,11 @@ public class StandardDeleteTests extends StandardSessionSupport {
             paramList.add(Collections.singletonMap(ChinaRegion_.ID, id));
         }
 
-
         final BatchDelete stmt;
-        stmt = SQLs.batchSingleDelete()
+        stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
-                .and(ChinaRegion_.id::equal, SQLs::namedParam)
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .asDelete()
                 .namedParamList(paramList);
 
@@ -93,24 +92,26 @@ public class StandardDeleteTests extends StandardSessionSupport {
     }
 
     @Test
-    public void delete20Parent(final SyncLocalSession session) {
+    public void deleteChild(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
+        final Select queryStmt;
+        queryStmt = SQLs.query()
+                .select(ChinaProvince_.id)
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
+                .orderBy(ChinaRegion_.id::desc)
+                .limit(SQLs::param, 2)
+                .asQuery();
+
+        final List<Long> idList;
+        idList = session.queryList(queryStmt, Long.class);
+
+
         final Delete stmt;
-        stmt = SQLs.singleDelete20()
-                .with("idListCte").as(c -> c.select(ChinaRegion_.id)
-                        .from(ChinaRegion_.T, AS, "t")
-                        .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                        .orderBy(ChinaRegion_.id::desc)
-                        .limit(SQLs::param, 2)
-                        .asQuery()
-                ).space()
-                .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id::in, SQLs.subQuery()
-                        .select(s -> s.space(SQLs.refField("cte", "id")))
-                        .from("idListCte", AS, "cte")
-                        ::asQuery
-                )
+        stmt = SQLs.domainDelete()
+                .deleteFrom(ChinaProvince_.T, AS, "p")
+                .where(ChinaProvince_.id.in(SQLs::rowParam, idList))
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .asDelete();
 
@@ -121,16 +122,16 @@ public class StandardDeleteTests extends StandardSessionSupport {
 
 
     @Test
-    public void batchDelete20Parent(final SyncLocalSession session) {
+    public void batchDeleteChild(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
         final Select queryStmt;
         queryStmt = SQLs.query()
-                .select(ChinaRegion_.id)
-                .from(ChinaRegion_.T, AS, "cc")
-                .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
+                .select(ChinaProvince_.id)
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
                 .orderBy(ChinaRegion_.id::desc)
-                .limit(SQLs::param, 3)
+                .limit(SQLs::param, 2)
                 .asQuery();
 
         final List<Long> idList;
@@ -141,24 +142,11 @@ public class StandardDeleteTests extends StandardSessionSupport {
             paramList.add(Collections.singletonMap(ChinaRegion_.ID, id));
         }
 
-
         final BatchDelete stmt;
-        stmt = SQLs.batchSingleDelete20()
-                .with("cte").as(c -> c.select(ChinaRegion_.name)
-                        .from(ChinaRegion_.T, AS, "cc")
-                        .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                        .orderBy(ChinaRegion_.id::desc)
-                        .limit(SQLs::param, 3)
-                        .asQuery()
-                ).space()
-                .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+        stmt = SQLs.batchDomainDelete()
+                .deleteFrom(ChinaProvince_.T, AS, "p")
+                .where(ChinaProvince_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
-                .and(ChinaRegion_.name::in, SQLs.subQuery()
-                        .select(s -> s.space(SQLs.refField("cte", "name")))
-                        .from("cte")
-                        ::asQuery
-                )
                 .asDelete()
                 .namedParamList(paramList);
 

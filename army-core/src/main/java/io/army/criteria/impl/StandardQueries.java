@@ -335,6 +335,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         };
     }
 
+    @Override
+    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
+        this.blockConsumer.accept(TabularBlocks.fromCteBlock(joinType, cteItem, alias));
+        return this;
+    }
+
 
     @Override
     final _OnClause<_JoinSpec<I>> onJoinTable(final _JoinType joinType, @Nullable TableModifier modifier,
@@ -354,12 +360,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             this.blockConsumer.accept(block);
             return block;
         };
-    }
-
-    @Override
-    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
-        this.blockConsumer.accept(TabularBlocks.fromCteBlock(joinType, cteItem, alias));
-        return this;
     }
 
     @Override

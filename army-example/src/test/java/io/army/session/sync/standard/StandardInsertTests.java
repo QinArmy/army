@@ -175,7 +175,7 @@ public class StandardInsertTests extends StandardSessionSupport {
     public void dynamicValuesInsertParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
-        final int rowCount = 2;
+        final int rowCount = 100;
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
@@ -201,7 +201,7 @@ public class StandardInsertTests extends StandardSessionSupport {
     public void dynamicValuesInsertChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
-        final int rowCount = 2;
+        final int rowCount = 200;
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
