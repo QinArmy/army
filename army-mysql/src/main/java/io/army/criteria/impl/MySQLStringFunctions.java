@@ -76,21 +76,6 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
         return LiteralFunctions.oneArgFunc("BIN", n, StringType.INSTANCE);
     }
 
-    /**
-     * <p>The {@link MappingType} of function return type:{@link IntegerType}
-     *
-     * @param str non-null, one of following :
-     *            <ul>
-     *                 <li>{@link Expression} instance</li>
-     *                 <li>literal</li>
-     *            </ul>
-     * @throws CriteriaException throw when argument
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
-     */
-    public static SimpleExpression binLength(final Object str) {
-        FuncExpUtils.assertLiteralExp(str);
-        return LiteralFunctions.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
-    }
 
     /**
      * <p>The {@link MappingType} of function return type:{@link StringType}
@@ -863,38 +848,6 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
         return LiteralFunctions.twoArgFunc("INSTR", str, substr, IntegerType.INSTANCE);
     }
 
-    /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
-     *
-     * @param str non-null, one of following :
-     *            <ul>
-     *                 <li>{@link Expression} instance</li>
-     *                 <li>{@link String} literal</li>
-     *            </ul>
-     * @throws CriteriaException throw when argument error
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lower">LOWER(str)</a>
-     */
-    public static SimpleExpression lower(Object str) {
-        FuncExpUtils.assertTextExp(str);
-        return LiteralFunctions.oneArgFunc("LOWER", str, StringType.INSTANCE);
-    }
-
-    /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
-     *
-     * @param str non-null, one of following :
-     *            <ul>
-     *                 <li>{@link Expression} instance</li>
-     *                 <li>{@link String} literal</li>
-     *            </ul>
-     * @throws CriteriaException throw when argument error
-     * @see #lower(Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_upper">UPPER(str)</a>
-     */
-    public static SimpleExpression upper(Object str) {
-        FuncExpUtils.assertTextExp(str);
-        return LiteralFunctions.oneArgFunc("UPPER", str, StringType.INSTANCE);
-    }
 
     /**
      * <p>The {@link MappingType} of function return type:{@link StringType}
@@ -945,60 +898,6 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
         return LiteralFunctions.oneArgFunc("LOAD_FILE", fileName, StringType.INSTANCE);
     }
 
-    /**
-     * <p>The {@link MappingType} of function return type:{@link IntegerType}
-     *
-     * @param substr non-null, one of following :
-     *               <ul>
-     *                    <li>{@link Expression} instance</li>
-     *                    <li>{@link String} literal</li>
-     *               </ul>
-     * @param str    non-null, one of following :
-     *               <ul>
-     *                    <li>{@link Expression} instance</li>
-     *                    <li>{@link String} literal</li>
-     *               </ul>
-     * @return int {@link Expression} ,based one .
-     * @throws CriteriaException throw when argument error
-     * @see #locate(Object, Object, Object)
-     * @see #position(Object, SQLs.WordIn, Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str)</a>
-     */
-    public static SimpleExpression locate(final Object substr, final Object str) {
-        FuncExpUtils.assertTextExp(substr);
-        FuncExpUtils.assertTextExp(str);
-        return LiteralFunctions.twoArgFunc("LOCATE", substr, str, IntegerType.INSTANCE);
-    }
-
-    /**
-     * <p>The {@link MappingType} of function return type:{@link IntegerType}
-     *
-     * @param substr non-null, one of following :
-     *               <ul>
-     *                    <li>{@link Expression} instance</li>
-     *                    <li>{@link String} literal</li>
-     *               </ul>
-     * @param str    non-null, one of following :
-     *               <ul>
-     *                    <li>{@link Expression} instance</li>
-     *                    <li>{@link String} literal</li>
-     *               </ul>
-     * @param pos    non-null, one of following :
-     *               <ul>
-     *                    <li>{@link Expression} instance</li>
-     *                    <li>{@link Integer} literal</li>
-     *               </ul>
-     * @throws CriteriaException throw when argument error
-     * @see #locate(Object, Object, Object)
-     * @see #position(Object, SQLs.WordIn, Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str,pos)</a>
-     */
-    public static SimpleExpression locate(Object substr, Object str, Object pos) {
-        FuncExpUtils.assertTextExp(substr);
-        FuncExpUtils.assertTextExp(str);
-        FuncExpUtils.assertIntExp(pos);
-        return LiteralFunctions.threeArgFunc("LOCATE", substr, str, pos, IntegerType.INSTANCE);
-    }
 
     /**
      * <p>The {@link MappingType} of function return type:{@link StringType}
@@ -1473,107 +1372,6 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
 
 
     /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
-     *
-     * @param str non-null, one of following :
-     *            <ul>
-     *                 <li>{@link Expression} instance</li>
-     *                 <li>{@link String} literal</li>
-     *            </ul>
-     * @throws CriteriaException throw when argument error
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
-     */
-    public static SimpleExpression trim(final Object str) {
-        FuncExpUtils.assertTextExp(str);
-        return LiteralFunctions.oneArgFunc("TRIM", str, StringType.INSTANCE);
-    }
-
-    /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
-     *
-     * @param remstr non-null, one of following :
-     *               <ul>
-     *                    <li>{@link Expression} instance</li>
-     *                    <li>{@link String} literal</li>
-     *               </ul>
-     * @param from   see {@link SQLs#FROM}
-     * @param str    non-null, one of following :
-     *               <ul>
-     *                    <li>{@link Expression} instance</li>
-     *                    <li>{@link String} literal</li>
-     *               </ul>
-     * @throws CriteriaException throw when argument error
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
-     */
-    public static SimpleExpression trim(Object remstr, SQLs.WordFrom from, Object str) {
-        FuncExpUtils.assertTextExp(remstr);
-        FuncExpUtils.assertTextExp(str);
-        if (from != SQLs.FROM) {
-            throw CriteriaUtils.unknownWords(from);
-        }
-        return LiteralFunctions.compositeFunc("TRIM", Arrays.asList(remstr, from, str), StringType.INSTANCE);
-    }
-
-    /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
-     *
-     * @param position non-null,should be below:
-     *                 <ul>
-     *                      <li>{@link SQLs#BOTH}</li>
-     *                      <li>{@link SQLs#LEADING}</li>
-     *                      <li>{@link SQLs#TRAILING}</li>
-     *                 </ul>
-     * @param from     see {@link SQLs#FROM}
-     * @param str      non-null, one of following :
-     *                 <ul>
-     *                      <li>{@link Expression} instance</li>
-     *                      <li>{@link String} literal</li>
-     *                 </ul>
-     * @throws CriteriaException throw when argument error
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
-     */
-    public static SimpleExpression trim(SQLs.TrimPosition position, SQLs.WordFrom from, Object str) {
-        FuncExpUtils.assertTrimPosition(position);
-        FuncExpUtils.assertWord(from, SQLs.FROM);
-        FuncExpUtils.assertTextExp(str);
-
-        return LiteralFunctions.compositeFunc("TRIM", Arrays.asList(position, from, str), StringType.INSTANCE);
-    }
-
-    /**
-     * <p>The {@link MappingType} of function return type:{@link StringType}
-     *
-     * @param position non-null,should be below:
-     *                 <ul>
-     *                      <li>{@link SQLs#BOTH}</li>
-     *                      <li>{@link SQLs#LEADING}</li>
-     *                      <li>{@link SQLs#TRAILING}</li>
-     *                 </ul>
-     * @param remstr   non-null, one of following :
-     *                 <ul>
-     *                      <li>{@link Expression} instance</li>
-     *                      <li>{@link String} literal</li>
-     *                 </ul>
-     * @param from     see {@link SQLs#FROM}
-     * @param str      non-null, one of following :
-     *                 <ul>
-     *                      <li>{@link Expression} instance</li>
-     *                      <li>{@link String} literal</li>
-     *                 </ul>
-     * @throws CriteriaException throw when argument error
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
-     */
-    public static SimpleExpression trim(SQLs.TrimPosition position, Object remstr, SQLs.WordFrom from, Object str) {
-        FuncExpUtils.assertTrimPosition(position);
-        FuncExpUtils.assertTextExp(remstr);
-        FuncExpUtils.assertWord(from, SQLs.FROM);
-        FuncExpUtils.assertTextExp(str);
-
-        return LiteralFunctions.compositeFunc("TRIM", Arrays.asList(position, remstr, from, str), StringType.INSTANCE);
-    }
-
-
-    /**
      * <p>The {@link MappingType} of function return type:{@link VarBinaryType}
      *
      * @param str non-null, one of following :
@@ -1602,7 +1400,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *             <ul>
      *                  <li>{@link io.army.sqltype.MySQLType#CHAR}</li>
      *                  <li>{@link io.army.sqltype.MySQLType#BINARY}</li>
-     *                  <li>{@link TypeDef}, see {@link TypeDefs#space(DataType, int)}</li>
+     *                  <li>{@link TypeDef}, see {@link DataType#parens(long)}</li>
      *             </ul>
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
@@ -1625,7 +1423,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *              <ul>
      *                   <li>{@link io.army.sqltype.MySQLType#CHAR}</li>
      *                   <li>{@link io.army.sqltype.MySQLType#BINARY}</li>
-     *                   <li>{@link TypeDef}, see {@link TypeDefs#space(DataType, int)}</li>
+     *                   <li>{@link TypeDef}, see {@link DataType#parens(long)}</li>
      *              </ul>
      * @param flags non-null, one of following :
      *              <ul>

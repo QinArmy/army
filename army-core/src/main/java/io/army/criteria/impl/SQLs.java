@@ -105,9 +105,9 @@ public abstract class SQLs extends SQLSyntax {
     public static final WordAnd AND = SqlWords.KeyWordAnd.AND;
 
 
-    public static final TrimPosition BOTH = SqlWords.WordTrimPosition.BOTH;
-    public static final TrimPosition LEADING = SqlWords.WordTrimPosition.LEADING;
-    public static final TrimPosition TRAILING = SqlWords.WordTrimPosition.TRAILING;
+    public static final TrimSpec BOTH = SqlWords.WordTrimPosition.BOTH;
+    public static final TrimSpec LEADING = SqlWords.WordTrimPosition.LEADING;
+    public static final TrimSpec TRAILING = SqlWords.WordTrimPosition.TRAILING;
 
     public static final WordIn IN = SqlWords.KeyWordIn.IN;
 
@@ -663,7 +663,7 @@ public abstract class SQLs extends SQLSyntax {
 
     }
 
-    public interface TrimPosition {
+    public interface TrimSpec {
 
     }
 

@@ -135,8 +135,6 @@ public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
 
         session.queryObject(stmt, RowMaps::hashMap)
                 .forEach(row -> LOG.debug(JSON.toJSONString(row)));
-
-
     }
 
     /**

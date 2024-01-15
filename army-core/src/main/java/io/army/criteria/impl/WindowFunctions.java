@@ -32,18 +32,18 @@ import io.army.util._Exceptions;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-abstract class WindowFunctionUtils {
+abstract class WindowFunctions {
 
-    private WindowFunctionUtils() {
+    private WindowFunctions() {
         throw new UnsupportedOperationException();
     }
 
 
-    static SQLs20._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
+    static WindowFunc._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
         return new ZeroArgStandardWindowFunc(name, returnType);
     }
 
-    static SQLs20._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
+    static WindowFunc._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
         if (!(one instanceof FunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -239,7 +239,7 @@ abstract class WindowFunctionUtils {
     }//GlobalWindow
 
     private static abstract class StandardWindowFunction extends WindowFunction<Window._StandardPartitionBySpec>
-            implements SQLs20._OverSpec {
+            implements WindowFunc._OverSpec {
 
         private StandardWindowFunction(String name, TypeMeta returnType) {
             super(name, returnType);

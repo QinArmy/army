@@ -974,7 +974,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
     private static abstract class PostgreWindowFunction
-            extends WindowFunctionUtils.WindowFunction<PostgreWindow._PartitionBySpec>
+            extends WindowFunctions.WindowFunction<PostgreWindow._PartitionBySpec>
             implements PostgreWindowFunctions._OverSpec {
 
         private PostgreWindowFunction(String name, TypeMeta returnType) {

@@ -152,7 +152,7 @@ abstract class SqlWords {
 
     }//KeyWordFor
 
-    enum WordTrimPosition implements SQLs.TrimPosition, SQLs.ArmyKeyWord {
+    enum WordTrimPosition implements SQLs.TrimSpec, SQLs.ArmyKeyWord {
 
         BOTH(" BOTH"),
         LEADING(" LEADING"),

@@ -22,7 +22,7 @@ import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
 
 @Test(dataProvider = "localSessionProvider"
-        // , dependsOnGroups = "standardInsert"
+        , dependsOnGroups = "standardInsert"
 )
 public class DomainDeleteTests extends StandardSessionSupport {
 

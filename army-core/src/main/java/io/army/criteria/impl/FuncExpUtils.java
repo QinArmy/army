@@ -192,7 +192,7 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void assertTrimPosition(SQLs.TrimPosition position) {
+    static void assertTrimSpec(SQLs.TrimSpec position) {
         if (!(position instanceof SqlWords.WordTrimPosition)) {
             throw CriteriaUtils.unknownWords(position);
         }

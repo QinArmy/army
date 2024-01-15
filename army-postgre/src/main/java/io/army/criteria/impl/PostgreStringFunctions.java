@@ -413,7 +413,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      */
-    public static SimpleExpression trim(SQLs.TrimPosition position, SQLs.WordFrom from, Expression string) {
+    public static SimpleExpression trim(SQLs.TrimSpec position, SQLs.WordFrom from, Expression string) {
         final String name = "TRIM";
         if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
@@ -465,7 +465,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] bytesremoved bytea FROM bytes bytea ) → bytea</a>
      */
-    public static SimpleExpression trim(SQLs.TrimPosition position, Expression characters, SQLs.WordFrom from, Expression string) {
+    public static SimpleExpression trim(SQLs.TrimSpec position, Expression characters, SQLs.WordFrom from, Expression string) {
         final String name = "TRIM";
         if (characters instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, characters);
@@ -535,7 +535,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
      */
-    public static SimpleExpression trim(SQLs.TrimPosition position, SQLs.WordFrom from, Expression string, Expression characters) {
+    public static SimpleExpression trim(SQLs.TrimSpec position, SQLs.WordFrom from, Expression string, Expression characters) {
         final String name = "TRIM";
         if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
