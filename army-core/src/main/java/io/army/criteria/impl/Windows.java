@@ -22,7 +22,7 @@ public abstract class Windows {
 
     }
 
-    public interface _AggWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, SimpleExpression {
+    public interface _WindowAggSpec extends _OverSpec, SQLFunction.AggregateFunction, SimpleExpression {
 
     }
 
@@ -246,7 +246,7 @@ public abstract class Windows {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc countAsterisk() {
+    public static _WindowAggSpec countAsterisk() {
         return count(SQLs._ASTERISK_EXP);
     }
 
@@ -256,7 +256,7 @@ public abstract class Windows {
      * @param expr non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc count(Expression expr) {
+    public static _WindowAggSpec count(Expression expr) {
         return WindowFunctions.oneArgWindowAggFunc("COUNT", expr, LongType.INSTANCE);
     }
 
@@ -266,7 +266,7 @@ public abstract class Windows {
      * @param expr non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc count(SQLs.ArgDistinct distinct, Expression expr) {
+    public static _WindowAggSpec count(SQLs.ArgDistinct distinct, Expression expr) {
         FuncExpUtils.assertDistinct(distinct, SQLs.DISTINCT);
         return WindowFunctions.compositeWindowAggFunc("COUNT", Arrays.asList(distinct, expr), LongType.INSTANCE);
     }
@@ -278,7 +278,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc min(Expression exp) {
+    public static _WindowAggSpec min(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("MIN", exp, exp.typeMeta());
     }
 
@@ -288,7 +288,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc max(Expression exp) {
+    public static _WindowAggSpec max(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("MAX", exp, exp.typeMeta());
     }
 
@@ -315,7 +315,7 @@ public abstract class Windows {
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#sum">H2 SUM([DISTINCT] expr)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">Postgre SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggWindowFunc sum(Expression exp) {
+    public static _WindowAggSpec sum(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("SUM", exp, Functions._returnType(exp, Functions::_sumType));
     }
 
@@ -342,7 +342,7 @@ public abstract class Windows {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">MySQL SUM([DISTINCT] expr) [over_clause]</a>
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#sum">H2 SUM([DISTINCT] expr)</a>
      */
-    public static _AggWindowFunc sum(SQLs.ArgDistinct distinct, Expression exp) {
+    public static _WindowAggSpec sum(SQLs.ArgDistinct distinct, Expression exp) {
         FuncExpUtils.assertDistinct(distinct, SQLs.DISTINCT);
         return WindowFunctions.compositeWindowAggFunc("SUM", Arrays.asList(distinct, exp), Functions._returnType(exp, Functions::_sumType));
     }
@@ -353,7 +353,7 @@ public abstract class Windows {
      * @param expr non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggWindowFunc avg(Expression expr) {
+    public static _WindowAggSpec avg(Expression expr) {
         return WindowFunctions.oneArgWindowAggFunc("AVG", expr, DoubleType.INSTANCE);
     }
 
@@ -365,7 +365,7 @@ public abstract class Windows {
      * @param expr     non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggWindowFunc avg(SQLs.ArgDistinct distinct, Expression expr) {
+    public static _WindowAggSpec avg(SQLs.ArgDistinct distinct, Expression expr) {
         FuncExpUtils.assertDistinct(distinct, SQLs.DISTINCT);
         return WindowFunctions.compositeWindowAggFunc("AVG", Arrays.asList(distinct, expr), DoubleType.INSTANCE);
     }
@@ -378,7 +378,7 @@ public abstract class Windows {
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#json_arrayagg">H2 JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">Postgre JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
      */
-    public static _AggWindowFunc jsonArrayAgg(Expression exp) {
+    public static _WindowAggSpec jsonArrayAgg(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("JSON_ARRAYAGG", exp, JsonType.TEXT);
     }
 
@@ -391,7 +391,7 @@ public abstract class Windows {
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#json_objectagg">H2 JSON_OBJECTAGG(col_or_expr) [over_clause]</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">Postgre JSON_OBJECTAGG(col_or_expr) [over_clause]</a>
      */
-    public static _AggWindowFunc jsonObjectAgg(Expression key, Expression value) {
+    public static _WindowAggSpec jsonObjectAgg(Expression key, Expression value) {
         return WindowFunctions.twoArgAggWindow("JSON_OBJECTAGG", key, value, JsonType.TEXT);
     }
 
@@ -401,7 +401,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_std">STD(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc std(Expression exp) {
+    public static _WindowAggSpec std(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("STD", exp, DoubleType.INSTANCE);
     }
 
@@ -411,7 +411,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev">STDDEV(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc stdDev(Expression exp) {
+    public static _WindowAggSpec stdDev(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("STDDEV", exp, DoubleType.INSTANCE);
     }
 
@@ -421,7 +421,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-pop">STDDEV_POP(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc stdDevPop(Expression exp) {
+    public static _WindowAggSpec stdDevPop(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("STDDEV_POP", exp, DoubleType.INSTANCE);
     }
 
@@ -431,7 +431,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-samp">STDDEV_SAMP(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc stdDevSamp(Expression exp) {
+    public static _WindowAggSpec stdDevSamp(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("STDDEV_SAMP", exp, DoubleType.INSTANCE);
     }
 
@@ -441,7 +441,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-pop">VAR_POP(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc varPop(Expression exp) {
+    public static _WindowAggSpec varPop(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("VAR_POP", exp, DoubleType.INSTANCE);
     }
 
@@ -452,7 +452,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VAR_SAMP(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc varSamp(Expression exp) {
+    public static _WindowAggSpec varSamp(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("VAR_SAMP", exp, DoubleType.INSTANCE);
     }
 
@@ -462,7 +462,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_variance">VARIANCE(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc variance(Expression exp) {
+    public static _WindowAggSpec variance(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("VARIANCE", exp, DoubleType.INSTANCE);
     }
 
@@ -476,7 +476,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc bitAnd(Expression exp) {
+    public static _WindowAggSpec bitAnd(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("BIT_AND", exp, Functions._bitwiseFuncType(exp));
     }
 
@@ -490,7 +490,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc bitOr(Expression exp) {
+    public static _WindowAggSpec bitOr(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("BIT_OR", exp, Functions._bitwiseFuncType(exp));
     }
 
@@ -504,7 +504,7 @@ public abstract class Windows {
      * @param exp non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
-    public static _AggWindowFunc bitXor(Expression exp) {
+    public static _WindowAggSpec bitXor(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("BIT_XOR", exp, Functions._bitwiseFuncType(exp));
     }
 
@@ -520,7 +520,7 @@ public abstract class Windows {
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#bit_and_agg">BIT_AND_AGG(expr) [over_clause]</a>
      */
     @Support({H2})
-    public static _AggWindowFunc bitAndAgg(Expression exp) {
+    public static _WindowAggSpec bitAndAgg(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("BIT_AND_AGG", exp, Functions._bitwiseFuncType(exp));
     }
 
@@ -535,7 +535,7 @@ public abstract class Windows {
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#bit_and_agg">BIT_OR_AGG(expr) [over_clause]</a>
      */
     @Support({H2})
-    public static _AggWindowFunc bitOrAgg(Expression exp) {
+    public static _WindowAggSpec bitOrAgg(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("BIT_OR_AGG", exp, Functions._bitwiseFuncType(exp));
     }
 
@@ -550,7 +550,7 @@ public abstract class Windows {
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#bit_and_agg">BIT_XOR_AGG(expr) [over_clause]</a>
      */
     @Support({H2})
-    public static _AggWindowFunc bitXorAgg(Expression exp) {
+    public static _WindowAggSpec bitXorAgg(Expression exp) {
         return WindowFunctions.oneArgWindowAggFunc("BIT_XOR_AGG", exp, Functions._bitwiseFuncType(exp));
     }
 

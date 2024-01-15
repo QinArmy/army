@@ -21,6 +21,7 @@ import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
 
 @Test(dataProvider = "localSessionProvider"
+        , groups = "standardDelete"
         , dependsOnGroups = "standardInsert"
 )
 public class StandardDeleteTests extends StandardSessionSupport {
@@ -35,7 +36,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
                 .select(ChinaRegion_.id)
                 .from(ChinaRegion_.T, AS, "cc")
                 .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                .orderBy(ChinaRegion_.id::desc)
+                .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, 2)
                 .asQuery();
 
@@ -56,7 +57,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
     }
 
 
-    @Test
+    @Test(dependsOnMethods = {"deleteParent"})  // avoid deadlock
     public void batchDeleteParent(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
@@ -65,7 +66,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
                 .select(ChinaRegion_.id)
                 .from(ChinaRegion_.T, AS, "cc")
                 .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                .orderBy(ChinaRegion_.id::desc)
+                .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, 3)
                 .asQuery();
 
@@ -92,7 +93,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
         LOG.debug("session[name : {}] rows {}", session.name(), rowList);
     }
 
-    @Test
+    @Test(dependsOnMethods = {"deleteParent", "batchDeleteParent"})  // avoid deadlock
     public void delete20Parent(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
@@ -101,7 +102,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
                 .with("idListCte").as(c -> c.select(ChinaRegion_.id)
                         .from(ChinaRegion_.T, AS, "t")
                         .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                        .orderBy(ChinaRegion_.id::desc)
+                        .orderBy(ChinaRegion_.id)
                         .limit(SQLs::param, 2)
                         .asQuery()
                 ).space()
@@ -120,7 +121,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
     }
 
 
-    @Test
+    @Test(dependsOnMethods = {"deleteParent", "batchDeleteParent", "delete20Parent"}) // avoid deadlock
     public void batchDelete20Parent(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
@@ -129,7 +130,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
                 .select(ChinaRegion_.id)
                 .from(ChinaRegion_.T, AS, "cc")
                 .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                .orderBy(ChinaRegion_.id::desc)
+                .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, 3)
                 .asQuery();
 
@@ -147,7 +148,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
                 .with("cte").as(c -> c.select(ChinaRegion_.name)
                         .from(ChinaRegion_.T, AS, "cc")
                         .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                        .orderBy(ChinaRegion_.id::desc)
+                        .orderBy(ChinaRegion_.id)
                         .limit(SQLs::param, 3)
                         .asQuery()
                 ).space()

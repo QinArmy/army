@@ -59,15 +59,15 @@ abstract class WindowFunctions {
 
     /*-------------------below Aggregate functions-------------------*/
 
-    static Windows._AggWindowFunc oneArgWindowAggFunc(String name, Expression one, TypeMeta returnType) {
+    static Windows._WindowAggSpec oneArgWindowAggFunc(String name, Expression one, TypeMeta returnType) {
         return new OneArgStandardAggWidowFunc(name, one, returnType);
     }
 
-    static Windows._AggWindowFunc twoArgAggWindow(String name, Expression one, Expression two, TypeMeta returnType) {
+    static Windows._WindowAggSpec twoArgAggWindow(String name, Expression one, Expression two, TypeMeta returnType) {
         return new TwoArgStandardAggWidowFunc(name, one, two, returnType);
     }
 
-    static Windows._AggWindowFunc compositeWindowAggFunc(String name, List<?> argList, TypeMeta returnType) {
+    static Windows._WindowAggSpec compositeWindowAggFunc(String name, List<?> argList, TypeMeta returnType) {
         return new CompositeStandardWindowAggFunc(name, argList, returnType);
     }
 
@@ -367,7 +367,7 @@ abstract class WindowFunctions {
 
 
     private static final class OneArgStandardAggWidowFunc extends OneArgStandardWindowFunc
-            implements Windows._AggWindowFunc {
+            implements Windows._WindowAggSpec {
 
 
         private OneArgStandardAggWidowFunc(String name, Expression one, TypeMeta returnType) {
@@ -379,7 +379,7 @@ abstract class WindowFunctions {
 
 
     private static final class TwoArgStandardAggWidowFunc extends TwoArgStandardWindowFunc
-            implements Windows._AggWindowFunc {
+            implements Windows._WindowAggSpec {
 
 
         private TwoArgStandardAggWidowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
@@ -414,7 +414,7 @@ abstract class WindowFunctions {
     } // CompositeStandardWindowFunc
 
     private static final class CompositeStandardWindowAggFunc extends CompositeStandardWindowFunc
-            implements Windows._AggWindowFunc {
+            implements Windows._WindowAggSpec {
 
         private CompositeStandardWindowAggFunc(String name, List<?> argList, TypeMeta returnType) {
             super(name, argList, returnType);

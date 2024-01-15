@@ -22,7 +22,8 @@ import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
 
 @Test(dataProvider = "localSessionProvider"
-        , dependsOnGroups = "standardInsert"
+        , groups = "domainDelete"
+        , dependsOnGroups = {"standardInsert", "standardDelete"}
 )
 public class DomainDeleteTests extends StandardSessionSupport {
 
@@ -56,7 +57,7 @@ public class DomainDeleteTests extends StandardSessionSupport {
     }
 
 
-    @Test
+    @Test(dependsOnMethods = {"deleteParent"}) // avoid deadlock
     public void batchDeleteParent(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
@@ -91,7 +92,7 @@ public class DomainDeleteTests extends StandardSessionSupport {
         LOG.debug("session[name : {}] rows {}", session.name(), rowList);
     }
 
-    @Test
+    @Test(dependsOnMethods = {"deleteParent", "batchDeleteParent"}) // avoid deadlock
     public void deleteChild(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
@@ -121,7 +122,7 @@ public class DomainDeleteTests extends StandardSessionSupport {
     }
 
 
-    @Test
+    @Test(dependsOnMethods = {"deleteParent", "batchDeleteParent", "deleteChild"}) // avoid deadlock
     public void batchDeleteChild(final SyncLocalSession session) {
         final LocalDateTime now = LocalDateTime.now();
 
