@@ -45,7 +45,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _UnionSpec<I extends Item> extends _StaticUnionClause<_SelectSpec<I>>,
@@ -65,7 +64,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *
      *
      * @since 0.6.0
      */
@@ -92,7 +90,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _UnionOrderBySpec<I extends Item> extends _StaticOrderByClause<_UnionOrderByCommaSpec<I>>,
@@ -115,7 +112,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _LockSpec<I extends Item> extends _SimpleForUpdateClause<_AsQueryClause<I>>,
@@ -137,7 +133,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *
      *
      * @since 0.6.0
      */
@@ -163,7 +158,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *
      *
      * @since 0.6.0
      */
@@ -207,7 +201,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _HavingSpec<I extends Item> extends _StaticHavingClause<_HavingAndSpec<I>>,
@@ -235,7 +228,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _GroupBySpec<I extends Item> extends _StaticGroupByClause<_GroupByCommaSpec<I>>,
@@ -257,7 +249,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *
      *
      * @since 0.6.0
      */
@@ -281,7 +272,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _WhereSpec<I extends Item>
@@ -303,10 +293,11 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _JoinSpec<I extends Item> extends _StandardJoinClause<_JoinSpec<I>, _OnClause<_JoinSpec<I>>>,
+            _JoinCteClause<_OnClause<_JoinSpec<I>>>,
+            _CrossJoinCteClause<_JoinSpec<I>>,
             _WhereSpec<I> {
 
     }
@@ -325,10 +316,10 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _FromSpec<I extends Item> extends Statement._FromClause<_JoinSpec<I>, _AsClause<_JoinSpec<I>>>,
+            _FromCteClause<_JoinSpec<I>>,
             _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>>,
             _UnionSpec<I> {
 

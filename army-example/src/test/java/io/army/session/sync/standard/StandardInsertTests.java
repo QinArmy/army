@@ -55,7 +55,7 @@ public class StandardInsertTests extends StandardSessionSupport {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+        final List<ChinaProvince> regionList = createProvinceListWithCount(30);
 
         final Insert stmt;
         stmt = SQLs.singleInsert()

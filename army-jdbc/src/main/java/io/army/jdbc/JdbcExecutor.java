@@ -2557,8 +2557,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final Logger logger;
             logger = executor.getLogger();
-            if (logger.isDebugEnabled()) {
-                logger.debug("session[name : {} , executorHash : {}]\nResultItem stream have closed", executor.sessionName,
+            if (logger.isTraceEnabled()) {
+                logger.trace("session[name : {} , executorHash : {}]\nResultItem stream have closed", executor.sessionName,
                         System.identityHashCode(executor)
                 );
             }

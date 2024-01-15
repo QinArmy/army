@@ -54,11 +54,11 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._FromSpec<I>, // SD
         StandardQuery._JoinSpec<I>,// FT
         Statement._AsClause<StandardQuery._JoinSpec<I>>,// FS
-        Void,                          //FC
+        StandardQuery._JoinSpec<I>,                          //FC
         Void,
         Statement._OnClause<StandardQuery._JoinSpec<I>>, // JT
         Statement._AsClause<Statement._OnClause<StandardQuery._JoinSpec<I>>>, // JS
-        Void,                               // JC
+        Statement._OnClause<StandardQuery._JoinSpec<I>>,                               // JC
         Void,
         StandardQuery._GroupBySpec<I>, // WR
         StandardQuery._WhereAndSpec<I>, // AR
@@ -357,13 +357,17 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final Void onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
-        throw ContextStack.castCriteriaApi(this.context);
+    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
+        this.blockConsumer.accept(TabularBlocks.fromCteBlock(joinType, cteItem, alias));
+        return this;
     }
 
     @Override
-    final Void onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
-        throw ContextStack.castCriteriaApi(this.context);
+    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
+        final TabularBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
+        block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
+        this.blockConsumer.accept(block);
+        return block;
     }
 
     @Override
@@ -489,7 +493,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         /**
          * <p>
          * Primary constructor
-         *
          */
         private SimpleSelect(StandardDialect dialect, @Nullable ArmyStmtSpec spec,
                              @Nullable CriteriaContext outerBracketContext, Function<? super Select, I> function,

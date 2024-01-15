@@ -7,6 +7,7 @@ import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.example.bank.domain.user.RegionType;
 import io.army.sync.SyncLocalSession;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -24,7 +25,7 @@ import static io.army.criteria.impl.SQLs.AS;
 @Test(dataProvider = "localSessionProvider"
         , dependsOnGroups = "standardInsert"
 )
-public class StandardSingleUpdateTests extends StandardSessionSupport {
+public class StandardUpdateTests extends StandardSessionSupport {
 
 
     @Test
@@ -119,6 +120,36 @@ public class StandardSingleUpdateTests extends StandardSessionSupport {
                         c.accept(ChinaRegion_.regionGdp.plus(SQLs::param, criteria.getRegionGdp()).greaterEqual(SQLs.literalValue(BigDecimal.ZERO)));
                     }
                 })
+                .asUpdate();
+
+        final long rows;
+        rows = session.update(stmt);
+        LOG.debug("session[name : {}] update {} rows", session.name(), rows);
+    }
+
+    @Test
+    public void update20Parent(final SyncLocalSession session) {
+        final BigDecimal gdpAmount = new BigDecimal("88888.66");
+        final LocalDateTime now = LocalDateTime.now();
+
+        final Update stmt;
+        stmt = SQLs.singleUpdate20()
+                .with("cte").as(c -> c.select(ChinaRegion_.id)
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
+                        .orderBy(ChinaRegion_.id::desc)
+                        .limit(SQLs::param, 10)
+                        .asQuery()
+                ).space()
+                .update(ChinaRegion_.T, AS, "c")
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
+                .where(ChinaRegion_.id::in, SQLs.subQuery()
+                        .select(s -> s.space(SQLs.refField("cte", "id")))
+                        .from("cte")
+                        ::asQuery
+                )
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         final long rows;

@@ -95,6 +95,10 @@ abstract class ArmyParser implements DialectParser {
 
     final boolean supportSingleDeleteAlias;
 
+    final boolean supportWithClause;
+
+    final boolean supportWithClauseInInsert;
+
     final boolean supportOnlyDefault;
 
     final boolean supportRowAlias;
@@ -157,6 +161,9 @@ abstract class ArmyParser implements DialectParser {
         this.singleDmlAliasAfterAs = this.aliasAfterAs;
         this.supportSingleUpdateAlias = this.isSupportSingleUpdateAlias();
         this.supportSingleDeleteAlias = this.isSupportSingleDeleteAlias();
+        this.supportWithClause = isSupportWithClause();
+
+        this.supportWithClauseInInsert = isSupportWithClauseInInsert();
         this.supportZone = this.isSupportZone();
 
         this.supportOnlyDefault = this.isSupportOnlyDefault();
@@ -435,6 +442,10 @@ abstract class ArmyParser implements DialectParser {
     protected abstract boolean isSupportSingleUpdateAlias();
 
     protected abstract boolean isSupportSingleDeleteAlias();
+
+    protected abstract boolean isSupportWithClause();
+
+    protected abstract boolean isSupportWithClauseInInsert();
 
     protected abstract boolean isSupportUpdateRow();
 
@@ -1188,8 +1199,8 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected final void withSubQuery(final boolean recursive, final List<_Cte> cteList
-            , final _SqlContext context, final Consumer<_Cte> assetConsumer) {
+    protected final void withSubQuery(final boolean recursive, final List<_Cte> cteList,
+                                      final _SqlContext context, final Consumer<_Cte> assetConsumer) {
         final int cteSize = cteList.size();
         if (cteSize == 0) {
             return;
@@ -1474,7 +1485,8 @@ abstract class ArmyParser implements DialectParser {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         _TabularBlock block;
-        TabularItem tableItem;
+        TabularItem tabularItem;
+        String alias;
         _JoinType joinType;
         List<_Predicate> predicateList;
         final boolean tableOnlyModifier = this.tableOnlyModifier;
@@ -1486,29 +1498,39 @@ abstract class ArmyParser implements DialectParser {
             } else if (joinType != _JoinType.NONE) {
                 throw _Exceptions.unexpectedEnum(joinType);
             }
-            tableItem = block.tableItem();
-            if (tableItem instanceof TableMeta) {
+            tabularItem = block.tableItem();
+            alias = block.alias();
+            if (tabularItem instanceof TableMeta) {
                 if (tableOnlyModifier) {
                     sqlBuilder.append(_Constant.SPACE_ONLY);
                 }
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((TableMeta<?>) tableItem).tableName(), sqlBuilder)
+                this.identifier(((TableMeta<?>) tabularItem).tableName(), sqlBuilder)
                         .append(_Constant.SPACE_AS_SPACE)
-                        .append(context.safeTableAlias((TableMeta<?>) tableItem, block.alias()));
-            } else if (tableItem instanceof SubQuery) {
-                this.handleSubQuery((SubQuery) tableItem, context);
+                        .append(context.safeTableAlias((TableMeta<?>) tabularItem, alias));
+            } else if (tabularItem instanceof SubQuery) {
+                this.handleSubQuery((SubQuery) tabularItem, context);
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE)
-                        .append(context.safeTableAlias(block.alias()));
-            } else if (tableItem instanceof _NestedItems) {
-                _SQLConsultant.assertStandardNestedItems((_NestedItems) tableItem);
+                        .append(context.safeTableAlias(alias));
+            } else if (tabularItem instanceof _NestedItems) {
+                _SQLConsultant.assertStandardNestedItems((_NestedItems) tabularItem);
                 if (_StringUtils.hasText(block.alias())) {
                     throw _Exceptions.nestedItemsAliasHasText(block.alias());
                 }
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                this.standardTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
+                this.standardTableReferences(((_NestedItems) tabularItem).tableBlockList(), context, true);
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            } else if (tabularItem instanceof _Cte) {
+                sqlBuilder.append(_Constant.SPACE);
+                this.identifier(((_Cte) tabularItem).name(), sqlBuilder);
+                if (_StringUtils.hasText(alias)) {
+                    sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                    this.identifier(alias, sqlBuilder);
+                } else if (!alias.isEmpty()) {
+                    throw _Exceptions.tableItemAliasNoText(tabularItem);
+                }
             } else {
-                throw _Exceptions.dontSupportTableItem(tableItem, block.alias(), null);
+                throw _Exceptions.dontSupportTableItem(tabularItem, block.alias(), null);
             }
 
             // on clause
@@ -1547,8 +1569,8 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #parseStandardQuery(_StandardQuery, _SimpleQueryContext)
      */
-    protected final void queryWhereClause(final List<_TabularBlock> tableBlockList, final List<_Predicate> predicateList
-            , final _MultiTableStmtContext context) {
+    protected final void queryWhereClause(final List<_TabularBlock> tableBlockList, final List<_Predicate> predicateList,
+                                          final _MultiTableStmtContext context) {
         final int predicateSize = predicateList.size();
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
@@ -2083,21 +2105,21 @@ abstract class ArmyParser implements DialectParser {
             final DomainInsertContext parentContext;
             parentContext = DomainInsertContext.forParent(outerContext, childStmt, this, visible);
             if (standardStmt) {
-                this.parseStandardValuesInsert(parentContext);
+                this.parseStandardValuesInsert(insert, parentContext);
             } else {
                 this.parseValuesInsert(parentContext, parentStmt);
             }
 
             context = DomainInsertContext.forChild(outerContext, childStmt, parentContext);
             if (standardStmt) {
-                this.parseStandardValuesInsert(context);
+                this.parseStandardValuesInsert(insert, context);
             } else {
                 this.parseValuesInsert(context, childStmt);
             }
         } else {
             context = DomainInsertContext.forSingle(outerContext, insert, this, visible);
             if (standardStmt) {
-                this.parseStandardValuesInsert(context);
+                this.parseStandardValuesInsert(insert, context);
             } else {
                 this.parseValuesInsert(context, insert);
             }
@@ -2122,21 +2144,21 @@ abstract class ArmyParser implements DialectParser {
             final ValuesInsertContext parentContext;
             parentContext = ValuesInsertContext.forParent(outerContext, childStmt, this, visible);
             if (standardStmt) {
-                this.parseStandardValuesInsert(parentContext);
+                this.parseStandardValuesInsert(insert, parentContext);
             } else {
                 this.parseValuesInsert(parentContext, parentStmt);
             }
 
             context = ValuesInsertContext.forChild(outerContext, childStmt, parentContext);
             if (standardStmt) {
-                this.parseStandardValuesInsert(context);
+                this.parseStandardValuesInsert(insert, context);
             } else {
                 this.parseValuesInsert(context, childStmt);
             }
         } else {
             context = ValuesInsertContext.forSingle(outerContext, insert, this, visible);
             if (standardStmt) {
-                this.parseStandardValuesInsert(context);
+                this.parseStandardValuesInsert(insert, context);
             } else {
                 this.parseValuesInsert(context, insert);
             }
@@ -2182,21 +2204,21 @@ abstract class ArmyParser implements DialectParser {
             final QueryInsertContext parentContext;
             parentContext = QueryInsertContext.forParent(outerContext, childStmt, this, visible);
             if (standardStmt) {
-                this.parseStandardQueryInsert(parentContext);
+                this.parseStandardQueryInsert(insert, parentContext);
             } else {
                 this.parseQueryInsert(parentContext, childStmt.parentStmt());
             }
 
             context = QueryInsertContext.forChild(outerContext, childStmt, parentContext);
             if (standardStmt) {
-                this.parseStandardQueryInsert(context);
+                this.parseStandardQueryInsert(insert, context);
             } else {
                 this.parseQueryInsert(context, childStmt);
             }
         } else {
             context = QueryInsertContext.forSingle(outerContext, insert, this, visible);
             if (standardStmt) {
-                this.parseStandardQueryInsert(context);
+                this.parseStandardQueryInsert(insert, context);
             } else {
                 this.parseQueryInsert(context, insert);
             }
@@ -2891,11 +2913,23 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleDomainInsert(_SqlContext, _Insert._DomainInsert, Visible)
      * @see #handleValueInsert(_SqlContext, _Insert._ValuesInsert, Visible)
      */
-    private void parseStandardValuesInsert(final _ValueSyntaxInsertContext context) {
+    private void parseStandardValuesInsert(final _Insert._ValuesSyntaxInsert stmt, final _ValueSyntaxInsertContext context) {
+
+        // WITH clause
+        if (stmt instanceof _Statement._WithClauseSpec) {
+            if (!this.supportWithClauseInInsert) {
+                throw _Exceptions.dontSupportWithClauseInInsert(this.dialect);
+            }
+            standardWithClause((_Statement._WithClauseSpec) stmt, context);
+        }
+
         final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
         //1. INSERT INTO keywords
-        sqlBuilder = context.sqlBuilder()
-                .append(_Constant.INSERT_INTO_SPACE);
+        sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
         //2. table name
         this.safeObjectName(context.insertTable(), sqlBuilder);
         //3. table column list
@@ -2913,8 +2947,22 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleQueryInsert(_SqlContext, _Insert._QueryInsert, Visible)
      */
-    private void parseStandardQueryInsert(final _QueryInsertContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+    private void parseStandardQueryInsert(final _Insert._QueryInsert stmt, final _QueryInsertContext context) {
+
+        // WITH clause
+        if (stmt instanceof _Statement._WithClauseSpec) {
+            if (!this.supportWithClauseInInsert) {
+                throw _Exceptions.dontSupportWithClauseInInsert(this.dialect);
+            }
+            standardWithClause((_Statement._WithClauseSpec) stmt, context);
+        }
+
+
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
         //1. INSERT INTO keywords
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
         //2. table name
@@ -2932,6 +2980,11 @@ abstract class ArmyParser implements DialectParser {
      */
     private void parseStandardSingleDelete(final _SingleDelete stmt, final _SingleDeleteContext context) {
         assert stmt instanceof StandardDelete;
+
+        // WITH clause
+        if (stmt instanceof _Statement._WithClauseSpec) {
+            standardWithClause((_Statement._WithClauseSpec) stmt, context);
+        }
 
         final SingleTableMeta<?> targetTable;
         targetTable = (SingleTableMeta<?>) context.targetTable();
@@ -2979,6 +3032,11 @@ abstract class ArmyParser implements DialectParser {
         assert stmt instanceof StandardUpdate;
         assert !(stmt instanceof _DomainUpdate) || ((_DomainUpdate) stmt).childItemPairList().size() == 0;
 
+        // WITH clause
+        if (stmt instanceof _Statement._WithClauseSpec) {
+            standardWithClause((_Statement._WithClauseSpec) stmt, context);
+        }
+
         final SingleTableMeta<?> targetTable;
         targetTable = (SingleTableMeta<?>) context.targetTable();
 
@@ -3025,16 +3083,32 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
+    private void standardWithClause(final _Statement._WithClauseSpec withSpec, final _SqlContext context) {
+        final List<_Cte> cteList = withSpec.cteList();
+        if (cteList.size() > 0) {
+            if (!this.supportWithClause) {
+                throw _Exceptions.dontSupportWithClause(this.dialect);
+            }
+            withSubQuery(withSpec.isRecursive(), cteList, context, _SQLConsultant::assertStandardCte);
+        }
+
+
+    }
+
+
     /**
      * @see #handleSelect(_SqlContext, SelectStatement, Visible, _SelectContext)
      * @see #handleSubQuery(SubQuery, _SqlContext)
      */
     private void parseStandardQuery(final _StandardQuery stmt, final _SimpleQueryContext context) {
 
+        standardWithClause(stmt, context);
+
         final StringBuilder builder;
         if ((builder = context.sqlBuilder()).length() > 0) {
             builder.append(_Constant.SPACE);
         }
+
         builder.append(_Constant.SELECT);
         //1. select clause
         this.standardSelectClause(stmt.modifierList(), builder);

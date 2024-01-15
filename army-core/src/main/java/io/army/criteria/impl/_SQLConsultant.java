@@ -45,6 +45,22 @@ public abstract class _SQLConsultant {
         }
     }
 
+    public static void assertStandardCte(_Cte cte) {
+        if (cte instanceof CriteriaContexts.RecursiveCte) {
+            return;
+        }
+        if (!(cte instanceof SQLs.CteImpl)) {
+            throw illegalCteImpl(cte);
+        }
+        final SubStatement subStatement;
+        subStatement = cte.subStatement();
+        if (!(subStatement instanceof StandardQueries
+                || subStatement instanceof StandardQueries.StandardBracketQuery
+                || subStatement instanceof SimpleQueries.UnionSubQuery)) {
+            throw illegalCteImpl(cte);
+        }
+    }
+
     public static void assertUnionRowSet(final RowSet rowSet) {
         if (!(rowSet instanceof OrderByClause.UnionRowSet)) {
             throw nonArmyStatement(rowSet);

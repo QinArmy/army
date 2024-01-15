@@ -32,8 +32,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * <p>
- * This class representing standard domain delete statement.
+ * <p>This class representing standard domain delete statement.
  *
  * @since 0.6.0
  */
@@ -149,8 +148,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
         }
 
         @Override
-        public final _WhereSpec<I> deleteFrom(final @Nullable SingleTableMeta<?> table, SQLs.WordAs as,
-                                              final @Nullable String tableAlias) {
+        public final _WhereSpec<I> deleteFrom(final SingleTableMeta<?> table, SQLs.WordAs as, final String tableAlias) {
             return this.deleteFrom(table, tableAlias);
         }
 

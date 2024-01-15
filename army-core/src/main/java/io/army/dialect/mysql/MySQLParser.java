@@ -475,7 +475,19 @@ abstract class MySQLParser extends _ArmyDialectParser {
     @Override
     protected final boolean isSupportSingleDeleteAlias() {
         //as of 8.0 MySQL support single delete alias
-        return this.asOf80;
+        return this.dialect.compareWith(MySQLDialect.MySQL80) >= 0;
+    }
+
+    @Override
+    protected final boolean isSupportWithClause() {
+        //as of 8.0 MySQL support WITH clause
+        return this.dialect.compareWith(MySQLDialect.MySQL80) >= 0;
+    }
+
+    @Override
+    protected final boolean isSupportWithClauseInInsert() {
+        // MySQL don't support WITH clause in INSERT statement
+        return false;
     }
 
     @Override

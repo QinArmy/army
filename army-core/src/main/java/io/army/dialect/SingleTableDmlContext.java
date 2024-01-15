@@ -106,11 +106,10 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         assert parentContext.targetTable == ((ChildTableMeta<?>) this.domainTable).parentMeta()
                 && parentContext.domainTable == this.domainTable;
 
-        if ((stmt instanceof _Update && parser.supportSingleUpdateAlias)
-                || (stmt instanceof _Delete && parser.supportSingleDeleteAlias)) {
+        if (parentContext.safeTargetTableName == null) {
             this.safeTargetTableName = null;
         } else {
-            this.safeTargetTableName = parser.safeObjectName(this.targetTable);
+            this.safeTargetTableName = this.parser.safeObjectName(this.targetTable);
         }
     }
 

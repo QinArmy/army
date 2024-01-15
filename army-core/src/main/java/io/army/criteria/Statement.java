@@ -661,6 +661,75 @@ public interface Statement extends Item {
 
     /**
      * <p>
+     * This interface representing JOIN CTE clause.
+     * * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * *
+     *
+     * @param <JC> same with the JS of {@link _JoinClause}
+     * @since 0.6.0
+     */
+    interface _JoinCteClause<JC> {
+
+        JC leftJoin(String cteName);
+
+        JC leftJoin(String cteName, SQLs.WordAs wordAs, String alias);
+
+        JC join(String cteName);
+
+        JC join(String cteName, SQLs.WordAs wordAs, String alias);
+
+        JC rightJoin(String cteName);
+
+        JC rightJoin(String cteName, SQLs.WordAs wordAs, String alias);
+
+        JC fullJoin(String cteName);
+
+        JC fullJoin(String cteName, SQLs.WordAs wordAs, String alias);
+
+    }
+
+    interface _JoinModifierCteClause<JC> extends _JoinCteClause<JC> {
+
+        JC leftJoin(DerivedModifier modifier, String cteName);
+
+        JC leftJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+
+        JC join(DerivedModifier modifier, String cteName);
+
+        JC join(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+
+        JC rightJoin(DerivedModifier modifier, String cteName);
+
+        JC rightJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+
+        JC fullJoin(DerivedModifier modifier, String cteName);
+
+        JC fullJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+
+    }
+
+    interface _CrossJoinCteClause<FC> {
+
+        FC crossJoin(String cteName);
+
+        FC crossJoin(String cteName, SQLs.WordAs wordAs, String alias);
+
+    }
+
+    interface _CrossJoinModifierCteClause<FC> extends _CrossJoinCteClause<FC> {
+
+        FC crossJoin(DerivedModifier modifier, String cteName);
+
+        FC crossJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+
+    }
+
+
+    /**
+     * <p>
      * This interface representing a left bracket clause after key word 'FROM' or key word 'JOIN'.
      *     * <p>
      * <strong>Note:</strong><br/>

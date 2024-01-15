@@ -393,6 +393,18 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
+    protected final boolean isSupportWithClause() {
+        // Postgre support WITH clause
+        return true;
+    }
+
+    @Override
+    protected final boolean isSupportWithClauseInInsert() {
+        // Postgre support WITH clause in INSERT statement
+        return true;
+    }
+
+    @Override
     protected final boolean isSupportUpdateRow() {
         // Postgre support update row
         return true;
