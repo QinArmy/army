@@ -102,17 +102,6 @@ public abstract class _ArmySession implements Session {
         return readOnlyStatus;
     }
 
-
-    @Override
-    public final Visible visible() {
-        return this.visible;
-    }
-
-    @Override
-    public final boolean isQueryInsertAllowed() {
-        return this.allowQueryInsert;
-    }
-
     @Override
     public final boolean hasTransactionInfo() {
         return obtainTransactionInfo() != null;
@@ -126,6 +115,21 @@ public abstract class _ArmySession implements Session {
         final TransactionInfo info;
         info = obtainTransactionInfo();
         return info != null && info.isolation() == Isolation.PSEUDO;
+    }
+
+    @Override
+    public final boolean inAnyTransaction() throws SessionException {
+        return this.inTransaction() || inPseudoTransaction();
+    }
+
+    @Override
+    public final Visible visible() {
+        return this.visible;
+    }
+
+    @Override
+    public final boolean isQueryInsertAllowed() {
+        return this.allowQueryInsert;
     }
 
     @Override

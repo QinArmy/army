@@ -75,6 +75,41 @@ public interface Session extends CloseableSpec, OptionSpec {
      */
     boolean inTransaction() throws SessionException;
 
+    boolean inPseudoTransaction();
+
+    /**
+     * <p>Test session whether hold one  {@link TransactionInfo} instance or not, the instance is current transaction info of this session.
+     * <p><strong>NOTE</strong> :
+     * <ol>
+     *     <li>This method don't check whether session closed or not</li>
+     *     <li>This method don't invoke {@link TransactionInfo#inTransaction()} method</li>
+     * </ol>
+     * <pre>The implementation of this method like following
+     *         <code><br/>
+     *   &#64;Override
+     *   public boolean hasTransactionInfo() {
+     *       return this.transactionInfo != null;
+     *   }
+     *         </code>
+     * </pre>
+     *
+     * @return true : session hold one  {@link TransactionInfo} instance.
+     */
+    boolean hasTransactionInfo();
+
+    /**
+     * <p>This method is equivalent to following :
+     * <pre>
+     *         <code><br/>
+     *             // session is instance of {@link Session}
+     *             session.inTransaction() || session.inPseudoTransaction()
+     *         </code>
+     * </pre>
+     *
+     * @throws SessionException throw when {@link #inTransaction()} throw
+     */
+    boolean inAnyTransaction() throws SessionException;
+
     /**
      * <p>Test session is whether rollback only or not.
      * <p> How to mark {@link Session}'s rollback only status ?
@@ -126,25 +161,6 @@ public interface Session extends CloseableSpec, OptionSpec {
      */
     void markRollbackOnly();
 
-    /**
-     * <p>Test session whether hold one  {@link TransactionInfo} instance or not, the instance is current transaction info of this session.
-     * <p><strong>NOTE</strong> :
-     * <ol>
-     *     <li>This method don't check whether session closed or not</li>
-     *     <li>This method don't invoke {@link TransactionInfo#inTransaction()} method</li>
-     * </ol>
-     * <pre>The implementation of this method like following
-     *         <code><br/>
-     *   &#64;Override
-     *   public boolean hasTransactionInfo() {
-     *       return this.transactionInfo != null;
-     *   }
-     *         </code>
-     * </pre>
-     *
-     * @return true : session hold one  {@link TransactionInfo} instance.
-     */
-    boolean hasTransactionInfo();
 
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
@@ -172,9 +188,6 @@ public interface Session extends CloseableSpec, OptionSpec {
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      */
     boolean isQueryInsertAllowed();
-
-
-    boolean inPseudoTransaction();
 
 
     /**

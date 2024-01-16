@@ -3,21 +3,18 @@ package io.army.session.sync.standard;
 
 import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
-import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sync.SyncLocalSession;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
@@ -43,6 +40,7 @@ public class DomainDeleteTests extends StandardSessionSupport {
 
         final long rows;
         rows = session.update(stmt);
+        Assert.assertEquals(rows, regionList.size());
         LOG.debug("session[name : {}] rows {}", session.name(), rows);
     }
 
@@ -65,84 +63,57 @@ public class DomainDeleteTests extends StandardSessionSupport {
 
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
-        Assert.assertEquals(rowList.size(), regionList.size());
+        assertBatchSingleRows(rowList, regionList.size(), 1);
         LOG.debug("session[name : {}] rows {}", session.name(), rowList);
     }
 
+    @Transactional
     @Test
     public void deleteChild(final SyncLocalSession session) {
 
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
 
-        session.startTransaction();
-        try {
-            session.batchSave(regionList);
+        session.batchSave(regionList);
 
-            final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now();
 
-            final Delete stmt;
-            stmt = SQLs.domainDelete()
-                    .deleteFrom(ChinaProvince_.T, AS, "p")
-                    .where(ChinaProvince_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
-                    .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
-                    .asDelete();
+        final Delete stmt;
+        stmt = SQLs.domainDelete()
+                .deleteFrom(ChinaProvince_.T, AS, "p")
+                .where(ChinaProvince_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
+                .asDelete();
 
-            final long rows;
-            rows = session.update(stmt);
+        final long rows;
+        rows = session.update(stmt);
 
-            switch (session.sessionFactory().serverMeta().serverDatabase()) {
-                case MySQL:
-                    Assert.assertEquals(rows, (long) regionList.size() << 1);
-                    break;
-                case PostgreSQL:
-                default:
-                    Assert.assertEquals(rows, regionList.size());
-            }
-
-            LOG.debug("session[name : {}] rows {}", session.name(), rows);
-
-            session.commit();
-        } catch (RuntimeException e) {
-            session.rollback();
-            throw e;
-        }
+        assertSingleUpdateChildRows(session, rows, regionList.size());
+        LOG.debug("session[name : {}] rows {}", session.name(), rows);
 
 
     }
 
-
+    @Transactional
     @Test
     public void batchDeleteChild(final SyncLocalSession session) {
+
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+
+        session.batchSave(regionList);
+
         final LocalDateTime now = LocalDateTime.now();
-
-        final Select queryStmt;
-        queryStmt = SQLs.query()
-                .select(ChinaProvince_.id)
-                .from(ChinaProvince_.T, AS, "p")
-                .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
-                .orderBy(ChinaRegion_.id::desc)
-                .limit(SQLs::param, 2)
-                .asQuery();
-
-        final List<Long> idList;
-        idList = session.queryList(queryStmt, Long.class);
-
-        final List<Map<String, Object>> paramList = new ArrayList<>(idList.size());
-        for (Long id : idList) {
-            paramList.add(Collections.singletonMap(ChinaRegion_.ID, id));
-        }
 
         final BatchDelete stmt;
         stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaProvince_.T, AS, "p")
                 .where(ChinaProvince_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
                 .asDelete()
-                .namedParamList(paramList);
+                .namedParamList(extractRegionIdMapList(regionList));
 
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
-        Assert.assertEquals(rowList.size(), paramList.size());
+        assertBatchUpdateChildRows(session, rowList, regionList.size(), 1);
         LOG.debug("session[name : {}] rows {}", session.name(), rowList);
     }
 

@@ -17,7 +17,7 @@
 package io.army.session.sync.postgre;
 
 import io.army.dialect.Database;
-import io.army.session.SyncSessionTestSupport;
+import io.army.session.sync.SyncSessionTestSupport;
 
 abstract class PostgreSuiteTests extends SyncSessionTestSupport {
 

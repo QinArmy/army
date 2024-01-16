@@ -1,7 +1,7 @@
 package io.army.session.sync.standard;
 
 
-import io.army.session.SyncSessionTestSupport;
+import io.army.session.sync.SyncSessionTestSupport;
 
 
 abstract class StandardSessionSupport extends SyncSessionTestSupport {

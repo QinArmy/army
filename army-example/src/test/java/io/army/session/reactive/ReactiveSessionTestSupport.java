@@ -16,11 +16,13 @@
 
 package io.army.session.reactive;
 
-import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
+import io.army.reactive.ReactiveLocalSession;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
 import io.army.session.FactoryUtils;
+import io.army.session.Option;
+import io.army.session.SessionTestSupport;
 import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,13 +32,14 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
+public abstract class ReactiveSessionTestSupport extends SessionTestSupport {
 
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
@@ -91,16 +94,31 @@ public abstract class ReactiveSessionTestSupport extends ArmyTestDataSupport {
     }
 
 
+
     @AfterMethod
     public final void closeSessionAfterTest(final ITestResult testResult) {
+        final Throwable error = testResult.getThrowable();
+
         ReactiveSession session;
         for (Object parameter : testResult.getParameters()) {
             if (!(parameter instanceof ReactiveSession)) {
                 continue;
             }
             session = (ReactiveSession) parameter;
-            session.close()
-                    .block();
+            if (session instanceof ReactiveLocalSession && session.inAnyTransaction()) {
+                if (error == null) {
+                    ((ReactiveLocalSession) session).commit(Option.EMPTY_FUNC)
+                            .then(Mono.defer(session::close))
+                            .block();
+                } else {
+                    ((ReactiveLocalSession) session).rollback(Option.EMPTY_FUNC)
+                            .then(Mono.defer(session::close))
+                            .block();
+                }
+            } else {
+                session.close()
+                        .block();
+            }
             LOG.debug("session[name : {} , hash : {}] have closed", session.name(), System.identityHashCode(session));
         }
     }

@@ -16,8 +16,6 @@
 
 package io.army;
 
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson;
 import io.army.example.pill.domain.PillUser;
@@ -33,7 +31,8 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class ArmyTestDataSupport {
@@ -321,23 +320,6 @@ public abstract class ArmyTestDataSupport {
     }
 
 
-    protected static List<Long> extractRegionIdList(final List<? extends ChinaRegion<?>> regionList) {
-        final List<Long> idList = new ArrayList<>(regionList.size());
-        for (ChinaRegion<?> region : regionList) {
-            idList.add(region.getId());
-        }
-        return Collections.unmodifiableList(idList);
-    }
-
-    protected static List<Map<String, Long>> extractRegionIdMapList(final List<? extends ChinaRegion<?>> regionList) {
-        final List<Map<String, Long>> idList = new ArrayList<>(regionList.size());
-        for (ChinaRegion<?> region : regionList) {
-            idList.add(Collections.singletonMap(ChinaRegion_.ID, region.getId()));
-        }
-        return Collections.unmodifiableList(idList);
-    }
-
-
     protected static void assertChinaRegionAfterNoConflictInsert(final List<? extends ChinaRegion<?>> regionList) {
         Long id, lastId = null;
         for (ChinaRegion<?> chinaRegion : regionList) {
@@ -351,16 +333,6 @@ public abstract class ArmyTestDataSupport {
 
     }
 
-    /**
-     * @return a unmodified list
-     */
-    protected static List<Dialect> createDialectList(final List<Database> databaseList) {
-        final List<Dialect> dialectList = _Collections.arrayList();
-        for (Database database : databaseList) {
-            dialectList.addAll(Arrays.asList(database.dialects()));
-        }
-        return Collections.unmodifiableList(dialectList);
-    }
 
     private static StringBuilder randomSuffix(final Random random, final String value) {
         return _StringUtils.builder()

@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-package io.army.session;
+package io.army.session.sync;
 
-import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
+import io.army.session.*;
+import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncSession;
 import io.army.sync.SyncSessionFactory;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.DataProvider;
+import org.testng.annotations.*;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
+public abstract class SyncSessionTestSupport extends SessionTestSupport {
 
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
@@ -86,15 +86,69 @@ public abstract class SyncSessionTestSupport extends ArmyTestDataSupport {
         }
     }
 
+    @BeforeMethod
+    public final void startLocalTransactionIfNeed(final ITestResult testResult) {
+        final Transactional transactional;
+        transactional = testResult.getMethod().getConstructorOrMethod().getMethod().getAnnotation(Transactional.class);
+        if (transactional == null) {
+            return;
+        }
+        SyncLocalSession session;
+        Isolation isolation;
+        for (Object parameter : testResult.getParameters()) {
+            if (!(parameter instanceof SyncLocalSession)) {
+                continue;
+            }
+            session = (SyncLocalSession) parameter;
+            if (session.inAnyTransaction()) {
+                continue;
+            }
+
+            switch (transactional.isolation()) {
+                case DEFAULT:
+                    isolation = null;
+                    break;
+                case READ_COMMITTED:
+                    isolation = Isolation.READ_COMMITTED;
+                    break;
+                case REPEATABLE_READ:
+                    isolation = Isolation.REPEATABLE_READ;
+                    break;
+                case SERIALIZABLE:
+                    isolation = Isolation.SERIALIZABLE;
+                    break;
+                case READ_UNCOMMITTED:
+                    isolation = Isolation.READ_UNCOMMITTED;
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(transactional.isolation());
+            }
+
+            session.startTransaction(TransactionOption.option(isolation, false));
+
+        }
+
+
+    }
+
 
     @AfterMethod
     public final void closeSessionAfterTest(final ITestResult testResult) {
+        final Throwable error = testResult.getThrowable();
+
         SyncSession session;
         for (Object parameter : testResult.getParameters()) {
             if (!(parameter instanceof SyncSession)) {
                 continue;
             }
             session = (SyncSession) parameter;
+            if (session instanceof SyncLocalSession && session.inAnyTransaction()) {
+                if (error == null) {
+                    ((SyncLocalSession) session).commit(Option.EMPTY_FUNC);
+                } else {
+                    ((SyncLocalSession) session).rollback(Option.EMPTY_FUNC);
+                }
+            }
             session.close();
             LOG.debug("session[name : {} , hash : {}] have closed", session.name(), System.identityHashCode(session));
         }
