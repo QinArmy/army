@@ -236,37 +236,25 @@ abstract class InsertSupports {
 
         @Override
         public final WE with(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(false, consumer, true);
         }
 
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(true, consumer, true);
         }
 
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(false, consumer, false);
         }
 
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(true, consumer, false);
         }
 
         @Override
@@ -278,30 +266,17 @@ abstract class InsertSupports {
         public final List<_Cte> cteList() {
             List<_Cte> cteList = this.cteList;
             if (cteList == null) {
-                cteList = _Collections.emptyList();
+                cteList = Collections.emptyList();
                 this.cteList = cteList;
             }
             return cteList;
         }
 
-        /**
-         * @param cteList unmodified list
-         */
-        @Deprecated
-        final void withClauseEnd(final boolean recursive, final List<_Cte> cteList) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.recursive = recursive;
-            this.cteList = cteList;
-        }
 
+        @SuppressWarnings("unchecked")
         final WE endStaticWithClause(final boolean recursive) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
             this.recursive = recursive;
-            this.cteList = this.context.endWithClause(recursive, true);
+            this.cteList = this.context.endWithClause(recursive, true); // static with syntax is required
             return (WE) this;
         }
 
@@ -309,10 +284,15 @@ abstract class InsertSupports {
         abstract B createCteBuilder(boolean recursive);
 
 
-        private WE endDynamicWithClause(final B builder, final boolean required) {
+        @SuppressWarnings("unchecked")
+        private WE endDynamicWithClause(final boolean recursive, final Consumer<B> consumer, final boolean required) {
+            final B builder;
+            builder = createCteBuilder(recursive);
+
+            CriteriaUtils.invokeConsumer(builder, consumer);
+
             ((CriteriaSupports.CteBuilder) builder).endLastCte();
-            final boolean recursive;
-            recursive = builder.isRecursive();
+
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
@@ -385,37 +365,25 @@ abstract class InsertSupports {
 
         @Override
         public final WE with(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(false, consumer, true);
         }
 
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(true, consumer, true);
         }
 
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(false, consumer, false);
         }
 
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(true, consumer, false);
         }
 
         @Override
@@ -446,18 +414,21 @@ abstract class InsertSupports {
 
 
         @SuppressWarnings("unchecked")
-        private WE endDynamicWithClause(final B builder, final boolean required) {
+        private WE endDynamicWithClause(final boolean recursive, final Consumer<B> consumer, final boolean required) {
+            final B builder;
+            builder = createCteBuilder(recursive);
+
+            CriteriaUtils.invokeConsumer(builder, consumer);
+
             ((CriteriaSupports.CteBuilder) builder).endLastCte();
 
-            final boolean recursive;
-            recursive = builder.isRecursive();
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
         }
 
 
-    }//DynamicWithClause
+    } // DynamicWithClause
 
     static abstract class SimpleValuesSyntaxOptions implements ValueSyntaxOptions {
 
@@ -505,7 +476,7 @@ abstract class InsertSupports {
         }
 
 
-    }//SimpleValuesSyntaxOptions
+    } // SimpleValuesSyntaxOptions
 
 
     static abstract class ColumnsClause<T, R>
@@ -2358,7 +2329,6 @@ abstract class InsertSupports {
      * <p>
      * Try find parent insert sub-statement for childStmt in cteList.
      * This method is designed for child sub-insert.
-     *
      */
     static ParentSubInsert parentSubInsertOfChildSubInsert(final ArmyInsert childStmt, final int rowCount,
                                                            final List<_Cte> cteList) {
@@ -2374,7 +2344,6 @@ abstract class InsertSupports {
     /**
      * <p>
      * Find parent insert sub-statement for childStmt in cteList.
-     *
      */
     static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final int rowCount, final List<_Cte> cteList) {
         final ParentSubInsert parentSubInsert;
@@ -2613,12 +2582,9 @@ abstract class InsertSupports {
     }
 
 
-
-
     /**
      * <p>
      * Check insert statement for safety.
-     *
      *
      * @see ArmyInsertStatement#asInsertStatement()
      */

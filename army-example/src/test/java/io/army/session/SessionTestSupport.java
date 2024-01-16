@@ -44,10 +44,8 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
         }
     }
 
-    protected static void assertBatchUpdateChildRows(final Session session, final List<Long> rowList, final int batchSize, final long dataRows) {
+    protected static void assertBatchUpdateChildRows(final List<Long> rowList, final int batchSize, final long dataRows) {
         Assert.assertEquals(rowList.size(), batchSize);
-        final Database database = session.sessionFactory().serverMeta().serverDatabase();
-
         for (Long rows : rowList) {
             Assert.assertEquals(rows, dataRows);
         }

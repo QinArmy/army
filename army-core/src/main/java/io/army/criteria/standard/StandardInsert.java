@@ -68,35 +68,56 @@ public interface StandardInsert extends StandardStatement {
     }
 
 
-    interface _PrimaryInsertIntoClause<I extends Item> extends Item {
+    interface _ChildWithSpec<I extends Item, P> extends _StandardDynamicWithClause<_ChildInsertIntoClause<I, P>>,
+            _StandardStaticWithClause<_ChildInsertIntoClause<I, P>>,
+            _ChildInsertIntoClause<I, P> {
+
+    }
+
+
+    /*-------------------below 1.0 api interfaces -------------------*/
+
+
+    interface _PrimaryInsertInto10Clause<I extends Item> extends Item {
 
         <T> _ColumnListSpec<T, I> insertInto(SimpleTableMeta<T> table);
 
         <P> _ColumnListSpec<P, InsertStatement._ParentInsert20<I, _ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table);
     }
 
-    interface _PrimaryPreferLiteralSpec<I extends Item>
-            extends InsertStatement._PreferLiteralClause<_PrimaryInsertIntoClause<I>>,
-            _PrimaryInsertIntoClause<I> {
+
+    interface _PrimaryPreferLiteral10Spec<I extends Item>
+            extends InsertStatement._PreferLiteralClause<_PrimaryInsertInto10Clause<I>>,
+            _PrimaryInsertInto10Clause<I> {
 
     }
 
-    interface _PrimaryNullOptionSpec<I extends Item>
-            extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec<I>>,
-            _PrimaryPreferLiteralSpec<I> {
+    interface _PrimaryNullOption10Spec<I extends Item>
+            extends InsertStatement._NullOptionClause<_PrimaryPreferLiteral10Spec<I>>,
+            _PrimaryPreferLiteral10Spec<I> {
 
     }
 
     interface _PrimaryOptionSpec<I extends Item>
-            extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec<I>>,
-            _PrimaryNullOptionSpec<I> {
+            extends InsertStatement._MigrationOptionClause<_PrimaryNullOption10Spec<I>>,
+            _PrimaryNullOption10Spec<I> {
 
     }
 
+    /*-------------------below 2.0 api interfaces -------------------*/
 
-    interface _WithSpec<I extends Item> extends _StandardDynamicWithClause<_PrimaryInsertIntoClause<I>>,
-            _StandardStaticWithClause<_PrimaryInsertIntoClause<I>>,
-            _PrimaryInsertIntoClause<I> {
+
+    interface _PrimaryInsertInto20Clause<I extends Item> extends Item {
+
+        <T> _ColumnListSpec<T, I> insertInto(SimpleTableMeta<T> table);
+
+        <P> _ColumnListSpec<P, InsertStatement._ParentInsert20<I, _ChildWithSpec<I, P>>> insertInto(ParentTableMeta<P> table);
+    }
+
+
+    interface _WithSpec<I extends Item> extends _StandardDynamicWithClause<_PrimaryInsertInto20Clause<I>>,
+            _StandardStaticWithClause<_PrimaryInsertInto20Clause<I>>,
+            _PrimaryInsertInto20Clause<I> {
 
     }
 

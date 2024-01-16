@@ -748,10 +748,10 @@ abstract class CriteriaUtils {
     }
 
     static CriteriaException childParentRowNotMatch(_Insert._ValuesInsert child, _Insert._ValuesInsert parent) {
-        String m = String.format("%s row number[%s] and parent row number[%s] not match."
-                , child.table(), child.rowPairList().size(), parent.rowPairList().size());
+        String m = String.format("%s row number[%s] and parent row number[%s] not match.",
+                child.table(), child.rowPairList().size(), parent.rowPairList().size());
 
-        return ContextStack.criteriaError(((CriteriaContextSpec) child).getContext(), m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException duplicateDynamicMethod(CriteriaContext context) {
@@ -872,6 +872,10 @@ abstract class CriteriaUtils {
 
     static CriteriaException standard10DontSupportWithClause(CriteriaContext context) {
         return ContextStack.criteriaError(context, "standard 1.0 api don't support WITH syntax.");
+    }
+
+    static CriteriaException standard10DontSupportWithClause() {
+        return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support WITH clause.");
     }
 
     static CriteriaException standard10DontSupportWindow(CriteriaContext context) {

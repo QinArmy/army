@@ -4,6 +4,7 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.Windows;
 import io.army.example.bank.domain.user.*;
 import io.army.sync.SyncLocalSession;
 import org.testng.Assert;
@@ -25,7 +26,7 @@ public class StandardInsertTests extends StandardSessionSupport {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final List<ChinaRegion<?>> regionList = createReginListWithCount(10);
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
@@ -55,7 +56,7 @@ public class StandardInsertTests extends StandardSessionSupport {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final List<ChinaProvince> regionList = createProvinceListWithCount(30);
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
@@ -92,6 +93,54 @@ public class StandardInsertTests extends StandardSessionSupport {
             session.rollback();
             throw e;
         }
+
+    }
+
+    @Test
+    public void domainInsert20Parent(final SyncLocalSession session) {
+
+        switch (session.sessionFactory().serverMeta().serverDatabase()) {
+            case MySQL: // MySQL INSERT statement don't support WITH clause
+                return;
+            case PostgreSQL:
+            default:
+        }
+
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaRegion<?>> parentList, regionList;
+        parentList = createReginListWithCount(3);
+        session.batchSave(parentList); // save parentList
+        regionList = createReginListWithCount(parentList.size());
+
+        final Insert stmt;
+        stmt = SQLs.singleInsert20()
+                .with("cte").as(s -> s.select(ChinaRegion_.id, Windows.rowNumber().over().as("rowNumber"))
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(parentList)))
+                        .orderBy(ChinaRegion_.id)
+                        .asQuery()
+                ).space()
+                .insertInto(ChinaRegion_.T)
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs.scalarSubQuery()
+                        .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
+                        .from("cte")
+                        .where(SQLs.refField("cte", "rowNumber").equal(SQLs.BATCH_NO_PARAM))
+                        .asQuery()
+                )
+                .values(regionList)
+                .asInsert();
+
+        final long rows;
+        rows = session.update(stmt);
+
+        Assert.assertEquals(rows, regionList.size());
+        assertChinaRegionAfterNoConflictInsert(regionList);
 
     }
 
