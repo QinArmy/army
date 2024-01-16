@@ -751,6 +751,11 @@ public abstract class ExecutorSupport {
         if (timeoutMillis != null) {
             map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
         }
+        final String label;
+        label = option.valueOf(Option.LABEL);
+        if (label != null) {
+            map.put(Option.LABEL, label);
+        }
     }
 
 
@@ -768,6 +773,12 @@ public abstract class ExecutorSupport {
         timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
         if (timeoutMillis != null) {
             map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+        }
+
+        final String label;
+        label = option.valueOf(Option.LABEL);
+        if (label != null) {
+            map.put(Option.LABEL, label);
         }
 
     }

@@ -34,9 +34,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -60,9 +62,15 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     private static final AtomicIntegerFieldUpdater<ArmyReactiveSession> SESSION_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmyReactiveSession.class, "sessionClosed");
 
+    @SuppressWarnings("unchecked")
+    private static final AtomicReferenceFieldUpdater<ArmyReactiveSession, ConcurrentMap<Object, Object>> ATTRIBUTE_MAP =
+            AtomicReferenceFieldUpdater.newUpdater(ArmyReactiveSession.class, (Class<ConcurrentMap<Object, Object>>) ((Class<?>) ConcurrentMap.class), "attributeMap");
+
 
     final ReactiveStmtExecutor stmtExecutor;
     private volatile int sessionClosed;
+
+    private volatile ConcurrentMap<Object, Object> attributeMap;
 
     ArmyReactiveSession(ArmyReactiveSessionFactory.ReactiveSessionBuilder<?, ?> builder) {
         super(builder);
@@ -338,6 +346,27 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
 
+    /*-------------------below protected template methods -------------------*/
+
+    @Nullable
+    @Override
+    protected final Map<Object, Object> obtainAttributeMap() {
+        return this.attributeMap;
+    }
+
+    @Override
+    protected final Map<Object, Object> obtainOrCreateAttributeMap() {
+        ConcurrentMap<Object, Object> map = this.attributeMap;
+        if (map != null) {
+            return map;
+        }
+        map = _Collections.concurrentHashMap();
+        if (!ATTRIBUTE_MAP.compareAndSet(this, null, map)) {
+            map = ATTRIBUTE_MAP.get(this);
+            assert map != null;
+        }
+        return map;
+    }
 
     /*-------------------below package methods -------------------*/
 

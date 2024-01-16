@@ -20,6 +20,10 @@ package io.army.session;
 import io.army.criteria.Visible;
 import io.army.meta.TableMeta;
 
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * <p>This interface representing database session.
  * <p>This interface is direct base interface of following :
@@ -43,13 +47,14 @@ public interface Session extends CloseableSpec, OptionSpec {
     /**
      * <p>
      * Session identifier(non-unique, for example : database server cluster),probably is following :
-     *     <ul>
-     *         <li>server process id</li>
-     *         <li>server thread id</li>
-     *         <li>other identifier</li>
-     *     </ul>
-     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
-     *     *
+     * <ul>
+     *     <li>server process id</li>
+     *     <li>server thread id</li>
+     *     <li>other identifier</li>
+     * </ul>
+     * <strong>NOTE</strong>: identifier will probably be updated if reconnect.
+     * *
+     *
      * @throws SessionException throw when session have closed.
      */
     long sessionIdentifier() throws SessionException;
@@ -178,6 +183,42 @@ public interface Session extends CloseableSpec, OptionSpec {
      * @throws IllegalArgumentException throw,when not found {@link TableMeta}.
      */
     <T> TableMeta<T> tableMeta(Class<T> domainClass);
+
+    /**
+     * @param key The key of the attribute to return
+     * @return The attribute
+     */
+    @Nullable
+    Object getAttribute(Object key);
+
+    /**
+     * Set a custom attribute.
+     *
+     * @param key   The attribute name
+     * @param value The attribute value
+     */
+    void setAttribute(Object key, Object value);
+
+    /**
+     * @return all the attributes names,a unmodified set.
+     */
+    Set<Object> getAttributeKeys();
+
+    /**
+     * Remove the attribute
+     *
+     * @param key The attribute key
+     * @return the attribute value if found, null otherwise
+     */
+    @Nullable
+    Object removeAttribute(Object key);
+
+    int attributeSize();
+
+    /**
+     * @return a unmodified set.
+     */
+    Set<Map.Entry<Object, Object>> attributeEntrySet();
 
     /**
      * override {@link Object#toString()}

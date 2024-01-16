@@ -33,6 +33,9 @@ import io.army.util._StringUtils;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -136,6 +139,61 @@ public abstract class _ArmySession implements Session {
         return table;
     }
 
+    @Nullable
+    @Override
+    public final Object getAttribute(Object key) {
+        final Map<Object, Object> map;
+        map = obtainAttributeMap();
+        if (map == null) {
+            return null;
+        }
+        return map.get(key);
+    }
+
+    @Override
+    public final void setAttribute(Object key, Object value) {
+        obtainOrCreateAttributeMap().put(key, value);
+    }
+
+    @Override
+    public final Set<Object> getAttributeKeys() {
+        final Map<Object, Object> map;
+        map = obtainAttributeMap();
+        if (map == null) {
+            return Collections.emptySet();
+        }
+        return Collections.unmodifiableSet(map.keySet());
+    }
+
+    @Nullable
+    @Override
+    public final Object removeAttribute(final Object key) {
+        final Map<Object, Object> map;
+        map = obtainAttributeMap();
+        if (map == null) {
+            return null;
+        }
+        return map.remove(key);
+    }
+
+    @Override
+    public final int attributeSize() {
+        final Map<Object, Object> map;
+        map = obtainAttributeMap();
+        return map == null ? 0 : map.size();
+    }
+
+    @Override
+    public final Set<Map.Entry<Object, Object>> attributeEntrySet() {
+        final Map<Object, Object> map;
+        map = obtainAttributeMap();
+        if (map == null) {
+            return Collections.emptySet();
+        }
+        return Collections.unmodifiableSet(map.entrySet());
+    }
+
+
     @Override
     public final <T> T nonNullOf(Option<T> option) {
         return Session.super.nonNullOf(option);
@@ -175,6 +233,13 @@ public abstract class _ArmySession implements Session {
 
 
     protected abstract void rollbackOnlyOnError(ChildUpdateException cause);
+
+
+    @Nullable
+    protected abstract Map<Object, Object> obtainAttributeMap();
+
+
+    protected abstract Map<Object, Object> obtainOrCreateAttributeMap();
 
 
     protected final Stmt parseDqlStatement(final DqlStatement statement, final StmtOption option) {

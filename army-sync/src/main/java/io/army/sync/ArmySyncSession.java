@@ -33,6 +33,7 @@ import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +54,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     final SyncExecutor stmtExecutor;
 
     private boolean sessionClosed;
+
+    private Map<Object, Object> attributeMap;
 
     ArmySyncSession(ArmySyncSessionFactory.SyncBuilder<?, ?> builder) {
         super(builder);
@@ -504,6 +507,23 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
         }
 
+    }
+
+    /*-------------------below protected template methods -------------------*/
+
+    @Nullable
+    @Override
+    protected final Map<Object, Object> obtainAttributeMap() {
+        return this.attributeMap;
+    }
+
+    @Override
+    protected final Map<Object, Object> obtainOrCreateAttributeMap() {
+        Map<Object, Object> map = this.attributeMap;
+        if (map == null) {
+            this.attributeMap = map = _Collections.hashMap();
+        }
+        return map;
     }
 
     final void releaseSession() {

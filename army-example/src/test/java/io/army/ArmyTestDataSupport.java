@@ -33,10 +33,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class ArmyTestDataSupport {
@@ -321,6 +318,23 @@ public abstract class ArmyTestDataSupport {
             list.add(u);
         }
         return list;
+    }
+
+
+    protected static List<Long> extractRegionIdList(final List<? extends ChinaRegion<?>> regionList) {
+        final List<Long> idList = new ArrayList<>(regionList.size());
+        for (ChinaRegion<?> region : regionList) {
+            idList.add(region.getId());
+        }
+        return Collections.unmodifiableList(idList);
+    }
+
+    protected static List<Map<String, Long>> extractRegionIdMapList(final List<? extends ChinaRegion<?>> regionList) {
+        final List<Map<String, Long>> idList = new ArrayList<>(regionList.size());
+        for (ChinaRegion<?> region : regionList) {
+            idList.add(Collections.singletonMap(ChinaRegion_.ID, region.getId()));
+        }
+        return Collections.unmodifiableList(idList);
     }
 
 
