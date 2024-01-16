@@ -2917,9 +2917,6 @@ abstract class ArmyParser implements DialectParser {
 
         // WITH clause
         if (stmt instanceof _Statement._WithClauseSpec) {
-            if (!this.supportWithClauseInInsert) {
-                throw _Exceptions.dontSupportWithClauseInInsert(this.dialect);
-            }
             standardWithClause((_Statement._WithClauseSpec) stmt, context);
         }
 
@@ -2951,9 +2948,6 @@ abstract class ArmyParser implements DialectParser {
 
         // WITH clause
         if (stmt instanceof _Statement._WithClauseSpec) {
-            if (!this.supportWithClauseInInsert) {
-                throw _Exceptions.dontSupportWithClauseInInsert(this.dialect);
-            }
             standardWithClause((_Statement._WithClauseSpec) stmt, context);
         }
 
@@ -3088,6 +3082,8 @@ abstract class ArmyParser implements DialectParser {
         if (cteList.size() > 0) {
             if (!this.supportWithClause) {
                 throw _Exceptions.dontSupportWithClause(this.dialect);
+            } else if (withSpec instanceof InsertStatement && !this.supportWithClauseInInsert) {
+                throw _Exceptions.dontSupportWithClauseInInsert(this.dialect);
             }
             withSubQuery(withSpec.isRecursive(), cteList, context, _SQLConsultant::assertStandardCte);
         }

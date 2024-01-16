@@ -16,10 +16,7 @@
 
 package io.army.example.bank.domain.user;
 
-import io.army.annotation.Column;
-import io.army.annotation.DiscriminatorValue;
-import io.army.annotation.Index;
-import io.army.annotation.Table;
+import io.army.annotation.*;
 
 @Table(name = "china_province", indexes =
 @Index(name = "uni_provincial_capital", fieldList = "provincialCapital", unique = true)
@@ -32,6 +29,9 @@ public class ChinaProvince extends ChinaRegion<ChinaProvince> {
 
     @Column(precision = 80, nullable = false, defaultValue = "''", comment = "china provincial governor")
     private String governor;
+
+    @Column(defaultValue = "0", updateMode = UpdateMode.IMMUTABLE, comment = "relation Id")
+    private Long relationId;
 
 
     public String getProvincialCapital() {
@@ -51,4 +51,16 @@ public class ChinaProvince extends ChinaRegion<ChinaProvince> {
         this.governor = governor;
         return this;
     }
+
+    public Long getRelationId() {
+        return relationId;
+    }
+
+    public void setRelationId(Long relationId) {
+        this.relationId = relationId;
+    }
+
+
+
+
 }

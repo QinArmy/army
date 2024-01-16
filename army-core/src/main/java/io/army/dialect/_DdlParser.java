@@ -176,6 +176,23 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         }
 
         sqlList.add(builder.toString());
+
+        switch (this.parser.database) {
+            case PostgreSQL: {
+                for (int i = 0; i < fieldSize; i++) {
+                    builder.setLength(0); // clear
+                    appendOuterComment(fieldList.get(i), builder);
+                    sqlList.add(builder.toString());
+                }
+            }
+            break;
+            case MySQL:
+            default:
+                //no-op
+
+        }
+
+
     }
 
 
@@ -197,6 +214,9 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             case H2:
             default:
         }
+
+        int fieldStartLength = builder.length();
+
         TableMeta<?> table = null;
         FieldMeta<?> field;
         _FieldResult result;
@@ -208,6 +228,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             if (i == 0) {
                 table = field.tableMeta();
                 this.parser.safeObjectName(table, builder);
+                fieldStartLength = builder.length();
                 //   .append("\n\t");
             } else if (field.tableMeta() != table) {
                 throw new IllegalArgumentException("resultList error.");
@@ -232,10 +253,11 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
                 default:
             }
 
-        }//for
+        } // for
 
-        sqlList.add(builder.toString()); // end
-
+        if (builder.length() > fieldStartLength + 1) { // space char after table name
+            sqlList.add(builder.toString()); // end
+        }
 
         if (commentFieldList != null) {
             for (FieldMeta<?> f : commentFieldList) {
