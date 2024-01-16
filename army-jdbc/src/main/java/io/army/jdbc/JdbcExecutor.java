@@ -283,7 +283,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
         try (final Statement statement = bindStatement(stmt, option)) {
 
-            final long rows;
+            final long rows, returnRows;
 
             if (statement instanceof PreparedStatement) {
                 if (this.factory.useLargeUpdate) {
@@ -297,14 +297,23 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 rows = statement.executeUpdate(stmt.sqlText());
             }
 
+            if (rows > 0L
+                    && optionFunc != Option.EMPTY_FUNC
+                    && Boolean.TRUE.equals(optionFunc.apply(MULTI_TABLE_DOMAIN_DML))) {
+                returnRows = rows >> 1;
+                assert returnRows > 0L;
+            } else {
+                returnRows = rows;
+            }
+
             final R r;
             if (resultClass == Long.class) {
-                r = (R) Long.valueOf(rows);
+                r = (R) Long.valueOf(returnRows);
             } else if (optionFunc != Option.EMPTY_FUNC
                     && Boolean.TRUE.equals(optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR))) {
                 r = (R) createNamedCursor(statement, rows, optionFunc);
             } else {
-                r = (R) new SingleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
+                r = (R) new SingleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), returnRows);
             }
             return r;
         } catch (Exception e) {
@@ -317,16 +326,17 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     @Override
     public final <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor,
                                              SyncStmtOption option, Class<R> elementClass,
-                                             @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+                                             @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList,
+                                             final Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         if (elementClass != Long.class && elementClass != ResultStates.class) {
             throw new IllegalArgumentException("elementClass error");
         }
         final List<R> resultList;
         if (option.isParseBatchAsMultiStmt()) {
-            resultList = executeMultiStmtBatchUpdate(stmt, listConstructor, option, elementClass, domainTable);
+            resultList = executeMultiStmtBatchUpdate(stmt, listConstructor, option, elementClass, domainTable, optionFunc);
         } else {
-            resultList = executeBatchUpdate(stmt, listConstructor, option, elementClass, domainTable, rowsList);
+            resultList = executeBatchUpdate(stmt, listConstructor, option, elementClass, domainTable, rowsList, optionFunc);
         }
         return resultList;
     }
@@ -334,9 +344,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     @Override
     public final <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
-                                           @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+                                           @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList,
+                                           Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
-        return batchUpdateList(stmt, _Collections::arrayList, option, elementClass, domainTable, rowsList)
+        return batchUpdateList(stmt, _Collections::arrayList, option, elementClass, domainTable, rowsList, optionFunc)
                 .stream();
     }
 
@@ -970,11 +981,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
+     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List, Function)
      */
     private <R> List<R> executeBatchUpdate(final BatchStmt stmt, final IntFunction<List<R>> listConstructor,
                                            final SyncStmtOption option, final Class<R> elementClass,
-                                           final @Nullable TableMeta<?> domainTable, final @Nullable List<R> rowsList) {
+                                           final @Nullable TableMeta<?> domainTable, final @Nullable List<R> rowsList,
+                                           final Function<Option<?>, ?> optionFunc) {
         if (!(rowsList == null || domainTable instanceof ChildTableMeta)) {
             throw new IllegalArgumentException();
         }
@@ -995,13 +1007,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 final long[] affectedRows;
                 affectedRows = statement.executeLargeBatch();
                 resultList = handleBatchResult(statement.getWarnings(), elementClass, stmt.hasOptimistic(), affectedRows.length,
-                        index -> affectedRows[index], listConstructor, domainTable, rowsList
+                        index -> affectedRows[index], listConstructor, domainTable, rowsList, optionFunc
                 );
             } else {
                 final int[] affectedRows;
                 affectedRows = statement.executeBatch();
                 resultList = handleBatchResult(statement.getWarnings(), elementClass, stmt.hasOptimistic(), affectedRows.length,
-                        index -> affectedRows[index], listConstructor, domainTable, rowsList
+                        index -> affectedRows[index], listConstructor, domainTable, rowsList, optionFunc
                 );
             }
 
@@ -1012,11 +1024,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     /**
-     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
+     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List, Function)
      */
     private <R> List<R> executeMultiStmtBatchUpdate(final BatchStmt stmt, final IntFunction<List<R>> listConstructor,
                                                     SyncStmtOption option, Class<R> elementClass,
-                                                    final @Nullable TableMeta<?> domainTable) {
+                                                    final @Nullable TableMeta<?> domainTable,
+                                                    final Function<Option<?>, ?> optionFunc) {
         final List<List<SQLParam>> groupList;
         groupList = stmt.groupList();
         if (groupList.get(0).size() > 0) {
@@ -1220,7 +1233,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
      * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function)
-     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
+     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List, Function)
      */
     private void bindParameter(final PreparedStatement statement, final List<SQLParam> paramGroup)
             throws SQLException {
@@ -1538,13 +1551,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
+     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List, Function)
      */
     @SuppressWarnings("unchecked")
     private <R> List<R> handleBatchResult(final @Nullable SQLWarning warning, final Class<R> elementClass,
                                           final boolean optimistic, final int bathSize,
                                           final IntToLongFunction accessor, final IntFunction<List<R>> listConstructor,
-                                          final @Nullable TableMeta<?> domainTable, final @Nullable List<R> rowsList) {
+                                          final @Nullable TableMeta<?> domainTable, final @Nullable List<R> rowsList,
+                                          final Function<Option<?>, ?> optionFunc) {
         assert rowsList == null || domainTable instanceof ChildTableMeta;
 
         final boolean longElement = elementClass == Long.class;
@@ -1580,11 +1594,19 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             armyWarning = mapToArmyWarning(warning);
         }
 
+        final boolean multiTableDomainDml;
+        multiTableDomainDml = optionFunc != Option.EMPTY_FUNC
+                && Boolean.TRUE.equals(optionFunc.apply(MULTI_TABLE_DOMAIN_DML));
+
         long rows;
         for (int i = 0, resultNo = 1; i < bathSize; i++, resultNo++) {
             rows = accessor.applyAsLong(i);
             if (optimistic && rows == 0L) {
                 throw _Exceptions.batchOptimisticLock(domainTable, resultNo, rows);
+            }
+            if (rows > 0L && multiTableDomainDml) {
+                rows >>= 1;
+                assert rows > 0L;
             }
 
             if (newList) {
@@ -1616,7 +1638,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta)
+     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, Function)
      */
     @SuppressWarnings("unchecked")
     private <R> void handleChildMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
@@ -1700,7 +1722,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      *                    <li>{@link SingleTableMeta} : single table batch update</li>
      *
      *                    </ul>
-     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta)
+     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, Function)
      */
     @SuppressWarnings("unchecked")
     private <R> void handleSimpleMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,

@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
+import io.army.dialect.Database;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
 import io.army.meta.ChildTableMeta;
@@ -244,6 +245,12 @@ public abstract class _ArmySession implements Session {
 
 
     protected abstract Map<Object, Object> obtainOrCreateAttributeMap();
+
+    protected final boolean isMultiTableDomainDml(final DmlStatement statement) {
+        return this.factory.serverDatabase == Database.MySQL
+                && statement instanceof _SingleDml._DomainDml
+                && ((_SingleDml._DomainDml) statement).isChildDml();
+    }
 
 
     protected final Stmt parseDqlStatement(final DqlStatement statement, final StmtOption option) {

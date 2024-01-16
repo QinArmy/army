@@ -33,7 +33,7 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
 
     protected static void assertSingleUpdateChildRows(final Session session, final long actualRows, final long dataRows) {
         final Database database = session.sessionFactory().serverMeta().serverDatabase();
-        assertUpdateRows(database, actualRows, dataRows);
+        Assert.assertEquals(actualRows, dataRows);
     }
 
 
@@ -49,21 +49,11 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
         final Database database = session.sessionFactory().serverMeta().serverDatabase();
 
         for (Long rows : rowList) {
-            assertUpdateRows(database, rows, dataRows);
+            Assert.assertEquals(rows, dataRows);
         }
     }
 
 
-    private static void assertUpdateRows(final Database database, final long actualRows, final long dataRows) {
-        switch (database) {
-            case MySQL:
-                Assert.assertEquals(actualRows, dataRows << 1);
-                break;
-            case PostgreSQL:
-            default:
-                Assert.assertEquals(actualRows, dataRows);
-        }
-    }
 
 
 }

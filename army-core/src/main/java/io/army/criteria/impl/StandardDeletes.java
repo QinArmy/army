@@ -24,6 +24,7 @@ import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
@@ -223,6 +224,12 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
         @Override
         public final _WhereSpec<I> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             return this.deleteFrom(table, tableAlias);
+        }
+
+
+        @Override
+        public final boolean isChildDml() {
+            return ((StandardDeletes<?, ?, ?>) this).deleteTable instanceof ChildTableMeta;
         }
 
 

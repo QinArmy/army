@@ -21,4 +21,11 @@ public interface _SingleDml extends _DmlStatement, _Statement._TableMetaSpec {
     String tableAlias();
 
 
+    interface _DomainDml extends _SingleDml {
+
+        boolean isChildDml();
+
+    }
+
+
 }

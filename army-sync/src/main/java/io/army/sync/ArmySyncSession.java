@@ -23,6 +23,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
+import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
@@ -402,7 +403,13 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
             final List<Long> resultList;
             if (stmt instanceof BatchStmt) {
-                resultList = this.stmtExecutor.batchUpdateList((BatchStmt) stmt, listConstructor, option, Long.class, domainTable, null);
+                final Function<Option<?>, ?> optionFunc;
+                if (isMultiTableDomainDml(statement)) {
+                    optionFunc = Option.singleFunc(StmtExecutor.MULTI_TABLE_DOMAIN_DML, Boolean.TRUE);
+                } else {
+                    optionFunc = Option.EMPTY_FUNC;
+                }
+                resultList = this.stmtExecutor.batchUpdateList((BatchStmt) stmt, listConstructor, option, Long.class, domainTable, null, optionFunc);
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (!this.inTransaction()) {
@@ -412,8 +419,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                 final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
 
                 final List<Long> childList;
-                childList = this.stmtExecutor.batchUpdateList(pairStmt.firstStmt(), listConstructor, option, Long.class, domainTable, null);
-                resultList = this.stmtExecutor.batchUpdateList(pairStmt.secondStmt(), listConstructor, option, Long.class, domainTable, childList);
+                childList = this.stmtExecutor.batchUpdateList(pairStmt.firstStmt(), listConstructor, option, Long.class, domainTable, null, Option.EMPTY_FUNC);
+                resultList = this.stmtExecutor.batchUpdateList(pairStmt.secondStmt(), listConstructor, option, Long.class, domainTable, childList, Option.EMPTY_FUNC);
             }
             return resultList;
         } catch (ChildUpdateException e) {
@@ -451,7 +458,14 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
             final Stream<ResultStates> stream;
             if (stmt instanceof BatchStmt) {
-                stream = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option, ResultStates.class, domainTable, null);
+                final Function<Option<?>, ?> optionFunc;
+                if (isMultiTableDomainDml(statement)) {
+                    optionFunc = Option.singleFunc(StmtExecutor.MULTI_TABLE_DOMAIN_DML, Boolean.TRUE);
+                } else {
+                    optionFunc = Option.EMPTY_FUNC;
+                }
+
+                stream = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option, ResultStates.class, domainTable, null, optionFunc);
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (!this.inTransaction()) {
@@ -461,10 +475,10 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                 final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
 
                 final List<ResultStates> childList;
-                childList = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option, ResultStates.class, domainTable, null)
+                childList = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option, ResultStates.class, domainTable, null, Option.EMPTY_FUNC)
                         .collect(Collectors.toCollection(_Collections::arrayList));
 
-                stream = this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option, ResultStates.class, domainTable, childList);
+                stream = this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option, ResultStates.class, domainTable, childList, Option.EMPTY_FUNC);
             }
             return stream;
         } catch (ChildUpdateException e) {
@@ -732,6 +746,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         return states;
     }
 
+
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #updateAsResult(SimpleDmlStatement, SyncStmtOption, Class)
@@ -744,7 +759,13 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
         final R result;
         if (stmt instanceof SimpleStmt) {
-            result = this.stmtExecutor.update((SimpleStmt) stmt, option, resultClass, Option.EMPTY_FUNC);
+            final Function<Option<?>, ?> optionFunc;
+            if (isMultiTableDomainDml(statement)) {
+                optionFunc = Option.singleFunc(StmtExecutor.MULTI_TABLE_DOMAIN_DML, Boolean.TRUE);
+            } else {
+                optionFunc = Option.EMPTY_FUNC;
+            }
+            result = this.stmtExecutor.update((SimpleStmt) stmt, option, resultClass, optionFunc);
 
             if (stmt.hasOptimistic() && obtainAffectedRows(result) == 0) {
                 throw _Exceptions.optimisticLock();

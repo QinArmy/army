@@ -18,6 +18,7 @@ package io.army.session.executor;
 
 
 import io.army.session.DataAccessException;
+import io.army.session.Option;
 import io.army.session.OptionSpec;
 
 /**
@@ -35,6 +36,11 @@ import io.army.session.OptionSpec;
  * @since 0.6.0
  */
 public interface StmtExecutor extends OptionSpec, DriverSpiHolder {
+
+    /**
+     * <p>Representing {@link io.army.stmt.SimpleStmt} is domain update/delete statement with multi-table update/delete syntax,for example MySQL.
+     */
+    Option<Boolean> MULTI_TABLE_DOMAIN_DML = Option.from("MULTI TABLE DOMAIN DML", Boolean.class);
 
     /**
      * <p>

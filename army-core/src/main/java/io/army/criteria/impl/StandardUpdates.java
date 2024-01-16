@@ -179,7 +179,13 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        I onAsUpdate() {
+        public final boolean isChildDml() {
+            final List<_ItemPair> list = this.childItemPairList;
+            return this.updateTable instanceof ChildTableMeta && (list != null && list.size() > 0);
+        }
+
+        @Override
+        final I onAsUpdate() {
             this.childItemPairList = _Collections.safeUnmodifiableList(this.childItemPairList);
             return this.onAsDomainUpdate();
         }
@@ -319,6 +325,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         private StandardSimpleUpdateClause(StandardDialect dialect) {
             super(dialect, null);
         }
+
         @Override
         public <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias) {
             return new StandardSimpleUpdate<>(this, table, tableAlias);

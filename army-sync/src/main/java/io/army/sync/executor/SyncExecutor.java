@@ -83,7 +83,12 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
     <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass) throws DataAccessException;
 
-
+    /**
+     * @param optionFunc support follow options :
+     *                   <ul>
+     *                      <li>{@link #MULTI_TABLE_DOMAIN_DML}</li>
+     *                   </ul>
+     */
     <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
             throws DataAccessException;
 
@@ -93,14 +98,14 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
      */
     <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor, SyncStmtOption option,
                                 Class<R> elementClass, @Nullable TableMeta<?> domainTable,
-                                @Nullable List<R> rowsList) throws DataAccessException;
+                                @Nullable List<R> rowsList, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
     /**
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
     <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
-                              @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+                              @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList, Function<Option<?>, ?> optionFunc)
             throws DataAccessException;
 
 
