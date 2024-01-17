@@ -59,4 +59,18 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
     }
 
 
+    protected static boolean isDontSupportWithClauseInInsert(final Session session) {
+        final boolean match;
+        switch (session.sessionFactory().serverMeta().serverDatabase()) {
+            case MySQL: // MySQL INSERT statement don't support WITH clause
+                match = true;
+                break;
+            case PostgreSQL:
+            default:
+                match = false;
+        }
+        return match;
+    }
+
+
 }

@@ -40,7 +40,10 @@ import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
 import io.army.sqltype.DataType;
-import io.army.stmt.*;
+import io.army.stmt.MultiStmt;
+import io.army.stmt.SingleParam;
+import io.army.stmt.Stmt;
+import io.army.stmt.Stmts;
 import io.army.util.*;
 
 import javax.annotation.Nullable;
@@ -3007,7 +3010,7 @@ abstract class ArmyParser implements DialectParser {
         }
         //3. WHERE clause
         this.dmlWhereClause(stmt.wherePredicateList(), context);
-        //3.1 append discriminator
+        //3.1 delete statement always append discriminator
         if (targetTable instanceof ParentTableMeta) {
             this.discriminator(targetTable, safeTableAlias, context);
         }
@@ -3066,8 +3069,10 @@ abstract class ArmyParser implements DialectParser {
         //3.1 append condition update field
         context.appendConditionFields();
 
-        //3.2 append discriminator predicate
-        this.discriminator(context.domainTable(), safeTableAlias, context);
+        if (stmt instanceof _DomainUpdate) {
+            //3.2 only domain update append discriminator predicate
+            this.discriminator(context.domainTable(), safeTableAlias, context);
+        }
 
         //3.3 append visible
         if (targetTable.containField(_MetaBridge.VISIBLE)) {
@@ -3167,34 +3172,6 @@ abstract class ArmyParser implements DialectParser {
         return stmt;
     }
 
-
-    /**
-     * @see #delete(DeleteStatement, boolean, Visible)
-     */
-    private Stmt createDeleteStmt(final _DeleteContext context) {
-        final _DeleteContext parentContext;
-        final Stmt stmt;
-        if (context instanceof _MultiDeleteContext || (parentContext = context.parentContext()) == null) {
-            stmt = context.build();
-        } else if (this.childUpdateMode == ChildUpdateMode.CTE) {
-            assert context instanceof DomainDeleteContext;
-            assert parentContext.sqlBuilder() == context.sqlBuilder();
-            stmt = context.build();
-        } else {
-            assert parentContext instanceof _SingleDeleteContext;
-            final Stmt parentStmt, childStmt;
-            parentStmt = parentContext.build();
-            childStmt = context.build();
-            if (childStmt instanceof BatchStmt) {
-                assert parentStmt instanceof BatchStmt;
-                stmt = Stmts.pairBatch((BatchStmt) childStmt, (BatchStmt) parentStmt);
-            } else {
-                assert parentStmt instanceof SimpleStmt && childStmt instanceof SimpleStmt;
-                stmt = Stmts.pair((SimpleStmt) childStmt, (SimpleStmt) parentStmt);
-            }
-        }
-        return stmt;
-    }
 
     /**
      * @see #dialectDml(DmlStatement, Visible)

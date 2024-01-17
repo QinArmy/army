@@ -14,22 +14,21 @@ import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
 
-@Test(dataProvider = "localSessionProvider"
-        , dependsOnGroups = "standardInsert"
-)
+@Test(dataProvider = "localSessionProvider")
 public class StandardUpdateTests extends StandardSessionSupport {
 
 
-    @Test
+    @Test(invocationCount = 3)
     public void updateParent(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
         final BigDecimal gdpAmount = new BigDecimal("88888.66");
         final LocalDateTime now = LocalDateTime.now();
 
@@ -37,51 +36,58 @@ public class StandardUpdateTests extends StandardSessionSupport {
         stmt = SQLs.singleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
-                .where(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         final long rows;
         rows = session.update(stmt);
-        LOG.debug("session[name : {}] update {} rows", session.name(), rows);
+        Assert.assertEquals(rows, regionList.size());
 
     }
 
 
-    @Test
+    @Test(invocationCount = 3)
     public void batchUpdateParent(final SyncLocalSession session) {
-        final LocalDateTime now = LocalDateTime.now();
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
 
-        final List<Map<String, Object>> paramList = new ArrayList<>();
+
+        final List<Map<String, Object>> paramList = new ArrayList<>(regionList.size());
+
+        final Random random = ThreadLocalRandom.current();
         Map<String, Object> map;
 
-        map = new HashMap<>();
-        map.put(ChinaRegion_.REGION_GDP, new BigDecimal("88888.66"));
-        paramList.add(map);
+        for (ChinaRegion<?> region : regionList) {
+            map = new HashMap<>();
+            map.put(ChinaRegion_.ID, region.getId());
+            map.put(ChinaRegion_.REGION_GDP, randomDecimal(random));
+            paramList.add(map);
+        }
 
-        map = new HashMap<>();
-        map.put(ChinaRegion_.REGION_GDP, new BigDecimal("9999.66"));
-        paramList.add(map);
+        final LocalDateTime now = LocalDateTime.now();
 
         final BatchUpdate stmt;
         stmt = SQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
                 .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
-                .where(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate()
                 .namedParamList(paramList);
 
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
-
-        Assert.assertEquals(rowList.size(), paramList.size());
-        LOG.debug("session[name : {}] update {} rows", session.name(), rowList);
-
+        assertBatchSingleRows(rowList, regionList.size(), 1);
     }
 
-    @Test
+    @Test(invocationCount = 3)
     public void dynamicUpdateParent(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
         final LocalDateTime now = LocalDateTime.now();
 
         final ChinaRegion<?> criteria = new ChinaRegion<>();
@@ -92,18 +98,23 @@ public class StandardUpdateTests extends StandardSessionSupport {
                 .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.population, SQLs::plusEqual, SQLs::param, 999)
                 .ifSet(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, criteria::getRegionGdp)
-                .where(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::param, criteria.getRegionGdp(), Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         final long rows;
         rows = session.update(stmt);
-        LOG.debug("session[name : {}] update {} rows", session.name(), rows);
+        Assert.assertEquals(rows, regionList.size());
+
     }
 
 
-    @Test
+    @Test(invocationCount = 3)
     public void dynamicWhereUpdateParent(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
         final LocalDateTime now = LocalDateTime.now();
 
         final ChinaRegion<?> criteria = new ChinaRegion<>();
@@ -115,6 +126,7 @@ public class StandardUpdateTests extends StandardSessionSupport {
                 .set(ChinaRegion_.population, SQLs::plusEqual, SQLs::param, 999)
                 .ifSet(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, criteria::getRegionGdp)
                 .where(c -> {
+                    c.accept(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)));
                     c.accept(ChinaRegion_.createTime.between(SQLs::param, now.minusMinutes(10), AND, now));
                     if (criteria.getRegionGdp() != null) {
                         c.accept(ChinaRegion_.regionGdp.plus(SQLs::param, criteria.getRegionGdp()).greaterEqual(SQLs.literalValue(BigDecimal.ZERO)));
@@ -124,11 +136,14 @@ public class StandardUpdateTests extends StandardSessionSupport {
 
         final long rows;
         rows = session.update(stmt);
-        LOG.debug("session[name : {}] update {} rows", session.name(), rows);
+        Assert.assertEquals(rows, regionList.size());
     }
 
-    @Test
+    @Test(invocationCount = 3)
     public void update20Parent(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
         final BigDecimal gdpAmount = new BigDecimal("88888.66");
         final LocalDateTime now = LocalDateTime.now();
 
@@ -136,9 +151,8 @@ public class StandardUpdateTests extends StandardSessionSupport {
         stmt = SQLs.singleUpdate20()
                 .with("cte").as(c -> c.select(ChinaRegion_.id)
                         .from(ChinaRegion_.T, AS, "c")
-                        .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                        .orderBy(ChinaRegion_.id::desc)
-                        .limit(SQLs::param, 10)
+                        .where(ChinaRegion_.id::in, SQLs.SPACE, SQLs::rowParam, extractRegionIdList(regionList))
+                        .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
                         .asQuery()
                 ).space()
                 .update(ChinaRegion_.T, AS, "c")
@@ -154,7 +168,7 @@ public class StandardUpdateTests extends StandardSessionSupport {
 
         final long rows;
         rows = session.update(stmt);
-        LOG.debug("session[name : {}] update {} rows", session.name(), rows);
+        Assert.assertEquals(rows, regionList.size());
     }
 
 

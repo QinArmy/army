@@ -98,7 +98,7 @@ public class StandardDeleteTests extends StandardSessionSupport {
     }
 
 
-    @Test
+    @Test(invocationCount = 3)
     public void batchDelete20Parent(final SyncLocalSession session) {
 
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);

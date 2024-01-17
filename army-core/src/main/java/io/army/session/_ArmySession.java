@@ -120,7 +120,7 @@ public abstract class _ArmySession implements Session {
 
     @Override
     public final boolean inAnyTransaction() throws SessionException {
-        return this.inTransaction() || inPseudoTransaction();
+        return inTransaction() || inPseudoTransaction();
     }
 
     @Override
@@ -399,7 +399,7 @@ public abstract class _ArmySession implements Session {
             micro = (costNano % 1000_000L) / 1000L;
             nano = costNano % 1000L;
 
-            builder.append("\n\nsql parsing cost ")
+            builder.append("\nsql parsing cost ")
                     .append(millis)
                     .append(" millis ")
                     .append(micro)

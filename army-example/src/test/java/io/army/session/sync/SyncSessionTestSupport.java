@@ -124,7 +124,7 @@ public abstract class SyncSessionTestSupport extends SessionTestSupport {
                     throw _Exceptions.unexpectedEnum(transactional.isolation());
             }
 
-            session.startTransaction(TransactionOption.option(isolation, false));
+            session.startTransaction(TransactionOption.option(isolation));
 
         }
 

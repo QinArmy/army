@@ -30,7 +30,7 @@ public class ChinaProvince extends ChinaRegion<ChinaProvince> {
     @Column(precision = 80, nullable = false, defaultValue = "''", comment = "china provincial governor")
     private String governor;
 
-    @Column(defaultValue = "0", updateMode = UpdateMode.IMMUTABLE, comment = "relation Id")
+    @Column(defaultValue = "0", nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "relation Id")
     private Long relationId;
 
 
@@ -59,8 +59,6 @@ public class ChinaProvince extends ChinaRegion<ChinaProvince> {
     public void setRelationId(Long relationId) {
         this.relationId = relationId;
     }
-
-
 
 
 }

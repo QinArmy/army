@@ -98,7 +98,6 @@ public class DomainDeleteTests extends StandardSessionSupport {
     public void batchDeleteChild(final SyncLocalSession session) {
 
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
-
         session.batchSave(regionList);
 
         final LocalDateTime now = LocalDateTime.now();

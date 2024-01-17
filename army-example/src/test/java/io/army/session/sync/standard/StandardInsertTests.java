@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -18,7 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
-@Test(dataProvider = "localSessionProvider", groups = "standardInsert")
+@Test(dataProvider = "localSessionProvider")
 public class StandardInsertTests extends StandardSessionSupport {
 
 
@@ -90,18 +91,17 @@ public class StandardInsertTests extends StandardSessionSupport {
     @Test
     public void domainInsert20Parent(final SyncLocalSession session) {
 
-        switch (session.sessionFactory().serverMeta().serverDatabase()) {
-            case MySQL: // MySQL INSERT statement don't support WITH clause
-                return;
-            case PostgreSQL:
-            default:
+        if (isDontSupportWithClauseInInsert(session)) {
+            return;
         }
+
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> parentList, regionList;
         parentList = createReginListWithCount(3);
         session.batchSave(parentList); // save parentList
+
         regionList = createReginListWithCount(parentList.size());
 
         final Insert stmt;
@@ -140,18 +140,18 @@ public class StandardInsertTests extends StandardSessionSupport {
     @Test(invocationCount = 3)
     public void domainInsert20Child(final SyncLocalSession session) {
 
-        switch (session.sessionFactory().serverMeta().serverDatabase()) {
-            case MySQL: // MySQL INSERT statement don't support WITH clause
-                return;
-            case PostgreSQL:
-            default:
+        if (isDontSupportWithClauseInInsert(session)) {
+            return;
         }
+
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> parentList, regionList;
         parentList = createProvinceListWithCount(3);
         session.batchSave(parentList); // save parentList
+
+
         regionList = createProvinceListWithCount(parentList.size());
 
         final List<Long> regionIdList = extractRegionIdList(parentList);
@@ -163,6 +163,7 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .with("cte").as(s -> s.select(ChinaRegion_.id, Windows.rowNumber().over().as("rowNumber"))
                         .from(ChinaRegion_.T, AS, "t")
                         .where(ChinaRegion_.id.in(SQLs::rowParam, regionIdList))
+                        .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.PROVINCE)
                         .orderBy(ChinaRegion_.id)
                         .asQuery()
                 ).space()
@@ -170,8 +171,8 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
                         .comma(ChinaRegion_.parentId)
                 )
-                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
-                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, BigDecimal.ZERO)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
                 .defaultValue(ChinaRegion_.parentId, SQLs.scalarSubQuery()
                         .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
                         .from("cte")
@@ -186,6 +187,7 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .with("cte").as(s -> s.select(ChinaRegion_.id, Windows.rowNumber().over().as("rowNumber"))
                         .from(ChinaRegion_.T, AS, "t")
                         .where(ChinaRegion_.id.in(SQLs::rowParam, regionIdList))
+                        .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.PROVINCE)
                         .orderBy(ChinaRegion_.id)
                         .asQuery()
                 ).space()
@@ -236,9 +238,9 @@ public class StandardInsertTests extends StandardSessionSupport {
 
         Assert.assertEquals(session.update(stmt), 2L);
 
-
     }
 
+    @Transactional
     @Test
     public void staticValuesInsertChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
@@ -271,21 +273,150 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .asInsert();
 
 
-        session.startTransaction();
+        Assert.assertEquals(session.update(stmt), 2L);
 
-        try {
-            Assert.assertEquals(session.update(stmt), 2L);
-            session.commit();
-        } catch (RuntimeException e) {
-            session.rollback();
-            throw e;
+    }
+
+
+    @Test(invocationCount = 3)
+    public void staticValuesInsert20Parent(final SyncLocalSession session) {
+
+        if (isDontSupportWithClauseInInsert(session)) {
+            return;
         }
+
+
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaRegion<?>> parentList;
+        parentList = createReginListWithCount(2);
+        session.batchSave(parentList); // save parentList
+
+        final Random random = ThreadLocalRandom.current();
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = SQLs.singleInsert20()
+                .with("cte").as(s -> s.select(ChinaRegion_.id, Windows.rowNumber().over().as("rowNumber"))
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(parentList)))
+                        .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
+                        .orderBy(ChinaRegion_.id)
+                        .asQuery()
+                ).space()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, BigDecimal.ZERO)
+                .defaultValue(ChinaRegion_.parentId, SQLs.scalarSubQuery()
+                        .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
+                        .from("cte")
+                        .where(SQLs.refField("cte", "rowNumber").equal(SQLs.BATCH_NO_PARAM))
+                        .asQuery()
+                )
+                .values()
+
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                )
+                .comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomProvince(random))
+                )
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final long rows;
+        rows = session.update(stmt);
+
+        Assert.assertEquals(rows, parentList.size());
+
+    }
+
+
+    @Transactional
+    @Test(invocationCount = 3)
+    public void staticValuesInsert20Child(final SyncLocalSession session) {
+
+        if (isDontSupportWithClauseInInsert(session)) {
+            return;
+        }
+
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> parentList;
+        parentList = createProvinceListWithCount(2);
+        session.batchSave(parentList); // save parentList
+
+        final List<Long> regionIdList = extractRegionIdList(parentList);
+
+        final Random random = ThreadLocalRandom.current();
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = SQLs.singleInsert20()
+                .with("cte").as(s -> s.select(ChinaRegion_.id, Windows.rowNumber().over().as("rowNumber"))
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, regionIdList))
+                        .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.PROVINCE)
+                        .orderBy(ChinaRegion_.id)
+                        .asQuery()
+                ).space()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, BigDecimal.ZERO)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .defaultValue(ChinaRegion_.parentId, SQLs.scalarSubQuery()
+                        .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
+                        .from("cte")
+                        .where(SQLs.refField("cte", "rowNumber").equal(SQLs.BATCH_NO_PARAM))
+                        .asQuery()
+                )
+                .values()
+
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion())
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                )
+                .comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                )
+                .asInsert()
+
+                .child()
+
+                .with("cte").as(s -> s.select(ChinaRegion_.id, Windows.rowNumber().over().as("rowNumber"))
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, regionIdList))
+                        .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.PROVINCE)
+                        .orderBy(ChinaRegion_.id)
+                        .asQuery()
+                ).space()
+                .insertInto(ChinaProvince_.T)
+                .defaultValue(ChinaProvince_.relationId, SQLs.scalarSubQuery()
+                        .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
+                        .from("cte")
+                        .where(SQLs.refField("cte", "rowNumber").equal(SQLs.BATCH_NO_PARAM))
+                        .asQuery()
+                )
+                .values()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                )
+                .comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                )
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertEquals(session.update(stmt), parentList.size());
 
     }
 
     /*-------------------below dynamic VALUES insert -------------------*/
 
-    @Test
+    @Test(invocationCount = 3)
     public void dynamicValuesInsertParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -311,7 +442,7 @@ public class StandardInsertTests extends StandardSessionSupport {
 
     }
 
-    @Test
+    @Test(invocationCount = 3)
     public void dynamicValuesInsertChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -356,8 +487,14 @@ public class StandardInsertTests extends StandardSessionSupport {
 
     /*-------------------below query insert -------------------*/
 
-    @Test(dependsOnMethods = {"domainInsertParent", "staticValuesInsertParent", "dynamicValuesInsertParent"})
+    @Test(invocationCount = 3)
     public void queryInsertParent(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> parentList;
+        parentList = createReginListWithCount(3);
+        session.batchSave(parentList); // save parentList
+
+        final long startNanoSecond = System.nanoTime();
+
         final Insert stmt;
         stmt = SQLs.singleInsert()
                 .migration()
@@ -365,25 +502,28 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .space()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
-                .and(SQLs::notExists, SQLs.subQuery()
-                        .select(HistoryChinaRegion_.id)
-                        .from(HistoryChinaRegion_.T, AS, "hc")
-                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
-                        ::asQuery
-                )
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(parentList)))
+                .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
                 .asQuery()
                 .asInsert();
 
-        session.update(stmt);
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertEquals(session.update(stmt), parentList.size());
 
     }
 
-
-    @Test(dependsOnMethods = {"domainInsertParent", "staticValuesInsertParent", "dynamicValuesInsertParent",
-            "queryInsertParent", "domainInsertChild", "staticValuesInsertChild", "dynamicValuesInsertChild"})
-    // dependsOn queryInsertParent to avoid deadlock
+    @Transactional
+    @Test(invocationCount = 3)
     public void queryInsertChild(final SyncLocalSession session) {
+        final List<ChinaProvince> parentList, regionList;
+        parentList = createProvinceListWithCount(3);
+        session.batchSave(parentList); // save parentList
+
+        final List<Long> regionIdList = extractRegionIdList(parentList);
+
+        final long startNanoSecond = System.nanoTime();
+
         final Insert stmt;
         stmt = SQLs.singleInsert()
                 .migration()
@@ -392,12 +532,7 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaProvince_.T, AS, "p")
                 .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
-                .where(SQLs::notExists, SQLs.subQuery()
-                        .select(HistoryChinaRegion_.id)
-                        .from(HistoryChinaRegion_.T, AS, "hc")
-                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
-                        ::asQuery
-                )
+                .where(ChinaProvince_.id.in(SQLs::rowParam, regionIdList))
                 .asQuery()
                 .asInsert()
 
@@ -408,24 +543,12 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .select("p", PERIOD, ChinaProvince_.T)
                 .from(ChinaProvince_.T, AS, "p")
                 .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
-                .where(SQLs::notExists, SQLs.subQuery()
-                        .select(HistoryChinaProvince_.id)
-                        .from(HistoryChinaProvince_.T, AS, "hp")
-                        .join(HistoryChinaRegion_.T, AS, "hc").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
-                        .where(HistoryChinaProvince_.id::equal, ChinaProvince_.id)
-                        ::asQuery
-                )
+                .where(ChinaProvince_.id.in(SQLs::rowParam, regionIdList))
                 .asQuery()
                 .asInsert();
 
-        session.startTransaction();
-        try {
-            session.update(stmt);
-            session.commit();
-        } catch (RuntimeException e) {
-            session.rollback();
-            throw e;
-        }
+        statementCostTimeLog(session, LOG, startNanoSecond);
+        Assert.assertEquals(session.update(stmt), parentList.size());
 
     }
 
