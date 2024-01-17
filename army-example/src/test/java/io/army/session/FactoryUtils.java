@@ -122,7 +122,10 @@ public abstract class FactoryUtils {
         map.put(ArmyKey.DATASOURCE_CLOSE_METHOD.name, "close");
         map.put(ArmyKey.QUERY_INSERT_MODE.name, AllowMode.SUPPORT);
         map.put(ArmyKey.DDL_MODE.name, DdlMode.UPDATE);
+
         map.put(ArmyKey.SQL_LOG_MODE.name, SqlLogMode.BEAUTIFY_DEBUG);
+
+        map.put(ArmyKey.SQL_PARSING_COST_TIME.name, Boolean.TRUE);
 
         map.put(ArmyKey.QUALIFIED_TABLE_NAME_ENABLE.name, Boolean.FALSE);
 

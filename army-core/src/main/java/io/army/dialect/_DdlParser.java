@@ -228,7 +228,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             if (i == 0) {
                 table = field.tableMeta();
                 this.parser.safeObjectName(table, builder);
-                fieldStartLength = builder.length();
+                fieldStartLength = builder.length() + 1; // space char after table name
                 //   .append("\n\t");
             } else if (field.tableMeta() != table) {
                 throw new IllegalArgumentException("resultList error.");
@@ -255,7 +255,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
         } // for
 
-        if (builder.length() > fieldStartLength + 1) { // space char after table name
+        if (builder.length() > fieldStartLength) { // space char after table name
             sqlList.add(builder.toString()); // end
         }
 

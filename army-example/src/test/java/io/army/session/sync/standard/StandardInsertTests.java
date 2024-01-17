@@ -188,7 +188,7 @@ public class StandardInsertTests extends StandardSessionSupport {
                         .asQuery()
                 ).space()
                 .insertInto(ChinaProvince_.T)
-                .defaultValue(ChinaProvince_.relationId, SQLs.scalarSubQuery() // SQLs.literalValue(randomPerson())
+                .defaultValue(ChinaProvince_.relationId, SQLs.scalarSubQuery()
                         .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
                         .from("cte")
                         .where(SQLs.refField("cte", "rowNumber").equal(SQLs.BATCH_NO_PARAM))

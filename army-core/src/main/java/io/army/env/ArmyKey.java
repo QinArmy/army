@@ -82,6 +82,7 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<SqlLogMode> SQL_LOG_MODE = new ArmyKey<>("sql.log.mode", SqlLogMode.class, SqlLogMode.OFF);
 
+    public static final ArmyKey<Boolean> SQL_PARSING_COST_TIME = new ArmyKey<>("sql.log.sql_parsing_cost_time", Boolean.class, Boolean.FALSE);
 
     public final String name;
 

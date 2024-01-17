@@ -870,6 +870,7 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+    @Deprecated
     static CriteriaException standard10DontSupportWithClause(CriteriaContext context) {
         return ContextStack.criteriaError(context, "standard 1.0 api don't support WITH syntax.");
     }
@@ -878,8 +879,13 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support WITH clause.");
     }
 
+    @Deprecated
     static CriteriaException standard10DontSupportWindow(CriteriaContext context) {
         return ContextStack.criteriaError(context, "standard 1.0 api don't support WINDOW syntax.");
+    }
+
+    static CriteriaException standard10DontSupportWindowFunc() {
+        return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support window function.");
     }
 
     static CriteriaException unknownTypeDef() {

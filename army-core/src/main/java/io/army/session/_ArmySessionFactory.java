@@ -84,6 +84,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     final SqlLogMode sqlLogMode;
 
+    final boolean sqlParsingCostTime;
+
 
     protected _ArmySessionFactory(final _ArmyFactoryBuilder<?, ?> support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
@@ -112,6 +114,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
         this.sqlLogMode = env.getOrDefault(ArmyKey.SQL_LOG_MODE);
+        this.sqlParsingCostTime = env.getOrDefault(ArmyKey.SQL_PARSING_COST_TIME);
 
         this.driverSpiWhiteMap = createWhitMap(this.driverSpiMode, env, ArmyKey.DRIVER_SPI_SESSION_WHITE_LIST);
 

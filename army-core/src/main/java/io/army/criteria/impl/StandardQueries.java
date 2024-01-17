@@ -104,7 +104,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     static <I extends Item> StandardQuery._CteComma<I> staticCteComma(CriteriaContext context, boolean recursive,
                                                                       Function<Boolean, I> function) {
         if (context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWithClause(context);
+            throw CriteriaUtils.standard10DontSupportWithClause();
         }
         return new StaticCteComma<>(context, recursive, function);
     }
@@ -112,14 +112,14 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     static Window._StandardPartitionBySpec anonymousWindow(CriteriaContext context,
                                                            @Nullable String existingWindowName) {
         if (context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWindow(context);
+            throw CriteriaUtils.standard10DontSupportWindowFunc();
         }
         return new StandardWindow(context, existingWindowName);
     }
 
     static StandardCtes cteBuilder(boolean recursive, CriteriaContext context) {
         if (context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWithClause(context);
+            throw CriteriaUtils.standard10DontSupportWithClause();
         }
         return new StandardCteBuilder(recursive, context);
     }

@@ -255,6 +255,16 @@ public abstract class _ArmySession implements Session {
 
     protected final Stmt parseDqlStatement(final DqlStatement statement, final StmtOption option) {
 
+        final SqlLogMode logMode;
+        logMode = obtainSqlLogMode();
+
+        final long startNanoSecond;
+        if (logMode != SqlLogMode.OFF && this.factory.sqlParsingCostTime) {
+            startNanoSecond = System.nanoTime();
+        } else {
+            startNanoSecond = -1L;
+        }
+
         final Stmt stmt;
         if (statement instanceof SelectStatement) {
             stmt = this.factory.dialectParser.select((SelectStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
@@ -271,19 +281,43 @@ public abstract class _ArmySession implements Session {
         } else {
             stmt = this.factory.dialectParser.dialectDml((DmlStatement) statement, this.visible);
         }
-        this.printSqlIfNeed(stmt);
+
+        if (logMode != SqlLogMode.OFF) {
+            printSql(logMode, stmt, startNanoSecond);
+        }
         return stmt;
     }
 
 
     protected final Stmt parseInsertStatement(final InsertStatement statement) {
+        final SqlLogMode logMode;
+        logMode = obtainSqlLogMode();
+
+        final long startNanoSecond;
+        if (logMode != SqlLogMode.OFF && this.factory.sqlParsingCostTime) {
+            startNanoSecond = System.nanoTime();
+        } else {
+            startNanoSecond = -1L;
+        }
+
         final Stmt stmt;
         stmt = this.factory.dialectParser.insert(statement, this.visible);
-        this.printSqlIfNeed(stmt);
+        if (logMode != SqlLogMode.OFF) {
+            printSql(logMode, stmt, startNanoSecond);
+        }
         return stmt;
     }
 
     protected final Stmt parseDmlStatement(final DmlStatement statement, final StmtOption option) {
+        final SqlLogMode logMode;
+        logMode = obtainSqlLogMode();
+
+        final long startNanoSecond;
+        if (logMode != SqlLogMode.OFF && this.factory.sqlParsingCostTime) {
+            startNanoSecond = System.nanoTime();
+        } else {
+            startNanoSecond = -1L;
+        }
 
         final Stmt stmt;
         if (statement instanceof UpdateStatement) {
@@ -293,7 +327,10 @@ public abstract class _ArmySession implements Session {
         } else {
             stmt = this.factory.dialectParser.dialectDml(statement, this.visible);
         }
-        this.printSqlIfNeed(stmt);
+
+        if (logMode != SqlLogMode.OFF) {
+            printSql(logMode, stmt, startNanoSecond);
+        }
         return stmt;
     }
 
@@ -321,52 +358,60 @@ public abstract class _ArmySession implements Session {
 
     /*-------------------below private methods -------------------*/
 
-    private void printSqlIfNeed(final Stmt stmt) {
-        final SqlLogMode mode;
+
+    private SqlLogMode obtainSqlLogMode() {
+        SqlLogMode mode;
         final _ArmySessionFactory factory = this.factory;
         if (factory.sqlLogDynamic) {
             mode = factory.env.getOrDefault(ArmyKey.SQL_LOG_MODE);
         } else {
             mode = factory.sqlLogMode;
         }
-        final boolean debug, beautify;
-        switch (mode) {
-            case OFF:
-                return;
-            case SIMPLE:
-                beautify = debug = false;
-                break;
-            case DEBUG:
-                debug = true;
-                beautify = false;
-                break;
-            case BEAUTIFY:
-                debug = false;
-                beautify = true;
-                break;
-            case BEAUTIFY_DEBUG:
-                beautify = debug = true;
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
+        if (mode == SqlLogMode.OFF) {
+            return mode;
         }
-
         final Logger logger;
-        logger = this.getLogger();
+        final boolean debug = mode.debug;
+        logger = getLogger();
         if ((debug && !logger.isDebugEnabled()) || (!debug && !logger.isInfoEnabled())) {
-            return;
+            mode = SqlLogMode.OFF;
         }
+        return mode;
+    }
+
+    private void printSql(final SqlLogMode mode, final Stmt stmt, final long startNanoSecond) {
+        final boolean debug = mode.debug;
+
         final StringBuilder builder = new StringBuilder(128);
         builder.append("session[name : ")
                 .append(this.name)
                 .append(" , hash : ")
                 .append(System.identityHashCode(this))
                 .append("]\n");
-        factory.dialectParser.printStmt(stmt, beautify, builder::append);
+
+        this.factory.dialectParser.printStmt(stmt, mode.beautify, builder::append);
+
+        if (startNanoSecond > -1L) {
+            final long costNano, millis, micro, nano;
+            costNano = System.nanoTime() - startNanoSecond;
+
+            millis = costNano / 1000_000L;
+            micro = (costNano % 1000_000L) / 1000L;
+            nano = costNano % 1000L;
+
+            builder.append("\n\nsql parsing cost ")
+                    .append(millis)
+                    .append(" millis ")
+                    .append(micro)
+                    .append(" micro ")
+                    .append(nano)
+                    .append(" nano");
+        }
+
         if (debug) {
-            logger.debug(builder.toString());
+            getLogger().debug(builder.toString());
         } else {
-            logger.info(builder.toString());
+            getLogger().info(builder.toString());
         }
 
     }
