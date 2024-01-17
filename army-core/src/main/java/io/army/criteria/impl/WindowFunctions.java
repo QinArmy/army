@@ -104,7 +104,7 @@ abstract class WindowFunctions {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             } else if (this.outerContext.dialect() == StandardDialect.STANDARD10) {
-                throw CriteriaUtils.standard10DontSupportWindow(this.outerContext);
+                throw CriteriaUtils.standard10DontSupportWindowFunc();
             }
             if (existingWindowName == null) {
                 this.existingWindowName = GLOBAL_PLACE_HOLDER;

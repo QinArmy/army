@@ -20,7 +20,7 @@ import io.army.criteria.SQLWords;
 
 import javax.annotation.Nullable;
 
-public interface _StandardQuery extends _Query {
+public interface _StandardQuery extends _Query, _Query._WindowClauseSpec {
 
     @Nullable
     SQLWords lockStrength();

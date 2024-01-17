@@ -224,7 +224,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     public final Window._WindowAsClause<Window._StandardPartitionBySpec, _WindowCommaSpec<I>> window(String windowName) {
         if (this.context.dialect() == StandardDialect.STANDARD10) {// here required for WINDOW AS clause
-            throw CriteriaUtils.standard10DontSupportWindow(this.context);
+            throw CriteriaUtils.standard10DontSupportWindowClause();
         }
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, StandardQueries::namedWindow);
     }
@@ -233,7 +233,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     public final Window._WindowAsClause<Window._StandardPartitionBySpec, _WindowCommaSpec<I>> comma(String windowName) {
         if (this.context.dialect() == StandardDialect.STANDARD10) {// here required for WINDOW AS clause
-            throw CriteriaUtils.standard10DontSupportWindow(this.context);
+            throw CriteriaUtils.standard10DontSupportWindowClause();
         }
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, StandardQueries::namedWindow);
     }
@@ -274,6 +274,14 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         return this;
     }
 
+    @Override
+    public final List<_Window> windowList() {
+        final List<_Window> list = this.windowList;
+        if (list == null || list instanceof ArrayList) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return list;
+    }
 
     @Override
     public final SQLWords lockStrength() {
@@ -312,9 +320,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     @Override
     final boolean isIllegalDerivedModifier(@Nullable DerivedModifier modifier) {
-        if (modifier != null && this.context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWindow(this.context);
-        }
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
@@ -380,12 +385,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         final boolean standard10;
         standard10 = this.context.dialect() == StandardDialect.STANDARD10;
         if (standard10 && this.cteList().size() > 0) {
-            throw CriteriaUtils.standard10DontSupportWithClause(this.context);
+            throw CriteriaUtils.standard10DontSupportWithClause();
         }
 
         final List<_Window> windowList = this.windowList;
         if (windowList != null && standard10) {
-            throw CriteriaUtils.standard10DontSupportWindow(this.context);
+            throw CriteriaUtils.standard10DontSupportWindowClause();
         }
 
         this.windowList = _Collections.safeUnmodifiableList(windowList);
@@ -444,7 +449,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     private Window._WindowAsClause<Window._StandardPartitionBySpec, Item> dynamicNamedWindow(String windowName) {
         if (context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWindow(context);
+            throw CriteriaUtils.standard10DontSupportWindowClause();
         }
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, StandardQueries::namedWindow);
     }
@@ -453,7 +458,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     private static Window._StandardPartitionBySpec namedWindow(String windowName, CriteriaContext context,
                                                                @Nullable String existingWindowName) {
         if (context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWindow(context);
+            throw CriteriaUtils.standard10DontSupportWindowClause();
         }
         return new StandardWindow(windowName, context, existingWindowName);
     }
@@ -483,10 +488,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//StandardLockMode
+    } // StandardLockMode
 
 
-    static class SimpleSelect<I extends Item> extends StandardQueries<I> implements ArmySelect {
+    static final class SimpleSelect<I extends Item> extends StandardQueries<I> implements ArmySelect {
 
         private final Function<? super Select, I> function;
 
@@ -678,7 +683,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//BracketSubQuery
 
 
-    private static final class StandardWindow extends SQLWindow<
+    static final class StandardWindow extends SQLWindow<
             Window._StandardPartitionByCommaSpec,
             Window._StandardOrderByCommaSpec,
             Window._StandardFrameExtentSpec,
@@ -870,16 +875,24 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         private final SQLWords lockStrength;
 
+        private final List<_Window> windowList;
+
 
         private StandardBatchSimpleSelect(SimpleSelect<?> query, List<?> paramList) {
             super(query, paramList);
             this.lockStrength = query.lockStrength();
+            this.windowList = query.windowList();
         }
 
 
         @Override
         Dialect statementDialect() {
             return MySQLDialect.MySQL57;
+        }
+
+        @Override
+        public List<_Window> windowList() {
+            return this.windowList;
         }
 
         @Override

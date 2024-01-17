@@ -27,6 +27,7 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.IntegerType;
+import io.army.mapping.LongType;
 import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -235,8 +236,8 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
     @Override
-    public final <T> FS rows(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier) {
-        return this.startExtent(FrameUnits.ROWS, funcRef.apply(IntegerType.INSTANCE, value), modifier);
+    public final <T> FS rows(BiFunction<LongType, T, Expression> funcRef, T value, ExpModifier modifier) {
+        return this.startExtent(FrameUnits.ROWS, funcRef.apply(LongType.INSTANCE, value), modifier);
     }
 
     @Override

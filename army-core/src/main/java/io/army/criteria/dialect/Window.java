@@ -22,6 +22,7 @@ import io.army.criteria.SimpleExpression;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.SQLs;
 import io.army.mapping.IntegerType;
+import io.army.mapping.LongType;
 
 import javax.annotation.Nullable;
 import java.util.function.BiFunction;
@@ -78,11 +79,12 @@ public interface Window extends Item {
     /**
      * <p>
      * This interface representing dynamic WINDOW clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <T> sub interface of {@link Builder}
      * @param <R> next clause java type
      * @since 0.6.0
@@ -116,11 +118,12 @@ public interface Window extends Item {
     /**
      * <p>
      * This interface representing PARTITION BY clause in WINDOW clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <R> next clause java type
      * @since 0.6.0
      */
@@ -142,13 +145,13 @@ public interface Window extends Item {
 
 
     /**
-     * <p>
-     *     <ul>
-     *         <li>UNBOUNDED PRECEDING</li>
-     *         <li>CURRENT ROW</li>
-     *         <li>UNBOUNDED FOLLOWING</li>
-     *     </ul>
-     *     *
+     * <p>see :
+     * <ul>
+     *     <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+     *     <li>{@link SQLs#CURRENT_ROW}</li>
+     *      <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+     * </ul>
+     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
      * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
@@ -157,12 +160,12 @@ public interface Window extends Item {
     }
 
     /**
-     * <p>
-     *     <ul>
-     *         <li>PRECEDING</li>
-     *         <li>FOLLOWING</li>
-     *     </ul>
-     *     *
+     * <p>see
+     * <ul>
+     *     <li>{@link SQLs#PRECEDING}</li>
+     *     <li>{@link SQLs#FOLLOWING}</li>
+     * </ul>
+     *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
      * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
@@ -176,11 +179,33 @@ public interface Window extends Item {
      */
     interface _StaticFrameUnitRowsClause<RS, RB> {
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                     <li>{@link SQLs#CURRENT_ROW}</li>
+         *                      <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                 </ul>
+         */
         RS rows(RowModifier modifier);
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
         RS rows(Expression exp, ExpModifier modifier);
 
-        <T> RS rows(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
+        <T> RS rows(BiFunction<LongType, T, Expression> funcRef, T value, ExpModifier modifier);
 
         RB rows();
 
@@ -194,10 +219,32 @@ public interface Window extends Item {
      */
     interface _StaticFrameUnitRangeClause<RS, RB> {
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                     <li>{@link SQLs#CURRENT_ROW}</li>
+         *                      <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                 </ul>
+         */
         RS range(RowModifier modifier);
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
         RS range(Expression exp, ExpModifier modifier);
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
         <T> RS range(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
 
         RB range();
@@ -219,10 +266,32 @@ public interface Window extends Item {
      */
     interface _StaticFrameUnitGroupsClause<RS, RB> {
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                     <li>{@link SQLs#CURRENT_ROW}</li>
+         *                      <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                 </ul>
+         */
         RS groups(RowModifier modifier);
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
         RS groups(Expression exp, ExpModifier modifier);
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
         <T> RS groups(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
 
         RB groups();
@@ -241,10 +310,32 @@ public interface Window extends Item {
 
     interface _FrameUnitSpaceClause<RS, RB> {
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                     <li>{@link SQLs#CURRENT_ROW}</li>
+         *                      <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                 </ul>
+         */
         RS space(RowModifier modifier);
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
         RS space(Expression exp, ExpModifier modifier);
 
+        /**
+         * @param modifier see :
+         *                 <ul>
+         *                     <li>{@link SQLs#PRECEDING}</li>
+         *                     <li>{@link SQLs#FOLLOWING}</li>
+         *                 </ul>
+         */
         <T> RS space(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
 
         RB space();
@@ -306,10 +397,32 @@ public interface Window extends Item {
 
     interface _FrameBetweenAndClause<R> {
 
+        /**
+         * @param endModifier see :
+         *                    <ul>
+         *                        <li>{@link SQLs#PRECEDING}</li>
+         *                        <li>{@link SQLs#FOLLOWING}</li>
+         *                    </ul>
+         */
         R and(Expression endExp, ExpModifier endModifier);
 
+        /**
+         * @param endModifier see :
+         *                    <ul>
+         *                        <li>{@link SQLs#PRECEDING}</li>
+         *                        <li>{@link SQLs#FOLLOWING}</li>
+         *                    </ul>
+         */
         <T> R and(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier);
 
+        /**
+         * @param frameEnd see :
+         *                 <ul>
+         *                     <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                     <li>{@link SQLs#CURRENT_ROW}</li>
+         *                      <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                 </ul>
+         */
         R and(RowModifier frameEnd);
 
     }
@@ -321,14 +434,76 @@ public interface Window extends Item {
      */
     interface _FrameBetweenClause<R> {
 
+        /**
+         * @param frameStart see :
+         *                   <ul>
+         *                       <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                       <li>{@link SQLs#CURRENT_ROW}</li>
+         *                        <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                   </ul>
+         * @param frameEnd   see :
+         *                   <ul>
+         *                       <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                       <li>{@link SQLs#CURRENT_ROW}</li>
+         *                        <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                   </ul>
+         */
         R between(RowModifier frameStart, SQLs.WordAnd and, RowModifier frameEnd);
 
+        /**
+         * @param startModifier see :
+         *                      <ul>
+         *                          <li>{@link SQLs#PRECEDING}</li>
+         *                          <li>{@link SQLs#FOLLOWING}</li>
+         *                      </ul>
+         * @param and           see {@link SQLs#AND}
+         * @param endModifier   see :
+         *                      <ul>
+         *                          <li>{@link SQLs#PRECEDING}</li>
+         *                          <li>{@link SQLs#FOLLOWING}</li>
+         *                      </ul>
+         */
         R between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and, Expression endExp, ExpModifier endModifier);
 
+        /**
+         * @param frameStart  see :
+         *                    <ul>
+         *                        <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                        <li>{@link SQLs#CURRENT_ROW}</li>
+         *                         <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                    </ul>
+         * @param and         see {@link SQLs#AND}
+         * @param endModifier see :
+         *                    <ul>
+         *                        <li>{@link SQLs#PRECEDING}</li>
+         *                        <li>{@link SQLs#FOLLOWING}</li>
+         *                    </ul>
+         */
         R between(RowModifier frameStart, SQLs.WordAnd and, Expression endExp, ExpModifier endModifier);
 
+        /**
+         * @param startModifier see :
+         *                      <ul>
+         *                          <li>{@link SQLs#PRECEDING}</li>
+         *                          <li>{@link SQLs#FOLLOWING}</li>
+         *                      </ul>
+         * @param and           see {@link SQLs#AND}
+         * @param frameEnd      see :
+         *                      <ul>
+         *                          <li>{@link SQLs#UNBOUNDED_PRECEDING}</li>
+         *                          <li>{@link SQLs#CURRENT_ROW}</li>
+         *                           <li>{@link SQLs#UNBOUNDED_FOLLOWING}</li>
+         *                      </ul>
+         */
         R between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and, RowModifier frameEnd);
 
+        /**
+         * @param startModifier see :
+         *                      <ul>
+         *                          <li>{@link SQLs#PRECEDING}</li>
+         *                          <li>{@link SQLs#FOLLOWING}</li>
+         *                      </ul>
+         */
         _FrameBetweenAndClause<R> between(Expression startExp, ExpModifier startModifier);
 
         <T> R between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier, SQLs.WordAnd and, RowModifier frameEnd);

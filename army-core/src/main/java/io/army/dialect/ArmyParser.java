@@ -59,10 +59,8 @@ import java.util.function.Predicate;
 
 
 /**
- * <p>
- * This class is base class of all implementation of {@link DialectParser}.
- * <p>
- * Below is chinese signature:<br/>
+ * <p>This class is base class of all implementation of {@link DialectParser}.
+ * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @since 0.6.0
@@ -97,10 +95,6 @@ abstract class ArmyParser implements DialectParser {
     final boolean supportSingleUpdateAlias;
 
     final boolean supportSingleDeleteAlias;
-
-    final boolean supportWithClause;
-
-    final boolean supportWithClauseInInsert;
 
     final boolean supportOnlyDefault;
 
@@ -139,6 +133,12 @@ abstract class ArmyParser implements DialectParser {
 
     private final NameMode columnNameMode;
 
+    private final boolean supportWithClause;
+
+    private final boolean supportWithClauseInInsert;
+
+    private final boolean supportWindowClause;
+
     private final boolean validateUnionType;
 
     private final boolean useObjectNameModeMethod;
@@ -164,9 +164,6 @@ abstract class ArmyParser implements DialectParser {
         this.singleDmlAliasAfterAs = this.aliasAfterAs;
         this.supportSingleUpdateAlias = this.isSupportSingleUpdateAlias();
         this.supportSingleDeleteAlias = this.isSupportSingleDeleteAlias();
-        this.supportWithClause = isSupportWithClause();
-
-        this.supportWithClauseInInsert = isSupportWithClauseInInsert();
         this.supportZone = this.isSupportZone();
 
         this.supportOnlyDefault = this.isSupportOnlyDefault();
@@ -187,6 +184,10 @@ abstract class ArmyParser implements DialectParser {
         } else {
             this.generator = FieldValuesGenerators.create(dialectEnv.fieldGeneratorMap());
         }
+
+        this.supportWithClause = isSupportWithClause();
+        this.supportWithClauseInInsert = isSupportWithClauseInInsert();
+        this.supportWindowClause = isSupportWindowClause();
 
         final ArmyEnvironment env;
         env = dialectEnv.environment();
@@ -449,6 +450,8 @@ abstract class ArmyParser implements DialectParser {
     protected abstract boolean isSupportWithClause();
 
     protected abstract boolean isSupportWithClauseInInsert();
+
+    protected abstract boolean isSupportWindowClause();
 
     protected abstract boolean isSupportUpdateRow();
 
@@ -1722,6 +1725,11 @@ abstract class ArmyParser implements DialectParser {
         if (windowSize == 0) {
             return;
         }
+        if (!this.supportWindowClause) {
+            String m = String.format("%s don't support WINDOW clause.", this.dialect);
+            throw new CriteriaException(m);
+        }
+
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_WINDOW);
         _Window window;
@@ -1730,8 +1738,12 @@ abstract class ArmyParser implements DialectParser {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             window = windowList.get(i);
+
             validator.accept(window);
+            window.prepared();
             window.appendSql(sqlBuilder, context);
+            window.clear();
+
         }
 
     }
@@ -3119,8 +3131,7 @@ abstract class ArmyParser implements DialectParser {
         final List<_TabularBlock> blockList;
         blockList = stmt.tableBlockList();
         if (blockList.size() > 0) {
-            context.sqlBuilder()
-                    .append(_Constant.SPACE_FROM);
+            builder.append(_Constant.SPACE_FROM);
             this.standardTableReferences(blockList, context, false);
         }
         //4. where clause
@@ -3128,13 +3139,17 @@ abstract class ArmyParser implements DialectParser {
 
         //5. groupBy clause
         this.groupByAndHavingClause(stmt, context);
-        //6. orderBy clause
+
+        //6. window clause
+        windowClause(stmt.windowList(), context, _SQLConsultant::assertStandardWindow);
+
+        //7. orderBy clause
         this.orderByClause(stmt.orderByList(), context);
 
-        //7. limit clause
+        //8. limit clause
         this.standardLimitClause(stmt.offsetExp(), stmt.rowCountExp(), context);
 
-        //8. lock clause
+        //9. lock clause
         final SQLWords lock = stmt.lockStrength();
         if (lock != null) {
             this.standardLockClause(lock, context);

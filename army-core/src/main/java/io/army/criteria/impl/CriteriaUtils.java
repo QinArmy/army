@@ -884,6 +884,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, "standard 1.0 api don't support WINDOW syntax.");
     }
 
+    static CriteriaException standard10DontSupportWindowClause() {
+        return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support WINDOW clause.");
+    }
+
     static CriteriaException standard10DontSupportWindowFunc() {
         return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support window function.");
     }

@@ -491,6 +491,12 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
+    protected final boolean isSupportWindowClause() {
+        //as of 8.0 MySQL support WINDOW clause
+        return this.dialect.compareWith(MySQLDialect.MySQL80) >= 0;
+    }
+
+    @Override
     protected final boolean isSupportUpdateRow() {
         //MySQL don't support update row
         return false;

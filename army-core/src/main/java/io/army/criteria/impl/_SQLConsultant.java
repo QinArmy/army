@@ -100,6 +100,12 @@ public abstract class _SQLConsultant {
 
     }
 
+    public static void assertStandardWindow(final Window window) {
+        if (!(window instanceof StandardQueries.StandardWindow || window instanceof SQLWindow.SimpleWindow)) {
+            throw illegalWindow(window);
+        }
+    }
+
     public static void assertStandardNestedItems(@Nullable _NestedItems nestedItems) {
         if (!(nestedItems instanceof StandardNestedJoins)) {
             throw illegalNestedItems(nestedItems, null);

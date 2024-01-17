@@ -516,7 +516,7 @@ public class StandardInsertTests extends StandardSessionSupport {
     @Transactional
     @Test(invocationCount = 3)
     public void queryInsertChild(final SyncLocalSession session) {
-        final List<ChinaProvince> parentList, regionList;
+        final List<ChinaProvince> parentList;
         parentList = createProvinceListWithCount(3);
         session.batchSave(parentList); // save parentList
 
@@ -530,9 +530,9 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .insertInto(HistoryChinaRegion_.T)
                 .space()
                 .select("c", PERIOD, ChinaRegion_.T)
-                .from(ChinaProvince_.T, AS, "p")
-                .join(ChinaRegion_.T, AS, "c").on(ChinaRegion_.id::equal, ChinaProvince_.id)
-                .where(ChinaProvince_.id.in(SQLs::rowParam, regionIdList))
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.id.in(SQLs::rowParam, regionIdList))
+                .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.PROVINCE)
                 .asQuery()
                 .asInsert()
 
@@ -548,7 +548,7 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .asInsert();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
-        Assert.assertEquals(session.update(stmt), parentList.size());
+        Assert.assertEquals(session.update(stmt), regionIdList.size());
 
     }
 

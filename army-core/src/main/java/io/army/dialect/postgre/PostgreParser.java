@@ -405,6 +405,12 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
+    protected final boolean isSupportWindowClause() {
+        // Postgre support WINDOW clause
+        return true;
+    }
+
+    @Override
     protected final boolean isSupportUpdateRow() {
         // Postgre support update row
         return true;

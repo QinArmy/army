@@ -147,6 +147,8 @@ public class StandardUpdateTests extends StandardSessionSupport {
         final BigDecimal gdpAmount = new BigDecimal("88888.66");
         final LocalDateTime now = LocalDateTime.now();
 
+        final long startNanoSecond = System.nanoTime();
+
         final Update stmt;
         stmt = SQLs.singleUpdate20()
                 .with("cte").as(c -> c.select(ChinaRegion_.id)
@@ -166,9 +168,9 @@ public class StandardUpdateTests extends StandardSessionSupport {
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
-        final long rows;
-        rows = session.update(stmt);
-        Assert.assertEquals(rows, regionList.size());
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertEquals(session.update(stmt), regionList.size());
     }
 
 

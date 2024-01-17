@@ -10,6 +10,7 @@ import io.army.mapping.*;
 import java.util.Arrays;
 
 import static io.army.dialect.Database.H2;
+import static io.army.dialect.Database.MySQL;
 
 public abstract class Windows {
 
@@ -342,6 +343,7 @@ public abstract class Windows {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">MySQL SUM([DISTINCT] expr) [over_clause]</a>
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#sum">H2 SUM([DISTINCT] expr)</a>
      */
+    @Support({MySQL, H2})
     public static _WindowAggSpec sum(SQLs.ArgDistinct distinct, Expression exp) {
         FuncExpUtils.assertDistinct(distinct, SQLs.DISTINCT);
         return WindowFunctions.compositeWindowAggFunc("SUM", Arrays.asList(distinct, exp), Functions._returnType(exp, Functions::_sumType));

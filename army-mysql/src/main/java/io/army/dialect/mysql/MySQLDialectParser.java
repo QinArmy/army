@@ -40,10 +40,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * <p>
- * This class is the implementation of {@link DialectParser} for  MySQL dialect criteria api.
- * <p>
- * Below is chinese signature:<br/>
+ * <p>This class is the implementation of {@link DialectParser} for  MySQL dialect criteria api.
+ * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @since 0.6.0
@@ -213,14 +211,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
         //9. WINDOW clause
-        final List<_Window> windowList;
-        windowList = stmt.windowList();
-        if (windowList.size() > 0) {
-            if (!this.asOf80) {
-                throw new CriteriaException(String.format("%s don't support WINDOW clause.", this.dialect));
-            }
-            this.windowClause(windowList, context, _MySQLConsultant::assertWindow);
-        }
+        windowClause(stmt.windowList(), context, _MySQLConsultant::assertWindow);
 
         //10. ORDER BY clause
         final List<? extends SortItem> orderByList;
