@@ -87,7 +87,7 @@ public class DomainDeleteTests extends StandardSessionSupport {
         final long rows;
         rows = session.update(stmt);
 
-        assertSingleUpdateChildRows(session, rows, regionList.size());
+        Assert.assertEquals(rows, regionList.size());
         LOG.debug("session[name : {}] rows {}", session.name(), rows);
 
 

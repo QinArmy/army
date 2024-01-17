@@ -1,9 +1,9 @@
 package io.army.session;
 
 import io.army.ArmyTestDataSupport;
-import io.army.dialect.Database;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
+import org.slf4j.Logger;
 import org.testng.Assert;
 
 import java.util.ArrayList;
@@ -31,12 +31,6 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
     }
 
 
-    protected static void assertSingleUpdateChildRows(final Session session, final long actualRows, final long dataRows) {
-        final Database database = session.sessionFactory().serverMeta().serverDatabase();
-        Assert.assertEquals(actualRows, dataRows);
-    }
-
-
     protected static void assertBatchSingleRows(final List<Long> rowList, final int batchSize, final long dataRows) {
         Assert.assertEquals(rowList.size(), batchSize);
         for (Long rows : rowList) {
@@ -52,6 +46,17 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
     }
 
 
+    protected static void statementCostTimeLog(final Session session, final Logger logger, long startNanoSecond) {
+        final long costNano, millis, micro, nano;
+        costNano = System.nanoTime() - startNanoSecond;
+
+        millis = costNano / 1000_000L;
+        micro = (costNano % 1000_000L) / 1000L;
+        nano = costNano % 1000L;
+
+        logger.debug("session[name : {}] create statement cost {} millis {} micro {} nano.", session.name(), millis, micro, nano);
+
+    }
 
 
 }

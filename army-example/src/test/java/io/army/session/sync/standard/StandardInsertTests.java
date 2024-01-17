@@ -137,7 +137,7 @@ public class StandardInsertTests extends StandardSessionSupport {
 
 
     @Transactional
-    @Test
+    @Test(invocationCount = 3)
     public void domainInsert20Child(final SyncLocalSession session) {
 
         switch (session.sessionFactory().serverMeta().serverDatabase()) {
@@ -155,6 +155,8 @@ public class StandardInsertTests extends StandardSessionSupport {
         regionList = createProvinceListWithCount(parentList.size());
 
         final List<Long> regionIdList = extractRegionIdList(parentList);
+
+        final long startNanoSecond = System.nanoTime();
 
         final Insert stmt;
         stmt = SQLs.singleInsert20()
@@ -197,6 +199,8 @@ public class StandardInsertTests extends StandardSessionSupport {
                 .values(regionList)
                 .asInsert();
 
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final long rows;
         rows = session.update(stmt);
