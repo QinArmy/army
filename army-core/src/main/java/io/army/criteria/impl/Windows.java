@@ -12,6 +12,13 @@ import java.util.Arrays;
 import static io.army.dialect.Database.H2;
 import static io.army.dialect.Database.MySQL;
 
+
+/**
+ * <p>This class provide standard window function.
+ * <p><strong>NOTE</strong>: You shouldn't static import these window function method , because you shouldn't avoid the conflict with dialect window function methods.
+ *
+ * @since 0.6.4
+ */
 public abstract class Windows {
 
     private Windows() {
@@ -30,6 +37,7 @@ public abstract class Windows {
     /**
      * <p>The {@link MappingType} of function return type:  {@link  DoubleType}.
      *
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">cume_dist () → double precision<br/>
      * Returns the cumulative distribution, that is (number of partition rows preceding or peers with current row) / (total partition rows). The value thus ranges from 1/N to 1.
@@ -42,6 +50,7 @@ public abstract class Windows {
     /**
      * <p>The {@link MappingType} of function return type:  {@link  LongType}.
      *
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">row_number () → bigint<br/>
      * Returns the number of the current row within its partition, counting from 1.
@@ -54,6 +63,7 @@ public abstract class Windows {
     /**
      * <p>The {@link MappingType} of function return type:  {@link  LongType}.
      *
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">dense_rank () → bigint<br/>
      * Returns the rank of the current row, without gaps; this function effectively counts peer groups.
@@ -66,6 +76,8 @@ public abstract class Windows {
     /**
      * <p>The {@link MappingType} of function return type:  {@link  MappingType} or exp.
      *
+     * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE() over_clause</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">first_value () → anyelement</a>
      */
@@ -78,7 +90,8 @@ public abstract class Windows {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      *
-     * @param expr non-null parameter or {@link  Expression}
+     * @param expr non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
      */
     public static _OverSpec lastValue(Expression expr) {
@@ -89,7 +102,8 @@ public abstract class Windows {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      *
-     * @param expr non-null parameter or {@link  Expression}
+     * @param expr non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(Expression expr) {
@@ -109,6 +123,7 @@ public abstract class Windows {
      *                 <li>{@link SQLs#paramValue(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                 <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(Expression expr, Expression n) {
@@ -130,6 +145,7 @@ public abstract class Windows {
      *                         <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                     </ul>
      * @param defaultValue non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(Expression expr, Expression n, Expression defaultValue) {
@@ -140,7 +156,8 @@ public abstract class Windows {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      *
-     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
+     * @param expr non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(Expression expr) {
@@ -160,6 +177,7 @@ public abstract class Windows {
      *                 <li>{@link SQLs#paramValue(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                 <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(Expression expr, Expression n) {
@@ -179,6 +197,7 @@ public abstract class Windows {
      *                         <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                     </ul>
      * @param defaultValue non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(Expression expr, Expression n, Expression defaultValue) {
@@ -191,6 +210,7 @@ public abstract class Windows {
      *
      * @param expr non-null {@link  Expression}
      * @param n    positive.output literal.
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
      */
     public static _OverSpec nthValue(Expression expr, Expression n) {
@@ -214,6 +234,7 @@ public abstract class Windows {
      *               <li>positive number literal {@link  Expression},eg:{@link SQLs#literalValue(Object)}</li>
      *               <li>variable {@link  Expression}</li>
      *          </ul>
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
      */
     public static _OverSpec ntile(Expression n) {
@@ -223,6 +244,7 @@ public abstract class Windows {
     /**
      * <p>The {@link MappingType} of function return type: {@link DoubleType}.
      *
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
      */
     public static _OverSpec percentRank() {
@@ -232,6 +254,7 @@ public abstract class Windows {
     /**
      * <p>The {@link MappingType} of function return type: {@link LongType}.
      *
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
     public static _OverSpec rank() {
@@ -245,6 +268,7 @@ public abstract class Windows {
     /**
      * <p>The {@link MappingType} of function return type: {@link  LongType}
      *
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _WindowAggSpec countAsterisk() {
@@ -255,6 +279,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link  LongType}
      *
      * @param expr non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _WindowAggSpec count(Expression expr) {
@@ -265,6 +290,11 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link  LongType}
      *
      * @param expr non-null
+     * @throws io.army.criteria.CriteriaException throw when
+     *                                            <ul>
+     *                                                <li>distinct isn't {@link SQLs#DISTINCT}</li>
+     *                                                <li>not in statement context</li>
+     *                                            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _WindowAggSpec count(SQLs.ArgDistinct distinct, Expression expr) {
@@ -277,6 +307,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link  MappingType} of exp
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN(expr) [over_clause]</a>
      */
     public static _WindowAggSpec min(Expression exp) {
@@ -287,6 +318,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link  MappingType} of exp
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX(expr) [over_clause]</a>
      */
     public static _WindowAggSpec max(Expression exp) {
@@ -312,6 +344,7 @@ public abstract class Windows {
      * </ul>
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">MySQL SUM([DISTINCT] expr)</a>
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#sum">H2 SUM([DISTINCT] expr)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">Postgre SUM([DISTINCT] expr) [over_clause]</a>
@@ -340,6 +373,11 @@ public abstract class Windows {
      *
      * @param distinct see {@link SQLs#DISTINCT}
      * @param exp      non-null
+     * @throws io.army.criteria.CriteriaException throw when
+     *                                            <ul>
+     *                                                <li>distinct isn't {@link SQLs#DISTINCT}</li>
+     *                                                <li>not in statement context</li>
+     *                                            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">MySQL SUM([DISTINCT] expr) [over_clause]</a>
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#sum">H2 SUM([DISTINCT] expr)</a>
      */
@@ -353,6 +391,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param expr non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
     public static _WindowAggSpec avg(Expression expr) {
@@ -365,6 +404,11 @@ public abstract class Windows {
      *
      * @param distinct see {@link SQLs#DISTINCT}
      * @param expr     non-null
+     * @throws io.army.criteria.CriteriaException throw when
+     *                                            <ul>
+     *                                                <li>distinct isn't {@link SQLs#DISTINCT}</li>
+     *                                                <li>not in statement context</li>
+     *                                            </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
     public static _WindowAggSpec avg(SQLs.ArgDistinct distinct, Expression expr) {
@@ -376,6 +420,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link JsonType#TEXT}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-arrayagg">MySQL JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#json_arrayagg">H2 JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">Postgre JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
@@ -389,6 +434,7 @@ public abstract class Windows {
      *
      * @param key   non-null
      * @param value non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-objectagg">MySQL JSON_OBJECTAGG(col_or_expr) [over_clause]</a>
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#json_objectagg">H2 JSON_OBJECTAGG(col_or_expr) [over_clause]</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">Postgre JSON_OBJECTAGG(col_or_expr) [over_clause]</a>
@@ -401,6 +447,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_std">STD(expr) [over_clause]</a>
      */
     public static _WindowAggSpec std(Expression exp) {
@@ -411,6 +458,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev">STDDEV(expr) [over_clause]</a>
      */
     public static _WindowAggSpec stdDev(Expression exp) {
@@ -421,6 +469,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-pop">STDDEV_POP(expr) [over_clause]</a>
      */
     public static _WindowAggSpec stdDevPop(Expression exp) {
@@ -431,6 +480,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-samp">STDDEV_SAMP(expr) [over_clause]</a>
      */
     public static _WindowAggSpec stdDevSamp(Expression exp) {
@@ -441,6 +491,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-pop">VAR_POP(expr) [over_clause]</a>
      */
     public static _WindowAggSpec varPop(Expression exp) {
@@ -452,6 +503,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VAR_SAMP(expr) [over_clause]</a>
      */
     public static _WindowAggSpec varSamp(Expression exp) {
@@ -462,6 +514,7 @@ public abstract class Windows {
      * <p>The {@link MappingType} of function return type: {@link DoubleType}
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_variance">VARIANCE(expr) [over_clause]</a>
      */
     public static _WindowAggSpec variance(Expression exp) {
@@ -476,6 +529,7 @@ public abstract class Windows {
      * </ul>
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
     public static _WindowAggSpec bitAnd(Expression exp) {
@@ -490,6 +544,7 @@ public abstract class Windows {
      * </ul>
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
     public static _WindowAggSpec bitOr(Expression exp) {
@@ -504,6 +559,7 @@ public abstract class Windows {
      * </ul>
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
     public static _WindowAggSpec bitXor(Expression exp) {
@@ -519,6 +575,7 @@ public abstract class Windows {
      * </ul>
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#bit_and_agg">BIT_AND_AGG(expr) [over_clause]</a>
      */
     @Support({H2})
@@ -534,6 +591,7 @@ public abstract class Windows {
      * </ul>
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#bit_and_agg">BIT_OR_AGG(expr) [over_clause]</a>
      */
     @Support({H2})
@@ -549,6 +607,7 @@ public abstract class Windows {
      * </ul>
      *
      * @param exp non-null
+     * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://www.h2database.com/html/functions-aggregate.html#bit_and_agg">BIT_XOR_AGG(expr) [over_clause]</a>
      */
     @Support({H2})
