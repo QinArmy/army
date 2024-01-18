@@ -1466,10 +1466,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             statement = this.conn.prepareStatement(stmt.sqlText());
 
-            for (List<SQLParam> paramGroup : stmt.groupList()) {
-                bindParameter(statement, paramGroup);
-                statement.addBatch();
-            }
+            bindParameter(statement, stmt.groupList().get(0));
 
             // bind option
             bindStatementOption(statement, stmt, option);

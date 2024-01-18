@@ -63,6 +63,10 @@ public abstract class ArrayUtils {
     }
 
 
+    public static <T> List<T> of(T t1) {
+        return Collections.singletonList(t1);
+    }
+
     public static <T> List<T> of(T t1, T t2) {
         final List<T> list = _Collections.arrayList(2);
         list.add(t1);

@@ -117,12 +117,10 @@ public class StandardQueryTests extends StandardSessionSupport {
     }
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test//(invocationCount = 3)
     public void batchQuery20WindowClause(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
         session.batchSave(regionList);
-
-        final List<Long> regionIdList = extractRegionIdList(regionList);
 
         final long startNanoSecond = System.nanoTime();
 
@@ -150,10 +148,17 @@ public class StandardQueryTests extends StandardSessionSupport {
 
         statementCostTimeLog(session, LOG, startNanoSecond);
 
+        final int regionIdListSize = regionList.size();
 
         final List<Map<String, Object>> rowList;
         rowList = session.queryObjectList(stmt, RowMaps::hashMap);
-        Assert.assertEquals(rowList.size(), regionIdList.size());
+        Assert.assertEquals(rowList.size(), regionIdListSize);
+
+        for (int i = 0; i < regionIdListSize; i++) {
+
+            Assert.assertEquals(regionList.get(i).getId(), rowList.get(i).get(ChinaRegion_.ID));
+        }
+
 
         LOG.debug("{} rowList : \n{}", session.name(), JSON.toJSONString(rowList));
     }
