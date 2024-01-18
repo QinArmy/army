@@ -311,7 +311,7 @@ abstract class CriteriaContexts {
             String m = String.format("error,couldn't create %s before command.", QualifiedField.class.getName());
             throw ContextStack.criteriaError(dispatcherContext, m);
         } else if (dispatcherContext.refWindowNameMap != null) {
-            throw unknownWindows(dispatcherContext, dispatcherContext.refWindowNameMap);
+            throw unknownWindows(dispatcherContext.refWindowNameMap);
         } else if (dispatcherContext.fieldsFromSubContext != null) {
             throw unknownQualifiedFields(dispatcherContext, dispatcherContext.fieldsFromSubContext);
         }
@@ -341,12 +341,6 @@ abstract class CriteriaContexts {
         return ContextStack.criteriaError(context, m);
     }
 
-    private static UnknownDerivedFieldException staticSelectClauseRefDerivedField(CriteriaContext context, boolean sub) {
-        String m = String.format("error,You couldn't invoke %s.%s() in static SELECT clause. detail see the Java doc of related method.",
-                SQLs.class.getName(), sub ? "refOuter" : "refThis");
-        return ContextStack.criteriaError(context, UnknownDerivedFieldException::new, m);
-
-    }
 
     private static NotExistsNonRecursiveException notExistsNonRecursivePart(String cteName) {
         String m = String.format("couldn't reference recursive cte[%s],because not exists non-recursive part.",
@@ -414,7 +408,7 @@ abstract class CriteriaContexts {
     }
 
 
-    private static CriteriaException unknownWindows(CriteriaContext context, Map<String, Boolean> refWindowNameMap) {
+    private static CriteriaException unknownWindows(Map<String, Boolean> refWindowNameMap) {
         final StringBuilder builder = new StringBuilder()
                 .append("unknown windows:");
         int index = 0;
@@ -425,7 +419,7 @@ abstract class CriteriaContexts {
             builder.append(windowName);
             index++;
         }
-        return ContextStack.criteriaError(context, builder.toString());
+        return ContextStack.clearStackAndCriteriaError(builder.toString());
     }
 
 
@@ -597,7 +591,7 @@ abstract class CriteriaContexts {
             final List<String> columnAliasList = withContext.currentAliasList;
 
             if (currentName == null || !currentName.equals(cte.name())) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (columnAliasList == null) {
                 assert cte.columnAliasList().size() == 0;
             } else {
@@ -613,7 +607,7 @@ abstract class CriteriaContexts {
                 withContext.cteList = cteList;
             } else if (!(cteMap instanceof HashMap)) {
                 // with clause end
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
 
@@ -1316,10 +1310,10 @@ abstract class CriteriaContexts {
                     || this.tableBlockList != null
                     || this.aliasFieldMap != null
                     || ((SimpleQueryContext) this).selectItemList != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (((SimpleQueryContext) this).refWindowNameMap != null) {
                 String m = String.format("You couldn't reference %s before SELECT clause.", Window.class.getName());
-                throw ContextStack.criteriaError(this, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
 
             ((SimpleQueryContext) this).selectItemList = Collections.emptyList();
@@ -1842,13 +1836,13 @@ abstract class CriteriaContexts {
             if (insertTable == null) {
                 this.insertTable = table;
             } else if (table != insertTable) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             if (tableAlias == null) {
                 throw ContextStack.nullPointer(this);
             } else if (this.tableAlias != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             this.tableAlias = tableAlias;
@@ -1861,16 +1855,16 @@ abstract class CriteriaContexts {
             if (insertTable == null) {
                 this.insertTable = table;
             } else if (table != insertTable) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (rowAlias == null) {
                 throw ContextStack.nullPointer(this);
             } else if (this.rowAlias != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (rowAlias.equals(this.tableAlias)) {
                 String m = String.format("INSERT statement row alias[%s] couldn't be equals to table alias[%s]",
                         rowAlias, this.tableAlias);
-                throw ContextStack.criteriaError(this, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
             this.rowAlias = rowAlias;
         }
@@ -1878,7 +1872,7 @@ abstract class CriteriaContexts {
         @Override
         public final void insertColumnList(final List<FieldMeta<?>> columnList) {
             if (this.columnlist != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.columnlist = columnList;
         }
@@ -1897,7 +1891,7 @@ abstract class CriteriaContexts {
                 qualifiedFieldMap = _Collections.hashMap();
                 this.qualifiedFieldMap = qualifiedFieldMap;
             } else if (!(qualifiedFieldMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             QualifiedField<?> qualifiedField;
             qualifiedField = qualifiedFieldMap.get(field);
@@ -2181,7 +2175,7 @@ abstract class CriteriaContexts {
         public final List<? extends _SelectItem> selectItemList() {
             final List<? extends _SelectItem> selectItemList = this.selectItemList;
             if (selectItemList == null || selectItemList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return selectItemList;
         }
@@ -2189,7 +2183,7 @@ abstract class CriteriaContexts {
         @Override
         public void addSelectClauseEndListener(final Runnable listener) {
             if (this.isSelectClauseEnd()) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final Runnable prevListener = this.selectClauseEndListener;
             if (prevListener == null) {
@@ -2205,7 +2199,7 @@ abstract class CriteriaContexts {
         @Override
         public final void registerDeferSelectClause(final Runnable deferSelectClause) {
             if (this.deferSelectClause != null || this.selectItemList != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.deferSelectClause = deferSelectClause;
         }
@@ -2214,7 +2208,7 @@ abstract class CriteriaContexts {
         @Override
         public final void onAddDerivedGroup(final @Nullable String derivedAlis) {
             if (derivedAlis == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
 
             this.onAddSelectItem(this.createDerivedFieldGroup(derivedAlis));
@@ -2224,7 +2218,7 @@ abstract class CriteriaContexts {
         @Override
         public final CriteriaContext onAddSelectItem(final @Nullable SelectItem selectItem) {
             if (selectItem == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
 
             List<_SelectItem> selectItemList = this.selectItemList;
@@ -2236,7 +2230,7 @@ abstract class CriteriaContexts {
                 if (selectionMap != null && selectionMap.size() > 0) {
                     throw invokeRefSelectionInSelectionClause(this);
                 }
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             selectItemList.add((_SelectItem) selectItem);
@@ -2254,7 +2248,7 @@ abstract class CriteriaContexts {
             if (this.getOrCreateSelectionGroupMap().putIfAbsent(group.tableAlias(), group) != null) {
                 String m = String.format("%s group[%s] duplication", Selection.class.getName(),
                         group.tableAlias());
-                throw ContextStack.criteriaError(this, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
             return this;
         }
@@ -2263,9 +2257,9 @@ abstract class CriteriaContexts {
         public final RowElement row(final @Nullable String alias, SQLs.SymbolPeriod period,
                                     final @Nullable TableMeta<?> table) {
             if (this.isSelectClauseEnd()) {
-                throw ContextStack.criteriaError(this, "Error,SELECT clause have ended.");
+                throw ContextStack.clearStackAndCriteriaError("Error,SELECT clause have ended.");
             } else if (alias == null || table == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
             final Map<String, _SelectionGroup> map;
             map = this.getOrCreateSelectionGroupMap();
@@ -2277,7 +2271,7 @@ abstract class CriteriaContexts {
             } else if (!(group instanceof _SelectionGroup._TableFieldGroup)
                     || !((_SelectionGroup._TableFieldGroup) group).isLegalGroup(table)) {
                 String m = String.format("error,please check table alias[%s] in statement.", alias);
-                throw ContextStack.criteriaError(this, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
             return (RowElement) group;
         }
@@ -2287,9 +2281,9 @@ abstract class CriteriaContexts {
         public final RowElement row(final @Nullable String alias, SQLs.SymbolPeriod period,
                                     SQLs.SymbolAsterisk asterisk) {
             if (this.isSelectClauseEnd()) {
-                throw ContextStack.criteriaError(this, "Error,SELECT clause have ended.");
+                throw ContextStack.clearStackAndCriteriaError("Error,SELECT clause have ended.");
             } else if (alias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
 
             final Map<String, _SelectionGroup> map;
@@ -2394,7 +2388,7 @@ abstract class CriteriaContexts {
         @Override
         public final Selection selection(final String alias) {
             if (!(this instanceof SubQueryContext)) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return this.getSelectionMap().get(alias);
         }
@@ -2411,7 +2405,7 @@ abstract class CriteriaContexts {
             if (selectItemList == null
                     || selectItemList instanceof ArrayList
                     || (selectItemSize = selectItemList.size()) == 0) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             _SelectItem selectItem;
@@ -2573,7 +2567,7 @@ abstract class CriteriaContexts {
 
             final Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
             if (refWindowNameMap != null && refWindowNameMap.size() > 0) {
-                throw unknownWindows(this, refWindowNameMap);
+                throw unknownWindows(refWindowNameMap);
             }
 
             this.endSelectClauseIfNeed();
@@ -2631,7 +2625,7 @@ abstract class CriteriaContexts {
             final int selectItemSize;
             if (!(selectItemList != null && (selectItemSize = selectItemList.size()) > 0)) {
                 // not exists select item
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final _SelectItem selectItem;
             if (selectItemSize > 1) {
@@ -2733,7 +2727,7 @@ abstract class CriteriaContexts {
             selectionSize = selectionList.size();
             switch (selectionSize) {
                 case 0:
-                    throw ContextStack.castCriteriaApi(this);
+                    throw ContextStack.clearStackAndCastCriteriaApi();
                 case 1: {
                     final Selection selection;
                     selection = selectionList.get(0);
@@ -2841,7 +2835,7 @@ abstract class CriteriaContexts {
             final CriteriaContext leftContext = this.leftContext, innerContext = this.innerContext;
             final Expression selection;
             if (innerContext == null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (leftContext == null) {
                 selection = innerContext.refSelection(selectionAlias);
             } else {
@@ -2855,7 +2849,7 @@ abstract class CriteriaContexts {
             final CriteriaContext leftContext = this.leftContext, innerContext = this.innerContext;
             final Expression selection;
             if (innerContext == null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (leftContext == null) {
                 selection = innerContext.refSelection(selectionOrdinal);
             } else {
@@ -2867,12 +2861,12 @@ abstract class CriteriaContexts {
         @Override
         public final void onSetInnerContext(final @Nullable CriteriaContext innerContext) {
             if (this.innerContext != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (innerContext == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (innerContext.getOuterContext() != this) {
                 //no bug,never here
-                throw ContextStack.criteriaError(this, "innerContext not match");
+                throw ContextStack.clearStackAndCriteriaError("innerContext not match");
             }
             this.innerContext = innerContext;
         }
@@ -2968,6 +2962,8 @@ abstract class CriteriaContexts {
 
     private static abstract class ValuesContext extends StatementContext {
 
+        private final StatementContext leftContext;
+
         /**
          * couldn't clear this field,because {@link  SQLs#refSelection(String)} and {@link  BracketContext#refSelection(String)}
          */
@@ -2984,8 +2980,10 @@ abstract class CriteriaContexts {
         private Map<String, ImmutableNameRefSelection> refSelectionMap;
 
 
-        private ValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+        private ValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
             super(dialect, outerContext);
+            this.leftContext = (StatementContext) leftContext;
+            assert leftContext == null || this.leftContext.outerContext == outerContext;
         }
 
 
@@ -3027,11 +3025,22 @@ abstract class CriteriaContexts {
 
     private static final class PrimaryValuesContext extends ValuesContext implements PrimaryContext {
 
-        private PrimaryValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
-            super(dialect, outerContext);
+        private PrimaryValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext,
+                                     @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
         }
 
     } // PrimaryValuesContext
+
+
+    private static final class SubValuesContext extends ValuesContext implements SubContext {
+
+        private SubValuesContext(Dialect dialect, CriteriaContext outerContext,
+                                 @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
+
+        }
+    } // SubValuesContext
 
 
     private static final class OtherPrimaryContext extends StatementContext {
