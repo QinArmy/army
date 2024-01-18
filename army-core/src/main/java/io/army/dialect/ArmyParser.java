@@ -3193,7 +3193,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #dialectDql(DqlStatement, Visible)
      */
     private Stmt createDialectStmt(_PrimaryContext context) {
-        throw new UnsupportedOperationException();
+        return context.build();
     }
 
 

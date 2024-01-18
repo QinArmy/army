@@ -116,15 +116,16 @@ abstract class MySQLLoads {
         }
 
 
+
         public final T infile(final @Nullable Path filePath) {
             if (filePath == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else if (!Files.notExists(filePath)) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (Files.notExists(filePath)) {
                 String m = String.format("%s not exists ", filePath);
-                throw ContextStack.criteriaError(this.context, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
             } else if (Files.isDirectory(filePath) || !Files.isReadable(filePath)) {
                 String m = String.format("%s isn't readable ", filePath);
-                throw ContextStack.criteriaError(this.context, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
             this.fileName = filePath;
             return THIS;

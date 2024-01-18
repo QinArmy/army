@@ -28,7 +28,8 @@ public class StandardQueryTests extends StandardSessionSupport {
     @Transactional
     @Test(invocationCount = 3)
     public void query20WindowClause(final SyncLocalSession session) {
-        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+        final int regionSize = 3;
+        final List<ChinaProvince> regionList = createProvinceListWithCount(regionSize);
         session.batchSave(regionList);
 
         final List<Long> regionIdList = extractRegionIdList(regionList);
@@ -53,7 +54,7 @@ public class StandardQueryTests extends StandardSessionSupport {
                 )
                 .window("w").as(s -> s.partitionBy(ChinaRegion_.name).orderBy(ChinaRegion_.regionGdp::desc).rows(UNBOUNDED_PRECEDING))
                 .orderBy(ChinaProvince_.id)
-                .limit(SQLs::param, regionIdList.size())
+                .limit(SQLs::param, regionSize)
                 .asQuery();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
@@ -61,16 +62,21 @@ public class StandardQueryTests extends StandardSessionSupport {
 
         final List<Map<String, Object>> rowList;
         rowList = session.queryObjectList(stmt, RowMaps::hashMap);
-        Assert.assertEquals(rowList.size(), regionIdList.size());
+        Assert.assertEquals(rowList.size(), regionSize);
 
-        LOG.debug("{} rowList : \n{}", session.name(), JSON.toJSONString(rowList));
+        for (int i = 0; i < regionSize; i++) {
+
+            Assert.assertEquals(regionList.get(i).getId(), rowList.get(i).get(ChinaRegion_.ID));
+        }
+
     }
 
 
     @Transactional
     @Test(invocationCount = 3)
     public void query20FullClause(final SyncLocalSession session) {
-        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+        final int regionSize = 3;
+        final List<ChinaProvince> regionList = createProvinceListWithCount(regionSize);
         session.batchSave(regionList);
 
         final List<Long> regionIdList = extractRegionIdList(regionList);
@@ -105,7 +111,7 @@ public class StandardQueryTests extends StandardSessionSupport {
                 .window("w").as(s -> s.partitionBy(ChinaRegion_.name).orderBy(ChinaRegion_.regionGdp::desc).rows(UNBOUNDED_PRECEDING))
                 .orderBy(ChinaProvince_.id)
                 .spaceComma(ChinaRegion_.createTime::desc, ChinaRegion_.version::asc)
-                .limit(SQLs::param, regionIdList.size())
+                .limit(SQLs::param, regionSize)
                 .asQuery();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
@@ -113,7 +119,13 @@ public class StandardQueryTests extends StandardSessionSupport {
 
         final List<Map<String, Object>> rowList;
         rowList = session.queryObjectList(stmt, RowMaps::hashMap);
-        Assert.assertEquals(rowList.size(), regionIdList.size());
+        Assert.assertEquals(rowList.size(), regionSize);
+
+        for (int i = 0; i < regionSize; i++) {
+
+            Assert.assertEquals(regionList.get(i).getId(), rowList.get(i).get(ChinaRegion_.ID));
+        }
+
     }
 
     @Transactional

@@ -215,9 +215,7 @@ abstract class CriteriaContexts {
      * For Example ,Postgre update/delete criteria context
      */
     static CriteriaContext subJoinableSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
-        final SubJoinableSingleDmlContext context;
-        context = new SubJoinableSingleDmlContext(dialect, outerContext);
-        return context;
+        return new SubJoinableSingleDmlContext(dialect, outerContext);
     }
 
 
@@ -2966,7 +2964,7 @@ abstract class CriteriaContexts {
 
     }//SubBracketContext
 
-    private static final class ValuesContext extends StatementContext {
+    private static abstract class ValuesContext extends StatementContext {
 
         /**
          * couldn't clear this field,because {@link  SQLs#refSelection(String)} and {@link  BracketContext#refSelection(String)}
@@ -2983,13 +2981,14 @@ abstract class CriteriaContexts {
          */
         private Map<String, ImmutableNameRefSelection> refSelectionMap;
 
+
         private ValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
             super(dialect, outerContext);
         }
 
 
         @Override
-        public SimpleExpression refSelection(final String selectionAlias) {
+        public final SimpleExpression refSelection(final String selectionAlias) {
             Map<String, ImmutableNameRefSelection> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 this.refSelectionMap = refSelectionMap = _Collections.hashMap();
@@ -3021,7 +3020,16 @@ abstract class CriteriaContexts {
         }
 
 
-    }//ValuesContext
+    } // ValuesContext
+
+
+    private static final class PrimaryValuesContext extends ValuesContext implements PrimaryContext {
+
+        private PrimaryValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
+        }
+
+    } // PrimaryValuesContext
 
 
     private static final class OtherPrimaryContext extends StatementContext {

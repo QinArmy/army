@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * <p>This class is the implementation of {@link DialectParser} for  MySQL dialect criteria api.
@@ -528,18 +527,15 @@ final class MySQLDialectParser extends MySQLParser {
             if (modifier == MySQLs.LOW_PRIORITY
                     || modifier == MySQLs.HIGH_PRIORITY
                     || modifier == MySQLs.IGNORE) {
-                sqlBuilder.append(_Constant.SPACE)
-                        .append(modifier.spaceRender());
+                sqlBuilder.append(modifier.spaceRender());
             } else if (modifier == MySQLs.DELAYED) {
                 if (stmt instanceof _MySQLInsert._MySQLQueryInsert) {
-                    throw new CriteriaException(String.format("%s QUERY INSERT don't support %s"
-                            , this.dialect, modifier));
+                    String m = String.format("%s QUERY INSERT don't support %s", this.dialect, modifier);
+                    throw new CriteriaException(m);
                 }
-                sqlBuilder.append(_Constant.SPACE)
-                        .append(modifier.spaceRender());
+                sqlBuilder.append(modifier.spaceRender());
             } else {
-                throw new CriteriaException(String.format("%s INSERT don't support %s"
-                        , this.dialect, modifier));
+                throw new CriteriaException(String.format("%s INSERT don't support %s", this.dialect, modifier));
             }
         }
 
@@ -1060,9 +1056,8 @@ final class MySQLDialectParser extends MySQLParser {
             sqlBuilder.append(" CHARACTER SET '");
             if (charset instanceof MySQLCharset) {
                 sqlBuilder.append(((MySQLCharset) charset).spaceRender());
-            } else if (charset instanceof String
-                    && !Pattern.compile("[a-zA-Z][\\w_]*").matcher((String) charset).matches()) {
-                sqlBuilder.append((String) charset);
+            } else if (charset instanceof String) {
+                identifier((String) charset, sqlBuilder);
             } else {
                 String m = String.format("charset_name[%s] error.", charset);
                 throw new CriteriaException(m);
