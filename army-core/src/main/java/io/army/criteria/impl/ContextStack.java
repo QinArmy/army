@@ -222,19 +222,14 @@ abstract class ContextStack {
     }
 
     static CriteriaException clearStackAndCriteriaError(String msg) {
-        final Stack stack;
-        if ((stack = HOLDER.get()) != null) {
-            HOLDER.remove();
-            stack.clear();
-        }
+        HOLDER.remove();
         return new CriteriaException(msg);
     }
 
     static CriteriaException clearStackAndCause(Exception cause, String msg) {
-        final Stack stack;
-        if ((stack = HOLDER.get()) != null) {
-            HOLDER.remove();
-            stack.clear();
+        HOLDER.remove();
+        if (cause instanceof CriteriaException) {
+            return (CriteriaException) cause;
         }
         return new CriteriaException(msg, cause);
     }

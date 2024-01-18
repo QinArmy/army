@@ -141,14 +141,40 @@ abstract class CriteriaUtils {
     }
 
 
-    static <T> T invokeConsumer(final T data, final Consumer<? super T> consumer) {
+    static <T> T invokeConsumer(final T data, final @Nullable Consumer<? super T> consumer) {
         try {
+            if (consumer == null) {
+                throw new NullPointerException("java.util.function.Consumer is null,couldn't be invoked");
+            }
+
             consumer.accept(data);
 
             if (data instanceof ArmyFuncClause) {
                 ((ArmyFuncClause) data).endClause();
             }
             return data;
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
+    static <T, R> R invokeFunction(final @Nullable Function<T, R> function, final T data) {
+        try {
+            if (function == null) {
+                throw new NullPointerException("java.util.function.Function is null,couldn't be invoked");
+            }
+            final R result;
+            result = function.apply(data);
+            if (result == null) {
+                throw new NullPointerException("function must return non-null");
+            }
+            return result;
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
         } catch (Exception e) {
             throw ContextStack.clearStackAnd(CriteriaException::new, e);
         } catch (Error e) {

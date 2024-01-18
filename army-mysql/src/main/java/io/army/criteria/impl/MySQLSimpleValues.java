@@ -22,7 +22,6 @@ import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -48,23 +47,23 @@ abstract class MySQLSimpleValues<I extends Item>
         MySQLValues {
 
     static <I extends Item> MySQLValues._ValueSpec<I> simpleValues(Function<? super Values, I> function) {
-        return new SimplePrimaryValues<>(null, null, function);
+        return new SimplePrimaryValues<>(null, null, function, null);
     }
 
 
     static <I extends Item> MySQLValues._ValueSpec<I> fromDispatcher(ArmyStmtSpec spec,
                                                                      Function<? super Values, I> function) {
-        return new SimplePrimaryValues<>(spec, null, function);
+        return new SimplePrimaryValues<>(spec, null, function, null);
     }
 
     static <I extends Item> MySQLValues._ValueSpec<I> subValues(CriteriaContext outerContext,
                                                                 Function<? super SubValues, I> function) {
-        return new SimpleSubValues<>(null, outerContext, function);
+        return new SimpleSubValues<>(null, outerContext, function, null);
     }
 
     static <I extends Item> MySQLValues._ValueSpec<I> fromSubDispatcher(ArmyStmtSpec spec,
                                                                         Function<? super SubValues, I> function) {
-        return new SimpleSubValues<>(spec, null, function);
+        return new SimpleSubValues<>(spec, null, function, null);
     }
 
 
@@ -129,8 +128,8 @@ abstract class MySQLSimpleValues<I extends Item>
         private final Function<? super Values, I> function;
 
         private SimplePrimaryValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
-                                    Function<? super Values, I> function) {
-            super(CriteriaContexts.primaryValuesContext(spec, outerBracketContext));
+                                    Function<? super Values, I> function, @Nullable CriteriaContext leftContext) {
+            super(CriteriaContexts.primaryValuesContext(MySQLUtils.DIALECT, spec, outerBracketContext, leftContext));
             this.function = function;
         }
 
@@ -141,7 +140,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
-            return function.apply(new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
         @Override
@@ -165,9 +164,9 @@ abstract class MySQLSimpleValues<I extends Item>
 
         private final Function<? super SubValues, I> function;
 
-        private SimpleSubValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
-                                Function<? super SubValues, I> function) {
-            super(CriteriaContexts.subValuesContext(spec, outerContext));
+        private SimpleSubValues(@Nullable ArmyStmtSpec spec, CriteriaContext outerContext,
+                                Function<? super SubValues, I> function, @Nullable CriteriaContext leftContext) {
+            super(CriteriaContexts.subValuesContext(MySQLUtils.DIALECT, spec, outerContext, leftContext));
             this.function = function;
         }
 
@@ -177,7 +176,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
-            return function.apply(MySQLSimpleValues.subValues(bracket.context, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SimpleSubValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
 
@@ -222,7 +221,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
+            return MySQLUtils.DIALECT;
         }
 
 
@@ -250,7 +249,7 @@ abstract class MySQLSimpleValues<I extends Item>
             return new ValuesDispatcher<>(this.context, unionFunc);
         }
 
-    }//BracketValues
+    } // BracketValues
 
     private static final class BracketSubValues<I extends Item> extends MySQLBracketValues<I>
             implements ArmySubValues {
@@ -275,7 +274,7 @@ abstract class MySQLSimpleValues<I extends Item>
             return new SubValuesDispatcher<>(this.context, unionFunc);
         }
 
-    }//BracketSubValues
+    } // BracketSubValues
 
 
     private static abstract class MySQLValuesDispatcher<I extends Item>
@@ -319,7 +318,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
 
-    }//MySQLValuesDispatcher
+    } // MySQLValuesDispatcher
 
 
     private static final class ValuesDispatcher<I extends Item> extends MySQLValuesDispatcher<I> {
@@ -352,7 +351,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        public _ValuesLeftParenClause<I> values() {
+        public _StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromDispatcher(this, this.function)
@@ -366,8 +365,7 @@ abstract class MySQLSimpleValues<I extends Item>
             return MySQLQueries.fromDispatcher(this, this.function);
         }
 
-
-    }//ValuesDispatcher
+    } // ValuesDispatcher
 
     private static final class SubValuesDispatcher<I extends Item> extends MySQLValuesDispatcher<I> {
 
@@ -398,7 +396,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        public _ValuesLeftParenClause<I> values() {
+        public _StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromSubDispatcher(this, this.function)
@@ -412,7 +410,7 @@ abstract class MySQLSimpleValues<I extends Item>
             return MySQLQueries.fromSubDispatcher(this, this.function);
         }
 
-    }//SubValuesDispatcher
+    } // SubValuesDispatcher
 
 
 }

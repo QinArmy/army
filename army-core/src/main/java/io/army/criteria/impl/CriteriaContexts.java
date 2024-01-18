@@ -41,8 +41,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This class is utils class for creating {@link CriteriaContext}
- * <p>
- * Below is chinese signature:<br/>
+ * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @since 0.6.0
@@ -227,8 +226,9 @@ abstract class CriteriaContexts {
      *             </ul>,
      *              if non-nul,then outerBracketContext and leftContext both are null.
      */
-    static CriteriaContext primaryValuesContext(@Nullable ArmyStmtSpec spec,
-                                                @Nullable CriteriaContext outerBracketContext) {
+    static CriteriaContext primaryValuesContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
+                                                final @Nullable CriteriaContext outerBracketContext,
+                                                final @Nullable CriteriaContext leftContext) {
         throw new UnsupportedOperationException();
     }
 
@@ -242,7 +242,8 @@ abstract class CriteriaContexts {
      *                     <li>If non-null,then spec null.</li>
      *                     </ul>
      */
-    static CriteriaContext subValuesContext(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext) {
+    static CriteriaContext subValuesContext(final Dialect dialect, @Nullable ArmyStmtSpec spec, CriteriaContext outerContext,
+                                            @Nullable CriteriaContext leftContext) {
         throw new UnsupportedOperationException();
     }
 
