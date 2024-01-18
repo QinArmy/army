@@ -549,7 +549,7 @@ abstract class CriteriaContexts {
         @Override
         public final void onBeforeWithClause(final boolean recursive) {
             if (this.withCteContext != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.withCteContext = new WithCteContext(recursive);
         }
@@ -567,7 +567,7 @@ abstract class CriteriaContexts {
             final List<_Cte> cteList = withContext.cteList;
             if (cteList != null && !(cteList instanceof ArrayList)) {
                 // with clause have ended
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             withContext.currentName = name;
         }
@@ -699,7 +699,7 @@ abstract class CriteriaContexts {
                 cteList = _Collections.unmodifiableList(cteList);
                 withContext.cteMap = _Collections.unmodifiableMap(cteMap);
             } else {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             withContext.cteList = cteList;
             withContext.readOnlyCteList = cteList;
@@ -1110,7 +1110,7 @@ abstract class CriteriaContexts {
         @Override
         public final void bufferNestedDerived(final _AliasDerivedBlock block) {
             if (this.isEndContext()) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap == null) {
@@ -1297,7 +1297,7 @@ abstract class CriteriaContexts {
             final List<_TabularBlock> blockList = this.tableBlockList;
             final int size;
             if (blockList == null || (size = blockList.size()) == 0) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return blockList.get(size - 1);
         }
@@ -1361,7 +1361,7 @@ abstract class CriteriaContexts {
             //1. assert not duplication
             if (this.isEndContext()) {
                 //no bug,never here
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             //2. flush bufferDerivedBlock
@@ -1384,7 +1384,7 @@ abstract class CriteriaContexts {
             //4. assert nestedDerivedBufferMap
             final Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap != null && nestedDerivedBufferMap.size() > 0) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.nestedDerivedBufferMap = null; //clear
 
@@ -1392,7 +1392,7 @@ abstract class CriteriaContexts {
             //5. validate aliasToBlock
             final int blockSize = blockList.size();
             if (blockSize == 0 && !(this instanceof SimpleQueryContext || this instanceof JoinableSingleDmlContext)) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             assert aliasToBlock.size() >= blockSize;// nested items
 
@@ -1436,7 +1436,7 @@ abstract class CriteriaContexts {
             } else if ((aliasToBlock = this.aliasToBlock) == null) {
                 selectionMap = null;
             } else if (!(aliasToBlock instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if ((block = aliasToBlock.get(derivedAlias)) == null) {
                 selectionMap = null;
             } else if ((tabularItem = block.tableItem()) instanceof _Cte) {
@@ -1617,7 +1617,7 @@ abstract class CriteriaContexts {
                     ((SimpleQueryContext) this).endSelectClauseIfNeed();
                 }
             } else if (!(aliasToBlock instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             final int blockSize;
@@ -2009,7 +2009,7 @@ abstract class CriteriaContexts {
         @Override
         public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String tableAlias) {
             if (this.table != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (table == null) {
                 throw ContextStack.nullPointer(this);
             } else if (tableAlias == null) {
@@ -2079,7 +2079,7 @@ abstract class CriteriaContexts {
         @Override
         public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String tableAlias) {
             if (this.table != null) {
-                throw ContextStack.castCriteriaApi(this);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (tableAlias == null) {
                 throw ContextStack.nullPointer(this);
             } else if (table == null) {
@@ -3146,7 +3146,7 @@ abstract class CriteriaContexts {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
-            throw ContextStack.castCriteriaApi(this);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Override

@@ -232,7 +232,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
         _Assert.nonPrepared(this.prepared);
         final CriteriaContext context = this.context;
         if (this.innerRowSet == null) {
-            throw ContextStack.castCriteriaApi(context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.endOrderByClauseIfNeed();
         this.onEndQuery();

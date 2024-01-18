@@ -239,7 +239,7 @@ abstract class CriteriaUtils {
     static void createAndAddCte(final CriteriaContext context, final @Nullable String name
             , final @Nullable List<String> columnAliasList, final SubStatement subStatement) {
         if (name == null) {
-            throw ContextStack.castCriteriaApi(context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         assert ((CriteriaContextSpec) subStatement).getContext().getNonNullOuterContext() == context;
         final SQLs.CteImpl cte;
