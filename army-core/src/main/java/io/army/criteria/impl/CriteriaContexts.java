@@ -562,7 +562,7 @@ abstract class CriteriaContexts {
                 String m = String.format("Cte[%s] don't end,couldn't start new Cte[%s]", withContext.currentName, name);
                 throw ContextStack.criteriaError(this, m);
             } else if (name == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
             final List<_Cte> cteList = withContext.cteList;
             if (cteList != null && !(cteList instanceof ArrayList)) {
@@ -709,7 +709,7 @@ abstract class CriteriaContexts {
         @Override
         public final _Cte refCte(final @Nullable String cteName) {
             if (cteName == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
             final _Cte cte;
             if (this.withCteContext != null) {
@@ -1840,7 +1840,7 @@ abstract class CriteriaContexts {
             }
 
             if (tableAlias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (this.tableAlias != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -1858,7 +1858,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (rowAlias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (this.rowAlias != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (rowAlias.equals(this.tableAlias)) {
@@ -1881,7 +1881,7 @@ abstract class CriteriaContexts {
         @Override
         public final <T> QualifiedField<T> field(final @Nullable String tableAlias, final FieldMeta<T> field) {
             if (tableAlias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (!tableAlias.equals(this.rowAlias) && !tableAlias.equals(this.tableAlias)) {
                 String m = String.format("unknown %s[%s.%s]", QualifiedField.class.getName(), tableAlias, field);
                 throw ContextStack.criteriaError(this, m);
@@ -2011,9 +2011,9 @@ abstract class CriteriaContexts {
             if (this.table != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (table == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (tableAlias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
             this.table = table;
             this.tableAlias = tableAlias;
@@ -2081,9 +2081,9 @@ abstract class CriteriaContexts {
             if (this.table != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (tableAlias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (table == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
             this.tableAlias = tableAlias;
             this.table = table;
@@ -2306,7 +2306,7 @@ abstract class CriteriaContexts {
         @Override
         public final Expression refSelection(final @Nullable String selectionAlias) {
             if (selectionAlias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (this.deferSelectClauseIng) {
                 throw currentlyCannotRefSelection(this, selectionAlias);
             }
@@ -2434,7 +2434,7 @@ abstract class CriteriaContexts {
         @Override
         public final void onAddWindow(final @Nullable String windowName) {
             if (windowName == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (!_StringUtils.hasText(windowName)) {
                 throw ContextStack.criteriaError(this, "window name must be non-empty.");
             }
@@ -2456,7 +2456,7 @@ abstract class CriteriaContexts {
         @Override
         public final void onRefWindow(final @Nullable String windowName) {
             if (windowName == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             } else if (!_StringUtils.hasText(windowName)) {
                 throw ContextStack.criteriaError(this, "couldn't reference empty window name");
             }
@@ -3131,7 +3131,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             if (windowName == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
             Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
             if (refWindowNameMap == null) {
@@ -3154,7 +3154,7 @@ abstract class CriteriaContexts {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (selectionAlias == null) {
-                throw ContextStack.nullPointer(this);
+                throw ContextStack.clearStackAndNullPointer();
             }
             throw invokeRefSelectionInSelectionClause(this);
         }
