@@ -286,7 +286,7 @@ abstract class ArmyParser implements DialectParser {
             stmt = this.selectWithMultiSmt(MultiStmtBatchContext.create(this, visible), select)
                     .build();
         } else {
-            stmt = this.handleSelect(null, select, visible, null)
+            stmt = handleSelect(null, select, visible, null)
                     .build();
         }
         return stmt;
@@ -1427,7 +1427,7 @@ abstract class ArmyParser implements DialectParser {
         TabularItem tableItem;
         String safeTableAlias;
         for (String tableAlias : aliasMap.keySet()) {
-            tableItem = context.tableItemOf(tableAlias);
+            tableItem = context.tabularItemOf(tableAlias);
 
             if (tableItem instanceof SingleTableMeta) {
                 singleTable = (SingleTableMeta<?>) tableItem;
@@ -2288,10 +2288,10 @@ abstract class ArmyParser implements DialectParser {
             }
             if (stmt instanceof StandardQuery) {
                 _SQLConsultant.assertStandardQuery(stmt);
-                this.parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
+                parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
             } else {
-                this.assertRowSet(stmt);
-                this.parseSimpleQuery((_Query) stmt, (_SimpleQueryContext) context);
+                assertRowSet(stmt);
+                parseSimpleQuery((_Query) stmt, (_SimpleQueryContext) context);
             }
         } else if (stmt instanceof _UnionRowSet) {
             _SQLConsultant.assertUnionRowSet(stmt);

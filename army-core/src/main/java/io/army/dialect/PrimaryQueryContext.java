@@ -16,7 +16,7 @@
 
 package io.army.dialect;
 
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 
 /**
  * <p>
@@ -31,7 +31,7 @@ import io.army.stmt.SimpleStmt;
 interface PrimaryQueryContext extends _PrimaryContext {
 
     @Override
-    SimpleStmt build();
+    Stmt build();
 
 
 }

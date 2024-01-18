@@ -21,6 +21,7 @@ import io.army.util._Collections;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -74,6 +75,9 @@ public interface TransactionInfo extends TransactionOption {
      */
     @Override
     <T> T valueOf(Option<T> option);
+
+
+    Set<Option<?>> optionSet();
 
     static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
                                 Function<Option<?>, ?> optionFunc) {

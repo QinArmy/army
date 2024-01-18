@@ -74,11 +74,11 @@ abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements
         final List<?> paramList = this.paramList;
         final Stmt stmt;
         if (paramList != null) {
-            stmt = Stmts.batchDml(this, paramList);
+            stmt = Stmts.batchDmlStmt(this, paramList);
         } else if (this.hasNamedParam()) {
             throw _Exceptions.namedParamInNonBatch();
         } else {
-            stmt = Stmts.dml(this);
+            stmt = Stmts.dmlStmt(this);
         }
         return stmt;
     }

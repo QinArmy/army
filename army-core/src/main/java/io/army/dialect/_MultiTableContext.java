@@ -39,7 +39,7 @@ public interface _MultiTableContext extends SqlContextSpec {
 
     String saTableAliasOf(TableMeta<?> table);
 
-    TabularItem tableItemOf(String tableAlias);
+    TabularItem tabularItemOf(String tableAlias);
 
 
 }

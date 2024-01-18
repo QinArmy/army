@@ -537,7 +537,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//SimpleSelect
+    } // SimpleSelect
 
 
     static class SimpleSubQuery<I extends Item> extends StandardQueries<I>
@@ -631,18 +631,18 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
         }
 
-        BatchBracketSelect wrapToBatchSelect(List<?> paramList) {
-            return new BatchBracketSelect(this, CriteriaUtils.paramList(paramList));
+        StandardBatchBracketSelect wrapToBatchSelect(List<?> paramList) {
+            return new StandardBatchBracketSelect(this, CriteriaUtils.paramList(paramList));
         }
 
 
     }//BracketSelect
 
 
-    private static final class BatchBracketSelect extends BracketRowSet.ArmyBatchBracketSelect
+    static final class StandardBatchBracketSelect extends BracketRowSet.ArmyBatchBracketSelect
             implements StandardQuery {
 
-        private BatchBracketSelect(BracketSelect<?> select, List<?> paramList) {
+        private StandardBatchBracketSelect(BracketSelect<?> select, List<?> paramList) {
             super(select, paramList);
         }
 
@@ -652,7 +652,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//BatchBracketSelect
+    } // StandardBatchBracketSelect
 
 
     private static final class BracketSubQuery<I extends Item> extends StandardBracketQuery<I>
@@ -870,7 +870,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//StandardCteBuilder
 
 
-    private static final class StandardBatchSimpleSelect extends ArmyBatchSimpleSelect
+    static final class StandardBatchSimpleSelect extends ArmyBatchSimpleSelect
             implements StandardQuery, _StandardQuery {
 
         private final SQLWords lockStrength;

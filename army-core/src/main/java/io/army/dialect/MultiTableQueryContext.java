@@ -22,13 +22,21 @@ import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._Statement;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
+
+/**
+ * <p>This class is base class of following :
+ * <ul>
+ *     <li>{@link SimpleSelectContext}</li>
+ *     <li>{@link SimpleSubQueryContext}</li>
+ * </ul>
+ */
 abstract class MultiTableQueryContext extends BatchSpecStatementContext implements _MultiTableStmtContext, _SimpleQueryContext {
 
     final MultiTableContext multiTableContext;
@@ -65,8 +73,8 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
     }
 
     @Override
-    public final TabularItem tableItemOf(String tableAlias) {
-        return this.multiTableContext.tableItemOf(tableAlias);
+    public final TabularItem tabularItemOf(String tableAlias) {
+        return this.multiTableContext.tabularItemOf(tableAlias);
     }
 
     @Override
@@ -108,15 +116,26 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
     }
 
     @Override
-    public final SimpleStmt build() {
+    public final Stmt build() {
         if (this instanceof _SubQueryContext) {
             //sub query don't support,no bug,never here
             String m = String.format("%s don't support build() method", this.getClass().getName());
-            throw new UnsupportedOperationException();
-        } else if (this.hasNamedParam()) {
-            throw new CriteriaException("Query statement don't support named value");
+            throw new UnsupportedOperationException(m);
         }
-        return Stmts.queryStmt(this);
+        final Stmt stmt;
+        if (this.paramList == null) {
+            if (hasNamedParam()) {
+                throw new CriteriaException("simple query statement don't support named parameter");
+            }
+            // simple query
+            stmt = Stmts.queryStmt(this);
+        } else if (this.multiStmtBatch) {
+            // TODO
+            throw new UnsupportedOperationException("TODO multi-statement batch query");
+        } else {
+            stmt = Stmts.batchQueryStmt(this, this.paramList);
+        }
+        return stmt;
     }
 
     void appendOuterField(@Nullable String tableAlias, FieldMeta<?> field) {

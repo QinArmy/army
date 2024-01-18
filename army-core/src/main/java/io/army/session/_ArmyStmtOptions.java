@@ -18,6 +18,7 @@ package io.army.session;
 
 import io.army.session.record.ResultStates;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public abstract class _ArmyStmtOptions {
@@ -27,118 +28,108 @@ public abstract class _ArmyStmtOptions {
         throw new UnsupportedOperationException();
     }
 
+    protected static final boolean DEFAULT_PREFER_SERVER_PREPARE = true;
 
-    protected static abstract class ArmyStmtOption implements StmtOption {
+    protected static final boolean DEFAULT_PARSE_BATCH_AS_MULTI_STMT = false;
 
-        private final boolean parseBatchAsMultiStmt;
+    protected static final byte DEFAULT_FREQUENCY = -1;
 
-        private final boolean preferServerPrepare;
 
-        private final int fetchSize;
+    private static IllegalStateException dontSupportTimeout() {
+        return new IllegalStateException("Don't support timeout");
+    }
 
-        private final int frequency;
+
+    protected static abstract class DefaultStmtOption implements StmtOption {
+
+        public DefaultStmtOption() {
+        }
+
+        @Override
+        public boolean isPreferServerPrepare() {
+            return DEFAULT_PREFER_SERVER_PREPARE;
+        }
+
+        @Override
+        public boolean isParseBatchAsMultiStmt() {
+            return DEFAULT_PARSE_BATCH_AS_MULTI_STMT;
+        }
+
+        @Override
+        public int frequency() {
+            return DEFAULT_FREQUENCY;
+        }
+
+
+        @Override
+        public int fetchSize() {
+            return 0;
+        }
+
+        @Override
+        public MultiStmtMode multiStmtMode() {
+            return MultiStmtMode.DEFAULT;
+        }
+
+        @Override
+        public Consumer<ResultStates> stateConsumer() {
+            return ResultStates.IGNORE_STATES;
+        }
+
+
+        @Override
+        public boolean isSupportTimeout() {
+            return false;
+        }
+
+        @Override
+        public int timeoutMillis() {
+            throw dontSupportTimeout();
+        }
+
+        @Override
+        public long startTimeMillis() {
+            throw dontSupportTimeout();
+        }
+
+        @Override
+        public int restSeconds() throws TimeoutException {
+            throw dontSupportTimeout();
+        }
+
+        @Override
+        public int restMillSeconds() throws TimeoutException {
+            throw dontSupportTimeout();
+        }
+
+
+    } // DefaultStmtOption
+
+
+    protected static abstract class ArmyDefaultTimeOutOption extends DefaultStmtOption {
 
         private final int timeoutMillis;
 
         private final long startMills;
 
-        private final MultiStmtMode multiStmtMode;
-
-        private final Consumer<ResultStates> statesConsumer;
-
-
-        public ArmyStmtOption(StmtOptionBuilderSpec<?> builder) {
-
-            this.preferServerPrepare = builder.preferServerPrepare;
-            this.parseBatchAsMultiStmt = builder.parseBatchAsMultiStmt;
-            this.fetchSize = builder.fetchSize;
-            this.frequency = builder.frequency;
-
-            final int timeoutMillis = builder.timeoutMillis;
-            this.timeoutMillis = timeoutMillis;
-            if (timeoutMillis > 0) {
-                this.startMills = System.currentTimeMillis();
-            } else {
-                this.startMills = 0L;
-            }
-
-            final MultiStmtMode mode = builder.multiStmtMode;
-            this.multiStmtMode = mode == null ? MultiStmtMode.DEFAULT : mode;
-
-            final Consumer<ResultStates> statesConsumer = builder.statesConsumer;
-            this.statesConsumer = statesConsumer == null ? ResultStates.IGNORE_STATES : statesConsumer;
-
-
-        }
-
-        public ArmyStmtOption(final StmtOption option, final int timeoutMillis, long startMills) {
-            assert timeoutMillis > 0;
-            assert startMills > -1L;
-
+        public ArmyDefaultTimeOutOption(int timeoutMillis, long startMills) {
             this.timeoutMillis = timeoutMillis;
             this.startMills = startMills;
+        }
 
-            if (option instanceof ArmyStmtOption) {
-                final ArmyStmtOption armyOption = (ArmyStmtOption) option;
-
-                this.preferServerPrepare = armyOption.preferServerPrepare;
-                this.parseBatchAsMultiStmt = armyOption.parseBatchAsMultiStmt;
-                this.fetchSize = armyOption.fetchSize;
-                this.frequency = armyOption.frequency;
-
-                this.statesConsumer = armyOption.statesConsumer;
-                this.multiStmtMode = armyOption.multiStmtMode;
+        public ArmyDefaultTimeOutOption(final StmtOption option) {
+            if (option instanceof ArmyDefaultTimeOutOption) {
+                this.timeoutMillis = ((ArmyDefaultTimeOutOption) option).timeoutMillis;
+                this.startMills = ((ArmyDefaultTimeOutOption) option).startMills;
+            } else if (option.isSupportTimeout()) {
+                this.timeoutMillis = option.timeoutMillis();
+                this.startMills = option.startTimeMillis();
             } else {
-                this.preferServerPrepare = option.isPreferServerPrepare();
-                this.parseBatchAsMultiStmt = option.isParseBatchAsMultiStmt();
-                this.fetchSize = option.fetchSize();
-                this.frequency = option.frequency();
-
-                this.statesConsumer = option.stateConsumer();
-                this.multiStmtMode = option.multiStmtMode();
+                this.timeoutMillis = 0;
+                this.startMills = 0L;
             }
-
         }
 
-        public ArmyStmtOption(final StmtOption option, final Consumer<ResultStates> statesConsumer) {
-
-            this.statesConsumer = statesConsumer;
-
-            if (option instanceof ArmyStmtOption) {
-                final ArmyStmtOption armyOption = (ArmyStmtOption) option;
-
-                this.preferServerPrepare = armyOption.preferServerPrepare;
-                this.parseBatchAsMultiStmt = armyOption.parseBatchAsMultiStmt;
-                this.fetchSize = armyOption.fetchSize;
-                this.frequency = armyOption.frequency;
-
-                this.timeoutMillis = armyOption.timeoutMillis;
-                this.startMills = armyOption.startMills;
-                this.multiStmtMode = armyOption.multiStmtMode;
-            } else {
-                this.preferServerPrepare = option.isPreferServerPrepare();
-                this.parseBatchAsMultiStmt = option.isParseBatchAsMultiStmt();
-                this.fetchSize = option.fetchSize();
-                this.frequency = option.frequency();
-
-                if (option instanceof ArmyOnlyTimeoutOption) {
-                    final ArmyOnlyTimeoutOption armyOption = (ArmyOnlyTimeoutOption) option;
-                    this.timeoutMillis = armyOption.timeoutMillis;
-                    this.startMills = armyOption.startMillis;
-                } else {
-                    this.timeoutMillis = 0;
-                    this.startMills = 0L;
-                }
-                this.multiStmtMode = option.multiStmtMode();
-            }
-
-        }
-
-
-        @Override
-        public final boolean isPreferServerPrepare() {
-            return this.preferServerPrepare;
-        }
 
         @Override
         public final boolean isSupportTimeout() {
@@ -146,8 +137,13 @@ public abstract class _ArmyStmtOptions {
         }
 
         @Override
-        public final boolean isParseBatchAsMultiStmt() {
-            return this.parseBatchAsMultiStmt;
+        public final int timeoutMillis() {
+            return this.timeoutMillis;
+        }
+
+        @Override
+        public final long startTimeMillis() {
+            return this.startMills;
         }
 
         @Override
@@ -164,7 +160,7 @@ public abstract class _ArmyStmtOptions {
         public final int restMillSeconds() throws TimeoutException {
             final int timeoutMills = this.timeoutMillis;
             if (timeoutMills < 1) {
-                throw new IllegalStateException("Don't support timeout");
+                throw dontSupportTimeout();
             }
             final long restMills;
             restMills = timeoutMills - (System.currentTimeMillis() - this.startMills);
@@ -173,6 +169,78 @@ public abstract class _ArmyStmtOptions {
                 throw new TimeoutException(m, restMills);
             }
             return (int) restMills;
+        }
+
+
+    } // ArmyTimeoutStmtOption
+
+
+    protected static abstract class ArmyStmtOption extends ArmyDefaultTimeOutOption {
+
+        private final boolean parseBatchAsMultiStmt;
+
+        private final boolean preferServerPrepare;
+
+        private final int fetchSize;
+
+        private final int frequency;
+
+        private final MultiStmtMode multiStmtMode;
+
+        private final Consumer<ResultStates> statesConsumer;
+
+
+        public ArmyStmtOption(StmtOptionBuilderSpec<?> builder) {
+            super(builder.timeoutMillis, (builder.timeoutMillis > 0 ? System.currentTimeMillis() : 0L));
+
+            this.preferServerPrepare = builder.preferServerPrepare;
+            this.parseBatchAsMultiStmt = builder.parseBatchAsMultiStmt;
+            this.fetchSize = builder.fetchSize;
+            this.frequency = builder.frequency;
+
+            final MultiStmtMode mode = builder.multiStmtMode;
+            this.multiStmtMode = mode == null ? MultiStmtMode.DEFAULT : mode;
+
+            final Consumer<ResultStates> statesConsumer = builder.statesConsumer;
+            this.statesConsumer = statesConsumer == null ? ResultStates.IGNORE_STATES : statesConsumer;
+
+        }
+
+        public ArmyStmtOption(final StmtOption option, final int timeoutMillis, final long startMills,
+                              final Consumer<ResultStates> statesConsumer) {
+            super(timeoutMillis, startMills);
+
+            if (option instanceof ArmyStmtOption) {
+                final ArmyStmtOption armyOption = (ArmyStmtOption) option;
+
+                this.preferServerPrepare = armyOption.preferServerPrepare;
+                this.parseBatchAsMultiStmt = armyOption.parseBatchAsMultiStmt;
+                this.fetchSize = armyOption.fetchSize;
+                this.frequency = armyOption.frequency;
+
+                this.multiStmtMode = armyOption.multiStmtMode;
+            } else {
+                this.preferServerPrepare = option.isPreferServerPrepare();
+                this.parseBatchAsMultiStmt = option.isParseBatchAsMultiStmt();
+                this.fetchSize = option.fetchSize();
+                this.frequency = option.frequency();
+
+                this.multiStmtMode = option.multiStmtMode();
+            }
+
+            this.statesConsumer = statesConsumer;
+
+        }
+
+
+        @Override
+        public final boolean isPreferServerPrepare() {
+            return this.preferServerPrepare;
+        }
+
+        @Override
+        public final boolean isParseBatchAsMultiStmt() {
+            return this.parseBatchAsMultiStmt;
         }
 
         @Override
@@ -205,7 +273,7 @@ public abstract class _ArmyStmtOptions {
 
         private int fetchSize = 0;
 
-        private int frequency = -1;
+        private int frequency = DEFAULT_FREQUENCY;
 
         private int timeoutMillis = 0;
 
@@ -213,9 +281,9 @@ public abstract class _ArmyStmtOptions {
 
         private Consumer<ResultStates> statesConsumer = ResultStates.IGNORE_STATES;
 
-        private boolean parseBatchAsMultiStmt;
+        private boolean parseBatchAsMultiStmt = DEFAULT_PARSE_BATCH_AS_MULTI_STMT;
 
-        private boolean preferServerPrepare = true;
+        private boolean preferServerPrepare = DEFAULT_PREFER_SERVER_PREPARE;
 
 
         public StmtOptionBuilderSpec() {
@@ -246,8 +314,8 @@ public abstract class _ArmyStmtOptions {
         }
 
         @Override
-        public final B stateConsumer(Consumer<ResultStates> consumer) {
-            this.statesConsumer = consumer;
+        public final B stateConsumer(final @Nullable Consumer<ResultStates> consumer) {
+            this.statesConsumer = consumer == null ? ResultStates.IGNORE_STATES : consumer;
             return (B) this;
         }
 
@@ -265,279 +333,6 @@ public abstract class _ArmyStmtOptions {
 
 
     } // StmtOptionBuilder
-
-    private static abstract class ArmyPreferOption implements StmtOption {
-
-        private ArmyPreferOption() {
-        }
-
-        @Override
-        public final boolean isPreferServerPrepare() {
-            // default true, prefer server prepare
-            return true;
-        }
-
-        @Override
-        public final boolean isParseBatchAsMultiStmt() {
-            // default false
-            return false;
-        }
-
-
-    } // ArmyPreferOption
-
-
-    private static abstract class ArmyDefaultTimeoutOption extends ArmyPreferOption {
-
-        private ArmyDefaultTimeoutOption() {
-        }
-
-        @Override
-        public final boolean isSupportTimeout() {
-            // default false
-            return false;
-        }
-
-        @Override
-        public final int restSeconds() throws TimeoutException {
-            throw new IllegalStateException();
-        }
-
-        @Override
-        public final int restMillSeconds() throws TimeoutException {
-            throw new IllegalStateException();
-        }
-
-
-    } // ArmyDefaultTimeoutOption
-
-
-    protected static abstract class ArmyDefaultStmtOption extends ArmyDefaultTimeoutOption {
-
-        public ArmyDefaultStmtOption() {
-        }
-
-        @Override
-        public final int fetchSize() {
-            return 0;
-        }
-
-        @Override
-        public final int frequency() {
-            return -1;
-        }
-
-        @Override
-        public final MultiStmtMode multiStmtMode() {
-            return MultiStmtMode.DEFAULT;
-        }
-
-        @Override
-        public final Consumer<ResultStates> stateConsumer() {
-            return ResultStates.IGNORE_STATES;
-        }
-
-
-    } // ArmyDefaultStmtOption
-
-
-    protected static abstract class ArmyOnlyFetchSizeOption extends ArmyDefaultTimeoutOption {
-
-        private final int fetchSize;
-
-        public ArmyOnlyFetchSizeOption(int fetchSize) {
-            this.fetchSize = fetchSize;
-        }
-
-        @Override
-        public final int fetchSize() {
-            return this.fetchSize;
-        }
-
-        @Override
-        public final int frequency() {
-            return -1;
-        }
-
-        @Override
-        public final MultiStmtMode multiStmtMode() {
-            return MultiStmtMode.DEFAULT;
-        }
-
-        @Override
-        public final Consumer<ResultStates> stateConsumer() {
-            return ResultStates.IGNORE_STATES;
-        }
-
-
-    } // ArmyOnlyFetchSizeOption
-
-
-    protected static abstract class ArmyOnlyFrequencyOption extends ArmyDefaultTimeoutOption {
-
-        private final int frequency;
-
-        public ArmyOnlyFrequencyOption(int frequency) {
-            this.frequency = frequency;
-        }
-
-        @Override
-        public final int fetchSize() {
-            return 0;
-        }
-
-        @Override
-        public final int frequency() {
-            return this.frequency;
-        }
-
-        @Override
-        public final MultiStmtMode multiStmtMode() {
-            return MultiStmtMode.DEFAULT;
-        }
-
-        @Override
-        public final Consumer<ResultStates> stateConsumer() {
-            return ResultStates.IGNORE_STATES;
-        }
-
-
-    } // ArmyOnlyFrequencyOption
-
-    protected static abstract class ArmyOnlyMultiStmtModeOption extends ArmyDefaultTimeoutOption {
-
-        private final MultiStmtMode mode;
-
-        public ArmyOnlyMultiStmtModeOption(MultiStmtMode mode) {
-            this.mode = mode;
-        }
-
-        @Override
-        public final int fetchSize() {
-            return 0;
-        }
-
-        @Override
-        public final int frequency() {
-            return -1;
-        }
-
-        @Override
-        public final MultiStmtMode multiStmtMode() {
-            return mode;
-        }
-
-        @Override
-        public final Consumer<ResultStates> stateConsumer() {
-            return ResultStates.IGNORE_STATES;
-        }
-
-
-    } // ArmyOnlyMultiStmtModeOption
-
-
-    protected static abstract class ArmyOnlyStateConsumerOption extends ArmyDefaultTimeoutOption {
-
-        private final Consumer<ResultStates> statesConsumer;
-
-        public ArmyOnlyStateConsumerOption(Consumer<ResultStates> statesConsumer) {
-            this.statesConsumer = statesConsumer;
-        }
-
-        @Override
-        public final int fetchSize() {
-            return 0;
-        }
-
-        @Override
-        public final int frequency() {
-            return -1;
-        }
-
-        @Override
-        public final MultiStmtMode multiStmtMode() {
-            return MultiStmtMode.DEFAULT;
-        }
-
-        @Override
-        public final Consumer<ResultStates> stateConsumer() {
-            return this.statesConsumer;
-        }
-
-
-    } // ArmyOnlyStateConsumerOption
-
-    protected static abstract class ArmyOnlyTimeoutOption extends ArmyPreferOption {
-
-        private final int timeoutMillis;
-
-        private final long startMillis;
-
-        public ArmyOnlyTimeoutOption(int timeoutMillis) {
-            assert timeoutMillis > 0;
-            this.timeoutMillis = timeoutMillis;
-            this.startMillis = System.currentTimeMillis();
-        }
-
-        public ArmyOnlyTimeoutOption(int timeoutMillis, long startMillis) {
-            assert timeoutMillis > 0;
-            assert startMillis > -1L;
-            this.timeoutMillis = timeoutMillis;
-            this.startMillis = startMillis;
-        }
-
-        @Override
-        public final boolean isSupportTimeout() {
-            return this.timeoutMillis > 0;
-        }
-
-        @Override
-        public final int restSeconds() throws TimeoutException {
-            int seconds;
-            seconds = restMillSeconds() * 1000;
-            if (seconds < 1) {
-                seconds = 1;
-            }
-            return seconds;
-        }
-
-        @Override
-        public final int restMillSeconds() throws TimeoutException {
-            final int timeoutMills = this.timeoutMillis;
-            if (timeoutMills < 1) {
-                throw new IllegalStateException("Don't support timeout");
-            }
-            final long restMills;
-            restMills = timeoutMills - (System.currentTimeMillis() - this.startMillis);
-            if (restMills >= timeoutMills) {
-                final String m = String.format("timeout is %s millis , but rest %s millis", timeoutMills, restMills);
-                throw new TimeoutException(m, restMills);
-            }
-            return (int) restMills;
-        }
-
-        @Override
-        public final int fetchSize() {
-            return 0;
-        }
-
-        @Override
-        public final int frequency() {
-            return -1;
-        }
-
-        @Override
-        public final MultiStmtMode multiStmtMode() {
-            return MultiStmtMode.DEFAULT;
-        }
-
-        @Override
-        public final Consumer<ResultStates> stateConsumer() {
-            return ResultStates.IGNORE_STATES;
-        }
-
-
-    } // ArmyOnlyTimeoutOption
 
 
 }

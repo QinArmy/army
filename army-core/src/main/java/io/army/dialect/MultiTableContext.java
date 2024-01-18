@@ -140,7 +140,7 @@ final class MultiTableContext implements _MultiTableContext {
     }
 
     @Override
-    public TabularItem tableItemOf(final String tableAlias) {
+    public TabularItem tabularItemOf(final String tableAlias) {
         final TabularItem tableItem;
         tableItem = this.aliasToTable.get(tableAlias);
         if (tableItem == null) {

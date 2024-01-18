@@ -24,7 +24,10 @@ import io.army.bean.ObjectAccessException;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._AliasDerivedBlock;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._NestedItems;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
@@ -719,21 +722,6 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("Invalidate named parameter[%s]", name));
     }
 
-    public static CriteriaException namedParamInNonBatch(NamedParam namedParam) {
-        String m = String.format("Couldn't exist %s[%s] in non-batch statement."
-                , NamedParam.class.getName(), namedParam.name());
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException noNamedParamInBatch() {
-        return new CriteriaException("Not found named parameter in batch statement.");
-    }
-
-    public static CriteriaException namedParamsInNonBatch(NamedParam.NamedRow param) {
-        String m = String.format("Couldn't exist named parameters[name:%s,size:%s] in non-batch statement."
-                , param.name(), param.columnSize());
-        return new CriteriaException(m);
-    }
 
     public static CriteriaException namedParamNotMatch(SqlValueParam.NamedMultiValue param, @Nullable Object value) {
         String m = String.format("named value[name:%s,size:%s] value[%s] isn't %s."
@@ -770,37 +758,12 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException dontSupportRowLeftItem(@Nullable Dialect dialect) {
-        String m = String.format("%s don't support ROW in SET clause.", dialect == null ? "standard" : dialect);
-        return new CriteriaException(m);
-    }
 
     public static CriteriaException independentDmlDontSupportNamedValue() {
         String m = "Only the batch update(delete) in multi-statement context support named parameter(literal).";
         return new CriteriaException(m);
     }
 
-
-    public static CriteriaException singleUpdateChildField(TableField field, Dialect dialect) {
-        String m;
-        m = String.format("%s single table update syntax don't support update child table field %s", dialect, field);
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException dialectAndModifierNotMatch(Dialect dialect, SQLWords modifier) {
-        String m = String.format("%s and %s not match.", dialect, modifier);
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException commandAndModifierNotMatch(_DialectStatement statement, SQLWords modifier) {
-        String m = String.format("%s and %s not match.", statement.getClass().getName(), modifier);
-        return new CriteriaException(m);
-    }
-
-
-    public static IllegalArgumentException stmtDontSupportDialect(Dialect mode) {
-        return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
-    }
 
     public static NullPointerException optionValueIsNull(Option<?> option) {
         String m = String.format("error %s.nonNullOf(),the value of %s is null", OptionSpec.class.getName(), option);
@@ -823,13 +786,6 @@ public abstract class _Exceptions {
         String m;
         m = String.format("%s isn't read only,don't support pseudo transaction.", session);
         return new SessionException(m);
-    }
-
-
-    public static IllegalArgumentException pseudoIsolationError(Session session, TransactionOption option) {
-        String m;
-        m = String.format("%s isolation isn't %s,reject pseudo transaction %s.", session, Isolation.PSEUDO.name(), option);
-        return new IllegalArgumentException(m);
     }
 
     public static IllegalArgumentException pseudoWriteError(Session session, TransactionOption option) {
@@ -1003,7 +959,7 @@ public abstract class _Exceptions {
     }
 
 
-    public static NonSingleRowException nonUnique(List<?> list) {
+    public static NonSingleRowException nonSingleRow(List<?> list) {
         String m = String.format("select result[%s] more than 1.", list.size());
         return new NonSingleRowException(m);
     }

@@ -18,6 +18,7 @@ package io.army.dialect;
 
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Statement;
@@ -103,7 +104,12 @@ abstract class BatchSpecStatementContext extends StatementContext implements Bat
         final List<?> paramList = this.paramList;
         final ReadAccessor accessor = this.accessor;
         if (paramList == null || accessor == null) {
-            throw _Exceptions.independentDmlDontSupportNamedValue();
+            if (this instanceof _SimpleQueryContext) {
+                String m = "simple query don't support named literal";
+                return new CriteriaException(m);
+            } else {
+                throw _Exceptions.independentDmlDontSupportNamedValue();
+            }
         }
         final int paramIndex;
         paramIndex = this.paramIndex;

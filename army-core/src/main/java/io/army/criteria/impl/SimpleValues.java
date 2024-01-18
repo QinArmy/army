@@ -243,7 +243,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
     }
 
     @Override
-    public final void close() {
+    public final void clear() {
         _Assert.prepared(this.prepared);
         this.prepared = Boolean.FALSE;
         this.rowList = null;

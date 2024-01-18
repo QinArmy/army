@@ -18,6 +18,7 @@ package io.army.session;
 
 import io.army.session.record.ResultStates;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 
@@ -42,7 +43,7 @@ public interface StmtOptionSpec {
 
         B fetchSize(int value);
 
-        B stateConsumer(Consumer<ResultStates> consumer);
+        B stateConsumer(@Nullable Consumer<ResultStates> consumer);
 
     }
 

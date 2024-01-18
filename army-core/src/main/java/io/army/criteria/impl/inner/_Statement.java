@@ -26,7 +26,7 @@ import java.util.List;
 
 public interface _Statement extends Statement {
 
-    void close();
+    void clear();
 
     interface _WherePredicateListSpec {
 

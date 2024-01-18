@@ -54,6 +54,9 @@ public abstract class _ArmySession implements Session {
 
     protected static final String PSEUDO_SAVE_POINT = "ARMY_PSEUDO_SAVE_POINT";
 
+    protected static final Consumer<ResultStates> OPTIMISTIC_LOCK_VALIDATOR = _ArmySession::validateOptimisticLock;
+
+
     protected final _ArmySessionFactory factory;
 
     protected final String name;
@@ -504,67 +507,13 @@ public abstract class _ArmySession implements Session {
         return use;
     }
 
-    protected static abstract class WrapStmtOption implements StmtOption {
-
-        protected final StmtOption option;
-
-        private final Consumer<ResultStates> statesConsumer;
-
-        protected WrapStmtOption(StmtOption option, Consumer<ResultStates> statesConsumer) {
-            this.option = option;
-            final Consumer<ResultStates> source;
-            source = option.stateConsumer();
-
-            if (source == ResultStates.IGNORE_STATES) {
-                this.statesConsumer = statesConsumer;
-            } else {
-                this.statesConsumer = statesConsumer.andThen(source);
-            }
-
+    private static void validateOptimisticLock(final ResultStates states) {
+        if (states.affectedRows() < 1L) {
+            throw _Exceptions.optimisticLock();
         }
-
-        @Override
-        public final boolean isPreferServerPrepare() {
-            return this.option.isPreferServerPrepare();
-        }
-
-        @Override
-        public final boolean isSupportTimeout() {
-            return this.option.isSupportTimeout();
-        }
-
-        @Override
-        public final boolean isParseBatchAsMultiStmt() {
-            return this.option.isParseBatchAsMultiStmt();
-        }
-
-        @Override
-        public final int restSeconds() throws TimeoutException {
-            return this.option.restSeconds();
-        }
-
-        @Override
-        public final int restMillSeconds() throws TimeoutException {
-            return this.option.restMillSeconds();
-        }
-
-        @Override
-        public final int fetchSize() {
-            return this.option.fetchSize();
-        }
-
-        @Override
-        public final MultiStmtMode multiStmtMode() {
-            return this.option.multiStmtMode();
-        }
-
-        @Override
-        public final Consumer<ResultStates> stateConsumer() {
-            return this.statesConsumer;
-        }
+    }
 
 
-    } // WrapStmtOption
 
 
 }

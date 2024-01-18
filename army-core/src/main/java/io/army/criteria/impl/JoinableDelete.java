@@ -134,7 +134,7 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
 
 
     @Override
-    public final void close() {
+    public final void clear() {
         _Assert.prepared(this.prepared);
         this.prepared = Boolean.FALSE;
         this.clearWhereClause();

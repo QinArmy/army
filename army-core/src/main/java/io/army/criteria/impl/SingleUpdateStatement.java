@@ -59,7 +59,7 @@ abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, W
     }
 
     @Override
-    public final void close() {
+    public final void clear() {
         _Assert.prepared(this.prepared);
         this.prepared = Boolean.FALSE;
         this.onClear();

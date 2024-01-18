@@ -809,7 +809,7 @@ final class MySQLDialectParser extends MySQLParser {
             }
             pair = deleteTablePairList.get(i);
             tableAlias = pair.first;
-            tableItem = context.tableItemOf(tableAlias);
+            tableItem = context.tabularItemOf(tableAlias);
             if (tableItem != pair.second) {
                 throw _Exceptions.unknownTableAlias(tableAlias);
             }
@@ -835,7 +835,7 @@ final class MySQLDialectParser extends MySQLParser {
         for (Map.Entry<String, String> e : childToParent.entrySet()) {
             if (!aliasSet.contains(e.getValue())) {
                 tableAlias = e.getKey();
-                ChildTableMeta<?> child = (ChildTableMeta<?>) context.tableItemOf(tableAlias);
+                ChildTableMeta<?> child = (ChildTableMeta<?>) context.tabularItemOf(tableAlias);
                 throw _Exceptions.deleteChildButNoParent(child, tableAlias);
             }
         }
@@ -845,7 +845,7 @@ final class MySQLDialectParser extends MySQLParser {
         //finally, create aliasToParent
         Map<String, ParentTableMeta<?>> aliasToLonelyParent = null;
         for (String alias : aliasSet) {
-            tableItem = context.tableItemOf(alias);
+            tableItem = context.tabularItemOf(alias);
             if (!(tableItem instanceof ParentTableMeta)) {
                 continue;
             }

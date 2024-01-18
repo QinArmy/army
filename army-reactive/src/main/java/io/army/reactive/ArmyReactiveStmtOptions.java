@@ -32,7 +32,7 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
         throw new UnsupportedOperationException();
     }
 
-    static final ReactiveStmtOption DEFAULT = new DefaultOption();
+    static final ReactiveStmtOption DEFAULT = new FinalDefaultOption();
 
     static ReactiveStmtOption.Builder builder() {
         return new ArmyOptionBuilder();
@@ -56,7 +56,7 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
 
     static ReactiveStmtOption timeoutMillis(final int millis) {
         if (millis > 0) {
-            return new OnlyTimeoutOption(millis);
+            return new OnlyTimeoutOption(millis, System.currentTimeMillis());
         }
         return DEFAULT;
     }
@@ -82,7 +82,7 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
     }
 
 
-    static ReactiveStmtOption overrideOptionIfNeed(final ReactiveStmtOption option, final TransactionInfo info) {
+    static ReactiveStmtOption overrideTimeoutIfNeed(final ReactiveStmtOption option, final TransactionInfo info) {
         final Integer timeout;
         timeout = info.valueOf(Option.TIMEOUT_MILLIS);
         if (timeout == null || option instanceof TransactionOverrideOption) {
@@ -93,10 +93,10 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
         assert startMillis != null;
 
         final TransactionOverrideOption newOption;
-        if (option == DEFAULT || option instanceof OnlyTimeoutOption) {
+        if (option == DEFAULT || option instanceof ReactiveTimeoutOption) {
             newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
         } else {
-            newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis);
+            newOption = new ArmyTransactionTimeoutOption(option, timeout, startMillis, option.stateConsumer());
         }
         return newOption;
     }
@@ -105,15 +105,6 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
     interface TransactionOverrideOption extends ReactiveStmtOption {
 
     }
-
-    private static final class OnlyTransactionTimeoutOption extends ArmyOnlyTimeoutOption
-            implements TransactionOverrideOption {
-
-        private OnlyTransactionTimeoutOption(int timeoutMillis, long startMillis) {
-            super(timeoutMillis, startMillis);
-        }
-
-    } // OnlyTransactionTimeoutOption
 
 
     private static final class ArmyOptionBuilder extends StmtOptionBuilderSpec<ReactiveStmtOption.Builder>
@@ -130,6 +121,58 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
     } // ArmyOptionBuilder
 
 
+    private static abstract class DefaultReactiveStmtOption extends DefaultStmtOption implements ReactiveStmtOption {
+
+        private DefaultReactiveStmtOption() {
+        }
+
+
+    } // DefaultReactiveStmtOption
+
+    private static final class FinalDefaultOption extends DefaultStmtOption implements ReactiveStmtOption {
+
+        private FinalDefaultOption() {
+        }
+
+
+    } // FinalDefaultOption
+
+
+    /**
+     * <p>This class is base class of following :
+     * <ul>
+     *     <li>{@link OnlyTransactionTimeoutOption}</li>
+     *     <li>{@link OnlyTimeoutOption}</li>
+     * </ul>
+     */
+    private static abstract class ReactiveTimeoutOption extends ArmyDefaultTimeOutOption
+            implements ReactiveStmtOption {
+
+        private ReactiveTimeoutOption(int timeoutMillis, long startMills) {
+            super(timeoutMillis, startMills);
+        }
+
+        private ReactiveTimeoutOption(ReactiveStmtOption option) {
+            super(option);
+        }
+
+    } // ReactiveTimeoutOption
+
+
+    private static final class OnlyTransactionTimeoutOption extends ReactiveTimeoutOption
+            implements TransactionOverrideOption {
+
+        private OnlyTransactionTimeoutOption(int timeoutMillis, long startMillis) {
+            super(timeoutMillis, startMillis);
+        }
+
+        private OnlyTransactionTimeoutOption(ReactiveStmtOption option) {
+            super(option);
+        }
+
+    } // OnlyTransactionTimeoutOption
+
+
     private static final class ArmyReactiveOption extends ArmyStmtOption implements ReactiveStmtOption {
 
         private ArmyReactiveOption(ArmyOptionBuilder builder) {
@@ -139,66 +182,89 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
 
     } // ArmyReactiveOption
 
-    private static final class ArmyReactiveOverrideOption extends ArmyStmtOption implements TransactionOverrideOption {
+    private static final class ArmyTransactionTimeoutOption extends ArmyStmtOption
+            implements TransactionOverrideOption {
 
-        private ArmyReactiveOverrideOption(ReactiveStmtOption option, int timeoutMillis, long startMills) {
-            super(option, timeoutMillis, startMills);
-        }
-
-    } // ArmyReactiveOverrideOption
-
-
-    private static final class DefaultOption extends ArmyDefaultStmtOption implements ReactiveStmtOption {
-
-        private DefaultOption() {
+        private ArmyTransactionTimeoutOption(ReactiveStmtOption option, int timeoutMillis, long startMills,
+                                             Consumer<ResultStates> consumer) {
+            super(option, timeoutMillis, startMills, consumer);
         }
 
 
-    } // DefaultOption
+    } // ArmyTransactionTimeoutOption
 
-    private static final class OnlyFetchSizeOption extends ArmyOnlyFetchSizeOption implements ReactiveStmtOption {
+
+    private static final class OnlyFetchSizeOption extends DefaultReactiveStmtOption {
+
+        private final int fetchSize;
 
         private OnlyFetchSizeOption(int fetchSize) {
-            super(fetchSize);
+            this.fetchSize = fetchSize;
         }
+
+        @Override
+        public int fetchSize() {
+            return this.fetchSize;
+        }
+
 
     } // OnlyFetchSizeOption
 
-    private static final class OnlyFrequencyOption extends ArmyOnlyFrequencyOption implements ReactiveStmtOption {
+    private static final class OnlyFrequencyOption extends DefaultReactiveStmtOption {
+
+        private final int frequency;
 
         public OnlyFrequencyOption(int frequency) {
-            super(frequency);
+            this.frequency = frequency;
         }
 
+        @Override
+        public int frequency() {
+            return this.frequency;
+        }
 
     } // OnlyFrequencyOption
 
-    private static final class OnlyTimeoutOption extends ArmyOnlyTimeoutOption implements ReactiveStmtOption {
+    private static final class OnlyTimeoutOption extends ReactiveTimeoutOption {
 
-        private OnlyTimeoutOption(int timeoutMillis) {
-            super(timeoutMillis);
+
+        private OnlyTimeoutOption(int timeoutMillis, long startMills) {
+            super(timeoutMillis, startMills);
         }
-
 
     } // OnlyTimeoutOption
 
 
-    private static final class OnlyMultiStmtModeOption extends ArmyOnlyMultiStmtModeOption
-            implements ReactiveStmtOption {
+    private static final class OnlyMultiStmtModeOption extends DefaultReactiveStmtOption {
+
+        private final MultiStmtMode multiStmtMode;
 
         private OnlyMultiStmtModeOption(MultiStmtMode mode) {
-            super(mode);
+            this.multiStmtMode = mode;
         }
+
+        @Override
+        public MultiStmtMode multiStmtMode() {
+            return this.multiStmtMode;
+        }
+
 
     } // OnlyMultiStmtModeOption
 
 
-    private static final class OnlyStateConsumerOption extends ArmyOnlyStateConsumerOption
-            implements ReactiveStmtOption {
+    private static final class OnlyStateConsumerOption extends DefaultReactiveStmtOption {
+
+        private final Consumer<ResultStates> statesConsumer;
 
         private OnlyStateConsumerOption(Consumer<ResultStates> statesConsumer) {
-            super(statesConsumer);
+            this.statesConsumer = statesConsumer;
         }
+
+        @Override
+        public Consumer<ResultStates> stateConsumer() {
+            return this.statesConsumer;
+        }
+
 
     } // OnlyStateConsumerOption
 

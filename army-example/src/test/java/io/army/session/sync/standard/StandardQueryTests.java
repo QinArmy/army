@@ -2,6 +2,7 @@ package io.army.session.sync.standard;
 
 
 import com.alibaba.fastjson2.JSON;
+import io.army.criteria.BatchSelect;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.Windows;
@@ -85,6 +86,10 @@ public class StandardQueryTests extends StandardSessionSupport {
                         .groupBy(ChinaRegion_.id)
                         .having(ChinaRegion_.id.greater(SQLs::param, 0))
                         .asQuery()
+                ).comma("cte_order").as(c -> c.select(s -> s.space("cte", PERIOD, ASTERISK)
+                                .comma(Windows.rowNumber().over().as("rowNumber")))
+                        .from("cte")
+                        .asQuery()
                 )
                 .space()
                 .select(ChinaRegion_.population.plus(SQLs::param, 1).as("populationPlus"), Windows.sum(ChinaRegion_.regionGdp).over("w").as("gdpSum"))
@@ -92,8 +97,8 @@ public class StandardQueryTests extends StandardSessionSupport {
                 .from(ChinaProvince_.T, AS, "p")
                 .join(ChinaRegion_.T, AS, "c").on(ChinaProvince_.id::equal, ChinaRegion_.id)
                 .where(ChinaProvince_.id::in, SQLs.subQuery()
-                        .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
-                        .from("cte")
+                        .select(s -> s.space(SQLs.refField("cte_order", ChinaRegion_.ID)))
+                        .from("cte_order")
                         ::asQuery
                 )
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(1), AND, now.plusSeconds(1))
@@ -109,6 +114,48 @@ public class StandardQueryTests extends StandardSessionSupport {
         final List<Map<String, Object>> rowList;
         rowList = session.queryObjectList(stmt, RowMaps::hashMap);
         Assert.assertEquals(rowList.size(), regionIdList.size());
+    }
+
+    @Transactional
+    @Test(invocationCount = 3)
+    public void batchQuery20WindowClause(final SyncLocalSession session) {
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+        session.batchSave(regionList);
+
+        final List<Long> regionIdList = extractRegionIdList(regionList);
+
+        final long startNanoSecond = System.nanoTime();
+
+        final BatchSelect stmt;
+        stmt = SQLs.batchQuery20()
+                .with("cte").as(s -> s.select(ChinaRegion_.id)
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                        .asQuery()
+                )
+                .space()
+                .select(ChinaProvince_.id, Windows.sum(ChinaRegion_.regionGdp).over("w").as("gdpSum"))
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "c").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                .where(ChinaProvince_.id::equal, SQLs.scalarSubQuery()
+                        .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
+                        .from("cte")
+                        ::asQuery
+                )
+                .window("w").as(s -> s.partitionBy(ChinaRegion_.name).orderBy(ChinaRegion_.regionGdp::desc).rows(UNBOUNDED_PRECEDING))
+                .orderBy(ChinaProvince_.id)
+                .limit(SQLs::param, 1)
+                .asQuery()
+                .namedParamList(extractRegionIdMapList(regionList));
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+        Assert.assertEquals(rowList.size(), regionIdList.size());
+
+        LOG.debug("{} rowList : \n{}", session.name(), JSON.toJSONString(rowList));
     }
 
 

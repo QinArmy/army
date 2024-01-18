@@ -26,11 +26,11 @@ import javax.annotation.Nullable;
 final class SimpleSelectContext extends MultiTableQueryContext implements  _SelectContext {
 
 
-    static SimpleSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser dialect
-            , Visible visible) {
+    static SimpleSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser parser,
+                                      Visible visible) {
         final TableContext tableContext;
-        tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), dialect, visible);
-        return new SimpleSelectContext((StatementContext) outerContext, select, tableContext, dialect, visible);
+        tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), parser, visible);
+        return new SimpleSelectContext((StatementContext) outerContext, select, tableContext, parser, visible);
     }
 
     static SimpleSelectContext create(final _SqlContext outerCtx, final SelectStatement select) {
@@ -43,8 +43,8 @@ final class SimpleSelectContext extends MultiTableQueryContext implements  _Sele
     }
 
 
-    private SimpleSelectContext(@Nullable  StatementContext outerContext, Query query
-            , TableContext tableContext, ArmyParser parser, Visible visible) {
+    private SimpleSelectContext(@Nullable StatementContext outerContext, Query query,
+                                TableContext tableContext, ArmyParser parser, Visible visible) {
         super(outerContext, query, tableContext, parser, visible);
     }
 

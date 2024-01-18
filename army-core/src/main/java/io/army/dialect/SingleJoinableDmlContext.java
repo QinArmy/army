@@ -72,8 +72,8 @@ abstract class SingleJoinableDmlContext extends SingleTableDmlContext implements
     }
 
     @Override
-    public final TabularItem tableItemOf(String tableAlias) {
-        return this.multiTableContext.tableItemOf(tableAlias);
+    public final TabularItem tabularItemOf(String tableAlias) {
+        return this.multiTableContext.tabularItemOf(tableAlias);
     }
 
 

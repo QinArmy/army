@@ -21,6 +21,7 @@ import io.army.util._StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -182,6 +183,11 @@ final class ArmyTransactionInfo implements TransactionInfo {
         return null;
     }
 
+
+    @Override
+    public Set<Option<?>> optionSet() {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public String toString() {

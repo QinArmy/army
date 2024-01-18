@@ -274,7 +274,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             flux = Flux.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).close();
+                ((_Statement) statement).clear();
             }
         }
 
@@ -383,7 +383,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
         if (info == null) {
             option = ArmyReactiveStmtOptions.DEFAULT;
         } else {
-            option = ArmyReactiveStmtOptions.overrideOptionIfNeed(ArmyReactiveStmtOptions.DEFAULT, info);
+            option = ArmyReactiveStmtOptions.overrideTimeoutIfNeed(ArmyReactiveStmtOptions.DEFAULT, info);
         }
         return option;
     }
@@ -396,7 +396,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 || (info = obtainTransactionInfo()) == null) {
             newOption = option;
         } else {
-            newOption = ArmyReactiveStmtOptions.overrideOptionIfNeed(option, info);
+            newOption = ArmyReactiveStmtOptions.overrideTimeoutIfNeed(option, info);
         }
         return newOption;
     }
@@ -438,7 +438,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             flux = Flux.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).close();
+                ((_Statement) statement).clear();
             }
         }
         return flux;
@@ -527,7 +527,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             mono = Mono.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).close();
+                ((_Statement) statement).clear();
             }
         }
         return mono;
@@ -570,7 +570,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             mono = Mono.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).close();
+                ((_Statement) statement).clear();
             }
         }
         return mono;
@@ -622,7 +622,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 mono = Mono.empty();
                 break;
             default:
-                mono = Mono.error(_Exceptions.nonUnique(resultList));
+                mono = Mono.error(_Exceptions.nonSingleRow(resultList));
         }
         return mono;
     }

@@ -58,7 +58,7 @@ public abstract class Stmts {
     }
 
 
-    public static SimpleStmt dml(StmtParams params) {
+    public static SimpleStmt dmlStmt(StmtParams params) {
         return new SimpleDmlStmt(params);
     }
 
@@ -75,6 +75,11 @@ public abstract class Stmts {
         return stmt;
     }
 
+    public static BatchStmt batchQueryStmt(final StmtParams params, final List<?> paramList) {
+        // TODO add code for firebird database
+        return new BatchQueryStmt(params, createParamGroupList(params, paramList));
+    }
+
 
     public static PairStmt pair(SimpleStmt first, SimpleStmt second) {
         return new PairStmtImpl(first, second);
@@ -84,20 +89,61 @@ public abstract class Stmts {
         return new PairBatchStmtImpl(first, second);
     }
 
-    public static BatchStmt batchDml(final StmtParams params, final List<?> paramWrapperList) {
+
+    public static BatchStmt batchDmlStmt(final StmtParams params, final List<?> namedParamList) {
+        return new MinBatchDmlStmt(params, createParamGroupList(params, namedParamList));
+    }
+
+
+    public static MultiStmtBatchStmt multiStmtBatchStmt(final StmtParams params, final int batchSize) {
+        final List<SQLParam> paramGroup;
+        paramGroup = params.paramList();
+        if (paramGroup.size() > 0 || batchSize < 1) {
+            //no bug, never here
+            throw new IllegalArgumentException();
+        }
+        final List<List<SQLParam>> groupList = _Collections.arrayList(batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            groupList.add(paramGroup);
+        }
+        return new MultiStmtBatchStmtImpl(params, groupList);
+    }
+
+    public static MultiStmt.StmtItem queryOrUpdateItem(final StmtParams params) {
+        final List<? extends Selection> selectionList;
+        selectionList = params.selectionList();
+
+        final MultiStmt.StmtItem item;
+        if (selectionList.size() > 0) {
+            item = new QueryStmtItem(params.hasOptimistic(), selectionList);
+        } else if (params.hasOptimistic()) {
+            item = MultiStmt.UpdateStmt.OPTIMISTIC;
+        } else {
+            item = MultiStmt.UpdateStmt.NON_OPTIMISTIC;
+        }
+        return item;
+    }
+
+
+    /**
+     * @return a modified list
+     * @see #batchDmlStmt(StmtParams, List)
+     * @see #batchQueryStmt(StmtParams, List)
+     */
+    private static List<List<SQLParam>> createParamGroupList(final StmtParams params, final List<?> namedParamList) {
         final List<SQLParam> paramGroup = params.paramList();
         final int paramSize = paramGroup.size();
-        final int batchSize = paramWrapperList.size();
+        final int batchSize = namedParamList.size();
 
         final List<List<SQLParam>> groupList = _Collections.arrayList(batchSize);
         final ReadAccessor accessor;
-        accessor = ObjectAccessorFactory.readOnlyFromInstance(paramWrapperList.get(0));
+        accessor = ObjectAccessorFactory.readOnlyFromInstance(namedParamList.get(0));
 
         NamedParam namedParam = null;
         List<SQLParam> group;
         Object value, paramObject;
         for (int batchIndex = 0; batchIndex < batchSize; batchIndex++) {
-            paramObject = paramWrapperList.get(batchIndex);
+            paramObject = namedParamList.get(batchIndex);
 
             group = _Collections.arrayList(paramSize);
             for (SQLParam sqlParam : paramGroup) {
@@ -127,40 +173,12 @@ public abstract class Stmts {
                 throw new IllegalStateException("create parameter group error.");
             }
             groupList.add(_Collections.unmodifiableList(group));
-        }
+        } // for loop
+
         if (namedParam == null) {
             throw new CriteriaException("Not found any named parameter in batch statement.");
         }
-        return new MinBatchDmlStmt(params, groupList);
-    }
-
-    public static MultiStmtBatchStmt multiStmtBatchStmt(final StmtParams params, final int batchSize) {
-        final List<SQLParam> paramGroup;
-        paramGroup = params.paramList();
-        if (paramGroup.size() > 0 || batchSize < 1) {
-            //no bug, never here
-            throw new IllegalArgumentException();
-        }
-        final List<List<SQLParam>> groupList = _Collections.arrayList(batchSize);
-        for (int i = 0; i < batchSize; i++) {
-            groupList.add(paramGroup);
-        }
-        return new MultiStmtBatchStmtImpl(params, groupList);
-    }
-
-    public static MultiStmt.StmtItem queryOrUpdateItem(final StmtParams params) {
-        final List<? extends Selection> selectionList;
-        selectionList = params.selectionList();
-
-        final MultiStmt.StmtItem item;
-        if (selectionList.size() > 0) {
-            item = new QueryStmtItem(params.hasOptimistic(), selectionList);
-        } else if (params.hasOptimistic()) {
-            item = MultiStmt.UpdateStmt.OPTIMISTIC;
-        } else {
-            item = MultiStmt.UpdateStmt.NON_OPTIMISTIC;
-        }
-        return item;
+        return groupList;
     }
 
     private static abstract class ArmySingleSqlStmt implements SingleSqlStmt {
@@ -358,6 +376,7 @@ public abstract class Stmts {
 
     }//MinDml
 
+
     private static class MinBatchDmlStmt extends ArmySingleSqlStmt implements BatchStmt {
 
 
@@ -388,7 +407,41 @@ public abstract class Stmts {
         }
 
 
-    }//MinBatchDmlStmt
+    } // MinBatchDmlStmt
+
+
+    private static final class BatchQueryStmt extends ArmySingleSqlStmt implements BatchStmt {
+
+        private final List<? extends Selection> selectionList;
+
+        private final List<List<SQLParam>> paramGroupList;
+
+        private final boolean hasOptimistic;
+
+        private BatchQueryStmt(StmtParams params, List<List<SQLParam>> paramGroupList) {
+            super(params);
+            this.selectionList = params.selectionList();
+            this.paramGroupList = Collections.unmodifiableList(paramGroupList);
+            this.hasOptimistic = params.hasOptimistic();
+        }
+
+        @Override
+        public List<List<SQLParam>> groupList() {
+            return this.paramGroupList;
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.selectionList;
+        }
+
+        @Override
+        public boolean hasOptimistic() {
+            return this.hasOptimistic;
+        }
+
+
+    } // BatchQueryStmt
 
     private static final class MultiStmtBatchStmtImpl extends ArmySingleSqlStmt implements MultiStmtBatchStmt {
 

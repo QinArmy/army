@@ -37,10 +37,19 @@ public abstract class _SQLConsultant {
 
 
     public static void assertStandardQuery(final Query query) {
-        if (!(query instanceof StandardQueries
-                || query instanceof StandardQueries.StandardBracketQuery
-                || query instanceof SimpleQueries.UnionSelect
-                || query instanceof SimpleQueries.UnionSubQuery)) {
+        final boolean match;
+        if (query instanceof BatchSelect) {
+            match = query instanceof StandardQueries.StandardBatchSimpleSelect
+                    || query instanceof SimpleQueries.UnionBatchSelect
+                    || query instanceof StandardQueries.StandardBatchBracketSelect;
+        } else {
+            match = query instanceof StandardQueries
+                    || query instanceof StandardQueries.StandardBracketQuery
+                    || query instanceof SimpleQueries.UnionSelect
+                    || query instanceof SimpleQueries.UnionSubQuery;
+        }
+
+        if (!match) {
             throw nonArmyStatement(query);
         }
     }
