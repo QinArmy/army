@@ -242,7 +242,8 @@ abstract class CriteriaContexts {
      *                     <li>If non-null,then spec null.</li>
      *                     </ul>
      */
-    static CriteriaContext subValuesContext(final Dialect dialect, @Nullable ArmyStmtSpec spec, CriteriaContext outerContext,
+    static CriteriaContext subValuesContext(final Dialect dialect, @Nullable ArmyStmtSpec spec,
+                                            @Nullable CriteriaContext outerContext,
                                             @Nullable CriteriaContext leftContext) {
         throw new UnsupportedOperationException();
     }

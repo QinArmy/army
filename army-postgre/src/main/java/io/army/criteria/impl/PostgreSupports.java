@@ -1138,12 +1138,12 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreQuery._DynamicCteSearchSpec as(Function<PostgreQuery._WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
+        public PostgreQuery._DynamicCteSearchSpec as(Function<PostgreQuery.WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
             return this.as(null, function);
         }
 
         @Override
-        public PostgreQuery._DynamicCteSearchSpec as(@Nullable Postgres.WordMaterialized materialized, Function<PostgreQuery._WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
+        public PostgreQuery._DynamicCteSearchSpec as(@Nullable Postgres.WordMaterialized materialized, Function<PostgreQuery.WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
             this.modifier = materialized;
             return function.apply(PostgreQueries.subQuery(this.builder.context, this::subQueryEnd));
         }
@@ -1198,13 +1198,13 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreValues._WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreValues.WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             return this.as(null, function);
         }
 
         @Override
         public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
-                                                             Function<PostgreValues._WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
+                                                             Function<PostgreValues.WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreSimpleValues.subValues(this.context, this::subValuesEnd));
         }

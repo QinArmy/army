@@ -76,7 +76,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
         @Override
-        public DialectStatement._CommaClause<MySQLCtes> as(Function<MySQLQuery._WithSpec<DialectStatement._CommaClause<MySQLCtes>>, DialectStatement._CommaClause<MySQLCtes>> function) {
+        public DialectStatement._CommaClause<MySQLCtes> as(Function<MySQLQuery.WithSpec<DialectStatement._CommaClause<MySQLCtes>>, DialectStatement._CommaClause<MySQLCtes>> function) {
             return function.apply(MySQLQueries.subQuery(this.context, this::subQueryEnd));
         }
 

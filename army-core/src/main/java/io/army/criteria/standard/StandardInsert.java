@@ -51,7 +51,7 @@ public interface StandardInsert extends StandardStatement {
 
 
     interface _ComplexColumnDefaultSpec<T, I extends Item> extends _ValuesColumnDefaultSpec<T, I>,
-            InsertStatement._QueryInsertSpaceClause<StandardQuery._SelectSpec<_DmlInsertClause<I>>, _DmlInsertClause<I>> {
+            InsertStatement._QueryInsertSpaceClause<StandardQuery.SelectSpec<_DmlInsertClause<I>>, _DmlInsertClause<I>> {
 
     }
 

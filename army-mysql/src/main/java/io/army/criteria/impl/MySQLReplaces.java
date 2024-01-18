@@ -342,7 +342,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public MySQLQuery._WithSpec<Statement._DmlInsertClause<I>> space() {
+        public MySQLQuery.WithSpec<_DmlInsertClause<I>> space() {
             return MySQLQueries.subQuery(this.context, this::spaceQueryEnd);
         }
 
@@ -352,7 +352,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public Statement._DmlInsertClause<I> space(Function<MySQLQuery._WithSpec<Statement._DmlInsertClause<I>>, Statement._DmlInsertClause<I>> function) {
+        public Statement._DmlInsertClause<I> space(Function<MySQLQuery.WithSpec<_DmlInsertClause<I>>, Statement._DmlInsertClause<I>> function) {
             return function.apply(MySQLQueries.subQuery(this.context, this::spaceQueryEnd));
         }
 

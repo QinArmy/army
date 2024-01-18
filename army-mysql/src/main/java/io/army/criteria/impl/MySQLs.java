@@ -91,21 +91,21 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLQuery._WithSpec<Select> query() {
+    public static MySQLQuery.WithSpec<Select> query() {
         return MySQLQueries.simpleQuery();
     }
 
-    public static MySQLQuery._WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
+    public static MySQLQuery.WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
         return MySQLQueries.batchQuery();
     }
 
 
-    public static MySQLQuery._WithSpec<SubQuery> subQuery() {
+    public static MySQLQuery.WithSpec<SubQuery> subQuery() {
         return MySQLQueries.subQuery(ContextStack.peek(), SQLs.SUB_QUERY);
     }
 
 
-    public static MySQLQuery._WithSpec<Expression> scalarSubQuery() {
+    public static MySQLQuery.WithSpec<Expression> scalarSubQuery() {
         return MySQLQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
     }
 
@@ -113,7 +113,7 @@ public abstract class MySQLs extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
      */
-    public static MySQLValues._ValueSpec<Values> valuesStmt() {
+    public static MySQLValues.ValuesSpec<Values> valuesStmt() {
         return MySQLSimpleValues.simpleValues(SQLs::identity);
     }
 
@@ -121,7 +121,7 @@ public abstract class MySQLs extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
      */
-    public static MySQLValues._ValueSpec<SubValues> subValues() {
+    public static MySQLValues.ValuesSpec<SubValues> subValues() {
         return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }
 

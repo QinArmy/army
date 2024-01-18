@@ -72,7 +72,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         Object,
         MySQLQuery._QueryWithComplexSpec<I>>
         implements _MySQLQuery, MySQLQuery,
-        MySQLQuery._WithSpec<I>,
+        MySQLQuery.WithSpec<I>,
         MySQLQuery._MySQLSelectCommaSpec<I>,
         MySQLQuery._IndexHintJoinSpec<I>,
         MySQLQuery._ParensJoinSpec<I>,
@@ -85,11 +85,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         MySQLQuery._OrderByCommaSpec<I>,
         OrderByClause.OrderByEventListener {
 
-    static _WithSpec<Select> simpleQuery() {
+    static WithSpec<Select> simpleQuery() {
         return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
     }
 
-    static _WithSpec<_BatchSelectParamSpec> batchQuery() {
+    static WithSpec<_BatchSelectParamSpec> batchQuery() {
         return new SimpleSelect<>(null, null, MySQLQueries::mapToBatchSelect);
     }
 
@@ -98,8 +98,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         return new SimpleSelect<>(spec, null, function);
     }
 
-    static <I extends Item> _WithSpec<I> subQuery(CriteriaContext outerContext,
-                                                  Function<? super SubQuery, I> function) {
+    static <I extends Item> WithSpec<I> subQuery(CriteriaContext outerContext,
+                                                 Function<? super SubQuery, I> function) {
         return new SimpleSubQuery<>(null, outerContext, function);
     }
 
@@ -878,7 +878,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
@@ -917,7 +917,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
@@ -1087,7 +1087,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
         private _StaticCteAsClause<I> onColumnAliasList(final List<String> list) {
             if (this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.comma.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.columnAliasList = list;
             if (list.size() > 0) {
@@ -1239,8 +1239,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
         @Override
-        final MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
-            return MySQLSupports.mysqlLCteBuilder(recursive, context);
+        final MySQLCtes createCteBuilder(boolean recursive) {
+            return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
         }
 
 
@@ -1276,7 +1276,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public MySQLValues._ValuesLeftParenClause<I> values() {
+        public MySQLValues._StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromDispatcher(this, this.function)
@@ -1324,7 +1324,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public MySQLValues._ValuesLeftParenClause<I> values() {
+        public MySQLValues._StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromSubDispatcher(this, this.function)

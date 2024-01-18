@@ -1052,7 +1052,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreQuery._WithSpec<PostgreInsert._OnConflictSpec<T, I, Q>> space() {
+        public PostgreQuery.WithSpec<PostgreInsert._OnConflictSpec<T, I, Q>> space() {
             return PostgreQueries.subQuery(this.context, this::spaceQueryEnd);
         }
 
@@ -1062,7 +1062,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._OnConflictSpec<T, I, Q> space(Function<PostgreQuery._WithSpec<PostgreInsert._OnConflictSpec<T, I, Q>>, PostgreInsert._OnConflictSpec<T, I, Q>> function) {
+        public PostgreInsert._OnConflictSpec<T, I, Q> space(Function<PostgreQuery.WithSpec<PostgreInsert._OnConflictSpec<T, I, Q>>, PostgreInsert._OnConflictSpec<T, I, Q>> function) {
             return function.apply(PostgreQueries.subQuery(this.context, this::spaceQueryEnd));
         }
 

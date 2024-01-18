@@ -93,8 +93,8 @@ public interface MySQLValues extends MySQLStatement, RowSet {
     }
 
 
-    interface _ValueSpec<I extends Item> extends _MySQLValuesClause<I>,
-            _DynamicParensRowSetClause<_ValueSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+    interface ValuesSpec<I extends Item> extends _MySQLValuesClause<I>,
+            _DynamicParensRowSetClause<ValuesSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

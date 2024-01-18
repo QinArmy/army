@@ -28,6 +28,7 @@ import java.util.function.Function;
 /**
  * <p>
  * This interface representing MySQL 8.0 SELECT syntax.
+ *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/select.html">MySQL 8.0 Select statement</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/union.html">MySQL 8.0 UNION Clause</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/join.html">MySQL 8.0 JOIN Clause</a>
@@ -54,7 +55,6 @@ public interface MySQLQuery extends Query, MySQLStatement {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *
      *
      * @param <IO> next clause java type
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select-into.html">MySQL 5.7 SELECT ... INTO Statement</a>
@@ -292,7 +292,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
 
     interface _SelectSpec<I extends Item> extends _MySQLSelectClause<I>,
-            _DynamicParensRowSetClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -313,14 +313,14 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _WithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>,
+    interface WithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>,
             _MySQLStaticWithClause<_SelectSpec<I>>,
             _SelectSpec<I> {
 
     }
 
 
-    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<_WithSpec<_CommaClause<MySQLCtes>>,
+    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<WithSpec<_CommaClause<MySQLCtes>>,
             _CommaClause<MySQLCtes>> {
 
     }
@@ -333,7 +333,6 @@ public interface MySQLQuery extends Query, MySQLStatement {
     /**
      * <p>
      * VALUES statement don't support WITH clause.
-     *
      */
     interface _QueryComplexSpec<I extends Item> extends _MySQLSelectClause<I>,
             _DynamicParensRowSetClause<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {

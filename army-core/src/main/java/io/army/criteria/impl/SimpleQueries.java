@@ -1873,39 +1873,27 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             super(dialect, outerContext, leftContext);
         }
 
+
         @Override
         public final WE with(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false, this.context);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(false, consumer, true);
         }
-
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true, this.context);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(true, consumer, true);
         }
 
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false, this.context);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(false, consumer, false);
         }
 
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true, this.context);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(true, consumer, false);
         }
 
         @Override
@@ -1923,27 +1911,30 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             return cteList;
         }
 
-        abstract B createCteBuilder(boolean recursive, CriteriaContext context);
+        abstract B createCteBuilder(boolean recursive);
 
 
         final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);
             return (WE) this;
         }
 
+
         @SuppressWarnings("unchecked")
-        private WE endDynamicWithClause(final B builder, final boolean required) {
+        private WE endDynamicWithClause(final boolean recursive, final Consumer<B> consumer, final boolean required) {
+            final B builder;
+            builder = createCteBuilder(recursive);
+
+            CriteriaUtils.invokeConsumer(builder, consumer);
+
             ((CriteriaSupports.CteBuilder) builder).endLastCte();
 
-            final boolean recursive;
-            recursive = builder.isRecursive();
-
             this.recursive = recursive;
-            this.cteList = context.endWithClause(recursive, required);
+            this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
         }
 

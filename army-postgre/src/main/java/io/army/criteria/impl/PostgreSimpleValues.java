@@ -38,51 +38,51 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         I,
         PostgreCtes,
         PostgreValues._ValuesSpec<I>,
-        PostgreValues._ValuesLeftParenSpec<I>,
         PostgreValues._OrderByCommaSpec<I>,
         PostgreValues._LimitSpec<I>,
         PostgreValues._OffsetSpec<I>,
         PostgreValues._FetchSpec<I>,
         PostgreStatement._AsValuesClause<I>,
         PostgreValues._QueryWithComplexSpec<I>>
-        implements PostgreValues._WithSpec<I>,
-        PostgreValues._ValuesLeftParenSpec<I>,
+        implements PostgreValues.WithSpec<I>,
+        PostgreValues._StaticValuesRowClause<I>,
+        PostgreValues._StaticValuesRowCommaSpec<I>,
         PostgreValues._OffsetSpec<I>,
         PostgreValues._OrderByCommaSpec<I>,
+        ValuesParens,
         PostgreValues {
 
 
     /**
      * <p>
      * create primary VALUES statement.
-     *
      */
-    static PostgreValues._WithSpec<Values> simpleValues() {
-        return new SimplePrimaryValues<>(null, null, SQLs::identity);
+    static WithSpec<Values> simpleValues() {
+        return new SimplePrimaryValues<>(null, null, SQLs::identity, null);
     }
 
     /**
      * create primary VALUES statement for dispatcher.
      */
-    static <I extends Item> PostgreValues._WithSpec<I> fromDispatcher(ArmyStmtSpec spec,
-                                                                      Function<? super Values, I> function) {
-        return new SimplePrimaryValues<>(spec, null, function);
+    static <I extends Item> WithSpec<I> fromDispatcher(ArmyStmtSpec spec,
+                                                       Function<? super Values, I> function) {
+        return new SimplePrimaryValues<>(spec, null, function, null);
     }
 
     /**
      * create sub VALUES statement for dispatcher.
      */
-    static <I extends Item> PostgreValues._WithSpec<I> fromSubDispatcher(ArmyStmtSpec spec,
-                                                                         Function<? super SubValues, I> function) {
-        return new SimpleSubValues<>(spec, null, function);
+    static <I extends Item> WithSpec<I> fromSubDispatcher(ArmyStmtSpec spec,
+                                                          Function<? super SubValues, I> function) {
+        return new SimpleSubValues<>(spec, null, function, null);
     }
 
     /**
      * create sub VALUES statement.
      */
-    static <I extends Item> PostgreValues._WithSpec<I> subValues(CriteriaContext outerContext,
-                                                                 Function<? super SubValues, I> function) {
-        return new SimpleSubValues<>(null, outerContext, function);
+    static <I extends Item> WithSpec<I> subValues(CriteriaContext outerContext,
+                                                  Function<? super SubValues, I> function) {
+        return new SimpleSubValues<>(null, outerContext, function, null);
     }
 
 
@@ -104,19 +104,38 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
     }
 
     @Override
-    public final _OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
-        consumer.accept(new RowConstructorImpl(this));
+    public final _OrderBySpec<I> values(Consumer<ValuesParens> consumer) {
+        CriteriaUtils.invokeConsumer(this, consumer);
         return this;
     }
 
     @Override
-    public final _PostgreValuesLeftParenClause<I> values() {
+    public final _StaticValuesRowClause<I> values() {
+        return this;
+    }
+
+    @Override
+    public final PostgreSimpleValues<I> parens(Consumer<Values._ValueStaticColumnSpaceClause> consumer) {
+        CriteriaUtils.invokeConsumer(this, consumer);
+        endCurrentRow();
+        return this;
+    }
+
+    @Override
+    public final PostgreSimpleValues<I> parens(SQLs.SymbolSpace space, Consumer<Values._ValuesDynamicColumnClause> consumer) {
+        CriteriaUtils.invokeConsumer(this, consumer);
+        endCurrentRow();
+        return this;
+    }
+
+    @Override
+    public final _StaticValuesRowClause<I> comma() {
         return this;
     }
 
     @Override
     final Dialect statementDialect() {
-        return PostgreDialect.POSTGRE15;
+        return PostgreUtils.DIALECT;
     }
 
     @Override
@@ -139,19 +158,18 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
          * @param outerBracketContext outer bracket context
          */
         private SimplePrimaryValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
-                                    Function<? super Values, I> function) {
-            super(spec, CriteriaContexts.primaryValuesContext(spec, outerBracketContext));
+                                    Function<? super Values, I> function, @Nullable CriteriaContext leftContext) {
+            super(spec, CriteriaContexts.primaryValuesContext(PostgreUtils.DIALECT, spec, outerBracketContext, leftContext));
             this.function = function;
         }
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
-
-            return function.apply(new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
         @Override
@@ -175,19 +193,19 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         private final Function<? super SubValues, I> function;
 
         private SimpleSubValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
-                                Function<? super SubValues, I> function) {
-            super(spec, CriteriaContexts.subValuesContext(spec, outerContext));
+                                Function<? super SubValues, I> function, @Nullable CriteriaContext leftContext) {
+            super(spec, CriteriaContexts.subValuesContext(PostgreUtils.DIALECT, spec, outerContext, leftContext));
             this.function = function;
         }
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            return function.apply(PostgreSimpleValues.subValues(bracket.context, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SimpleSubValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
         @Override
@@ -205,20 +223,20 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
     }//SimpleSubValues
 
 
-     static abstract class PostgreBracketValues<I extends Item> extends BracketRowSet<
-             I,
-             PostgreValues._UnionOrderBySpec<I>,
-             PostgreValues._UnionOrderByCommaSpec<I>,
-             PostgreValues._UnionLimitSpec<I>,
-             PostgreValues._UnionOffsetSpec<I>,
-             PostgreValues._UnionFetchSpec<I>,
-             PostgreValues._AsValuesClause<I>,
-             PostgreValues._QueryWithComplexSpec<I>>
-             implements PostgreValues,
-             PostgreValues._UnionOrderBySpec<I>,
-             PostgreValues._UnionOrderByCommaSpec<I>,
-             PostgreValues._UnionOffsetSpec<I>,
-             PostgreValues._UnionFetchSpec<I> {
+    static abstract class PostgreBracketValues<I extends Item> extends BracketRowSet<
+            I,
+            PostgreValues._UnionOrderBySpec<I>,
+            PostgreValues._UnionOrderByCommaSpec<I>,
+            PostgreValues._UnionLimitSpec<I>,
+            PostgreValues._UnionOffsetSpec<I>,
+            PostgreValues._UnionFetchSpec<I>,
+            PostgreValues._AsValuesClause<I>,
+            PostgreValues._QueryWithComplexSpec<I>>
+            implements PostgreValues,
+            PostgreValues._UnionOrderBySpec<I>,
+            PostgreValues._UnionOrderByCommaSpec<I>,
+            PostgreValues._UnionOffsetSpec<I>,
+            PostgreValues._UnionFetchSpec<I> {
 
         private PostgreBracketValues(ArmyStmtSpec spec) {
             super(spec);
@@ -288,7 +306,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
 
-    }//BracketSubValues
+    } // BracketSubValues
 
 
     private static abstract class PostgreValuesDispatcher<I extends Item>
@@ -323,8 +341,8 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        final PostgreCtes createCteBuilder(boolean recursive, CriteriaContext context) {
-            return PostgreSupports.postgreCteBuilder(recursive, context);
+        final PostgreCtes createCteBuilder(boolean recursive) {
+            return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
 
@@ -350,23 +368,22 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
             return function.apply(new ValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
+
         @Override
-        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
+        public _OrderBySpec<I> values(Consumer<ValuesParens> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromDispatcher(this, this.function)
                     .values(consumer);
         }
 
-
         @Override
-        public _PostgreValuesLeftParenClause<I> values() {
+        public _StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromDispatcher(this, this.function)
                     .values();
         }
-
 
         @Override
         PostgreQueries<I> createSelectClause() {
@@ -401,7 +418,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
         @Override
-        public _OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
+        public _OrderBySpec<I> values(Consumer<ValuesParens> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)
@@ -409,7 +426,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        public _PostgreValuesLeftParenClause<I> values() {
+        public _StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)
@@ -424,7 +441,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
 
-    }//SubValuesDispatcher
+    } // SubValuesDispatcher
 
 
 }

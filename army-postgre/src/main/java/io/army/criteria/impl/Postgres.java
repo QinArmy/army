@@ -191,7 +191,7 @@ public abstract class Postgres extends PostgreSyntax {
      * create simple(non-batch) SELECT statement that is primary statement.
      *
      */
-    public static PostgreQuery._WithSpec<Select> query() {
+    public static PostgreQuery.WithSpec<Select> query() {
         return PostgreQueries.simpleQuery();
     }
 
@@ -200,7 +200,7 @@ public abstract class Postgres extends PostgreSyntax {
      * create batch SELECT statement that is primary statement.
      *
      */
-    public static PostgreQuery._WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
+    public static PostgreQuery.WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
         return PostgreQueries.batchQuery();
     }
 
@@ -210,7 +210,7 @@ public abstract class Postgres extends PostgreSyntax {
      * create SUB-SELECT statement that is sub query statement.
      *
      */
-    public static PostgreQuery._WithSpec<SubQuery> subQuery() {
+    public static PostgreQuery.WithSpec<SubQuery> subQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), SQLs::identity);
     }
 
@@ -219,7 +219,7 @@ public abstract class Postgres extends PostgreSyntax {
      * create SUB-SELECT statement that is sub query statement and would be converted to {@link Expression}.
      *
      */
-    public static PostgreQuery._WithSpec<Expression> scalarSubQuery() {
+    public static PostgreQuery.WithSpec<Expression> scalarSubQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
     }
 
@@ -259,11 +259,11 @@ public abstract class Postgres extends PostgreSyntax {
         return PostgreDeletes.batchDelete();
     }
 
-    public static PostgreValues._WithSpec<Values> simpleValues() {
+    public static PostgreValues.WithSpec<Values> simpleValues() {
         return PostgreSimpleValues.simpleValues();
     }
 
-    public static PostgreValues._WithSpec<SubValues> subValues() {
+    public static PostgreValues.WithSpec<SubValues> subValues() {
         return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }
 

@@ -208,8 +208,8 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     @Override
     public final List<List<_Expression>> rowList() {
         final List<List<_Expression>> list = this.rowList;
-        if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+        if (list == null || list instanceof ArrayList) {
+            throw _Exceptions.castCriteriaApi();
         }
         return list;
     }
@@ -218,7 +218,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     public final int selectionSize() {
         final List<_Selection> list = this.selectionList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw _Exceptions.castCriteriaApi();
         }
         return list.size();
     }
@@ -229,7 +229,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
         if (selectionMap == null) {
             final List<_Selection> list = this.selectionList;
             if (list == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final int selectionSize = list.size();
             if (selectionSize == 1) {
@@ -253,7 +253,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     public final List<? extends Selection> refAllSelection() {
         final List<_Selection> list = this.selectionList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -387,10 +387,9 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     }
 
     @SuppressWarnings("unchecked")
-    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE extends Item, RR, OR, OD, LR, LO, LF, SP>
-            extends SimpleValues<I, RR, OR, OD, LR, LO, LF, SP>
-            implements DialectStatement._DynamicWithClause<B, WE>
-            , ArmyStmtSpec {
+    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE extends Item, OR, OD, LR, LO, LF, SP>
+            extends SimpleValues<I, OR, OD, LR, LO, LF, SP>
+            implements DialectStatement._DynamicWithClause<B, WE>, ArmyStmtSpec {
 
         private boolean recursive;
 
@@ -404,39 +403,28 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
             }
         }
 
-
         @Override
         public final WE with(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(false, consumer, true);
         }
+
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(true, consumer, true);
         }
+
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(false, consumer, false);
         }
+
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(true, consumer, false);
         }
-
 
         @Override
         public final boolean isRecursive() {
@@ -447,7 +435,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
         public final List<_Cte> cteList() {
             final List<_Cte> list = this.cteList;
             if (list == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw _Exceptions.castCriteriaApi();
             }
             return list;
         }
@@ -458,68 +446,30 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
 
         final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);
             return (WE) this;
         }
 
-        private WE endDynamicWithClause(final B builder, final boolean required) {
+        @SuppressWarnings("unchecked")
+        private WE endDynamicWithClause(final boolean recursive, final Consumer<B> consumer, final boolean required) {
+            final B builder;
+            builder = createCteBuilder(recursive);
+
+            CriteriaUtils.invokeConsumer(builder, consumer);
+
             ((CriteriaSupports.CteBuilder) builder).endLastCte();
 
-            final boolean recursive;
-            recursive = builder.isRecursive();
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
         }
 
 
-    }//WithSimpleValues
+    } // WithSimpleValues
 
-
-    static final class RowConstructorImpl implements ValuesRows {
-
-        private final SimpleValues<?, ?, ?, ?, ?, ?, ?, ?> clause;
-
-        RowConstructorImpl(SimpleValues<?, ?, ?, ?, ?, ?, ?, ?> clause) {
-            this.clause = clause;
-        }
-
-        @Override
-        public ValuesRows column(@Nullable Object exp) {
-            this.clause.comma(exp);
-            return this;
-        }
-
-        @Override
-        public ValuesRows column(@Nullable Object exp1, @Nullable Object exp2) {
-            this.clause.comma(exp1, exp2);
-            return this;
-        }
-
-        @Override
-        public ValuesRows column(@Nullable Object exp1, @Nullable Object exp2, Expression exp3) {
-            this.clause.comma(exp1, exp2, exp3);
-            return this;
-        }
-
-        @Override
-        public ValuesRows column(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
-            this.clause.comma(exp1, exp2, exp3, exp4);
-            return this;
-        }
-
-
-        @Override
-        public ValuesRows row() {
-            this.clause.endCurrentRow();
-            return this;
-        }
-
-
-    }//RowConstructorImpl
 
     static final class UnionSubValues extends UnionSubRowSet implements ArmySubValues {
 

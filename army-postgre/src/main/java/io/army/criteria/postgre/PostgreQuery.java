@@ -401,19 +401,18 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
 
     interface _SelectSpec<I extends Item> extends _PostgreSelectClause<I>,
-            _DynamicParensRowSetClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
 
     /**
-     * <p>
-     * primary-statement syntax support static WITH clause,it's simple and clear and free
-     *
+     * <p>primary-statement syntax support static WITH clause,it's simple and clear and free
+     * <p>This interface is public interface that developer can directly use.
      *
      * @since 0.6.0
      */
-    interface _WithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
+    interface WithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
             _PostgreStaticWithClause<_SelectSpec<I>>,
             _SelectSpec<I> {
 
@@ -430,7 +429,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _QueryDynamicCteAsClause
-            extends _PostgreDynamicCteAsClause<_WithSpec<_DynamicCteSearchSpec>, _DynamicCteSearchSpec> {
+            extends _PostgreDynamicCteAsClause<WithSpec<_DynamicCteSearchSpec>, _DynamicCteSearchSpec> {
 
     }
 

@@ -17,6 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
+import io.army.criteria.Statement;
 import io.army.criteria.Values;
 import io.army.criteria.ValuesQuery;
 
@@ -82,34 +83,39 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
     }
 
 
-    interface _PostgreValuesLeftParenClause<I extends Item>
-            extends Values._StaticValueLeftParenClause<_ValuesLeftParenSpec<I>> {
+    interface _StaticValuesRowClause<I extends Item> extends Values._ValuesRowParensClause<_StaticValuesRowCommaSpec<I>> {
 
     }
 
-    interface _ValuesLeftParenSpec<I extends Item> extends _PostgreValuesLeftParenClause<I>, _OrderBySpec<I> {
+
+    interface _StaticValuesRowCommaSpec<I extends Item> extends Statement._CommaClause<_StaticValuesRowClause<I>>,
+            _OrderBySpec<I> {
 
     }
 
 
     interface _PostgreValuesClause<I extends Item>
-            extends Values._StaticValuesClause<_PostgreValuesLeftParenClause<I>>,
-            Values._DynamicValuesRowClause<_OrderBySpec<I>> {
+            extends Values._StaticValuesClause<_StaticValuesRowClause<I>>,
+            Values._DynamicValuesRowParensClause<_OrderBySpec<I>> {
 
     }
+
 
     interface _ValuesSpec<I extends Item> extends _PostgreValuesClause<I>,
-            _DynamicParensRowSetClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
-    interface _WithSpec<I extends Item> extends _PostgreDynamicWithClause<_ValuesSpec<I>>,
+    /**
+     * <p>This interface is public interface that developer can directly use.
+     */
+    interface WithSpec<I extends Item> extends _PostgreDynamicWithClause<_ValuesSpec<I>>,
             PostgreQuery._PostgreStaticWithClause<_ValuesSpec<I>>,
             _ValuesSpec<I> {
 
     }
 
-    interface _ValuesDynamicCteAsClause extends _PostgreDynamicCteAsClause<_WithSpec<_CommaClause<PostgreCtes>>,
+    interface _ValuesDynamicCteAsClause extends _PostgreDynamicCteAsClause<WithSpec<_CommaClause<PostgreCtes>>,
             _CommaClause<PostgreCtes>> {
 
     }

@@ -48,7 +48,7 @@ import java.util.function.Function;
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
         I,
         StandardCtes,
-        StandardQuery._SelectSpec<I>,
+        StandardQuery.SelectSpec<I>,
         SQLs.Modifier,
         StandardQuery._StandardSelectCommaClause<I>, // SR
         StandardQuery._FromSpec<I>, // SD
@@ -71,10 +71,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._LockSpec<I>, // LR
         Object,
         Object,
-        StandardQuery._SelectSpec<I>> // SP
+        StandardQuery.SelectSpec<I>> // SP
 
         implements StandardQuery,
-        StandardQuery._WithSpec<I>,
+        StandardQuery.WithSpec<I>,
         StandardQuery._StandardSelectCommaClause<I>,
         StandardQuery._JoinSpec<I>,
         StandardQuery._WhereAndSpec<I>,
@@ -87,17 +87,17 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         ArmyStmtSpec {
 
 
-    static _WithSpec<Select> simpleQuery(StandardDialect dialect) {
+    static WithSpec<Select> simpleQuery(StandardDialect dialect) {
         return new SimpleSelect<>(dialect, null, null, SQLs.SIMPLE_SELECT, null);
     }
 
-    static _WithSpec<_BatchSelectParamSpec> batchQuery(StandardDialect dialect) {
+    static WithSpec<_BatchSelectParamSpec> batchQuery(StandardDialect dialect) {
         return new SimpleSelect<>(dialect, null, null, StandardQueries::mapToBatchSelect, null);
     }
 
 
-    static <I extends Item> _WithSpec<I> subQuery(StandardDialect dialect, CriteriaContext outerContext,
-                                                  Function<? super SubQuery, I> function) {
+    static <I extends Item> WithSpec<I> subQuery(StandardDialect dialect, CriteriaContext outerContext,
+                                                 Function<? super SubQuery, I> function) {
         return new SimpleSubQuery<>(dialect, null, outerContext, function, null);
     }
 
@@ -149,13 +149,13 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    public final _StaticCteParensSpec<_SelectSpec<I>> with(String name) {
+    public final _StaticCteParensSpec<SelectSpec<I>> with(String name) {
         return StandardQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                 .comma(name);
     }
 
     @Override
-    public final _StaticCteParensSpec<_SelectSpec<I>> withRecursive(String name) {
+    public final _StaticCteParensSpec<SelectSpec<I>> withRecursive(String name) {
         return StandardQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                 .comma(name);
     }
@@ -508,7 +508,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
@@ -526,7 +526,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final _UnionType unionType) {
+        SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
@@ -553,7 +553,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
@@ -569,7 +569,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final _UnionType unionType) {
+        SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class), null,
@@ -590,7 +590,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             Query._AsQueryClause<I>,
             Object,
             Object,
-            _SelectSpec<I>>
+            SelectSpec<I>>
             implements StandardQuery._UnionOrderBySpec<I>,
             StandardQuery._UnionOrderByCommaSpec<I>,
             StandardQuery {
@@ -625,7 +625,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
+        SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
@@ -671,7 +671,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
+        SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class), null,
@@ -778,7 +778,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public _CteComma<I> as(Function<_SelectSpec<_CteComma<I>>, _CteComma<I>> function) {
+        public _CteComma<I> as(Function<SelectSpec<_CteComma<I>>, _CteComma<I>> function) {
             final CriteriaContext context = this.comma.context;
             return function.apply(StandardQueries.subQuery(context.dialect(StandardDialect.class), context,
                     this::subQueryEnd)
@@ -817,7 +817,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
         @Override
-        public DialectStatement._CommaClause<StandardCtes> as(Function<StandardQuery._WithSpec<_CommaClause<StandardCtes>>, _CommaClause<StandardCtes>> function) {
+        public DialectStatement._CommaClause<StandardCtes> as(Function<WithSpec<_CommaClause<StandardCtes>>, _CommaClause<StandardCtes>> function) {
             return function.apply(StandardQueries.subQuery(this.context.dialect(StandardDialect.class), this.context,
                     this::subQueryEnd)
             );

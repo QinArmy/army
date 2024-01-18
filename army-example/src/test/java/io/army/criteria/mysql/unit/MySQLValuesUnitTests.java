@@ -65,7 +65,7 @@ public class MySQLValuesUnitTests {
         Select stmt;
         stmt = MySQLs.query()
                 .select(s -> s.space("s", PERIOD, ASTERISK))
-                .from(this.createSimpleValues(MySQLs::subValues)
+                .from(createSimpleValues(MySQLs::subValues)
                         ::asValues
                 ).as("c")
                 .join(ChinaRegion_.T, AS, "c").on(SQLs.refField("s", "column_0")::equal, ChinaRegion_.id)
@@ -97,27 +97,22 @@ public class MySQLValuesUnitTests {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use the interface that start with {@code _ }
      * ,because army don't guarantee compatibility to future distribution.
-     *
      */
-    private <V extends ValuesQuery> MySQLValues._UnionOrderBySpec<V> createSimpleValues(Supplier<MySQLValues._ValueSpec<V>> supplier) {
+    private <V extends ValuesQuery> MySQLValues._UnionOrderBySpec<V> createSimpleValues(Supplier<MySQLValues.ValuesSpec<V>> supplier) {
         return supplier.get()
-                .parens(s -> s.values()
-                        .leftParen(SQLs::literalValue, 1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
-                        .comma(SQLs::literalValue, DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
-                        .rightParen()
-
-                        .leftParen(SQLs::literalValue, 2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
-                        .comma(SQLs::literalValue, DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
-                        .rightParen()
-
-                        .leftParen(SQLs::literalValue, 3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
-                        .comma(SQLs::literalValue, DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
-                        .rightParen()
-
-                        .leftParen(SQLs::literalValue, 4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
-                        .comma(SQLs::literalValue, DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
-                        .rightParen()
-
+                .parens(v -> v.values()
+                        .row(s -> s.space(1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
+                                .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
+                        ).comma()
+                        .row(s -> s.space(2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
+                                .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
+                        ).comma()
+                        .row(s -> s.space(3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
+                                .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
+                        ).comma()
+                        .row(s -> s.space(4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
+                                .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
+                        )
                         .orderBy(SQLs.refSelection("column_1"), SQLs.literalValue(2)::desc)
                         .limit(SQLs::literal, 4)
                         .asValues()

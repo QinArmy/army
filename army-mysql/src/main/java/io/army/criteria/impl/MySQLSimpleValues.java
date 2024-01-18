@@ -38,7 +38,7 @@ abstract class MySQLSimpleValues<I extends Item>
         Object,
         Object,
         MySQLValues._ValueWithComplexSpec<I>>
-        implements MySQLValues._ValueSpec<I>,
+        implements MySQLValues.ValuesSpec<I>,
         ValuesRows,
         MySQLValues._StaticValuesRowClause<I>,
         MySQLValues._StaticValuesRowCommaSpec<I>,
@@ -46,23 +46,23 @@ abstract class MySQLSimpleValues<I extends Item>
         ArmyStmtSpec,
         MySQLValues {
 
-    static <I extends Item> MySQLValues._ValueSpec<I> simpleValues(Function<? super Values, I> function) {
+    static <I extends Item> ValuesSpec<I> simpleValues(Function<? super Values, I> function) {
         return new SimplePrimaryValues<>(null, null, function, null);
     }
 
 
-    static <I extends Item> MySQLValues._ValueSpec<I> fromDispatcher(ArmyStmtSpec spec,
-                                                                     Function<? super Values, I> function) {
+    static <I extends Item> ValuesSpec<I> fromDispatcher(ArmyStmtSpec spec,
+                                                         Function<? super Values, I> function) {
         return new SimplePrimaryValues<>(spec, null, function, null);
     }
 
-    static <I extends Item> MySQLValues._ValueSpec<I> subValues(CriteriaContext outerContext,
-                                                                Function<? super SubValues, I> function) {
+    static <I extends Item> ValuesSpec<I> subValues(CriteriaContext outerContext,
+                                                    Function<? super SubValues, I> function) {
         return new SimpleSubValues<>(null, outerContext, function, null);
     }
 
-    static <I extends Item> MySQLValues._ValueSpec<I> fromSubDispatcher(ArmyStmtSpec spec,
-                                                                        Function<? super SubValues, I> function) {
+    static <I extends Item> ValuesSpec<I> fromSubDispatcher(ArmyStmtSpec spec,
+                                                            Function<? super SubValues, I> function) {
         return new SimpleSubValues<>(spec, null, function, null);
     }
 
@@ -135,7 +135,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_ValueSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<ValuesSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketValues<I> bracket;
@@ -164,14 +164,14 @@ abstract class MySQLSimpleValues<I extends Item>
 
         private final Function<? super SubValues, I> function;
 
-        private SimpleSubValues(@Nullable ArmyStmtSpec spec, CriteriaContext outerContext,
+        private SimpleSubValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
                                 Function<? super SubValues, I> function, @Nullable CriteriaContext leftContext) {
             super(CriteriaContexts.subValuesContext(MySQLUtils.DIALECT, spec, outerContext, leftContext));
             this.function = function;
         }
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_ValueSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<ValuesSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubValues<I> bracket;
@@ -313,8 +313,8 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        final MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
-            return MySQLSupports.mysqlLCteBuilder(recursive, context);
+        final MySQLCtes createCteBuilder(boolean recursive) {
+            return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
         }
 
 

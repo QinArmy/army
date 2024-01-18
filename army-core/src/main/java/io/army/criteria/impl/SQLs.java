@@ -282,36 +282,36 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    public static StandardQuery._WithSpec<Select> query() {
+    public static StandardQuery.SelectSpec<Select> query() {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD10);
     }
 
-    public static StandardQuery._SelectSpec<Statement._BatchSelectParamSpec> batchQuery() {
+    public static StandardQuery.SelectSpec<Statement._BatchSelectParamSpec> batchQuery() {
         return StandardQueries.batchQuery(StandardDialect.STANDARD10);
     }
 
-    public static StandardQuery._WithSpec<Select> query20() {
+    public static StandardQuery.WithSpec<Select> query20() {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
     }
 
-    public static StandardQuery._WithSpec<Statement._BatchSelectParamSpec> batchQuery20() {
+    public static StandardQuery.WithSpec<Statement._BatchSelectParamSpec> batchQuery20() {
         return StandardQueries.batchQuery(StandardDialect.STANDARD20);
     }
 
-    public static StandardQuery._SelectSpec<SubQuery> subQuery() {
+    public static StandardQuery.SelectSpec<SubQuery> subQuery() {
         return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SUB_QUERY);
     }
 
-    public static StandardQuery._WithSpec<SubQuery> subQuery20() {
+    public static StandardQuery.WithSpec<SubQuery> subQuery20() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SUB_QUERY);
     }
 
 
-    public static StandardQuery._SelectSpec<Expression> scalarSubQuery() {
+    public static StandardQuery.SelectSpec<Expression> scalarSubQuery() {
         return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), Expressions::scalarExpression);
     }
 
-    public static StandardQuery._WithSpec<Expression> scalarSubQuery20() {
+    public static StandardQuery.WithSpec<Expression> scalarSubQuery20() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
     }
 

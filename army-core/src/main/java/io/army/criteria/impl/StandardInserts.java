@@ -346,7 +346,7 @@ abstract class StandardInserts extends InsertSupports {
 
 
         @Override
-        public StandardQuery._SelectSpec<Statement._DmlInsertClause<I>> space() {
+        public StandardQuery.SelectSpec<_DmlInsertClause<I>> space() {
             return StandardQueries.subQuery(this.context.dialect(StandardDialect.class),
                     this.context, this::spaceQueryEnd
             );
@@ -358,7 +358,7 @@ abstract class StandardInserts extends InsertSupports {
         }
 
         @Override
-        public Statement._DmlInsertClause<I> space(Function<StandardQuery._SelectSpec<Statement._DmlInsertClause<I>>, Statement._DmlInsertClause<I>> function) {
+        public Statement._DmlInsertClause<I> space(Function<StandardQuery.SelectSpec<_DmlInsertClause<I>>, Statement._DmlInsertClause<I>> function) {
             return function.apply(StandardQueries.subQuery(this.context.dialect(StandardDialect.class),
                     this.context, this::spaceQueryEnd)
             );

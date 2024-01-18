@@ -47,7 +47,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 0.6.0
      */
-    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_SelectSpec<I>>,
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<SelectSpec<I>>,
             _AsQueryClause<I> {
 
     }
@@ -349,8 +349,11 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
-    interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>,
-            _DynamicParensRowSetClause<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+    /**
+     * <p>This interface is public interface that developer can directly use.
+     */
+    interface SelectSpec<I extends Item> extends _StandardSelectClause<I>,
+            _DynamicParensRowSetClause<SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -362,7 +365,7 @@ public interface StandardQuery extends Query, StandardStatement {
 
 
     interface _StaticCteAsClause<I extends Item> {
-        _CteComma<I> as(Function<_SelectSpec<_CteComma<I>>, _CteComma<I>> function);
+        _CteComma<I> as(Function<SelectSpec<_CteComma<I>>, _CteComma<I>> function);
 
     }
 
@@ -371,15 +374,17 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
-
-    interface _WithSpec<I extends Item> extends _StandardDynamicWithClause<_SelectSpec<I>>,
-            _StandardStaticWithClause<_SelectSpec<I>>,
-            _SelectSpec<I> {
+    /**
+     * <p>This interface is public interface that developer can directly use.
+     */
+    interface WithSpec<I extends Item> extends _StandardDynamicWithClause<SelectSpec<I>>,
+            _StandardStaticWithClause<SelectSpec<I>>,
+            SelectSpec<I> {
 
     }
 
 
-    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<_WithSpec<_CommaClause<StandardCtes>>,
+    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<WithSpec<_CommaClause<StandardCtes>>,
             _CommaClause<StandardCtes>> {
 
     }

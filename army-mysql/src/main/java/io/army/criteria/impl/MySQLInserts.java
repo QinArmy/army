@@ -629,7 +629,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public MySQLQuery._WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> space() {
+        public MySQLQuery.WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> space() {
             return MySQLQueries.subQuery(this.context, this::spaceQueryEnd);
         }
 
@@ -639,7 +639,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public MySQLInsert._OnDuplicateKeyUpdateSpec<I, T> space(Function<MySQLQuery._WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>>, MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> function) {
+        public MySQLInsert._OnDuplicateKeyUpdateSpec<I, T> space(Function<MySQLQuery.WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>>, MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> function) {
             return function.apply(MySQLQueries.subQuery(this.context, this::spaceQueryEnd));
         }
 

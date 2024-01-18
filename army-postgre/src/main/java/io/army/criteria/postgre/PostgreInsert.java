@@ -207,7 +207,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _ComplexColumnDefaultSpec<T, I extends Item, Q extends Item>
             extends _ValuesDefaultSpec<T, I, Q>,
-            InsertStatement._QueryInsertSpaceClause<PostgreQuery._WithSpec<_OnConflictSpec<T, I, Q>>, _OnConflictSpec<T, I, Q>> {
+            InsertStatement._QueryInsertSpaceClause<PostgreQuery.WithSpec<_OnConflictSpec<T, I, Q>>, _OnConflictSpec<T, I, Q>> {
 
     }
 

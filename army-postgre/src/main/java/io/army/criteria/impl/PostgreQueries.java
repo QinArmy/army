@@ -69,7 +69,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._QueryWithComplexSpec<I>>
         implements PostgreQuery,
         _PostgreQuery,
-        PostgreQuery._WithSpec<I>,
+        PostgreQuery.WithSpec<I>,
         PostgreQuery._PostgreSelectCommaSpec<I>,
         PostgreQuery._TableSampleJoinSpec<I>,
         PostgreQuery._RepeatableJoinClause<I>,
@@ -83,11 +83,11 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._FetchSpec<I> {
 
 
-    static PostgreQuery._WithSpec<Select> simpleQuery() {
+    static WithSpec<Select> simpleQuery() {
         return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
     }
 
-    static PostgreQuery._WithSpec<_BatchSelectParamSpec> batchQuery() {
+    static WithSpec<_BatchSelectParamSpec> batchQuery() {
         return new SimpleSelect<>(null, null, PostgreQueries::mapToBatchSelect);
     }
 
@@ -102,8 +102,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
 
-    static <I extends Item> PostgreQuery._WithSpec<I> subQuery(CriteriaContext outerContext,
-                                                               Function<? super SubQuery, I> function) {
+    static <I extends Item> WithSpec<I> subQuery(CriteriaContext outerContext,
+                                                 Function<? super SubQuery, I> function) {
         return new SimpleSubQuery<>(null, outerContext, function);
     }
 
@@ -935,7 +935,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
@@ -977,7 +977,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public _UnionOrderBySpec<I> parens(Function<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
@@ -1156,8 +1156,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        final PostgreCtes createCteBuilder(boolean recursive, CriteriaContext context) {
-            return PostgreSupports.postgreCteBuilder(recursive, context);
+        final PostgreCtes createCteBuilder(boolean recursive) {
+            return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
 
@@ -1186,7 +1186,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
+        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesParens> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromDispatcher(this, this.function)
@@ -1194,7 +1194,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._PostgreValuesLeftParenClause<I> values() {
+        public PostgreValues._StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromDispatcher(this, this.function)
@@ -1238,7 +1238,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
+        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesParens> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)
@@ -1246,7 +1246,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._PostgreValuesLeftParenClause<I> values() {
+        public PostgreValues._StaticValuesRowClause<I> values() {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)
@@ -1270,7 +1270,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         private final Function<Boolean, I> function;
 
         private StaticCteComma(CriteriaContext context, boolean recursive, Function<Boolean, I> function) {
-             context.onBeforeWithClause(recursive);
+            context.onBeforeWithClause(recursive);
             this.context = context;
             this.recursive = recursive;
             this.function = function;
@@ -1499,9 +1499,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        final PostgreCtes createCteBuilder(boolean recursive, CriteriaContext context) {
+        final PostgreCtes createCteBuilder(boolean recursive) {
             // static WITH clause don't support this
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Override
@@ -1616,7 +1616,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
         @Override
-        public PostgreValues._OrderBySpec<_CteComma<I>> values(Consumer<ValuesRows> consumer) {
+        public PostgreValues._OrderBySpec<_CteComma<I>> values(Consumer<ValuesParens> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)
@@ -1624,7 +1624,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._PostgreValuesLeftParenClause<_CteComma<I>> values() {
+        public PostgreValues._StaticValuesRowClause<_CteComma<I>> values() {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)
