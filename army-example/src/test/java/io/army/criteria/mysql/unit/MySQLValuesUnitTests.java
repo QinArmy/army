@@ -41,7 +41,7 @@ public class MySQLValuesUnitTests {
     @Test
     public void simpleValues() {
         Values stmt;
-        stmt = this.createSimpleValues(MySQLs::primaryValues)
+        stmt = this.createSimpleValues(MySQLs::valuesStmt)
                 .asValues();
         printStmt(stmt);
 
@@ -50,7 +50,7 @@ public class MySQLValuesUnitTests {
     @Test
     public void unionValues() {
         Values stmt;
-        stmt = this.createSimpleValues(MySQLs::primaryValues)
+        stmt = this.createSimpleValues(MySQLs::valuesStmt)
 
                 .orderBy(SQLs.refSelection("column_0"), SQLs.refSelection("column_1")::desc)
                 .limit(SQLs::literal, 3)

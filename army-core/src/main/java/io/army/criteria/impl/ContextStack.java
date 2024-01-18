@@ -158,6 +158,7 @@ abstract class ContextStack {
     }
 
 
+    @Deprecated
     static CriteriaException castCriteriaApi(CriteriaContext criteriaContext) {
         clearStackOnError(criteriaContext);
         return _Exceptions.castCriteriaApi();
@@ -179,6 +180,11 @@ abstract class ContextStack {
             HOLDER.remove();
         }
         return supplier.get();
+    }
+
+    static CriteriaException clearStackAndCastCriteriaApi() {
+        HOLDER.remove();
+        return _Exceptions.castCriteriaApi();
     }
 
     static <T, E extends ArmyException> E clearStackAnd(Function<T, E> function, @Nullable T input) {

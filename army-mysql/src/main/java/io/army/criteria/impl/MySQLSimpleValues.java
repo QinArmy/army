@@ -33,7 +33,6 @@ import java.util.function.Function;
 abstract class MySQLSimpleValues<I extends Item>
         extends SimpleValues<
         I,
-        MySQLValues._ValuesLeftParenSpec<I>,
         MySQLValues._OrderByCommaSpec<I>,
         MySQLValues._LimitSpec<I>,
         Statement._AsValuesClause<I>,
@@ -41,7 +40,9 @@ abstract class MySQLSimpleValues<I extends Item>
         Object,
         MySQLValues._ValueWithComplexSpec<I>>
         implements MySQLValues._ValueSpec<I>,
-        MySQLValues._ValuesLeftParenSpec<I>,
+        ValuesRows,
+        MySQLValues._StaticValuesRowClause<I>,
+        MySQLValues._StaticValuesRowCommaSpec<I>,
         MySQLValues._OrderByCommaSpec<I>,
         ArmyStmtSpec,
         MySQLValues {
@@ -72,13 +73,33 @@ abstract class MySQLSimpleValues<I extends Item>
     }
 
     @Override
-    public final _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
-        consumer.accept(new RowConstructorImpl(this));
+    public final _OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
+        CriteriaUtils.invokeConsumer(this, consumer);
         return this;
     }
 
     @Override
-    public final _ValuesLeftParenClause<I> values() {
+    public final _StaticValuesRowClause<I> values() {
+        return this;
+    }
+
+
+    @Override
+    public final MySQLSimpleValues<I> row(Consumer<Values._ValueStaticColumnSpaceClause> consumer) {
+        CriteriaUtils.invokeConsumer(this, consumer);
+        endCurrentRow();
+        return this;
+    }
+
+    @Override
+    public final MySQLSimpleValues<I> row(SQLs.SymbolSpace space, Consumer<Values._ValuesDynamicColumnClause> consumer) {
+        CriteriaUtils.invokeConsumer(this, consumer);
+        endCurrentRow();
+        return this;
+    }
+
+    @Override
+    public final _StaticValuesRowClause<I> comma() {
         return this;
     }
 
@@ -137,7 +158,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
 
-    }//SimplePrimaryValues
+    } // SimplePrimaryValues
 
     private static final class SimpleSubValues<I extends Item> extends MySQLSimpleValues<I>
             implements ArmySubValues {
@@ -323,7 +344,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        public _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
+        public _OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromDispatcher(this, this.function)
@@ -369,7 +390,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        public _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
+        public _OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromSubDispatcher(this, this.function)

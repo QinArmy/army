@@ -101,7 +101,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery._WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::identity);
+        return MySQLQueries.subQuery(ContextStack.peek(), SQLs.SUB_QUERY);
     }
 
 
@@ -110,11 +110,17 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLValues._ValueSpec<Values> primaryValues() {
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
+     */
+    public static MySQLValues._ValueSpec<Values> valuesStmt() {
         return MySQLSimpleValues.simpleValues(SQLs::identity);
     }
 
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
+     */
     public static MySQLValues._ValueSpec<SubValues> subValues() {
         return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }

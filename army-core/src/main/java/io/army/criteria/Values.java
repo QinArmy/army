@@ -16,6 +16,9 @@
 
 package io.army.criteria;
 
+import io.army.criteria.impl.SQLs;
+
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -83,9 +86,292 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
     }
 
 
-    interface _DynamicValuesClause<VR> {
+    interface _ValueStaticColumnCommaClause {
 
-        VR values(Consumer<ValuesRowConstructor> consumer);
+
+        /**
+         * @param exp nullable, one of following :
+         *            <ul>
+         *              <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>literal</li>
+         *            </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause comma(@Nullable Object exp);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause comma(@Nullable Object exp1, @Nullable Object exp2);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp3 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause comma(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp3 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp4 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4);
+
+    }
+
+
+    interface _ValueStaticColumnSpaceClause {
+
+
+        /**
+         * @param exp nullable, one of following :
+         *            <ul>
+         *              <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>literal</li>
+         *            </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause space(@Nullable Object exp);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause space(@Nullable Object exp1, @Nullable Object exp2);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp3 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause space(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp3 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp4 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValueStaticColumnCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4);
+
+    }
+
+
+    interface _ValuesDynamicColumnClause {
+
+
+        /**
+         * @param exp nullable, one of following :
+         *            <ul>
+         *              <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>literal</li>
+         *            </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValuesDynamicColumnClause column(@Nullable Object exp);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValuesDynamicColumnClause column(@Nullable Object exp1, @Nullable Object exp2);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp3 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValuesDynamicColumnClause column(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3);
+
+        /**
+         * @param exp1 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp2 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp3 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @param exp4 nullable, one of following :
+         *             <ul>
+         *               <li>null</li>
+         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *               <li>literal</li>
+         *             </ul>
+         * @throws CriteriaException throw when exp error.
+         */
+        _ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4);
+
+    }
+
+
+    interface _ValuesRowParensClause<R> {
+
+        R parens(Consumer<_ValueStaticColumnSpaceClause> consumer);
+
+        R parens(SQLs.SymbolSpace space, Consumer<_ValuesDynamicColumnClause> consumer);
+
+    }
+
+
+    interface _ValuesRowClause<R> {
+
+        R row(Consumer<_ValueStaticColumnSpaceClause> consumer);
+
+        R row(SQLs.SymbolSpace space, Consumer<_ValuesDynamicColumnClause> consumer);
+
+    }
+
+
+    interface _DynamicValuesRowParensClause<R> {
+
+        R values(Consumer<ValuesParens> consumer);
+
+    }
+
+
+    interface _DynamicValuesRowClause<VR> {
+
+        VR values(Consumer<ValuesRows> consumer);
 
     }
 

@@ -594,7 +594,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
      */
     private static final class GroupConcatInnerClause
             extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause, MySQLFunction._GroupConcatSeparatorClause>
-            implements MySQLFunction._GroupConcatOrderBySpec, ArmyClause {
+            implements MySQLFunction._GroupConcatOrderBySpec, io.army.criteria.impl.ArmyFuncClause {
 
 
         private String stringValue;

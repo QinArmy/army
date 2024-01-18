@@ -104,7 +104,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
     }
 
     @Override
-    public final _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
+    public final _OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
         consumer.accept(new RowConstructorImpl(this));
         return this;
     }
@@ -351,7 +351,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
+        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromDispatcher(this, this.function)
@@ -401,7 +401,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
         @Override
-        public _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
+        public _OrderBySpec<I> values(Consumer<ValuesRows> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)

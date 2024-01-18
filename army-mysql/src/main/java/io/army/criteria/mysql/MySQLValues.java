@@ -20,15 +20,17 @@ import io.army.criteria.Item;
 import io.army.criteria.RowSet;
 import io.army.criteria.Statement;
 import io.army.criteria.Values;
+import io.army.criteria.impl.MySQLs;
 
 /**
- * <p>
- * This interface representing MySQL Values statement,this interface is base interface of below:
+ * <p>This interface representing MySQL Values statement,this interface is base interface of below:
  * <ul>
  *     <li>MySQL {@link  io.army.criteria.Values}</li>
  *     <li>MySQL {@link io.army.criteria.SubValues}</li>
  * </ul>
  *
+ * @see MySQLs#valuesStmt()
+ * @see MySQLs#subValues()
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
  * @since 0.6.0
  */
@@ -75,19 +77,18 @@ public interface MySQLValues extends MySQLStatement, RowSet {
     }
 
 
-    interface _ValuesLeftParenClause<I extends Item>
-            extends Values._StaticValueLeftParenClause<_ValuesLeftParenSpec<I>> {
+    interface _StaticValuesRowClause<I extends Item> extends Values._ValuesRowClause<_StaticValuesRowCommaSpec<I>> {
 
     }
 
-    interface _ValuesLeftParenSpec<I extends Item> extends _ValuesLeftParenClause<I>,
+
+    interface _StaticValuesRowCommaSpec<I extends Item> extends Statement._CommaClause<_StaticValuesRowClause<I>>,
             _OrderBySpec<I> {
 
     }
 
-    interface _MySQLValuesClause<I extends Item>
-            extends Values._StaticValuesClause<_ValuesLeftParenClause<I>>,
-            Values._DynamicValuesClause<_OrderBySpec<I>> {
+    interface _MySQLValuesClause<I extends Item> extends Values._StaticValuesClause<_StaticValuesRowClause<I>>,
+            Values._DynamicValuesRowClause<_OrderBySpec<I>> {
 
     }
 
@@ -99,9 +100,7 @@ public interface MySQLValues extends MySQLStatement, RowSet {
 
 
     /**
-     * <p>
-     * VALUES statement don't support WITH clause.
-     *
+     * <p>VALUES statement don't support WITH clause.
      */
     interface _SelectComplexCommandSpec<I extends Item> extends MySQLQuery._MySQLSelectClause<I>,
             _DynamicParensRowSetClause<_ValueWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {

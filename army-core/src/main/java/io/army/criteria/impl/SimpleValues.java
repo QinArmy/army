@@ -20,18 +20,18 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.util._Assert;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 
-abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
+abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
         implements _ValuesQuery,
-        Values._StaticValueLeftParenClause<RR>,
-        Values._StaticValueRowCommaDualSpec<RR>,
-        Values._StaticValueRowCommaQuadraSpec<RR>,
+        Values._ValuesDynamicColumnClause,
+        Values._ValueStaticColumnSpaceClause,
+        Values._ValueStaticColumnCommaClause,
         Statement._AsValuesClause<I>,
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticExceptClause<SP>,
@@ -55,171 +55,117 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
     }
 
     @Override
-    public final Statement._RightParenClause<RR> leftParen(Expression exp) {
-        this.onAddColumn(exp);
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp) {
+        onAddColumn(exp);
         return this;
     }
 
     @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> leftParen(Expression exp1, Expression exp2) {
-        this.onAddColumn(exp1)
-                .add((ArmyExpression) exp2);
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, @Nullable Object exp2) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
         return this;
     }
 
     @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> leftParen(Expression exp1, Expression exp2, Expression exp3) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(exp1);
-        columnList.add((ArmyExpression) exp2);
-        columnList.add((ArmyExpression) exp3);
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
         return this;
     }
 
     @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> leftParen(Expression exp1, Expression exp2
-            , Expression exp3, Expression exp4) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(exp1);
-        columnList.add((ArmyExpression) exp2);
-        columnList.add((ArmyExpression) exp3);
-        columnList.add((ArmyExpression) exp4);
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
         return this;
     }
 
     @Override
-    public final Statement._RightParenClause<RR> leftParen(Function<Object, Expression> valueOperator, Object value) {
-        this.onAddColumn(valueOperator.apply(value));
+    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp) {
+        return comma(exp);
+    }
+
+    @Override
+    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp1, @Nullable Object exp2) {
+        return comma(exp1, exp2);
+    }
+
+    @Override
+    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
+        return comma(exp1, exp2, exp3);
+    }
+
+    @Override
+    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
+        return comma(exp1, exp2, exp3, exp4);
+    }
+
+
+    @Override
+    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp) {
+        onAddColumn(exp);
         return this;
     }
 
     @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> leftParen(Function<Object, Expression> valueOperator
-            , Object value1, Object value2) {
-        this.onAddColumn(valueOperator.apply(value1))
-                .add((ArmyExpression) valueOperator.apply(value2));
+    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp1, @Nullable Object exp2) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
         return this;
     }
 
     @Override
-    public final _RightParenClause<RR> leftParen(Function<Object, Expression> valueOperator, Object value1
-            , Object value2, Object value3) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(valueOperator.apply(value1));
-        columnList.add((ArmyExpression) valueOperator.apply(value2));
-        columnList.add((ArmyExpression) valueOperator.apply(value3));
+    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
         return this;
     }
 
     @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> leftParen(Function<Object, Expression> valueOperator
-            , Object value1, Object value2, Object value3, Object value4) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(valueOperator.apply(value1));
-        columnList.add((ArmyExpression) valueOperator.apply(value2));
-        columnList.add((ArmyExpression) valueOperator.apply(value3));
-        columnList.add((ArmyExpression) valueOperator.apply(value4));
-        return this;
-    }
-
-    @Override
-    public final Statement._RightParenClause<RR> comma(Expression exp) {
-        this.onAddColumn(exp);
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> comma(Expression exp1, Expression exp2) {
-        this.onAddColumn(exp1)
-                .add((ArmyExpression) exp2);
-        return this;
-    }
-
-    @Override
-    public final Statement._RightParenClause<RR> comma(Expression exp1, Expression exp2, Expression exp3) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(exp1);
-        columnList.add((ArmyExpression) exp2);
-        columnList.add((ArmyExpression) exp3);
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> comma(Expression exp1, Expression exp2, Expression exp3
-            , Expression exp4) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(exp1);
-        columnList.add((ArmyExpression) exp2);
-        columnList.add((ArmyExpression) exp3);
-        columnList.add((ArmyExpression) exp4);
-        return this;
-    }
-
-    @Override
-    public final Statement._RightParenClause<RR> comma(Function<Object, Expression> valueOperator, Object value) {
-        this.onAddColumn(valueOperator.apply(value));
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> comma(Function<Object, Expression> valueOperator
-            , Object value1, Object value2) {
-        this.onAddColumn(valueOperator.apply(value1))
-                .add((ArmyExpression) valueOperator.apply(value2));
-        return this;
-    }
-
-    @Override
-    public final Statement._RightParenClause<RR> comma(Function<Object, Expression> valueOperator, Object value1
-            , Object value2, Object value3) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(valueOperator.apply(value1));
-        columnList.add((ArmyExpression) valueOperator.apply(value2));
-        columnList.add((ArmyExpression) valueOperator.apply(value3));
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> comma(Function<Object, Expression> valueOperator
-            , Object value1, Object value2, Object value3, Object value4) {
-        final List<_Expression> columnList;
-        columnList = this.onAddColumn(valueOperator.apply(value1));
-        columnList.add((ArmyExpression) valueOperator.apply(value2));
-        columnList.add((ArmyExpression) valueOperator.apply(value3));
-        columnList.add((ArmyExpression) valueOperator.apply(value4));
+    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
         return this;
     }
 
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public final RR rightParen() {
+    protected final void endCurrentRow() {
         List<_Expression> columnList = this.columnList;
-        if (!(columnList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+        if (columnList == null) {
+            throw CriteriaUtils.dontAddAnyItem();
+        } else if (!(columnList instanceof ArrayList)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         final List<List<_Expression>> rowList = this.rowList;
 
         if (!(rowList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
+
         final int columnSize, rowSize;
         columnSize = columnList.size();
         rowSize = rowList.size();
         if (rowSize > 0) {
             if (columnSize != rowList.get(0).size()) {
-                String m = String.format("Row[%s] column count[%s] and first row column count[%s] not match."
-                        , rowList.size(), columnSize, rowList.get(0).size());
-                throw ContextStack.criteriaError(this.context, m);
+                String m = String.format("Row[%s (based 1)] column count[%s] and first row column count[%s] not match.",
+                        rowSize + 1, columnSize, rowList.get(0).size());
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
         } else if (columnSize == 1) {
-            this.selectionList = Collections.singletonList(ArmySelections.forExp(columnList.get(0), this.columnAlias(0)));
+            this.selectionList = Collections.singletonList(ArmySelections.forExp(columnList.get(0), columnAlias(0)));
         } else {
-            final List<_Selection> selectionList = new ArrayList<>(columnSize);
+            final List<_Selection> selectionList = _Collections.arrayList(columnSize);
             for (int i = 0; i < columnSize; i++) {
-                selectionList.add(ArmySelections.forExp(columnList.get(i), this.columnAlias(i)));
+                selectionList.add(ArmySelections.forExp(columnList.get(i), columnAlias(i)));
             }
-            this.selectionList = selectionList;
+            this.selectionList = Collections.unmodifiableList(selectionList);
         }
 
         if (columnSize == 1) {
@@ -228,7 +174,6 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
             rowList.add(Collections.unmodifiableList(columnList));
         }
         this.columnList = null;
-        return (RR) this;
     }
 
     @Override
@@ -255,7 +200,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
     public final List<_Selection> selectItemList() {
         final List<_Selection> list = this.selectionList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw _Exceptions.castCriteriaApi();
         }
         return list;
     }
@@ -397,20 +342,27 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
     }
 
 
-    private List<_Expression> onAddColumn(final @Nullable Expression expression) {
+    private void onAddColumn(final @Nullable Object expOrLiteral) {
         List<_Expression> list = this.columnList;
         if (list == null) {
-            list = _Collections.arrayList();
-            this.columnList = list;
+            this.columnList = list = _Collections.arrayList();
         } else if (!(list instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        } else if (expression == null) {
-            throw ContextStack.nullPointer(this.context);
-        } else if (!(expression instanceof ArmyExpression)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        final Expression expression;
+        if (expOrLiteral == null) {
+            expression = SQLs.NULL;
+        } else if (expOrLiteral instanceof Expression) {
+            if (expOrLiteral == SQLs.DEFAULT) {
+                throw ContextStack.clearStackAndCriteriaError("VALUES don't support DEFAULT key word");
+            }
+            expression = (Expression) expOrLiteral;
+        } else if (expOrLiteral instanceof Item) {
+            throw ContextStack.clearStackAndCriteriaError("VALUES support only Expression or literal.");
+        } else {
+            expression = SQLs.literalValue(expOrLiteral);
         }
         list.add((ArmyExpression) expression);
-        return list;
     }
 
     private void endValuesStatement(final boolean beforeWordValues) {
@@ -420,13 +372,11 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
             this.context.endContextBeforeCommand();
         } else {
             if (this.columnList != null) {
-                //here,dynamic values
-                this.rightParen();
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final List<List<_Expression>> rowList = this.rowList;
-            if (this.selectionList == null
-                    || !(rowList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+            if (this.selectionList == null || !(rowList instanceof ArrayList)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.rowList = _Collections.unmodifiableList(rowList);
             this.endOrderByClauseIfNeed();
@@ -529,7 +479,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
     }//WithSimpleValues
 
 
-    static final class RowConstructorImpl implements ValuesRowConstructor {
+    static final class RowConstructorImpl implements ValuesRows {
 
         private final SimpleValues<?, ?, ?, ?, ?, ?, ?, ?> clause;
 
@@ -538,58 +488,33 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
         }
 
         @Override
-        public ValuesRowConstructor column(Expression exp) {
+        public ValuesRows column(@Nullable Object exp) {
             this.clause.comma(exp);
             return this;
         }
 
         @Override
-        public ValuesRowConstructor column(Expression exp1, Expression exp2) {
+        public ValuesRows column(@Nullable Object exp1, @Nullable Object exp2) {
             this.clause.comma(exp1, exp2);
             return this;
         }
 
         @Override
-        public ValuesRowConstructor column(Expression exp1, Expression exp2, Expression exp3) {
+        public ValuesRows column(@Nullable Object exp1, @Nullable Object exp2, Expression exp3) {
             this.clause.comma(exp1, exp2, exp3);
             return this;
         }
 
         @Override
-        public ValuesRowConstructor column(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
+        public ValuesRows column(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
             this.clause.comma(exp1, exp2, exp3, exp4);
             return this;
         }
 
-        @Override
-        public ValuesRowConstructor column(Function<Object, Expression> valueOperator, Object value) {
-            this.clause.comma(valueOperator.apply(value));
-            return this;
-        }
 
         @Override
-        public ValuesRowConstructor column(Function<Object, Expression> valueOperator, Object value1, Object value2) {
-            this.clause.comma(valueOperator, value1, value2);
-            return this;
-        }
-
-        @Override
-        public ValuesRowConstructor column(Function<Object, Expression> valueOperator, Object value1
-                , Object value2, Object value3) {
-            this.clause.comma(valueOperator, value1, value2, value3);
-            return this;
-        }
-
-        @Override
-        public ValuesRowConstructor column(Function<Object, Expression> valueOperator, Object value1
-                , Object value2, Object value3, Object value4) {
-            this.clause.comma(valueOperator, value1, value2, value3, value4);
-            return this;
-        }
-
-        @Override
-        public ValuesRowConstructor row() {
-            this.clause.rightParen();
+        public ValuesRows row() {
+            this.clause.endCurrentRow();
             return this;
         }
 

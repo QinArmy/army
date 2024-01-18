@@ -94,7 +94,7 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     interface _PostgreValuesClause<I extends Item>
             extends Values._StaticValuesClause<_PostgreValuesLeftParenClause<I>>,
-            Values._DynamicValuesClause<_OrderBySpec<I>> {
+            Values._DynamicValuesRowClause<_OrderBySpec<I>> {
 
     }
 

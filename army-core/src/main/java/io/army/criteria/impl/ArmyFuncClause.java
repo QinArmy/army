@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 /**
  * package interface
  */
-interface ArmyClause extends Clause, _SelfDescribed {
+interface ArmyFuncClause extends Clause, _SelfDescribed {
 
     void endClause();
 

@@ -75,14 +75,12 @@ public abstract class SyncSessionTestSupport extends SessionTestSupport {
             if (syncFactory != null) {
                 syncFactory.close();
             }
-            return;
-        }
-
-        for (Database db : DATABASE_LIST) {
+        } else for (Database db : DATABASE_LIST) {
             syncFactory = SYNC_FACTORY_MAP.remove(db);
-            if (syncFactory != null) {
-                syncFactory.close();
+            if (syncFactory == null) {
+                continue;
             }
+            syncFactory.close();
         }
     }
 

@@ -8,6 +8,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.Windows;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
+import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sync.SyncLocalSession;
 import io.army.util.RowMaps;
@@ -129,7 +130,7 @@ public class StandardQueryTests extends StandardSessionSupport {
     }
 
     @Transactional
-    @Test//(invocationCount = 3)
+    @Test(invocationCount = 3)
     public void batchQuery20WindowClause(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
         session.batchSave(regionList);
@@ -173,6 +174,53 @@ public class StandardQueryTests extends StandardSessionSupport {
 
 
         LOG.debug("{} rowList : \n{}", session.name(), JSON.toJSONString(rowList));
+    }
+
+    @Test(invocationCount = 3)
+    public void unionQuery(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
+        final List<ChinaRegion<?>> regionList2 = createReginListWithCount(3);
+        session.batchSave(regionList2);
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Select stmt;
+        stmt = SQLs.query()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .union()
+                .parens(s -> s.select("c2", PERIOD, ChinaRegion_.T)
+                        .from(ChinaRegion_.T, AS, "c2")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList2)))
+                        .asQuery()
+                )
+                .orderBy(SQLs.refSelection(ChinaRegion_.ID))
+                .asQuery();
+
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final List<ChinaRegion<?>> rowList;
+        rowList = session.queryList(stmt, ChinaRegion_.CLASS);
+
+        final int regionSize, regionSize2;
+        regionSize = regionList.size();
+        regionSize2 = regionList2.size();
+
+        Assert.assertEquals(rowList.size(), regionSize + regionSize2);
+
+        for (int i = 0; i < regionSize; i++) {
+            Assert.assertEquals(rowList.get(i).getId(), regionList.get(i).getId());
+        }
+
+        for (int i = 0, rowIndex = regionSize; i < regionSize2; i++, rowIndex++) {
+            Assert.assertEquals(rowList.get(rowIndex).getId(), regionList2.get(i).getId());
+        }
+
+
     }
 
 

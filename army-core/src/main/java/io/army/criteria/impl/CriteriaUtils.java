@@ -145,8 +145,8 @@ abstract class CriteriaUtils {
         try {
             consumer.accept(data);
 
-            if (data instanceof ArmyClause) {
-                ((ArmyClause) data).endClause();
+            if (data instanceof ArmyFuncClause) {
+                ((ArmyFuncClause) data).endClause();
             }
             return data;
         } catch (Exception e) {
