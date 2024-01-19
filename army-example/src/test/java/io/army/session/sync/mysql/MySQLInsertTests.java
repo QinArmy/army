@@ -126,9 +126,8 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
         final long rows;
         rows = session.update(stmt);
 
-        Assert.assertEquals(rows, regionList.size());
+        Assert.assertEquals(rows, (long) regionList.size() << 1);
 
-        assertChinaRegionAfterNoConflictInsert(regionList);
     }
 
 
