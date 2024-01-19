@@ -1062,12 +1062,16 @@ abstract class ArmyParser implements DialectParser {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder().append(conflictWords);
 
+        context.inConflictSetClause(true);
+
         for (int i = 0; i < pairSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             itemPairList.get(i).appendItemPair(sqlBuilder, context);
         }
+
+        context.inConflictSetClause(false);
 
         final TableMeta<?> insertTable;
         insertTable = context.insertTable();

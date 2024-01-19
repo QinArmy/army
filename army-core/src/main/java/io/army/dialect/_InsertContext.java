@@ -58,6 +58,11 @@ public interface _InsertContext extends _DmlContext, _SetClauseContext {
     _InsertContext parentContext();
 
     /**
+     * Just for {@link #appendField(String, FieldMeta)} in on conflict clause.
+     */
+    void inConflictSetClause(boolean inSetClause);
+
+    /**
      * Just for {@link #appendField(FieldMeta)} in on conflict clause.
      *
      * @param output default false

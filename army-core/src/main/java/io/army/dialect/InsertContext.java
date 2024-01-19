@@ -66,6 +66,8 @@ abstract class InsertContext extends StatementContext
 
     final List<FieldMeta<?>> fieldList;
 
+    final Map<FieldMeta<?>, Boolean> fieldMap;
+
     private final String tableAlias;
 
     private final String safeTableAlias;
@@ -109,6 +111,8 @@ abstract class InsertContext extends StatementContext
     private int outputColumnSize;
 
     private List<FieldMeta<?>> conditionFieldList;
+
+    private boolean inSetClause;
 
     /**
      * @see #outputFieldTableAlias(boolean)
@@ -181,6 +185,7 @@ abstract class InsertContext extends StatementContext
             this.fieldList = _DialectUtils.castFieldList(this.insertTable);
         }
 
+
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
         final boolean needReturnId, cannotReturnId;
         needReturnId = !this.migration
@@ -195,6 +200,16 @@ abstract class InsertContext extends StatementContext
 
         if (needReturnId && cannotReturnId) {
             throw _Exceptions.cannotReturnPostId(domainStmt);
+        }
+
+        if (this.hasConflictClause
+                && this.rowAlias != null
+                && !((_Insert._SupportConflictClauseSpec) targetStmt).isDoNothing()
+                && this.fieldList.size() < this.insertTable.fieldList().size()) {
+            // for example : MySQL conflict clause , column list less than table field list size
+            this.fieldMap = createFieldMap(this.fieldList);
+        } else {
+            this.fieldMap = null;
         }
 
         if (targetStmt instanceof _ReturningDml) {
@@ -298,6 +313,16 @@ abstract class InsertContext extends StatementContext
             this.fieldList = _DialectUtils.castFieldList(this.insertTable);
         }
 
+        if (this.hasConflictClause
+                && this.rowAlias != null
+                && !((_Insert._SupportConflictClauseSpec) stmt).isDoNothing()
+                && this.fieldList.size() < this.insertTable.fieldList().size()) {
+            // for example : MySQL conflict clause , column list less than table field list size
+            this.fieldMap = createFieldMap(this.fieldList);
+        } else {
+            this.fieldMap = null;
+        }
+
         if (stmt instanceof _ReturningDml) {
             this.returningList = ((_ReturningDml) stmt).returningList();
             this.returnSelectionList = _DialectUtils.flatSelectItem(this.returningList);
@@ -387,6 +412,10 @@ abstract class InsertContext extends StatementContext
         return this.literalMode;
     }
 
+    @Override
+    public final void inConflictSetClause(boolean inSetClause) {
+        this.inSetClause = inSetClause;
+    }
 
     @Override
     public final void outputFieldTableAlias(final boolean output) {
@@ -403,6 +432,11 @@ abstract class InsertContext extends StatementContext
         } else if (tableAlias == null) {
             throw new NullPointerException();
         } else if (tableAlias.equals(this.rowAlias)) {
+            if (this.inSetClause && this.fieldMap != null && !this.fieldMap.containsKey(field)) {
+                // here ,MySQL couldn't recognize field
+                String m = String.format("%s not present in column list clause,so %s couldn't recognize.", field, this.parser.database.name());
+                throw new CriteriaException(m);
+            }
             safeAlias = this.safeRowAlias;
         } else if (tableAlias.equals(this.tableAlias)) {
             safeAlias = this.safeTableAlias;
@@ -414,6 +448,7 @@ abstract class InsertContext extends StatementContext
         } else {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
+
 
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE)
@@ -920,6 +955,14 @@ abstract class InsertContext extends StatementContext
             throw new CriteriaException(m);
         }
         return idIndex;
+    }
+
+    private static Map<FieldMeta<?>, Boolean> createFieldMap(final List<FieldMeta<?>> fieldList) {
+        final Map<FieldMeta<?>, Boolean> map = _Collections.hashMap((int) (fieldList.size() / 0.75F));
+        for (FieldMeta<?> field : fieldList) {
+            map.put(field, Boolean.TRUE);
+        }
+        return Collections.unmodifiableMap(map);
     }
 
     static abstract class InsertRowWrapper implements RowWrapper {
