@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner.postgre._PostgreValues;
 import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreStatement;
@@ -50,6 +51,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         PostgreValues._OffsetSpec<I>,
         PostgreValues._OrderByCommaSpec<I>,
         ValuesParens,
+        _PostgreValues,
         PostgreValues {
 
 

@@ -356,4 +356,60 @@ public class MySQLValuesTests extends MySQLSynSessionTestSupport {
         Assert.assertEquals(rowList.size(), regionList.size() + 8);
     }
 
+
+    @Test(invocationCount = 3)
+    public void simpleUnionParens(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(4);
+        session.batchSave(regionList);
+
+        final LocalDateTime now = LocalDateTime.now();
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Values stmt;
+        stmt = MySQLs.valuesStmt()
+                .values()
+                .row(s -> s.space(1, "海问香", Decimals.valueOf("9999.88"), now)
+                        .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
+                ).comma()
+                .row(s -> s.space(2, "大仓", Decimals.valueOf("9999.66"), now.plusDays(1))
+                        .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
+                ).comma()
+                .row(s -> s.space(3, "卡拉肖克·玲", Decimals.valueOf("6666.88"), now.minusDays(3))
+                        .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
+                ).comma()
+                .row(s -> s.space(4, "幽弥狂", Decimals.valueOf("8888.88"), now.minusDays(8))
+                        .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
+                )
+                .unionAll()
+                .parens(v -> v.values()
+                        .row(s -> s.space(1, "海问香", Decimals.valueOf("9999.88"), now)
+                                .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
+                        ).comma()
+                        .row(s -> s.space(2, "大仓", Decimals.valueOf("9999.66"), now.plusDays(1))
+                                .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
+                        ).comma()
+                        .row(s -> s.space(3, "卡拉肖克·玲", Decimals.valueOf("6666.88"), now.minusDays(3))
+                                .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
+                        ).comma()
+                        .row(s -> s.space(4, "幽弥狂", Decimals.valueOf("8888.88"), now.minusDays(8))
+                                .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
+                        ).unionAll()
+                        .select(ChinaRegion_.population, ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.createTime)
+                        .comma(SQLs.literalValue(DayOfWeek.TUESDAY).as("week"), FALSE.as("myBoolean"))
+                        .comma(SQLs.literalValue(81).as("number"))
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+                        .asQuery()
+                )
+                .asValues();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+
+        Assert.assertEquals(rowList.size(), regionList.size() + 8);
+    }
+
 }

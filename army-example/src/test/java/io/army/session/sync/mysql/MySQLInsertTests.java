@@ -94,7 +94,7 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
     }
 
     @VisibleMode(Visible.BOTH)
-    @Test//(invocationCount = 3)
+    @Test(invocationCount = 3)
     public void domainInsertParentWithConflict(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;

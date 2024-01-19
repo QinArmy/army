@@ -21,6 +21,10 @@ final class ParensValuesContext extends StatementContext implements _ValuesConte
         return new ParensValuesContext((StatementContext) outerContext, values, parser, visible);
     }
 
+    static ParensValuesContext forParens(_SqlContext original) {
+        return new ParensValuesContext((StatementContext) original);
+    }
+
     private final List<_Selection> selectionList;
 
 
@@ -29,6 +33,11 @@ final class ParensValuesContext extends StatementContext implements _ValuesConte
                                 Visible visible) {
         super(parentOrOuterContext, parser, visible);
         this.selectionList = (List<_Selection>) ((_PrimaryRowSet) values).selectItemList();
+    }
+
+    private ParensValuesContext(StatementContext original) {
+        super(original, original.parser, original.visible);
+        this.selectionList = null;
     }
 
 
@@ -75,6 +84,9 @@ final class ParensValuesContext extends StatementContext implements _ValuesConte
 
     @Override
     public SimpleStmt build() {
+        if (this.selectionList == null) {
+            throw new IllegalStateException("non outer primary statement");
+        }
         return Stmts.queryStmt(this);
     }
 
