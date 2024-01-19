@@ -2998,6 +2998,8 @@ abstract class CriteriaContexts {
          */
         private Map<Object, SelectionReference> refSelectionMap;
 
+        private Map<String, Boolean> outerRefMap;
+
 
         private ValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
             super(dialect, outerContext);
@@ -3145,7 +3147,13 @@ abstract class CriteriaContexts {
             }
             final StatementContext outerContext = this.outerContext;
             assert outerContext != null;
-            return outerContext.field(tableAlias, field);
+
+            final QualifiedField<T> outerField;
+            outerField = outerContext.field(tableAlias, field);
+            if (outerField != null) {
+                addOuterRef(tableAlias);
+            }
+            return outerField;
         }
 
         @Override
@@ -3156,7 +3164,13 @@ abstract class CriteriaContexts {
             }
             final StatementContext outerContext = this.outerContext;
             assert outerContext != null;
-            return outerContext.refField(derivedAlias, fieldName);
+
+            final DerivedField outerField;
+            outerField = outerContext.refField(derivedAlias, fieldName);
+            if (outerField != null) {
+                addOuterRef(derivedAlias);
+            }
+            return outerField;
         }
 
 
@@ -3188,7 +3202,34 @@ abstract class CriteriaContexts {
             if (this instanceof PrimaryContext) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            return false;
+
+            final Map<String, Boolean> outerRefMap = this.outerRefMap;
+
+            if (outerRefMap == null) {
+                return false;
+            }
+            boolean contain = false;
+            for (String outerAlias : outerTabularItemAlias) {
+                if (outerRefMap.containsKey(outerAlias)) {
+                    contain = true;
+                    break;
+                }
+            }
+            return contain;
+        }
+
+        /**
+         * @see #field(String, FieldMeta)
+         * @see #refField(String, String)
+         */
+        private void addOuterRef(final String outerTableAlias) {
+            Map<String, Boolean> outerRefMap = this.outerRefMap;
+            if (outerRefMap == null) {
+                this.outerRefMap = outerRefMap = _Collections.hashMap();
+            } else if (!(outerRefMap instanceof HashMap)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            outerRefMap.putIfAbsent(outerTableAlias, Boolean.TRUE);
         }
 
 

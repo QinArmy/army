@@ -271,6 +271,8 @@ public abstract class _ArmySession implements Session {
         final Stmt stmt;
         if (statement instanceof SelectStatement) {
             stmt = this.factory.dialectParser.select((SelectStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
+        } else if (statement instanceof Values) {
+            stmt = this.factory.dialectParser.values((Values) statement, this.visible);
         } else if (!(statement instanceof DmlStatement)) {
             stmt = this.factory.dialectParser.dialectDql(statement, this.visible);
         } else if (statement instanceof InsertStatement) {
@@ -512,8 +514,6 @@ public abstract class _ArmySession implements Session {
             throw _Exceptions.optimisticLock();
         }
     }
-
-
 
 
 }

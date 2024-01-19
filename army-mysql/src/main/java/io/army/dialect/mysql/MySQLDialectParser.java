@@ -24,7 +24,6 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
-import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.*;
 import io.army.mapping.StringType;
 import io.army.meta.*;
@@ -93,7 +92,7 @@ final class MySQLDialectParser extends MySQLParser {
     protected void assertRowSet(final RowSet rowSet) {
         if (rowSet instanceof Query) {
             _MySQLConsultant.assertQuery((Query) rowSet);
-        } else if (rowSet instanceof MySQLValues) {
+        } else if (rowSet instanceof ValuesQuery) {
             if (!this.asOf80) {
                 throw _Exceptions.unknownStatement(rowSet, this.dialect);
             }
