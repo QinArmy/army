@@ -22,6 +22,7 @@ import io.army.criteria.dialect.SubDelete;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.function.*;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
@@ -1173,15 +1174,15 @@ public interface Statement extends Item {
 
         R limit(Expression rowCount);
 
-        R limit(BiFunction<MappingType, Number, Expression> operator, long rowCount);
+        R limit(BiFunction<LongType, Number, Expression> operator, long rowCount);
 
-        <N extends Number> R limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
+        <N extends Number> R limit(BiFunction<LongType, Number, Expression> operator, Supplier<N> supplier);
 
-        R limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
+        R limit(BiFunction<LongType, Number, Expression> operator, Function<String, ?> function, String keyName);
 
-        <N extends Number> R ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
+        <N extends Number> R ifLimit(BiFunction<LongType, Number, Expression> operator, Supplier<N> supplier);
 
-        R ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
+        R ifLimit(BiFunction<LongType, Number, Expression> operator, Function<String, ?> function, String keyName);
 
         R ifLimit(Supplier<Expression> supplier);
 
@@ -1190,9 +1191,9 @@ public interface Statement extends Item {
 
     interface _DmlRowCountLimitClause<LR> extends _RowCountLimitClause<LR> {
 
-        LR limit(BiFunction<MappingType, String, Expression> operator, String paramName);
+        LR limit(BiFunction<LongType, String, Expression> operator, String paramName);
 
-        LR ifLimit(BiFunction<MappingType, String, Expression> operator, @Nullable String paramName);
+        LR ifLimit(BiFunction<LongType, String, Expression> operator, @Nullable String paramName);
     }
 
     interface _RowCountLimitAllClause<LR> extends _RowCountLimitClause<LR> {
@@ -1387,18 +1388,18 @@ public interface Statement extends Item {
 
         LR limit(Expression offset, Expression rowCount);
 
-        LR limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount);
+        LR limit(BiFunction<LongType, Number, Expression> operator, long offset, long rowCount);
 
-        <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
+        <N extends Number> LR limit(BiFunction<LongType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
 
-        LR limit(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
+        LR limit(BiFunction<LongType, Object, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
 
         LR limit(Consumer<BiConsumer<Expression, Expression>> consumer);
 
 
-        <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
+        <N extends Number> LR ifLimit(BiFunction<LongType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
 
-        LR ifLimit(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
+        LR ifLimit(BiFunction<LongType, Object, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
 
         LR ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer);
 

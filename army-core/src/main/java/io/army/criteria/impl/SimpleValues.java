@@ -34,7 +34,8 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
         implements _ValuesQuery,
         Values._ValuesDynamicColumnClause,
         Values._ValueStaticColumnSpaceClause,
-        Values._ValueStaticColumnCommaClause,
+        Values._ValueStaticColumnDualCommaClause,
+        Values._ValueStaticColumnQuadraCommaClause,
         Statement._AsValuesClause<I>,
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticExceptClause<SP>,
@@ -88,41 +89,41 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp) {
+    public final Item space(@Nullable Object exp) {
         return comma(exp);
     }
 
     @Override
-    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp1, @Nullable Object exp2) {
+    public final Values._ValueStaticColumnDualCommaClause space(@Nullable Object exp1, @Nullable Object exp2) {
         return comma(exp1, exp2);
     }
 
     @Override
-    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
+    public final Item space(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
         return comma(exp1, exp2, exp3);
     }
 
     @Override
-    public final Values._ValueStaticColumnCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
+    public final Values._ValueStaticColumnQuadraCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
         return comma(exp1, exp2, exp3, exp4);
     }
 
 
     @Override
-    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp) {
+    public final Item comma(@Nullable Object exp) {
         onAddColumn(exp);
         return this;
     }
 
     @Override
-    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp1, @Nullable Object exp2) {
+    public final Values._ValueStaticColumnDualCommaClause comma(@Nullable Object exp1, @Nullable Object exp2) {
         onAddColumn(exp1);
         onAddColumn(exp2);
         return this;
     }
 
     @Override
-    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
+    public final Item comma(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
         onAddColumn(exp1);
         onAddColumn(exp2);
         onAddColumn(exp3);
@@ -130,7 +131,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final Values._ValueStaticColumnCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
+    public final Values._ValueStaticColumnQuadraCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
         onAddColumn(exp1);
         onAddColumn(exp2);
         onAddColumn(exp3);

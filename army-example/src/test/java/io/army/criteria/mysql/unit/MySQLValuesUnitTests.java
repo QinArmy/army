@@ -138,7 +138,7 @@ public class MySQLValuesUnitTests extends MySQLUnitTests {
     }
 
     @Test
-    public void unionSubValues() {
+    public void unionValues() {
         final Values stmt;
         stmt = MySQLs.valuesStmt()
                 .values()

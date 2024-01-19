@@ -69,7 +69,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LR limit(BiFunction<MappingType, Number, Expression> operator, final long rowCount) {
+    public final LR limit(BiFunction<LongType, Number, Expression> operator, final long rowCount) {
         if (rowCount < 0) {
             throw CriteriaUtils.limitParamError(this.context, rowCount);
         }
@@ -77,18 +77,18 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LR limit(BiFunction<MappingType, String, Expression> operator, String paramName) {
+    public final LR limit(BiFunction<LongType, String, Expression> operator, String paramName) {
         return this.limit(operator.apply(LongType.INSTANCE, paramName));
     }
 
     @Override
-    public final <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator,
+    public final <N extends Number> LR limit(BiFunction<LongType, Number, Expression> operator,
                                              Supplier<N> supplier) {
         return this.limit(operator.apply(LongType.INSTANCE, CriteriaUtils.asLimitParam(this.context, supplier.get())));
     }
 
     @Override
-    public final LR limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function,
+    public final LR limit(BiFunction<LongType, Number, Expression> operator, Function<String, ?> function,
                           String keyName) {
         final long number;
         number = CriteriaUtils.asLimitParam(this.context, function.apply(keyName));
@@ -96,7 +96,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator,
+    public final <N extends Number> LR ifLimit(BiFunction<LongType, Number, Expression> operator,
                                                Supplier<N> supplier) {
         final long number;
         number = CriteriaUtils.asIfLimitParam(this.context, supplier.get());
@@ -107,7 +107,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
+    public final LR ifLimit(BiFunction<LongType, Number, Expression> operator, Function<String, ?> function
             , String keyName) {
         final long number;
         number = CriteriaUtils.asIfLimitParam(this.context, function.apply(keyName));
@@ -128,7 +128,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LR ifLimit(BiFunction<MappingType, String, Expression> operator, @Nullable String paramName) {
+    public final LR ifLimit(BiFunction<LongType, String, Expression> operator, @Nullable String paramName) {
         if (paramName != null) {
             this.limit(operator.apply(LongType.INSTANCE, paramName));
         }
@@ -148,12 +148,12 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LR limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount) {
+    public final LR limit(BiFunction<LongType, Number, Expression> operator, long offset, long rowCount) {
         return this.limit(operator.apply(LongType.INSTANCE, offset), operator.apply(LongType.INSTANCE, rowCount));
     }
 
     @Override
-    public final <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator
+    public final <N extends Number> LR limit(BiFunction<LongType, Number, Expression> operator
             , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
         final Expression offsetExp, rowCountExp;
         offsetExp = operator.apply(LongType.INSTANCE, offsetSupplier.get());
@@ -162,7 +162,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LR limit(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
+    public final LR limit(BiFunction<LongType, Object, Expression> operator, Function<String, ?> function
             , String offsetKey, String rowCountKey) {
         final Expression offsetExp, rowCountExp;
         offsetExp = operator.apply(LongType.INSTANCE, function.apply(offsetKey));
@@ -180,7 +180,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator
+    public final <N extends Number> LR ifLimit(BiFunction<LongType, Number, Expression> operator
             , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
         final Number offsetNumber, rowCountNumber;
         if ((offsetNumber = offsetSupplier.get()) != null
@@ -194,7 +194,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LR ifLimit(BiFunction<MappingType, Object, Expression> operator
+    public final LR ifLimit(BiFunction<LongType, Object, Expression> operator
             , Function<String, ?> function, String offsetKey, String rowCountKey) {
         final Object offsetNumber, rowCountNumber;
         if ((offsetNumber = function.apply(offsetKey)) != null
