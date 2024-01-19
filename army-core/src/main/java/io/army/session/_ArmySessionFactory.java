@@ -337,7 +337,10 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         }
 
         @Override
-        public final B visibleMode(Visible visible) {
+        public final B visibleMode(@Nullable Visible visible) {
+            if (visible == null) {
+                throw new NullPointerException("visible non-ull");
+            }
             this.visible = visible;
             return (B) this;
         }

@@ -119,6 +119,9 @@ public abstract class FactoryUtils {
             default:
                 throw _Exceptions.unexpectedEnum(database);
         }
+
+        map.put(ArmyKey.VISIBLE_MODE.name, AllowMode.SUPPORT);
+
         map.put(ArmyKey.DATASOURCE_CLOSE_METHOD.name, "close");
         map.put(ArmyKey.QUERY_INSERT_MODE.name, AllowMode.SUPPORT);
         map.put(ArmyKey.DDL_MODE.name, DdlMode.UPDATE);
@@ -128,6 +131,7 @@ public abstract class FactoryUtils {
         map.put(ArmyKey.SQL_PARSING_COST_TIME.name, Boolean.TRUE);
 
         map.put(ArmyKey.QUALIFIED_TABLE_NAME_ENABLE.name, Boolean.FALSE);
+
 
 //         map.put(ArmyKey.DATABASE_NAME_MODE.name, NameMode.UPPER_CASE);
 //        map.put(ArmyKey.TABLE_NAME_MODE.name, NameMode.UPPER_CASE);

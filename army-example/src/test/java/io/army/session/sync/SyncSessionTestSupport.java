@@ -16,6 +16,7 @@
 
 package io.army.session.sync;
 
+import io.army.criteria.annotaion.VisibleMode;
 import io.army.dialect.Database;
 import io.army.session.*;
 import io.army.sync.SyncLocalSession;
@@ -187,21 +188,35 @@ public abstract class SyncSessionTestSupport extends SessionTestSupport {
         final String methodName;
         methodName = targetMethod.getMethodName();
 
+        final VisibleMode visibleMode;
+        visibleMode = targetMethod.getConstructorOrMethod().getMethod().getAnnotation(VisibleMode.class);
+
         final SyncSessionFactory sessionFactory;
         sessionFactory = SYNC_FACTORY_MAP.get(database);
         assert sessionFactory != null;
 
         final SyncSession session;
         if (local) {
-            session = sessionFactory.localBuilder()
+            final SyncSessionFactory.LocalSessionBuilder builder;
+            builder = sessionFactory.localBuilder()
                     .name(methodName + '#' + database.name())
-                    .allowQueryInsert(true)
-                    .build();
+                    .allowQueryInsert(true);
+
+            if (visibleMode != null) {
+                builder.visibleMode(visibleMode.value());
+            }
+
+            session = builder.build();
         } else {
-            session = sessionFactory.rmBuilder()
+            final SyncSessionFactory.RmSessionBuilder builder;
+            builder = sessionFactory.rmBuilder()
                     .name(methodName + '#' + database.name())
-                    .allowQueryInsert(true)
-                    .build();
+                    .allowQueryInsert(true);
+
+            if (visibleMode != null) {
+                builder.visibleMode(visibleMode.value());
+            }
+            session = builder.build();
         }
         return new Object[]{session};
     }

@@ -23,7 +23,7 @@ import static io.army.criteria.impl.SQLs.PERIOD;
 public class StandardInsertTests extends StandardSessionSupport {
 
 
-    @Test//(invocationCount = 3)
+    @Test(invocationCount = 3)
     public void domainInsertParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
