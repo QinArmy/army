@@ -304,7 +304,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     @Override
     public final FS space(final RowModifier modifier) {
         if (this.frameUnits == null || this.frameStartBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(modifier instanceof WindowRowModifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
@@ -317,7 +317,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     @Override
     public final FS space(final Expression exp, final ExpModifier modifier) {
         if (this.frameUnits == null || this.frameStartBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(exp instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         } else if (!(modifier instanceof WindowExpModifier)) {
@@ -337,7 +337,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     @Override
     public final FB space() {
         if (this.frameUnits == null || this.betweenExtent != null || this.frameStartBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.betweenExtent = Boolean.TRUE;
         return (FB) this;
@@ -349,7 +349,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound != null
                 || this.frameEndBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(frameStart instanceof WindowRowModifier)) {
             throw CriteriaUtils.errorModifier(this.context, frameStart);
         } else if (!(frameEnd instanceof WindowRowModifier)) {
@@ -369,7 +369,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound != null
                 || this.frameEndBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(startExp instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         } else if (!(endExp instanceof ArmyExpression)) {
@@ -393,7 +393,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound != null
                 || this.frameEndBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(frameStart instanceof WindowRowModifier)) {
             throw CriteriaUtils.errorModifier(this.context, frameStart);
         } else if (!(endExp instanceof ArmyExpression)) {
@@ -415,7 +415,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound != null
                 || this.frameEndBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(startExp instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         } else if (!(startModifier instanceof WindowExpModifier)) {
@@ -436,7 +436,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound != null
                 || this.frameEndBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(startExp instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         } else if (!(startModifier instanceof WindowExpModifier)) {
@@ -486,7 +486,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound == null
                 || this.frameEndBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(endExp instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         } else if (!(endModifier instanceof WindowExpModifier)) {
@@ -508,7 +508,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound == null
                 || this.frameEndBound != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(frameEnd instanceof WindowRowModifier)) {
             throw CriteriaUtils.errorModifier(this.context, frameEnd);
         }
@@ -598,7 +598,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
         if (frameUnits != null) {
             final Boolean betweenExtent = this.betweenExtent;
             if (betweenExtent == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             sqlBuilder.append(frameUnits.spaceWord);
             if (betweenExtent) {
@@ -676,7 +676,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     private R ifFrame(final FrameUnits units, final Consumer<DC> consumer) {
         if (this.frameUnits != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.frameUnits = units;
         consumer.accept((DC) this);
@@ -690,7 +690,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
      */
     private FS startExtent(final FrameUnits units, final RowModifier modifier) {
         if (this.frameUnits != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(modifier instanceof WindowRowModifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
@@ -707,7 +707,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
      */
     private FS startExtent(final FrameUnits units, final Expression exp, final ExpModifier modifier) {
         if (this.frameUnits != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (!(exp instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         } else if (!(modifier instanceof WindowExpModifier)) {
@@ -727,7 +727,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
      */
     private FB betweenExtent(final FrameUnits units) {
         if (this.frameUnits != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.frameUnits = units;
         this.betweenExtent = Boolean.TRUE;
@@ -745,7 +745,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
         if (partitionByList == null) {
             this.partitionByList = partitionByList = _Collections.arrayList();
         } else if (!(partitionByList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         partitionByList.add((ArmyExpression) expression);
     }
@@ -770,13 +770,13 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     final Dialect statementDialect() {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
     private static CriteriaException refWindowNotExists(CriteriaContext context, String existingWindowName) {
         String m = String.format("reference window[%s] not exists.", existingWindowName);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -913,7 +913,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
         private R exclusionOption(final FrameExclusion exclusion) {
             if (this.exclusion != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.exclusion = exclusion;
             return (R) this;
@@ -922,7 +922,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
         private R ifExclusionOption(final FrameExclusion exclusion, final BooleanSupplier predicate) {
             if (this.exclusion != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (predicate.getAsBoolean()) {
                 this.exclusion = exclusion;

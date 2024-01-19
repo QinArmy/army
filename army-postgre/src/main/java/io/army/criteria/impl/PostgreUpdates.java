@@ -543,7 +543,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     public final Q asReturningUpdate() {
         final List<_SelectItem> returningList = this.returningList;
         if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.endUpdateStatement();
         if (returningList instanceof ArrayList) {
@@ -578,7 +578,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     @Override
     final I onAsUpdate() {
         if (this.returningList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.returningList = Collections.emptyList();
         return this.onAsPostgreUpdate();
@@ -717,7 +717,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     private PostgreSupports.FromClauseTableBlock getFromCrossBlock() {
         final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.FromClauseTableBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (PostgreSupports.FromClauseTableBlock) block;
     }
@@ -726,7 +726,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     final TabularBlocks.FromClauseAliasDerivedBlock getFromDerived() {
         final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
@@ -740,7 +740,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
             list = _Collections.arrayList();
             this.returningList = list;
         } else if (!(list instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (selectItem instanceof _SelectionGroup._TableFieldGroup) {
             final String tableAlias;
             tableAlias = ((_SelectionGroup._TableFieldGroup) selectItem).tableAlias();

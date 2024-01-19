@@ -323,7 +323,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         private Statement._OnClause<MySQLStatement._DynamicJoinSpec> onColumnAlias(final List<String> columnAliasList) {
             if (this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.columnAliasList = columnAliasList;
             this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList,
@@ -423,7 +423,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 list = _Collections.arrayList();
                 this.indexHintList = list;
             } else if (!(list instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             list.add(indexHint);
             return (R) this;

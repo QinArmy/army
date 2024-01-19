@@ -297,7 +297,9 @@ abstract class CriteriaUtils {
 
         final Map<String, Selection> selectionMap;
 
-        if (selectItemSize == 1 && selectItemList.get(0) instanceof Selection) {
+        if (selectItemSize == 0) {
+            selectionMap = Collections.emptyMap();
+        } else if (selectItemSize == 1 && selectItemList.get(0) instanceof Selection) {
             final Selection selection = (Selection) selectItemList.get(0);
             selectionMap = Collections.singletonMap(selection.label(), selection);
         } else {
@@ -431,7 +433,7 @@ abstract class CriteriaUtils {
     static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
         String m = String.format("limit clause only support [%s,%s,%s,%s] and non-negative,but input %s"
                 , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);
-        return ContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -484,7 +486,7 @@ abstract class CriteriaUtils {
                 }
                 if (function.apply(modifier) < 0) {
                     String m = String.format("%s syntax error", modifier);
-                    throw ContextStack.criteriaError(context, m);
+                    throw ContextStack.clearStackAndCriteriaError(m);
                 }
                 modifierList = Collections.singletonList(modifier);
             }
@@ -496,12 +498,12 @@ abstract class CriteriaUtils {
                     modifier = list.get(i);
                     if (modifier == null) {
                         String m = "Modifier list element must non-null";
-                        throw ContextStack.criteriaError(context, m);
+                        throw ContextStack.clearStackAndCriteriaError(m);
                     }
                     level = function.apply(modifier);
                     if (level <= preLevel) {
                         String m = String.format("%s syntax error", modifier);
-                        throw ContextStack.criteriaError(context, m);
+                        throw ContextStack.clearStackAndCriteriaError(m);
                     }
                     preLevel = level;
                     if (tempList == null) {
@@ -711,17 +713,17 @@ abstract class CriteriaUtils {
         throw ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException unknownSelection(CriteriaContext context, String selectionAlias) {
-        String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
-        return ContextStack.criteriaError(context, m);
+    static CriteriaException unknownSelection(String selectionLabel) {
+        String m = String.format("unknown %s[label: %s]", Selection.class.getName(), selectionLabel);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     /**
      * @param selectionOrdinal based 1
      */
-    static CriteriaException unknownSelection(CriteriaContext context, int selectionOrdinal) {
+    static CriteriaException unknownSelection(int selectionOrdinal) {
         String m = String.format("unknown %s[ordinal:%s]", Selection.class.getName(), selectionOrdinal);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -770,7 +772,7 @@ abstract class CriteriaUtils {
     static CriteriaException childParentDomainListNotMatch(CriteriaContext context, ChildTableMeta<?> child) {
         String m = String.format("%s insert domain list and parent insert statement domain list not match"
                 , child);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException childParentRowNotMatch(_Insert._ValuesInsert child, _Insert._ValuesInsert parent) {
@@ -787,13 +789,13 @@ abstract class CriteriaUtils {
 
     static CriteriaException funcColumnDuplicate(CriteriaContext context, String funcName, String columnName) {
         String m = String.format("tabular function[%s] column[%s] duplication.", funcName, columnName);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException funcColumnNameIsNotSimpleIdentifier(CriteriaContext context, String funcName,
                                                                  String columnName) {
         String m = String.format("tabular function[%s] column[%s] isn't simple identifier.", funcName, columnName);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException funcArgExpError() {
@@ -838,7 +840,7 @@ abstract class CriteriaUtils {
 
     static CriteriaException errorModifier(CriteriaContext context, @Nullable Object modifier) {
         String m = String.format("error modifier[%s]", modifier);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException errorModifier(@Nullable SQLWords modifier) {
@@ -869,7 +871,7 @@ abstract class CriteriaUtils {
 
     static CriteriaException illegalItemPair(CriteriaContext context, @Nullable ItemPair pair) {
         String m = String.format("ItemPair %s is illegal.", ClassUtils.safeClassName(pair));
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -879,7 +881,7 @@ abstract class CriteriaUtils {
         if (context == null) {
             e = ContextStack.clearStackAndCriteriaError(m);
         } else {
-            e = ContextStack.criteriaError(context, m);
+            e = ContextStack.clearStackAndCriteriaError(m);
         }
         return e;
     }
@@ -888,7 +890,7 @@ abstract class CriteriaUtils {
     @Deprecated
     static CriteriaException duplicateColumnAlias(CriteriaContext context, String columnAlias) {
         String m = String.format("column alias[%s] duplication.", columnAlias);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException duplicateColumnAlias(String columnAlias) {
@@ -949,7 +951,7 @@ abstract class CriteriaUtils {
     static CriteriaException childParentNotMatch(CriteriaContext context, ParentTableMeta<?> parent,
                                                  ChildTableMeta<?> child) {
         String m = String.format("%s isn't child of %s", child, parent);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 

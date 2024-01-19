@@ -261,7 +261,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
     public final List<_ItemPair> itemPairList() {
         final List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null || itemPairList instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return itemPairList;
     }
@@ -286,7 +286,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
             itemPairList = _Collections.unmodifiableList(itemPairList);
             this.itemPairList = itemPairList;
         } else {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return itemPairList;
 
@@ -296,7 +296,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
     final SR onAddItemPair(final ItemPair pair) {
         final List<_ItemPair> itemPairList = this.itemPairList;
         if (!(itemPairList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         final SQLs.FieldItemPair fieldPair;
@@ -307,7 +307,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         } else if (!(pair instanceof SQLs.FieldItemPair)) {
             throw ContextStack.criteriaError(this.context, String.format("unknown %s", ItemPair.class.getName()));
         } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof TableField)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if ((field = (TableField) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
             throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
         } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
@@ -351,7 +351,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
 
         @Override
         final Dialect statementDialect() {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
     }//SetWhereClauseClause

@@ -33,8 +33,8 @@ import java.util.List;
 
 final class ParensSelectContext extends BatchSpecStatementContext implements _SelectContext, _ParenRowSetContext {
 
-    static ParensSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser dialect
-            , Visible visible) {
+    static ParensSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser dialect,
+                                      Visible visible) {
         return new ParensSelectContext((StatementContext) outerContext, select, dialect, visible);
     }
 

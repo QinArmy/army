@@ -290,7 +290,7 @@ abstract class MySQLLoads {
             if (this.modifierList == null
                     || this.fileName == null
                     || this.strategyOption == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
         }
 
@@ -486,7 +486,7 @@ abstract class MySQLLoads {
                 list = _Collections.arrayList();
                 this.columnExpList = list;
             } else if (!(list instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             list.add((ArmyExpression) fieldOrVar);
             return this;
@@ -547,7 +547,7 @@ abstract class MySQLLoads {
 
         private MySQLLoadData._CharsetSpec<I, T> partitionEnd(final List<String> list) {
             if (this.partitionLit != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.partitionLit = list;
             return this;

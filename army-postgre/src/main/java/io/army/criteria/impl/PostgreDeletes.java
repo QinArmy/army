@@ -534,7 +534,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     public final Q asReturningDelete() {
         final List<_SelectItem> returningList = this.returningList;
         if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.endDeleteStatement();
         if (returningList instanceof ArrayList) {
@@ -554,7 +554,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     public final TableMeta<?> table() {
         final TableMeta<?> targetTable = this.targetTable;
         if (targetTable == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return targetTable;
     }
@@ -568,7 +568,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     public final String tableAlias() {
         final String targetTableAlias = this.targetTableAlias;
         if (targetTableAlias == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return targetTableAlias;
     }
@@ -700,7 +700,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     private PostgreSupports.FromClauseTableBlock getFromCrossBlock() {
         final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.FromClauseTableBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (PostgreSupports.FromClauseTableBlock) block;
     }
@@ -709,7 +709,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     final TabularBlocks.FromClauseAliasDerivedBlock getFromDerived() {
         final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
@@ -723,7 +723,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     @Override
     final I onAsDelete() {
         if (this.returningList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.returningList = Collections.emptyList();
         return this.asPostgreDelete();
@@ -737,7 +737,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
         if (list == null) {
             this.returningList = list = _Collections.arrayList();
         } else if (!(list instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (selectItem instanceof _SelectionGroup._TableFieldGroup) {
             final String tableAlias;
             tableAlias = ((_SelectionGroup._TableFieldGroup) selectItem).tableAlias();
@@ -760,7 +760,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
                                                               final @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as,
                                                               final @Nullable String tableAlias) {
         if (this.targetTable != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (only != null && only != SQLs.ONLY) {
             throw CriteriaUtils.errorModifier(this.context, only);
         } else if (star != null && star != SQLs.ASTERISK) {

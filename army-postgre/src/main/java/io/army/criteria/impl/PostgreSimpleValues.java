@@ -116,6 +116,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
     @Override
     public final PostgreSimpleValues<I> parens(Consumer<Values._ValueStaticColumnSpaceClause> consumer) {
+        this.context.onValuesRowStart();
         CriteriaUtils.invokeConsumer(this, consumer);
         endCurrentRow();
         return this;
@@ -123,6 +124,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
     @Override
     public final PostgreSimpleValues<I> parens(SQLs.SymbolSpace space, Consumer<Values._ValuesDynamicColumnClause> consumer) {
+        this.context.onValuesRowStart();
         CriteriaUtils.invokeConsumer(this, consumer);
         endCurrentRow();
         return this;

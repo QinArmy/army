@@ -23,7 +23,10 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 
@@ -158,14 +161,19 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
                         rowSize + 1, columnSize, rowList.get(0).size());
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
+            this.context.onValuesRowEnd();
         } else if (columnSize == 1) {
-            this.selectionList = Collections.singletonList(ArmySelections.forExp(columnList.get(0), columnAlias(0)));
+            final List<_Selection> selectionList;
+            selectionList = Collections.singletonList(ArmySelections.forExp(columnList.get(0), columnAlias(0)));
+            this.selectionList = selectionList;
+            this.context.registerValuesSelectionList(selectionList);
         } else {
-            final List<_Selection> selectionList = _Collections.arrayList(columnSize);
+            List<_Selection> selectionList = _Collections.arrayList(columnSize);
             for (int i = 0; i < columnSize; i++) {
                 selectionList.add(ArmySelections.forExp(columnList.get(i), columnAlias(i)));
             }
-            this.selectionList = Collections.unmodifiableList(selectionList);
+            this.selectionList = selectionList = Collections.unmodifiableList(selectionList);
+            this.context.registerValuesSelectionList(selectionList);
         }
 
         if (columnSize == 1) {
@@ -224,28 +232,30 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final Selection refSelection(String name) {
+    public final Selection refSelection(final String name) {
         Map<String, Selection> selectionMap = this.selectionMap;
-        if (selectionMap == null) {
-            final List<_Selection> list = this.selectionList;
-            if (list == null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            final int selectionSize = list.size();
-            if (selectionSize == 1) {
-                final Selection selection;
-                selection = list.get(0);
-                selectionMap = Collections.singletonMap(selection.label(), selection);
-            } else {
-                selectionMap = new HashMap<>((int) (selectionSize / 0.75F));
-                for (Selection selection : list) {
-                    selectionMap.put(selection.label(), selection);
-                }
-                selectionMap = Collections.unmodifiableMap(selectionMap);
-                assert selectionMap.size() == selectionSize;
-            }
-            this.selectionMap = selectionMap;
+        if (selectionMap != null) {
+            return selectionMap.get(name);
         }
+        final List<_Selection> list = this.selectionList;
+        if (list == null) {
+            throw ContextStack.clearStackAndCastCriteriaApi();
+        }
+        final int selectionSize = list.size();
+        if (selectionSize == 1) {
+            final Selection selection;
+            selection = list.get(0);
+            selectionMap = Collections.singletonMap(selection.label(), selection);
+        } else {
+            selectionMap = _Collections.hashMap((int) (selectionSize / 0.75F));
+            for (Selection selection : list) {
+                selectionMap.put(selection.label(), selection);
+            }
+            assert selectionMap.size() == selectionSize;
+            selectionMap = Collections.unmodifiableMap(selectionMap);
+        }
+
+        this.selectionMap = selectionMap;
         return selectionMap.get(name);
     }
 

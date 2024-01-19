@@ -385,7 +385,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         @Override
         public final TR tableSample(final @Nullable Expression method) {
             if (this.sampleMethod != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (method == null) {
                 throw ContextStack.nullPointer(this.context);
             }

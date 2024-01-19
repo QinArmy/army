@@ -146,7 +146,7 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
     public final List<_TabularBlock> tableBlockList() {
         final List<_TabularBlock> list = this.tableBlockList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -177,7 +177,7 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
     @SuppressWarnings("unchecked")
     final WE endStaticWithClause(final boolean recursive) {
         if (this.cteList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.recursive = recursive;
         this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
@@ -188,7 +188,7 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
     @SuppressWarnings("unchecked")
     private WE endDynamicWithClause(final B builder, final boolean required) {
         if (this.cteList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         ((CriteriaSupports.CteBuilder) builder).endLastCte();
 

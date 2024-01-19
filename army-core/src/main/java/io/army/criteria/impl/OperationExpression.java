@@ -339,12 +339,12 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final Selection as(String selectionAlas) {
+    public final Selection as(String selectionLabel) {
         if (this instanceof CriteriaContexts.SelectionReference) {
             String m = String.format("the reference of %s don't support as() method.", Selection.class.getName());
             throw ContextStack.clearStackAndCriteriaError(m);
         }
-        return ArmySelections.forExp(this, selectionAlas);
+        return ArmySelections.forExp(this, selectionLabel);
     }
 
 

@@ -32,9 +32,9 @@ package io.army.criteria;
 public interface SelectionSpec extends TypeInfer {
 
     /**
-     * @param selectionAlas non-null,non-empty.
+     * @param selectionLabel non-null,non-empty.
      */
-    Selection as(String selectionAlas);
+    Selection as(String selectionLabel);
 
 
 }

@@ -151,7 +151,7 @@ abstract class MySQLSingleDeletes<I extends Item>
     public final List<Hint> hintList() {
         final List<Hint> list = this.hintList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -160,7 +160,7 @@ abstract class MySQLSingleDeletes<I extends Item>
     public final List<MySQLs.Modifier> modifierList() {
         final List<MySQLs.Modifier> list = this.modifierList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -169,7 +169,7 @@ abstract class MySQLSingleDeletes<I extends Item>
     public final TableMeta<?> table() {
         final SingleTableMeta<?> deleteTable = this.deleteTable;
         if (deleteTable == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return deleteTable;
     }
@@ -178,7 +178,7 @@ abstract class MySQLSingleDeletes<I extends Item>
     public final String tableAlias() {
         final String alias = this.tableAlias;
         if (alias == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return alias;
     }
@@ -188,7 +188,7 @@ abstract class MySQLSingleDeletes<I extends Item>
     public final List<String> partitionList() {
         final List<String> list = this.partitionList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -206,7 +206,7 @@ abstract class MySQLSingleDeletes<I extends Item>
             this.partitionList = Collections.emptyList();
         }
         if (this.deleteTable == null || this.tableAlias == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return this.onAsMySQLDelete();
     }

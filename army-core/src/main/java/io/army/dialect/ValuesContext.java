@@ -33,16 +33,14 @@ import java.util.List;
 
 final class ValuesContext extends StatementContext implements _ValuesContext {
 
-    static ValuesContext create(@Nullable _SqlContext outerContext, ValuesQuery stmt, ArmyParser dialect
-            , Visible visible) {
+    static ValuesContext create(@Nullable _SqlContext outerContext, ValuesQuery stmt, ArmyParser dialect, Visible visible) {
         return new ValuesContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
 
     private final List<_Selection> selectionList;
 
-    private ValuesContext(@Nullable StatementContext outerContext, ValuesQuery stmt, ArmyParser dialect
-            , Visible visible) {
+    private ValuesContext(@Nullable StatementContext outerContext, ValuesQuery stmt, ArmyParser dialect, Visible visible) {
         super(outerContext, dialect, visible);
         if (outerContext == null && stmt instanceof Values) {
             this.selectionList = ((_ValuesQuery) stmt).selectItemList();

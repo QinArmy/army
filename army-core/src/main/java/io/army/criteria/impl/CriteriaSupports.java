@@ -248,7 +248,7 @@ abstract class CriteriaSupports {
 
         private Stmt parseStatement(final DialectParser parser, final Visible visible) {
             if (!(this instanceof PrimaryStatement)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final Stmt stmt;
             if (this instanceof SelectStatement) {
@@ -356,7 +356,7 @@ abstract class CriteriaSupports {
                 stringList = _Collections.arrayList();
                 this.stringList = stringList;
             } else if (!(stringList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             stringList.add(string);
             return this;
@@ -393,7 +393,7 @@ abstract class CriteriaSupports {
             if (stringList instanceof ArrayList) {
                 stringList = _Collections.unmodifiableList(stringList);
             } else if (stringList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (this.optionalClause) {
                 stringList = Collections.emptyList();
             } else {
@@ -721,9 +721,9 @@ abstract class CriteriaSupports {
             final TableField field;
             if (!(pair instanceof SQLs.FieldItemPair)) {
                 //here, support only simple filed
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof TableField)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if ((field = (TableField) fieldPair.field).tableMeta() != this.updateTable) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
             } else if (field.updateMode() == UpdateMode.IMMUTABLE) {

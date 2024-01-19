@@ -256,7 +256,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     public final _AsQueryClause<I> forUpdate() {
         if (this.lockStrength != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.lockStrength = StandardLockMode.FOR_UPDATE;
         return this;
@@ -265,7 +265,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     public final _AsQueryClause<I> ifForUpdate(BooleanSupplier predicate) {
         if (this.lockStrength != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (predicate.getAsBoolean()) {
             this.lockStrength = StandardLockMode.FOR_UPDATE;
         } else {
@@ -291,7 +291,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
         //standard statement don't hints
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
@@ -441,7 +441,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             windowList = _Collections.arrayList();
             this.windowList = windowList;
         } else if (!(window instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         windowList.add(window);
         return this;
@@ -787,7 +787,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         private _StaticCteAsClause<I> onColumnAliasList(final List<String> list) {
             if (this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.comma.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.columnAliasList = list;
             if (list.size() > 0) {

@@ -368,7 +368,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     public final List<Hint> hintList() {
         final List<Hint> list = this.hintList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -377,7 +377,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     public final List<MySQLs.Modifier> modifierList() {
         final List<MySQLs.Modifier> list = this.modifierList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -500,7 +500,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     private TabularBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
         final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
@@ -516,7 +516,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     private MySQLSupports.FromClauseForJoinTableBlock<_MultiIndexHintJoinSpec<I>> getHintClause() {
         final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.FromClauseForJoinTableBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (MySQLSupports.FromClauseForJoinTableBlock<_MultiIndexHintJoinSpec<I>>) block;
     }

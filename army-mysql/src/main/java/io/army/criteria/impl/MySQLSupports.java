@@ -210,7 +210,7 @@ abstract class MySQLSupports extends CriteriaSupports {
                 indexHintList = _Collections.arrayList();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.clause));
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             indexHintList.add(indexHint);
             return this.clause;
@@ -400,7 +400,7 @@ abstract class MySQLSupports extends CriteriaSupports {
                 indexHintList = _Collections.arrayList();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             indexHintList.add(indexHint);
             return (RR) this;
@@ -471,7 +471,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         @Override
         public final R as(final @Nullable String alias) {
             if (this.tableAlias != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (alias == null) {
                 throw ContextStack.nullPointer(this.context);
             }
@@ -493,7 +493,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         public final String alias() {
             final String tableAlias = this.tableAlias;
             if (tableAlias == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return tableAlias;
         }
@@ -507,7 +507,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         public final List<String> partitionList() {
             final List<String> list = this.partitionList;
             if (list == null || list instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return list;
         }

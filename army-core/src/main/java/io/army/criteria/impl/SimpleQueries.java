@@ -878,7 +878,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<Hint> hintList() {
         final List<Hint> list = this.hintList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -887,7 +887,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<? extends SQLWords> modifierList() {
         final List<? extends SQLWords> list = this.modifierList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -904,9 +904,9 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final List<Selection> refAllSelection() {
+    public final List<? extends Selection> refAllSelection() {
         if (!(this instanceof SubQuery)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return this.context.flatSelectItems();
     }
@@ -914,7 +914,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     @Override
     public final Selection refSelection(final String derivedAlias) {
         if (!(this instanceof SubQuery)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return this.context.selection(derivedAlias);
     }
@@ -923,7 +923,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<_TabularBlock> tableBlockList() {
         final List<_TabularBlock> list = this.tableBlockList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -933,7 +933,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<? extends GroupByItem> groupByList() {
         final List<ArmyGroupByItem> list = this.groupByList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -942,7 +942,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<_Predicate> havingList() {
         final List<_Predicate> list = this.havingList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -1165,7 +1165,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
     final WE endStaticWithClause(final boolean recursive) {
         if (this.cteList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.recursive = recursive;
         this.cteList = this.context.endWithClause(recursive, true);
@@ -1249,7 +1249,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             itemList = _Collections.arrayList();
             this.groupByList = itemList;
         } else if (!(itemList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         itemList.add((ArmyGroupByItem) item);
     }
@@ -1276,7 +1276,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             predicateList = _Collections.arrayList();
             this.havingList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         predicateList.add((OperationPredicate) predicate);
@@ -1413,7 +1413,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
         private void registerDistinctOn(final boolean required, final Consumer<Consumer<Expression>> expConsumer) {
             if (this.registered) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.context.addSelectClauseEndListener(() -> {
                 final List<_Expression> list = _Collections.arrayList();
@@ -1425,7 +1425,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
                 });
 
                 if (this.distinctOnExpList != null) {
-                    throw ContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.clearStackAndCastCriteriaApi();
                 }
                 if (list.size() > 0) {
                     this.selectDistinct();
@@ -1444,7 +1444,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         private void registerDistinctOn(final boolean required, final @Nullable SQLs.WordDistinct distinct,
                                         final Consumer<Consumer<Expression>> expConsumer) {
             if (this.registered) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             this.context.addSelectClauseEndListener(() -> {
@@ -1457,7 +1457,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
                 });
 
                 if (this.distinctOnExpList != null) {
-                    throw ContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.clearStackAndCastCriteriaApi();
                 }
 
                 if (distinct != null && list.size() > 0) {
@@ -1526,7 +1526,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LT of(String tableAlias) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAliasList = Collections.singletonList(tableAlias);
             return (LT) this;
@@ -1535,7 +1535,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LT of(String tableAlias1, String tableAlias2) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2);
             return (LT) this;
@@ -1544,7 +1544,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LT of(String tableAlias1, String tableAlias2, String tableAlias3) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2, tableAlias3);
             return (LT) this;
@@ -1553,7 +1553,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LT of(String tableAlias1, String tableAlias2, String tableAlias3, String tableAlias4) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2, tableAlias3, tableAlias4);
             return (LT) this;
@@ -1563,7 +1563,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         public final LT of(String tableAlias1, String tableAlias2, String tableAlias3, String tableAlias4,
                            String tableAlias5, String... restTableAlias) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2, tableAlias3, tableAlias4,
                     tableAlias5, restTableAlias);
@@ -1573,7 +1573,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LT of(Consumer<Consumer<String>> consumer) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAliasList = CriteriaUtils.stringList(this.getContext(), true, consumer);
             return (LT) this;
@@ -1582,7 +1582,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LT ifOf(Consumer<Consumer<String>> consumer) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAliasList = CriteriaUtils.stringList(this.getContext(), false, consumer);
             return (LT) this;
@@ -1592,7 +1592,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LW noWait() {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.lockWaitOption = LockWaitOption.NOWAIT;
             return (LW) this;
@@ -1601,7 +1601,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LW skipLocked() {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
             return (LW) this;
@@ -1610,7 +1610,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LW ifNoWait(BooleanSupplier predicate) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (predicate.getAsBoolean()) {
                 this.lockWaitOption = LockWaitOption.NOWAIT;
             } else {
@@ -1622,7 +1622,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final LW ifSkipLocked(BooleanSupplier predicate) {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (predicate.getAsBoolean()) {
                 this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
             } else {
@@ -1648,7 +1648,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
         final _LockBlock endLockClause() {
             if (this.clauseEnd) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.clauseEnd = true;
             return this;

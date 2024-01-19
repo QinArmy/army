@@ -183,7 +183,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
     public final List<? extends _IndexHint> indexHintList() {
         final List<_IndexHint> list = this.indexHintList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -217,7 +217,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
             indexHintList = _Collections.arrayList();
             this.indexHintList = indexHintList;
         } else if (!(indexHintList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         indexHintList.add(indexHint);
         return this;

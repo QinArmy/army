@@ -85,6 +85,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
     @Override
     public final MySQLSimpleValues<I> row(Consumer<Values._ValueStaticColumnSpaceClause> consumer) {
+        this.context.onValuesRowStart();
         CriteriaUtils.invokeConsumer(this, consumer);
         endCurrentRow();
         return this;
@@ -92,6 +93,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
     @Override
     public final MySQLSimpleValues<I> row(SQLs.SymbolSpace space, Consumer<Values._ValuesDynamicColumnClause> consumer) {
+        this.context.onValuesRowStart();
         CriteriaUtils.invokeConsumer(this, consumer);
         endCurrentRow();
         return this;
@@ -193,7 +195,7 @@ abstract class MySQLSimpleValues<I extends Item>
             return new SubValuesDispatcher<>(this.context, unionFunc);
         }
 
-    }//SimpleSubValueValues
+    } // SimpleSubValueValues
 
 
     static abstract class MySQLBracketValues<I extends Item>
@@ -225,7 +227,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
 
-    }//MySQLBracketValues
+    } // MySQLBracketValues
 
     private static final class BracketValues<I extends Item> extends MySQLBracketValues<I>
             implements ArmyValues {

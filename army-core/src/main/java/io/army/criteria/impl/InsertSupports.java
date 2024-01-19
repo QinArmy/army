@@ -569,7 +569,7 @@ abstract class InsertSupports {
                 this.fieldMap = fieldMap = this.createFieldMap();
                 fieldList = this.fieldList;
             } else if (!(fieldMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             assert fieldList instanceof ArrayList;
             if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
@@ -616,7 +616,7 @@ abstract class InsertSupports {
             if (fieldList == null) {
                 this.fieldList = fieldList = ArmyCriteria.fieldListOf(this.insertTable);
             } else if (fieldList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return fieldList;
         }
@@ -628,7 +628,7 @@ abstract class InsertSupports {
             if (map == null) {
                 map = this.useDefaultFieldMap();
             } else if (map instanceof HashMap) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return map;
         }
@@ -739,7 +739,7 @@ abstract class InsertSupports {
             }
 
             if (fieldList != null && !(fieldList instanceof ArrayList && fieldMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.fieldList = _Collections.safeUnmodifiableList(fieldList);
             this.fieldMap = _Collections.safeUnmodifiableMap(fieldMap);
@@ -754,7 +754,7 @@ abstract class InsertSupports {
             if (fieldList == null) {
                 this.fieldList = fieldList = ArmyCriteria.fieldListOf(this.insertTable);
             } else if (fieldList != ArmyCriteria.fieldListOf(this.insertTable)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             final int fieldSize = fieldList.size();
@@ -837,7 +837,7 @@ abstract class InsertSupports {
             if (commonExpMap == null) {
                 this.commonExpMap = commonExpMap = _Collections.hashMap();
             } else if (!(commonExpMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (commonExpMap.putIfAbsent(field, valueExp) != null) {
                 String m = String.format("duplication default for %s.", field);
@@ -960,7 +960,7 @@ abstract class InsertSupports {
             } else if (map instanceof HashMap) {
                 map = _Collections.unmodifiableMap(map);
             } else {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.commonExpMap = map;
             this.context.insertColumnList(this.fieldList());
@@ -985,7 +985,7 @@ abstract class InsertSupports {
                 case ASSIGNMENT:
                 case QUERY: {
                     if (map.size() > 0) {
-                        throw ContextStack.castCriteriaApi(this.context);
+                        throw ContextStack.clearStackAndCastCriteriaApi();
                     }
                 }
                 break;
@@ -1027,7 +1027,7 @@ abstract class InsertSupports {
             if (domain == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (this.insertMode != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.insertMode = InsertMode.DOMAIN;
             this.endColumnDefaultClause(InsertMode.DOMAIN);
@@ -1050,7 +1050,7 @@ abstract class InsertSupports {
             if (domainList == null || domainList.size() == 0) {
                 throw ContextStack.criteriaError(this.context, "domainList must non-empty");
             } else if (this.insertMode != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.insertMode = InsertMode.DOMAIN;
             this.endColumnDefaultClause(InsertMode.DOMAIN);
@@ -1068,7 +1068,7 @@ abstract class InsertSupports {
         @Override
         public VR values(Consumer<ValuesConstructor<T>> consumer) {
             if (this.insertMode != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             this.insertMode = InsertMode.VALUES;
@@ -1090,7 +1090,7 @@ abstract class InsertSupports {
             if (this.insertMode != InsertMode.VALUES) {
                 throw insertModeNotMatch();
             } else if (list == null || list instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return list;
         }
@@ -1101,7 +1101,7 @@ abstract class InsertSupports {
             if (this.insertMode != InsertMode.QUERY) {
                 throw insertModeNotMatch();
             } else if (query == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return query;
         }
@@ -1139,7 +1139,7 @@ abstract class InsertSupports {
          */
         final VR staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
             if (this.insertMode != null || this.rowPairList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.insertMode = InsertMode.VALUES;
             this.endColumnDefaultClause(InsertMode.VALUES);
@@ -1151,7 +1151,7 @@ abstract class InsertSupports {
         final VR spaceQueryEnd(final SubQuery subQuery) {
             final CriteriaContext subContext;
             if (this.insertMode != null || this.subQuery != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (!this.migration) {
                 throw this.queryInsetSupportOnlyMigration();
             } else if (((_RowSet) subQuery).selectionSize() != this.fieldList().size()) {
@@ -1175,7 +1175,7 @@ abstract class InsertSupports {
         public final InsertMode getInsertMode() {
             final InsertMode mode = this.insertMode;
             if (mode == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return mode;
         }
@@ -1189,7 +1189,7 @@ abstract class InsertSupports {
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
             } else if (domainList == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return _Collections.asUnmodifiableList(domainList);
         }
@@ -1203,7 +1203,7 @@ abstract class InsertSupports {
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
             } else if (domainList == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return domainList;
         }
@@ -1218,7 +1218,7 @@ abstract class InsertSupports {
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
             } else if (domainList == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             validateDomainList(domainList, originalList, (ChildTableMeta<?>) this.insertTable);
         }
@@ -1235,7 +1235,7 @@ abstract class InsertSupports {
                         this.insertTable, this.insertMode, ((ChildTableMeta<T>) this.insertTable).parentMeta());
                 e = ContextStack.criteriaError(this.context, m);
             } else {
-                e = ContextStack.castCriteriaApi(this.context);
+                e = ContextStack.clearStackAndCastCriteriaApi();
             }
             return e;
         }
@@ -1409,7 +1409,7 @@ abstract class InsertSupports {
             Map<FieldMeta<?>, _Expression> assignmentMap = this.assignmentMap;
             if (pairList == null) {
                 if (((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != null) {
-                    throw ContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.clearStackAndCastCriteriaApi();
                 }
                 assert ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode == null;
                 pairList = _Collections.arrayList();
@@ -1417,7 +1417,7 @@ abstract class InsertSupports {
                 assignmentMap = _Collections.hashMap();
                 this.assignmentMap = assignmentMap;
             } else if (!(pairList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (value == null) {
                 throw ContextStack.nullPointer(this.context);
@@ -1518,7 +1518,7 @@ abstract class InsertSupports {
         @Override
         public final VR ifSets(Consumer<Assignments<T>> consumer) {
             if (this.assignmentPairList != null || ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             consumer.accept(new AssignmentsImpl<>(this.context, this::set));
             this.endStaticAssignmentClauseIfNeed();
@@ -1530,7 +1530,7 @@ abstract class InsertSupports {
             this.assertAssignmentMode();
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.assignmentPairList;
             if (pairList == null || pairList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return pairList;
         }
@@ -1540,7 +1540,7 @@ abstract class InsertSupports {
             this.assertAssignmentMode();
             final Map<FieldMeta<?>, _Expression> fieldMap = this.assignmentMap;
             if (fieldMap == null || fieldMap instanceof HashMap) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return fieldMap;
         }
@@ -1776,11 +1776,11 @@ abstract class InsertSupports {
 
         final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
             if (this.rowValuesMap != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (!(rowValueList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.rowList = rowValueList = _Collections.unmodifiableList(rowValueList);
             this.assignments = null; // clear
@@ -1806,7 +1806,7 @@ abstract class InsertSupports {
                 rowValueList = _Collections.arrayList();
                 this.rowList = rowValueList;
             } else if (!(rowValueList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow != null) {
@@ -1875,7 +1875,7 @@ abstract class InsertSupports {
         public final List<_Pair<FieldMeta<?>, _Expression>> assignmentPairList() {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.itemPairList;
             if (pairList == null || pairList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return pairList;
         }
@@ -1884,7 +1884,7 @@ abstract class InsertSupports {
         public final Map<FieldMeta<?>, _Expression> assignmentMap() {
             final Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
             if (fieldMap == null || fieldMap instanceof HashMap) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return fieldMap;
         }
@@ -1903,7 +1903,7 @@ abstract class InsertSupports {
                 this.fieldPairMap = fieldPairMap = _Collections.hashMap();
                 this.itemPairList = itemPairList = _Collections.arrayList();
             } else if (!(fieldPairMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (fieldPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.context, field);
@@ -1920,7 +1920,7 @@ abstract class InsertSupports {
             if (itemPairList == null) {
                 itemPairList = Collections.emptyList();
             } else if (!(itemPairList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (itemPairList.size() == 1) {
                 itemPairList = Collections.singletonList(itemPairList.get(0));
             } else {
@@ -2300,12 +2300,12 @@ abstract class InsertSupports {
 
     static CriteriaException notContainField(CriteriaContext criteriaContext, FieldMeta<?> field) {
         String m = String.format("insert field list don't contain %s", field);
-        return ContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException duplicationValuePair(CriteriaContext criteriaContext, FieldMeta<?> field) {
         String m = String.format("duplication value of %s at same row.", field);
-        return ContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -2783,7 +2783,7 @@ abstract class InsertSupports {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
                     , Selection.class.getSimpleName(), discriminatorSelection.label()
                     , discriminatorField);
-            throw ContextStack.criteriaError(context, m);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
 
 
@@ -2796,7 +2796,7 @@ abstract class InsertSupports {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be instance of %s."
                     , Selection.class.getSimpleName(), discriminatorSelection.label()
                     , discriminatorField, discriminatorJavaType.getName());
-            throw ContextStack.criteriaError(context, m);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
 
         return (CodeEnum) value;
@@ -2822,7 +2822,7 @@ abstract class InsertSupports {
                     selectionList.size(),
                     fieldSize,
                     stmt.table());
-            throw ContextStack.criteriaError(context, m);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
 
         final Selection discriminatorSelection;
@@ -2880,7 +2880,7 @@ abstract class InsertSupports {
                 domainTable,
                 codeEnum.getClass().getName(),
                 codeEnum.name());
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 

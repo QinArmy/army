@@ -353,7 +353,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             if (attValueList == null
                     || attValueList instanceof ArrayList
                     || (attValueSize = attValueList.size()) == 0) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             final DialectParser parser;
@@ -389,14 +389,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public Postgres._XmlNamedElementFieldClause accept(final @Nullable SqlField field) {
             if (!this.supportField) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             List<Object> attValueList = this.attValueList;
             if (attValueList == null) {
                 attValueList = _Collections.arrayList();
                 this.attValueList = attValueList;
             } else if (!(attValueList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (field == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -416,7 +416,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 attValueList = _Collections.arrayList();
                 this.attValueList = attValueList;
             } else if (!(attValueList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (attValue == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -444,7 +444,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             } else if (attValueList instanceof ArrayList) {
                 this.attValueList = _Collections.unmodifiableList(attValueList);
             } else {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return this.function.apply(this);
         }
@@ -505,7 +505,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         if (context == null) {
             e = ContextStack.clearStackAndCriteriaError(m);
         } else {
-            e = ContextStack.criteriaError(context, m);
+            e = ContextStack.clearStackAndCriteriaError(m);
         }
         return e;
     }
@@ -751,7 +751,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             List<XmlTableColumn> columnList = this.columnList;
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (!(columnList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (columnList.size() == 0) {
                 throw ContextStack.criteriaError(this.outerContext, "You don't add any column.");
             }
@@ -807,7 +807,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             final List<XmlTableColumn> columnList = this.columnList;
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (!(columnList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             if (selectionMap.putIfAbsent(column.name, column) != null) {
                 throw CriteriaUtils.funcColumnDuplicate(this.outerContext, XMLTABLE, column.name);
@@ -1129,7 +1129,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             whereClause = new WhereClause.SimpleWhereClause(this.outerContext);
             consumer.accept(whereClause);
             if (this.whereList != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.whereList = whereClause.endWhereClauseIfNeed();
             return this;
@@ -1214,7 +1214,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         private PostgreAggregateWindowFunction doFilter(final boolean required,
                                                         final Consumer<Statement._SimpleWhereClause> consumer) {
             if (this.filterClause != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final AggFuncFilterClause clause;
             clause = new AggFuncFilterClause(this.outerContext);
@@ -1342,7 +1342,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         private SimpleExpression doFilter(final boolean required, final Consumer<Statement._SimpleWhereClause> consumer) {
             if (this.filterClause != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final AggFuncFilterClause clause;
             clause = new AggFuncFilterClause(this.outerContext);
@@ -1490,7 +1490,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public final PostgreWindowFunctions._PgAggFunc withinGroup(Consumer<Statement._SimpleOrderByClause> consumer) {
             if (this.orderByItemList != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final OrderByOptionClause clause;
             clause = FunctionUtils.orderByOptionClause(this.outerContext);

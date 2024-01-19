@@ -978,7 +978,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private DynamicCteCycleSpec createCycleSpec() {
             if (this.cycleSpec != null) {
-                throw ContextStack.castCriteriaApi(this.builder.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final DynamicCteCycleSpec spec;
             spec = new DynamicCteCycleSpec(this.builder.context, this::comma);

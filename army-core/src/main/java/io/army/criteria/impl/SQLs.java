@@ -451,7 +451,7 @@ public abstract class SQLs extends SQLSyntax {
     static <I extends Item> Function<TypeInfer, I> _toSelection(final Function<Selection, I> function) {
         return t -> {
             if (!(t instanceof Selection)) {
-                throw ContextStack.castCriteriaApi(ContextStack.peek());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return function.apply((Selection) t);
         };
@@ -460,7 +460,7 @@ public abstract class SQLs extends SQLSyntax {
     static <I extends Item> Function<TypeInfer, I> _ToExp(final Function<Expression, I> function) {
         return t -> {
             if (!(t instanceof Expression)) {
-                throw ContextStack.castCriteriaApi(ContextStack.peek());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return function.apply((Expression) t);
         };

@@ -380,7 +380,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
 
     @Override
-    public final Selection as(String selectionAlas) {
+    public final Selection as(String selectionLabel) {
         throw unsupportedOperation(this);
     }
 

@@ -1019,7 +1019,7 @@ abstract class FunctionUtils {
             if (context == null) {
                 e = ContextStack.clearStackAndCriteriaError(m);
             } else {
-                e = ContextStack.criteriaError(context, m);
+                e = ContextStack.clearStackAndCriteriaError(m);
             }
             throw e;
         }

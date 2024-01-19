@@ -130,7 +130,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     public final _RowSet innerRowSet() {
         final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return rowSet;
     }
@@ -150,7 +150,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     public final List<? extends _SelectItem> selectItemList() {
         final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null || !(this instanceof _PrimaryRowSet)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return ((_PrimaryRowSet) rowSet).selectItemList();
     }
@@ -159,7 +159,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     public final int selectionSize() {
         final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return rowSet.selectionSize();
     }
@@ -168,7 +168,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     public final Selection refSelection(final String derivedAlias) {
         final RowSet rowSet = this.innerRowSet;
         if (!(rowSet instanceof DerivedTable)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return ((_DerivedTable) rowSet).refSelection(derivedAlias);
     }
@@ -177,7 +177,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     public final List<? extends Selection> refAllSelection() {
         final RowSet rowSet = this.innerRowSet;
         if (!(rowSet instanceof DerivedTable)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return ((_DerivedTable) rowSet).refAllSelection();
     }
@@ -204,7 +204,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
 
     final RR parensEnd(final RowSet parenRowSet) {
         if (this.innerRowSet != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.innerRowSet = (_RowSet) parenRowSet;
         this.context.onSetInnerContext(((CriteriaContextSpec) parenRowSet).getContext());

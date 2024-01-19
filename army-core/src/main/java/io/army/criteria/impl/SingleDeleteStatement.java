@@ -141,7 +141,7 @@ abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, W
     @SuppressWarnings("unchecked")
     final WE endStaticWithClause(final boolean recursive) {
         if (this.cteList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.recursive = recursive;
         this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
@@ -155,7 +155,7 @@ abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, W
     @SuppressWarnings("unchecked")
     private WE endDynamicWithClause(final B builder, final boolean required) {
         if (this.cteList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         ((CriteriaSupports.CteBuilder) builder).endLastCte();
         final boolean recursive;

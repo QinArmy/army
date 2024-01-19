@@ -138,7 +138,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
     public final List<? extends SortItem> orderByList() {
         final List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList == null || orderByList instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return orderByList;
     }
@@ -175,7 +175,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
                 ((OrderByEventListener) this).onOrderByEvent();
             }
         } else if (!(orderByList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         if (sortItem instanceof ArmySortItem) {
@@ -344,7 +344,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
 
         @Override
         final Dialect statementDialect() {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
 

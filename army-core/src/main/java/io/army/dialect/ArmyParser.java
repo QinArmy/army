@@ -295,7 +295,7 @@ abstract class ArmyParser implements DialectParser {
 
     @Override
     public final Stmt values(final Values values, final Visible visible) {
-        return this.handleValues(null, values, visible)
+        return handleValues(null, values, visible)
                 .build();
     }
 
@@ -1092,13 +1092,14 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * @see #handleRowSet(RowSet, _SqlContext)
+     * @see #handleValues(_SqlContext, Values, Visible)
      */
     protected final void handleValuesQuery(final ValuesQuery values, final _SqlContext original) {
-        this.assertRowSet(values);
+        assertRowSet(values);
         if (values instanceof _ValuesQuery) {
             final ValuesContext context;
             context = ValuesContext.create(original, values, this, original.visible());
-            this.parseSimpleValues((_ValuesQuery) values, context);
+            parseSimpleValues((_ValuesQuery) values, context);
         } else if (values instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) values;
             this.handleValuesQuery((ValuesQuery) union.leftRowSet(), original);
@@ -1110,7 +1111,7 @@ abstract class ArmyParser implements DialectParser {
             }
             ((StatementContext) original).sqlBuilder.append(unionType.spaceRender());
 
-            this.handleRowSet(union.rightRowSet(), original);
+            handleRowSet(union.rightRowSet(), original);
         } else {
             assert values instanceof _ParensRowSet;
             final _ParenRowSetContext context;
@@ -1133,8 +1134,8 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #parseSimpleValues(_ValuesQuery, _ValuesContext)
      */
-    protected final void valuesClauseOfValues(final _ValuesContext context, @Nullable String rowKeyword
-            , final List<List<_Expression>> rowList) {
+    protected final void valuesClauseOfValues(final _ValuesContext context, @Nullable String rowKeyword,
+                                              final List<List<_Expression>> rowList) {
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -1142,7 +1143,7 @@ abstract class ArmyParser implements DialectParser {
         assert rowSize > 0;
 
         List<_Expression> columnList;
-        for (int rowIndex = 0, columnSize; rowIndex < rowSize; rowIndex++) {
+        for (int rowIndex = 0, firstRowColumnSize = 0, columnSize; rowIndex < rowSize; rowIndex++) {
             if (rowIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
@@ -1157,6 +1158,13 @@ abstract class ArmyParser implements DialectParser {
             columnList = rowList.get(rowIndex);
             columnSize = columnList.size();
             assert columnSize > 0;
+            if (rowIndex == 0) {
+                firstRowColumnSize = columnSize;
+            } else if (columnSize != firstRowColumnSize) {
+                String m = String.format("VALUES row number %s column count[%s] and first row column count[%s] not match.",
+                        rowIndex + 1, columnSize, firstRowColumnSize);
+                throw new CriteriaException(m);
+            }
             for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
                 if (columnIndex > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -2354,23 +2362,37 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #values(Values, Visible)
      */
-    private _ValuesContext handleValues(final @Nullable _SqlContext outerContext, final Values stmt
-            , final Visible visible) {
+    private _ValuesContext handleValues(final @Nullable _SqlContext outerContext, final Values stmt, final Visible visible) {
         stmt.prepared();
-        assertRowSet(stmt);
+
         final _ValuesContext context;
-        context = ValuesContext.create(outerContext, stmt, this, visible);
         if (stmt instanceof _ValuesQuery) {
-            this.parseSimpleValues((_ValuesQuery) stmt, context);
+            assertRowSet(stmt);
+
+            context = ValuesContext.create(outerContext, stmt, this, visible);
+            parseSimpleValues((_ValuesQuery) stmt, context);
         } else if (stmt instanceof _UnionRowSet) {
+            context = ParensValuesContext.create(outerContext, stmt, this, visible);
             final _UnionRowSet union = (_UnionRowSet) stmt;
-            this.handleValuesQuery((Values) union.leftRowSet(), context);
-            context.sqlBuilder().append(union.unionType().spaceRender());
-            this.handleRowSet(union.rightRowSet(), context);
+
+            final _UnionType unionType;
+            unionType = union.unionType();
+            if (this.validateUnionType) {
+                this.validateUnionType(unionType);
+            }
+
+            handleValuesQuery((Values) union.leftRowSet(), context);
+            context.sqlBuilder().append(unionType.spaceRender());
+            handleRowSet(union.rightRowSet(), context);
         } else {
             assert stmt instanceof _ParensRowSet;
+            assertRowSet(stmt);
+
+            context = ParensValuesContext.create(outerContext, stmt, this, visible);
+
             final _ParensRowSet parensRowSet = (_ParensRowSet) stmt;
             final StringBuilder sqlBuilder;
+
             sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
             this.handleRowSet(parensRowSet.innerRowSet(), context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

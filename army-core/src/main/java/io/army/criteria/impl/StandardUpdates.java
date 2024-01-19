@@ -204,7 +204,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
             if (childItemPairList == null) {
                 this.childItemPairList = childItemPairList = _Collections.arrayList();
             } else if (!(childItemPairList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             childItemPairList.add(pair);
         }
@@ -220,7 +220,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         public final List<_ItemPair> childItemPairList() {
             final List<_ItemPair> childItemPairList = this.childItemPairList;
             if (childItemPairList == null || childItemPairList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return childItemPairList;
         }

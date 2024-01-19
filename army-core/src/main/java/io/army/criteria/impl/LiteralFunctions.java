@@ -587,7 +587,7 @@ abstract class LiteralFunctions {
             final int pairSize;
             final List<_Pair<Object, Object>> expPairList = this.expPairList;
             if (expPairList == null || (pairSize = expPairList.size()) == 0) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
             context.appendFuncName(true, "CASE");
@@ -764,7 +764,7 @@ abstract class LiteralFunctions {
             if (pairList == null) {
                 this.expPairList = pairList = _Collections.arrayList();
             } else if (!(pairList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             pairList.add(_Pair.create(whenExp, expression));
             this.whenExpression = null; // clear for next
@@ -914,7 +914,7 @@ abstract class LiteralFunctions {
             } else if (expPairList instanceof ArrayList) {
                 this.expPairList = _Collections.unmodifiableList(expPairList);
             } else {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.returnType = type;
             return this;

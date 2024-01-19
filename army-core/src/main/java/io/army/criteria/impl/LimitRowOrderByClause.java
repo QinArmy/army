@@ -62,7 +62,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         } else if (rowCount instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.dontSupportMultiParam(this.context);
         } else if (this.rowCountOrPercent != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.rowCountOrPercent = (ArmyExpression) rowCount;
         return (LR) this;
@@ -140,7 +140,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         if (!(offset instanceof ArmyExpression && rowCount instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         } else if (this.offsetExp != null || this.rowCountOrPercent != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         this.offsetExp = (ArmyExpression) offset;
         this.rowCountOrPercent = (ArmyExpression) rowCount;

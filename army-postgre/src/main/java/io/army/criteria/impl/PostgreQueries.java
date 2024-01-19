@@ -490,7 +490,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     public final List<_Window> windowList() {
         final List<_Window> list = this.windowList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -499,7 +499,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     public final List<_LockBlock> lockBlockList() {
         final List<_LockBlock> list = this.lockBlockList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -557,7 +557,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
         //postgre don't support hint
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
@@ -681,7 +681,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     private PostgreSupports.FromClauseTableBlock getFromClauseBlock() {
         final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.FromClauseTableBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (PostgreSupports.FromClauseTableBlock) block;
     }
@@ -692,7 +692,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     private TabularBlocks.FromClauseAliasDerivedBlock getFromDerivedBlock() {
         final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
@@ -708,7 +708,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             list = _Collections.arrayList();
             this.windowList = list;
         } else if (!(list instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         list.add(window);
         return this;
@@ -729,7 +729,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             lockBlockList = new ArrayList<>(2);
             this.lockBlockList = lockBlockList;
         } else if (!(lockBlockList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         lockBlockList.add(block);
         return this;
@@ -914,7 +914,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         public SQLWords lockStrength() {
             final PostgreLockStrength strength = this.lockStrength;
             if (strength == null) {
-                throw ContextStack.castCriteriaApi(this.stmt.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return strength;
         }
@@ -1343,7 +1343,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         private _StaticCteAsClause<I> onColumnAliasList(final List<String> list) {
             if (this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.comma.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.columnAliasList = list;
             if (list.size() > 0) {
@@ -1430,7 +1430,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         @Override
         public _SetCycleMarkColumnClause<_CteComma<I>> cycle(String firstColumnName, String... rest) {
             if (this.cycleSpec != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final StaticCycleSpec<I> cycleSpec;
             cycleSpec = new StaticCycleSpec<>(this);
@@ -1441,7 +1441,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         @Override
         public _SetCycleMarkColumnClause<_CteComma<I>> cycle(Consumer<Consumer<String>> consumer) {
             if (this.cycleSpec != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final StaticCycleSpec<I> cycleSpec;
             cycleSpec = new StaticCycleSpec<>(this);
@@ -1452,7 +1452,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         @Override
         public _SetCycleMarkColumnClause<_CteComma<I>> ifCycle(Consumer<Consumer<String>> consumer) {
             if (this.cycleSpec != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final StaticCycleSpec<I> cycleSpec;
             cycleSpec = new StaticCycleSpec<>(this);

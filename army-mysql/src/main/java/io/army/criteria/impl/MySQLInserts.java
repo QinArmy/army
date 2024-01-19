@@ -468,7 +468,7 @@ abstract class MySQLInserts extends InsertSupports {
                 pairList = _Collections.unmodifiableList(pairList);
                 this.itemPairList = pairList;
             } else {
-                throw ContextStack.castCriteriaApi(this.clause.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return pairList;
         }
@@ -482,7 +482,7 @@ abstract class MySQLInserts extends InsertSupports {
                 pairList = _Collections.arrayList();
                 this.itemPairList = pairList;
             } else if (!(pairList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.clause.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             pairList.add((SQLs.FieldItemPair) pair);
             return this;
@@ -658,7 +658,7 @@ abstract class MySQLInserts extends InsertSupports {
         @Override
         public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<UpdateStatement._ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final List<_ItemPair> list = _Collections.arrayList();
             consumer.accept(CriteriaSupports.simpleFieldItemPairs(this.context, this.insertTable, list::add));
@@ -672,7 +672,7 @@ abstract class MySQLInserts extends InsertSupports {
         @Override
         public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<UpdateStatement._ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final List<_ItemPair> list = _Collections.arrayList();
             consumer.accept(CriteriaSupports.simpleFieldItemPairs(this.context, this.insertTable, list::add));
@@ -701,7 +701,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         private Statement._DmlInsertClause<I> onDuplicateKeyClauseEnd(final List<_ItemPair> itemPairList) {
             if (this.conflictPairList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.conflictPairList = itemPairList;
             return this;

@@ -397,24 +397,24 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final Selection as(final @Nullable String selectionAlas) {
+        public final Selection as(final @Nullable String selectionLabel) {
             if (this.userDefinedAlias != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            } else if (selectionAlas == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            } else if (selectionLabel == null) {
                 throw ContextStack.nullPointer(this.outerContext);
-            } else if (!_StringUtils.hasText(selectionAlas)) {
+            } else if (!_StringUtils.hasText(selectionLabel)) {
                 throw ContextStack.criteriaError(this.outerContext, _Exceptions::selectionAliasNoText);
             }
-            this.userDefinedAlias = selectionAlas;
+            this.userDefinedAlias = selectionLabel;
             this.typeMeta();
-            return ArmySelections.forColumnFunc(this, selectionAlas);
+            return ArmySelections.forColumnFunc(this, selectionLabel);
         }
 
 
         @Override
         public final Functions._TabularFunction withOrdinality() {
             if (this.userDefinedType != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.userDefinedType = this.returnType;
             return this.addOrdinalityField();
@@ -423,7 +423,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final Functions._TabularFunction ifWithOrdinality(final BooleanSupplier predicate) {
             if (this.userDefinedType != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.userDefinedType = this.returnType;
             if (predicate.getAsBoolean()) {
@@ -435,7 +435,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         private Functions._TabularFunction addOrdinalityField() {
             List<Selection> fieldList = this.fieldList;
             if (fieldList.size() != 1) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.fieldList = ArrayUtils.of(fieldList.get(0), ORDINALITY_FIELD);
             return this;
@@ -450,7 +450,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
                 //no bug,never here
                 throw new UnsupportedOperationException();
             } else if (this.userDefinedAlias != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (name == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (name.equals(field.label())) {
@@ -466,7 +466,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final List<? extends Selection> refAllSelection() {
             if (this.userDefinedAlias != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return this.fieldList;
         }
@@ -484,7 +484,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final SelectionSpec mapTo(final @Nullable TypeMeta typeMeta) {
             if (this.userDefinedType != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (typeMeta == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
@@ -747,7 +747,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final Functions._TabularFunction withOrdinality() {
             if (this.ordinality != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             final List<Selection> list = _Collections.arrayList(this.funcFieldList.size() + 1);
             list.addAll(this.funcFieldList);
@@ -761,7 +761,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final Functions._TabularFunction ifWithOrdinality(final BooleanSupplier predicate) {
             if (this.ordinality != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (predicate.getAsBoolean()) {
                 this.withOrdinality();
             } else {

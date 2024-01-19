@@ -740,11 +740,11 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
 
     boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
     boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
@@ -769,11 +769,11 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
                           String alias);
 
     FF onFromUndoneFunc(_JoinType joinType, @Nullable Statement.DerivedModifier modifier, UndoneFunction func) {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
     JF onJoinUndoneFunc(_JoinType joinType, @Nullable Statement.DerivedModifier modifier, UndoneFunction func) {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
@@ -875,7 +875,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         public final List<_TabularBlock> tableBlockList() {
             final List<_TabularBlock> blockList = this.blockList;
             if (blockList == null || blockList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return blockList;
         }
@@ -883,7 +883,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         final void onAddTabularBlock(final _TabularBlock block) {
             final List<_TabularBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             blockList.add(block);
             if (block instanceof _AliasDerivedBlock) {
@@ -902,11 +902,11 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
 
         boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
 
@@ -917,14 +917,14 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         abstract LC onLeftCte(_Cte cteItem, String alias);
 
         LF onLeftUndoneFunc(@Nullable Statement.DerivedModifier modifier, UndoneFunction func) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Deprecated
         final void onAddFirstBlock(final _TabularBlock block) {
             final List<_TabularBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList && blockList.size() == 0)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             blockList.add(block);
         }
@@ -933,7 +933,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         final I thisNestedJoinEnd() {
             final List<_TabularBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList && blockList.size() > 0)) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.blockList = Collections.unmodifiableList(blockList);
             return this.function.apply(this.joinType, this);
@@ -1076,7 +1076,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         @Override
         final Dialect statementDialect() {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
 
@@ -1228,11 +1228,11 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
         boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
 
@@ -1243,7 +1243,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         abstract FC onCte(_Cte cteItem, String alias);
 
         FF onUndoneFunc(@Nullable Statement.DerivedModifier modifier, UndoneFunction func) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
 

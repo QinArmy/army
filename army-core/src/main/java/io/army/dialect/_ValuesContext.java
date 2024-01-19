@@ -16,10 +16,15 @@
 
 package io.army.dialect;
 
+import io.army.stmt.SimpleStmt;
+
 /**
  * @since 0.6.0
  */
 public interface _ValuesContext extends PrimaryQueryContext {
+
+    @Override
+    SimpleStmt build();
 
 
 }

@@ -76,7 +76,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
     @SuppressWarnings("unchecked")
     final DR deleteFrom(final @Nullable TableMeta<?> table, final @Nullable String tableAlias) {
         if (this.deleteTable != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         } else if (table == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (tableAlias == null) {
@@ -91,7 +91,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
     public final TableMeta<?> table() {
         final TableMeta<?> deleteTable = this.deleteTable;
         if (deleteTable == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return deleteTable;
     }
@@ -100,7 +100,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
     public final String tableAlias() {
         final String tableAlias = this.tableAlias;
         if (tableAlias == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return tableAlias;
     }

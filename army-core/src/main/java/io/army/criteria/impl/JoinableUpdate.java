@@ -310,7 +310,7 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     public final List<_TabularBlock> tableBlockList() {
         final List<_TabularBlock> list = this.tableBlockList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -319,7 +319,7 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     public final List<_ItemPair> itemPairList() {
         final List<_ItemPair> list = this.itemPairList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -376,7 +376,7 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
             itemPairList = _Collections.arrayList();
             this.itemPairList = itemPairList;
         } else if (!(itemPairList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         itemPairList.add((_ItemPair) pair);
         return (SR) this;

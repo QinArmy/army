@@ -91,7 +91,7 @@ abstract class WindowFunctions {
         @Override
         public final SimpleExpression over() {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (this.outerContext.dialect() == StandardDialect.STANDARD10) {
                 throw CriteriaUtils.standard10DontSupportWindow(this.outerContext);
             }
@@ -102,7 +102,7 @@ abstract class WindowFunctions {
         @Override
         public final SimpleExpression over(final @Nullable String existingWindowName) {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (this.outerContext.dialect() == StandardDialect.STANDARD10) {
                 throw CriteriaUtils.standard10DontSupportWindowFunc();
             }
@@ -130,7 +130,7 @@ abstract class WindowFunctions {
             window = this.createAnonymousWindow(existingWindowName);
             consumer.accept(window);
             if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             ((ArmyWindow) window).endWindowClause();
             this.anonymousWindow = (ArmyWindow) window;
@@ -180,10 +180,10 @@ abstract class WindowFunctions {
 
             if (existingWindowName == null && anonymousWindow == null) {
                 if (!(this instanceof AggregateFunction)) {
-                    throw ContextStack.castCriteriaApi(this.outerContext);
+                    throw ContextStack.clearStackAndCastCriteriaApi();
                 }
             } else if (existingWindowName != null && anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else {
                 //2. OVER clause
                 builder.append(_Constant.SPACE_OVER);

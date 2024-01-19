@@ -89,10 +89,10 @@ interface CriteriaContext {
      * @return a unmodified list
      * @throws CriteriaException throw when context not end.
      */
-    List<Selection> flatSelectItems();
+    List<? extends Selection> flatSelectItems();
 
     @Nullable
-    Selection selection(String alias);
+    Selection selection(String selectionLabel);
 
     void contextEndEvent();
 
@@ -112,7 +112,7 @@ interface CriteriaContext {
     @Nullable
     DerivedField refField(String derivedAlias, String fieldName);
 
-    Expression refSelection(String selectionAlias);
+    Expression refSelection(String selectionLabel);
 
     /**
      * @param selectionOrdinal based 1 .
@@ -162,6 +162,9 @@ interface CriteriaContext {
      */
     List<_TabularBlock> endContext();
 
+    /**
+     * <p>Invoking when use parens clause before COMMAND (for example : SELECT , VALUES)
+     */
     void endContextBeforeCommand();
 
     /**
@@ -169,6 +172,30 @@ interface CriteriaContext {
      * @throws CriteriaException throw when context not end
      */
     List<? extends _SelectItem> selectItemList();
+
+    /**
+     * <p>Invoking when the row( from 1) of VALUES statement start.
+     *
+     * @see #registerValuesSelectionList(List)
+     */
+    void onValuesRowStart();
+
+
+    /**
+     * <p>Invoking when the row( from 2) of VALUES statement end.
+     *
+     * @see #registerValuesSelectionList(List)
+     */
+    void onValuesRowEnd();
+
+    /**
+     * <p>Invoking when the first row of VALUES statement end.
+     * <p>The implementation of this method will invoke {@link #onValuesRowEnd()}
+     *
+     * @param selectionList a unmodified and non-empty list
+     * @see #onValuesRowEnd()
+     */
+    void registerValuesSelectionList(List<? extends _Selection> selectionList);
 
 
     /**

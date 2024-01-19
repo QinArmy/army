@@ -157,13 +157,13 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
     @Override
     final Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
@@ -237,7 +237,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Item onCte(_Cte cteItem, String alias) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         private Statement._OnClause<StandardStatement._DynamicJoinSpec> nestedEnd(_JoinType joinType, _NestedItems items) {
@@ -290,7 +290,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Item onCte(_Cte cteItem, String alias) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         private StandardStatement._DynamicJoinSpec nestedJoinEnd(_JoinType joinType, _NestedItems items) {

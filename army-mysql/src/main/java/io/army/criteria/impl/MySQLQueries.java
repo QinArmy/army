@@ -426,7 +426,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         if (predicate.getAsBoolean()) {
             this.onLockClauseEnd(LockInShareMode.LOCK_IN_SHARE_MODE);
         } else if (this.lockBlock != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return this;
     }
@@ -465,7 +465,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     public final List<_Window> windowList() {
         final List<_Window> list = this.windowList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -480,7 +480,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     public final List<String> intoVarList() {
         final List<String> list = this.intoVarList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -643,7 +643,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     private MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>> getIndexHintClause() {
         final _TabularBlock block = this.fromCrossBlock;
         if (this.context.lastBlock() != block || !(block instanceof MySQLSupports.FromClausePurposeTableBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>>) block;
     }
@@ -658,7 +658,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     private TabularBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
         final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
@@ -674,7 +674,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             windowList = _Collections.arrayList();
             this.windowList = windowList;
         } else if (!(window instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         windowList.add(window);
         return this;
@@ -691,7 +691,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
     private MySQLQueries<I> onLockClauseEnd(final _LockBlock block) {
         if (this.lockBlock != null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         if (block instanceof LockClauseBlock<?, ?>) {
             ((LockClauseBlock<?, ?>) block).endLockClause();
@@ -858,7 +858,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         public SQLWords lockStrength() {
             final MySQLLockStrength strength = this.lockStrength;
             if (strength == null) {
-                throw ContextStack.castCriteriaApi(this.stmt.context);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return strength;
         }

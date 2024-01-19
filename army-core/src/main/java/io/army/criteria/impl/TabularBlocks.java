@@ -359,7 +359,7 @@ abstract class TabularBlocks {
                 list = Collections.emptyList();
                 this.predicateList = list;
             } else if (list instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             return list;
         }
@@ -374,7 +374,7 @@ abstract class TabularBlocks {
                 predicateList = _Collections.arrayList();
                 this.predicateList = predicateList;
             } else if (!(predicateList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             predicateList.add((OperationPredicate) predicate);
         }
@@ -529,7 +529,7 @@ abstract class TabularBlocks {
 
         private Statement._OnClause<R> onColumnAlias(final List<String> columnAliasList) {
             if (this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.getContext());
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.columnAliasList = columnAliasList;
             this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList,

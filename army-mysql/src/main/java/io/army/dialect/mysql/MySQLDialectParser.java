@@ -252,10 +252,11 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
-
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
+     */
     @Override
     protected void parseSimpleValues(final _ValuesQuery values, final _ValuesContext context) {
-        assert context.parser() == this;
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
@@ -263,11 +264,11 @@ final class MySQLDialectParser extends MySQLParser {
         //1. VALUES keyword
         sqlBuilder.append(_Constant.VALUES);
         //2. row_constructor_list
-        this.valuesClauseOfValues(context, _Constant.SPACE_ROW, values.rowList());
+        valuesClauseOfValues(context, _Constant.SPACE_ROW, values.rowList());
         //3. ORDER BY clause
-        this.orderByClause(values.orderByList(), context);
+        orderByClause(values.orderByList(), context);
         //4. LIMIT clause
-        this.standardLimitClause(values.offsetExp(), values.rowCountExp(), context);
+        standardLimitClause(values.offsetExp(), values.rowCountExp(), context);
     }
 
     @Override

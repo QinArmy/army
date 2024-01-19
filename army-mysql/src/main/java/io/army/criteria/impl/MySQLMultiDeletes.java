@@ -326,7 +326,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     public final List<Hint> hintList() {
         final List<Hint> list = this.hintList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -335,7 +335,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     public final List<MySQLs.Modifier> modifierList() {
         final List<MySQLs.Modifier> list = this.modifierList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -344,7 +344,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     public final List<_Pair<String, TableMeta<?>>> deleteTableList() {
         final List<_Pair<String, TableMeta<?>>> list = this.deleteTablePairList;
         if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return list;
     }
@@ -363,7 +363,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     @Override
     final I onAsDelete() {
         if (this.deleteTablePairList == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return this.onAsMySQLDelete();
     }
@@ -496,7 +496,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     private TabularBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
         final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
@@ -525,7 +525,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     private MySQLSupports.FromClauseForJoinTableBlock<MySQLDelete._MultiIndexHintJoinSpec<I>> getHintClause() {
         final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.FromClauseForJoinTableBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
         return (MySQLSupports.FromClauseForJoinTableBlock<MySQLDelete._MultiIndexHintJoinSpec<I>>) block;
     }

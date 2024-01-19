@@ -81,7 +81,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
     @Override
     Object onLeftCte(_Cte cteItem, String alias) {
-        throw ContextStack.castCriteriaApi(this.context);
+        throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
@@ -206,7 +206,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
         @Override
         Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Override
@@ -233,7 +233,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
         @Override
         Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         /**
