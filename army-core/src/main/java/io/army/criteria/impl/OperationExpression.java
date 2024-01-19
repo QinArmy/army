@@ -365,12 +365,12 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast) {
+    public final SortItem ascSpace(@Nullable SQLs.NullsFirstLast firstLast) {
         return ArmySortItems.create(this, SQLs.ASC, firstLast);
     }
 
     @Override
-    public final SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast) {
+    public final SortItem descSpace(@Nullable SQLs.NullsFirstLast firstLast) {
         return ArmySortItems.create(this, SQLs.DESC, firstLast);
     }
 

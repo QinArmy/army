@@ -609,12 +609,12 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
     @Override
-    final boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+    final boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
         return CriteriaUtils.isIllegalOnly(modifier);
     }
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
@@ -625,7 +625,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     }
 
     @Override
-    final _TableSampleJoinSpec<I, Q> onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+    final _TableSampleJoinSpec<I, Q> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final PostgreSupports.FromClauseTableBlock block;
         block = new PostgreSupports.FromClauseTableBlock(joinType, modifier, table, alias);
         this.blockConsumer.accept(block);
@@ -634,7 +634,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     }
 
     @Override
-    final _SingleJoinSpec<I, Q> onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+    final _SingleJoinSpec<I, Q> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final _TabularBlock block;
         block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -650,7 +650,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
     @Override
     final _AsClause<_ParensJoinSpec<I, Q>> onFromDerived(_JoinType joinType,
-                                                         @Nullable Query.DerivedModifier modifier,
+                                                         @Nullable SQLs.DerivedModifier modifier,
                                                          DerivedTable table) {
         return alias -> {
             final TabularBlocks.FromClauseAliasDerivedBlock block;
@@ -663,13 +663,13 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
     @Override
     final _FuncColumnDefinitionAsClause<_SingleJoinSpec<I, Q>> onFromUndoneFunc(
-            final _JoinType joinType, final @Nullable DerivedModifier modifier, final UndoneFunction func) {
+            final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier, final UndoneFunction func) {
         return alias -> PostgreBlocks.fromUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
     }
 
 
     @Override
-    final _TableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+    final _TableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                TableMeta<?> table, String alias) {
         final SimpleJoinClauseTableBlock<I, Q> block;
         block = new SimpleJoinClauseTableBlock<>(joinType, modifier, table, alias, this);
@@ -679,7 +679,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
     @Override
-    final _AsParensOnClause<_SingleJoinSpec<I, Q>> onJoinDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+    final _AsParensOnClause<_SingleJoinSpec<I, Q>> onJoinDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                                  DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseAliasDerivedBlock<_SingleJoinSpec<I, Q>> block;
@@ -690,7 +690,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     }
 
     @Override
-    final _OnClause<_SingleJoinSpec<I, Q>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+    final _OnClause<_SingleJoinSpec<I, Q>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                      _Cte cteItem, String alias) {
         final TabularBlocks.JoinClauseCteBlock<_SingleJoinSpec<I, Q>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
@@ -700,7 +700,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
     @Override
     final _FuncColumnDefinitionAsClause<_OnClause<_SingleJoinSpec<I, Q>>> onJoinUndoneFunc(
-            final _JoinType joinType, final @Nullable DerivedModifier modifier, final UndoneFunction func) {
+            final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier, final UndoneFunction func) {
         return alias -> PostgreBlocks.joinUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
     }
 

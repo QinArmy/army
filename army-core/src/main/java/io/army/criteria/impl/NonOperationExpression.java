@@ -406,7 +406,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast) {
+    public final SortItem ascSpace(@Nullable SQLs.NullsFirstLast firstLast) {
         if (!(this instanceof CriteriaContexts.SelectionReference)) {
             throw unsupportedOperation(this);
         }
@@ -414,7 +414,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast) {
+    public final SortItem descSpace(@Nullable SQLs.NullsFirstLast firstLast) {
         if (!(this instanceof CriteriaContexts.SelectionReference)) {
             throw unsupportedOperation(this);
         }

@@ -16,7 +16,10 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.DerivedTable;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
+import io.army.criteria.TabularItem;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
@@ -59,7 +62,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
     @Override
     StandardStatement._StandardNestedJoinClause<I> onLeftTable(
-            @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+            @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final StandardNestedBlock<I> block;
         block = new StandardNestedBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, table, tableAlias,
                 this::thisNestedJoinEnd);
@@ -69,7 +72,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
     @Override
     Statement._AsClause<StandardStatement._StandardNestedJoinClause<I>> onLeftDerived(
-            @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final StandardNestedBlock<I> block;
             block = new StandardNestedBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, table, alias,
@@ -183,7 +186,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
 
         @Override
-        StandardStatement._NestedJoinSpec<I> onFromTable(final _JoinType joinType, @Nullable Query.TableModifier modifier,
+        StandardStatement._NestedJoinSpec<I> onFromTable(final _JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                          final TableMeta<?> table, final String alias) {
             final StandardNestedBlock<I> block;
             block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, table, alias,
@@ -194,7 +197,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
         @Override
         Statement._AsClause<StandardStatement._NestedJoinSpec<I>> onFromDerived(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+                _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardNestedBlock<I> block;
                 block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, table, alias,
@@ -205,12 +208,12 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         }
 
         @Override
-        Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+        Void onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Override
-        StandardStatement._NestedOnSpec<I> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+        StandardStatement._NestedOnSpec<I> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                        TableMeta<?> table, String alias) {
             final StandardNestedBlock<I> block;
             block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, table, alias,
@@ -221,7 +224,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
         @Override
         Statement._AsClause<StandardStatement._NestedOnSpec<I>> onJoinDerived(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable item) {
+                _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable item) {
             return alias -> {
                 final StandardNestedBlock<I> block;
                 block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, item, alias,
@@ -232,7 +235,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         }
 
         @Override
-        Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+        Void onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 

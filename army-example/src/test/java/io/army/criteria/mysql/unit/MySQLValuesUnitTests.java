@@ -25,12 +25,12 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.util.Decimals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.function.Supplier;
@@ -50,16 +50,16 @@ public class MySQLValuesUnitTests extends MySQLUnitTests {
         final Values stmt;
         stmt = MySQLs.valuesStmt()
                 .values()
-                .row(s -> s.space(1, "海问香", new BigDecimal("9999.88"), NOW)
+                .row(s -> s.space(1, "海问香", Decimals.valueOf("9999.88"), NOW)
                         .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(2, "大仓", new BigDecimal("9999.66"), NOW.plusDays(1))
+                .row(s -> s.space(2, "大仓", Decimals.valueOf("9999.66"), NOW.plusDays(1))
                         .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(3, "卡拉肖克·玲", new BigDecimal("6666.88"), NOW.minusDays(3))
+                .row(s -> s.space(3, "卡拉肖克·玲", Decimals.valueOf("6666.88"), NOW.minusDays(3))
                         .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(4, "幽弥狂", new BigDecimal("8888.88"), NOW.minusDays(8))
+                .row(s -> s.space(4, "幽弥狂", Decimals.valueOf("8888.88"), NOW.minusDays(8))
                         .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
                 )
                 .orderBy(SQLs.refSelection("column_1"), SQLs.refSelection(2)::desc)
@@ -79,16 +79,16 @@ public class MySQLValuesUnitTests extends MySQLUnitTests {
     public void dynamicSimpleValues() {
         final Values stmt;
         stmt = MySQLs.valuesStmt()
-                .values(r -> r.row(s -> s.space(1, "海问香", new BigDecimal("9999.88"), NOW)
+                .values(r -> r.row(s -> s.space(1, "海问香", Decimals.valueOf("9999.88"), NOW)
                                         .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
                                 )
-                                .row(s -> s.space(2, "大仓", new BigDecimal("9999.66"), NOW.plusDays(1))
+                        .row(s -> s.space(2, "大仓", Decimals.valueOf("9999.66"), NOW.plusDays(1))
                                         .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
                                 )
-                                .row(s -> s.space(3, "卡拉肖克·玲", new BigDecimal("6666.88"), NOW.minusDays(3))
+                        .row(s -> s.space(3, "卡拉肖克·玲", Decimals.valueOf("6666.88"), NOW.minusDays(3))
                                         .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
                                 )
-                                .row(s -> s.space(4, "幽弥狂", new BigDecimal("8888.88"), NOW.minusDays(8))
+                        .row(s -> s.space(4, "幽弥狂", Decimals.valueOf("8888.88"), NOW.minusDays(8))
                                         .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
                                 )
                 )
@@ -142,30 +142,30 @@ public class MySQLValuesUnitTests extends MySQLUnitTests {
         final Values stmt;
         stmt = MySQLs.valuesStmt()
                 .values()
-                .row(s -> s.space(1, "海问香", new BigDecimal("9999.88"), NOW)
+                .row(s -> s.space(1, "海问香", Decimals.valueOf("9999.88"), NOW)
                         .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(2, "大仓", new BigDecimal("9999.66"), NOW.plusDays(1))
+                .row(s -> s.space(2, "大仓", Decimals.valueOf("9999.66"), NOW.plusDays(1))
                         .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(3, "卡拉肖克·玲", new BigDecimal("6666.88"), NOW.minusDays(3))
+                .row(s -> s.space(3, "卡拉肖克·玲", Decimals.valueOf("6666.88"), NOW.minusDays(3))
                         .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(4, "幽弥狂", new BigDecimal("8888.88"), NOW.minusDays(8))
+                .row(s -> s.space(4, "幽弥狂", Decimals.valueOf("8888.88"), NOW.minusDays(8))
                         .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
                 )
                 .unionAll()
                 .values()
-                .row(s -> s.space(1, "海问香", new BigDecimal("9999.88"), NOW)
+                .row(s -> s.space(1, "海问香", Decimals.valueOf("9999.88"), NOW)
                         .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(2, "大仓", new BigDecimal("9999.66"), NOW.plusDays(1))
+                .row(s -> s.space(2, "大仓", Decimals.valueOf("9999.66"), NOW.plusDays(1))
                         .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(3, "卡拉肖克·玲", new BigDecimal("6666.88"), NOW.minusDays(3))
+                .row(s -> s.space(3, "卡拉肖克·玲", Decimals.valueOf("6666.88"), NOW.minusDays(3))
                         .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
                 ).comma()
-                .row(s -> s.space(4, "幽弥狂", new BigDecimal("8888.88"), NOW.minusDays(8))
+                .row(s -> s.space(4, "幽弥狂", Decimals.valueOf("8888.88"), NOW.minusDays(8))
                         .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
                 )
                 .orderBy(SQLs.refSelection("column_1"), SQLs.refSelection(2)::desc)
@@ -189,16 +189,16 @@ public class MySQLValuesUnitTests extends MySQLUnitTests {
 
         return supplier.get()
                 .parens(v -> v.values()
-                        .row(s -> s.space(1, "海问香", new BigDecimal("9999.88"), NOW)
+                        .row(s -> s.space(1, "海问香", Decimals.valueOf("9999.88"), NOW)
                                 .comma(DayOfWeek.MONDAY, TRUE, SQLs.literalValue(1).plus(SQLs::literal, 3))
                         ).comma()
-                        .row(s -> s.space(2, "大仓", new BigDecimal("9999.66"), NOW.plusDays(1))
+                        .row(s -> s.space(2, "大仓", Decimals.valueOf("9999.66"), NOW.plusDays(1))
                                 .comma(DayOfWeek.SUNDAY, TRUE, SQLs.literalValue(13).minus(SQLs::literal, 3))
                         ).comma()
-                        .row(s -> s.space(3, "卡拉肖克·玲", new BigDecimal("6666.88"), NOW.minusDays(3))
+                        .row(s -> s.space(3, "卡拉肖克·玲", Decimals.valueOf("6666.88"), NOW.minusDays(3))
                                 .comma(DayOfWeek.FRIDAY, TRUE, SQLs.literalValue(3).minus(SQLs::literal, 3))
                         ).comma()
-                        .row(s -> s.space(4, "幽弥狂", new BigDecimal("8888.88"), NOW.minusDays(8))
+                        .row(s -> s.space(4, "幽弥狂", Decimals.valueOf("8888.88"), NOW.minusDays(8))
                                 .comma(DayOfWeek.TUESDAY, FALSE, SQLs.literalValue(81).divide(SQLs::literal, 3))
                         )
                         .orderBy(SQLs.refSelection("column_1"), SQLs.refSelection(2)::desc)

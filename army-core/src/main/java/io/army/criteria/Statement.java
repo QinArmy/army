@@ -68,48 +68,11 @@ public interface Statement extends Item {
     }
 
 
-    interface TableModifier extends SQLWords {
-
-    }
-
-    interface DerivedModifier extends SQLWords {
-
-    }
-
-    interface FetchFirstNext {
-
-    }
-
-    interface FetchRow {
-
-    }
-
-    interface FetchOnly {
-
-    }
-
-    interface FetchWithTies {
-
-    }
-
-    interface FetchOnlyWithTies extends FetchOnly, FetchWithTies {
-
-    }
-
-
     interface DmlStatementSpec {
 
     }
 
     interface JoinBuilder {
-
-    }
-
-    interface AscDesc extends SQLWords {
-
-    }
-
-    interface NullsFirstLast extends SQLWords {
 
     }
 
@@ -332,14 +295,14 @@ public interface Statement extends Item {
 
     interface _FromModifierTabularClause<FT, FS> extends _FromClause<FT, FS> {
 
-        FS from(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        FS from(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> FS from(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> FS from(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _FromModifierClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
 
-        FT from(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        FT from(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -372,9 +335,9 @@ public interface Statement extends Item {
 
     interface _FromModifierCteClause<R> extends _FromCteClause<R> {
 
-        R from(DerivedModifier modifier, String cteName);
+        R from(SQLs.DerivedModifier modifier, String cteName);
 
-        R from(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        R from(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
     }
 
 
@@ -385,7 +348,7 @@ public interface Statement extends Item {
 
     interface _FromModifierUndoneFunctionClause<R> extends _FromUndoneFunctionClause<R> {
 
-        R from(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R from(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
     }
 
 
@@ -413,14 +376,14 @@ public interface Statement extends Item {
 
     interface _UsingModifierTabularClause<FT, FS> extends _UsingItemClause<FT, FS> {
 
-        FS using(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        FS using(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> FS using(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> FS using(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _UsingModifierClause<FT, FS> extends _UsingModifierTabularClause<FT, FS> {
 
-        FT using(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        FT using(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -452,9 +415,9 @@ public interface Statement extends Item {
 
     interface _UsingModifierCteClause<FC> extends _UsingCteClause<FC> {
 
-        FC using(DerivedModifier modifier, String cteName);
+        FC using(SQLs.DerivedModifier modifier, String cteName);
 
-        FC using(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        FC using(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
     }
 
 
@@ -465,7 +428,7 @@ public interface Statement extends Item {
 
     interface _UsingModifierUndoneFunctionClause<R> extends _UsingUndoneFunctionClause<R> {
 
-        R using(@Nullable DerivedModifier modifier, UndoneFunction function);
+        R using(@Nullable SQLs.DerivedModifier modifier, UndoneFunction function);
     }
 
 
@@ -514,32 +477,32 @@ public interface Statement extends Item {
 
     interface _JoinModifierTabularClause<JT, JS> extends _JoinClause<JT, JS> {
 
-        JS leftJoin(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        JS leftJoin(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> JS leftJoin(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS leftJoin(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
 
-        JS join(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        JS join(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> JS join(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS join(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
 
-        JS rightJoin(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        JS rightJoin(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> JS rightJoin(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS rightJoin(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
 
-        JS fullJoin(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        JS fullJoin(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> JS fullJoin(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS fullJoin(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _JoinModifierClause<JT, JS> extends _JoinModifierTabularClause<JT, JS> {
 
-        JT leftJoin(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT leftJoin(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        JT join(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT join(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        JT rightJoin(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT rightJoin(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        JT fullJoin(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT fullJoin(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -557,13 +520,13 @@ public interface Statement extends Item {
 
     interface _JoinModifierUndoneFunctionClause<R> extends _JoinUndoneFunctionClause<R> {
 
-        R leftJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R leftJoin(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
 
-        R join(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R join(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
 
-        R rightJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R rightJoin(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
 
-        R fullJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R fullJoin(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
 
     }
 
@@ -590,14 +553,14 @@ public interface Statement extends Item {
 
     interface _CrossJoinModifierTabularClause<FT, FS> extends _CrossJoinClause<FT, FS> {
 
-        FS crossJoin(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        FS crossJoin(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> FS crossJoin(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> FS crossJoin(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _CrossJoinModifierClause<FT, FS> extends _CrossJoinModifierTabularClause<FT, FS> {
 
-        FT crossJoin(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        FT crossJoin(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
 
     }
@@ -610,7 +573,7 @@ public interface Statement extends Item {
 
     interface _CrossModifierUndoneFunctionClause<R> extends _CrossUndoneFunctionClause<R> {
 
-        R crossJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R crossJoin(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
 
     }
 
@@ -693,21 +656,21 @@ public interface Statement extends Item {
 
     interface _JoinModifierCteClause<JC> extends _JoinCteClause<JC> {
 
-        JC leftJoin(DerivedModifier modifier, String cteName);
+        JC leftJoin(SQLs.DerivedModifier modifier, String cteName);
 
-        JC leftJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC leftJoin(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
-        JC join(DerivedModifier modifier, String cteName);
+        JC join(SQLs.DerivedModifier modifier, String cteName);
 
-        JC join(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC join(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
-        JC rightJoin(DerivedModifier modifier, String cteName);
+        JC rightJoin(SQLs.DerivedModifier modifier, String cteName);
 
-        JC rightJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC rightJoin(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
-        JC fullJoin(DerivedModifier modifier, String cteName);
+        JC fullJoin(SQLs.DerivedModifier modifier, String cteName);
 
-        JC fullJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC fullJoin(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -721,9 +684,9 @@ public interface Statement extends Item {
 
     interface _CrossJoinModifierCteClause<FC> extends _CrossJoinCteClause<FC> {
 
-        FC crossJoin(DerivedModifier modifier, String cteName);
+        FC crossJoin(SQLs.DerivedModifier modifier, String cteName);
 
-        FC crossJoin(DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        FC crossJoin(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -752,15 +715,15 @@ public interface Statement extends Item {
 
     interface _NestedLeftParenModifierTabularClause<LT, LS> extends _NestedLeftParenClause<LT, LS> {
 
-        LS leftParen(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        LS leftParen(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> LS leftParen(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> LS leftParen(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
 
     }
 
     interface _NestedLeftParenModifierClause<LT, LS> extends _NestedLeftParenModifierTabularClause<LT, LS> {
 
-        LT leftParen(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        LT leftParen(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -771,7 +734,7 @@ public interface Statement extends Item {
 
     interface _NestedLeftParenModifierUndoneFunctionClause<R> extends _NestedLeftParenUndoneFunctionClause<R> {
 
-        R leftParen(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R leftParen(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
     }
 
 
@@ -794,9 +757,9 @@ public interface Statement extends Item {
 
     interface _DynamicTabularDerivedModifierClause<FT, FS> extends _DynamicTabularItemClause<FT, FS> {
 
-        FS space(@Nullable DerivedModifier modifier, DerivedTable derivedTable);
+        FS space(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> FS space(@Nullable DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> FS space(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
 
     }
 
@@ -804,7 +767,7 @@ public interface Statement extends Item {
     interface _DynamicTabularModifierClause<FT, FS> extends _DynamicTabularDerivedModifierClause<FT, FS> {
 
 
-        FT space(@Nullable TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+        FT space(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -815,7 +778,7 @@ public interface Statement extends Item {
 
     interface _DynamicTabularModifierUndoneFunctionClause<R> extends _DynamicTabularUndoneFunctionClause<R> {
 
-        R space(@Nullable DerivedModifier modifier, UndoneFunction func);
+        R space(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
     }
 
 
@@ -1100,21 +1063,21 @@ public interface Statement extends Item {
     interface _StaticOrderByCommaClause<OR> {
 
 
-        OR comma(Expression exp, AscDesc ascDesc);
+        OR comma(Expression exp, SQLs.AscDesc ascDesc);
 
-        OR comma(Expression exp1, AscDesc ascDesc1, Expression exp2);
+        OR comma(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2);
 
-        OR comma(Expression exp1, Expression exp2, AscDesc ascDesc2);
+        OR comma(Expression exp1, Expression exp2, SQLs.AscDesc ascDesc2);
 
-        OR comma(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2);
+        OR comma(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2, SQLs.AscDesc ascDesc2);
 
     }
 
     interface _StaticOrderByNullsCommaClause<OR> extends _StaticOrderByCommaClause<OR> {
 
-        OR comma(Expression exp, NullsFirstLast nullOption);
+        OR comma(Expression exp, SQLs.NullsFirstLast nullOption);
 
-        OR comma(Expression exp, AscDesc ascDesc, NullsFirstLast nullOption);
+        OR comma(Expression exp, SQLs.AscDesc ascDesc, SQLs.NullsFirstLast nullOption);
 
     }
 
@@ -1133,15 +1096,15 @@ public interface Statement extends Item {
 
         OR orderBy(Expression exp);
 
-        OR orderBy(Expression exp, AscDesc ascDesc);
+        OR orderBy(Expression exp, SQLs.AscDesc ascDesc);
 
         OR orderBy(Expression exp1, Expression exp2);
 
-        OR orderBy(Expression exp1, AscDesc ascDesc1, Expression exp2);
+        OR orderBy(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2);
 
-        OR orderBy(Expression exp1, Expression exp2, AscDesc ascDesc2);
+        OR orderBy(Expression exp1, Expression exp2, SQLs.AscDesc ascDesc2);
 
-        OR orderBy(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2);
+        OR orderBy(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2, SQLs.AscDesc ascDesc2);
 
     }
 
@@ -1243,7 +1206,7 @@ public interface Statement extends Item {
 
     interface _QueryOffsetClause<R> {
 
-        R offset(Expression start, Query.FetchRow row);
+        R offset(Expression start, SQLs.FetchRow row);
 
 
         /**
@@ -1255,7 +1218,7 @@ public interface Statement extends Item {
          * @param start    non-negative integer
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
          */
-        R offset(BiFunction<MappingType, Number, Expression> operator, long start, Query.FetchRow row);
+        R offset(BiFunction<MappingType, Number, Expression> operator, long start, SQLs.FetchRow row);
 
 
         /**
@@ -1268,7 +1231,7 @@ public interface Statement extends Item {
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
          */
         <N extends Number> R offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-                , Query.FetchRow row);
+                , SQLs.FetchRow row);
 
         /**
          * @param operator the method reference of below:
@@ -1281,7 +1244,7 @@ public interface Statement extends Item {
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
          */
         R offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
-                , String keyName, Query.FetchRow row);
+                , String keyName, SQLs.FetchRow row);
 
         /**
          * @param operator the method reference of below:
@@ -1292,7 +1255,7 @@ public interface Statement extends Item {
          * @param start    non-negative integer
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
          */
-        R ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start, Query.FetchRow row);
+        R ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start, SQLs.FetchRow row);
 
         /**
          * @param operator the method reference of below:
@@ -1304,7 +1267,7 @@ public interface Statement extends Item {
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
          */
         <N extends Number> R ifOffset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-                , Query.FetchRow row);
+                , SQLs.FetchRow row);
 
         /**
          * @param operator the method reference of below:
@@ -1317,7 +1280,7 @@ public interface Statement extends Item {
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
          */
         R ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
-                , String keyName, Query.FetchRow row);
+                , String keyName, SQLs.FetchRow row);
 
     }
 
@@ -1329,8 +1292,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R fetch(Query.FetchFirstNext firstOrNext, Expression count, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
+        R fetch(SQLs.FetchFirstNext firstOrNext, Expression count, SQLs.FetchRow row
+                , SQLs.FetchOnlyWithTies onlyWithTies);
 
 
         /**
@@ -1344,8 +1307,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , long count, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+        R fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , long count, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1358,8 +1321,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        <N extends Number> R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+        <N extends Number> R fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1373,8 +1336,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
-                , Function<String, ?> function, String keyName, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+        R fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+                , Function<String, ?> function, String keyName, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1387,8 +1350,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , @Nullable Number count, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+        R ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , @Nullable Number count, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1401,8 +1364,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        <N extends Number> R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+        <N extends Number> R ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1416,8 +1379,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
-                , Function<String, ?> function, String keyName, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+        R ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+                , Function<String, ?> function, String keyName, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
     }
 
     interface _LimitClause<LR> extends _RowCountLimitClause<LR> {
@@ -1450,8 +1413,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R fetch(Query.FetchFirstNext firstOrNext, Expression percent, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
+        R fetch(SQLs.FetchFirstNext firstOrNext, Expression percent, SQLs.WordPercent wordPercent, SQLs.FetchRow row
+                , SQLs.FetchOnlyWithTies onlyWithTies);
 
 
         /**
@@ -1466,8 +1429,8 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+        R fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Number percent, SQLs.WordPercent wordPercent, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1481,9 +1444,9 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        <N extends Number> R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
+        <N extends Number> R fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.WordPercent wordPercent, SQLs.FetchRow row
+                , SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1498,9 +1461,9 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+        R fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
                 , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
-                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+                , SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1514,9 +1477,9 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , @Nullable Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
+        R ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , @Nullable Number percent, SQLs.WordPercent wordPercent, SQLs.FetchRow row
+                , SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1530,9 +1493,9 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        <N extends Number> R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
+        <N extends Number> R ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.WordPercent wordPercent, SQLs.FetchRow row
+                , SQLs.FetchOnlyWithTies onlyWithTies);
 
         /**
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
@@ -1547,9 +1510,9 @@ public interface Statement extends Item {
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
          * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
          */
-        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+        R ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
                 , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
-                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+                , SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies);
 
     }
 

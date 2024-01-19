@@ -227,10 +227,10 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
 
     SortItem desc();
 
-    SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast);
+    SortItem ascSpace(@Nullable SQLs.NullsFirstLast firstLast);
 
 
-    SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast);
+    SortItem descSpace(@Nullable SQLs.NullsFirstLast firstLast);
 
     /*-------------------below dialect operator method -------------------*/
 

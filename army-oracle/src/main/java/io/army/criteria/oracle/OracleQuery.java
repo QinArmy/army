@@ -22,6 +22,7 @@ import io.army.criteria.Query;
 import io.army.criteria.TableField;
 import io.army.criteria.dialect.SortNullItems;
 import io.army.criteria.dialect.Window;
+import io.army.criteria.impl.SQLs;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -77,11 +78,11 @@ public interface OracleQuery extends Query, OracleStatement {
 
         OR orderSiblingsBy(Expression exp1, Expression exp2, Expression exp3);
 
-        OR orderSiblingsBy(Expression exp1, AscDesc ascDesc);
+        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc);
 
-        OR orderSiblingsBy(Expression exp1, AscDesc ascDesc, NullsFirstLast nullOption);
+        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc, SQLs.NullsFirstLast nullOption);
 
-        OR orderSiblingsBy(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2);
+        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2, SQLs.AscDesc ascDesc2);
 
     }
 

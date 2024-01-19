@@ -27,13 +27,11 @@ import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
-import io.army.mapping.*;
-import io.army.meta.ServerMeta;
+import io.army.mapping.IntegerType;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoCastIntegerType;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -74,9 +72,9 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordPercent PERCENT = SqlWords.KeyWordPercent.PERCENT;
 
-    public static final Statement.NullsFirstLast NULLS_FIRST = SqlWords.KeyWordsNullsFirstLast.NULLS_FIRST;
+    public static final NullsFirstLast NULLS_FIRST = SqlWords.KeyWordsNullsFirstLast.NULLS_FIRST;
 
-    public static final Statement.NullsFirstLast NULLS_LAST = SqlWords.KeyWordsNullsFirstLast.NULLS_LAST;
+    public static final NullsFirstLast NULLS_LAST = SqlWords.KeyWordsNullsFirstLast.NULLS_LAST;
 
     public static final WordOnly ONLY = SqlWords.KeyWordOny.ONLY;
 
@@ -93,11 +91,11 @@ public abstract class SQLs extends SQLSyntax {
     /**
      * package field
      */
-    static final Statement.AscDesc ASC = SqlWords.KeyWordAscDesc.ASC;
+    static final AscDesc ASC = SqlWords.KeyWordAscDesc.ASC;
     /**
      * package field
      */
-    static final Statement.AscDesc DESC = SqlWords.KeyWordAscDesc.DESC;
+    static final AscDesc DESC = SqlWords.KeyWordAscDesc.DESC;
 
 
     public static final WordAs AS = SqlWords.KeyWordAs.AS;
@@ -594,31 +592,31 @@ public abstract class SQLs extends SQLSyntax {
 
     }
 
-    public interface WordOnly extends Query.TableModifier, Query.FetchOnlyWithTies, SQLWords {
+    public interface WordOnly extends TableModifier, FetchOnlyWithTies, SQLWords {
 
     }
 
-    public interface WordFirst extends Query.FetchFirstNext {
+    public interface WordFirst extends FetchFirstNext {
 
     }
 
-    public interface WordNext extends Query.FetchFirstNext {
+    public interface WordNext extends FetchFirstNext {
 
     }
 
-    public interface WordRow extends Query.FetchRow {
+    public interface WordRow extends FetchRow {
 
     }
 
-    public interface WordRows extends Query.FetchRow {
+    public interface WordRows extends FetchRow {
 
     }
 
-    public interface WordLateral extends Query.DerivedModifier {
+    public interface WordLateral extends DerivedModifier {
 
     }
 
-    public interface WordsWithTies extends Query.FetchOnlyWithTies {
+    public interface WordsWithTies extends FetchOnlyWithTies {
 
     }
 
@@ -676,6 +674,42 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public interface WordUsing extends SQLWords {
+
+    }
+
+    public interface TableModifier extends SQLWords {
+
+    }
+
+    public interface DerivedModifier extends SQLWords {
+
+    }
+
+    public interface FetchFirstNext {
+
+    }
+
+    public interface FetchRow {
+
+    }
+
+    public interface FetchOnly {
+
+    }
+
+    public interface FetchWithTies {
+
+    }
+
+    public interface FetchOnlyWithTies extends FetchOnly, FetchWithTies {
+
+    }
+
+    public interface AscDesc extends SQLWords {
+
+    }
+
+    public interface NullsFirstLast extends SQLWords {
 
     }
 
@@ -951,59 +985,6 @@ public abstract class SQLs extends SQLSyntax {
 
     }//SQLIdentifierImpl
 
-
-    @Deprecated
-    static final class _NullType extends _ArmyBuildInMapping {
-
-        public static final _NullType INSTANCE = new _NullType();
-
-
-        private _NullType() {
-        }
-
-        @Override
-        public Class<?> javaType() {
-            return Object.class;
-        }
-
-        @Override
-        public DataType map(final ServerMeta meta) {
-            final SqlType sqlType;
-            switch (meta.serverDatabase()) {
-                case MySQL:
-                    sqlType = MySQLType.NULL;
-                    break;
-                case PostgreSQL:
-                case Oracle:
-                case H2:
-                default:
-                    throw MAP_ERROR_HANDLER.apply(this, meta);
-            }
-            return sqlType;
-        }
-
-        @Override
-        public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-            return null;
-        }
-
-        @Override
-        public Object convert(MappingEnv env, Object source) throws CriteriaException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object beforeBind(DataType dataType, MappingEnv env, Object source) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object afterGet(DataType dataType, MappingEnv env, Object source) {
-            throw new UnsupportedOperationException();
-        }
-
-
-    }// _NullType
 
 
     /**

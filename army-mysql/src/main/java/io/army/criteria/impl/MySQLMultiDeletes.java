@@ -422,12 +422,12 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     }
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
-    final MySQLDelete._MultiIndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+    final MySQLDelete._MultiIndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final MySQLSupports.FromClauseForJoinTableBlock<MySQLDelete._MultiIndexHintJoinSpec<I>> block;
         block = new MySQLSupports.FromClauseForJoinTableBlock<>(joinType, table, alias, this);
         this.blockConsumer.accept(block);
@@ -436,7 +436,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     }
 
     @Override
-    final MySQLDelete._MultiJoinSpec<I> onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+    final MySQLDelete._MultiJoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final _TabularBlock block;
         block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -446,7 +446,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
 
 
     @Override
-    final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+    final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
             final TabularBlocks.FromClauseAliasDerivedBlock block;
@@ -458,7 +458,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     }
 
     @Override
-    final _MultiIndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+    final _MultiIndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                TableMeta<?> table, String alias) {
         final SimpleJoinClauseTableBlock<I> block;
         block = new SimpleJoinClauseTableBlock<>(joinType, table, alias, this);
@@ -468,7 +468,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
 
     @Override
     final _AsParensOnClause<_MultiJoinSpec<I>> onJoinDerived(_JoinType joinType,
-                                                             @Nullable Query.DerivedModifier modifier,
+                                                             @Nullable SQLs.DerivedModifier modifier,
                                                              DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseAliasDerivedBlock<_MultiJoinSpec<I>> block;
@@ -479,7 +479,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     }
 
     @Override
-    final _OnClause<_MultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+    final _OnClause<_MultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                  _Cte cteItem, String alias) {
         final TabularBlocks.JoinClauseCteBlock<_MultiJoinSpec<I>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);

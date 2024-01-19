@@ -164,13 +164,13 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
     final MySQLQuery._DynamicIndexHintJoinClause onFromTable(
-            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+            _JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final FromClauseTableBlock block;
         block = new FromClauseTableBlock(this.context, this.blockConsumer, joinType, table, alias);
         this.blockConsumer.accept(block);
@@ -179,7 +179,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._AsClause<MySQLQuery._DynamicJoinSpec> onFromDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final DynamicDerivedBlock block;
             block = new DynamicDerivedBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
@@ -191,7 +191,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final MySQLQuery._DynamicJoinSpec onFromCte(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+            _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final DynamicCteBlock block;
         block = new DynamicCteBlock(this.context, this.blockConsumer, joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -200,7 +200,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final MySQLQuery._DynamicIndexHintOnClause onJoinTable(
-            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+            _JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final JoinClauseTableBlock block;
         block = new JoinClauseTableBlock(this.context, this.blockConsumer, joinType, table, alias);
         this.blockConsumer.accept(block);
@@ -209,7 +209,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._AsParensOnClause<MySQLStatement._DynamicJoinSpec> onJoinDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final DynamicDerivedBlock block;
             block = new DynamicDerivedBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
@@ -220,7 +220,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._OnClause<MySQLQuery._DynamicJoinSpec> onJoinCte(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+            _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final DynamicCteBlock block;
         block = new DynamicCteBlock(this.context, this.blockConsumer, joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -511,13 +511,13 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
         @Override
-        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             return CriteriaUtils.isIllegalLateral(modifier);
         }
 
         @Override
         MySQLQuery._DynamicIndexHintOnClause onTable(
-                @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+                @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final JoinClauseTableBlock block;
             block = new JoinClauseTableBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
@@ -526,7 +526,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> onDerived(
-                @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+                @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final DynamicDerivedBlock block;
                 block = new DynamicDerivedBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);
@@ -578,14 +578,14 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             return CriteriaUtils.isIllegalLateral(modifier);
         }
 
 
         @Override
         MySQLQuery._DynamicIndexHintJoinClause onTable(
-                @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+                @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final FromClauseTableBlock block;
             block = new FromClauseTableBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
@@ -594,7 +594,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Statement._AsClause<MySQLQuery._DynamicJoinSpec> onDerived(
-                @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+                @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final DynamicDerivedBlock block;
                 block = new DynamicDerivedBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);

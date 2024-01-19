@@ -17,7 +17,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLWords;
-import io.army.criteria.Statement;
 import io.army.dialect._Constant;
 
 abstract class SqlWords {
@@ -492,7 +491,7 @@ abstract class SqlWords {
 
     } //KeyWordUnknown
 
-    enum KeyWordAscDesc implements Statement.AscDesc, SQLWords {
+    enum KeyWordAscDesc implements SQLs.AscDesc, SQLWords {
 
         ASC(" ASC"),
         DESC(" DESC");
@@ -581,7 +580,7 @@ abstract class SqlWords {
 
     }//KeyWordNext
 
-    enum KeyWordsNullsFirstLast implements Statement.NullsFirstLast, SQLWords {
+    enum KeyWordsNullsFirstLast implements SQLs.NullsFirstLast, SQLWords {
 
         NULLS_FIRST(" NULLS FIRST"),
         NULLS_LAST(" NULLS LAST");

@@ -37,7 +37,7 @@ abstract class PostgreBlocks {
 
 
     static <R extends Item> PostgreStatement._FuncColumnDefinitionParensClause<R> fromUndoneFunc(
-            final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func,
+            final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier, final UndoneFunction func,
             final String alias, final R stmt, final Consumer<_TabularBlock> blockConsumer) {
         final Function<PostgreUtils.DoneFunc, R> blockFunc;
         blockFunc = doneFunc -> {
@@ -50,7 +50,7 @@ abstract class PostgreBlocks {
     }
 
     static <R extends Item> PostgreStatement._FuncColumnDefinitionParensClause<Statement._OnClause<R>> joinUndoneFunc(
-            final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func,
+            final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier, final UndoneFunction func,
             final String alias, final R stmt, final Consumer<_TabularBlock> blockConsumer) {
         final Function<PostgreUtils.DoneFunc, Statement._OnClause<R>> blockFunc;
         blockFunc = doneFunc -> {
@@ -70,7 +70,7 @@ abstract class PostgreBlocks {
     private static final class FromClauseDoneFuncBlock extends TabularBlocks.FromClauseBlock
             implements _DoneFuncBlock {
 
-        private final Statement.DerivedModifier modifier;
+        private final SQLs.DerivedModifier modifier;
 
         private final String alias;
 
@@ -78,7 +78,7 @@ abstract class PostgreBlocks {
 
         private final Map<String, _FunctionField> fieldMap;
 
-        private FromClauseDoneFuncBlock(_JoinType joinType, @Nullable Statement.DerivedModifier modifier,
+        private FromClauseDoneFuncBlock(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                         PostgreUtils.DoneFunc func, String alias) {
             super(joinType, func.funcItem);
             this.modifier = modifier;
@@ -118,7 +118,7 @@ abstract class PostgreBlocks {
     private static final class JoinClauseDoneFuncBlock<R extends Item> extends TabularBlocks.JoinClauseBlock<R>
             implements _DoneFuncBlock {
 
-        private final Statement.DerivedModifier modifier;
+        private final SQLs.DerivedModifier modifier;
 
         private final UndoneFunction func;
 
@@ -128,7 +128,7 @@ abstract class PostgreBlocks {
 
         private final Map<String, _FunctionField> fieldMap;
 
-        private JoinClauseDoneFuncBlock(_JoinType joinType, @Nullable Statement.DerivedModifier modifier,
+        private JoinClauseDoneFuncBlock(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                         PostgreUtils.DoneFunc func, String alias, R clause) {
             super(joinType, clause);
             this.modifier = modifier;

@@ -17,7 +17,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SortItem;
-import io.army.criteria.Statement;
 import io.army.dialect._SqlContext;
 import io.army.meta.TypeMeta;
 
@@ -25,8 +24,8 @@ import javax.annotation.Nullable;
 
 class ArmySortItems implements ArmySortItem {
 
-    static ArmySortItem create(final ArmyExpression exp, final Statement.AscDesc ascDesc,
-                               final @Nullable Statement.NullsFirstLast firstLast) {
+    static ArmySortItem create(final ArmyExpression exp, final SQLs.AscDesc ascDesc,
+                               final @Nullable SQLs.NullsFirstLast firstLast) {
         if (ascDesc != SQLs.DESC && ascDesc != SQLs.ASC) {
             throw CriteriaUtils.unknownWords(ascDesc);
         } else if (firstLast != null && firstLast != SQLs.NULLS_LAST && firstLast != SQLs.NULLS_FIRST) {
@@ -44,9 +43,9 @@ class ArmySortItems implements ArmySortItem {
 
     final ArmyExpression sortItem;
 
-    private final Statement.AscDesc ascDesc;
+    private final SQLs.AscDesc ascDesc;
 
-    private ArmySortItems(ArmyExpression sortItem, Statement.AscDesc ascDesc) {
+    private ArmySortItems(ArmyExpression sortItem, SQLs.AscDesc ascDesc) {
         this.sortItem = sortItem;
         this.ascDesc = ascDesc;
     }
@@ -89,10 +88,10 @@ class ArmySortItems implements ArmySortItem {
 
     private static final class SortItemWithNullsOption extends ArmySortItems {
 
-        private final Statement.NullsFirstLast nullOption;
+        private final SQLs.NullsFirstLast nullOption;
 
-        private SortItemWithNullsOption(ArmyExpression sortItem, Statement.AscDesc aesWord,
-                                        Statement.NullsFirstLast nullOption) {
+        private SortItemWithNullsOption(ArmyExpression sortItem, SQLs.AscDesc aesWord,
+                                        SQLs.NullsFirstLast nullOption) {
             super(sortItem, aesWord);
             this.nullOption = nullOption;
         }

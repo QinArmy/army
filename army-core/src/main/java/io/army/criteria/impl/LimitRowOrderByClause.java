@@ -229,7 +229,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LO offset(final @Nullable Expression start, final Query.FetchRow row) {
+    public final LO offset(final @Nullable Expression start, final SQLs.FetchRow row) {
         if (start == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (row != SQLs.ROW && row != SQLs.ROWS) {
@@ -241,26 +241,26 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LO offset(BiFunction<MappingType, Number, Expression> operator, long start, Query.FetchRow row) {
+    public final LO offset(BiFunction<MappingType, Number, Expression> operator, long start, SQLs.FetchRow row) {
         return this.offset(operator.apply(LongType.INSTANCE, start), row);
     }
 
 
     @Override
     public final <N extends Number> LO offset(BiFunction<MappingType, Number, Expression> operator
-            , Supplier<N> supplier, Query.FetchRow row) {
+            , Supplier<N> supplier, SQLs.FetchRow row) {
         return this.offset(operator.apply(LongType.INSTANCE, supplier.get()), row);
     }
 
     @Override
     public final LO offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
-            , String keyName, Query.FetchRow row) {
+            , String keyName, SQLs.FetchRow row) {
         return this.offset(operator.apply(LongType.INSTANCE, function.apply(keyName)), row);
     }
 
     @Override
     public final LO ifOffset(BiFunction<MappingType, Number, Expression> operator, final @Nullable Number start
-            , Query.FetchRow row) {
+            , SQLs.FetchRow row) {
         if (start != null) {
             this.offset(operator.apply(LongType.INSTANCE, start), row);
         }
@@ -269,7 +269,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
 
     @Override
     public final <N extends Number> LO ifOffset(BiFunction<MappingType, Number, Expression> operator
-            , Supplier<N> supplier, Query.FetchRow row) {
+            , Supplier<N> supplier, SQLs.FetchRow row) {
         final N start;
         start = supplier.get();
         if (start != null) {
@@ -280,7 +280,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
 
     @Override
     public final LO ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
-            , String keyName, Query.FetchRow row) {
+            , String keyName, SQLs.FetchRow row) {
         final Object start;
         start = function.apply(keyName);
         if (start != null) {
@@ -290,8 +290,8 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LF fetch(Query.FetchFirstNext firstOrNext, final @Nullable Expression count, Query.FetchRow row
-            , Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF fetch(SQLs.FetchFirstNext firstOrNext, final @Nullable Expression count, SQLs.FetchRow row
+            , SQLs.FetchOnlyWithTies onlyWithTies) {
         if (count == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (this.rowCountOrPercent != null) {
@@ -312,26 +312,26 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LF fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-            , long count, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+            , long count, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         return this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, count), row, onlyWithTies);
     }
 
     @Override
-    public final <N extends Number> LF fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number
-            , Expression> operator, Supplier<N> supplier, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+    public final <N extends Number> LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number
+            , Expression> operator, Supplier<N> supplier, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         return this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, supplier.get()), row, onlyWithTies);
     }
 
     @Override
-    public final LF fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
-            , Function<String, ?> function, String keyName, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+            , Function<String, ?> function, String keyName, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         return this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, function.apply(keyName)), row, onlyWithTies);
     }
 
     @Override
-    public final LF ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-            , final @Nullable Number count, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+            , final @Nullable Number count, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         if (count != null) {
             this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, count), row, onlyWithTies);
         }
@@ -339,8 +339,8 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final <N extends Number> LF ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number
-            , Expression> operator, Supplier<N> supplier, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+    public final <N extends Number> LF ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number
+            , Expression> operator, Supplier<N> supplier, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         final N count;
         count = supplier.get();
         if (count != null) {
@@ -350,8 +350,8 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LF ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
-            , Function<String, ?> function, String keyName, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+            , Function<String, ?> function, String keyName, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         final Object count;
         count = function.apply(keyName);
         if (count != null) {
@@ -361,9 +361,9 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LF fetch(final Query.FetchFirstNext firstOrNext, final @Nullable Expression percent,
-                          final SQLs.WordPercent wordPercent, final Query.FetchRow row,
-                          final Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF fetch(final SQLs.FetchFirstNext firstOrNext, final @Nullable Expression percent,
+                          final SQLs.WordPercent wordPercent, final SQLs.FetchRow row,
+                          final SQLs.FetchOnlyWithTies onlyWithTies) {
         if (percent == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (firstOrNext != SQLs.FIRST && firstOrNext != SQLs.NEXT) {
@@ -387,36 +387,36 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
 
 
     @Override
-    public final LF fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-            , Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row
-            , Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+            , Number percent, SQLs.WordPercent wordPercent, SQLs.FetchRow row
+            , SQLs.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
         percentExp = operator.apply(BigDecimalType.INSTANCE, percent);
         return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
     }
 
     @Override
-    public final <N extends Number> LF fetch(Query.FetchFirstNext firstOrNext
+    public final <N extends Number> LF fetch(SQLs.FetchFirstNext firstOrNext
             , BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-            , SQLs.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+            , SQLs.WordPercent wordPercent, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
         percentExp = operator.apply(BigDecimalType.INSTANCE, supplier.get());
         return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
     }
 
     @Override
-    public final LF fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
-            , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent, Query.FetchRow row
-            , Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+            , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent, SQLs.FetchRow row
+            , SQLs.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
         percentExp = operator.apply(BigDecimalType.INSTANCE, function.apply(keyName));
         return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
     }
 
     @Override
-    public final LF ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-            , @Nullable Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row
-            , Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+            , @Nullable Number percent, SQLs.WordPercent wordPercent, SQLs.FetchRow row
+            , SQLs.FetchOnlyWithTies onlyWithTies) {
         if (percent != null) {
             final Expression percentExp;
             percentExp = operator.apply(BigDecimalType.INSTANCE, percent);
@@ -426,9 +426,9 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final <N extends Number> LF ifFetch(Query.FetchFirstNext firstOrNext
+    public final <N extends Number> LF ifFetch(SQLs.FetchFirstNext firstOrNext
             , BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-            , SQLs.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+            , SQLs.WordPercent wordPercent, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         final N percent;
         percent = supplier.get();
         if (percent != null) {
@@ -440,9 +440,9 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     }
 
     @Override
-    public final LF ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+    public final LF ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
             , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
-            , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+            , SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         final Object percent;
         percent = function.apply(keyName);
         if (percent != null) {

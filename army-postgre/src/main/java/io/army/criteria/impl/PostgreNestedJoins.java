@@ -71,18 +71,18 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
     @Override
-    boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+    boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
         return CriteriaUtils.isIllegalOnly(modifier);
     }
 
     @Override
-    boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+    boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
     PostgreStatement._NestedTableSampleJoinSpec<I> onLeftTable(
-            @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+            @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final NestedTableJoinBlock<I> block;
         block = new NestedTableJoinBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, modifier, table, tableAlias,
                 this::thisNestedJoinEnd);
@@ -92,7 +92,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
     @Override
     Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> onLeftDerived(
-            @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final NestedDerivedJoinBlock<I> block;
             block = new NestedDerivedJoinBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, modifier,
@@ -113,7 +113,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
     @Override
     PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._PostgreNestedJoinClause<I>> onLeftUndoneFunc(
-            final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func) {
+            final @Nullable SQLs.DerivedModifier modifier, final UndoneFunction func) {
         return alias -> {
             final Function<PostgreUtils.DoneFunc, PostgreStatement._PostgreNestedJoinClause<I>> function;
             function = doneFunc -> {
@@ -224,18 +224,18 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
 
         @Override
-        boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+        boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
             return CriteriaUtils.isIllegalOnly(modifier);
         }
 
         @Override
-        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             return CriteriaUtils.isIllegalLateral(modifier);
         }
 
         @Override
         final PostgreStatement._NestedTableSampleCrossSpec<I> onFromTable(_JoinType joinType,
-                                                                          @Nullable Query.TableModifier modifier,
+                                                                          @Nullable SQLs.TableModifier modifier,
                                                                           TableMeta<?> table, String alias) {
             final NestedTableCrossBlock<I> block;
             block = new NestedTableCrossBlock<>(this.context, this.blockConsumer, joinType, modifier, table, alias,
@@ -246,7 +246,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final Statement._AsClause<PostgreStatement._NestedParensCrossSpec<I>> onFromDerived(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+                _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final NestedDerivedCrossBlock<I> block;
                 block = new NestedDerivedCrossBlock<>(this.context, this.blockConsumer, joinType, modifier, table,
@@ -258,7 +258,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedJoinSpec<I>> onFromUndoneFunc(
-                final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier,
+                final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
                 final UndoneFunction func) {
             return alias -> {
                 final Function<PostgreUtils.DoneFunc, PostgreStatement._NestedJoinSpec<I>> function;
@@ -275,7 +275,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final PostgreStatement._NestedJoinSpec<I> onFromCte(_JoinType joinType,
-                                                            @Nullable Query.DerivedModifier modifier,
+                                                            @Nullable SQLs.DerivedModifier modifier,
                                                             _Cte cteItem, String alias) {
             final PostgreNestedBlock<I> block;
             block = new PostgreNestedBlock<>(this.context, this.blockConsumer, joinType, modifier, cteItem, alias,
@@ -286,7 +286,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final PostgreStatement._NestedTableSampleOnSpec<I> onJoinTable(_JoinType joinType,
-                                                                       @Nullable Query.TableModifier modifier,
+                                                                       @Nullable SQLs.TableModifier modifier,
                                                                        TableMeta<?> table, String alias) {
             final NestedTableOnBlock<I> block;
             block = new NestedTableOnBlock<>(this.context, this.blockConsumer, joinType, modifier, table, alias,
@@ -297,7 +297,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final Statement._AsClause<PostgreStatement._NestedParensOnSpec<I>> onJoinDerived(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+                _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final NestedDerivedOnBlock<I> block;
                 block = new NestedDerivedOnBlock<>(this.context, this.blockConsumer, joinType, modifier, table,
@@ -309,7 +309,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final PostgreStatement._NestedOnSpec<I> onJoinCte(_JoinType joinType,
-                                                          @Nullable Query.DerivedModifier modifier,
+                                                          @Nullable SQLs.DerivedModifier modifier,
                                                           _Cte cteItem, String alias) {
             final PostgreNestedBlock<I> block;
             block = new PostgreNestedBlock<>(this.context, this.blockConsumer, joinType, modifier, cteItem, alias,
@@ -320,7 +320,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedOnSpec<I>> onJoinUndoneFunc(
-                final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier,
+                final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
                 final UndoneFunction func) {
             return alias -> {
                 final Function<PostgreUtils.DoneFunc, PostgreStatement._NestedOnSpec<I>> function;
@@ -676,7 +676,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         private final Map<String, _FunctionField> fieldMap;
 
         private NestedDoneFuncBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
-                                    @Nullable Statement.DerivedModifier modifier, PostgreUtils.DoneFunc func,
+                                    @Nullable SQLs.DerivedModifier modifier, PostgreUtils.DoneFunc func,
                                     String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, func.funcItem, alias, ender);
             this.fieldList = func.fieldList;

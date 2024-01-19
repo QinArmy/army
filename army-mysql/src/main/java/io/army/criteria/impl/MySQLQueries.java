@@ -129,8 +129,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     /**
-     * @see #onFromTable(_JoinType, TableModifier, TableMeta, String)
-     * @see #onFromDerived(_JoinType, DerivedModifier, DerivedTable)
+     * @see #onFromTable(_JoinType, SQLs.TableModifier, TableMeta, String)
+     * @see #onFromDerived(_JoinType, SQLs.DerivedModifier, DerivedTable)
      * @see PartitionJoinClause#asEnd(MySQLSupports.MySQLBlockParams)
      * @see #getIndexHintClause()
      * @see #getFromClauseDerived()
@@ -533,12 +533,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
-    final _IndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+    final _IndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
                                             String alias) {
         final MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>> block;
         block = new MySQLSupports.FromClausePurposeTableBlock<>(joinType, table, alias, this);
@@ -548,7 +548,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
+    final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
             final TabularBlocks.FromClauseAliasDerivedBlock block;
@@ -561,7 +561,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
+    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
                                  String alias) {
         final _TabularBlock block;
         block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
@@ -571,7 +571,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _IndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+    final _IndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
                                           String alias) {
         final JoinClauseTableBlock<I> block;
         block = new JoinClauseTableBlock<>(joinType, table, alias, this);
@@ -580,7 +580,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
+    final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                         DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseAliasDerivedBlock<_JoinSpec<I>> block;
@@ -591,7 +591,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
+    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
                                             String alias) {
         final TabularBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
@@ -650,7 +650,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     /**
-     * @see #onFromDerived(_JoinType, DerivedModifier, DerivedTable)
+     * @see #onFromDerived(_JoinType, SQLs.DerivedModifier, DerivedTable)
      * @see #parens(String, String...)
      * @see #parens(Consumer)
      * @see #ifParens(Consumer)

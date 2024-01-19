@@ -319,20 +319,20 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable DerivedModifier modifier) {
+    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
 
     @Override
-    final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+    final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
                                    String alias) {
         this.blockConsumer.accept(TabularBlocks.fromTableBlock(joinType, modifier, table, alias));
         return this;
     }
 
     @Override
-    final _AsClause<_JoinSpec<I>> onFromDerived(final _JoinType joinType, @Nullable DerivedModifier modifier,
+    final _AsClause<_JoinSpec<I>> onFromDerived(final _JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                 final DerivedTable table) {
         return alias -> {
             this.blockConsumer.accept(TabularBlocks.fromDerivedBlock(joinType, modifier, table, alias));
@@ -341,14 +341,14 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
+    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         this.blockConsumer.accept(TabularBlocks.fromCteBlock(joinType, cteItem, alias));
         return this;
     }
 
 
     @Override
-    final _OnClause<_JoinSpec<I>> onJoinTable(final _JoinType joinType, @Nullable TableModifier modifier,
+    final _OnClause<_JoinSpec<I>> onJoinTable(final _JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                               final TableMeta<?> table, final String alias) {
         final TabularBlocks.JoinClauseTableBlock<_JoinSpec<I>> block;
         block = TabularBlocks.joinTableBlock(joinType, modifier, table, alias, this);
@@ -357,7 +357,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _AsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(final _JoinType joinType, @Nullable DerivedModifier modifier,
+    final _AsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(final _JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                            final DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseDerivedBlock<_JoinSpec<I>> block;
@@ -368,7 +368,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
+    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final TabularBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
         this.blockConsumer.accept(block);

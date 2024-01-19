@@ -256,11 +256,11 @@ abstract class CriteriaUtils {
         return ((CriteriaContextSpec) statement).getContext();
     }
 
-    static boolean isIllegalLateral(@Nullable Query.DerivedModifier modifier) {
+    static boolean isIllegalLateral(@Nullable SQLs.DerivedModifier modifier) {
         return modifier != null && modifier != SQLs.LATERAL;
     }
 
-    static boolean isIllegalOnly(@Nullable Query.TableModifier modifier) {
+    static boolean isIllegalOnly(@Nullable SQLs.TableModifier modifier) {
         return modifier != null && modifier != SQLs.ONLY;
     }
 

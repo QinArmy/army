@@ -148,9 +148,9 @@ public interface DialectStatement extends Statement {
 
     interface _StraightJoinModifierTabularClause<JT, JS> extends _StraightJoinClause<JT, JS> {
 
-        JS straightJoin(@Nullable Query.DerivedModifier modifier, DerivedTable derivedTable);
+        JS straightJoin(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
-        <T extends DerivedTable> JS straightJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS straightJoin(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _StraightJoinUndoneFunctionClause<R> {
@@ -161,7 +161,7 @@ public interface DialectStatement extends Statement {
 
     interface _StraightJoinModifierUndoneFunctionClause<R> extends _StraightJoinUndoneFunctionClause<R> {
 
-        R straightJoin(@Nullable Query.DerivedModifier modifier, UndoneFunction func);
+        R straightJoin(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func);
 
     }
 
@@ -246,9 +246,9 @@ public interface DialectStatement extends Statement {
 
     interface _StraightJoinModifierCteClause<JS> extends _StraightJoinCteClause<JS> {
 
-        JS straightJoin(Query.DerivedModifier modifier, String cteName);
+        JS straightJoin(SQLs.DerivedModifier modifier, String cteName);
 
-        JS straightJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JS straightJoin(SQLs.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 

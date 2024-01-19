@@ -16,7 +16,10 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.DerivedTable;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
+import io.army.criteria.TabularItem;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
@@ -113,7 +116,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
     @Override
-    final StandardStatement._DynamicJoinSpec onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+    final StandardStatement._DynamicJoinSpec onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                          TableMeta<?> table, String alias) {
 
         final StandardDynamicBlock block;
@@ -124,7 +127,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._AsClause<StandardStatement._DynamicJoinSpec> onFromDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
 
         return alias -> {
             final StandardDynamicBlock block;
@@ -137,7 +140,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._OnClause<StandardStatement._DynamicJoinSpec> onJoinTable(
-            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+            _JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final StandardDynamicBlock block;
         block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
         this.blockConsumer.accept(block);
@@ -146,7 +149,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onJoinDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final StandardDynamicBlock block;
             block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
@@ -156,13 +159,13 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    final Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+    final Void onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
     @Override
-    final Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+    final Void onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
@@ -217,7 +220,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Statement._OnClause<StandardStatement._DynamicJoinSpec> onTable(
-                @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+                @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final StandardDynamicBlock block;
             block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
@@ -226,7 +229,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onDerived(
-                @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+                @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardDynamicBlock block;
                 block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, alias);
@@ -270,7 +273,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         StandardStatement._DynamicJoinSpec onTable(
-                @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+                @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final StandardDynamicBlock block;
             block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
@@ -279,7 +282,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Statement._AsClause<StandardStatement._DynamicJoinSpec> onDerived(
-                @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+                @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardDynamicBlock block;
                 block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, alias);

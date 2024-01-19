@@ -390,11 +390,11 @@ public interface MySQLUpdate extends MySQLStatement {
 
         _AsClause<_ParensJoinSpec<I>> space(DerivedTable derivedTable);
 
-        _AsClause<_ParensJoinSpec<I>> space(@Nullable Query.DerivedModifier modifier, DerivedTable derivedTable);
+        _AsClause<_ParensJoinSpec<I>> space(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
         <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> space(Supplier<T> supplier);
 
-        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> space(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> space(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
 
         _MultiJoinSpec<I> space(String cteName);
 
@@ -425,11 +425,11 @@ public interface MySQLUpdate extends MySQLStatement {
 
         _AsClause<_ParensJoinSpec<I>> update(DerivedTable derivedTable);
 
-        _AsClause<_ParensJoinSpec<I>> update(@Nullable Query.DerivedModifier modifier, DerivedTable derivedTable);
+        _AsClause<_ParensJoinSpec<I>> update(@Nullable SQLs.DerivedModifier modifier, DerivedTable derivedTable);
 
         <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(Supplier<T> supplier);
 
-        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(@Nullable SQLs.DerivedModifier modifier, Supplier<T> supplier);
 
         _MultiJoinSpec<I> update(String cteName);
 
