@@ -292,6 +292,13 @@ abstract class CriteriaContexts {
         return ContextStack.clearStackAnd(UnknownQualifiedFieldException::new, m);
     }
 
+    private static CriteriaException qualifiedFieldTableNotMatch(final String tableAlias, TableMeta<?> targetTable,
+                                                                 final FieldMeta<?> field) {
+        String m = String.format("the %s that is represented by alias[%s] and %s not match.", targetTable,
+                tableAlias, field);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
 
     /**
      * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
@@ -840,15 +847,13 @@ abstract class CriteriaContexts {
 
         @Override
         public <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-            String m = "current context don't support SQLs.field(tableAlias,field)";
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw unknownQualifiedField(tableAlias, field);
         }
 
 
         @Override
         public DerivedField refField(String derivedAlias, String fieldName) {
-            String m = "current context don't support SQLs.refField(derivedAlias,fieldName)";
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw unknownDerivedField(derivedAlias, fieldName);
         }
 
 
@@ -1066,6 +1071,18 @@ abstract class CriteriaContexts {
             return false;
         }
 
+        @Nullable
+        DerivedField refOuterOrMoreOuterField(String derivedAlias, String fieldName) {
+            // default return null .
+            return null;
+        }
+
+        @Nullable
+        <T> QualifiedField<T> outerOrMoreOuterField(String tableAlias, FieldMeta<T> field) {
+            // default return null .
+            return null;
+        }
+
 
         /**
          * @param sourceContext the context whose {@link CriteriaContext#refCte(String)} is invoked .
@@ -1261,20 +1278,25 @@ abstract class CriteriaContexts {
         @SuppressWarnings("unchecked")
         @Override
         public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
-            if (isEndContext()) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            }
+
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
             final Map<FieldMeta<?>, QualifiedField<?>> fieldMap;
 
-            final StatementContext outerContext;
-            final TableMeta<?> fieldTable;
+
+            final TableMeta<?> targetTable;
 
             QualifiedField<?> qualifiedField;
 
             if (aliasFieldMap != null && (fieldMap = aliasFieldMap.get(tableAlias)) != null) {
-                qualifiedField = fieldMap.computeIfAbsent(field, f -> QualifiedFieldImpl.create(tableAlias, field));
-            } else if ((fieldTable = getTable(tableAlias)) != null && fieldTable == field.tableMeta()) {
+                qualifiedField = fieldMap.get(field);
+                if (qualifiedField == null) {
+                    qualifiedField = QualifiedFieldImpl.create(tableAlias, field);
+                    fieldMap.put(field, qualifiedField);
+                }
+            } else if ((targetTable = getTable(tableAlias)) != null) {
+                if (targetTable != field.tableMeta()) {
+                    throw qualifiedFieldTableNotMatch(tableAlias, targetTable, field);
+                }
                 if (aliasFieldMap == null) {
                     this.aliasFieldMap = aliasFieldMap = _Collections.hashMap();
                 }
@@ -1282,10 +1304,15 @@ abstract class CriteriaContexts {
                         .computeIfAbsent(field, f -> QualifiedFieldImpl.create(tableAlias, field));
             } else if (isInWithClause()) {
                 throw unknownQualifiedField(tableAlias, field);
-            } else if ((outerContext = this.outerContext) == null) {
+            } else if (this instanceof PrimaryContext) {
                 qualifiedField = null;
-            } else if ((qualifiedField = outerContext.field(tableAlias, field)) != null) {
-                addOuterRef(tableAlias);
+            } else {
+                final StatementContext outerContext = this.outerContext;
+                assert outerContext != null;
+                qualifiedField = outerContext.outerOrMoreOuterField(tableAlias, field);
+                if (qualifiedField != null) {
+                    addOuterRef(tableAlias);
+                }
             }
 
             if (qualifiedField != null) {
@@ -1307,35 +1334,33 @@ abstract class CriteriaContexts {
 
         @Override
         public final DerivedField refField(final String derivedAlias, final String fieldName) {
-            if (isEndContext()) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            }
+
             final Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             final Map<String, DerivedField> fieldMap;
 
-            DerivedField field;
+            final DerivedField field;
+            DerivedField tempField;
             if (aliasToSelection != null
                     && (fieldMap = aliasToSelection.get(derivedAlias)) != null
-                    && (field = fieldMap.get(fieldName)) != null) {
-                return field;
-            }
-
-            if (isInWithClause()) {
-                throw unknownDerivedField(derivedAlias, fieldName);
-            }
-
-            if (this.aliasToBlock == null
-                    && this instanceof SimpleQueryContext
-                    && ((SimpleQueryContext) this).deferSelectClause == null) {
-                throw nonDeferSelectClause();
-            }
-
-            final StatementContext outerContext;
-            if (getDerived(derivedAlias) != null) { // in current context
+                    && (tempField = fieldMap.get(fieldName)) != null) {
+                field = tempField;
+            } else if (getDerived(derivedAlias) != null) { // here getDerived() trigger buffer derived table in current context
                 field = createDerivedField(derivedAlias, fieldName);
-            } else if ((outerContext = this.outerContext) == null) {
-                field = null;
-            } else if ((field = outerContext.refField(derivedAlias, fieldName)) != null) {
+            } else if (isInWithClause()) {
+                throw unknownDerivedField(derivedAlias, fieldName);
+            } else if (this.aliasToBlock == null
+                    && this instanceof SimpleQueryContext
+                    && ((SimpleQueryContext) this).deferSelectClause == null) { // after trigger ,if still null,then error
+                throw nonDeferSelectClause();
+            } else if (this instanceof PrimaryContext) {
+                throw unknownDerivedField(derivedAlias, fieldName);
+            } else {
+                final StatementContext outerContext = this.outerContext;
+                assert outerContext != null;
+                field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+                if (field == null) {
+                    throw unknownDerivedField(derivedAlias, fieldName);
+                }
                 addOuterRef(derivedAlias);
             }
             return field;
@@ -1407,6 +1432,91 @@ abstract class CriteriaContexts {
         }
 
         /*-------------------below package methods -------------------*/
+
+
+        /**
+         * @see JoinableContext#field(String, FieldMeta)
+         */
+        @SuppressWarnings("unchecked")
+        @Nullable
+        @Override
+        final <T> QualifiedField<T> outerOrMoreOuterField(final String tableAlias, final FieldMeta<T> field) {
+
+            Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
+            final Map<FieldMeta<?>, QualifiedField<?>> fieldMap;
+
+
+            final TableMeta<?> targetTable;
+
+            final QualifiedField<?> qualifiedField, tempFiled;
+
+            if (aliasFieldMap != null && (fieldMap = aliasFieldMap.get(tableAlias)) != null) {
+                tempFiled = fieldMap.get(field);
+                if (tempFiled == null) {
+                    qualifiedField = QualifiedFieldImpl.create(tableAlias, field);
+                    fieldMap.put(field, qualifiedField);
+                } else {
+                    qualifiedField = tempFiled;
+                }
+            } else if ((targetTable = getTable(tableAlias)) != null) {
+                if (targetTable != field.tableMeta()) {
+                    throw qualifiedFieldTableNotMatch(tableAlias, targetTable, field);
+                }
+                if (aliasFieldMap == null) {
+                    this.aliasFieldMap = aliasFieldMap = _Collections.hashMap();
+                }
+                qualifiedField = aliasFieldMap.computeIfAbsent(tableAlias, _Collections::hashMapIgnoreKey)
+                        .computeIfAbsent(field, f -> QualifiedFieldImpl.create(tableAlias, field));
+            } else if (isInWithClause()) {
+                qualifiedField = null;
+            } else if (this instanceof PrimaryContext) {
+                qualifiedField = null;
+            } else {
+                final StatementContext outerContext = this.outerContext;
+                assert outerContext != null;
+                qualifiedField = outerContext.outerOrMoreOuterField(tableAlias, field);
+                if (qualifiedField != null) {
+                    addOuterRef(tableAlias);
+                }
+            }
+            return (QualifiedField<T>) qualifiedField;
+        }
+
+
+        /**
+         * @see JoinableContext#refField(String, String)
+         */
+        @Nullable
+        @Override
+        final DerivedField refOuterOrMoreOuterField(final String derivedAlias, final String fieldName) {
+
+            final Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
+            final Map<String, DerivedField> fieldMap;
+
+            final DerivedField field;
+            DerivedField tempField;
+            if (aliasToSelection != null
+                    && (fieldMap = aliasToSelection.get(derivedAlias)) != null
+                    && (tempField = fieldMap.get(fieldName)) != null) {
+                field = tempField;
+            } else if (getDerived(derivedAlias) != null) { // here getDerived() trigger buffer derived table in current context
+                field = createDerivedField(derivedAlias, fieldName);
+            } else if (this.aliasToBlock == null
+                    && this instanceof SimpleQueryContext
+                    && ((SimpleQueryContext) this).deferSelectClause == null) { // after trigger ,if still null,then error
+                throw nonDeferSelectClause();
+            } else if (this instanceof PrimaryContext) {
+                field = null;
+            } else {
+                final StatementContext outerContext = this.outerContext;
+                assert outerContext != null;
+                field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+                if (field != null) {
+                    addOuterRef(derivedAlias);
+                }
+            }
+            return field;
+        }
 
 
         @Override
@@ -2812,6 +2922,8 @@ abstract class CriteriaContexts {
 
         private StatementContext innerContext;
 
+        private Map<String, Boolean> outerRefMap;
+
 
         private BracketContext(Dialect dialect, final @Nullable CriteriaContext outerContext,
                                final @Nullable CriteriaContext leftContext) {
@@ -2834,27 +2946,42 @@ abstract class CriteriaContexts {
 
         @Override
         public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
-            final CriteriaContext outerContext = this.outerContext;
-            final QualifiedField<T> qualifiedField;
-            if (outerContext == null) {
-                qualifiedField = null;
-            } else {
-                qualifiedField = outerContext.field(tableAlias, field);
+            if (this instanceof PrimaryContext) {
+                throw unknownQualifiedField(tableAlias, field);
             }
+
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final QualifiedField<T> qualifiedField;
+            qualifiedField = outerContext.outerOrMoreOuterField(tableAlias, field);
+            if (qualifiedField == null) {
+                throw unknownQualifiedField(tableAlias, field);
+            }
+
+            addOuterRef(tableAlias);
             return qualifiedField;
         }
 
         @Override
         public final DerivedField refField(final String derivedAlias, final String fieldName) {
-            final CriteriaContext outerContext = this.outerContext;
-            final DerivedField field;
-            if (outerContext == null) {
-                field = null;
-            } else {
-                field = outerContext.refField(derivedAlias, fieldName);
+            if (this instanceof PrimaryContext) {
+                throw unknownDerivedField(derivedAlias, fieldName);
             }
+
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final DerivedField field;
+            field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+            if (field == null) {
+                throw unknownDerivedField(derivedAlias, fieldName);
+            }
+
+            addOuterRef(derivedAlias);
             return field;
         }
+
 
         @Override
         public final Expression refSelection(final String selectionLabel) {
@@ -2895,6 +3022,47 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCriteriaError("innerContext not match");
             }
             this.innerContext = (StatementContext) innerContext;
+        }
+
+
+        /*-------------------below package methods -------------------*/
+
+        @Nullable
+        @Override
+        final DerivedField refOuterOrMoreOuterField(final String derivedAlias, final String fieldName) {
+            if (this instanceof PrimaryContext) {
+                return null;
+            }
+
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final DerivedField field;
+            field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+
+            if (field != null) {
+                addOuterRef(derivedAlias);
+            }
+            return field;
+        }
+
+        @Nullable
+        @Override
+        final <T> QualifiedField<T> outerOrMoreOuterField(final String tableAlias, final FieldMeta<T> field) {
+            if (this instanceof PrimaryContext) {
+                return null;
+            }
+
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final QualifiedField<T> qualifiedField;
+            qualifiedField = outerContext.outerOrMoreOuterField(tableAlias, field);
+
+            if (qualifiedField != null) {
+                addOuterRef(tableAlias);
+            }
+            return qualifiedField;
         }
 
         @Override
@@ -2944,11 +3112,33 @@ abstract class CriteriaContexts {
             if (innerContext == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            return innerContext.containsAnyTableAlias(outerTabularItemAlias);
+
+            final Map<String, Boolean> outerRefMap = this.outerRefMap;
+
+            boolean contains = false;
+            if (outerRefMap != null) {
+                for (String tabularItemAlias : outerTabularItemAlias) {
+                    if (outerRefMap.containsKey(tabularItemAlias)) {
+                        contains = true;
+                        break;
+                    }
+                }
+            }
+            return contains || innerContext.containsAnyTableAlias(outerTabularItemAlias);
+        }
+
+        private void addOuterRef(final String tabularAlias) {
+            Map<String, Boolean> outerRefMap = this.outerRefMap;
+            if (outerRefMap == null) {
+                this.outerRefMap = outerRefMap = _Collections.hashMap();
+            } else if (!(outerRefMap instanceof HashMap)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            outerRefMap.putIfAbsent(tabularAlias, Boolean.TRUE);
         }
 
 
-    }//BracketContext
+    } // BracketContext
 
 
     private static final class PrimaryBracketContext extends BracketContext

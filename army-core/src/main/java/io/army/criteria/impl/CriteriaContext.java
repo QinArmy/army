@@ -109,7 +109,9 @@ interface CriteriaContext {
     @Nullable
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
 
-    @Nullable
+    /**
+     * @see SQLs#refField(String, String)
+     */
     DerivedField refField(String derivedAlias, String fieldName);
 
     Expression refSelection(String selectionLabel);

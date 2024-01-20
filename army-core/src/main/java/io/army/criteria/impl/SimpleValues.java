@@ -36,6 +36,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
         Values._ValueStaticColumnSpaceClause,
         Values._ValueStaticColumnDualCommaClause,
         Values._ValueStaticColumnQuadraCommaClause,
+        Values._ValueStaticColumnOctupleCommaClause,
         Statement._AsValuesClause<I>,
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticExceptClause<SP>,
@@ -80,11 +81,68 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                          @Nullable Object exp4) {
         onAddColumn(exp1);
         onAddColumn(exp2);
         onAddColumn(exp3);
         onAddColumn(exp4);
+        return this;
+    }
+
+    @Override
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                          @Nullable Object exp4, @Nullable Object exp5) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        return this;
+    }
+
+    @Override
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                          @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        return this;
+    }
+
+    @Override
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                          @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                                          @Nullable Object exp7) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        onAddColumn(exp7);
+        return this;
+    }
+
+    @Override
+    public final Values._ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                          @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                                          @Nullable Object exp7, @Nullable Object exp8) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        onAddColumn(exp7);
+        onAddColumn(exp8);
         return this;
     }
 
@@ -108,6 +166,34 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
         return comma(exp1, exp2, exp3, exp4);
     }
 
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5) {
+        return this.comma(exp1, exp2, exp3, exp4, exp5);
+    }
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5,
+                                                                   @Nullable Object exp6) {
+        return this.comma(exp1, exp2, exp3, exp4, exp5, exp6);
+    }
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5,
+                                                                   @Nullable Object exp6, @Nullable Object exp7) {
+        return this.comma(exp1, exp2, exp3, exp4, exp5, exp6, exp7);
+    }
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5,
+                                                                   @Nullable Object exp6, @Nullable Object exp7,
+                                                                   @Nullable Object exp8) {
+        return this.comma(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8);
+    }
 
     @Override
     public final Item comma(@Nullable Object exp) {
@@ -136,6 +222,65 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
         onAddColumn(exp2);
         onAddColumn(exp3);
         onAddColumn(exp4);
+        return this;
+    }
+
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        return this;
+    }
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5,
+                                                                   @Nullable Object exp6) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        return this;
+    }
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5,
+                                                                   @Nullable Object exp6, @Nullable Object exp7) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        onAddColumn(exp7);
+        return this;
+    }
+
+    @Override
+    public final Values._ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                                   @Nullable Object exp4, @Nullable Object exp5,
+                                                                   @Nullable Object exp6, @Nullable Object exp7,
+                                                                   @Nullable Object exp8) {
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        onAddColumn(exp7);
+        onAddColumn(exp8);
         return this;
     }
 

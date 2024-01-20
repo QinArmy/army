@@ -122,6 +122,25 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
     }
 
 
+    interface _ValueStaticColumnOctupleCommaClause extends _ValueStaticColumnQuadraCommaClause {
+
+        _ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5);
+
+        _ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6);
+
+        _ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                                   @Nullable Object exp7);
+
+        _ValueStaticColumnOctupleCommaClause comma(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                                   @Nullable Object exp7, @Nullable Object exp8);
+
+
+    }
+
 
     interface _ValueStaticColumnSpaceClause {
 
@@ -205,6 +224,21 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @throws CriteriaException throw when exp error.
          */
         _ValueStaticColumnQuadraCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4);
+
+
+        _ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5);
+
+        _ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6);
+
+        _ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                                   @Nullable Object exp7);
+
+        _ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                                   @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                                   @Nullable Object exp7, @Nullable Object exp8);
 
     }
 
@@ -291,6 +325,20 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @throws CriteriaException throw when exp error.
          */
         _ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4);
+
+        _ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                          @Nullable Object exp4, @Nullable Object exp5);
+
+        _ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                          @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6);
+
+        _ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                          @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                          @Nullable Object exp7);
+
+        _ValuesDynamicColumnClause column(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
+                                          @Nullable Object exp4, @Nullable Object exp5, @Nullable Object exp6,
+                                          @Nullable Object exp7, @Nullable Object exp8);
 
     }
 

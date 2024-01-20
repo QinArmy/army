@@ -663,12 +663,7 @@ abstract class SQLSyntax extends Functions {
      * @throws UnknownDerivedFieldException throw when derived filed is unknown.
      */
     public static DerivedField refField(String derivedAlias, String selectionAlias) {
-        final DerivedField field;
-        field = ContextStack.peek().refField(derivedAlias, selectionAlias);
-        if (field == null) {
-            throw CriteriaContexts.unknownDerivedField(derivedAlias, selectionAlias);
-        }
-        return field;
+        return ContextStack.peek().refField(derivedAlias, selectionAlias);
     }
 
 
