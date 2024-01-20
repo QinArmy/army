@@ -645,12 +645,7 @@ abstract class SQLSyntax extends Functions {
      *                           </ul>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-        final QualifiedField<T> qualifiedField;
-        qualifiedField = ContextStack.peek().field(tableAlias, field);
-        if (qualifiedField == null) {
-            throw CriteriaContexts.unknownQualifiedField(tableAlias, field);
-        }
-        return qualifiedField;
+        return ContextStack.peek().field(tableAlias, field);
     }
 
     /**

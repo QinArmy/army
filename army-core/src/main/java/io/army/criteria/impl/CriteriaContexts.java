@@ -324,6 +324,7 @@ abstract class CriteriaContexts {
     private static void migrateToQueryContext(final SimpleQueryContext queryContext, final DispatcherContext migrated) {
         ((JoinableContext) queryContext).aliasFieldMap = migrated.aliasFieldMap;
         ((JoinableContext) queryContext).fieldsFromSubContext = migrated.fieldsFromSubContext;
+        ((JoinableContext) queryContext).outerRefMap = migrated.outerRefMap;
 
         queryContext.refWindowNameMap = migrated.refWindowNameMap;
 
@@ -331,6 +332,7 @@ abstract class CriteriaContexts {
         migrated.aliasFieldMap = null;
         migrated.refWindowNameMap = null;
         migrated.fieldsFromSubContext = null;
+        migrated.outerRefMap = null;
 
         migrated.migrated = true;
 
@@ -347,11 +349,6 @@ abstract class CriteriaContexts {
             throw unknownQualifiedFields(dispatcherContext, dispatcherContext.fieldsFromSubContext);
         }
 
-    }
-
-    private static CriteriaException notFoundOuterContext(CriteriaContext context) {
-        String m = String.format("current %s no outer context", context);
-        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -1278,7 +1275,7 @@ abstract class CriteriaContexts {
         @SuppressWarnings("unchecked")
         @Override
         public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
-
+            // here , perhaps from sub values context
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
             final Map<FieldMeta<?>, QualifiedField<?>> fieldMap;
 
@@ -1334,7 +1331,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final DerivedField refField(final String derivedAlias, final String fieldName) {
-
+            // here , perhaps from sub values context
             final Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             final Map<String, DerivedField> fieldMap;
 
@@ -2946,6 +2943,8 @@ abstract class CriteriaContexts {
 
         @Override
         public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
+            assert this.innerContext != null; // fail ,bug
+
             if (this instanceof PrimaryContext) {
                 throw unknownQualifiedField(tableAlias, field);
             }
@@ -2965,6 +2964,8 @@ abstract class CriteriaContexts {
 
         @Override
         public final DerivedField refField(final String derivedAlias, final String fieldName) {
+            assert this.innerContext != null; // fail ,bug
+
             if (this instanceof PrimaryContext) {
                 throw unknownDerivedField(derivedAlias, fieldName);
             }
@@ -3033,17 +3034,10 @@ abstract class CriteriaContexts {
             if (this instanceof PrimaryContext) {
                 return null;
             }
-
+            // from inner sub context invoking.
             final StatementContext outerContext = this.outerContext;
             assert outerContext != null;
-
-            final DerivedField field;
-            field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
-
-            if (field != null) {
-                addOuterRef(derivedAlias);
-            }
-            return field;
+            return outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
         }
 
         @Nullable
@@ -3052,17 +3046,10 @@ abstract class CriteriaContexts {
             if (this instanceof PrimaryContext) {
                 return null;
             }
-
+            // from inner sub context invoking.
             final StatementContext outerContext = this.outerContext;
             assert outerContext != null;
-
-            final QualifiedField<T> qualifiedField;
-            qualifiedField = outerContext.outerOrMoreOuterField(tableAlias, field);
-
-            if (qualifiedField != null) {
-                addOuterRef(tableAlias);
-            }
-            return qualifiedField;
+            return outerContext.outerOrMoreOuterField(tableAlias, field);
         }
 
         @Override
@@ -3103,7 +3090,7 @@ abstract class CriteriaContexts {
             if (this.innerContext == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            return _Collections.emptyList();
+            return Collections.emptyList();
         }
 
         @Override
@@ -3232,6 +3219,7 @@ abstract class CriteriaContexts {
             this.inRowClause = false;
         }
 
+
         @Override
         public final Expression refSelection(final int selectionOrdinal) {
             if (this.inRowClause) {
@@ -3330,36 +3318,30 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
+        public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
             if (this instanceof PrimaryContext) {
-                // sub query invoking ,always return null;
-                return null;
+                throw unknownQualifiedField(tableAlias, field);
             }
-            final StatementContext outerContext = this.outerContext;
+            final CriteriaContext outerContext = this.outerContext;
             assert outerContext != null;
 
             final QualifiedField<T> outerField;
-            outerField = outerContext.field(tableAlias, field);
-            if (outerField != null) {
-                addOuterRef(tableAlias);
-            }
+            outerField = outerContext.field(tableAlias, field); // here, dont' use outerOrMoreOuterField() method, for example : SELECT clause
+            addOuterRef(tableAlias);
             return outerField;
         }
 
         @Override
-        public final DerivedField refField(String derivedAlias, String fieldName) {
+        public final DerivedField refField(final String derivedAlias, final String fieldName) {
             if (this instanceof PrimaryContext) {
-                // sub query invoking ,always return null;
-                return null;
+                throw unknownDerivedField(derivedAlias, fieldName);
             }
-            final StatementContext outerContext = this.outerContext;
+            final CriteriaContext outerContext = this.outerContext;
             assert outerContext != null;
 
             final DerivedField outerField;
-            outerField = outerContext.refField(derivedAlias, fieldName);
-            if (outerField != null) {
-                addOuterRef(derivedAlias);
-            }
+            outerField = outerContext.refField(derivedAlias, fieldName);  // here, dont' use refOuterOrMoreOuterField() method, for example : SELECT clause
+            addOuterRef(derivedAlias);
             return outerField;
         }
 
@@ -3380,6 +3362,42 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.selectionList = Collections.emptyList();
+        }
+
+        /*-------------------below package methods -------------------*/
+
+        @Nullable
+        @Override
+        final DerivedField refOuterOrMoreOuterField(final String derivedAlias, final String fieldName) {
+            if (this instanceof PrimaryContext) {
+                return null;
+            }
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final DerivedField field;
+            field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+            if (field != null) {
+                addOuterRef(derivedAlias);
+            }
+            return field;
+        }
+
+        @Nullable
+        @Override
+        final <T> QualifiedField<T> outerOrMoreOuterField(final String tableAlias, final FieldMeta<T> field) {
+            if (this instanceof PrimaryContext) {
+                return null;
+            }
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final QualifiedField<T> outerField;
+            outerField = outerContext.outerOrMoreOuterField(tableAlias, field);
+            if (outerField != null) {
+                addOuterRef(tableAlias);
+            }
+            return outerField;
         }
 
         @Override
@@ -3484,6 +3502,8 @@ abstract class CriteriaContexts {
          */
         private List<QualifiedField<?>> fieldsFromSubContext;
 
+        private Map<String, Boolean> outerRefMap;
+
 
         private boolean migrated;
 
@@ -3514,8 +3534,21 @@ abstract class CriteriaContexts {
         @Override
         public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
             if (this.migrated) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
+
+            if (this instanceof SubContext) {
+                final StatementContext outerContext = this.outerContext;
+                assert outerContext != null;
+
+                final QualifiedField<T> outerField;
+                outerField = outerContext.outerOrMoreOuterField(tableAlias, field);
+                if (outerField != null) {
+                    addOuterRef(tableAlias);
+                    return outerField;
+                }
+            }
+
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> fieldMap = this.aliasFieldMap;
             if (fieldMap == null) {
                 this.aliasFieldMap = fieldMap = _Collections.hashMap();
@@ -3528,13 +3561,10 @@ abstract class CriteriaContexts {
         @Override
         public final DerivedField refField(final String derivedAlias, final String fieldName) {
             if (this.migrated) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final CriteriaContext outerContext = this.outerContext;
-            if (outerContext == null) {
-                throw notFoundOuterContext(this);
-            }
-            return outerContext.refField(derivedAlias, fieldName);
+            // this is  DispatcherContext , so in static SELECT clause
+            throw nonDeferSelectClause();
         }
 
         @Override
@@ -3547,24 +3577,20 @@ abstract class CriteriaContexts {
             }
             Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
             if (refWindowNameMap == null) {
-                refWindowNameMap = _Collections.hashMap();
-                this.refWindowNameMap = refWindowNameMap;
+                this.refWindowNameMap = refWindowNameMap = _Collections.hashMap();
             }
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
         }
 
         @Override
         public final void onAddWindow(final String windowName) {
-            if (this.migrated) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            }
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Override
         public final Expression refSelection(final @Nullable String selectionLabel) {
             if (this.migrated) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (selectionLabel == null) {
                 throw ContextStack.clearStackAndNullPointer();
             }
@@ -3577,11 +3603,48 @@ abstract class CriteriaContexts {
         @Override
         public final Expression refSelection(final int selectionOrdinal) {
             if (this.migrated) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             } else if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(selectionOrdinal);
             }
             throw invokeRefSelectionInSelectionClause(this);
+        }
+
+        /*-------------------below package methods -------------------*/
+
+        @Nullable
+        @Override
+        final <T> QualifiedField<T> outerOrMoreOuterField(final String tableAlias, final FieldMeta<T> field) {
+            if (this instanceof PrimaryContext) {
+                return null;
+            }
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final QualifiedField<T> outerField;
+            outerField = outerContext.outerOrMoreOuterField(tableAlias, field);
+            if (outerField != null) {
+                addOuterRef(tableAlias);
+            }
+            return outerField;
+        }
+
+
+        @Nullable
+        @Override
+        final DerivedField refOuterOrMoreOuterField(final String derivedAlias, final String fieldName) {
+            if (this instanceof PrimaryContext) {
+                return null;
+            }
+            final StatementContext outerContext = this.outerContext;
+            assert outerContext != null;
+
+            final DerivedField outerField;
+            outerField = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+            if (outerField != null) {
+                addOuterRef(derivedAlias);
+            }
+            return outerField;
         }
 
         @Override
@@ -3596,6 +3659,22 @@ abstract class CriteriaContexts {
                 this.fieldsFromSubContext = list = _Collections.arrayList();
             }
             list.add(field);
+        }
+
+        /*-------------------below private methods -------------------*/
+
+        /**
+         * @see #field(String, FieldMeta)
+         * @see #refField(String, String)
+         */
+        private void addOuterRef(final String outerTableAlias) {
+            Map<String, Boolean> outerRefMap = this.outerRefMap;
+            if (outerRefMap == null) {
+                this.outerRefMap = outerRefMap = _Collections.hashMap();
+            } else if (!(outerRefMap instanceof HashMap)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            outerRefMap.putIfAbsent(outerTableAlias, Boolean.TRUE);
         }
 
 

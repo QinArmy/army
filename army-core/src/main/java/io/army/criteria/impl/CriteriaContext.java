@@ -106,7 +106,6 @@ interface CriteriaContext {
     /**
      * <p>This method is invoked by {@link SQLs#field(String, FieldMeta)}
      */
-    @Nullable
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
 
     /**
