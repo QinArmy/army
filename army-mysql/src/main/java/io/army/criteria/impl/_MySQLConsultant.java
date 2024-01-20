@@ -19,7 +19,10 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._NestedItems;
+import io.army.criteria.impl.inner._SingleDelete;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Database;
@@ -149,23 +152,6 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         if (!(window instanceof MySQLSupports.MySQLWindowImpl || window instanceof SQLWindow.SimpleWindow)) {
             throw illegalWindow(window);
         }
-    }
-
-    public static void assertMySQLCte(final _Cte cte) {
-        if (cte instanceof CriteriaContexts.RecursiveCte) {
-            return;
-        }
-        if (!(cte instanceof SQLs.CteImpl)) {
-            throw illegalCteImpl(cte);
-        }
-        final SubStatement subStatement;
-        subStatement = cte.subStatement();
-        if (!(subStatement instanceof MySQLQueries
-                || subStatement instanceof MySQLQueries.MySQLBracketQuery
-                || subStatement instanceof SimpleQueries.UnionSubQuery)) {
-            throw illegalCteImpl(cte);
-        }
-
     }
 
 

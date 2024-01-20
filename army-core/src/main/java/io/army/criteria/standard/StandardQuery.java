@@ -353,7 +353,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * <p>This interface is public interface that developer can directly use.
      */
     interface SelectSpec<I extends Item> extends _StandardSelectClause<I>,
-            _DynamicParensRowSetClause<SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

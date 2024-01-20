@@ -20,8 +20,10 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
 import io.army.criteria.Visible;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.StandardStatement;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
@@ -72,6 +74,19 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
         } // switch
 
+    }
+
+    @Override
+    protected final void parseWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
+        if (spec instanceof StandardStatement) {
+            withSubQuery(spec.isRecursive(), spec.cteList(), context, _SQLConsultant::assertStandardCte);
+        } else {
+            postgreWithClause(spec, context);
+        }
+    }
+
+    protected void postgreWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
+        throw _Exceptions.dontSupportWithClause(this.dialect);
     }
 
     @Override

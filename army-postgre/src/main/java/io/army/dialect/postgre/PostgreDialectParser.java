@@ -97,7 +97,7 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     @Override
-    protected void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
+    protected void postgreWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
         final List<_Cte> cteList = spec.cteList();
         final int cteSize = cteList.size();
         if (cteSize == 0) {

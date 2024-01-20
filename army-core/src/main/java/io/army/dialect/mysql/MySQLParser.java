@@ -17,11 +17,9 @@
 package io.army.dialect.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._SingleDelete;
-import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -76,6 +74,15 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 sqlBuilder.append(dataType.typeName());
         }
 
+    }
+
+
+    @Override
+    protected final void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
+        if (!this.asOf80) {
+            throw _Exceptions.dontSupportWithClause(this.dialect);
+        }
+        withSubQuery(spec.isRecursive(), spec.cteList(), context, _SQLConsultant::assertStandardCte);
     }
 
     @Override

@@ -158,10 +158,6 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
-    @Override
-    protected void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
-        this.mySqlWithClause(spec.isRecursive(), spec.cteList(), context);
-    }
 
     @Override
     protected void parseSimpleQuery(final _Query query, final _SimpleQueryContext context) {
@@ -169,7 +165,7 @@ final class MySQLDialectParser extends MySQLParser {
         final _MySQLQuery stmt = (_MySQLQuery) query;
 
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        parseWithClause(stmt, context);
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
         if (sqlBuilder.length() > 0) {
@@ -284,7 +280,7 @@ final class MySQLDialectParser extends MySQLParser {
         assert context.parser() == this;
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        parseWithClause(stmt, context);
 
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
@@ -348,7 +344,7 @@ final class MySQLDialectParser extends MySQLParser {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        parseWithClause(stmt, context);
         if (sqlBuilder.length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
@@ -379,7 +375,7 @@ final class MySQLDialectParser extends MySQLParser {
         final _MySQLSingleDelete stmt = (_MySQLSingleDelete) delete;
 
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        parseWithClause(stmt, context);
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
         if (sqlBuilder.length() > 0) {
@@ -439,7 +435,7 @@ final class MySQLDialectParser extends MySQLParser {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        parseWithClause(stmt, context);
         if (sqlBuilder.length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
@@ -739,7 +735,6 @@ final class MySQLDialectParser extends MySQLParser {
             } else if (!asOf80) {
                 throw _Exceptions.dontSupportTableItem(tabularItem, alias, this.dialect);
             } else if (tabularItem instanceof _Cte) {
-                _MySQLConsultant.assertMySQLCte((_Cte) tabularItem);
                 sqlBuilder.append(_Constant.SPACE);
                 this.identifier(((_Cte) tabularItem).name(), sqlBuilder);
                 if (_StringUtils.hasText(alias)) {
@@ -922,18 +917,6 @@ final class MySQLDialectParser extends MySQLParser {
             hintIndex++;
         }
 
-
-    }
-
-
-    private void mySqlWithClause(final boolean recursive, final List<_Cte> cteList, final _SqlContext context) {
-        if (cteList.size() == 0) {
-            return;
-        }
-        if (!this.asOf80) {
-            throw _Exceptions.dontSupportWithClause(this.dialect);
-        }
-        this.withSubQuery(recursive, cteList, context, _MySQLConsultant::assertMySQLCte);
 
     }
 

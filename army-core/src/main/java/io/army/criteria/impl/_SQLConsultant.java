@@ -61,13 +61,6 @@ public abstract class _SQLConsultant {
         if (!(cte instanceof SQLs.CteImpl)) {
             throw illegalCteImpl(cte);
         }
-        final SubStatement subStatement;
-        subStatement = cte.subStatement();
-        if (!(subStatement instanceof StandardQueries
-                || subStatement instanceof StandardQueries.StandardBracketQuery
-                || subStatement instanceof SimpleQueries.UnionSubQuery)) {
-            throw illegalCteImpl(cte);
-        }
     }
 
     public static void assertUnionRowSet(final RowSet rowSet) {
