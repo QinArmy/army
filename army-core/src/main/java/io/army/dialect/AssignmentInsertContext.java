@@ -298,8 +298,6 @@ final class AssignmentInsertContext extends InsertContext
 
     private static final class AssignmentWrapper extends ExpRowWrapper {
 
-        private final boolean mockEnv;
-
         private final Map<FieldMeta<?>, _Expression> nonChildPairMap;
 
         private final Map<FieldMeta<?>, _Expression> childPairMap;
@@ -313,7 +311,6 @@ final class AssignmentInsertContext extends InsertContext
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
             super(context, domainStmt);
-            this.mockEnv = context.parser.mockEnv;
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();
                 this.nonChildPairMap = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().assignmentMap();
@@ -330,13 +327,13 @@ final class AssignmentInsertContext extends InsertContext
             } else {
                 int maxSize = 6;
 
-                if (domainTable instanceof ChildTableMeta) {
-                    maxSize += ((ChildTableMeta<?>) domainTable).parentMeta().fieldChain().size();
+                if (this.domainTable instanceof ChildTableMeta) {
+                    maxSize += ((ChildTableMeta<?>) this.domainTable).parentMeta().fieldChain().size();
                 }
-                maxSize += domainTable.fieldChain().size();
+                maxSize += this.domainTable.fieldChain().size();
 
                 final Map<FieldMeta<?>, Object> map = _Collections.hashMap((int) (maxSize / 0.75F));
-                this.generatedMap = _Collections.unmodifiableMap(map);
+                this.generatedMap = Collections.unmodifiableMap(map); // here ,use read only view of map
                 this.tempGeneratedMap = map;
             }
 
@@ -348,8 +345,7 @@ final class AssignmentInsertContext extends InsertContext
             final Map<FieldMeta<?>, Object> map = this.tempGeneratedMap;
             assert map != null;
             if (value == null) {
-                assert this.mockEnv;
-                //here mock environment
+                map.remove(field);
                 return;
             }
             map.put(field, value);

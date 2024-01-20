@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -96,12 +97,9 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
     public void domainInsertParentWithConflict(final SyncLocalSession session) {
-
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
-
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
-
         final long startNanoSecond = System.nanoTime();
 
         final Insert stmt;
@@ -122,10 +120,8 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
                 .asInsert();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
-
         final long rows;
         rows = session.update(stmt);
-
         Assert.assertEquals(rows, (long) regionList.size() << 1);
 
     }
@@ -144,19 +140,47 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-
                 .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
                         .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
                         .comma(ChinaRegion_.parentId, SQLs::literal, 0)
-                )
-                .comma()
+                ).comma()
                 .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomProvince(random))
                         .comma(ChinaRegion_.parentId, SQLs::literal, 0)
-                )
-                .asInsert();
+                ).asInsert();
 
 
         Assert.assertEquals(session.update(stmt), 2L);
+
+    }
+
+    @VisibleMode(Visible.BOTH)
+    @Test(invocationCount = 3)
+    public void staticValuesInsertParentWithConflict(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(2);
+        session.batchSave(regionList);
+        final Random random = ThreadLocalRandom.current();
+
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, BigDecimal.ZERO)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionList.get(0).getName())
+                        .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, 0)
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionList.get(1).getName())
+                        .comma(ChinaRegion_.parentId, SQLs::literal, 0)
+                ).as("c")
+                .onDuplicateKey()
+                .update(ChinaRegion_.population, SQLs.field("c", ChinaRegion_.population))
+                .comma(ChinaRegion_.regionGdp, SQLs.field("c", ChinaRegion_.regionGdp))
+                .asInsert();
+
+        final long regionSize = regionList.size();
+
+        Assert.assertEquals(session.update(stmt), regionSize << 1);
 
     }
 
@@ -191,8 +215,6 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
                 .comma()
                 .parens(s -> s.space(ChinaCity_.mayorName, SQLs::param, randomPerson(random)))
                 .asInsert();
-
-
         Assert.assertEquals(session.update(stmt), 2L);
 
     }
@@ -263,6 +285,35 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
 
     }
 
+
+    /*-------------------below assignment insert -------------------*/
+
+    @VisibleMode(Visible.BOTH)
+    @Test(invocationCount = 3)
+    public void assignmentInsertParent(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(1);
+        session.batchSave(regionList);
+
+        final Random random = ThreadLocalRandom.current();
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .set(ChinaRegion_.name, SQLs::param, regionList.get(0).getName())
+                .set(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                .set(ChinaRegion_.population, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                .as("c")
+                .onDuplicateKey()
+                .update(ChinaRegion_.population, SQLs.field("c", ChinaRegion_.population))
+                .comma(ChinaRegion_.regionGdp, SQLs.field("c", ChinaRegion_.regionGdp))
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertEquals(session.update(stmt), 1L << 1); // because of conflict
+
+    }
 
     /*-------------------below query insert -------------------*/
 

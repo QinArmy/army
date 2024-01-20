@@ -17,10 +17,7 @@
 package io.army.session;
 
 
-import io.army.util._Collections;
-
 import javax.annotation.Nonnull;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -79,47 +76,27 @@ public interface TransactionInfo extends TransactionOption {
 
     Set<Option<?>> optionSet();
 
+
+    static InfoBuilder builder(boolean inTransaction, Isolation isolation, boolean readOnly) {
+        return ArmyTransactionInfo.builder(inTransaction, isolation, readOnly);
+    }
+
+
+    @Deprecated
     static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
                                 Function<Option<?>, ?> optionFunc) {
         return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
     }
 
     static TransactionInfo pseudoLocal(final TransactionOption option) {
-        final Map<Option<?>, Object> map = _Collections.hashMap(8);
-
-        map.put(Option.START_MILLIS, System.currentTimeMillis());
-
-        final Integer timeoutMillis;
-        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-        if (timeoutMillis != null) {
-            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-        }
-        map.put(Option.DEFAULT_ISOLATION, Boolean.TRUE);
-        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
+        return ArmyTransactionInfo.pseudoLocal(option);
     }
 
     /**
      * <p>Create pseudo transaction info for XA transaction start method.
      */
     static TransactionInfo pseudoStart(final Xid xid, final int flags, final TransactionOption option) {
-        if (option.isolation() != Isolation.PSEUDO || !option.isReadOnly()) {
-            throw new IllegalArgumentException("non-pseudo transaction option");
-        }
-
-        final Map<Option<?>, Object> map = _Collections.hashMap(12);
-
-        map.put(Option.START_MILLIS, System.currentTimeMillis());
-
-        final Integer timeoutMillis;
-        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-        if (timeoutMillis != null) {
-            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-        }
-        map.put(Option.XID, xid);
-        map.put(Option.XA_FLAGS, flags);
-        map.put(Option.XA_STATES, XaStates.ACTIVE);
-        map.put(Option.DEFAULT_ISOLATION, Boolean.TRUE);
-        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
+        return ArmyTransactionInfo.pseudoStart(xid, flags, option);
     }
 
 
@@ -127,28 +104,25 @@ public interface TransactionInfo extends TransactionOption {
      * <p>Create pseudo transaction info for XA transaction end method.
      */
     static TransactionInfo pseudoEnd(final TransactionInfo info, final int flags) {
-        if (info.inTransaction() || info.isolation() != Isolation.PSEUDO || !info.isReadOnly()) {
-            throw new IllegalArgumentException("non-pseudo transaction info");
-        }
-        final Map<Option<?>, Object> map = _Collections.hashMap(12);
-
-        map.put(Option.START_MILLIS, info.nonNullOf(Option.START_MILLIS));
-
-        final Integer timeoutMillis;
-        timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS);
-        if (timeoutMillis != null) {
-            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-        }
-        map.put(Option.XID, info.nonNullOf(Option.XID));
-        map.put(Option.XA_FLAGS, flags);
-        map.put(Option.XA_STATES, XaStates.IDLE);
-        map.put(Option.DEFAULT_ISOLATION, info.nonNullOf(Option.DEFAULT_ISOLATION));
-        return ArmyTransactionInfo.create(false, Isolation.PSEUDO, true, map::get);
+        return ArmyTransactionInfo.pseudoEnd(info, flags);
     }
 
-
+    @Deprecated
     static <T> TransactionInfo replaceOption(TransactionInfo info, Option<T> option, T value) {
         return ArmyTransactionInfo.replaceOption(info, option, value);
+    }
+
+    static TransactionInfo forRollbackOnly(TransactionInfo info) {
+        return ArmyTransactionInfo.forRollbackOnly(info);
+    }
+
+    interface InfoBuilder {
+
+        <T> InfoBuilder option(Option<T> option, @Nonnull T value);
+
+
+        TransactionInfo build();
+
     }
 
 

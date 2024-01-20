@@ -36,10 +36,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 abstract class InsertContext extends StatementContext
@@ -66,6 +63,9 @@ abstract class InsertContext extends StatementContext
 
     final List<FieldMeta<?>> fieldList;
 
+    /**
+     * nullable map
+     */
     final Map<FieldMeta<?>, Boolean> fieldMap;
 
     private final String tableAlias;
@@ -207,7 +207,7 @@ abstract class InsertContext extends StatementContext
                 && !((_Insert._SupportConflictClauseSpec) targetStmt).isDoNothing()
                 && this.fieldList.size() < this.insertTable.fieldList().size()) {
             // for example : MySQL conflict clause , column list less than table field list size
-            this.fieldMap = createFieldMap(this.fieldList);
+            this.fieldMap = createFieldMap(targetStmt, this.fieldList);
         } else {
             this.fieldMap = null;
         }
@@ -318,7 +318,7 @@ abstract class InsertContext extends StatementContext
                 && !((_Insert._SupportConflictClauseSpec) stmt).isDoNothing()
                 && this.fieldList.size() < this.insertTable.fieldList().size()) {
             // for example : MySQL conflict clause , column list less than table field list size
-            this.fieldMap = createFieldMap(this.fieldList);
+            this.fieldMap = createFieldMap(stmt, this.fieldList);
         } else {
             this.fieldMap = null;
         }
@@ -957,10 +957,26 @@ abstract class InsertContext extends StatementContext
         return idIndex;
     }
 
-    private static Map<FieldMeta<?>, Boolean> createFieldMap(final List<FieldMeta<?>> fieldList) {
-        final Map<FieldMeta<?>, Boolean> map = _Collections.hashMap((int) (fieldList.size() / 0.75F));
+    private static Map<FieldMeta<?>, Boolean> createFieldMap(final _Insert targetStmt, final List<FieldMeta<?>> fieldList) {
+        int fieldSize = fieldList.size();
+
+        final Set<FieldMeta<?>> assignmentFieldSet;
+        if (targetStmt instanceof _Insert._AssignmentInsert) {
+            assignmentFieldSet = ((_Insert._AssignmentInsert) targetStmt).assignmentMap().keySet();
+            fieldSize += assignmentFieldSet.size();
+        } else {
+            assignmentFieldSet = null;
+        }
+
+        final Map<FieldMeta<?>, Boolean> map = _Collections.hashMap((int) (fieldSize / 0.75F));
         for (FieldMeta<?> field : fieldList) {
             map.put(field, Boolean.TRUE);
+        }
+
+        if (assignmentFieldSet != null) {
+            for (FieldMeta<?> field : assignmentFieldSet) {
+                map.put(field, Boolean.TRUE);
+            }
         }
         return Collections.unmodifiableMap(map);
     }

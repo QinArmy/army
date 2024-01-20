@@ -213,6 +213,8 @@ final class ArmyTransactionOption implements TransactionOption {
             final TransactionOption option;
             if (map.size() == 0) {
                 option = ArmyTransactionOption.option(isolation, readOnly);
+            } else if (isolation == Isolation.PSEUDO && !readOnly) {
+                throw new IllegalArgumentException("PSEUDO must be read only");
             } else {
                 option = new ArmyTransactionOption(isolation, readOnly, map::get);
             }
