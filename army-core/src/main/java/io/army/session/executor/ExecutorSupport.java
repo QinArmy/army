@@ -801,6 +801,11 @@ public abstract class ExecutorSupport {
 
     /*-------------------below Exception  -------------------*/
 
+    protected static IllegalArgumentException notInTransactionAndChainConflict() {
+        String m = String.format("session not in transaction block,don't support %s option", Option.CHAIN);
+        return new IllegalArgumentException(m);
+    }
+
 
     protected static NullPointerException currentRecordColumnIsNull(int indexBasedZero, String columnLabel) {
         String m = String.format("value is null of current record index[%s] column label[%s] ",

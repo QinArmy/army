@@ -24,6 +24,11 @@ import java.util.function.Function;
 
 /**
  * <p>This interface representing the transaction info of session.
+ * <p>The developer of {@link io.army.session.executor.StmtExecutor} can create the instance of this interface by following :
+ * <ul>
+ *     <li>{@link #notInTransaction(Isolation, boolean)}</li>
+ *     <li>{@link #infoBuilder(boolean, Isolation, boolean)}</li>
+ * </ul>
  *
  * @since 0.6.0
  */
@@ -78,10 +83,9 @@ public interface TransactionInfo extends TransactionOption {
     Set<Option<?>> optionSet();
 
 
-    static InfoBuilder builder(boolean inTransaction, Isolation isolation, boolean readOnly) {
+    static InfoBuilder infoBuilder(boolean inTransaction, Isolation isolation, boolean readOnly) {
         return ArmyTransactionInfo.builder(inTransaction, isolation, readOnly);
     }
-
 
 
     static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
@@ -89,8 +93,12 @@ public interface TransactionInfo extends TransactionOption {
         throw new UnsupportedOperationException();
     }
 
-    static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly) {
-        return ArmyTransactionInfo.create(inTransaction, isolation, readOnly);
+    /**
+     * <p>Get a {@link TransactionInfo} instance that {@link TransactionInfo#inTransaction()} is false
+     * and option is empty.
+     */
+    static TransactionInfo notInTransaction(Isolation isolation, boolean readOnly) {
+        return ArmyTransactionInfo.noInTransaction(isolation, readOnly);
     }
 
     static TransactionInfo pseudoLocal(final TransactionOption option) {
@@ -128,11 +136,46 @@ public interface TransactionInfo extends TransactionOption {
         return ArmyTransactionInfo.forRollbackOnly(info);
     }
 
+    /**
+     * @throws IllegalArgumentException throw when
+     *                                  <ul>
+     *                                      <li>info is unknown implementation</li>
+     *                                      <li>info's {@link TransactionInfo#inTransaction()} is false </li>
+     *                                  </ul>
+     */
+    static TransactionInfo forChain(TransactionInfo info) {
+        return ArmyTransactionInfo.forChain(info);
+    }
+
+    static TransactionInfo forXaEnd(int flags, TransactionInfo info) {
+        return ArmyTransactionInfo.forXaEnd(flags, info);
+    }
+
+    static TransactionInfo forXaJoinEnded(int flags, TransactionInfo info) {
+        return ArmyTransactionInfo.forXaJoinEnded(flags, info);
+    }
+
     interface InfoBuilder {
 
         <T> InfoBuilder option(Option<T> option, @Nullable T value);
 
+        /**
+         * @throws IllegalArgumentException throw when not in transaction.
+         */
+        InfoBuilder option(TransactionOption option);
 
+        /**
+         * @throws IllegalArgumentException throw when not in transaction.
+         */
+        InfoBuilder option(Xid xid, int flags, XaStates xaStates, TransactionOption option);
+
+
+        /**
+         * <p>Create a new {@link TransactionInfo} instance.
+         * <p><strong>NOTE</strong>: if in transaction is true then this method always auto add {@link Option#START_MILLIS}.
+         *
+         * @throws IllegalStateException throw when in transaction and not found {@link Option#DEFAULT_ISOLATION}.
+         */
         TransactionInfo build();
 
     }

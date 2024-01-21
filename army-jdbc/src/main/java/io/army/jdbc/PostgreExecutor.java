@@ -585,14 +585,15 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(8);
-            localStartOptionMap(map, option);
+            final TransactionInfo.InfoBuilder infoBuilder;
+            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder.option(option);
             if (deferrable != null) {
-                map.put(DEFERRABLE, deferrable);
+                infoBuilder.option(DEFERRABLE, deferrable);
             }
 
             final TransactionInfo info;
-            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
+            this.transactionInfo = info = infoBuilder.build();
             return info;
         }
 
@@ -633,15 +634,20 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             final boolean chain;
             chain = transactionChain(optionFunc, builder);
-            final TransactionInfo newInfo;
-            if (chain) {
-                newInfo = this.transactionInfo;
-                assert newInfo != null;
-            } else {
-                newInfo = null;
+
+            final TransactionInfo currentInfo = this.transactionInfo;
+            if (chain && currentInfo == null) {
+                throw notInTransactionAndChainConflict();
             }
 
             executeSimpleStaticStatement(builder.toString(), LOG);
+
+            final TransactionInfo newInfo;
+            if (chain) {
+                newInfo = TransactionInfo.forChain(currentInfo);
+            } else {
+                newInfo = null;
+            }
             this.transactionInfo = newInfo;
             return newInfo;
         }
@@ -688,21 +694,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             } else if (flags != RmSession.TM_JOIN) {
                 throw _Exceptions.xaInvalidFlag(flags, "start");
             } else if (states == XaStates.IDLE && infoXid != null && infoXid.equals(xid)) { // It's ok to join an ended transaction. WebLogic does that.
-                final Map<Option<?>, Object> map = _Collections.hashMap(8);
-
-                map.put(Option.XID, infoXid);
-                map.put(Option.XA_FLAGS, flags); // modify flags
-                map.put(Option.XA_STATES, XaStates.ACTIVE);
-                map.put(Option.START_MILLIS, info.nonNullOf(Option.START_MILLIS)); // use old value
-
-
-                final Integer timeoutMillis;
-                timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS); // use old value
-                if (timeoutMillis != null) {
-                    map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-                }
-
-                newInfo = TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), map::get);
+                newInfo = TransactionInfo.forXaJoinEnded(flags, info);
             } else {
                 String m = String.format("Invalid protocol state requested. Attempted transaction interleaving is not supported. xid=%s, currentXid=%s, state=%s, flags=%s",
                         xid, infoXid, states, flags);
@@ -946,15 +938,15 @@ abstract class PostgreExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(12);
-
-            xaStartOptionMap(map, xid, option, flags);
+            final TransactionInfo.InfoBuilder infoBuilder;
+            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder.option(xid, flags, XaStates.ACTIVE, option);
 
             if (deferrable != null) {
-                map.put(DEFERRABLE, deferrable);
+                infoBuilder.option(DEFERRABLE, deferrable);
             }
 
-            return TransactionInfo.info(true, finalIsolation, readOnly, map::get);
+            return infoBuilder.build();
         }
 
         private void xidToString(final Xid xid, final StringBuilder builder) {

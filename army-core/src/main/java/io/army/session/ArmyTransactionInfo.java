@@ -34,42 +34,74 @@ import java.util.function.Function;
 final class ArmyTransactionInfo implements TransactionInfo {
 
 
-    static ArmyTransactionInfo create(final boolean inTransaction, final @Nullable Isolation isolation,
-                                      final boolean readOnly) {
+    static ArmyTransactionInfo noInTransaction(final @Nullable Isolation isolation, final boolean readOnly) {
         if (isolation == null) {
             throw new NullPointerException("isolation must non-null");
         }
         final ArmyTransactionInfo info;
-        if (inTransaction) {
-            info = new ArmyTransactionInfo(true, isolation, readOnly);
-        } else if (isolation == Isolation.REPEATABLE_READ) {
+        if (isolation == Isolation.REPEATABLE_READ) {
             info = readOnly ? REPEATABLE_READ_READ : REPEATABLE_READ_WRITE;
         } else if (isolation == Isolation.READ_COMMITTED) {
             info = readOnly ? READ_COMMITTED_READ : READ_COMMITTED_WRITE;
         } else if (isolation == Isolation.SERIALIZABLE) {
             info = readOnly ? SERIALIZABLE_READ : SERIALIZABLE_WRITE;
         } else {
-            info = new ArmyTransactionInfo(false, isolation, readOnly);
+            info = new ArmyTransactionInfo(isolation, readOnly);
         }
         return info;
     }
 
 
     static TransactionInfo forRollbackOnly(final TransactionInfo info) {
-        if (!(info instanceof ArmyTransactionInfo)) {
-            throw new IllegalArgumentException("unknown info implementation");
-        }
-        final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
-        if (!(armyInfo.inTransaction || armyInfo.isolation == Isolation.PSEUDO)) {
-            throw new IllegalArgumentException("Illegal transaction info");
-        }
-        final Map<Option<?>, Object> map = _Collections.hashMap();
-        for (Option<?> option : armyInfo.optionSet) {
-            map.put(option, armyInfo.optionFunc.apply(option));
-        }
+        final Map<Option<?>, Object> map;
+
+        map = cloneOptionMap(info);
         map.put(Option.ROLLBACK_ONLY, Boolean.TRUE);
+
+        final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
         return new ArmyTransactionInfo(armyInfo.inTransaction, armyInfo.isolation, armyInfo.readOnly, map);
     }
+
+    static TransactionInfo forChain(final TransactionInfo info) {
+        final Map<Option<?>, Object> map;
+
+        map = cloneOptionMap(info);
+        map.put(Option.START_MILLIS, System.currentTimeMillis());
+
+        final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
+        return new ArmyTransactionInfo(armyInfo.inTransaction, armyInfo.isolation, armyInfo.readOnly, map);
+    }
+
+    static TransactionInfo forXaEnd(final int flags, final TransactionInfo info) {
+        if (info.valueOf(Option.XA_STATES) != XaStates.ACTIVE) {
+            throw illegalTransactionIfo();
+        }
+
+        final Map<Option<?>, Object> map;
+
+        map = cloneOptionMap(info);
+        map.put(Option.XA_FLAGS, flags);
+        map.put(Option.XA_STATES, XaStates.IDLE);
+
+        final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
+        return new ArmyTransactionInfo(armyInfo.inTransaction, armyInfo.isolation, armyInfo.readOnly, map);
+    }
+
+    static TransactionInfo forXaJoinEnded(final int flags, final TransactionInfo info) {
+        if (info.valueOf(Option.XA_STATES) != XaStates.IDLE) {
+            throw illegalTransactionIfo();
+        }
+
+        final Map<Option<?>, Object> map;
+
+        map = cloneOptionMap(info);
+        map.put(Option.XA_FLAGS, flags);
+        map.put(Option.XA_STATES, XaStates.ACTIVE);
+
+        final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
+        return new ArmyTransactionInfo(armyInfo.inTransaction, armyInfo.isolation, armyInfo.readOnly, map);
+    }
+
 
     static InfoBuilder builder(boolean inTransaction, @Nullable Isolation isolation, boolean readOnly) {
         if (isolation == null) {
@@ -114,18 +146,15 @@ final class ArmyTransactionInfo implements TransactionInfo {
      * <p>Create pseudo transaction info for XA transaction end method.
      */
     static TransactionInfo pseudoEnd(final TransactionInfo info, final int flags) {
-        if (!(info instanceof ArmyTransactionInfo)) {
-            throw new IllegalArgumentException("unknown info implementation");
-        }
-        final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
-        if (armyInfo.isolation != Isolation.PSEUDO || armyInfo.optionFunc.apply(Option.XA_STATES) != XaStates.ACTIVE) {
-            throw new IllegalArgumentException("Non-PSEUDO");
+        if (info.inTransaction()
+                || info.isolation() != Isolation.PSEUDO
+                || info.valueOf(Option.XA_STATES) != XaStates.ACTIVE) {
+            throw illegalTransactionIfo();
         }
 
-        final Map<Option<?>, Object> map = _Collections.hashMap();
-        for (Option<?> option : armyInfo.optionSet) {
-            map.put(option, armyInfo.optionFunc.apply(option));
-        }
+        final Map<Option<?>, Object> map;
+
+        map = cloneOptionMap(info);
 
         map.put(Option.XA_FLAGS, flags);
         map.put(Option.XA_STATES, XaStates.IDLE);
@@ -164,28 +193,49 @@ final class ArmyTransactionInfo implements TransactionInfo {
         return isolation;
     }
 
+
+    private static Map<Option<?>, Object> cloneOptionMap(final TransactionInfo info) {
+        if (!(info instanceof ArmyTransactionInfo)) {
+            throw unknownImplementation();
+        }
+        final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
+        if (!(armyInfo.inTransaction || armyInfo.isolation == Isolation.PSEUDO)) {
+            throw illegalTransactionIfo();
+        }
+
+        final Map<Option<?>, Object> map = _Collections.hashMapForSize(armyInfo.optionSet.size() + 1);
+        for (Option<?> option : armyInfo.optionSet) {
+            map.put(option, armyInfo.optionFunc.apply(option));
+        }
+        return map;
+    }
+
     private static IllegalArgumentException pseudoMustReadonly() {
         return new IllegalArgumentException("PSEUDO must read only.");
     }
 
-    private static IllegalArgumentException pseudoMustNotInTransaction() {
-        return new IllegalArgumentException("PSEUDO must not in transaction.");
+    private static IllegalArgumentException unknownImplementation() {
+        return new IllegalArgumentException("unknown info implementation");
+    }
+
+    private static IllegalArgumentException illegalTransactionIfo() {
+        return new IllegalArgumentException("Illegal transaction info");
     }
 
 
-    private static final ArmyTransactionInfo READ_COMMITTED_WRITE = new ArmyTransactionInfo(false, Isolation.READ_COMMITTED, false);
+    private static final ArmyTransactionInfo READ_COMMITTED_WRITE = new ArmyTransactionInfo(Isolation.READ_COMMITTED, false);
 
-    private static final ArmyTransactionInfo REPEATABLE_READ_WRITE = new ArmyTransactionInfo(false, Isolation.REPEATABLE_READ, false);
+    private static final ArmyTransactionInfo REPEATABLE_READ_WRITE = new ArmyTransactionInfo(Isolation.REPEATABLE_READ, false);
 
-    private static final ArmyTransactionInfo SERIALIZABLE_WRITE = new ArmyTransactionInfo(false, Isolation.SERIALIZABLE, false);
+    private static final ArmyTransactionInfo SERIALIZABLE_WRITE = new ArmyTransactionInfo(Isolation.SERIALIZABLE, false);
 
     /*-------------------below read transaction option-------------------*/
 
-    private static final ArmyTransactionInfo READ_COMMITTED_READ = new ArmyTransactionInfo(false, Isolation.READ_COMMITTED, true);
+    private static final ArmyTransactionInfo READ_COMMITTED_READ = new ArmyTransactionInfo(Isolation.READ_COMMITTED, true);
 
-    private static final ArmyTransactionInfo REPEATABLE_READ_READ = new ArmyTransactionInfo(false, Isolation.REPEATABLE_READ, true);
+    private static final ArmyTransactionInfo REPEATABLE_READ_READ = new ArmyTransactionInfo(Isolation.REPEATABLE_READ, true);
 
-    private static final ArmyTransactionInfo SERIALIZABLE_READ = new ArmyTransactionInfo(false, Isolation.SERIALIZABLE, true);
+    private static final ArmyTransactionInfo SERIALIZABLE_READ = new ArmyTransactionInfo(Isolation.SERIALIZABLE, true);
 
 
     private final boolean inTransaction;
@@ -199,8 +249,8 @@ final class ArmyTransactionInfo implements TransactionInfo {
     private final Set<Option<?>> optionSet;
 
 
-    private ArmyTransactionInfo(boolean inTransaction, Isolation isolation, boolean readOnly) {
-        this.inTransaction = inTransaction;
+    private ArmyTransactionInfo(Isolation isolation, boolean readOnly) {
+        this.inTransaction = false;
         this.isolation = isolation;
         this.readOnly = readOnly;
         this.optionFunc = Option.EMPTY_FUNC;
@@ -344,12 +394,65 @@ final class ArmyTransactionInfo implements TransactionInfo {
         }
 
         @Override
+        public InfoBuilder option(final TransactionOption option) {
+            if (!this.inTransaction) {
+                throw new IllegalArgumentException("not in transaction");
+            }
+            Map<Option<?>, Object> optionMap = this.optionMap;
+            if (optionMap == null) {
+                this.optionMap = optionMap = _Collections.hashMap();
+            }
+            optionMap.put(Option.DEFAULT_ISOLATION, option.isolation() == null);
+
+            final Integer timeoutMillis;
+            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+            if (timeoutMillis != null) {
+                optionMap.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+            }
+            final String label;
+            label = option.valueOf(Option.LABEL);
+            if (label != null) {
+                optionMap.put(Option.LABEL, label);
+            }
+            return this;
+        }
+
+        @Override
+        public InfoBuilder option(final @Nullable Xid xid, final int flags, @Nullable XaStates xaStates,
+                                  TransactionOption option) {
+            if (xid == null) {
+                throw new NullPointerException("xid must be non-null");
+            } else if (xaStates == null) {
+                throw new NullPointerException("xaStates must be non-null");
+            } else if (xaStates == XaStates.PREPARED) {
+                throw new IllegalArgumentException(String.format("%s error", xaStates));
+            }
+
+            option(option);
+
+            final Map<Option<?>, Object> optionMap = this.optionMap;
+
+            optionMap.put(Option.XID, xid);
+            optionMap.put(Option.XA_FLAGS, flags);
+            optionMap.put(Option.XA_STATES, xaStates);
+            return this;
+        }
+
+        @Override
         public TransactionInfo build() {
             final Map<Option<?>, Object> optionMap = this.optionMap;
 
+            if (this.inTransaction) {
+                if (optionMap == null || !(optionMap.get(Option.DEFAULT_ISOLATION) instanceof Boolean)) {
+                    String m = String.format("inTransaction is true at least contain %s", Option.DEFAULT_ISOLATION);
+                    throw new IllegalStateException(m);
+                }
+                optionMap.put(Option.START_MILLIS, System.currentTimeMillis());
+            }
+
             final TransactionInfo info;
-            if (optionMap == null || optionMap.size() == 0) {
-                info = create(this.inTransaction, isolation, this.readOnly);
+            if (!this.inTransaction && (optionMap == null || optionMap.size() == 0)) {
+                info = noInTransaction(isolation, this.readOnly);
             } else {
                 info = new ArmyTransactionInfo(this.inTransaction, this.isolation, this.readOnly, optionMap);
             }

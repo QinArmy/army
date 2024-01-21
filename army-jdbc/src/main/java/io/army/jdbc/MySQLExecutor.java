@@ -28,7 +28,10 @@ import io.army.sqltype.MySQLType;
 import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
-import io.army.util.*;
+import io.army.util.HexUtils;
+import io.army.util.NumberUtils;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +43,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.*;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -407,14 +409,15 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(8);
-            localStartOptionMap(map, option);
+            final TransactionInfo.InfoBuilder infoBuilder;
+            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder.option(option);
             if (consistentSnapshot != null) {
-                map.put(WITH_CONSISTENT_SNAPSHOT, consistentSnapshot);
+                infoBuilder.option(WITH_CONSISTENT_SNAPSHOT, consistentSnapshot);
             }
 
             final TransactionInfo info;
-            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
+            this.transactionInfo = info = infoBuilder.build();
             return info;
         }
 
@@ -454,14 +457,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(ROLLBACK);
             }
 
+            final TransactionInfo currentInfo = this.transactionInfo;
             final boolean chain;
             chain = transactionChain(optionFunc, builder);
-            final TransactionInfo newInfo;
-            if (chain) {
-                newInfo = this.transactionInfo;
-                assert newInfo != null;
-            } else {
-                newInfo = null;
+            if (chain && currentInfo == null) {
+                throw notInTransactionAndChainConflict();
             }
 
             final Object release;
@@ -470,6 +470,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             } else {
                 release = optionFunc.apply(Option.RELEASE);
             }
+
             if (chain && Boolean.TRUE.equals(release)) {
                 String m = String.format("%s[true] and %s[true] conflict", Option.CHAIN.name(), Option.RELEASE.name());
                 throw new IllegalArgumentException(m);
@@ -482,9 +483,14 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(" RELEASE");
             }
 
-
             executeSimpleStaticStatement(builder.toString(), LOG);
 
+            final TransactionInfo newInfo;
+            if (chain) {
+                newInfo = TransactionInfo.forChain(currentInfo);
+            } else {
+                newInfo = null;
+            }
             this.transactionInfo = newInfo;
             return newInfo;
         }
@@ -561,11 +567,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(8);
-            xaStartOptionMap(map, xid, option, flags);
+            final TransactionInfo.InfoBuilder infoBuilder;
+            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder.option(xid, flags, XaStates.ACTIVE, option);
 
             final TransactionInfo info;
-            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
+            this.transactionInfo = info = infoBuilder.build();
             return info;
         }
 
@@ -598,14 +605,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(" SUSPEND");
             }
 
-
             executeSimpleStaticStatement(builder.toString(), LOG);
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(8);
-            xaEndOptionMap(map, info, flags);
-
             final TransactionInfo newInfo;
-            this.transactionInfo = newInfo = TransactionInfo.info(true, info.isolation(), info.isReadOnly(), map::get);
+            this.transactionInfo = newInfo = TransactionInfo.forXaEnd(flags, info);
             return newInfo;
         }
 

@@ -117,6 +117,10 @@ public abstract class _Collections {
         return new FinalHashMap<>();
     }
 
+    public static <K, V> HashMap<K, V> hashMapForSize(int initialSize) {
+        return new FinalHashMap<>((int) (initialSize / 0.75F));
+    }
+
     public static <K, V> HashMap<K, V> hashMap(int initialCapacity) {
         return new FinalHashMap<>(initialCapacity);
     }
