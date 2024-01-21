@@ -1,6 +1,7 @@
 package io.army.session;
 
 import io.army.ArmyTestDataSupport;
+import io.army.dialect.Database;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
@@ -46,6 +47,20 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
     }
 
 
+    protected static void assertDomainUpdateChildRows(final Session session, long rows, long dataRows) {
+        assertDomainUpdate(session.sessionFactory().serverMeta().serverDatabase(), rows, dataRows);
+    }
+
+    protected static void assertBatchDomainUpdateChildRows(final Session session, final List<Long> rowList, final int batchSize, final long dataRows) {
+        Assert.assertEquals(rowList.size(), batchSize);
+        final Database database = session.sessionFactory().serverMeta().serverDatabase();
+        for (Long rows : rowList) {
+            assertDomainUpdate(database, rows, dataRows);
+        }
+    }
+
+
+
     protected static void statementCostTimeLog(final Session session, final Logger logger, long startNanoSecond) {
         final long costNano, millis, micro, nano;
         costNano = System.nanoTime() - startNanoSecond;
@@ -71,6 +86,19 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
         }
         return match;
     }
+
+
+    private static void assertDomainUpdate(final Database database, final long rows, final long dataRows) {
+        switch (database) {
+            case MySQL:
+                Assert.assertEquals(rows >> 1, dataRows); // because mysql use multi-table dml
+                break;
+            case PostgreSQL:
+            default:
+                Assert.assertEquals(rows, dataRows);
+        }
+    }
+
 
 
 }

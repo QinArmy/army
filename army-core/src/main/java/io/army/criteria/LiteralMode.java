@@ -20,6 +20,10 @@ public enum LiteralMode {
 
     DEFAULT,
     PREFERENCE,
-    LITERAL,
+
+    /**
+     * the fields that is managed by army output literal , but child id that is created by database.
+     */
+    LITERAL;
 
 }

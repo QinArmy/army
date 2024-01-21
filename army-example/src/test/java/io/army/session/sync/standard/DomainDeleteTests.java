@@ -87,7 +87,7 @@ public class DomainDeleteTests extends StandardSessionSupport {
         final long rows;
         rows = session.update(stmt);
 
-        Assert.assertEquals(rows, regionList.size());
+        assertDomainUpdateChildRows(session, rows, regionList.size());
         LOG.debug("session[name : {}] rows {}", session.name(), rows);
 
 
@@ -112,7 +112,7 @@ public class DomainDeleteTests extends StandardSessionSupport {
 
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
-        assertBatchUpdateChildRows(rowList, regionList.size(), 1);
+        assertBatchDomainUpdateChildRows(session, rowList, regionList.size(), 1);
         LOG.debug("session[name : {}] rows {}", session.name(), rowList);
     }
 

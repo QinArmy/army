@@ -297,23 +297,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 rows = statement.executeUpdate(stmt.sqlText());
             }
 
-            if (rows > 0L
-                    && optionFunc != Option.EMPTY_FUNC
-                    && Boolean.TRUE.equals(optionFunc.apply(MULTI_TABLE_DOMAIN_DML))) {
-                returnRows = rows >> 1;
-                assert returnRows > 0L;
-            } else {
-                returnRows = rows;
-            }
-
             final R r;
             if (resultClass == Long.class) {
-                r = (R) Long.valueOf(returnRows);
+                r = (R) Long.valueOf(rows);
             } else if (optionFunc != Option.EMPTY_FUNC
                     && Boolean.TRUE.equals(optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR))) {
                 r = (R) createNamedCursor(statement, rows, optionFunc);
             } else {
-                r = (R) new SingleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), returnRows);
+                r = (R) new SingleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
             }
             return r;
         } catch (Exception e) {
@@ -1591,19 +1582,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             armyWarning = mapToArmyWarning(warning);
         }
 
-        final boolean multiTableDomainDml;
-        multiTableDomainDml = optionFunc != Option.EMPTY_FUNC
-                && Boolean.TRUE.equals(optionFunc.apply(MULTI_TABLE_DOMAIN_DML));
-
         long rows;
         for (int i = 0, resultNo = 1; i < bathSize; i++, resultNo++) {
             rows = accessor.applyAsLong(i);
             if (optimistic && rows == 0L) {
                 throw _Exceptions.batchOptimisticLock(domainTable, resultNo, rows);
-            }
-            if (rows > 0L && multiTableDomainDml) {
-                rows >>= 1;
-                assert rows > 0L;
             }
 
             if (newList) {
@@ -1806,13 +1789,18 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             sqlType = getDataType(resultSet.getMetaData(), idColumnIndexBaseOne);
 
             final MappingEnv env = this.factory.mappingEnv;
-
             final int rowSize = stmt.rowSize();
+            final boolean oneRowWithConflict = rowSize == 1 && stmt.hasConflictClause();
+
             Object idValue;
             int rowIndex = 0;
+
             for (; resultSet.next(); rowIndex++) {
-                if (rowIndex == rowSize) {
-                    throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
+                if (rowIndex >= rowSize) {
+                    if (oneRowWithConflict) {
+                        continue;
+                    }
+                    throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
                 }
                 idValue = get(resultSet, idColumnIndexBaseOne, type, sqlType);
                 if (idValue == null) {
@@ -1821,7 +1809,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 idValue = type.afterGet(sqlType, env, idValue);
                 stmt.setGeneratedIdValue(rowIndex, idValue);
             }
-            if (rowIndex != rowSize) {
+            if (rowIndex != rowSize && !(oneRowWithConflict && rowIndex == 2)) {
                 throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
             }
             return rowIndex;

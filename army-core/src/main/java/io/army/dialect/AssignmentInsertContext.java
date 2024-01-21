@@ -39,21 +39,21 @@ import java.util.function.ObjIntConsumer;
 final class AssignmentInsertContext extends InsertContext
         implements _AssignmentInsertContext, InsertStmtParams {
 
-    static AssignmentInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._AssignmentInsert stmt
-            , ArmyParser dialect, Visible visible) {
+    static AssignmentInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._AssignmentInsert stmt,
+                                             ArmyParser dialect, Visible visible) {
         assert !(stmt instanceof _Insert._ChildAssignmentInsert);
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
-    static AssignmentInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
-            , ArmyParser dialect, Visible visible) {
+    static AssignmentInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt,
+                                             ArmyParser dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof MultiStmtContext;
 
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
-    static AssignmentInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
-            , AssignmentInsertContext parentContext) {
+    static AssignmentInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt,
+                                            AssignmentInsertContext parentContext) {
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, parentContext);
     }
 
@@ -119,7 +119,6 @@ final class AssignmentInsertContext extends InsertContext
             } else {
                 //use wrapper.domainTable not this.insertTable
                 generator.generate(wrapper.domainTable, wrapper);
-                wrapper.tempGeneratedMap = null;  //clear
             }
         }
 
@@ -304,9 +303,6 @@ final class AssignmentInsertContext extends InsertContext
 
         private final Map<FieldMeta<?>, Object> generatedMap;
 
-
-        private Map<FieldMeta<?>, Object> tempGeneratedMap;
-
         private DelayIdParam delayIdParam;
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
@@ -323,7 +319,6 @@ final class AssignmentInsertContext extends InsertContext
 
             if (context.migration) {
                 this.generatedMap = Collections.emptyMap();
-                this.tempGeneratedMap = null;
             } else {
                 int maxSize = 6;
 
@@ -331,10 +326,7 @@ final class AssignmentInsertContext extends InsertContext
                     maxSize += ((ChildTableMeta<?>) this.domainTable).parentMeta().fieldChain().size();
                 }
                 maxSize += this.domainTable.fieldChain().size();
-
-                final Map<FieldMeta<?>, Object> map = _Collections.hashMap((int) (maxSize / 0.75F));
-                this.generatedMap = Collections.unmodifiableMap(map); // here ,use read only view of map
-                this.tempGeneratedMap = map;
+                this.generatedMap = _Collections.hashMapForSize(maxSize);
             }
 
         }
@@ -342,7 +334,7 @@ final class AssignmentInsertContext extends InsertContext
 
         @Override
         public void set(final FieldMeta<?> field, final @Nullable Object value) {
-            final Map<FieldMeta<?>, Object> map = this.tempGeneratedMap;
+            final Map<FieldMeta<?>, Object> map = this.generatedMap;
             assert map != null;
             if (value == null) {
                 map.remove(field);
@@ -394,7 +386,6 @@ final class AssignmentInsertContext extends InsertContext
             return this.field;
         }
 
-        @Nullable
         private void parentPostId(final @Nullable Object idValue, final int indexBasedZero) {
             if (idValue == null) {
                 //no bug,never here

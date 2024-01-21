@@ -38,5 +38,7 @@ public interface GeneratedKeyStmt extends SimpleStmt, SingleSqlStmt.IdSelectionI
      */
     int idSelectionIndex();
 
+    boolean hasConflictClause();
+
 
 }

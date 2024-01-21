@@ -361,6 +361,12 @@ abstract class InsertContext extends StatementContext
         return this.maxColumnSize;
     }
 
+
+    @Override
+    public final boolean hasConflictClause() {
+        return this.hasConflictClause;
+    }
+
     @Override
     public final _InsertContext parentContext() {
         return this.parentContext;

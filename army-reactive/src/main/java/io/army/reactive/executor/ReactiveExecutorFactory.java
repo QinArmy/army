@@ -25,7 +25,7 @@ import java.util.function.Function;
 
 
 /**
- * <p>This interface representing {@link ReactiveStmtExecutor} factory.
+ * <p>This interface representing {@link ReactiveExecutor} factory.
  * <p>This interface extends {@link ExecutorFactory} and have overridden following methods:
  * <ul>
  *     <li>{@link #metaExecutor(Function)}</li>

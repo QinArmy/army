@@ -48,7 +48,7 @@ import java.util.function.Supplier;
  * @see ReactiveExecutorFactory
  * @since 0.6.0
  */
-public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
+public interface ReactiveExecutor extends StmtExecutor, ReactiveCloseable {
 
     Mono<TransactionInfo> transactionInfo();
 
@@ -64,7 +64,7 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
     Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option);
+    Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
     <R> Flux<R> query(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
 

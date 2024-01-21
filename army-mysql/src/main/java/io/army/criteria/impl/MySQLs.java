@@ -78,8 +78,15 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     /**
-     * <p>
-     * create single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
+     * <p>create single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
+     * <p><strong>NOTE</strong> : if you specify ON DUPLICATE KEY UPDATE ,then
+     * <ul>
+     *     <li>The affected-rows value per row is 1 if the row is inserted as a new row</li>
+     *     <li>2 if an existing row is updated</li>
+     *     <li>0 if an existing row is set to its current values</li>
+     * </ul>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT statement</a>
      */
     public static MySQLInsert._PrimaryOptionSpec singleInsert() {
         return MySQLInserts.singleInsert();

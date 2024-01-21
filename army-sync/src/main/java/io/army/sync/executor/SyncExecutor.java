@@ -83,12 +83,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
     <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass) throws DataAccessException;
 
-    /**
-     * @param optionFunc support follow options :
-     *                   <ul>
-     *                      <li>{@link #MULTI_TABLE_DOMAIN_DML}</li>
-     *                   </ul>
-     */
+
     <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
             throws DataAccessException;
 

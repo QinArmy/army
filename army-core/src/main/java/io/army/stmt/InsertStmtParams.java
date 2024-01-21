@@ -41,4 +41,6 @@ public interface InsertStmtParams extends DmlStmtParams {
     @Override
     int maxColumnSize();
 
+    boolean hasConflictClause();
+
 }

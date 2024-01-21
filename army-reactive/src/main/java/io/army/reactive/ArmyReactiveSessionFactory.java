@@ -17,10 +17,10 @@
 package io.army.reactive;
 
 import io.army.env.ArmyEnvironment;
+import io.army.reactive.executor.ReactiveExecutor;
 import io.army.reactive.executor.ReactiveExecutorFactory;
 import io.army.reactive.executor.ReactiveLocalExecutor;
 import io.army.reactive.executor.ReactiveRmExecutor;
-import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
@@ -132,7 +132,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
 
     static abstract class ReactiveSessionBuilder<B, R> extends ArmySessionBuilder<B, R> {
 
-        ReactiveStmtExecutor stmtExecutor;
+        ReactiveExecutor stmtExecutor;
 
         private ReactiveSessionBuilder(ArmyReactiveSessionFactory factory) {
             super(factory);

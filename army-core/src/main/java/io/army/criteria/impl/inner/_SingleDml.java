@@ -23,9 +23,7 @@ public interface _SingleDml extends _DmlStatement, _Statement._TableMetaSpec {
 
     interface _DomainDml extends _SingleDml {
 
-        /**
-         * @see io.army.session.executor.StmtExecutor#MULTI_TABLE_DOMAIN_DML
-         */
+
         boolean isChildDml();
 
     }

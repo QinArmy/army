@@ -315,6 +315,47 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
 
     }
 
+    @VisibleMode(Visible.BOTH)
+    @Transactional
+    @Test//(invocationCount = 3)
+    public void assignmentInsertChild(final SyncLocalSession session) {
+        final List<ChinaProvince> regionList = createProvinceListWithCount(1);
+        session.batchSave(regionList);
+
+        final ChinaProvince province = regionList.get(0);
+        LOG.debug("session[name : {}] province id : {}", session.name(), province.getId());
+        final Random random = ThreadLocalRandom.current();
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T)
+                .set(ChinaRegion_.name, SQLs::literal, province.getName())
+                .set(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                .set(ChinaRegion_.population, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                .as("c")
+                .onDuplicateKey()
+                .update(ChinaRegion_.population, SQLs.field("c", ChinaRegion_.population))
+                .comma(ChinaRegion_.regionGdp, SQLs.field("c", ChinaRegion_.regionGdp))
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .set(ChinaProvince_.provincialCapital, SQLs::literal, province.getProvincialCapital())
+                .set(ChinaProvince_.governor, SQLs::literal, province.getGovernor())
+                .as("c")
+                .onDuplicateKey()
+                .update(ChinaProvince_.governor, SQLs.field("c", ChinaProvince_.governor))
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertEquals(session.update(stmt), 1L); // because database return child's affected row count
+
+    }
+
     /*-------------------below query insert -------------------*/
 
     @Test(invocationCount = 3)

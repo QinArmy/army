@@ -555,6 +555,8 @@ public abstract class Stmts {
 
         private final ObjIntConsumer<Object> consumer;
 
+        private final boolean hasConflictClause;
+
         private PostStmt(InsertStmtParams params) {
             super(params);
             this.paramList = params.paramList();
@@ -564,6 +566,7 @@ public abstract class Stmts {
             this.field = params.idField();
             this.idSelectionIndex = params.idSelectionIndex();
             this.consumer = params.idConsumer();
+            this.hasConflictClause = params.hasConflictClause();
         }
 
         @Override
@@ -587,6 +590,10 @@ public abstract class Stmts {
             return this.idSelectionIndex;
         }
 
+        @Override
+        public final boolean hasConflictClause() {
+            return this.hasConflictClause;
+        }
 
         @Override
         public final boolean hasOptimistic() {

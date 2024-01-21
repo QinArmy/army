@@ -27,9 +27,7 @@ import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
-import io.army.mapping.IntegerType;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoCastIntegerType;
+import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
@@ -187,6 +185,24 @@ public abstract class SQLs extends SQLSyntax {
     public static final WordUsing USING = SqlWords.KeyWordUsing.USING;
 
     public static final SQLWords COMMA = SqlWords.FuncWord.COMMA;
+
+    public static final LiteralExpression LITERAL_0 = SQLs.literal(IntegerType.INSTANCE, 0);
+
+    public static final LiteralExpression LITERAL_1 = SQLs.literal(IntegerType.INSTANCE, 1);
+
+    public static final LiteralExpression LITERAL_EMPTY_STRING = SQLs.literal(StringType.INSTANCE, "");
+
+    /*-------------------below param -------------------*/
+
+    public static final ParamExpression PARAM_0 = SQLs.param(IntegerType.INSTANCE, 0);
+
+    public static final ParamExpression PARAM_1 = SQLs.param(IntegerType.INSTANCE, 1);
+
+    public static final ParamExpression PARAM_TRUE = SQLs.param(BooleanType.INSTANCE, Boolean.TRUE);
+
+    public static final ParamExpression PARAM_FALSE = SQLs.param(BooleanType.INSTANCE, Boolean.FALSE);
+
+    public static final ParamExpression PARAM_EMPTY_STRING = SQLs.param(StringType.INSTANCE, "");
 
 
     /**
@@ -984,7 +1000,6 @@ public abstract class SQLs extends SQLSyntax {
 
 
     }//SQLIdentifierImpl
-
 
 
     /**

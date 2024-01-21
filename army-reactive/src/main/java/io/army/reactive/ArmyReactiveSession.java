@@ -19,7 +19,7 @@ package io.army.reactive;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
-import io.army.reactive.executor.ReactiveStmtExecutor;
+import io.army.reactive.executor.ReactiveExecutor;
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
 import io.army.session.record.CurrentRecord;
@@ -67,7 +67,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             AtomicReferenceFieldUpdater.newUpdater(ArmyReactiveSession.class, (Class<ConcurrentMap<Object, Object>>) ((Class<?>) ConcurrentMap.class), "attributeMap");
 
 
-    final ReactiveStmtExecutor stmtExecutor;
+    final ReactiveExecutor stmtExecutor;
     private volatile int sessionClosed;
 
     private volatile ConcurrentMap<Object, Object> attributeMap;
@@ -252,7 +252,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             stmt = this.parseDmlStatement(statement, option);
 
             if (stmt instanceof BatchStmt) {
-                flux = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option)
+                flux = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option, Option.EMPTY_FUNC)
                         .onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
@@ -263,9 +263,9 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
                 assert domainTable != null; // fail, bug.
 
-                flux = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option)
+                flux = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option, Option.EMPTY_FUNC)
                         .collectMap(ResultStates::getResultNo, states -> states, _Collections::hashMap)
-                        .flatMapMany(statesMap -> validateBatchStates(this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option), statesMap, domainTable))
+                        .flatMapMany(statesMap -> validateBatchStates(this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option, Option.EMPTY_FUNC), statesMap, domainTable))
                         .onErrorMap(this::handlePairStmtError);
             } else {
                 throw updateChildNoTransaction();

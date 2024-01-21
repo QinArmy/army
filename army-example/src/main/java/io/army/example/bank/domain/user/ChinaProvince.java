@@ -19,8 +19,7 @@ package io.army.example.bank.domain.user;
 import io.army.annotation.*;
 
 @Table(name = "china_province", indexes =
-@Index(name = "uni_provincial_capital", fieldList = "provincialCapital", unique = true)
-        , comment = "china province")
+@Index(name = "uni_provincial_capital", fieldList = "provincialCapital", unique = true), comment = "china province")
 @DiscriminatorValue(RegionType.Constant.PROVINCE)
 public class ChinaProvince extends ChinaRegion<ChinaProvince> {
 

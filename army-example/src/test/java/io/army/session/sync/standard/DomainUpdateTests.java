@@ -111,7 +111,8 @@ public class DomainUpdateTests extends StandardSessionSupport {
 
         final long rows;
         rows = session.update(stmt);
-        LOG.debug("session[name : {}] update {} rows", session.name(), rows);
+        assertDomainUpdateChildRows(session, rows, regionList.size());
+
     }
 
 
@@ -154,7 +155,7 @@ public class DomainUpdateTests extends StandardSessionSupport {
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
 
-        assertBatchUpdateChildRows(rowList, regionList.size(), 1);
+        assertBatchDomainUpdateChildRows(session, rowList, regionList.size(), 1);
         LOG.debug("session[name : {}] update {} rows", session.name(), rowList);
 
     }

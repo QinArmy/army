@@ -26,9 +26,9 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.reactive.ReactiveStmtOption;
+import io.army.reactive.executor.ReactiveExecutor;
 import io.army.reactive.executor.ReactiveLocalExecutor;
 import io.army.reactive.executor.ReactiveRmExecutor;
-import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
@@ -76,7 +76,7 @@ import java.util.function.Supplier;
 
 
 /**
- * <p>This class is a abstract implementation of {@link ReactiveStmtExecutor} with jdbd spi.
+ * <p>This class is a abstract implementation of {@link ReactiveExecutor} with jdbd spi.
  * <p>This class is base class of following jdbd executor:
  * <ul>
  *     <li>{@link MySQLStmtExecutor}</li>
@@ -89,9 +89,9 @@ import java.util.function.Supplier;
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  */
 abstract class JdbdStmtExecutor extends JdbdExecutorSupport
-        implements ReactiveStmtExecutor,
-        ReactiveStmtExecutor.LocalTransactionSpec,
-        ReactiveStmtExecutor.XaTransactionSpec,
+        implements ReactiveExecutor,
+        ReactiveExecutor.LocalTransactionSpec,
+        ReactiveExecutor.XaTransactionSpec,
         Session.XaTransactionSupportSpec {
 
 
@@ -285,7 +285,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveStmtOption option) {
+    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
         Flux<ResultStates> flux;
         try {
             final BindStatement statement;
@@ -1257,7 +1257,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         final int rowSize = stmt.rowSize();
 
         if (jdbdStates.affectedRows() != rowSize) {
-            throw _Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, jdbdStates.affectedRows());
+            if (!(rowSize == 1 && stmt.hasConflictClause()) || jdbdStates.affectedRows() != 2) {
+                throw _Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, jdbdStates.affectedRows());
+            }
         } else if (!jdbdStates.isSupportInsertId()) {
             String m = String.format("error ,%s don't support lastInsertId() method", jdbdStates.getClass().getName());
             throw new DataAccessException(m);

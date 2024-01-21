@@ -2033,7 +2033,7 @@ abstract class CriteriaContexts {
 
             if (tableAlias == null) {
                 throw ContextStack.clearStackAndNullPointer();
-            } else if (this.tableAlias != null) {
+            } else if (this.tableAlias != null && !tableAlias.equals(this.tableAlias)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
