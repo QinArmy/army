@@ -88,7 +88,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
         if (ROLLBACK_ONLY.compareAndSet(this, 0, 1)) {
             final TransactionInfo info = this.transactionInfo;
             if (info != null) {
-                this.transactionInfo = wrapRollbackOnly(info);
+                this.transactionInfo = TransactionInfo.forRollbackOnly(info);
             }
         }
 

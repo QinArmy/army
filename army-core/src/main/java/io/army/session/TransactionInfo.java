@@ -20,7 +20,6 @@ package io.army.session;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * <p>This interface representing the transaction info of session.
@@ -87,11 +86,6 @@ public interface TransactionInfo extends TransactionOption {
         return ArmyTransactionInfo.builder(inTransaction, isolation, readOnly);
     }
 
-
-    static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
-                                Function<Option<?>, ?> optionFunc) {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * <p>Get a {@link TransactionInfo} instance that {@link TransactionInfo#inTransaction()} is false

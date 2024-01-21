@@ -28,7 +28,6 @@ import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncExecutor;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
-import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.postgresql.util.PGobject;
@@ -41,7 +40,10 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.*;
-import java.util.*;
+import java.util.Base64;
+import java.util.BitSet;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -465,7 +467,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
             readOnly = readBooleanFromMultiResult(statement);
             deferrable = readBooleanFromMultiResult(statement);
 
-            return TransactionInfo.info(false, isolation, readOnly, Option.singleFunc(DEFERRABLE, deferrable));
+            return TransactionInfo.infoBuilder(false, isolation, readOnly)
+                    .option(DEFERRABLE, deferrable)
+                    .build();
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -721,11 +725,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 throw _Exceptions.xaInvalidFlag(flags, "end");
             }
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(10);
-            xaEndOptionMap(map, info, flags);
-
             final TransactionInfo newInfo;
-            newInfo = TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), map::get);
+            newInfo = TransactionInfo.forXaEnd(flags, info);
             this.transactionInfo = newInfo;
             return newInfo;
         }

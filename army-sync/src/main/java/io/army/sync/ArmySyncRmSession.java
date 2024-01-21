@@ -89,7 +89,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         this.rollbackOnly = true;
         final TransactionInfo info = this.transactionInfo;
         if (info != null) {
-            this.transactionInfo = wrapRollbackOnly(info);
+            this.transactionInfo = TransactionInfo.forRollbackOnly(info);
         }
     }
 

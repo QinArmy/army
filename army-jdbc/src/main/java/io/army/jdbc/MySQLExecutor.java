@@ -303,7 +303,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 isolation = readIsolation(resultSet.getString(1));
                 readOnly = resultSet.getBoolean(2);
 
-                return TransactionInfo.info(false, isolation, readOnly, Option.EMPTY_FUNC);
+                return TransactionInfo.notInTransaction(isolation, readOnly);
             }
         } catch (Exception e) {
             throw handleException(e);

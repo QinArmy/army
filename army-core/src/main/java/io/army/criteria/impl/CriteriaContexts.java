@@ -2241,7 +2241,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndNullPointer();
             } else if (this.targetTable != null && this.targetTable != table) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
-            } else if (!tableAlias.equals(this.tableAlias)) {
+            } else if (this.tableAlias != null && !tableAlias.equals(this.tableAlias)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.targetTable = table;

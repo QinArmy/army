@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * <p>This class is all implementation of {@link Session}.
@@ -472,44 +471,6 @@ public abstract class _ArmySession implements Session {
             domainTable = ((_SingleDml) statement).table();
         }
         return domainTable;
-    }
-
-    protected static Function<Option<?>, ?> wrapStartMillisIfNeed(final @Nullable Xid xid, final TransactionOption option) {
-        final Integer timeoutMillis;
-        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-
-        if (timeoutMillis == null || timeoutMillis < 1) {
-            return option::valueOf;
-        }
-
-        final Object startTime;
-        startTime = System.currentTimeMillis();
-        return o -> {
-            final Object value;
-            if (o == Option.START_MILLIS) {
-                value = startTime;
-            } else if (o == Option.XID) {
-                value = xid;
-            } else {
-                value = option.valueOf(o);
-            }
-            return value;
-        };
-    }
-
-    protected static TransactionInfo wrapRollbackOnly(final TransactionInfo info) {
-        if (Boolean.TRUE.equals(info.valueOf(Option.ROLLBACK_ONLY))) {
-            return info;
-        }
-        final Function<Option<?>, ?> function;
-        function = o -> {
-            if (o == Option.ROLLBACK_ONLY) {
-                return Boolean.TRUE;
-            }
-            return info.valueOf(o);
-        };
-
-        return TransactionInfo.info(info.inTransaction(), info.isolation(), info.isReadOnly(), function);
     }
 
 

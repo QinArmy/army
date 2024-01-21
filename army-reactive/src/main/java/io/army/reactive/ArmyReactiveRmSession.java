@@ -97,7 +97,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             return;
         }
 
-        if (!TRANSACTION_INFO.compareAndSet(this, info, TransactionInfo.replaceOption(info, Option.ROLLBACK_ONLY, Boolean.TRUE))) {
+        if (!TRANSACTION_INFO.compareAndSet(this, info, TransactionInfo.forRollbackOnly(info))) {
             throw new ConcurrentModificationException();
         }
 
