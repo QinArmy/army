@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -118,16 +117,10 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
         if (option.isolation() != Isolation.PSEUDO) {
             info = ((SyncRmStmtExecutor) this.stmtExecutor).start(xid, flags, option);
-            Objects.requireNonNull(info);   // fail ,executor bug
-            assert info.inTransaction();  // fail ,executor bug
-
+            assertTransactionInfo(info, option);
             assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
             assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
             assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
-            assert info.valueOf(Option.START_MILLIS) != null;
-
-            assert option.isolation() == null == info.nonNullOf(Option.DEFAULT_ISOLATION);
-            assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
 
         } else if (!this.readonly) {
             throw _Exceptions.writeSessionPseudoTransaction(this);
@@ -180,16 +173,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         } else {
             info = ((SyncRmStmtExecutor) this.stmtExecutor).end(infoXid, flags, optionFunc); // use infoXid
 
-            Objects.requireNonNull(info); // fail ,executor bug
-
-            assert info.inTransaction(); // fail ,executor bug
-            assert infoXid.equals(info.valueOf(Option.XID)); // use infoXid ; fail ,executor bug
-            assert info.valueOf(Option.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
-            assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
-
-            assert lastInfo.nonNullOf(Option.START_MILLIS).equals(info.valueOf(Option.START_MILLIS));
-            assert lastInfo.nonNullOf(Option.DEFAULT_ISOLATION).equals(info.valueOf(Option.DEFAULT_ISOLATION));
-            assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), lastInfo.valueOf(Option.TIMEOUT_MILLIS));
+            assertXaEndTransactionInfo(lastInfo, flags, info);
         }
 
         if (this.transactionInfo != null) {
@@ -198,6 +182,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         this.transactionInfo = info;
         return info;
     }
+
 
     @Override
     public final int prepare(Xid xid) {

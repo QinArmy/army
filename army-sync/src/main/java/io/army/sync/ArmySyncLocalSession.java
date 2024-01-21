@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
-import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -147,21 +146,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
             info = TransactionInfo.pseudoLocal(option);
         } else {
             info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
-
-            Objects.requireNonNull(info); // fail,executor bug
-
-            final Isolation isolation = option.isolation();
-
-            assert info.inTransaction(); // fail,executor bug
-            assert info.isReadOnly() == option.isReadOnly();
-            assert isolation == null || isolation.equals(info.isolation());
-            assert info.valueOf(Option.START_MILLIS) != null;
-
-            assert (option.isolation() == null) == info.nonNullOf(Option.DEFAULT_ISOLATION);
-
-            final Integer timeoutMillis;
-            timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-            assert timeoutMillis == null || timeoutMillis <= 0 || info.valueOf(Option.START_MILLIS) != null;
+            assertTransactionInfo(info, option);
         }
 
         if (this.transactionInfo != null) {

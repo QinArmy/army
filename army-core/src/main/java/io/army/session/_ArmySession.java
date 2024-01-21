@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -423,6 +424,40 @@ public abstract class _ArmySession implements Session {
 
 
     /*-------------------below static method -------------------*/
+
+    protected static void assertTransactionInfo(final @Nullable TransactionInfo info, final TransactionOption option) {
+        assert info != null;
+
+        final Isolation isolation = option.isolation();
+
+        assert info.inTransaction(); // fail,executor bug
+        assert info.isReadOnly() == option.isReadOnly();
+        assert isolation == null || isolation.equals(info.isolation());
+        assert info.valueOf(Option.START_MILLIS) != null;
+
+        assert (option.isolation() == null) == info.nonNullOf(Option.DEFAULT_ISOLATION);
+
+        assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), option.valueOf(Option.TIMEOUT_MILLIS));
+        assert Objects.equals(info.valueOf(Option.NAME), option.valueOf(Option.NAME));
+        assert Objects.equals(info.valueOf(Option.LABEL), option.valueOf(Option.LABEL));
+
+    }
+
+    protected static void assertXaEndTransactionInfo(final TransactionInfo startInfo, int flags, final @Nullable TransactionInfo endInfo) {
+        assert endInfo != null;
+
+        assert endInfo.inTransaction(); // fail ,executor bug
+        assert Objects.equals(endInfo.valueOf(Option.XID), startInfo.valueOf(Option.XID));  // use infoXid ; fail ,executor bug
+        assert endInfo.valueOf(Option.XA_STATES) == XaStates.IDLE;  // fail ,executor bug
+        assert endInfo.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
+
+        assert Objects.equals(endInfo.valueOf(Option.START_MILLIS), startInfo.valueOf(Option.START_MILLIS));
+        assert Objects.equals(endInfo.valueOf(Option.DEFAULT_ISOLATION), startInfo.valueOf(Option.DEFAULT_ISOLATION));
+        assert Objects.equals(endInfo.valueOf(Option.TIMEOUT_MILLIS), startInfo.valueOf(Option.TIMEOUT_MILLIS));
+        assert Objects.equals(endInfo.valueOf(Option.NAME), startInfo.valueOf(Option.NAME));
+
+        assert Objects.equals(endInfo.valueOf(Option.LABEL), startInfo.valueOf(Option.LABEL));
+    }
 
 
     @Nullable
