@@ -84,6 +84,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
         }
         this.deleteTable = table;
         this.tableAlias = tableAlias;
+        this.context.singleDmlTable(table, tableAlias);
         return (DR) this;
     }
 

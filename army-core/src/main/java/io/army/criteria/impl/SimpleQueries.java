@@ -99,35 +99,27 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
     @Override
     public final WE with(Consumer<B> consumer) {
-        final B builder;
-        builder = this.createCteBuilder(false);
-        consumer.accept(builder);
-        return this.endDynamicWithClause(builder, true);
+        return endDynamicWithClause(false, consumer, true);
     }
+
 
     @Override
     public final WE withRecursive(Consumer<B> consumer) {
-        final B builder;
-        builder = this.createCteBuilder(true);
-        consumer.accept(builder);
-        return this.endDynamicWithClause(builder, true);
+        return endDynamicWithClause(true, consumer, true);
     }
+
 
     @Override
     public final WE ifWith(Consumer<B> consumer) {
-        final B builder;
-        builder = this.createCteBuilder(false);
-        consumer.accept(builder);
-        return this.endDynamicWithClause(builder, false);
+        return endDynamicWithClause(false, consumer, false);
     }
+
 
     @Override
     public final WE ifWithRecursive(Consumer<B> consumer) {
-        final B builder;
-        builder = this.createCteBuilder(true);
-        consumer.accept(builder);
-        return this.endDynamicWithClause(builder, false);
+        return endDynamicWithClause(true, consumer, false);
     }
+
 
 
     /*-------------------below _StaticSelectClause method-------------------*/
@@ -1197,16 +1189,19 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         return Collections.singletonList(modifier);
     }
 
-    private WE endDynamicWithClause(final B builder, final boolean required) {
+    @SuppressWarnings("unchecked")
+    private WE endDynamicWithClause(final boolean recursive, final Consumer<B> consumer, final boolean required) {
+        final B builder;
+        builder = createCteBuilder(recursive);
+
+        CriteriaUtils.invokeConsumer(builder, consumer);
+
         ((CriteriaSupports.CteBuilder) builder).endLastCte();
 
-        final boolean recursive;
-        recursive = builder.isRecursive();
         this.recursive = recursive;
         this.cteList = this.context.endWithClause(recursive, required);
         return (WE) this;
     }
-
 
     private void endQueryStatement(final boolean beforeSelect) {
         _Assert.nonPrepared(this.prepared);

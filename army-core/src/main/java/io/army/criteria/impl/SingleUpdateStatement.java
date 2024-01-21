@@ -37,6 +37,7 @@ abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, W
 
     SingleUpdateStatement(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context, updateTable, tableAlias);
+        context.singleDmlTable(updateTable, tableAlias);
     }
 
 

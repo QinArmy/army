@@ -113,6 +113,7 @@ abstract class MySQLSingleDeletes<I extends Item>
         }
         this.deleteTable = table;
         this.tableAlias = alias;
+        this.context.singleDmlTable(table, alias);
         return this;
     }
 

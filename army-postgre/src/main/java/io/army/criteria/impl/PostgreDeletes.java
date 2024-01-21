@@ -776,6 +776,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
         this.targetTable = table;
         this.starModifier = star;
         this.targetTableAlias = tableAlias;
+        this.context.singleDmlTable(table, tableAlias);
         return this;
     }
 

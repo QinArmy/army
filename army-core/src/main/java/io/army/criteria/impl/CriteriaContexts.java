@@ -2235,12 +2235,14 @@ abstract class CriteriaContexts {
 
         @Override
         public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String tableAlias) {
-            if (this.targetTable != null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            } else if (table == null) {
+            if (table == null) {
                 throw ContextStack.clearStackAndNullPointer();
             } else if (tableAlias == null) {
                 throw ContextStack.clearStackAndNullPointer();
+            } else if (this.targetTable != null && this.targetTable != table) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            } else if (!tableAlias.equals(this.tableAlias)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.targetTable = table;
             this.tableAlias = tableAlias;
@@ -2379,12 +2381,14 @@ abstract class CriteriaContexts {
 
         @Override
         public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String tableAlias) {
-            if (this.targetTable != null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
+            if (table == null) {
+                throw ContextStack.clearStackAndNullPointer();
             } else if (tableAlias == null) {
                 throw ContextStack.clearStackAndNullPointer();
-            } else if (table == null) {
-                throw ContextStack.clearStackAndNullPointer();
+            } else if (this.targetTable != null && table != this.targetTable) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            } else if (this.tableAlias != null && !tableAlias.equals(this.tableAlias)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.tableAlias = tableAlias;
             this.targetTable = table;
