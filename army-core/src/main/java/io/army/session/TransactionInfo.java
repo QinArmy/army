@@ -18,6 +18,7 @@ package io.army.session;
 
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -82,10 +83,14 @@ public interface TransactionInfo extends TransactionOption {
     }
 
 
-    @Deprecated
+
     static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
                                 Function<Option<?>, ?> optionFunc) {
-        return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
+        throw new UnsupportedOperationException();
+    }
+
+    static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly) {
+        return ArmyTransactionInfo.create(inTransaction, isolation, readOnly);
     }
 
     static TransactionInfo pseudoLocal(final TransactionOption option) {
@@ -109,16 +114,23 @@ public interface TransactionInfo extends TransactionOption {
 
     @Deprecated
     static <T> TransactionInfo replaceOption(TransactionInfo info, Option<T> option, T value) {
-        return ArmyTransactionInfo.replaceOption(info, option, value);
+        throw new UnsupportedOperationException();
     }
 
+    /**
+     * @throws IllegalArgumentException throw when
+     *                                  <ul>
+     *                                      <li>info is unknown implementation</li>
+     *                                      <li>info's {@link TransactionInfo#inTransaction()} is false and info's {@link TransactionInfo#isolation()} isn't {@link Isolation#PSEUDO}</li>
+     *                                  </ul>
+     */
     static TransactionInfo forRollbackOnly(TransactionInfo info) {
         return ArmyTransactionInfo.forRollbackOnly(info);
     }
 
     interface InfoBuilder {
 
-        <T> InfoBuilder option(Option<T> option, @Nonnull T value);
+        <T> InfoBuilder option(Option<T> option, @Nullable T value);
 
 
         TransactionInfo build();

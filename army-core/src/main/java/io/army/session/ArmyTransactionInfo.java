@@ -17,7 +17,6 @@
 package io.army.session;
 
 import io.army.util._Collections;
-import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nonnull;
@@ -34,81 +33,27 @@ import java.util.function.Function;
  */
 final class ArmyTransactionInfo implements TransactionInfo {
 
+
     static ArmyTransactionInfo create(final boolean inTransaction, final @Nullable Isolation isolation,
-                                      final boolean readOnly, final @Nullable Function<Option<?>, ?> optionFunc) {
-        if (isolation == null || optionFunc == null) {
-            throw new NullPointerException();
+                                      final boolean readOnly) {
+        if (isolation == null) {
+            throw new NullPointerException("isolation must non-null");
         }
-
-        final boolean pseudoTransaction = isolation == Isolation.PSEUDO;
-
-        final XaStates states;
-        states = (XaStates) optionFunc.apply(Option.XA_STATES);
-
-        if (states != null) {
-            switch (states) {
-                case ACTIVE:
-                case IDLE: {
-                    if (!(inTransaction || pseudoTransaction)) {
-                        throw new IllegalArgumentException("inTransaction error");
-                    }
-                }
-                break;
-                case PREPARED: {
-                    if (inTransaction) {
-                        throw new IllegalArgumentException("inTransaction error");
-                    }
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(states);
-            }
-        }
-
-
-        if (!pseudoTransaction) {
-            if (inTransaction && optionFunc.apply(Option.START_MILLIS) == null) {
-                String m = String.format("inTransaction is true ,but %s is null", Option.START_MILLIS);
-                throw new IllegalArgumentException(m);
-            } else if (inTransaction && optionFunc.apply(Option.DEFAULT_ISOLATION) == null) {
-                String m = String.format("inTransaction is true , %s must be non-null", Option.DEFAULT_ISOLATION);
-                throw new IllegalArgumentException(m);
-            }
-        } else if (optionFunc.apply(Option.START_MILLIS) == null) {
-            String m = String.format("pseudo transaction , %s must be non-null", Option.START_MILLIS);
-            throw new IllegalArgumentException(m);
-        } else if (optionFunc.apply(Option.DEFAULT_ISOLATION) == null) {
-            String m = String.format("pseudo transaction , %s must be non-null", Option.DEFAULT_ISOLATION);
-            throw new IllegalArgumentException(m);
-        } else if (inTransaction) {
-            String m = String.format("inTransaction[%s] and Isolation[%s] not match.", inTransaction, isolation.name());
-            throw new IllegalArgumentException(m);
-        } else if (!readOnly) {
-            String m = String.format("readOnly[false] and Isolation[%s] not match.", isolation.name());
-            throw new IllegalArgumentException(m);
-        }
-        return new ArmyTransactionInfo(inTransaction, isolation, readOnly, optionFunc);
-    }
-
-    static <T> TransactionInfo replaceOption(final TransactionInfo info, final Option<T> option, final T value) {
-
-        final Function<Option<?>, ?> oldFunc, newFunc;
-
-        if (info instanceof ArmyTransactionInfo) {
-            final ArmyTransactionInfo armyInfo = (ArmyTransactionInfo) info;
-            oldFunc = armyInfo.optionFunc;
+        final ArmyTransactionInfo info;
+        if (inTransaction) {
+            info = new ArmyTransactionInfo(true, isolation, readOnly);
+        } else if (isolation == Isolation.REPEATABLE_READ) {
+            info = readOnly ? REPEATABLE_READ_READ : REPEATABLE_READ_WRITE;
+        } else if (isolation == Isolation.READ_COMMITTED) {
+            info = readOnly ? READ_COMMITTED_READ : READ_COMMITTED_WRITE;
+        } else if (isolation == Isolation.SERIALIZABLE) {
+            info = readOnly ? SERIALIZABLE_READ : SERIALIZABLE_WRITE;
         } else {
-            oldFunc = info::valueOf;
+            info = new ArmyTransactionInfo(false, isolation, readOnly);
         }
-
-        newFunc = o -> {
-            if (option.equals(o)) {
-                return value;
-            }
-            return oldFunc.apply(o);
-        };
-        return new ArmyTransactionInfo(info.inTransaction(), info.isolation(), info.isReadOnly(), newFunc);
+        return info;
     }
+
 
     static TransactionInfo forRollbackOnly(final TransactionInfo info) {
         if (!(info instanceof ArmyTransactionInfo)) {
@@ -228,6 +173,21 @@ final class ArmyTransactionInfo implements TransactionInfo {
     }
 
 
+    private static final ArmyTransactionInfo READ_COMMITTED_WRITE = new ArmyTransactionInfo(false, Isolation.READ_COMMITTED, false);
+
+    private static final ArmyTransactionInfo REPEATABLE_READ_WRITE = new ArmyTransactionInfo(false, Isolation.REPEATABLE_READ, false);
+
+    private static final ArmyTransactionInfo SERIALIZABLE_WRITE = new ArmyTransactionInfo(false, Isolation.SERIALIZABLE, false);
+
+    /*-------------------below read transaction option-------------------*/
+
+    private static final ArmyTransactionInfo READ_COMMITTED_READ = new ArmyTransactionInfo(false, Isolation.READ_COMMITTED, true);
+
+    private static final ArmyTransactionInfo REPEATABLE_READ_READ = new ArmyTransactionInfo(false, Isolation.REPEATABLE_READ, true);
+
+    private static final ArmyTransactionInfo SERIALIZABLE_READ = new ArmyTransactionInfo(false, Isolation.SERIALIZABLE, true);
+
+
     private final boolean inTransaction;
 
     private final Isolation isolation;
@@ -239,24 +199,25 @@ final class ArmyTransactionInfo implements TransactionInfo {
     private final Set<Option<?>> optionSet;
 
 
-    private ArmyTransactionInfo(boolean inTransaction, Isolation isolation, boolean readOnly,
-                                Function<Option<?>, ?> optionFunc) {
+    private ArmyTransactionInfo(boolean inTransaction, Isolation isolation, boolean readOnly) {
         this.inTransaction = inTransaction;
         this.isolation = isolation;
         this.readOnly = readOnly;
-        this.optionFunc = optionFunc;
+        this.optionFunc = Option.EMPTY_FUNC;
         this.optionSet = Collections.emptySet();
     }
+
 
     private ArmyTransactionInfo(boolean inTransaction, Isolation isolation, boolean readOnly, Map<Option<?>, ?> map) {
         this.inTransaction = inTransaction;
         this.isolation = isolation;
         this.readOnly = readOnly;
 
-        this.optionFunc = map::get;
         if (map.size() == 0) {
+            this.optionFunc = Option.EMPTY_FUNC;
             this.optionSet = Collections.emptySet();
         } else {
+            this.optionFunc = map::get;
             this.optionSet = Collections.unmodifiableSet(map.keySet());
         }
 
@@ -357,6 +318,8 @@ final class ArmyTransactionInfo implements TransactionInfo {
 
         private final boolean readOnly;
 
+        private Map<Option<?>, Object> optionMap;
+
         private ArmyBuilder(boolean inTransaction, Isolation isolation, boolean readOnly) {
             this.inTransaction = inTransaction;
             this.isolation = isolation;
@@ -364,14 +327,36 @@ final class ArmyTransactionInfo implements TransactionInfo {
         }
 
         @Override
-        public <T> InfoBuilder option(Option<T> option, @Nonnull T value) {
-            return null;
+        public <T> InfoBuilder option(final Option<T> option, final @Nullable T value) {
+            Map<Option<?>, Object> optionMap = this.optionMap;
+            if (optionMap == null && value == null) {
+                return this;
+            }
+            if (optionMap == null) {
+                this.optionMap = optionMap = _Collections.hashMap();
+            }
+            if (value == null) {
+                optionMap.remove(option);
+            } else {
+                optionMap.put(option, value);
+            }
+            return this;
         }
 
         @Override
         public TransactionInfo build() {
-            return null;
+            final Map<Option<?>, Object> optionMap = this.optionMap;
+
+            final TransactionInfo info;
+            if (optionMap == null || optionMap.size() == 0) {
+                info = create(this.inTransaction, isolation, this.readOnly);
+            } else {
+                info = new ArmyTransactionInfo(this.inTransaction, this.isolation, this.readOnly, optionMap);
+            }
+            this.optionMap = null; // must immediately
+            return info;
         }
+
     } // ArmyBuilder
 
 
