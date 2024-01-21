@@ -61,7 +61,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
      */
     private ArmySyncRmSession(ArmySyncSessionFactory.RmBuilder builder) {
         super(builder);
-        assert this.stmtExecutor instanceof SyncRmStmtExecutor;
+        assert this.executor instanceof SyncRmStmtExecutor;
     }
 
 
@@ -116,7 +116,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         final TransactionInfo info;
 
         if (option.isolation() != Isolation.PSEUDO) {
-            info = ((SyncRmStmtExecutor) this.stmtExecutor).start(xid, flags, option);
+            info = ((SyncRmStmtExecutor) this.executor).start(xid, flags, option);
             assertTransactionInfo(info, option);
             assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
             assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
@@ -171,7 +171,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         if (lastInfo.isolation() == Isolation.PSEUDO) {
             info = TransactionInfo.pseudoEnd(lastInfo, flags);
         } else {
-            info = ((SyncRmStmtExecutor) this.stmtExecutor).end(infoXid, flags, optionFunc); // use infoXid
+            info = ((SyncRmStmtExecutor) this.executor).end(infoXid, flags, optionFunc); // use infoXid
 
             assertXaEndTransactionInfo(lastInfo, flags, info);
         }
@@ -214,7 +214,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         if (lastInfo.isolation() == Isolation.PSEUDO) {
             flags = XA_RDONLY;
         } else {
-            flags = ((SyncRmStmtExecutor) this.stmtExecutor).prepare(infoXid, optionFunc); // use infoXid
+            flags = ((SyncRmStmtExecutor) this.executor).prepare(infoXid, optionFunc); // use infoXid
 
         }
 
@@ -254,7 +254,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             if (info != null && info.nonNullOf(Option.XID).equals(xid)) {
                 throw _Exceptions.xaTowPhaseXidConflict(xid);
             }
-            ((SyncRmStmtExecutor) this.stmtExecutor).commit(xid, flags, optionFunc); // use xid
+            ((SyncRmStmtExecutor) this.executor).commit(xid, flags, optionFunc); // use xid
         } else if (info == null) {
             throw _Exceptions.noTransaction(this);
         } else if (!(infoXid = info.nonNullOf(Option.XID)).equals(xid)) {
@@ -269,7 +269,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             this.rollbackOnly = false; // clear transactionInfo for one phase commit
         } else {  // one phase commit
 
-            ((SyncRmStmtExecutor) this.stmtExecutor).commit(infoXid, flags, optionFunc); // use infoXid
+            ((SyncRmStmtExecutor) this.executor).commit(infoXid, flags, optionFunc); // use infoXid
             if (this.transactionInfo != info) {
                 throw new ConcurrentModificationException();
             }
@@ -298,14 +298,14 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         final Xid infoXid;
 
         if (info == null || !((infoXid = info.nonNullOf(Option.XID)).equals(xid))) { // tow phase rollback
-            ((SyncRmStmtExecutor) this.stmtExecutor).rollback(xid, optionFunc);
+            ((SyncRmStmtExecutor) this.executor).rollback(xid, optionFunc);
         } else if ((states = info.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, states);
         } else if (info.isolation() == Isolation.PSEUDO) { // one phase rollback pseudo transaction
             this.transactionInfo = null; // clear  for one phase rollback
             this.rollbackOnly = false; // clear  for one phase rollback
         } else {
-            ((SyncRmStmtExecutor) this.stmtExecutor).rollback(infoXid, optionFunc);  // use infoXid
+            ((SyncRmStmtExecutor) this.executor).rollback(infoXid, optionFunc);  // use infoXid
             if (this.transactionInfo != info) {
                 throw new ConcurrentModificationException();
             }
@@ -332,7 +332,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             throw new NullPointerException();
         }
 
-        ((SyncRmStmtExecutor) this.stmtExecutor).forget(xid, optionFunc);
+        ((SyncRmStmtExecutor) this.executor).forget(xid, optionFunc);
 
     }
 
@@ -358,32 +358,32 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        return ((SyncRmStmtExecutor) this.stmtExecutor).recover(flags, optionFunc, option);
+        return ((SyncRmStmtExecutor) this.executor).recover(flags, optionFunc, option);
     }
 
     @Override
     public final boolean isSupportForget() {
-        return ((SyncRmStmtExecutor) this.stmtExecutor).isSupportForget();
+        return ((SyncRmStmtExecutor) this.executor).isSupportForget();
     }
 
     @Override
     public final int startSupportFlags() {
-        return ((SyncRmStmtExecutor) this.stmtExecutor).startSupportFlags();
+        return ((SyncRmStmtExecutor) this.executor).startSupportFlags();
     }
 
     @Override
     public final int endSupportFlags() {
-        return ((SyncRmStmtExecutor) this.stmtExecutor).endSupportFlags();
+        return ((SyncRmStmtExecutor) this.executor).endSupportFlags();
     }
 
     @Override
     public final int commitSupportFlags() {
-        return ((SyncRmStmtExecutor) this.stmtExecutor).commitSupportFlags();
+        return ((SyncRmStmtExecutor) this.executor).commitSupportFlags();
     }
 
     @Override
     public final int recoverSupportFlags() {
-        return ((SyncRmStmtExecutor) this.stmtExecutor).recoverSupportFlags();
+        return ((SyncRmStmtExecutor) this.executor).recoverSupportFlags();
     }
 
     @Override
@@ -395,7 +395,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         if (s == this) {
             match = true;
         } else if (s instanceof ArmySyncRmSession) {
-            match = ((SyncRmStmtExecutor) this.stmtExecutor).isSameRm((SyncRmStmtExecutor) ((ArmySyncRmSession) s).stmtExecutor);
+            match = ((SyncRmStmtExecutor) this.executor).isSameRm((SyncRmStmtExecutor) ((ArmySyncRmSession) s).executor);
         } else {
             match = false;
         }
@@ -429,12 +429,12 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
         @Override
         public boolean isDriverAssignableTo(Class<?> spiClass) {
-            return this.stmtExecutor.isDriverAssignableTo(spiClass);
+            return this.executor.isDriverAssignableTo(spiClass);
         }
 
         @Override
         public <T> T getDriverSpi(Class<T> spiClass) {
-            return this.stmtExecutor.getDriverSpi(spiClass);
+            return this.executor.getDriverSpi(spiClass);
         }
 
 

@@ -332,14 +332,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         return resultList;
     }
 
-
     @Override
-    public final <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
-                                           @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList,
-                                           Function<Option<?>, ?> optionFunc)
-            throws DataAccessException {
-        return batchUpdateList(stmt, _Collections::arrayList, option, elementClass, domainTable, rowsList, optionFunc)
-                .stream();
+    public final Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc) {
+        // jdbc don't support
+        throw new UnsupportedOperationException();
     }
 
     @Nullable

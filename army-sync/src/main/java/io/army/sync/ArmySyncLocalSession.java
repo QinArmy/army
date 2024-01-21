@@ -61,7 +61,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
      */
     private ArmySyncLocalSession(final ArmySyncSessionFactory.LocalBuilder builder) {
         super(builder);
-        assert this.stmtExecutor instanceof SyncLocalStmtExecutor;
+        assert this.executor instanceof SyncLocalStmtExecutor;
     }
 
 
@@ -145,7 +145,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         if (startPseudo) {
             info = TransactionInfo.pseudoLocal(option);
         } else {
-            info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
+            info = ((SyncLocalStmtExecutor) this.executor).startTransaction(option, mode);
             assertTransactionInfo(info, option);
         }
 
@@ -289,9 +289,9 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
         final TransactionInfo newInfo;
         if (commit) {
-            newInfo = ((SyncLocalStmtExecutor) this.stmtExecutor).commit(optionFunc);
+            newInfo = ((SyncLocalStmtExecutor) this.executor).commit(optionFunc);
         } else {
-            newInfo = ((SyncLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc);
+            newInfo = ((SyncLocalStmtExecutor) this.executor).rollback(optionFunc);
         }
 
         switch (database) {
@@ -338,12 +338,12 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
         @Override
         public boolean isDriverAssignableTo(Class<?> spiClass) {
-            return this.stmtExecutor.isDriverAssignableTo(spiClass);
+            return this.executor.isDriverAssignableTo(spiClass);
         }
 
         @Override
         public <T> T getDriverSpi(Class<T> spiClass) {
-            return this.stmtExecutor.getDriverSpi(spiClass);
+            return this.executor.getDriverSpi(spiClass);
         }
 
 

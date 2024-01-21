@@ -22,6 +22,7 @@ import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 import io.army.stmt.*;
 import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtOption;
@@ -88,6 +89,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
             throws DataAccessException;
 
     /**
+     *  if jdbc ,always support this method,if jdbs throw {@link UnsupportedOperationException}
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
@@ -95,13 +97,11 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
                                 Class<R> elementClass, @Nullable TableMeta<?> domainTable,
                                 @Nullable List<R> rowsList, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
+
     /**
-     * @return a unmodified list.
-     * @throws OptimisticLockException when
+     * if jdbs ,always support this method,if jdbc throw {@link UnsupportedOperationException}
      */
-    <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
-                              @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList, Function<Option<?>, ?> optionFunc)
-            throws DataAccessException;
+    Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
 
     @Nullable
