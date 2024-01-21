@@ -62,6 +62,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
         return new ArmyTransactionInfo(armyInfo.inTransaction, armyInfo.isolation, armyInfo.readOnly, map);
     }
 
+
     static TransactionInfo forChain(final TransactionInfo info) {
         final Map<Option<?>, Object> map;
 
@@ -447,7 +448,9 @@ final class ArmyTransactionInfo implements TransactionInfo {
                     String m = String.format("inTransaction is true at least contain %s", Option.DEFAULT_ISOLATION);
                     throw new IllegalStateException(m);
                 }
-                optionMap.put(Option.START_MILLIS, System.currentTimeMillis());
+                if (!(optionMap.get(Option.START_MILLIS) instanceof Long)) {
+                    optionMap.put(Option.START_MILLIS, System.currentTimeMillis());
+                }
             }
 
             final TransactionInfo info;

@@ -1013,11 +1013,19 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     /**
      * @see #transactionInfo()
      */
+    @SuppressWarnings("unchecked")
     private TransactionInfo mapToArmyTransactionInfo(final io.jdbd.session.TransactionInfo info) {
-        return TransactionInfo.info(
-                info.inTransaction(), mapToArmyIsolation(info.isolation()), info.isReadOnly(),
-                this.factory.mapToArmyOptionFunc(info::valueOf)
-        );
+        final TransactionInfo.InfoBuilder builder;
+        builder = TransactionInfo.infoBuilder(info.inTransaction(), mapToArmyIsolation(info.isolation()), info.isReadOnly());
+
+        Option<?> armyOption;
+        for (io.jdbd.session.Option<?> jdbdOption : info.optionSet()) {
+            armyOption = this.factory.mapToArmyOption(jdbdOption);
+            if (armyOption != null) {
+                builder.option((Option<Object>) armyOption, info.valueOf(jdbdOption));
+            }
+        }
+        return builder.build();
     }
 
 

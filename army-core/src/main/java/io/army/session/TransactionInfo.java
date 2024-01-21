@@ -172,7 +172,12 @@ public interface TransactionInfo extends TransactionOption {
 
         /**
          * <p>Create a new {@link TransactionInfo} instance.
-         * <p><strong>NOTE</strong>: if in transaction is true then this method always auto add {@link Option#START_MILLIS}.
+         * <p><strong>NOTE</strong>: if satisfy following :
+         * <ul>
+         *     <li>in transaction is true</li>
+         *     <li>not found {@link Option#START_MILLIS}</li>
+         * </ul>
+         * then this method always auto add {@link Option#START_MILLIS}.
          *
          * @throws IllegalStateException throw when in transaction and not found {@link Option#DEFAULT_ISOLATION}.
          */
