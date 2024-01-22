@@ -37,8 +37,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.AND;
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.*;
 
 public class StandardUpdateUnitTests extends StandardUnitTests {
 
@@ -59,7 +58,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map.get("firstId"), AND, map.get("secondId"))
                 .and(SQLs::bracket, ChinaRegion_.name.equal(SQLs::literal, "江湖"))
-                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greaterEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -81,7 +80,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::literal, 1))
                 .and(ChinaRegion_.name::equal, SQLs::param, "江湖")
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -95,9 +94,9 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .update(ChinaRegion_.T, AS, "p") // update only parent table field: ChinaRegion_.*
                 .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
-                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
-                .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, LITERAL_DECIMAL_0) // test method infer
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0) // test method infer
+                .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0) // test method infer
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .asUpdate()
                 .namedParamList(this.createProvinceList());
@@ -117,7 +116,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::namedParam, ChinaRegion_.ID))
                 .and(ChinaRegion_.name.equal(SQLs::namedParam, ChinaRegion_.NAME))
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .asUpdate()
                 .namedParamList(this.createProvinceList());
 

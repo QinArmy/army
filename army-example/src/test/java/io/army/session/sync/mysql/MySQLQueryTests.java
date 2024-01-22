@@ -40,7 +40,7 @@ public class MySQLQueryTests extends MySQLSynSessionTestSupport {
 
         final Select stmt;
         stmt = MySQLs.query()
-                .with("cte").as(s -> s.select(ChinaRegion_.id)
+                .with("cte").as(s -> s.select(ChinaRegion_.id, ChinaRegion_.population)
                         .from(ChinaRegion_.T, AS, "t")
                         .where(ChinaRegion_.id::equal, SQLs::literal, firstId)
                         .asQuery()
@@ -49,8 +49,8 @@ public class MySQLQueryTests extends MySQLSynSessionTestSupport {
                         .from("cte")
                         .where(SQLs.refField("cte", ChinaRegion_.ID).equal(SQLs.literalValue(firstId)))
                         .asQuery()
-                ).union()
-                .parens(p -> p.with("cte20").as(s -> s.select(ChinaRegion_.id)
+                ).unionAll()
+                .parens(p -> p.with("cte20").as(s -> s.select(ChinaRegion_.id, ChinaRegion_.population)
                                         .from(ChinaRegion_.T, AS, "t")
                                         .where(ChinaRegion_.id::equal, SQLs::literal, secondId)
                                         .asQuery()
@@ -62,12 +62,12 @@ public class MySQLQueryTests extends MySQLSynSessionTestSupport {
                                 ).asQuery()
                 ).unionAll()
                 .values()
-                .row(r -> r.space(LITERAL_1))
+                .row(r -> r.space(LITERAL_1, LITERAL_1))
                 .unionAll()
                 .parens(p -> p.values()
-                        .row(r -> r.space(LITERAL_0))
+                        .row(r -> r.space(LITERAL_0, LITERAL_1))
                         .asValues()
-                ).orderBy(SQLs.refSelection(ChinaRegion_.ID))
+                ).orderBy(SQLs.refSelection(ChinaRegion_.ID), SQLs.refSelection(2)) // test ref left context selection
                 .limit(SQLs::literal, 4)
                 .asValues();
 

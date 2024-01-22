@@ -169,19 +169,43 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
     interface _UpdateWhereAndClause<WA> extends Statement._WhereAndClause<WA> {
 
+        /**
+         * @param numberOperand see <ul>
+         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_DECIMAL_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_DECIMAL_0}</li>
+         *                      </ul>
+         */
         <T> WA and(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
                    BiFunction<SimpleExpression, T, Expression> operator, T operand1,
-                   BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
+                   BiFunction<Expression, Expression, IPredicate> expOperator2, ValueExpression numberOperand);
 
+        /**
+         * @param numberOperand see <ul>
+         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_DECIMAL_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_DECIMAL_0}</li>
+         *                      </ul>
+         */
         <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
                      BiFunction<SimpleExpression, T, Expression> operator, @Nullable T operand1,
-                     BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
+                     BiFunction<Expression, Expression, IPredicate> expOperator2, ValueExpression numberOperand);
 
+        /**
+         * @param numberOperand see <ul>
+         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_DECIMAL_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_0}</li>
+         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_DECIMAL_0}</li>
+         *                      </ul>
+         */
         WA and(Function<BiFunction<SqlField, String, Expression>, Expression> fieldOperator,
                BiFunction<SqlField, String, Expression> operator,
-               BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
+               BiFunction<Expression, Expression, IPredicate> expOperator2, ValueExpression numberOperand);
 
-    }
+    } // _UpdateWhereAndClause
 
 
 }

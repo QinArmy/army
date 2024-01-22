@@ -136,39 +136,28 @@ abstract class CriteriaSupports {
             return this.context;
         }
 
+
         @Override
         public final WE with(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(false, consumer, true);
         }
 
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
+            return endDynamicWithClause(true, consumer, true);
         }
 
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(false, consumer, false);
         }
 
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            return endDynamicWithClause(true, consumer, false);
         }
 
         @Override
@@ -190,7 +179,7 @@ abstract class CriteriaSupports {
         @SuppressWarnings("unchecked")
         final WE endStaticWithClause(final boolean recursive) {
             this.recursive = recursive;
-            this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
+            this.cteList = this.context.endWithClause(recursive, true); // static with syntax is required
             return (WE) this;
         }
 
@@ -199,11 +188,14 @@ abstract class CriteriaSupports {
 
 
         @SuppressWarnings("unchecked")
-        private WE endDynamicWithClause(final B builder, final boolean required) {
+        private WE endDynamicWithClause(final boolean recursive, final Consumer<B> consumer, final boolean required) {
+            final B builder;
+            builder = createCteBuilder(recursive);
+
+            CriteriaUtils.invokeConsumer(builder, consumer);
+
             ((CriteriaSupports.CteBuilder) builder).endLastCte();
 
-            final boolean recursive;
-            recursive = builder.isRecursive();
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;

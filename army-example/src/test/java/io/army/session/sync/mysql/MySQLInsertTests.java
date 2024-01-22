@@ -317,7 +317,7 @@ public class MySQLInsertTests extends MySQLSynSessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Transactional
-    @Test//(invocationCount = 3)
+    @Test(invocationCount = 3)
     public void assignmentInsertChild(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(1);
         session.batchSave(regionList);

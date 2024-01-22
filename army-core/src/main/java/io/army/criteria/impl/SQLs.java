@@ -35,6 +35,7 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -190,6 +191,8 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final LiteralExpression LITERAL_1 = SQLs.literal(IntegerType.INSTANCE, 1);
 
+    public static final LiteralExpression LITERAL_DECIMAL_0 = SQLs.literal(BigDecimalType.INSTANCE, BigDecimal.ZERO);
+
     public static final LiteralExpression LITERAL_EMPTY_STRING = SQLs.literal(StringType.INSTANCE, "");
 
     /*-------------------below param -------------------*/
@@ -197,6 +200,8 @@ public abstract class SQLs extends SQLSyntax {
     public static final ParamExpression PARAM_0 = SQLs.param(IntegerType.INSTANCE, 0);
 
     public static final ParamExpression PARAM_1 = SQLs.param(IntegerType.INSTANCE, 1);
+
+    public static final ParamExpression PARAM_DECIMAL_0 = SQLs.param(BigDecimalType.INSTANCE, BigDecimal.ZERO);
 
     public static final ParamExpression PARAM_TRUE = SQLs.param(BooleanType.INSTANCE, Boolean.TRUE);
 

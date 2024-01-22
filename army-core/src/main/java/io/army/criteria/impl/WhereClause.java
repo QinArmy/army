@@ -465,9 +465,8 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     @Override
     public final <T> WA and(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
                             BiFunction<SimpleExpression, T, Expression> operator, @Nullable T operand1,
-                            BiFunction<Expression, Expression, IPredicate> expOperator2,
-                            @Nullable Number numberOperand) {
-        if (operand1 == null || numberOperand == null) {
+                            BiFunction<Expression, Expression, IPredicate> expOperator2, ValueExpression numberOperand) {
+        if (operand1 == null) {
             throw ContextStack.nullPointer(this.context);
         }
         final Expression expression;
@@ -475,14 +474,14 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
         if (expression == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        return this.and(expOperator2.apply(expression, SQLs.literalValue(numberOperand)));
+        return this.and(expOperator2.apply(expression, numberOperand));
     }
 
     @Override
     public final WA and(Function<BiFunction<SqlField, String, Expression>, Expression> fieldOperator,
                         BiFunction<SqlField, String, Expression> operator,
-                        BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand) {
-        return this.and(expOperator2.apply(fieldOperator.apply(operator), SQLs.literalValue(numberOperand)));
+                        BiFunction<Expression, Expression, IPredicate> expOperator2, ValueExpression numberOperand) {
+        return this.and(expOperator2.apply(fieldOperator.apply(operator), numberOperand));
     }
 
     @Override
@@ -631,14 +630,14 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     @Override
     public final <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
                               BiFunction<SimpleExpression, T, Expression> operator, @Nullable T operand1,
-                              BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand) {
-        if (operand1 != null && numberOperand != null) {
+                              BiFunction<Expression, Expression, IPredicate> expOperator2, ValueExpression numberOperand) {
+        if (operand1 != null) {
             final Expression expression;
             expression = expOperator1.apply(operator, operand1);
             if (expression == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            this.and(expOperator2.apply(expression, SQLs.literalValue(numberOperand)));
+            this.and(expOperator2.apply(expression, numberOperand));
         }
         return (WA) this;
     }

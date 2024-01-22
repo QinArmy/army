@@ -90,7 +90,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                 .and(ChinaRegion_.parentId.equal(SQLs::param, map.get("parentId"))
                         .or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY))
                 )
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greaterEqual, 0)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greaterEqual, LITERAL_0)
                 .orderBy(ChinaRegion_.name::desc)
                 .limit(SQLs::param, map::get, "rowCount")
                 .asUpdate();
@@ -342,7 +342,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                     .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                     .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
-                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greaterEqual, 0)
+                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greaterEqual, LITERAL_0)
                     .asUpdate();
 
             print80Stmt(LOG, stmt);
@@ -396,7 +396,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                 .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
                 .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                 .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
-                .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greaterEqual, 0)
+                .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greaterEqual, LITERAL_0)
                 .asUpdate();
 
         print80Stmt(LOG, stmt);
@@ -430,7 +430,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                 .ifAnd(BankUser_.nickName::equal, SQLs::literal, map::get, "oldNickName")
                 .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                 .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
-                .ifAnd(BankAccount_.balance::plus, SQLs::literal, map.get("amount"), Expression::greaterEqual, 0)
+                .ifAnd(BankAccount_.balance::plus, SQLs::literal, map.get("amount"), Expression::greaterEqual, LITERAL_0)
                 .asUpdate();
 
         print80Stmt(LOG, stmt);
