@@ -37,7 +37,7 @@ abstract class MySQLSimpleValues<I extends Item>
         Statement._AsValuesClause<I>,
         Object,
         Object,
-        MySQLValues._ValueWithComplexSpec<I>>
+        MySQLValues._ValuesQueryComplexSpec<I>>
         implements MySQLValues.ValuesSpec<I>,
         ValuesRows,
         MySQLValues._StaticValuesRowClause<I>,
@@ -151,7 +151,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        _ValueWithComplexSpec<I> createUnionValues(final _UnionType unionType) {
+        _ValuesQueryComplexSpec<I> createUnionValues(final _UnionType unionType) {
 
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionValues(this, unionType, rowSet));
@@ -188,7 +188,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        _ValueWithComplexSpec<I> createUnionValues(final _UnionType unionType) {
+        _ValuesQueryComplexSpec<I> createUnionValues(final _UnionType unionType) {
 
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
@@ -207,7 +207,7 @@ abstract class MySQLSimpleValues<I extends Item>
             _AsValuesClause<I>,
             Object,
             Object,
-            MySQLValues._ValueWithComplexSpec<I>>
+            MySQLValues._ValuesQueryComplexSpec<I>>
             implements MySQLValues._UnionOrderBySpec<I>,
             MySQLValues._UnionOrderByCommaSpec<I>,
             MySQLValues {
@@ -341,7 +341,7 @@ abstract class MySQLSimpleValues<I extends Item>
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
 
-            return function.apply(new ValuesDispatcher<>(bracket, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new ValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override
@@ -386,7 +386,7 @@ abstract class MySQLSimpleValues<I extends Item>
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            return function.apply(new SubValuesDispatcher<>(bracket, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SubValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override

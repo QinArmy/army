@@ -71,9 +71,9 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
-            _StaticIntersectClause<_QueryWithComplexSpec<I>>,
-            _StaticExceptClause<_QueryWithComplexSpec<I>>,
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryValuesComplexSpec<I>>,
+            _StaticIntersectClause<_QueryValuesComplexSpec<I>>,
+            _StaticExceptClause<_QueryValuesComplexSpec<I>>,
             _AsQueryClause<I> {
 
     }
@@ -331,18 +331,20 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
     /**
-     * <p>
-     * VALUES statement don't support WITH clause.
+     * <p>VALUES statement don't support WITH clause.
      */
     interface _QueryComplexSpec<I extends Item> extends _MySQLSelectClause<I>,
             _DynamicParensRowSetClause<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
+    interface _QueryValuesComplexSpec<I extends Item> extends _QueryComplexSpec<I>, MySQLValues._MySQLValuesClause<I> {
+
+    }
+
     interface _QueryWithComplexSpec<I extends Item> extends _MySQLDynamicWithClause<_QueryComplexSpec<I>>,
             _MySQLStaticWithClause<_QueryComplexSpec<I>>,
-            _QueryComplexSpec<I>,
-            MySQLValues._MySQLValuesClause<I> {
+            _QueryValuesComplexSpec<I> {
 
     }
 

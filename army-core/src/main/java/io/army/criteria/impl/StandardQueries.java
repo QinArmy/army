@@ -526,7 +526,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        WithSpec<I> createQueryUnion(final _UnionType unionType) {
+        SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
@@ -569,7 +569,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        WithSpec<I> createQueryUnion(final _UnionType unionType) {
+        SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class), null,
@@ -625,7 +625,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        WithSpec<I> createUnionRowSet(final _UnionType unionType) {
+        SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
@@ -671,7 +671,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        WithSpec<I> createUnionRowSet(final _UnionType unionType) {
+        SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class), null,

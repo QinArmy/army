@@ -38,7 +38,10 @@ public interface MySQLValues extends MySQLStatement, RowSet {
 
 
     interface _UnionSpec<I extends Item>
-            extends _StaticUnionClause<_ValueWithComplexSpec<I>>, _AsValuesClause<I> {
+            extends _StaticUnionClause<_ValuesQueryComplexSpec<I>>,
+            _StaticIntersectClause<_ValuesQueryComplexSpec<I>>,
+            _StaticExceptClause<_ValuesQueryComplexSpec<I>>,
+            _AsValuesClause<I> {
 
     }
 
@@ -107,12 +110,14 @@ public interface MySQLValues extends MySQLStatement, RowSet {
 
     }
 
+    interface _ValuesQueryComplexSpec<I extends Item> extends _SelectComplexCommandSpec<I>, _MySQLValuesClause<I> {
 
-    interface _ValueWithComplexSpec<I extends Item>
-            extends _MySQLDynamicWithClause<_SelectComplexCommandSpec<I>>,
+    }
+
+
+    interface _ValueWithComplexSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectComplexCommandSpec<I>>,
             _MySQLStaticWithClause<_SelectComplexCommandSpec<I>>,
-            _SelectComplexCommandSpec<I>,
-            _MySQLValuesClause<I> {
+            _ValuesQueryComplexSpec<I> {
 
     }
 

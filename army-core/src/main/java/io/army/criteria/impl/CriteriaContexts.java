@@ -2631,8 +2631,7 @@ abstract class CriteriaContexts {
                 this.callDeferSelectClauseIfNeed();
                 this.endSelectClauseIfNeed();
 
-                refSelectionMap = _Collections.hashMap();
-                this.refSelectionMap = refSelectionMap;
+                this.refSelectionMap = refSelectionMap = _Collections.hashMap();
             }
 
             final Selection selection;
@@ -2672,12 +2671,10 @@ abstract class CriteriaContexts {
                 this.callDeferSelectClauseIfNeed();
                 this.endSelectClauseIfNeed();
 
-                refSelectionMap = _Collections.hashMap();
-                this.refSelectionMap = refSelectionMap;
+                this.refSelectionMap = refSelectionMap = _Collections.hashMap();
             }
 
-            final List<Selection> selectionList = this.flatSelectionList;
-            assert selectionList != null;
+            final List<? extends Selection> selectionList = flatSelectItems();
             if (selectionOrdinal > selectionList.size()) {
                 throw CriteriaUtils.unknownSelection(selectionOrdinal);
             }
@@ -3149,7 +3146,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final Expression refSelection(int selectionOrdinal) {
+        public final Expression refSelection(final int selectionOrdinal) {
             final CriteriaContext leftContext = this.leftContext, innerContext = this.innerContext;
             final Expression selection;
             if (innerContext == null) {
@@ -3389,13 +3386,21 @@ abstract class CriteriaContexts {
             } else if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(selectionOrdinal);
             }
-            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
-            if (refSelectionMap == null) {
-                this.refSelectionMap = refSelectionMap = _Collections.hashMap();
+
+            final CriteriaContext leftContext = this.leftContext;
+            if (leftContext != null) {
+                return leftContext.refSelection(selectionOrdinal);
             }
 
+            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
             SelectionReference reference;
-            reference = refSelectionMap.get(selectionOrdinal);
+            if (refSelectionMap == null) {
+                this.refSelectionMap = refSelectionMap = _Collections.hashMap();
+                reference = null;
+            } else {
+                reference = refSelectionMap.get(selectionOrdinal);
+            }
+
             if (reference != null) {
                 return reference;
             }
@@ -3421,13 +3426,21 @@ abstract class CriteriaContexts {
             } else if (this.inRowClause) {
                 throw currentlyCannotRefSelection(selectionLabel);
             }
-            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
-            if (refSelectionMap == null) {
-                this.refSelectionMap = refSelectionMap = _Collections.hashMap();
+
+            final CriteriaContext leftContext = this.leftContext;
+            if (leftContext != null) {
+                return leftContext.refSelection(selectionLabel);
             }
 
+            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
             SelectionReference reference;
-            reference = refSelectionMap.get(selectionLabel);
+            if (refSelectionMap == null) {
+                this.refSelectionMap = refSelectionMap = _Collections.hashMap();
+                reference = null;
+            } else {
+                reference = refSelectionMap.get(selectionLabel);
+            }
+
             if (reference != null) {
                 return reference;
             }

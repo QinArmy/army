@@ -70,7 +70,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         MySQLQuery._LockSpec<I>,
         Object,
         Object,
-        MySQLQuery._QueryWithComplexSpec<I>>
+        MySQLQuery._QueryValuesComplexSpec<I>>
         implements _MySQLQuery, MySQLQuery,
         MySQLQuery.WithSpec<I>,
         MySQLQuery._MySQLSelectCommaSpec<I>,
@@ -884,7 +884,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            return function.apply(new SimpleSelect<>(null, bracket.context, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SimpleSelect<>(null, bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -893,7 +893,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _QueryWithComplexSpec<I> createQueryUnion(final _UnionType unionType) {
+        _QueryValuesComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSelect(this, unionType, rowSet));
             return new SelectDispatcher<>(this.context, unionFunc);
@@ -904,7 +904,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//SimpleSelect
+    } // SimpleSelect
 
     private static final class SimpleSubQuery<I extends Item> extends MySQLQueries<I> implements ArmySubQuery {
 
@@ -923,7 +923,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
 
-            return function.apply(MySQLQueries.subQuery(bracket.context, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, MySQLQueries.subQuery(bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -932,14 +932,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _QueryWithComplexSpec<I> createQueryUnion(final _UnionType unionType) {
+        _QueryValuesComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubQuery(this, unionType, rowSet));
             return new SubQueryDispatcher<>(this.context, unionFunc);
         }
 
 
-    }//SimpleSubQuery
+    } // SimpleSubQuery
 
 
     private static final class PartitionJoinClause<I extends Item>
@@ -1114,7 +1114,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             Query._AsQueryClause<I>,
             Object,
             Object,
-            _QueryWithComplexSpec<I>>
+            _QueryValuesComplexSpec<I>>
             implements MySQLQuery._UnionOrderBySpec<I>,
             MySQLQuery,
             MySQLQuery._UnionOrderByCommaSpec<I> {
@@ -1148,7 +1148,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
+        _QueryValuesComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSelect(this, unionType, rowSet));
             return new SelectDispatcher<>(this.context, unionFunc);
@@ -1193,7 +1193,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
+        _QueryValuesComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubQuery(this, unionType, rowSet));
             return new SubQueryDispatcher<>(this.context, unionFunc);
@@ -1244,7 +1244,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//MySQLQueryDispatcher
+    } // MySQLQueryDispatcher
 
 
     private static final class SelectDispatcher<I extends Item> extends MySQLQueryDispatcher<I> {
@@ -1264,7 +1264,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            return function.apply(new SelectDispatcher<>(bracket, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SelectDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override
@@ -1291,7 +1291,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//SelectDispatcher
+    } // SelectDispatcher
 
 
     private static final class SubQueryDispatcher<I extends Item> extends MySQLQueryDispatcher<I> {
@@ -1312,7 +1312,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
 
-            return function.apply(new SubQueryDispatcher<>(bracket, bracket::parensEnd));
+            return CriteriaUtils.invokeFunction(function, new SubQueryDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override
@@ -1339,7 +1339,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//SubQueryDispatcher
+    } // SubQueryDispatcher
 
 
     private static final class MySQLBatchSimpleSelect extends ArmyBatchSimpleSelect
@@ -1399,7 +1399,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
 
-    }//MySQLBatchSelect
+    } // MySQLBatchSelect
 
 
 }
