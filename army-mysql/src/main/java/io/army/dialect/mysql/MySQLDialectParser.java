@@ -268,8 +268,8 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void parseClauseAfterRightParen(final _ParensRowSet rowSet, final _ParenRowSetContext context) {
-        this.orderByClause(rowSet.orderByList(), context);
-        this.standardLimitClause(rowSet.offsetExp(), rowSet.rowCountExp(), context);
+        orderByClause(rowSet.orderByList(), context);
+        standardLimitClause(rowSet.offsetExp(), rowSet.rowCountExp(), context);
     }
 
     /**
