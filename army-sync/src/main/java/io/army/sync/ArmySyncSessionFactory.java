@@ -60,12 +60,12 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
         assert this.stmtExecutorFactory != null;
         this.sessionIdentifierEnable = this.env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
         this.buildInExecutor = this.stmtExecutorFactory.getClass().getPackage().getName().startsWith("io.army.jdbc.");
-        this.jdbcDriver = this.buildInExecutor || this.stmtExecutorFactory.driverSpiVendor().equals("java.sql");
+        this.jdbcDriver = this.buildInExecutor || this.stmtExecutorFactory.driverSpiName().equalsIgnoreCase("JDBC");
     }
 
     @Override
-    public String driverSpiVendor() {
-        return this.stmtExecutorFactory.driverSpiVendor();
+    public String driverSpiName() {
+        return this.stmtExecutorFactory.driverSpiName();
     }
 
     @Override

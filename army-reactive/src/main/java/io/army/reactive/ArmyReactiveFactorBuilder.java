@@ -123,7 +123,7 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
                                     LOG.debug("Created {}", sessionFactory);
                                 }
                                 assert name.equals(sessionFactory.name());
-                                assert sessionFactory.stmtExecutorFactory == executorFactory;
+                                assert sessionFactory.executorFactory == executorFactory;
 
                                 // 8. invoke beforeInitialize
                                 if (factoryAdvice != null) {
@@ -195,7 +195,7 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
         final long startTime;
         startTime = System.currentTimeMillis();
 
-        return sessionFactory.stmtExecutorFactory.metaExecutor(dataSourceFunc())
+        return sessionFactory.executorFactory.metaExecutor(dataSourceFunc())
                 .flatMap(executor -> executor.extractInfo() // 1. extract schema info.
                         .flatMap(info -> updateSchemaIfNeed(sessionFactory, executor, info, ddlMode)) // 2. update schema
                         .then(Mono.defer(executor::close))  // normally close executor

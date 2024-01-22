@@ -35,6 +35,7 @@ import java.util.function.Function;
  *     <li>{@link #localExecutor(String, boolean, Function)}</li>
  *     <li>{@link #rmExecutor(String, boolean, Function)}</li>
  * </ul>
+ *
  * @since 0.6.0
  */
 public interface ExecutorFactory extends CloseableSpec, OptionSpec {
@@ -48,17 +49,18 @@ public interface ExecutorFactory extends CloseableSpec, OptionSpec {
     /**
      * <p>For example:
      * <ul>
-     *     <li>io.jdbd</li>
-     *     <li>java.sql</li>
+     *     <li>JDBC</li>
+     *     <li>JDBD</li>
+     *     <li>ODBC</li>
      * </ul>
      *
-     * @return driver spi vendor,The value returned typically is the package name for this vendor.
+     * @return driver spi name,The value returned typically is the name for this driver spi.
      */
-    String driverSpiVendor();
+    String driverSpiName();
 
 
     /**
-     * <p>For example: io.army
+     * <p>For example: io.army.jdbc or io.army.jdbd
      *
      * @return executor vendor,The value returned typically is the package name for this vendor.
      */

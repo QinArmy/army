@@ -58,9 +58,9 @@ public interface SessionFactory extends CloseableSpec {
     AllowMode queryInsertMode();
 
     /**
-     * See {@link ExecutorFactory#driverSpiVendor()}
+     * See {@link ExecutorFactory#driverSpiName()}
      */
-    String driverSpiVendor();
+    String driverSpiName();
 
 
     boolean isSupportSavePoints();

@@ -160,13 +160,13 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
 
 
     @Override
-    public String driverSpiVendor() {
-        return "java.sql";
+    public String driverSpiName() {
+        return "JDBC";
     }
 
     @Override
     public String executorVendor() {
-        return "io.qinarmy";
+        return "io.army.jdbc";
     }
 
     @Override

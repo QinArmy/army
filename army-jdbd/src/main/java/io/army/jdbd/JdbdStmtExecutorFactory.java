@@ -115,13 +115,13 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
 
 
     @Override
-    public String driverSpiVendor() {
-        return "io.jdbd";
+    public String driverSpiName() {
+        return "JDBD";
     }
 
     @Override
     public String executorVendor() {
-        return "io.army";
+        return "io.army.jdbd";
     }
 
     @Override
