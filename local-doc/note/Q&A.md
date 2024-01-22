@@ -207,3 +207,8 @@
     * 设计 成 SimpleExpression 是为 sql 解析方便.
     * 不返回 SimpleExpression 是为避免应用开发者 使用 SimpleExpression 的方法.
     * boolean function 保留 SimplePredicate 则是为了 避免 type bug,因为 IPredicate 是 Expression 子接口
+
+47. 设计 io.army.criteria.DefiniteExpression 的目的是什么?
+    * 因为普通 SimpleExpression 的 mapping type 常常是不确定的,所以开发者可能在绑定参数和字面量时可能 绑定错误的类型.
+    * 而 TableField 和 ValueExpression 的 mapping type 是确定的,故设计此接口
+    * 在后续可会让一些返回类型确定的 function expression 也实现 DefiniteExpression
