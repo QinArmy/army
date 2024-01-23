@@ -984,9 +984,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 statement.addBatch();
             }
 
-            if (option.isSupportTimeout()) {
-                statement.setQueryTimeout(option.restSeconds());
-            }
+            bindStatementOption(statement, stmt, option);
 
             final List<R> resultList;
 
