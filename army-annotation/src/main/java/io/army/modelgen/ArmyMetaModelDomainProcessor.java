@@ -48,7 +48,8 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         final Set<? extends Element> elementSet;
         elementSet = roundEnv.getElementsAnnotatedWith(Table.class);
 
-        if (elementSet.size() == 0) {
+        final int domainSetSize;
+        if ((domainSetSize = elementSet.size()) == 0) {
             return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
         }
 
@@ -65,8 +66,10 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         } catch (IOException e) {
             throw new AnnotationMetaException("Army create source file occur.", e);
         }
-        System.out.printf("[INFO] %s cost %s ms.%n", ArmyMetaModelDomainProcessor.class.getName()
-                , System.currentTimeMillis() - startTime);
+        System.out.printf("[INFO] %s generate %s army static metamodel class source file, cost %s ms.%n",
+                ArmyMetaModelDomainProcessor.class.getName(),
+                domainSetSize,
+                System.currentTimeMillis() - startTime);
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
     }
 

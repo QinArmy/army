@@ -34,6 +34,7 @@ import io.army.util._TimeUtils;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.time.*;
+import java.util.List;
 import java.util.Set;
 
 abstract class MySQLParser extends _ArmyDialectParser {
@@ -79,10 +80,15 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
+        final List<_Cte> cteList;
+        cteList = spec.cteList();
+        if (cteList.size() == 0) {
+            return;
+        }
         if (!this.asOf80) {
             throw _Exceptions.dontSupportWithClause(this.dialect);
         }
-        withSubQuery(spec.isRecursive(), spec.cteList(), context, _SQLConsultant::assertStandardCte);
+        withSubQuery(spec.isRecursive(), cteList, context, _SQLConsultant::assertStandardCte);
     }
 
     @Override

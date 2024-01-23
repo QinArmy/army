@@ -56,7 +56,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                 .limit(SQLs::param, criteria::getRowCount)
                 .asUpdate();
 
-        printStmt(LOG, stmt);
+        print80Stmt(LOG, stmt);
 
 
     }
@@ -125,7 +125,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                 .asUpdate()
                 .namedParamList(paramList);
 
-        printStmt(LOG, stmt);
+        print80Stmt(LOG, stmt);
     }
 
 
@@ -313,36 +313,6 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
 
     @Test
     public void multiUpdateWithMapCriteria() {
-        //daoMethod mock dao method
-        final Consumer<Map<String, Object>> daoMethod = map -> {
-
-            final Supplier<List<Hint>> hintSupplier = () -> {
-                final List<Hint> hintList = new ArrayList<>(2);
-                hintList.add(MySQLs.qbName("regionDelete"));
-                hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
-                return hintList;
-            };
-
-            final Object amount = map.get("amount");
-
-            final Update stmt;
-            stmt = MySQLs.multiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE))
-                    .space(BankUser_.T).partition("p1").as("u").useIndex(FOR, JOIN, "PRIMARY")
-                    .join(BankAccount_.T, AS, "a").ignoreIndex("idx_account_id")
-                    .on(BankUser_.id::equal, BankAccount_.id)
-                    .ifSet(BankUser_.nickName, SQLs::param, map::get, "newNickName")
-                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, () -> amount)
-                    .whereIf(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
-                    .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
-                    .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
-                    .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
-                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greaterEqual, LITERAL_0)
-                    .asUpdate();
-
-            print80Stmt(LOG, stmt);
-
-        };//mock dao method end
 
         final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
@@ -354,11 +324,32 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
 
         map.put("identityId", "6668888");
 
-        //map.put("oldNickName","zoro");
-        //map.put("newNickName","索隆");
 
-        //below,mock dao method invoking
-        daoMethod.accept(map);
+        final Supplier<List<Hint>> hintSupplier = () -> {
+            final List<Hint> hintList = new ArrayList<>(2);
+            hintList.add(MySQLs.qbName("regionDelete"));
+            hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
+            return hintList;
+        };
+
+        final Object amount = map.get("amount");
+
+        final Update stmt;
+        stmt = MySQLs.multiUpdate()
+                .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE))
+                .space(BankUser_.T).partition("p1").as("u").useIndex(FOR, JOIN, "PRIMARY")
+                .join(BankAccount_.T, AS, "a").ignoreIndex("idx_account_id")
+                .on(BankUser_.id::equal, BankAccount_.id)
+                .ifSet(BankUser_.nickName, SQLs::param, map::get, "newNickName")
+                .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, () -> amount)
+                .whereIf(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
+                .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
+                .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
+                .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
+                .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greaterEqual, LITERAL_0)
+                .asUpdate();
+
+        print80Stmt(LOG, stmt);
     }
 
     @Test

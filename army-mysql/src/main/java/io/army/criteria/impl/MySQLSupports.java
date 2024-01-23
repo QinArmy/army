@@ -1088,7 +1088,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         private MySQLIndexHint(IndexHintCommand command, @Nullable SQLs.IndexHintPurpose purpose, List<String> indexNameList) {
             if (indexNameList.size() == 0) {
                 throw ContextStack.clearStackAndCriteriaError("index hint index name list must not empty.");
-            } else if (purpose != SQLs.JOIN && purpose != SQLs.ORDER_BY && purpose != SQLs.GROUP_BY) {
+            } else if (purpose != null && purpose != SQLs.JOIN && purpose != SQLs.ORDER_BY && purpose != SQLs.GROUP_BY) {
                 throw CriteriaUtils.unknownWords(purpose);
             }
             this.command = command;

@@ -385,9 +385,8 @@ public abstract class _ArmySession implements Session {
     }
 
     private void printSql(final SqlLogMode mode, final Stmt stmt, final long startNanoSecond) {
-        final boolean debug = mode.debug;
 
-        final StringBuilder builder = new StringBuilder(128);
+        final StringBuilder builder = new StringBuilder(256);
         builder.append("session[name : ")
                 .append(this.name)
                 .append(" , hash : ")
@@ -413,7 +412,7 @@ public abstract class _ArmySession implements Session {
                     .append(" nano");
         }
 
-        if (debug) {
+        if (mode.debug) {
             getLogger().debug(builder.toString());
         } else {
             getLogger().info(builder.toString());

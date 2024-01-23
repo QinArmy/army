@@ -104,10 +104,6 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
                 .insertInto(ChinaCity_.T).as("cc")
                 .overridingUserValue()
                 .values(cityList)
-                .onConflict()
-                .onConstraint("id")
-                .doUpdate()
-                .set(ChinaCity_.mayorName, Postgres::excluded)
                 .asInsert();
 
         printStmt(LOG, stmt, Visible.BOTH);
