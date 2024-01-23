@@ -34,6 +34,7 @@ import io.army.env.NameMode;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
@@ -1151,14 +1152,16 @@ abstract class ArmyParser implements DialectParser {
      * @see #parseSimpleValues(_ValuesQuery, _ValuesContext)
      */
     protected final void valuesClauseOfValues(final _ValuesContext context, @Nullable String rowKeyword,
-                                              final List<List<_Expression>> rowList) {
+                                              final List<List<Object>> rowList) {
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
         final int rowSize = rowList.size();
         assert rowSize > 0;
 
-        List<_Expression> columnList;
+        List<?> columnList;
+        MappingType mappingType;
+        Object columnValue;
         for (int rowIndex = 0, firstRowColumnSize = 0, columnSize; rowIndex < rowSize; rowIndex++) {
             if (rowIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1185,7 +1188,19 @@ abstract class ArmyParser implements DialectParser {
                 if (columnIndex > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                columnList.get(columnIndex).appendSql(sqlBuilder, context);
+                columnValue = columnList.get(columnIndex);
+                if (columnValue == null) {
+                    sqlBuilder.append(_Constant.SPACE_NULL);
+                } else if (columnValue instanceof Expression) {
+                    ((_Expression) columnValue).appendSql(sqlBuilder, context);
+                } else {
+                    mappingType = _MappingFactory.getDefaultIfMatch(columnValue.getClass());
+                    if (mappingType == null) {
+                        throw _Exceptions.notFoundMappingType(columnValue);
+                    }
+                    literal(mappingType, columnValue, sqlBuilder.append(_Constant.SPACE));
+                }
+
             }
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

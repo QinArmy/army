@@ -32,7 +32,7 @@ public interface _ValuesQuery extends ValuesQuery, _PartRowSet, _RowSet._SelectI
     @Override
     List<_Selection> selectItemList();
 
-    List<List<_Expression>> rowList();
+    List<List<Object>> rowList();
 
 
 }

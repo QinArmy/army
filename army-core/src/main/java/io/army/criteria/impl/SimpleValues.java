@@ -44,9 +44,9 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
         RowSet._StaticMinusClause<SP>,
         _SelectionMap {
 
-    private List<_Expression> columnList;
+    private List<Object> columnList;
 
-    private List<List<_Expression>> rowList = _Collections.arrayList();
+    private List<List<Object>> rowList = _Collections.arrayList();
 
     private List<_Selection> selectionList;
 
@@ -148,43 +148,74 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
 
     @Override
     public final Item space(@Nullable Object exp) {
-        return comma(exp);
+        onAddColumn(exp);
+        return this;
     }
 
     @Override
     public final Values._ValueStaticColumnDualCommaClause space(@Nullable Object exp1, @Nullable Object exp2) {
-        return comma(exp1, exp2);
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        return this;
     }
 
     @Override
     public final Item space(@Nullable Object exp1, @Nullable Object exp2, @Nullable Object exp3) {
-        return comma(exp1, exp2, exp3);
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        return this;
     }
 
     @Override
     public final Values._ValueStaticColumnQuadraCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3, @Nullable Object exp4) {
-        return comma(exp1, exp2, exp3, exp4);
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+        return this;
     }
 
 
     @Override
     public final Values._ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
                                                                    @Nullable Object exp4, @Nullable Object exp5) {
-        return this.comma(exp1, exp2, exp3, exp4, exp5);
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        return this;
     }
 
     @Override
     public final Values._ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
                                                                    @Nullable Object exp4, @Nullable Object exp5,
                                                                    @Nullable Object exp6) {
-        return this.comma(exp1, exp2, exp3, exp4, exp5, exp6);
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        return this;
     }
 
     @Override
     public final Values._ValueStaticColumnOctupleCommaClause space(@Nullable Object exp1, Object exp2, @Nullable Object exp3,
                                                                    @Nullable Object exp4, @Nullable Object exp5,
                                                                    @Nullable Object exp6, @Nullable Object exp7) {
-        return this.comma(exp1, exp2, exp3, exp4, exp5, exp6, exp7);
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        onAddColumn(exp7);
+        return this;
     }
 
     @Override
@@ -192,7 +223,16 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
                                                                    @Nullable Object exp4, @Nullable Object exp5,
                                                                    @Nullable Object exp6, @Nullable Object exp7,
                                                                    @Nullable Object exp8) {
-        return this.comma(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8);
+        onAddColumn(exp1);
+        onAddColumn(exp2);
+        onAddColumn(exp3);
+        onAddColumn(exp4);
+
+        onAddColumn(exp5);
+        onAddColumn(exp6);
+        onAddColumn(exp7);
+        onAddColumn(exp8);
+        return this;
     }
 
     @Override
@@ -286,13 +326,13 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
 
 
     protected final void endCurrentRow() {
-        List<_Expression> columnList = this.columnList;
+        List<Object> columnList = this.columnList;
         if (columnList == null) {
             throw CriteriaUtils.dontAddAnyItem();
         } else if (!(columnList instanceof ArrayList)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
-        final List<List<_Expression>> rowList = this.rowList;
+        final List<List<Object>> rowList = this.rowList;
 
         if (!(rowList instanceof ArrayList)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -310,13 +350,13 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
             this.context.onValuesRowEnd();
         } else if (columnSize == 1) {
             final List<_Selection> selectionList;
-            selectionList = Collections.singletonList(ArmySelections.forExp(columnList.get(0), columnAlias(0)));
+            selectionList = Collections.singletonList(ArmySelections.forExp(convertToExpression(columnList.get(0)), columnAlias(0)));
             this.selectionList = selectionList;
             this.context.registerValuesSelectionList(selectionList);
         } else {
             List<_Selection> selectionList = _Collections.arrayList(columnSize);
             for (int i = 0; i < columnSize; i++) {
-                selectionList.add(ArmySelections.forExp(columnList.get(i), columnAlias(i)));
+                selectionList.add(ArmySelections.forExp(convertToExpression(columnList.get(i)), columnAlias(i)));
             }
             this.selectionList = selectionList = Collections.unmodifiableList(selectionList);
             this.context.registerValuesSelectionList(selectionList);
@@ -360,8 +400,8 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final List<List<_Expression>> rowList() {
-        final List<List<_Expression>> list = this.rowList;
+    public final List<List<Object>> rowList() {
+        final List<List<Object>> list = this.rowList;
         if (list == null || list instanceof ArrayList) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -499,26 +539,20 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
 
 
     private void onAddColumn(final @Nullable Object expOrLiteral) {
-        List<_Expression> list = this.columnList;
+        List<Object> list = this.columnList;
         if (list == null) {
             this.columnList = list = _Collections.arrayList();
         } else if (!(list instanceof ArrayList)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
-        final Expression expression;
+
         if (expOrLiteral == null) {
-            expression = SQLs.NULL;
-        } else if (expOrLiteral instanceof Expression) {
-            if (expOrLiteral == SQLs.DEFAULT) {
-                throw ContextStack.clearStackAndCriteriaError("VALUES don't support DEFAULT key word");
-            }
-            expression = (Expression) expOrLiteral;
-        } else if (expOrLiteral instanceof Item) {
-            throw ContextStack.clearStackAndCriteriaError("VALUES support only Expression or literal.");
+            list.add(SQLs.NULL);
+        } else if (expOrLiteral == SQLs.DEFAULT) {
+            throw ContextStack.clearStackAndCriteriaError("VALUES don't support DEFAULT key word");
         } else {
-            expression = SQLs.literalValue(expOrLiteral);
+            list.add(expOrLiteral);
         }
-        list.add((ArmyExpression) expression);
     }
 
     private void endValuesStatement(final boolean beforeWordValues) {
@@ -530,7 +564,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
             if (this.columnList != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final List<List<_Expression>> rowList = this.rowList;
+            final List<List<Object>> rowList = this.rowList;
             if (this.selectionList == null || !(rowList instanceof ArrayList)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -540,6 +574,18 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
             this.context.endContext();
         }
         ContextStack.pop(this.context);
+    }
+
+    private Expression convertToExpression(final @Nullable Object column) {
+        Expression expression;
+        if (column == null) {
+            expression = SQLs.NULL;
+        } else if (column instanceof Expression) {
+            expression = (Expression) column;
+        } else {
+            expression = SQLs.literalValue(column);
+        }
+        return expression;
     }
 
     @SuppressWarnings("unchecked")

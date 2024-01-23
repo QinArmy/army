@@ -1099,7 +1099,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
         @Override
         public TypeMeta typeMeta() {
-            return NoCastTextType.INSTANCE;
+            return NullType.INSTANCE;
         }
 
         @Override
@@ -1114,7 +1114,7 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
 
-    }// NullWord
+    } // NullWord
 
 
 }
