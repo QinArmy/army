@@ -108,7 +108,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery.WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(ContextStack.peek(), SQLs.SUB_QUERY);
+        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::identity);
     }
 
 

@@ -221,6 +221,11 @@ abstract class ContextStack {
         return new NullPointerException();
     }
 
+    static NullPointerException clearStackAndNullPointer(String msg) {
+        HOLDER.remove();
+        return new NullPointerException(msg);
+    }
+
     static CriteriaException clearStackAndCriteriaError(String msg) {
         HOLDER.remove();
         return new CriteriaException(msg);

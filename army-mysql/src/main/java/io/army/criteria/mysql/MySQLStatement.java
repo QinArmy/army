@@ -16,9 +16,11 @@
 
 package io.army.criteria.mysql;
 
+import io.army.criteria.Clause;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
+import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
 import java.util.function.Consumer;
@@ -101,11 +103,10 @@ public interface MySQLStatement extends DialectStatement {
     /**
      * <p>
      * This interface representing the composite of below:
-     *     <ul>
-     *         <li>{@link _JoinClause }</li>
-     *         <li>{@link  _StraightJoinClause}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link _JoinClause }</li>
+     *     <li>{@link  _StraightJoinClause}</li>
+     * </ul>
      *
      * @param <JT> next clause java type
      * @param <JS> next clause java type
@@ -120,11 +121,10 @@ public interface MySQLStatement extends DialectStatement {
     /**
      * <p>
      * This interface representing the composite of below:
-     *     <ul>
-     *         <li>{@link _JoinCteClause }</li>
-     *         <li>{@link  _StraightJoinCteClause}</li>
-     *     </ul>
-     *
+     * <ul>
+     *     <li>{@link _JoinCteClause }</li>
+     *     <li>{@link  _StraightJoinCteClause}</li>
+     * </ul>
      */
     interface _MySQLJoinCteClause<JC> extends _JoinCteClause<JC>, _StraightJoinCteClause<JC> {
 
@@ -192,7 +192,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicIndexHintClause<T extends Item, R extends Item> extends Item {
+    interface _DynamicIndexHintClause0<T extends Item, R extends Item> extends Item {
 
         R ifUseIndex(Consumer<T> consumer);
 
@@ -216,8 +216,239 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">Index Hints</a>
+     */
+    interface _IndexHintIndexNameClause<R extends Item> {
 
-    interface _IndexHintForOrderByClause<R> extends _StaticIndexHintClause<R> {
+        R useIndex(String indexName);
+
+        R useIndex(String indexName1, String indexName2);
+
+        R useIndex(String indexName1, String indexName2, String indexName3);
+
+        R useIndex(Consumer<Clause._StaticStringSpaceClause> consumer);
+
+        R useIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer);
+
+        R ifUseIndex(Consumer<Consumer<String>> consumer);
+
+        R ignoreIndex(String indexName);
+
+        R ignoreIndex(String indexName1, String indexName2);
+
+        R ignoreIndex(String indexName1, String indexName2, String indexName3);
+
+        R ignoreIndex(Consumer<Clause._StaticStringSpaceClause> consumer);
+
+        R ignoreIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer);
+
+        R ifIgnoreIndex(Consumer<Consumer<String>> consumer);
+
+        R forceIndex(String indexName);
+
+        R forceIndex(String indexName1, String indexName2);
+
+        R forceIndex(String indexName1, String indexName2, String indexName3);
+
+        R forceIndex(Consumer<Clause._StaticStringSpaceClause> consumer);
+
+        R forceIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer);
+
+        R ifForceIndex(Consumer<Consumer<String>> consumer);
+
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">Index Hints</a>
+     */
+    interface _IndexHintFoTargetClause<R extends Item> extends _IndexHintIndexNameClause<R> {
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ifUseIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ifIgnoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer);
+
+        /**
+         * @param wordFor see {@link SQLs#FOR}
+         * @param purpose see <ul>
+         *                <li>{@link SQLs#JOIN}</li>
+         *                <li>{@link SQLs#ORDER_BY}</li>
+         *                <li>{@link SQLs#GROUP_BY}</li>
+         *                </ul>
+         */
+        R ifForceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer);
+
+
+    }
+
+
+    interface _IndexHintForOrderByClause0<R> extends _StaticIndexHintClause<R> {
 
         @Override
         _IndexForOrderBySpec<R> useIndex();
@@ -238,7 +469,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _QueryIndexHintSpec<R extends Item> extends _IndexHintForJoinClause<R>, _IndexHintForOrderByClause<R> {
+    interface _QueryIndexHintSpec<R extends Item> extends _IndexHintForJoinClause<R>, _IndexHintForOrderByClause0<R> {
 
         @Override
         _IndexPurposeBySpec<R> useIndex();
@@ -292,7 +523,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
     interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintOnSpec<I>>,
-            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _NestedIndexHintOnSpec<I>>,
+            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _NestedIndexHintOnSpec<I>>,
             _NestedOnSpec<I> {
 
     }
@@ -329,7 +560,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
     interface _DynamicIndexHintOnClause extends _QueryIndexHintSpec<_DynamicIndexHintOnClause>,
-            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _DynamicIndexHintOnClause>,
+            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _DynamicIndexHintOnClause>,
             _OnClause<_DynamicJoinSpec> {
 
     }
@@ -353,7 +584,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
     interface _DynamicIndexHintJoinClause extends _QueryIndexHintSpec<_DynamicIndexHintJoinClause>,
-            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _DynamicIndexHintJoinClause>,
+            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _DynamicIndexHintJoinClause>,
             _DynamicJoinSpec {
 
     }

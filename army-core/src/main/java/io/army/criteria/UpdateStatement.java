@@ -57,7 +57,7 @@ public interface UpdateStatement extends NarrowDmlStatement {
     /**
      * @param <SR> java type of next clause.
      */
-    interface _StaticSetClause<F extends SqlField, SR> {
+    interface _StaticSetClause<F extends SqlField, SR> extends Item {
 
         SR set(F field, Expression value);
 

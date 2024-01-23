@@ -88,7 +88,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     static WithSpec<Select> simpleQuery(StandardDialect dialect) {
-        return new SimpleSelect<>(dialect, null, null, SQLs.SIMPLE_SELECT, null);
+        return new SimpleSelect<>(dialect, null, null, SQLs::identity, null);
     }
 
     static WithSpec<_BatchSelectParamSpec> batchQuery(StandardDialect dialect) {

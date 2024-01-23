@@ -65,7 +65,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
     /**
      * <p>
      * create simple(non-batch) single-table UPDATE statement that is primary statement.
-     *     */
+     */
     static _SingleWithSpec<Update> simple() {
         return new SimpleUpdateClause();
     }
@@ -73,7 +73,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
     /**
      * <p>
      * create batch single-table UPDATE statement that is primary statement.
-     *     */
+     */
     static _SingleWithSpec<_BatchUpdateParamSpec> batch() {
         return new BatchUpdateClause();
     }
@@ -129,44 +129,215 @@ abstract class MySQLSingleUpdates<I extends Item, T>
 
 
     @Override
-    public final _IndexForOrderBySpec<_SingleIndexHintSpec<I, T>> useIndex() {
-        return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
-                this::indexHintEnd);
+    public final _SingleIndexHintSpec<I, T> useIndex(String indexName) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName));
     }
 
     @Override
-    public final _IndexForOrderBySpec<_SingleIndexHintSpec<I, T>> ignoreIndex() {
-        return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
-                this::indexHintEnd);
+    public final _SingleIndexHintSpec<I, T> useIndex(String indexName1, String indexName2) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2));
     }
 
     @Override
-    public final _IndexForOrderBySpec<_SingleIndexHintSpec<I, T>> forceIndex() {
-        return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
-                this::indexHintEnd);
+    public final _SingleIndexHintSpec<I, T> useIndex(String indexName1, String indexName2, String indexName3) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2, indexName3));
     }
 
+    @Override
+    public final _SingleIndexHintSpec<I, T> useIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer));
+    }
 
     @Override
-    public final _SingleIndexHintSpec<I, T> ifUseIndex(Consumer<_IndexForOrderBySpec<Object>> consumer) {
-        consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
-                this::indexHintEnd));
+    public final _SingleIndexHintSpec<I, T> useIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, space, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ifUseIndex(Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer);
+        if (indexHint != null) {
+            indexHintEnd(indexHint);
+        }
         return this;
     }
 
     @Override
-    public final _SingleIndexHintSpec<I, T> ifIgnoreIndex(Consumer<_IndexForOrderBySpec<Object>> consumer) {
-        consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
-                this::indexHintEnd));
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(String indexName) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(String indexName1, String indexName2) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(String indexName1, String indexName2, String indexName3) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, space, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ifIgnoreIndex(Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer);
+        if (indexHint != null) {
+            indexHintEnd(indexHint);
+        }
         return this;
     }
 
     @Override
-    public final _SingleIndexHintSpec<I, T> ifForceIndex(Consumer<_IndexForOrderBySpec<Object>> consumer) {
-        consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
-                this::indexHintEnd));
+    public final _SingleIndexHintSpec<I, T> forceIndex(String indexName) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(String indexName1, String indexName2) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(String indexName1, String indexName2, String indexName3) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, space, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ifForceIndex(Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer);
+        if (indexHint != null) {
+            indexHintEnd(indexHint);
+        }
         return this;
     }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, space, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ifUseIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer);
+        if (indexHint != null) {
+            indexHintEnd(indexHint);
+        }
+        return this;
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, space, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ifIgnoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer);
+        if (indexHint != null) {
+            indexHintEnd(indexHint);
+        }
+        return this;
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return indexHintEnd(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, space, consumer));
+    }
+
+    @Override
+    public final _SingleIndexHintSpec<I, T> ifForceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer);
+        if (indexHint != null) {
+            indexHintEnd(indexHint);
+        }
+        return this;
+    }
+
 
     @Override
     public final List<String> partitionList() {
@@ -214,8 +385,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
 
         List<_IndexHint> indexHintList = this.indexHintList;
         if (indexHintList == null) {
-            indexHintList = _Collections.arrayList();
-            this.indexHintList = indexHintList;
+            this.indexHintList = indexHintList = _Collections.arrayList();
         } else if (!(indexHintList instanceof ArrayList)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }

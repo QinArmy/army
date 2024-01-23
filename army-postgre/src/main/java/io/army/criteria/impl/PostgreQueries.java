@@ -84,7 +84,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
     static WithSpec<Select> simpleQuery() {
-        return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
+        return new SimpleSelect<>(null, null, SQLs::identity);
     }
 
     static WithSpec<_BatchSelectParamSpec> batchQuery() {

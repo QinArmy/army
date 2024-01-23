@@ -367,7 +367,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     @SuppressWarnings("unchecked")
     private static abstract class MySQLNestedTableBlock<I extends Item, R extends Item> extends MySQLNestedBlock<I>
             implements MySQLStatement._QueryIndexHintSpec<R>,
-            MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexPurposeBySpec<Object>, R>,
+            MySQLStatement._DynamicIndexHintClause0<MySQLStatement._IndexPurposeBySpec<Object>, R>,
             _MySQLTableBlock {
 
         private final List<String> partitionList;

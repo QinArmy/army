@@ -74,4 +74,40 @@ public interface Clause extends Item {
         _PairVariadicConsumerClause accept(Expression key, @Nullable Object value);
 
     }
+
+
+    interface _StaticStringDualCommaClause extends Item {
+
+        Item comma(String str1);
+
+        _StaticStringDualCommaClause comma(String str1, String str2);
+
+    }
+
+    interface _StaticStringQuadraCommaClause {
+
+        Item comma(String str1);
+
+        Item comma(String str1, String str2);
+
+        Item comma(String str1, String str2, String str3);
+
+        _StaticStringQuadraCommaClause comma(String str1, String str2, String str3, String str4);
+
+    }
+
+    interface _StaticStringSpaceClause {
+
+        Item space(String str1);
+
+        _StaticStringDualCommaClause space(String str1, String str2);
+
+        Item space(String str1, String str2, String str3);
+
+        _StaticStringQuadraCommaClause space(String str1, String str2, String str3, String str4);
+
+
+    }
+
+
 }

@@ -228,7 +228,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
 
     interface _IndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_IndexHintOnSpec<I>>,
-            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _IndexHintOnSpec<I>>,
+            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _IndexHintOnSpec<I>>,
             _OnClause<_JoinSpec<I>> {
 
     }
@@ -254,7 +254,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
     interface _IndexHintJoinSpec<I extends Item> extends _QueryIndexHintSpec<_IndexHintJoinSpec<I>>,
-            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _IndexHintJoinSpec<I>>,
+            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _IndexHintJoinSpec<I>>,
             _JoinSpec<I> {
 
     }

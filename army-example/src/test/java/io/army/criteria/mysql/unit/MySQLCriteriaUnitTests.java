@@ -79,10 +79,8 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                 .space(ChinaCity_.T)
                 .partition("p2", "p1")
                 .as("t")
-
-                .useIndex().forOrderBy().parens("uni_name_region_type")
-
-                .ignoreIndex().forOrderBy().parens("uni_name_region_type")
+                .useIndex(FOR, ORDER_BY, "uni_name_region_type")
+                .ignoreIndex(FOR, ORDER_BY, "uni_name_region_type")
 
                 .set(ChinaRegion_.name, SQLs::param, "五指礁")
                 .set(ChinaRegion_.regionGdp, SQLs::literal, 100)

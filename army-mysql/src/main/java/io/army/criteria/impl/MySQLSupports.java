@@ -43,7 +43,6 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-
     static MySQLCtes mysqlLCteBuilder(boolean recursive, CriteriaContext context) {
         return new MySQLCteBuilder(recursive, context);
     }
@@ -60,6 +59,113 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     static MySQLWindow._PartitionBySpec anonymousWindow(CriteriaContext context, @Nullable String existingWindowName) {
         return new MySQLWindowImpl(context, existingWindowName);
+    }
+
+
+    static _IndexHint indexHint(IndexHintCommand command, @Nullable String indexName) {
+        if (indexName == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new MySQLIndexHint(command, null, Collections.singletonList(indexName));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, @Nullable String indexName1, @Nullable String indexName2) {
+        if (indexName1 == null || indexName2 == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new MySQLIndexHint(command, null, ArrayUtils.of(indexName1, indexName2));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, @Nullable String indexName1, @Nullable String indexName2,
+                                @Nullable String indexName3) {
+        if (indexName1 == null || indexName2 == null || indexName3 == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new MySQLIndexHint(command, null, ArrayUtils.of(indexName1, indexName2, indexName3));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return new MySQLIndexHint(command, null, ClauseUtils.staticStringClause(true, consumer));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        if (space != SQLs.SPACE) {
+            throw CriteriaUtils.unknownWords(space);
+        }
+        return new MySQLIndexHint(command, null, ClauseUtils.invokingDynamicConsumer(true, true, consumer));
+    }
+
+    @Nullable
+    static _IndexHint ifIndexHint(IndexHintCommand command, Consumer<Consumer<String>> consumer) {
+        final List<String> list;
+        list = ClauseUtils.invokingDynamicConsumer(false, true, consumer);
+        if (list.size() == 0) {
+            return null;
+        }
+        return new MySQLIndexHint(command, null, list);
+    }
+
+
+    static _IndexHint indexHint(IndexHintCommand command, SQLs.WordFor wordFor, SQLs.IndexHintPurpose target,
+                                @Nullable String indexName) {
+        if (indexName == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (wordFor != SQLs.FOR) {
+            throw CriteriaUtils.unknownWords(wordFor);
+        }
+        return new MySQLIndexHint(command, target, Collections.singletonList(indexName));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, SQLs.WordFor wordFor, SQLs.IndexHintPurpose target,
+                                @Nullable String indexName1, @Nullable String indexName2) {
+        if (indexName1 == null || indexName2 == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (wordFor != SQLs.FOR) {
+            throw CriteriaUtils.unknownWords(wordFor);
+        }
+        return new MySQLIndexHint(command, target, ArrayUtils.of(indexName1, indexName2));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, SQLs.WordFor wordFor, SQLs.IndexHintPurpose target,
+                                @Nullable String indexName1, @Nullable String indexName2, @Nullable String indexName3) {
+        if (indexName1 == null || indexName2 == null || indexName3 == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (wordFor != SQLs.FOR) {
+            throw CriteriaUtils.unknownWords(wordFor);
+        }
+        return new MySQLIndexHint(command, target, ArrayUtils.of(indexName1, indexName2, indexName3));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, SQLs.WordFor wordFor, SQLs.IndexHintPurpose target,
+                                Consumer<Clause._StaticStringSpaceClause> consumer) {
+        if (wordFor != SQLs.FOR) {
+            throw CriteriaUtils.unknownWords(wordFor);
+        }
+        return new MySQLIndexHint(command, target, ClauseUtils.staticStringClause(true, consumer));
+    }
+
+    static _IndexHint indexHint(IndexHintCommand command, SQLs.WordFor wordFor, SQLs.IndexHintPurpose target,
+                                SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        if (wordFor != SQLs.FOR) {
+            throw CriteriaUtils.unknownWords(wordFor);
+        } else if (space != SQLs.SPACE) {
+            throw CriteriaUtils.unknownWords(space);
+        }
+        return new MySQLIndexHint(command, target, ClauseUtils.invokingDynamicConsumer(true, true, consumer));
+    }
+
+    @Nullable
+    static _IndexHint ifIndexHint(IndexHintCommand command, SQLs.WordFor wordFor, SQLs.IndexHintPurpose target,
+                                  Consumer<Consumer<String>> consumer) {
+        if (wordFor != SQLs.FOR) {
+            throw CriteriaUtils.unknownWords(wordFor);
+        }
+        final List<String> list;
+        list = ClauseUtils.invokingDynamicConsumer(false, true, consumer);
+        if (list.size() == 0) {
+            return null;
+        }
+        return new MySQLIndexHint(command, target, list);
     }
 
 
@@ -232,7 +338,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     static final class FromClauseForJoinTableBlock<R extends Item> extends MySQLFromClauseTableBlock<R>
-            implements MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexForJoinSpec<Object>, R> {
+            implements MySQLStatement._DynamicIndexHintClause0<MySQLStatement._IndexForJoinSpec<Object>, R> {
 
         FromClauseForJoinTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
             super(joinType, table, alias, clause);
@@ -264,7 +370,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//MySQLFromClauseForJoinTableBlock
 
     static final class FromClausePurposeTableBlock<R extends Item> extends MySQLFromClauseTableBlock<R>
-            implements MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexPurposeBySpec<Object>, R> {
+            implements MySQLStatement._DynamicIndexHintClause0<MySQLStatement._IndexPurposeBySpec<Object>, R> {
 
         FromClausePurposeTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
             super(joinType, table, alias, clause);
@@ -300,7 +406,6 @@ abstract class MySQLSupports extends CriteriaSupports {
      * <p>
      * sub class must implements RR .
      *
-     *
      * @param <RR> sub interface of {@link  io.army.criteria.Statement._OnClause}
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
      */
@@ -308,7 +413,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             extends TabularBlocks.JoinClauseTableBlock<OR>
             implements _MySQLTableBlock,
             MySQLStatement._QueryIndexHintSpec<RR>,
-            MySQLStatement._DynamicIndexHintClause<T, RR> {
+            MySQLStatement._DynamicIndexHintClause0<T, RR> {
 
         private final List<String> partitionList;
 
@@ -537,19 +642,19 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public Statement._ParensStringClause<R> forJoin() {
-            this.purpose = IndexHintPurpose.FOR_JOIN;
+            this.purpose = MySQLSupports.IndexHintPurpose.FOR_JOIN;
             return this;
         }
 
         @Override
         public Statement._ParensStringClause<R> forOrderBy() {
-            this.purpose = IndexHintPurpose.FOR_ORDER_BY;
+            this.purpose = MySQLSupports.IndexHintPurpose.FOR_ORDER_BY;
             return this;
         }
 
         @Override
         public Statement._ParensStringClause<R> forGroupBy() {
-            this.purpose = IndexHintPurpose.FOR_GROUP_BY;
+            this.purpose = MySQLSupports.IndexHintPurpose.FOR_GROUP_BY;
             return this;
         }
 
@@ -567,7 +672,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         private R stringConsumerEnd(final List<String> stringList) {
             final IndexHintPurpose hintPurpose = this.purpose;
             this.purpose = null;// clear for next.
-            return this.function.apply(new MySQLIndexHint(this.command, hintPurpose, stringList));
+            return this.function.apply(new MySQLIndexHint(this.command, null, stringList));
         }
 
 
@@ -599,6 +704,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }//IndexHintCommand
 
+    @Deprecated
     private enum IndexHintPurpose implements SQLWords {
 
         FOR_ORDER_BY(" FOR ORDER BY"),
@@ -629,17 +735,22 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private final IndexHintCommand command;
 
-        private final IndexHintPurpose purpose;
+        private final SQLs.IndexHintPurpose purpose;
 
         private final List<String> indexNameList;
 
-        private MySQLIndexHint(IndexHintCommand command, @Nullable IndexHintPurpose purpose, List<String> indexNameList) {
+        /**
+         * @param indexNameList unmodified list
+         */
+        private MySQLIndexHint(IndexHintCommand command, @Nullable SQLs.IndexHintPurpose purpose, List<String> indexNameList) {
             if (indexNameList.size() == 0) {
-                throw new CriteriaException("index hint index name list must not empty.");
+                throw ContextStack.clearStackAndCriteriaError("index hint index name list must not empty.");
+            } else if (purpose != SQLs.JOIN && purpose != SQLs.ORDER_BY && purpose != SQLs.GROUP_BY) {
+                throw CriteriaUtils.unknownWords(purpose);
             }
             this.command = command;
             this.purpose = purpose;
-            this.indexNameList = _Collections.asUnmodifiableList(indexNameList);
+            this.indexNameList = indexNameList;
         }
 
 

@@ -86,7 +86,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         OrderByClause.OrderByEventListener {
 
     static WithSpec<Select> simpleQuery() {
-        return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
+        return new SimpleSelect<>(null, null, SQLs::identity);
     }
 
     static WithSpec<_BatchSelectParamSpec> batchQuery() {

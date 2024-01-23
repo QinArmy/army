@@ -40,7 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.H2;
 import static io.army.dialect.Database.PostgreSQL;
@@ -157,6 +156,12 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final IsComparisonWord DISTINCT_FROM = SqlWords.IsComparisonKeyWord.DISTINCT_FROM;
 
+    public static final WordJoin JOIN = SqlWords.KeyWordJoin.JOIN;
+
+    public static final WordsOrderBy ORDER_BY = SqlWords.KeyWordsOrderBy.ORDER_BY;
+
+    public static final WordsGroupBy GROUP_BY = SqlWords.KeyWordsGroupBy.GROUP_BY;
+
     public static final WordEscape ESCAPE = SqlWords.KeyWordEscape.ESCAPE;
 
 
@@ -234,11 +239,6 @@ public abstract class SQLs extends SQLSyntax {
      * package field
      */
     static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
-
-
-    static final UnaryOperator<Select> SIMPLE_SELECT = SQLs::identity;
-
-    static final UnaryOperator<SubQuery> SUB_QUERY = SQLs::identity;
 
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
@@ -338,11 +338,11 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public static StandardQuery.SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SUB_QUERY);
+        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SQLs::identity);
     }
 
     public static StandardQuery.WithSpec<SubQuery> subQuery20() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SUB_QUERY);
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SQLs::identity);
     }
 
 
@@ -753,6 +753,25 @@ public abstract class SQLs extends SQLSyntax {
     public interface NullsFirstLast extends SQLWords {
 
     }
+
+
+    public interface IndexHintPurpose extends SQLWords {
+
+    }
+
+    public interface WordJoin extends IndexHintPurpose {
+
+    }
+
+    public interface WordsOrderBy extends IndexHintPurpose {
+
+    }
+
+    public interface WordsGroupBy extends IndexHintPurpose {
+
+    }
+
+
 
 
 

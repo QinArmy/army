@@ -339,7 +339,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static abstract class DynamicTableBlock<R extends Item> extends MySQLDynamicJoins
             implements _MySQLTableBlock,
             MySQLStatement._QueryIndexHintSpec<R>,
-            MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexPurposeBySpec<Object>, R> {
+            MySQLStatement._DynamicIndexHintClause0<MySQLStatement._IndexPurposeBySpec<Object>, R> {
 
         private final List<String> partitionList;
 

@@ -231,7 +231,7 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
     }
 
 
-    @Test
+    @Test(invocationCount = 3)
     public void hintAndModifier(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
@@ -248,6 +248,32 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
+                .asUpdate();
+
+        final long rows;
+        rows = session.update(stmt);
+        Assert.assertEquals(rows, regionList.size());
+    }
+
+
+    @Test(invocationCount = 3)
+    public void indexHint(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
+        final BigDecimal gdpAmount = Decimals.valueOf("88888.66");
+        final LocalDateTime now = LocalDateTime.now();
+
+        final Update stmt;
+        stmt = MySQLs.singleUpdate()
+                .update(ChinaRegion_.T, AS, "c")
+                .useIndex(FOR, ORDER_BY, "PRIMARY")
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())

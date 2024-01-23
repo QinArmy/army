@@ -896,22 +896,25 @@ final class MySQLDialectParser extends MySQLParser {
             if (hintIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(indexHint.command().spaceRender());
+            sqlBuilder.append(indexHint.command().spaceRender());
             purpose = indexHint.purpose();
             if (purpose != null) {
-                sqlBuilder.append(_Constant.SPACE)
+                if (purpose != SQLs.JOIN && purpose != SQLs.ORDER_BY && purpose != SQLs.GROUP_BY) {
+                    throw new CriteriaException(String.format("Illegal key words %s", purpose));
+                }
+                sqlBuilder.append(" FOR")
                         .append(purpose.spaceRender());
             }
             indexNameList = indexHint.indexNameList();
             indexSize = indexNameList.size();
             assert indexSize > 0;
-            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN)
+                    .append(_Constant.SPACE);
             for (int i = 0; i < indexSize; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
                 }
-                this.identifier(indexNameList.get(i), sqlBuilder);
+                identifier(indexNameList.get(i), sqlBuilder);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             hintIndex++;

@@ -908,7 +908,7 @@ abstract class SqlWords {
         }
 
 
-    }//KeyWordUsing
+    } //KeyWordUsing
 
     enum FuncWord implements SQLs.ArmyKeyWord {
 
@@ -937,4 +937,56 @@ abstract class SqlWords {
 
 
     } // Word
+
+
+    enum KeyWordJoin implements SQLs.WordJoin, Functions.ArmyKeyWord {
+
+        JOIN;
+
+        @Override
+        public final String spaceRender() {
+            return " JOIN";
+        }
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+
+    } //  KeyWordJoin
+
+    enum KeyWordsOrderBy implements SQLs.WordsOrderBy, Functions.ArmyKeyWord {
+
+        ORDER_BY;
+
+        @Override
+        public final String spaceRender() {
+            return " ORDER BY";
+        }
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+    } //  KeyWordsOrderBy
+
+    enum KeyWordsGroupBy implements SQLs.WordsGroupBy, Functions.ArmyKeyWord {
+
+        GROUP_BY;
+
+        @Override
+        public final String spaceRender() {
+            return " GROUP BY";
+        }
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+    } //  KeyWordsGroupBy
+
+
 }

@@ -142,10 +142,10 @@ abstract class CriteriaUtils {
 
 
     static <T> T invokeConsumer(final T data, final @Nullable Consumer<? super T> consumer) {
+        if (consumer == null) {
+            throw consumerIsNull();
+        }
         try {
-            if (consumer == null) {
-                throw new NullPointerException("java.util.function.Consumer is null,couldn't be invoked");
-            }
 
             consumer.accept(data);
 
@@ -161,6 +161,7 @@ abstract class CriteriaUtils {
             throw ContextStack.clearStackAndError(e);
         }
     }
+
 
     static <T, R> R invokeFunction(final @Nullable Function<T, R> function, final T data) {
         try {
@@ -746,6 +747,10 @@ abstract class CriteriaUtils {
     static CriteriaException cteHaveNoReturningClause(String name) {
         String m = String.format("cte[%s] have no RETURNING clause,couldn't reference.", name);
         return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    static NullPointerException consumerIsNull() {
+        return ContextStack.clearStackAndNullPointer("java.util.function.Consumer is null,couldn't be invoked");
     }
 
     static CriteriaException dontAddAnyItem() {
