@@ -131,5 +131,27 @@ public class StandardDeleteTests extends StandardSessionSupport {
         LOG.debug("session[name : {}] rows {}", session.name(), rowList);
     }
 
+    @Test
+    public void qualifiedField(final SyncLocalSession session) {
+
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
+        final LocalDateTime now = LocalDateTime.now();
+
+        final Delete stmt;
+        stmt = SQLs.singleDelete()
+                .deleteFrom(ChinaRegion_.T, AS, "c")
+                .where(SQLs.field("c", ChinaRegion_.id).in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(SQLs.field("c", ChinaRegion_.createTime)::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
+                .asDelete();
+
+        final long rows;
+        rows = session.update(stmt);
+        Assert.assertEquals(rows, regionList.size());
+        LOG.debug("session[name : {}] rows {}", session.name(), rows);
+    }
+
+
 
 }

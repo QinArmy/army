@@ -37,7 +37,7 @@ abstract class SingleDmlContext extends SingleTableDmlContext {
 
     @Override
     public final void appendField(final String tableAlias, final FieldMeta<?> field) {
-        if (this.targetTableAlias.equals(tableAlias)) {
+        if (!this.targetTableAlias.equals(tableAlias)) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
         this.appendField(field);

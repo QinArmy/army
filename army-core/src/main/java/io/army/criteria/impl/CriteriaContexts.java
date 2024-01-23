@@ -2239,13 +2239,21 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndNullPointer();
             } else if (tableAlias == null) {
                 throw ContextStack.clearStackAndNullPointer();
-            } else if (this.targetTable != null && this.targetTable != table) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            } else if (this.tableAlias != null && !tableAlias.equals(this.tableAlias)) {
+            }
+
+            if (this.targetTable == null) {
+                this.targetTable = table;
+            } else if (this.targetTable != table) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            this.targetTable = table;
-            this.tableAlias = tableAlias;
+
+            if (this.tableAlias == null) {
+                this.tableAlias = tableAlias;
+            } else if (!tableAlias.equals(this.tableAlias)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+
+
         }
 
         @Override
