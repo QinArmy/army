@@ -37,8 +37,10 @@ public class SingleUpdateTests extends SynSessionTestSupport {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
 
-        final BigDecimal gdpAmount = new BigDecimal("88888.66");
+        final BigDecimal gdpAmount = Decimals.valueOf("88888.66");
         final LocalDateTime now = LocalDateTime.now();
+
+        final long startNanoSecond = System.nanoTime();
 
         final Update stmt;
         stmt = MySQLs.singleUpdate()
@@ -50,6 +52,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())
                 .asUpdate();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final long rows;
         rows = session.update(stmt);
@@ -78,6 +82,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
 
         final LocalDateTime now = LocalDateTime.now();
 
+        final long startNanoSecond = System.nanoTime();
+
         final BatchUpdate stmt;
         stmt = MySQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
@@ -89,6 +95,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
                 .limit(SQLs::param, regionList.size())
                 .asUpdate()
                 .namedParamList(paramList);
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
@@ -103,7 +111,9 @@ public class SingleUpdateTests extends SynSessionTestSupport {
         final LocalDateTime now = LocalDateTime.now();
 
         final ChinaRegion<?> criteria = new ChinaRegion<>();
-        criteria.setRegionGdp(new BigDecimal("88888.66"));
+        criteria.setRegionGdp(Decimals.valueOf("88888.66"));
+
+        final long startNanoSecond = System.nanoTime();
 
         final Update stmt;
         stmt = MySQLs.singleUpdate()
@@ -116,6 +126,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())
                 .asUpdate();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final long rows;
         rows = session.update(stmt);
@@ -134,6 +146,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
         final ChinaRegion<?> criteria = new ChinaRegion<>();
         criteria.setRegionGdp(Decimals.valueOf("88888.66"));
 
+        final long startNanoSecond = System.nanoTime();
+
         final Update stmt;
         stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
@@ -149,6 +163,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())
                 .asUpdate();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final long rows;
         rows = session.update(stmt);
@@ -241,6 +257,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
 
         final Supplier<List<Hint>> hintSupplier = () -> Collections.singletonList(MySQLs.setVar("foreign_key_checks=OFF"));
 
+        final long startNanoSecond = System.nanoTime();
+
         final Update stmt;
         stmt = MySQLs.singleUpdate()
                 .update(hintSupplier, Collections.singletonList(MySQLs.LOW_PRIORITY))
@@ -252,6 +270,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())
                 .asUpdate();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final long rows;
         rows = session.update(stmt);
@@ -267,6 +287,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
         final BigDecimal gdpAmount = Decimals.valueOf("88888.66");
         final LocalDateTime now = LocalDateTime.now();
 
+        final long startNanoSecond = System.nanoTime();
+
         final Update stmt;
         stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
@@ -278,6 +300,8 @@ public class SingleUpdateTests extends SynSessionTestSupport {
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())
                 .asUpdate();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final long rows;
         rows = session.update(stmt);

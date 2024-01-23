@@ -4,6 +4,7 @@ package io.army.session.sync.mysql;
 import io.army.criteria.BatchUpdate;
 import io.army.criteria.Expression;
 import io.army.criteria.Update;
+import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
@@ -15,8 +16,10 @@ import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.*;
 
@@ -63,9 +66,7 @@ public class MultiUpdateTests extends SynSessionTestSupport {
 
         statementCostTimeLog(session, LOG, startNanoSecond);
 
-        final long rows;
-        rows = session.update(stmt);
-        Assert.assertEquals(rows, regionList.size());
+        Assert.assertEquals(session.update(stmt), regionList.size());
 
     }
 
@@ -124,6 +125,8 @@ public class MultiUpdateTests extends SynSessionTestSupport {
 
         final List<Long> idList = extractRegionIdList(regionList);
 
+        final long startNanoSecond = System.nanoTime();
+
         final Update stmt;
         stmt = MySQLs.multiUpdate()
                 .update(ChinaRegion_.T, AS, "c").useIndex(FOR, JOIN, "PRIMARY")
@@ -140,9 +143,53 @@ public class MultiUpdateTests extends SynSessionTestSupport {
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .asUpdate();
 
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
         final long rows;
         rows = session.update(stmt);
         Assert.assertEquals(rows, idList.size());
+    }
+
+
+    @Transactional
+    @Test(invocationCount = 3)
+    public void hintAndModifier(final SyncLocalSession session) {
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+        session.batchSave(regionList);
+
+        final BigDecimal gdpAmount = Decimals.valueOf("88888.66");
+        final LocalDateTime now = LocalDateTime.now();
+
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Supplier<List<Hint>> hintSupplier = () -> Collections.singletonList(MySQLs.setVar("foreign_key_checks=OFF"));
+
+        final Update stmt;
+        stmt = MySQLs.multiUpdate()
+                .with("cte").as(sw -> sw.select(ChinaRegion_.id)
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                        .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.PROVINCE)
+                        .asQuery()
+                ).space()
+                .update(hintSupplier, Collections.singletonList(MySQLs.LOW_PRIORITY))
+                .space(ChinaProvince_.T, AS, "p").useIndex(FOR, JOIN, "PRIMARY")
+                .join(ChinaRegion_.T, AS, "c").useIndex(FOR, JOIN, "PRIMARY").on(ChinaRegion_.id::equal, ChinaProvince_.id)
+                .join("cte").on(ChinaRegion_.id::equal, SQLs.refField("cte", ChinaRegion_.ID))
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
+                .where(ChinaRegion_.id::in, SQLs.subQuery()
+                        .select(s -> s.space(SQLs.refField("subCte", ChinaRegion_.ID)))
+                        .from("cte", AS, "subCte")
+                        ::asQuery
+                )
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .asUpdate();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertEquals(session.update(stmt), regionList.size());
     }
 
 
