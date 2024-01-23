@@ -41,10 +41,10 @@ import static io.army.criteria.impl.MySQLs.*;
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class MySQLSyncFunctionTests extends MySQLSynSessionTestSupport {
+public class FunctionTests extends SynSessionTestSupport {
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(MySQLSyncFunctionTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FunctionTests.class);
 
 
     /**

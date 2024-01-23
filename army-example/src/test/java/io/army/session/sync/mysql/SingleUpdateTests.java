@@ -29,7 +29,7 @@ import static io.army.criteria.impl.SQLs.*;
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">MySQL 8.0 Optimizer Hints</a>
  */
 @Test(dataProvider = "localSessionProvider")
-public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
+public class SingleUpdateTests extends SynSessionTestSupport {
 
 
     @Test(invocationCount = 3)

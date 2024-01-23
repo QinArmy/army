@@ -20,9 +20,9 @@ import io.army.dialect.Database;
 import io.army.session.sync.SyncSessionTestSupport;
 
 
-abstract class MySQLSynSessionTestSupport extends SyncSessionTestSupport {
+abstract class SynSessionTestSupport extends SyncSessionTestSupport {
 
-    MySQLSynSessionTestSupport() {
+    SynSessionTestSupport() {
         super(Database.MySQL);
     }
 

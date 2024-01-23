@@ -158,8 +158,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
      *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">Index Hints</a>
      * @since 0.6.0
      */
     interface _SingleIndexHintSpec<I extends Item, T>
