@@ -46,7 +46,7 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 
 
     public static DayOfWeekType from(final Class<?> javaType) {
-        if (javaType != DayOfWeek.class) {
+        if (DayOfWeek.class.isAssignableFrom(javaType)) {
             throw errorJavaType(DayOfWeekType.class, javaType);
         }
         return DEFAULT;

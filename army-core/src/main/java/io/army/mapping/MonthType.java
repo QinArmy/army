@@ -52,7 +52,7 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
 
 
     public static MonthType form(final Class<?> javaType) {
-        if (javaType != Month.class) {
+        if (Month.class.isAssignableFrom(javaType)) {
             throw errorJavaType(MonthType.class, javaType);
         }
         return DEFAULT;
