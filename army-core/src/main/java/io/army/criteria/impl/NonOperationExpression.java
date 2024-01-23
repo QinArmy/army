@@ -17,9 +17,21 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect.UnsupportedDialectException;
+import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
+import io.army.session.DataAccessException;
+import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PostgreType;
+import io.army.sqltype.SqlType;
 
 import javax.annotation.Nullable;
 import java.util.function.BiFunction;
@@ -381,12 +393,18 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Selection as(String selectionLabel) {
+        if (this instanceof NullWord) {
+            return ArmySelections.forExp(this, selectionLabel);
+        }
         throw unsupportedOperation(this);
     }
 
     @Override
     public final SortItem asSortItem() {
-        throw unsupportedOperation(this);
+        if (!(this instanceof CriteriaContexts.SelectionReference)) {
+            throw unsupportedOperation(this);
+        }
+        return this;
     }
 
     @Override
@@ -425,6 +443,13 @@ abstract class NonOperationExpression implements ArmyExpression {
         return String.format("%s don't support any operation.", this.getClass().getName());
     }
 
+    /**
+     * @see SQLs#NULL
+     */
+    static SQLs.WordNull nullWord() {
+        return NullWord.INSTANCE;
+    }
+
 
     static CriteriaException unsupportedOperation(NonOperationExpression expression) {
         return ContextStack.clearStackAndCriteriaError(expression.operationErrorMessage());
@@ -444,6 +469,120 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
 
+    /**
+     * <p>
+     * This class representing sql {@code NULL} key word.
+     *
+     * @see SQLs#NULL
+     */
+    private static final class NullWord extends NonOperationExpression
+            implements SqlValueParam.SingleAnonymousValue,
+            ArmySimpleExpression,
+            SQLs.WordNull,
+            SQLs.ArmyKeyWord {
+
+        private static final NullWord INSTANCE = new NullWord();
+
+
+        private NullWord() {
+        }
+
+        @Override
+        public String spaceRender() {
+            return _Constant.SPACE_NULL;
+        }
+
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE_NULL);
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return NullType.INSTANCE;
+        }
+
+        @Override
+        public Object value() {
+            //always null
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return _Constant.SPACE_NULL;
+        }
+
+        @Override
+        String operationErrorMessage() {
+            return "SQL key word NULL don't support operator";
+        }
+
+
+    } // NullWord
+
+
+    /**
+     * <p>Just for {@link SQLs#NULL}
+     *
+     * @see NullWord
+     */
+    private static final class NullType extends _ArmyNoInjectionMapping {
+
+
+        private final static NullType INSTANCE = new NullType();
+
+
+        /**
+         * private constructor
+         */
+        private NullType() {
+        }
+
+        @Override
+        public Class<?> javaType() {
+            return Object.class;
+        }
+
+
+        @Override
+        public boolean isSameType(MappingType type) {
+            return type instanceof NullType;
+        }
+
+        @Override
+        public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
+            final SqlType type;
+            switch (meta.serverDatabase()) {
+                case MySQL:
+                    type = MySQLType.NULL;
+                    break;
+                case PostgreSQL:
+                    type = PostgreType.UNKNOWN;
+                    break;
+                default:
+                    throw MAP_ERROR_HANDLER.apply(this, meta);
+            }
+            return type;
+        }
+
+        @Override
+        public Object convert(MappingEnv env, Object source) throws CriteriaException {
+            throw new CriteriaException("SQL key word NULL don't support convert method");
+        }
+
+        @Override
+        public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+            throw new CriteriaException("SQL key word NULL don't support beforeBind method");
+        }
+
+        @Override
+        public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+            throw new UnsupportedOperationException("bug,never here");
+        }
+
+
+    } // NullType
 
 
 }

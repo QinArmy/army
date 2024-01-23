@@ -386,13 +386,6 @@ abstract class OperationExpression extends OperationSQLExpression
         return bracket;
     }
 
-    /**
-     * @see SQLs#NULL
-     */
-    static SQLs.WordNull nullWord() {
-        return NullWord.INSTANCE;
-    }
-
 
     static abstract class OperationSimpleExpression extends OperationExpression
             implements SimpleExpression,
@@ -1069,52 +1062,6 @@ abstract class OperationExpression extends OperationSQLExpression
     }//BracketsExpression
 
 
-    /**
-     * <p>
-     * This class representing sql {@code NULL} key word.
-     *
-     * @see SQLs#NULL
-     */
-    private static final class NullWord extends OperationExpression
-            implements SqlValueParam.SingleAnonymousValue,
-            ArmySimpleExpression,
-            SQLs.WordNull,
-            SQLs.ArmyKeyWord {
-
-        private static final NullWord INSTANCE = new NullWord();
-
-
-        private NullWord() {
-        }
-
-        @Override
-        public String spaceRender() {
-            return _Constant.SPACE_NULL;
-        }
-
-        @Override
-        public void appendSql(final StringBuilder sqlBuilder, _SqlContext context) {
-            sqlBuilder.append(_Constant.SPACE_NULL);
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return NullType.INSTANCE;
-        }
-
-        @Override
-        public Object value() {
-            //always null
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_NULL;
-        }
-
-
-    } // NullWord
 
 
 }

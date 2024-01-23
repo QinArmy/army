@@ -147,7 +147,7 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordDefault DEFAULT = new DefaultWord();
 
-    public static final WordNull NULL = OperationExpression.nullWord();
+    public static final WordNull NULL = NonOperationExpression.nullWord();
 
 
     public static final QuantifiedWord SOME = SqlWords.QueryOperator.SOME;
