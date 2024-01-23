@@ -32,9 +32,8 @@ import java.util.function.Supplier;
 
 
 /**
- * <p>
- * This interface representing MySQL update statement,the instance of this interface can only be parsed by MySQL dialect instance.
- * * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">MySQL 8.0 Optimizer Hints</a>
+ * <p>This interface representing MySQL update statement,the instance of this interface can only be parsed by MySQL dialect instance.
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">MySQL 8.0 Optimizer Hints</a>
  *
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/update.html">UPDATE Statement</a>

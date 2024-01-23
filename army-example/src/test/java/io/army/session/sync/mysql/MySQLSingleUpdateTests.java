@@ -4,6 +4,7 @@ package io.army.session.sync.mysql;
 import io.army.criteria.BatchUpdate;
 import io.army.criteria.Expression;
 import io.army.criteria.Update;
+import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
@@ -18,9 +19,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.*;
 
+
+/**
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/update.html">UPDATE Statement</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">MySQL 8.0 Optimizer Hints</a>
+ */
 @Test(dataProvider = "localSessionProvider")
 public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
 
@@ -40,6 +47,8 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
                 .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
                 .asUpdate();
 
         final long rows;
@@ -76,6 +85,8 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, PARAM_DECIMAL_0)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
                 .asUpdate()
                 .namedParamList(paramList);
 
@@ -102,6 +113,8 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
                 .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::param, criteria.getRegionGdp(), Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
                 .asUpdate();
 
         final long rows;
@@ -133,6 +146,8 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
                         c.accept(ChinaRegion_.regionGdp.plus(SQLs::param, criteria.getRegionGdp()).greaterEqual(LITERAL_DECIMAL_0));
                     }
                 })
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
                 .asUpdate();
 
         final long rows;
@@ -167,6 +182,8 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
                 )
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, PARAM_DECIMAL_0)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
                 .asUpdate();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
@@ -204,11 +221,41 @@ public class MySQLSingleUpdateTests extends MySQLSynSessionTestSupport {
                 )
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, PARAM_DECIMAL_0)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
                 .asUpdate();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
 
         Assert.assertEquals(session.update(stmt), regionList.size());
+    }
+
+
+    @Test
+    public void hintAndModifier(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
+
+        final BigDecimal gdpAmount = Decimals.valueOf("88888.66");
+        final LocalDateTime now = LocalDateTime.now();
+
+        final Supplier<List<Hint>> hintSupplier = () -> Collections.singletonList(MySQLs.setVar("foreign_key_checks=OFF"));
+
+        final Update stmt;
+        stmt = MySQLs.singleUpdate()
+                .update(hintSupplier, Collections.singletonList(MySQLs.LOW_PRIORITY))
+                .space(ChinaRegion_.T, AS, "c")
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, regionList.size())
+                .asUpdate();
+
+        final long rows;
+        rows = session.update(stmt);
+        Assert.assertEquals(rows, regionList.size());
     }
 
 

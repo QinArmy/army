@@ -211,10 +211,10 @@ final class AssignmentInsertContext extends InsertContext
                 continue;
             }
 
-            if (!(field instanceof PrimaryFieldMeta)) {//child id must be managed by army
+            if (!(field instanceof PrimaryFieldMeta)) { //child id must be managed by army
                 value = generatedMap.get(field);
                 assert value != null || mockEnv;
-                this.appendInsertValue(literalMode, field, value);
+                appendInsertValue(literalMode, field, value);
                 continue;
             }
 
@@ -231,7 +231,7 @@ final class AssignmentInsertContext extends InsertContext
                 idValue = generatedMap.get(field);
                 assert idValue != null || mockEnv;
                 this.appendInsertValue(literalMode, field, idValue);
-                idValue = Boolean.TRUE;
+                idValue = Boolean.TRUE; // Pseudo value,for assert non-null
             } else if (generatorType == GeneratorType.POST) {
                 assert insertTable instanceof ChildTableMeta;
                 assert rowWrapper.delayIdParam == null;
@@ -259,37 +259,16 @@ final class AssignmentInsertContext extends InsertContext
 
         final TableMeta<?> domainTable = this.rowWrapper.domainTable;
         final FieldMeta<?> discriminator = domainTable.discriminator();
+        assert discriminator != null;
 
-        final String discriminatorLiteral;
-        final SingleParam discriminatorParam;
-        if (domainTable instanceof SimpleTableMeta) {
-            discriminatorLiteral = null;
-            discriminatorParam = null;
-        } else if (this.literalMode == LiteralMode.DEFAULT) {
-            assert discriminator != null;
-            final CodeEnum codeEnum = domainTable.discriminatorValue();
-            assert codeEnum != null;
+        final CodeEnum codeEnum;
+        codeEnum = domainTable.discriminatorValue();
+        assert codeEnum != null;
 
-            discriminatorLiteral = null;
-            discriminatorParam = SingleParam.build(discriminator.mappingType(), codeEnum);
+        if (this.literalMode == LiteralMode.DEFAULT) {
+            appendParam(SingleParam.build(discriminator.mappingType(), codeEnum));
         } else {
-            final CodeEnum codeEnum = domainTable.discriminatorValue();
-            assert codeEnum != null;
-            assert discriminator != null;
-
-            final StringBuilder codeBuilder = new StringBuilder(10);
-            this.parser.literal(discriminator.mappingType(), codeEnum, codeBuilder);
-            discriminatorLiteral = codeBuilder.toString();
-
-            discriminatorParam = null;
-        }
-
-        if (discriminatorParam == null) {
-            assert discriminatorLiteral != null;
-            this.sqlBuilder.append(_Constant.SPACE)
-                    .append(discriminatorLiteral);
-        } else {
-            appendParam(discriminatorParam);
+            this.parser.literal(discriminator.mappingType(), codeEnum, this.sqlBuilder.append(_Constant.SPACE));
         }
 
     }

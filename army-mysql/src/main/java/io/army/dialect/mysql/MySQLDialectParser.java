@@ -277,7 +277,7 @@ final class MySQLDialectParser extends MySQLParser {
      */
     @Override
     protected void parseSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
-        assert context.parser() == this;
+
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
         //1. WITH clause
         parseWithClause(stmt, context);

@@ -145,10 +145,6 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
 
-    public static final ParamExpression BATCH_NO_PARAM = SQLs.namedParam(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
-
-    public static final LiteralExpression BATCH_NO_LITERAL = SQLs.namedLiteral(NoCastIntegerType.INSTANCE, "$ARMY_BATCH_NO$");
-
 
     public static final WordDefault DEFAULT = new DefaultWord();
 
@@ -187,13 +183,23 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final SQLWords COMMA = SqlWords.FuncWord.COMMA;
 
+    /*-------------------below literal -------------------*/
+
     public static final LiteralExpression LITERAL_0 = SQLs.literal(IntegerType.INSTANCE, 0);
 
     public static final LiteralExpression LITERAL_1 = SQLs.literal(IntegerType.INSTANCE, 1);
 
     public static final LiteralExpression LITERAL_DECIMAL_0 = SQLs.literal(BigDecimalType.INSTANCE, BigDecimal.ZERO);
 
+    /**
+     * @see #PARAM_EMPTY_STRING
+     */
     public static final LiteralExpression LITERAL_EMPTY_STRING = SQLs.literal(StringType.INSTANCE, "");
+
+    /**
+     * @see #BATCH_NO_PARAM
+     */
+    public static final LiteralExpression BATCH_NO_LITERAL = SQLs.namedLiteral(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
 
     /*-------------------below param -------------------*/
 
@@ -203,11 +209,25 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final ParamExpression PARAM_DECIMAL_0 = SQLs.param(BigDecimalType.INSTANCE, BigDecimal.ZERO);
 
+    /**
+     * @see #TRUE
+     */
     public static final ParamExpression PARAM_TRUE = SQLs.param(BooleanType.INSTANCE, Boolean.TRUE);
 
+    /**
+     * @see #FALSE
+     */
     public static final ParamExpression PARAM_FALSE = SQLs.param(BooleanType.INSTANCE, Boolean.FALSE);
 
+    /**
+     * @see #LITERAL_EMPTY_STRING
+     */
     public static final ParamExpression PARAM_EMPTY_STRING = SQLs.param(StringType.INSTANCE, "");
+
+    /**
+     * @see #BATCH_NO_LITERAL
+     */
+    public static final ParamExpression BATCH_NO_PARAM = SQLs.namedParam(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
 
 
     /**
