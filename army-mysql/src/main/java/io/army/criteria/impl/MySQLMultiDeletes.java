@@ -609,7 +609,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     }//SimplePartitionJoinClause
 
     private static final class SimpleJoinClauseTableBlock<I extends Item>
-            extends MySQLSupports.MySQLJoinClauseBlock<
+            extends MySQLSupports.MySQLJoinClauseBlock0<
             _IndexForJoinSpec<Object>,
             _MultiIndexHintOnSpec<I>,
             _MultiJoinSpec<I>>

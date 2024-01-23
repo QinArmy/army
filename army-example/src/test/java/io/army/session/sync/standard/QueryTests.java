@@ -23,7 +23,7 @@ import java.util.Map;
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class StandardQueryTests extends StandardSessionSupport {
+public class QueryTests extends SessionSupport {
 
 
     @Transactional
@@ -263,7 +263,10 @@ public class StandardQueryTests extends StandardSessionSupport {
                                         .where(SQLs.refField("cte20", ChinaRegion_.ID).equal(SQLs.literalValue(secondId)))
                                         .asQuery()
                                 ).asQuery()
-                ).asQuery();
+                )
+                .orderBy(SQLs.refSelection(1)::desc) // test ref left context selection
+                .limit(SQLs::literal, 4)
+                .asQuery();
 
         final List<Map<String, Object>> rowList;
         rowList = session.queryObjectList(stmt, RowMaps::hashMap);

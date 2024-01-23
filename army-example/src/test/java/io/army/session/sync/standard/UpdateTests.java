@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class StandardUpdateTests extends StandardSessionSupport {
+public class UpdateTests extends SessionSupport {
 
 
     @Test(invocationCount = 3)

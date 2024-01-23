@@ -20,7 +20,7 @@ import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
 
 @Test(dataProvider = "localSessionProvider")
-public class DomainDeleteTests extends StandardSessionSupport {
+public class DomainDeleteTests extends SessionSupport {
 
 
     @Test

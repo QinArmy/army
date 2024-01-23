@@ -203,7 +203,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _IndexHintForJoinClause<R> extends _StaticIndexHintClause<R> {
+    interface _IndexHintForJoinClause0<R> extends _StaticIndexHintClause<R> {
 
         @Override
         _IndexForJoinSpec<R> useIndex();
@@ -262,7 +262,7 @@ public interface MySQLStatement extends DialectStatement {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">Index Hints</a>
      */
-    interface _IndexHintFoTargetClause<R extends Item> extends _IndexHintIndexNameClause<R> {
+    interface _IndexHintFoPurposeClause<R extends Item> extends _IndexHintIndexNameClause<R> {
 
         /**
          * @param wordFor see {@link SQLs#FOR}
@@ -469,7 +469,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _QueryIndexHintSpec<R extends Item> extends _IndexHintForJoinClause<R>, _IndexHintForOrderByClause0<R> {
+    interface _QueryIndexHintSpec<R extends Item> extends _IndexHintForJoinClause0<R>, _IndexHintForOrderByClause0<R> {
 
         @Override
         _IndexPurposeBySpec<R> useIndex();

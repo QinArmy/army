@@ -239,7 +239,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-    private static abstract class MySQLFromClauseTableBlock<R extends Item>
+    private static abstract class MySQLFromClauseTableBlock0<R extends Item>
             extends TabularBlocks.FromClauseTableBlock
             implements _MySQLTableBlock,
             MySQLStatement._QueryIndexHintSpec<R> {
@@ -251,14 +251,14 @@ abstract class MySQLSupports extends CriteriaSupports {
         private List<_IndexHint> indexHintList;
 
 
-        private MySQLFromClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
+        private MySQLFromClauseTableBlock0(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
             super(joinType, table, alias);
             this.clause = clause;
             this.partitionList = Collections.emptyList();
 
         }
 
-        private MySQLFromClauseTableBlock(MySQLBlockParams params, R clause) {
+        private MySQLFromClauseTableBlock0(MySQLBlockParams params, R clause) {
             super(params.joinType(), (TableMeta<?>) params.tableItem(), params.alias());
             this.clause = clause;
             this.partitionList = params.partitionList();
@@ -337,7 +337,70 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//MySQLFromClauseTableBlock
 
 
-    static final class FromClauseForJoinTableBlock<R extends Item> extends MySQLFromClauseTableBlock<R>
+    static final class MySQLFromClauseTableBlock
+            extends TabularBlocks.FromClauseTableBlock
+            implements _MySQLTableBlock {
+
+
+        private final List<String> partitionList;
+
+
+        private List<_IndexHint> indexHintList;
+
+
+        MySQLFromClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias) {
+            super(joinType, table, alias);
+            this.partitionList = Collections.emptyList();
+
+        }
+
+        MySQLFromClauseTableBlock(MySQLBlockParams params) {
+            super(params.joinType(), (TableMeta<?>) params.tableItem(), params.alias());
+            this.partitionList = params.partitionList();
+
+        }
+
+        @Nullable
+        @Override
+        public SQLWords modifier() {
+            //always null, MySQL table don't support modifier
+            return null;
+        }
+
+        @Override
+        public List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public List<? extends _IndexHint> indexHintList() {
+            List<_IndexHint> list = this.indexHintList;
+            if (list == null) {
+                this.indexHintList = list = Collections.emptyList();
+            } else if (list instanceof ArrayList) {
+                this.indexHintList = list = _Collections.unmodifiableList(list);
+            }
+            return list;
+        }
+
+        void addIndexHint(final @Nullable _IndexHint hint) {
+            if (hint == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            List<_IndexHint> list = this.indexHintList;
+            if (list == null) {
+                this.indexHintList = list = _Collections.arrayList();
+            } else if (!(list instanceof ArrayList)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            list.add(hint);
+        }
+
+
+    } // MySQLFromClauseTableBlock
+
+
+    static final class FromClauseForJoinTableBlock<R extends Item> extends MySQLFromClauseTableBlock0<R>
             implements MySQLStatement._DynamicIndexHintClause0<MySQLStatement._IndexForJoinSpec<Object>, R> {
 
         FromClauseForJoinTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
@@ -369,7 +432,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }//MySQLFromClauseForJoinTableBlock
 
-    static final class FromClausePurposeTableBlock<R extends Item> extends MySQLFromClauseTableBlock<R>
+    static final class FromClausePurposeTableBlock<R extends Item> extends MySQLFromClauseTableBlock0<R>
             implements MySQLStatement._DynamicIndexHintClause0<MySQLStatement._IndexPurposeBySpec<Object>, R> {
 
         FromClausePurposeTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
@@ -403,13 +466,12 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     /**
-     * <p>
-     * sub class must implements RR .
+     * <p>sub class must implements RR .
      *
      * @param <RR> sub interface of {@link  io.army.criteria.Statement._OnClause}
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
      */
-    static abstract class MySQLJoinClauseBlock<T extends Item, RR extends Item, OR extends Item>
+    static abstract class MySQLJoinClauseBlock0<T extends Item, RR extends Item, OR extends Item>
             extends TabularBlocks.JoinClauseTableBlock<OR>
             implements _MySQLTableBlock,
             MySQLStatement._QueryIndexHintSpec<RR>,
@@ -420,12 +482,12 @@ abstract class MySQLSupports extends CriteriaSupports {
         private List<_IndexHint> indexHintList;
 
 
-        MySQLJoinClauseBlock(_JoinType joinType, TableMeta<?> table, String alias, OR stmt) {
+        MySQLJoinClauseBlock0(_JoinType joinType, TableMeta<?> table, String alias, OR stmt) {
             super(joinType, table, alias, stmt);
             this.partitionList = Collections.emptyList();
         }
 
-        MySQLJoinClauseBlock(MySQLBlockParams params, OR stmt) {
+        MySQLJoinClauseBlock0(MySQLBlockParams params, OR stmt) {
             super(params.joinType(), (TableMeta<?>) params.tableItem(), params.alias(), stmt);
             this.partitionList = params.partitionList();
         }
@@ -523,6 +585,287 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     }//MySQLJoinClauseBlock
+
+
+    /**
+     * <p>sub class must implements RR .
+     *
+     * @param <RR> sub interface of {@link  io.army.criteria.Statement._OnClause}
+     * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
+     */
+    static abstract class MySQLJoinClauseBlock<RR extends Item, OR extends Item>
+            extends TabularBlocks.JoinClauseTableBlock<OR>
+            implements _MySQLTableBlock, MySQLStatement._IndexHintFoPurposeClause<RR> {
+
+        private final List<String> partitionList;
+
+        private List<_IndexHint> indexHintList;
+
+
+        MySQLJoinClauseBlock(_JoinType joinType, TableMeta<?> table, String alias, OR stmt) {
+            super(joinType, table, alias, stmt);
+            this.partitionList = Collections.emptyList();
+        }
+
+        MySQLJoinClauseBlock(MySQLBlockParams params, OR stmt) {
+            super(params.joinType(), (TableMeta<?>) params.tableItem(), params.alias(), stmt);
+            this.partitionList = params.partitionList();
+        }
+
+        @Override
+        public final RR useIndex(String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName));
+        }
+
+        @Override
+        public final RR useIndex(String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2));
+        }
+
+        @Override
+        public final RR useIndex(String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final RR useIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer));
+        }
+
+        @Override
+        public final RR useIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, space, consumer));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final RR ifUseIndex(Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR ignoreIndex(String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName));
+        }
+
+        @Override
+        public final RR ignoreIndex(String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2));
+        }
+
+        @Override
+        public final RR ignoreIndex(String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final RR ignoreIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer));
+        }
+
+        @Override
+        public final RR ignoreIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, space, consumer));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final RR ifIgnoreIndex(Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR forceIndex(String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName));
+        }
+
+        @Override
+        public final RR forceIndex(String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2));
+        }
+
+        @Override
+        public final RR forceIndex(String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final RR forceIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer));
+        }
+
+        @Override
+        public final RR forceIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, space, consumer));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final RR ifForceIndex(Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName));
+        }
+
+        @Override
+        public final RR useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2));
+        }
+
+        @Override
+        public final RR useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final RR useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer));
+        }
+
+        @Override
+        public final RR useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, space, consumer));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final RR ifUseIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName));
+        }
+
+        @Override
+        public final RR ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2));
+        }
+
+        @Override
+        public final RR ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final RR ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer));
+        }
+
+        @Override
+        public final RR ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, space, consumer));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final RR ifIgnoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName));
+        }
+
+        @Override
+        public final RR forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2));
+        }
+
+        @Override
+        public final RR forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final RR forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer));
+        }
+
+        @Override
+        public final RR forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, space, consumer));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final RR ifForceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (RR) this;
+        }
+
+        @Nullable
+        @Override
+        public final SQLWords modifier() {
+            //always null, MySQL table don't support modifier
+            return null;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public final List<? extends _IndexHint> indexHintList() {
+            List<_IndexHint> list = this.indexHintList;
+            if (list == null) {
+                this.indexHintList = list = Collections.emptyList();
+            } else if (list instanceof ArrayList) {
+                this.indexHintList = list = _Collections.unmodifiableList(list);
+            }
+            return list;
+        }
+
+
+        @SuppressWarnings("unchecked")
+        private RR addIndexHint(final _IndexHint hint) {
+            List<_IndexHint> list = this.indexHintList;
+            if (list == null) {
+                this.indexHintList = list = _Collections.arrayList();
+            } else if (!(list instanceof ArrayList)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            list.add(hint);
+            return (RR) this;
+        }
+
+
+    } // MySQLJoinClauseBlock
 
     static abstract class PartitionAsClause<R> implements Statement._AsClause<R>,
             MySQLBlockParams, MySQLStatement._PartitionAsClause<R> {

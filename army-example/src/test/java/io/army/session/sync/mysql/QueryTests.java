@@ -67,7 +67,7 @@ public class QueryTests extends SynSessionTestSupport {
                 .parens(p -> p.values()
                         .row(r -> r.space(LITERAL_0, LITERAL_1))
                         .asValues()
-                ).orderBy(SQLs.refSelection(ChinaRegion_.ID), SQLs.refSelection(2)) // test ref left context selection
+                ).orderBy(SQLs.refSelection(ChinaRegion_.ID)::desc, SQLs.refSelection(2)::asc) // test ref left context selection
                 .limit(SQLs::literal, 4)
                 .asValues();
 

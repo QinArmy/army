@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class DomainUpdateTests extends StandardSessionSupport {
+public class DomainUpdateTests extends SessionSupport {
 
     @Test(invocationCount = 3)
     public void updateParent(final SyncLocalSession session) {

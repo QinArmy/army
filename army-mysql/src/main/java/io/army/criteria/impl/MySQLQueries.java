@@ -970,7 +970,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     private static final class JoinClauseTableBlock<I extends Item>
-            extends MySQLSupports.MySQLJoinClauseBlock<
+            extends MySQLSupports.MySQLJoinClauseBlock0<
             _IndexPurposeBySpec<Object>,
             _IndexHintOnSpec<I>,
             _JoinSpec<I>>

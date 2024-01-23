@@ -20,7 +20,7 @@ import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
-public class StandardInsertTests extends StandardSessionSupport {
+public class InsertTests extends SessionSupport {
 
 
     @Test(invocationCount = 3)
