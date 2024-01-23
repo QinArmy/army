@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @since 0.6.0
  */
-public class MonthType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalFieldType {
+public final class MonthType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalFieldType {
 
 
     public static MonthType form(final Class<?> javaType) {
@@ -59,12 +59,12 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
     }
 
     public static MonthType fromParam(final Class<?> enumType, final String enumName) {
-        if (enumType != Month.class) {
+        if (Month.class.isAssignableFrom(enumType)) {
             throw errorJavaType(MonthType.class, enumType);
         } else if (!_StringUtils.hasText(enumName)) {
             throw new IllegalArgumentException("no text");
         }
-        return MonthEnumType.INSTANCE.computeIfAbsent(enumName, MonthEnumType::new);
+        return MonthEnumHolder.INSTANCE.computeIfAbsent(enumName, MonthType::new);
     }
 
     public static final MonthType DEFAULT = new MonthType(null);
@@ -79,12 +79,12 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
     }
 
     @Override
-    public final Class<?> javaType() {
+    public Class<?> javaType() {
         return Month.class;
     }
 
     @Override
-    public final MappingType arrayTypeOfThis() throws CriteriaException {
+    public MappingType arrayTypeOfThis() throws CriteriaException {
         return MonthArrayType.LINEAR;
     }
 
@@ -103,24 +103,24 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
     }
 
     @Override
-    public final DataType map(final ServerMeta meta) {
+    public DataType map(final ServerMeta meta) {
         return NameEnumType.mapToDataType(this, meta, this.enumName);
     }
 
 
     @Override
-    public final Month convert(MappingEnv env, Object source) throws CriteriaException {
+    public Month convert(MappingEnv env, Object source) throws CriteriaException {
         return toMoth(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final String beforeBind(DataType dataType, MappingEnv env, Object source) {
+    public String beforeBind(DataType dataType, MappingEnv env, Object source) {
         return toMoth(this, dataType, source, PARAM_ERROR_HANDLER)
                 .name();
     }
 
     @Override
-    public final Month afterGet(DataType dataType, MappingEnv env, Object source) {
+    public Month afterGet(DataType dataType, MappingEnv env, Object source) {
         return toMoth(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
@@ -183,15 +183,12 @@ public class MonthType extends _ArmyNoInjectionMapping implements MappingType.Sq
     }
 
 
-    private static final class MonthEnumType extends MonthType {
+    private static abstract class MonthEnumHolder {
 
-        private static final ConcurrentMap<String, MonthEnumType> INSTANCE = _Collections.concurrentHashMap();
+        private static final ConcurrentMap<String, MonthType> INSTANCE = _Collections.concurrentHashMap();
 
-        private MonthEnumType(String enumName) {
-            super(enumName);
-        }
 
-    } // MonthEnumType
+    } // MonthEnumHolder
 
 
 }

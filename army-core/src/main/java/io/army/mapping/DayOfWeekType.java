@@ -22,6 +22,8 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
+import io.army.util._Collections;
+import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 
 import javax.annotation.Nullable;
@@ -29,6 +31,7 @@ import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * <p>This class is mapping class of {@link DayOfWeek}.
@@ -50,6 +53,15 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
             throw errorJavaType(DayOfWeekType.class, javaType);
         }
         return DEFAULT;
+    }
+
+    public static DayOfWeekType fromParam(final Class<?> enumType, final String enumName) {
+        if (DayOfWeek.class.isAssignableFrom(enumType)) {
+            throw errorJavaType(DayOfWeekType.class, enumType);
+        } else if (!_StringUtils.hasText(enumName)) {
+            throw new IllegalArgumentException("no text");
+        }
+        return DayOfWeekEnumHolder.INSTANCE.computeIfAbsent(enumName, DayOfWeekType::new);
     }
 
     public static final DayOfWeekType DEFAULT = new DayOfWeekType(null);
@@ -203,6 +215,13 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 
         return value;
     }
+
+    private static abstract class DayOfWeekEnumHolder {
+
+        private static final ConcurrentMap<String, DayOfWeekType> INSTANCE = _Collections.concurrentHashMap();
+
+
+    } // DayOfWeekEnumHolder
 
 
 }
