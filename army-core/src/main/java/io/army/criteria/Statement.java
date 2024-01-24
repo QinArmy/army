@@ -1842,6 +1842,8 @@ public interface Statement extends Item {
         R comma(String name);
     }
 
+
+    @FunctionalInterface
     interface _StaticSpaceClause<R> {
 
         R space();

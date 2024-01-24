@@ -47,11 +47,13 @@ public interface RowSet extends Statement {
         R unionDistinct();
     }
 
-    interface _DynamicUnionParensClause<T extends Item, R extends Item> {
+    interface _DynamicUnionParensClause<T, R> {
 
-        R unionParens(Consumer<T> consumer);
+        R ifUnionParens(Consumer<_StaticSpaceClause<T>> consumer);
 
-        R ifUnionParens(Consumer<T> consumer);
+        R ifUnionAllParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+        R ifUnionDistinctParens(Consumer<_StaticSpaceClause<T>> consumer);
 
     }
 
@@ -65,6 +67,17 @@ public interface RowSet extends Statement {
     }
 
 
+    interface _DynamicIntersectParensClause<T, R> {
+
+        R ifIntersectParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+        R ifIntersectAllParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+        R ifIntersectDistinctParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+    }
+
+
     interface _StaticExceptClause<SP> {
 
         SP except();
@@ -72,6 +85,16 @@ public interface RowSet extends Statement {
         SP exceptAll();
 
         SP exceptDistinct();
+    }
+
+    interface _DynamicExceptParensClause<T, R> {
+
+        R ifExceptParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+        R ifExceptAllParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+        R ifExceptDistinctParens(Consumer<_StaticSpaceClause<T>> consumer);
+
     }
 
 
@@ -83,6 +106,31 @@ public interface RowSet extends Statement {
 
         SP minusDistinct();
     }
+
+    interface _DynamicMinusParensClause<T, R> {
+
+        R ifMinusParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+        R ifMinusAllParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+        R ifMinusDistinctParens(Consumer<_StaticSpaceClause<T>> consumer);
+
+    }
+
+
+    interface _StaticLineFeedUnionClause<T, R> {
+
+        R whiteSpace(Consumer<T> consumer);
+    }
+
+
+    interface _DynamicLineFeedUnionClause<T, R> {
+
+        R ifWhiteSpace(Consumer<T> consumer);
+    }
+
+
+
 
 
     interface _DynamicParensRowSetClause<T extends Item, R extends Item> {

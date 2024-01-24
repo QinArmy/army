@@ -87,8 +87,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         ArmyStmtSpec {
 
 
-    static WithSpec<Select> simpleQuery(StandardDialect dialect) {
-        return new SimpleSelect<>(dialect, null, null, SQLs::identity, null);
+    static <I extends Item> WithSpec<I> simpleQuery(StandardDialect dialect, Function<? super Select, I> function) {
+        return new SimpleSelect<>(dialect, null, null, function, null);
     }
 
     static WithSpec<_BatchSelectParamSpec> batchQuery(StandardDialect dialect) {
@@ -519,6 +519,17 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             );
         }
 
+        @Override
+        public _UnionSpec<I> whiteSpace(Consumer<_UnionClause<Item>> consumer) {
+
+            return null;
+        }
+
+        @Override
+        public _UnionSpec<I> ifWhiteSpace(Consumer<_UnionClause<Item>> consumer) {
+            return null;
+        }
+
 
         @Override
         I onAsQuery() {
@@ -538,6 +549,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     } // SimpleSelect
+
 
 
     static class SimpleSubQuery<I extends Item> extends StandardQueries<I>
@@ -577,8 +589,33 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             );
         }
 
+        @Override
+        public _UnionSpec<I> whiteSpace(Consumer<_UnionClause<Item>> consumer) {
+            return null;
+        }
+
+        @Override
+        public _UnionSpec<I> ifWhiteSpace(Consumer<_UnionClause<Item>> consumer) {
+            return null;
+        }
 
     } // SimpleSubQuery
+
+    private static abstract class StandardQueryUnionClause<I extends Item>
+            extends QueryUnionClause<StandardQuery.SelectSpec<I>>
+            implements StandardQuery._UnionClause<I> {
+
+        private StandardQueryUnionClause(@Nullable Runnable firstQueryEnd) {
+            super(firstQueryEnd);
+        }
+
+        @Override
+        SelectSpec<I> createQuery(_UnionType unionType) {
+            return null;
+        }
+
+
+    } // StandardQueryUnionClause
 
 
     static abstract class StandardBracketQuery<I extends Item>

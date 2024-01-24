@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.H2;
 import static io.army.dialect.Database.PostgreSQL;
@@ -240,6 +241,16 @@ public abstract class SQLs extends SQLSyntax {
      */
     static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
 
+    static final UnaryOperator<Select> SELECT_IDENTITY = SQLs::identity;
+
+    static final UnaryOperator<SubQuery> SUB_QUERY_IDENTITY = SQLs::identity;
+
+    static final Function<SubQuery, Expression> SCALAR_SUB_QUERY = Expressions::scalarExpression;
+
+    static final UnaryOperator<Insert> INSERT_IDENTITY = SQLs::identity;
+
+    static final UnaryOperator<Insert> UPDATE_IDENTITY = SQLs::identity;
+
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
         return StandardInserts.singleInsert();
@@ -322,7 +333,7 @@ public abstract class SQLs extends SQLSyntax {
 
 
     public static StandardQuery.SelectSpec<Select> query() {
-        return StandardQueries.simpleQuery(StandardDialect.STANDARD10);
+        return StandardQueries.simpleQuery(StandardDialect.STANDARD10, SELECT_IDENTITY);
     }
 
     public static StandardQuery.SelectSpec<Statement._BatchSelectParamSpec> batchQuery() {
@@ -330,7 +341,7 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public static StandardQuery.WithSpec<Select> query20() {
-        return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
+        return StandardQueries.simpleQuery(StandardDialect.STANDARD20, SELECT_IDENTITY);
     }
 
     public static StandardQuery.WithSpec<Statement._BatchSelectParamSpec> batchQuery20() {

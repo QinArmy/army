@@ -30,6 +30,7 @@ import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -848,6 +849,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
 
+
     /*################################## blow _Query method ##################################*/
 
     @Override
@@ -859,8 +861,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<_Cte> cteList() {
         List<_Cte> list = this.cteList;
         if (list == null) {
-            list = Collections.emptyList();
-            this.cteList = list;
+            this.cteList = list = Collections.emptyList();
         }
         return list;
     }
@@ -870,7 +871,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<Hint> hintList() {
         final List<Hint> list = this.hintList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.clearStackAndCastCriteriaApi();
+            throw _Exceptions.castCriteriaApi();
         }
         return list;
     }
@@ -879,7 +880,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<? extends SQLWords> modifierList() {
         final List<? extends SQLWords> list = this.modifierList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.clearStackAndCastCriteriaApi();
+            throw _Exceptions.castCriteriaApi();
         }
         return list;
     }
@@ -915,7 +916,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<_TabularBlock> tableBlockList() {
         final List<_TabularBlock> list = this.tableBlockList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.clearStackAndCastCriteriaApi();
+            throw _Exceptions.castCriteriaApi();
         }
         return list;
     }
@@ -925,7 +926,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<? extends GroupByItem> groupByList() {
         final List<ArmyGroupByItem> list = this.groupByList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.clearStackAndCastCriteriaApi();
+            throw _Exceptions.castCriteriaApi();
         }
         return list;
     }
@@ -934,7 +935,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<_Predicate> havingList() {
         final List<_Predicate> list = this.havingList;
         if (list == null || list instanceof ArrayList) {
-            throw ContextStack.clearStackAndCastCriteriaApi();
+            throw _Exceptions.castCriteriaApi();
         }
         return list;
     }
@@ -1291,6 +1292,90 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
     }
+
+    static abstract class QueryUnionClause<I extends Item> implements _StaticUnionClause<I>, _StaticIntersectClause<I>,
+            _StaticExceptClause<I>, _StaticMinusClause<I> {
+
+        private Runnable firstQueryEnd;
+
+        QueryUnionClause(@Nullable Runnable firstQueryEnd) {
+            this.firstQueryEnd = firstQueryEnd;
+        }
+
+        @Override
+        public final I union() {
+            return onUnionEvent(_UnionType.UNION);
+        }
+
+        @Override
+        public final I unionAll() {
+            return onUnionEvent(_UnionType.UNION_ALL);
+        }
+
+        @Override
+        public final I unionDistinct() {
+            return onUnionEvent(_UnionType.UNION_DISTINCT);
+        }
+
+        @Override
+        public final I intersect() {
+            return onUnionEvent(_UnionType.INTERSECT);
+        }
+
+        @Override
+        public final I intersectAll() {
+            return onUnionEvent(_UnionType.INTERSECT_ALL);
+        }
+
+        @Override
+        public final I intersectDistinct() {
+            return onUnionEvent(_UnionType.INTERSECT_DISTINCT);
+        }
+
+        @Override
+        public final I except() {
+            return onUnionEvent(_UnionType.EXCEPT);
+        }
+
+        @Override
+        public final I exceptAll() {
+            return onUnionEvent(_UnionType.EXCEPT_ALL);
+        }
+
+        @Override
+        public final I exceptDistinct() {
+            return onUnionEvent(_UnionType.EXCEPT_DISTINCT);
+        }
+
+        @Override
+        public final I minus() {
+            return onUnionEvent(_UnionType.MINUS);
+        }
+
+        @Override
+        public final I minusAll() {
+            return onUnionEvent(_UnionType.MINUS_ALL);
+        }
+
+        @Override
+        public final I minusDistinct() {
+            return onUnionEvent(_UnionType.MINUS_DISTINCT);
+        }
+
+        abstract I createQuery(_UnionType unionType);
+
+
+        private I onUnionEvent(_UnionType unionType) {
+            final Runnable firstQueryEnd = this.firstQueryEnd;
+            if (firstQueryEnd != null) {
+                this.firstQueryEnd = null;
+                firstQueryEnd.run();
+            }
+            return createQuery(unionType);
+        }
+
+
+    } // QueryUnionClause
 
 
     static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>

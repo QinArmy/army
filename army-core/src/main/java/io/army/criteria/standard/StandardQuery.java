@@ -32,22 +32,27 @@ import java.util.function.Function;
 public interface StandardQuery extends Query, StandardStatement {
 
 
+    interface _UnionClause<I extends Item> extends _StaticUnionClause<SelectSpec<I>> {
+
+    }
+
+
     /**
-     * <p>
-     * This interface representing the composite of below:
+     * <p>This interface representing the composite of below:
      *     <ul>
      *          <li>UNION clause for standard syntax</li>
      *          <li>method {@link _AsQueryClause#asQuery()}</li>
      *     </ul>
      *
-     * <p>
-     * <strong>Note:</strong><br/>
+     * <p><strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
      * @since 0.6.0
      */
-    interface _UnionSpec<I extends Item> extends _StaticUnionClause<SelectSpec<I>>,
+    interface _UnionSpec<I extends Item> extends _UnionClause<I>,
+            _StaticLineFeedUnionClause<_UnionClause<Item>, _UnionSpec<I>>,
+            _DynamicLineFeedUnionClause<_UnionClause<Item>, _UnionSpec<I>>,
             _AsQueryClause<I> {
 
     }
