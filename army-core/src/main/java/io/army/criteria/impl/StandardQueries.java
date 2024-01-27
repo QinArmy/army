@@ -519,16 +519,16 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             );
         }
 
-        @Override
-        public _UnionSpec<I> whiteSpace(Consumer<_UnionClause<Item>> consumer) {
-
-            return null;
-        }
-
-        @Override
-        public _UnionSpec<I> ifWhiteSpace(Consumer<_UnionClause<Item>> consumer) {
-            return null;
-        }
+//        @Override
+//        public _UnionSpec<I> whiteSpace(Consumer<_UnionClause<Item>> consumer) {
+//
+//            return null;
+//        }
+//
+//        @Override
+//        public _UnionSpec<I> ifWhiteSpace(Consumer<_UnionClause<Item>> consumer) {
+//            return null;
+//        }
 
 
         @Override
@@ -589,15 +589,15 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             );
         }
 
-        @Override
-        public _UnionSpec<I> whiteSpace(Consumer<_UnionClause<Item>> consumer) {
-            return null;
-        }
-
-        @Override
-        public _UnionSpec<I> ifWhiteSpace(Consumer<_UnionClause<Item>> consumer) {
-            return null;
-        }
+//        @Override
+//        public _UnionSpec<I> whiteSpace(Consumer<_UnionClause<Item>> consumer) {
+//            return null;
+//        }
+//
+//        @Override
+//        public _UnionSpec<I> ifWhiteSpace(Consumer<_UnionClause<Item>> consumer) {
+//            return null;
+//        }
 
     } // SimpleSubQuery
 

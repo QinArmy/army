@@ -17,6 +17,7 @@
 package io.army.sync.dao;
 
 import io.army.criteria.Select;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sync.SyncSession;
 import io.army.sync.SyncSessionContext;
@@ -48,16 +49,19 @@ public abstract class ArmySyncDaoSupport implements SyncDaoSupport {
         this.sessionContext.currentSession().batchSave(domainList);
     }
 
+    @Nullable
     @Override
     public <T> T get(Class<T> domainClass, Object id) {
         return findByUnique(domainClass, _MetaBridge.ID, id);
     }
 
+    @Nullable
     @Override
     public <T> T getByUnique(Class<T> domainClass, String fieldName, Object fieldValue) {
         return findByUnique(domainClass, fieldName, fieldValue);
     }
 
+    @Nullable
     @Override
     public <T> T findById(Class<T> domainClass, Object id) {
         return findByUnique(domainClass, _MetaBridge.ID, id);
@@ -68,11 +72,32 @@ public abstract class ArmySyncDaoSupport implements SyncDaoSupport {
     public <T> T findByUnique(Class<T> domainClass, String fieldName, Object fieldValue) {
         final SyncSession session;
         session = this.sessionContext.currentSession();
-
-        final Select stmt;
-        stmt = ArmyCriteria.queryDomainByUniqueStmt(session, domainClass, fieldName, fieldValue);
-        return session.queryOne(stmt, domainClass);
+        return findByUniqueFor(session.tableMeta(domainClass), domainClass, session, fieldName, fieldValue);
     }
 
+    @Override
+    public <T> long countRow(final Class<T> domainClass) {
+        final SyncSession session;
+        session = this.sessionContext.currentSession();
+        return countRowOf(session.tableMeta(domainClass), session);
+    }
+
+
+    protected static <T> long countRowOf(final TableMeta<T> table, final SyncSession session) {
+        final Long rowCount;
+        rowCount = session.queryOne(ArmyCriteria.countRowStmtOf(table), Long.class);
+        assert rowCount != null;
+        return rowCount;
+    }
+
+
+    @Nullable
+    protected static <T, R> R findByUniqueFor(final TableMeta<T> domainTable, final Class<R> returnClass,
+                                              final SyncSession session, final String fieldName,
+                                              final Object fieldValue) {
+        final Select stmt;
+        stmt = ArmyCriteria.queryDomainByUniqueStmtFor(domainTable, fieldName, fieldValue);
+        return session.queryOne(stmt, returnClass);
+    }
 
 }

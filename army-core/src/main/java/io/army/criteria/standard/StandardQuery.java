@@ -51,8 +51,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 0.6.0
      */
     interface _UnionSpec<I extends Item> extends _UnionClause<I>,
-            _StaticLineFeedUnionClause<_UnionClause<Item>, _UnionSpec<I>>,
-            _DynamicLineFeedUnionClause<_UnionClause<Item>, _UnionSpec<I>>,
+//            _StaticLineFeedUnionClause<_UnionClause<Item>, _UnionSpec<I>>,
+//            _DynamicLineFeedUnionClause<_UnionClause<Item>, _UnionSpec<I>>,
             _AsQueryClause<I> {
 
     }

@@ -39,8 +39,10 @@ public abstract class ArmyCriteria {
 
     @SuppressWarnings("unchecked")
     public static <T> Insert insertStmt(final Session session, final T domain) {
-        final TableMeta<T> table;
-        table = (TableMeta<T>) session.tableMeta(domain.getClass());
+        return insertStmtOf((TableMeta<T>) session.tableMeta(domain.getClass()), domain);
+    }
+
+    public static <T> Insert insertStmtOf(TableMeta<T> table, final T domain) {
         final Insert stmt;
         if (table instanceof SimpleTableMeta) {
             stmt = SQLs.singleInsert()
@@ -62,7 +64,10 @@ public abstract class ArmyCriteria {
     public static <T> Insert batchInsertStmt(final Session session, final List<T> domainList) {
         final TableMeta<T> table;
         table = (TableMeta<T>) session.tableMeta(domainList.get(0).getClass());
+        return batchInsertStmtOf(table, domainList);
+    }
 
+    public static <T> Insert batchInsertStmtOf(final TableMeta<T> table, final List<T> domainList) {
         final Insert stmt;
         if (table instanceof SimpleTableMeta) {
             stmt = SQLs.singleInsert()
@@ -90,10 +95,15 @@ public abstract class ArmyCriteria {
         return (List<FieldMeta<?>>) fieldList;
     }
 
-    public static <P, T> Select queryDomainByUniqueStmt(final Session session, final Class<T> domainClass,
-                                                        final String filedName, final Object fieldValue) {
+    public static <T> Select queryDomainByUniqueStmt(final Session session, final Class<T> domainClass,
+                                                     final String filedName, final Object fieldValue) {
         final TableMeta<T> domainTable;
         domainTable = session.tableMeta(domainClass);
+        return queryDomainByUniqueStmtFor(domainTable, filedName, fieldValue);
+    }
+
+    public static <P, T> Select queryDomainByUniqueStmtFor(final TableMeta<T> domainTable, final String filedName,
+                                                           final Object fieldValue) {
 
         final FieldMeta<?> uniqueFiled;
         if (_MetaBridge.ID.equals(filedName)) {
@@ -133,7 +143,30 @@ public abstract class ArmyCriteria {
         }
 
         return stmt;
+    }
 
+
+    public static <T> Select countRowStmt(final Session session, final Class<T> domainClass) {
+        return countRowStmtOf(session.tableMeta(domainClass));
+    }
+
+
+    public static <T> Select countRowStmtOf(final TableMeta<T> domainTable) {
+        final Select stmt;
+        if (domainTable instanceof ChildTableMeta) {
+            final ParentTableMeta<?> parent = ((ChildTableMeta<T>) domainTable).parentMeta();
+            stmt = SQLs.query()
+                    .select(SQLs.countAsterisk().as("count"))
+                    .from(domainTable, SQLs.AS, "c")
+                    .join(parent, SQLs.AS, "p").on(domainTable.id().equal(parent.id()))
+                    .asQuery();
+        } else {
+            stmt = SQLs.query()
+                    .select(SQLs.countAsterisk().as("count"))
+                    .from(domainTable, SQLs.AS, "t")
+                    .asQuery();
+        }
+        return stmt;
     }
 
 

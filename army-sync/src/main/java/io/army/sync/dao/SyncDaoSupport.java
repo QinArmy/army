@@ -44,4 +44,7 @@ public interface SyncDaoSupport {
     <T> T findByUnique(Class<T> domainClass, String fieldName, Object fieldValue);
 
 
+    <T> long countRow(Class<T> domainClass);
+
+
 }
