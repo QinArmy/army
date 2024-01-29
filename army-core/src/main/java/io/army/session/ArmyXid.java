@@ -19,7 +19,9 @@ package io.army.session;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -94,6 +96,10 @@ final class ArmyXid implements Xid {
         return (T) value;
     }
 
+    @Override
+    public Set<Option<?>> optionSet() {
+        return Collections.emptySet();
+    }
 
     @Override
     public int hashCode() {

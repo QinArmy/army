@@ -237,7 +237,7 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
             e = _Exceptions.unknownError(cause);
         } else if (cause instanceof io.jdbd.result.ServerException) {
             final io.jdbd.result.ServerException se = (io.jdbd.result.ServerException) cause;
-            e = new ServerException(cause, se.getSqlState(), se.getVendorCode(), mapToArmyOptionFunc(se::valueOf));
+            e = new ServerException(cause, se.getSqlState(), se.getVendorCode(), mapToArmyOptionFunc(se::valueOf), mapArmyOptionSet(se.optionSet()));
         } else if (cause instanceof io.jdbd.session.SessionCloseException) {
             e = new SessionClosedException(cause);
         } else {

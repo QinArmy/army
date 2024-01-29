@@ -33,6 +33,7 @@ import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
 import io.army.type.BlobPath;
 import io.army.type.TextPath;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -43,9 +44,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.time.*;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -228,6 +227,10 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return null;
         }
 
+        @Override
+        public final Set<Option<?>> optionSet() {
+            return Collections.emptySet();
+        }
 
         @Nullable
         @Override
@@ -764,6 +767,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     private static final class ArmyWarning implements Warning {
 
+        private static final Set<Option<?>> OPTION_SET = ArrayUtils.asUnmodifiableSet(Option.SQL_STATE, Option.VENDOR_CODE);
+
         private final String message;
 
         private final String sqlState;
@@ -799,6 +804,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
+        public Set<Option<?>> optionSet() {
+            return OPTION_SET;
+        }
+
+        @Override
         public String message() {
             return this.message;
         }
@@ -824,6 +834,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
 
     private static abstract class JdbcResultStates implements ResultStates {
+
+        private static final Set<Option<?>> OPTION_SET = ArrayUtils.asUnmodifiableSet(Option.IN_TRANSACTION, Option.READ_ONLY);
+
 
         private final TransactionInfo info;
 
@@ -866,6 +879,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 value = null;
             }
             return value;
+        }
+
+        @Override
+        public final Set<Option<?>> optionSet() {
+            return OPTION_SET;
         }
 
 

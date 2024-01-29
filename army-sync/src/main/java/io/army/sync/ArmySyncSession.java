@@ -34,6 +34,7 @@ import io.army.util._Exceptions;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -469,6 +470,11 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     @Override
     public final <T> T valueOf(Option<T> option) {
         return this.executor.valueOf(option);
+    }
+
+    @Override
+    public final Set<Option<?>> optionSet() {
+        return this.executor.optionSet();
     }
 
     @Override

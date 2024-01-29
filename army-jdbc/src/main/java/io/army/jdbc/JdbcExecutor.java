@@ -63,10 +63,7 @@ import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.time.*;
 import java.time.temporal.Temporal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.*;
 import java.util.stream.Stream;
@@ -470,6 +467,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     @Override
     public final <T> T valueOf(Option<T> option) {
         return null;
+    }
+
+    @Override
+    public final Set<Option<?>> optionSet() {
+        return Collections.emptySet();
     }
 
     @Override

@@ -17,6 +17,7 @@
 package io.army.session;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.function.Function;
 
 
@@ -30,11 +31,15 @@ public final class ServerException extends DriverException implements OptionSpec
 
     private final Function<Option<?>, ?> optionFunc;
 
+    private final Set<Option<?>> optionSet;
+
 
     public ServerException(Throwable cause, @Nullable String sqlState, int vendorCode,
-                           Function<Option<?>, ?> optionFunc) {
+                           Function<Option<?>, ?> optionFunc, Set<Option<?>> optionSet) {
         super(cause, sqlState, vendorCode);
         this.optionFunc = optionFunc;
+        this.optionSet = optionSet;
+
     }
 
     @SuppressWarnings("unchecked")
@@ -46,6 +51,12 @@ public final class ServerException extends DriverException implements OptionSpec
             return (T) value;
         }
         return null;
+    }
+
+
+    @Override
+    public Set<Option<?>> optionSet() {
+        return this.optionSet;
     }
 
 

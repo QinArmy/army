@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
@@ -324,6 +325,15 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     public final <T> T valueOf(final Option<T> option) {
         try {
             return this.stmtExecutor.valueOf(option);
+        } catch (Exception e) {
+            throw (RuntimeException) handleExecutionError(e);
+        }
+    }
+
+    @Override
+    public final Set<Option<?>> optionSet() {
+        try {
+            return this.stmtExecutor.optionSet();
         } catch (Exception e) {
             throw (RuntimeException) handleExecutionError(e);
         }
