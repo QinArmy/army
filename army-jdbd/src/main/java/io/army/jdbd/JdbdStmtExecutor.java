@@ -103,6 +103,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     private final SqlLogger jdbdSqlLogger;
 
+    private Set<Option<?>> optionSet;
+
     JdbdStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session, String sessionName) {
         this.sessionName = sessionName;
         this.factory = factory;
@@ -647,6 +649,15 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
+    public final Set<Option<?>> optionSet() {
+        Set<Option<?>> optionSet = this.optionSet;
+        if (optionSet == null) {
+            this.optionSet = optionSet = this.factory.mapArmyOptionSet(this.session.optionSet());
+        }
+        return optionSet;
+    }
+
+    @Override
     public final boolean isClosed() {
         return this.session.isClosed();
     }
@@ -1035,16 +1046,33 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
      * @see #startTransaction(TransactionOption, HandleMode)
      * @see #start(Xid, int, TransactionOption)
      */
+    @SuppressWarnings("unchecked")
     private io.jdbd.session.TransactionOption mapToJdbdTransactionOption(final TransactionOption option)
             throws ArmyException {
 
-        final Function<io.jdbd.session.Option<?>, ?> jdbdOptionFunc;
-        jdbdOptionFunc = addJdbdLogOptionIfNeed(this.factory.mapToJdbdOptionFunc(option::valueOf));
+        final Set<Option<?>> armyOptionSet = option.optionSet();
 
-        return io.jdbd.session.TransactionOption.option(
-                mapToJdbdIsolation(option.isolation()), option.isReadOnly(), jdbdOptionFunc
-        );
+        final io.jdbd.session.Isolation jdbdIsolation = mapToJdbdIsolation(option.isolation());
+        final io.jdbd.session.TransactionOption jdbdTransactionOption;
+        if (armyOptionSet.size() == 0) {
+            jdbdTransactionOption = io.jdbd.session.TransactionOption.option(jdbdIsolation, option.isReadOnly());
+        } else {
+            final io.jdbd.session.TransactionOption.Builder builder;
+            builder = io.jdbd.session.TransactionOption.builder();
+            io.jdbd.session.Option<?> jdbdOption;
+            for (Option<?> armyOption : armyOptionSet) {
+                jdbdOption = this.factory.mapToJdbdOption(armyOption);
+                if (jdbdOption == null) {
+                    continue;
+                }
+                builder.option((io.jdbd.session.Option<Object>) jdbdOption, option.valueOf(armyOption));
 
+            }
+            builder.option(io.jdbd.session.Option.ISOLATION, jdbdIsolation)
+                    .option(io.jdbd.session.Option.READ_ONLY, option.isReadOnly());
+            jdbdTransactionOption = builder.build();
+        }
+        return jdbdTransactionOption;
     }
 
 
@@ -1113,7 +1141,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
-        return new ArmyResultStates(jdbdStates, this.factory::mapToJdbdOption);
+        return new ArmyResultStates(jdbdStates, this.factory);
     }
 
 
@@ -1994,22 +2022,24 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private final io.jdbd.result.ResultStates jdbdStates;
 
-        private final Function<Option<?>, io.jdbd.session.Option<?>> optionFunc;
+        private final JdbdStmtExecutorFactory executorFactory;
 
         private Warning warning;
 
+        private Set<Option<?>> optionSet;
+
 
         private ArmyResultStates(io.jdbd.result.ResultStates jdbdStates,
-                                 Function<Option<?>, io.jdbd.session.Option<?>> optionFunc) {
+                                 JdbdStmtExecutorFactory executorFactory) {
             this.jdbdStates = jdbdStates;
-            this.optionFunc = optionFunc;
+            this.executorFactory = executorFactory;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public <T> T valueOf(Option<T> option) {
             final io.jdbd.session.Option<?> jdbdOption;
-            jdbdOption = this.optionFunc.apply(option);
+            jdbdOption = this.executorFactory.mapToJdbdOption(option);
             final Object value;
             if (jdbdOption == null) {
                 value = null;
@@ -2017,6 +2047,15 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 value = this.jdbdStates.valueOf(jdbdOption);
             }
             return (T) value;
+        }
+
+        @Override
+        public Set<Option<?>> optionSet() {
+            Set<Option<?>> armyOptionSet = this.optionSet;
+            if (armyOptionSet == null) {
+                this.optionSet = armyOptionSet = this.executorFactory.mapArmyOptionSet(this.jdbdStates.optionSet());
+            }
+            return armyOptionSet;
         }
 
         @Override
@@ -2057,7 +2096,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             final io.jdbd.result.Warning jdbdWarning;
             jdbdWarning = this.jdbdStates.warning();
             if (jdbdWarning != null) {
-                this.warning = w = new ArmyWarning(jdbdWarning, this.optionFunc);
+                this.warning = w = new ArmyWarning(jdbdWarning, this.executorFactory);
             }
             return w;
         }
@@ -2085,20 +2124,20 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private final io.jdbd.result.Warning jdbdWarning;
 
+        private final JdbdStmtExecutorFactory executorFactory;
 
-        private final Function<Option<?>, io.jdbd.session.Option<?>> optionFunc;
+        private Set<Option<?>> optionSet;
 
-        private ArmyWarning(io.jdbd.result.Warning jdbdWarning,
-                            Function<Option<?>, io.jdbd.session.Option<?>> optionFunc) {
+        private ArmyWarning(io.jdbd.result.Warning jdbdWarning, JdbdStmtExecutorFactory executorFactory) {
             this.jdbdWarning = jdbdWarning;
-            this.optionFunc = optionFunc;
+            this.executorFactory = executorFactory;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public <T> T valueOf(Option<T> option) {
             final io.jdbd.session.Option<?> jdbdOption;
-            jdbdOption = this.optionFunc.apply(option);
+            jdbdOption = this.executorFactory.mapToJdbdOption(option);
             final Object value;
             if (jdbdOption == null) {
                 value = null;
@@ -2109,11 +2148,20 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
 
         @Override
+        public Set<Option<?>> optionSet() {
+            Set<Option<?>> armyOptionSet = this.optionSet;
+            if (armyOptionSet == null) {
+                this.optionSet = armyOptionSet = this.executorFactory.mapArmyOptionSet(this.jdbdWarning.optionSet());
+            }
+            return armyOptionSet;
+        }
+
+        @Override
         public String message() {
             return this.jdbdWarning.message();
         }
 
-    }// ArmyWarning
+    } // ArmyWarning
 
 
 }

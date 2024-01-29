@@ -19,6 +19,7 @@ package io.army.session;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 public interface OptionSpec {
 
@@ -33,6 +34,11 @@ public interface OptionSpec {
         }
         return value;
     }
+
+    /**
+     * @return a unmodified set
+     */
+    Set<Option<?>> optionSet();
 
 
 }

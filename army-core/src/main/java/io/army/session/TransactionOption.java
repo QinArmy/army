@@ -100,6 +100,6 @@ public interface TransactionOption extends OptionSpec {
         TransactionOption build() throws IllegalArgumentException;
 
 
-    }//Builder
+    } // Builder
 
 }

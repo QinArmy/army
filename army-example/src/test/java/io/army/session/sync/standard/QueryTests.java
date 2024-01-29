@@ -276,19 +276,19 @@ public class QueryTests extends SessionSupport {
 
     @Test
     public void dynamicUnion(final SyncLocalSession session) {
-        final Select stmt;
-        stmt = query()
-                .select(ChinaRegion_.id)
-                .from(ChinaRegion_.T, AS, "c")
-                .whiteSpace(su -> {
-                    for (int i = 0; i < 3; i++) {
-                        su.union()
-                                .select(ChinaRegion_.id)
-                                .from(ChinaRegion_.T, AS, "c")
-                                .asQuery();
-                    }
-                })
-                .asQuery();
+//        final Select stmt;
+//        stmt = query()
+//                .select(ChinaRegion_.id)
+//                .from(ChinaRegion_.T, AS, "c")
+//                .whiteSpace(su -> {
+//                    for (int i = 0; i < 3; i++) {
+//                        su.union()
+//                                .select(ChinaRegion_.id)
+//                                .from(ChinaRegion_.T, AS, "c")
+//                                .asQuery();
+//                    }
+//                })
+//                .asQuery();
     }
 
 

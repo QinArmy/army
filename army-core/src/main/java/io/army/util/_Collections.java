@@ -133,6 +133,18 @@ public abstract class _Collections {
         return new FinalHashMap<>();
     }
 
+    public static <E> HashSet<E> hashSet() {
+        return new FinalHashSet<>();
+    }
+
+    public static <E> HashSet<E> hashSet(Collection<? extends E> c) {
+        return new FinalHashSet<>(c);
+    }
+
+    public static <E> HashSet<E> hashSetForSize(int initialSize) {
+        return new FinalHashSet<>((int) (initialSize / 0.75F));
+    }
+
     public static <K, V> ConcurrentHashMap<K, V> concurrentHashMap() {
         return new FinalConcurrentHashMap<>();
     }

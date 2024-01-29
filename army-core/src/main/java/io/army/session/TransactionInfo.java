@@ -19,7 +19,6 @@ package io.army.session;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Set;
 
 /**
  * <p>This interface representing the transaction info of session.
@@ -78,8 +77,6 @@ public interface TransactionInfo extends TransactionOption {
     @Override
     <T> T valueOf(Option<T> option);
 
-
-    Set<Option<?>> optionSet();
 
 
     static InfoBuilder infoBuilder(boolean inTransaction, Isolation isolation, boolean readOnly) {

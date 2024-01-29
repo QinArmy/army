@@ -26,6 +26,7 @@ import io.army.type.TextPath;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpec {
 
@@ -44,6 +45,11 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
     <T> T getOf(int indexBasedZero, Option<T> option) throws DataAccessException;
 
     <T> T getNonNullOf(int indexBasedZero, Option<T> option) throws DataAccessException;
+
+    /**
+     * @return a unmodified set
+     */
+    Set<Option<?>> optionSet();
 
 
     /**

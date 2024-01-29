@@ -31,6 +31,7 @@ import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.session.*;
 import io.army.session.executor.ExecutorFactorySupport;
 import io.army.session.executor.ExecutorSupport;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.jdbd.JdbdException;
@@ -41,6 +42,8 @@ import io.jdbd.session.RmDatabaseSession;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 
@@ -80,6 +83,8 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
     private final Function<io.jdbd.session.Option<?>, Option<?>> jdbdToArmyOptionFunc;
 
     private volatile int factoryClosed;
+
+    private Set<Option<?>> optionSet;
 
     /**
      * private construcotr
@@ -193,6 +198,16 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
     }
 
     @Override
+    public Set<Option<?>> optionSet() {
+        Set<Option<?>> optionSet = this.optionSet;
+        if (optionSet == null) {
+            this.optionSet = optionSet = mapArmyOptionSet(this.sessionFactory.optionSet());
+        }
+        return optionSet;
+    }
+
+
+    @Override
     public boolean isClosed() {
         return this.factoryClosed != 0;
     }
@@ -267,6 +282,28 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
             }
             return optionFunc.apply(jdbdOption);
         };
+    }
+
+    Set<Option<?>> mapArmyOptionSet(final Set<io.jdbd.session.Option<?>> jdbdOptionSet) {
+
+        final int size = jdbdOptionSet.size();
+        if (size == 0) {
+            return Collections.emptySet();
+        }
+
+        final Set<Option<?>> armyOptionSet;
+        armyOptionSet = _Collections.hashSetForSize(size);
+
+        Option<?> armyOption;
+        for (io.jdbd.session.Option<?> jdbdOption : jdbdOptionSet) {
+            armyOption = this.mapToArmyOption(jdbdOption);
+            if (armyOption == null) {
+                continue;
+            }
+            armyOptionSet.add(armyOption);
+        }
+
+        return Collections.unmodifiableSet(armyOptionSet);
     }
 
 

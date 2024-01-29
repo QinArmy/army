@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -49,6 +50,8 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
         final JdbdStmtExecutor executor;
 
         final ResultRowMeta meta;
+
+        private Set<Option<?>> optionSet;
 
         private JdbdRecordMeta(int resultNo, DataType[] dataTypeArray, JdbdStmtExecutor executor, ResultRowMeta meta) {
             super(resultNo, dataTypeArray);
@@ -72,6 +75,15 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             } catch (Exception e) {
                 throw this.executor.wrapExecutingError(e);
             }
+        }
+
+        @Override
+        public final Set<Option<?>> optionSet() {
+            Set<Option<?>> optionSet = this.optionSet;
+            if (optionSet == null) {
+                this.optionSet = optionSet = this.executor.factory.mapArmyOptionSet(this.meta.optionSet());
+            }
+            return optionSet;
         }
 
         @Nullable

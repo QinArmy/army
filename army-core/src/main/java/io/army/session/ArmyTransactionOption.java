@@ -19,7 +19,9 @@ package io.army.session;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 final class ArmyTransactionOption implements TransactionOption {
@@ -36,7 +38,7 @@ final class ArmyTransactionOption implements TransactionOption {
         } else if (isolation == Isolation.SERIALIZABLE) {
             option = readOnly ? SERIALIZABLE_READ : SERIALIZABLE_WRITE;
         } else if (isolation != Isolation.PSEUDO) {
-            option = new ArmyTransactionOption(isolation, readOnly, Option.EMPTY_FUNC);
+            option = new ArmyTransactionOption(isolation, readOnly);
         } else if (readOnly) {
             option = PSEUDO;
         } else {
@@ -77,20 +79,28 @@ final class ArmyTransactionOption implements TransactionOption {
 
     private final Function<Option<?>, ?> optionFunc;
 
+    private final Set<Option<?>> optionSet;
+
     /**
      * private constructor
      */
     private ArmyTransactionOption(@Nullable Isolation isolation, boolean readOnly) {
-        this(isolation, readOnly, Option.EMPTY_FUNC);
+        this(isolation, readOnly, null);
     }
 
     /**
      * private constructor
      */
-    private ArmyTransactionOption(@Nullable Isolation isolation, boolean readOnly, Function<Option<?>, ?> optionFunc) {
+    private ArmyTransactionOption(@Nullable Isolation isolation, boolean readOnly, @Nullable Map<Option<?>, ?> optionMap) {
         this.isolation = isolation;
         this.readOnly = readOnly;
-        this.optionFunc = optionFunc;
+        if (optionMap == null || optionMap.size() == 0) {
+            this.optionFunc = Option.EMPTY_FUNC;
+            this.optionSet = Collections.emptySet();
+        } else {
+            this.optionFunc = optionMap::get;
+            this.optionSet = Collections.unmodifiableSet(optionMap.keySet());
+        }
     }
 
 
@@ -100,13 +110,7 @@ final class ArmyTransactionOption implements TransactionOption {
         final Function<Option<?>, ?> func;
 
         final Object value, temp;
-        if (option == Option.ISOLATION) {
-            value = this.isolation;
-        } else if (option == Option.READ_ONLY) {
-            value = this.readOnly;
-        } else if (option == Option.IN_TRANSACTION) {
-            value = Boolean.FALSE;
-        } else if ((func = this.optionFunc) == Option.EMPTY_FUNC) {
+        if ((func = this.optionFunc) == Option.EMPTY_FUNC) {
             value = null;
         } else if ((temp = func.apply(option)) == null) {
             value = null;
@@ -118,6 +122,10 @@ final class ArmyTransactionOption implements TransactionOption {
         return (T) value;
     }
 
+    @Override
+    public Set<Option<?>> optionSet() {
+        return this.optionSet;
+    }
 
     @Override
     public Isolation isolation() {
@@ -216,7 +224,7 @@ final class ArmyTransactionOption implements TransactionOption {
             } else if (isolation == Isolation.PSEUDO && !readOnly) {
                 throw new IllegalArgumentException("PSEUDO must be read only");
             } else {
-                option = new ArmyTransactionOption(isolation, readOnly, map::get);
+                option = new ArmyTransactionOption(isolation, readOnly, map);
             }
             return option;
         }
