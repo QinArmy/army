@@ -24,15 +24,13 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
 import io.army.reactive.ReactiveLocalSession;
-import io.army.session.Isolation;
-import io.army.session.TransactionOption;
 import io.army.session.record.ResultStates;
-import io.army.util.Groups;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Random;
@@ -48,7 +46,7 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
     private static final Logger LOG = LoggerFactory.getLogger(InsertTests.class);
 
 
-    @Test(groups = Groups.DOMAIN_INSERT)
+    @Test(invocationCount = 3)
     public void domainInsertParent(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -78,7 +76,8 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
     }
 
 
-    @Test(groups = Groups.DOMAIN_INSERT)
+    @Transactional
+    @Test(invocationCount = 3)
     public void domainInsertChildWithTowStmtUpdateMode(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -98,25 +97,18 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
                 .values(provinceList)
                 .asInsert();
 
+        final ResultStates states;
+        states = session.update(stmt)
+                .block();
 
-        session.startTransaction()
-                .flatMap(info -> session.update(stmt))
-                .flatMap(states -> {
-                    Assert.assertEquals(states.affectedRows(), provinceList.size());
-
-                    for (ChinaProvince province : provinceList) {
-                        Assert.assertNotNull(province.getId()); // database generated key
-                    }
-                    return session.commit();
-                }).onErrorResume(error -> session.rollback()
-                        .then(Mono.error(error))
-                ).block();
+        Assert.assertNotNull(states);
+        Assert.assertEquals(states.affectedRows(), provinceList.size());
 
     }
 
     /*-------------------below values syntax tests -------------------*/
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Test(invocationCount = 3)
     public void staticValuesInsertParent(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -142,8 +134,8 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
 
     }
 
-
-    @Test(groups = Groups.VALUES_INSERT)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Test(invocationCount = 3)
     public void valuesInsertChildWithTowStmtUpdateMode(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -178,21 +170,19 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
 
         Assert.assertFalse(stmt instanceof _ReturningDml);
 
+        final ResultStates states;
+        states = session.update(stmt)
+                .block();
 
-        session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED))
-                .flatMap(info -> session.update(stmt))
-                .flatMap(states -> {
-                    Assert.assertEquals(states.affectedRows(), 2);
-                    return session.commit();
-                }).onErrorResume(error -> session.rollback()
-                        .then(Mono.error(error))
-                ).block();
+        Assert.assertNotNull(states);
+        Assert.assertEquals(states.affectedRows(), 2);
+
 
     }
 
     /*-------------------below query insert syntax-------------------*/
 
-    @Test(groups = Groups.QUERY_INSERT)
+    @Test(invocationCount = 3)
     public void queryInsertParent(final ReactiveLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 

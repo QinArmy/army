@@ -81,6 +81,7 @@ public class ArmyKey<T> {
 
     /**
      * <p>Whether print meta sql or not ,when application startup.
+     * <p>Currently,jdbd support only this option
      */
     public static final ArmyKey<Boolean> SQL_LOG_PRINT_META = new ArmyKey<>("sql.log.print_meta", Boolean.class, Boolean.FALSE);
     public static final ArmyKey<Boolean> SQL_LOG_DYNAMIC = new ArmyKey<>("sql.log.dynamic", Boolean.class, Boolean.FALSE);

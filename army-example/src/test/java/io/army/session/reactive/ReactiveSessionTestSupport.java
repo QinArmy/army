@@ -20,18 +20,15 @@ import io.army.dialect.Database;
 import io.army.reactive.ReactiveLocalSession;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
-import io.army.session.FactoryUtils;
-import io.army.session.Option;
-import io.army.session.SessionTestSupport;
+import io.army.session.*;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.DataProvider;
+import org.testng.annotations.*;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
@@ -93,6 +90,52 @@ public abstract class ReactiveSessionTestSupport extends SessionTestSupport {
         }
     }
 
+
+    @BeforeMethod
+    public final void startLocalTransactionIfNeed(final ITestResult testResult) {
+        final Transactional transactional;
+        transactional = testResult.getMethod().getConstructorOrMethod().getMethod().getAnnotation(Transactional.class);
+        if (transactional == null) {
+            return;
+        }
+        ReactiveLocalSession session;
+        Isolation isolation;
+        for (Object parameter : testResult.getParameters()) {
+            if (!(parameter instanceof ReactiveLocalSession)) {
+                continue;
+            }
+            session = (ReactiveLocalSession) parameter;
+            if (session.inAnyTransaction()) {
+                continue;
+            }
+
+            switch (transactional.isolation()) {
+                case DEFAULT:
+                    isolation = null;
+                    break;
+                case READ_COMMITTED:
+                    isolation = Isolation.READ_COMMITTED;
+                    break;
+                case REPEATABLE_READ:
+                    isolation = Isolation.REPEATABLE_READ;
+                    break;
+                case SERIALIZABLE:
+                    isolation = Isolation.SERIALIZABLE;
+                    break;
+                case READ_UNCOMMITTED:
+                    isolation = Isolation.READ_UNCOMMITTED;
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(transactional.isolation());
+            }
+
+            session.startTransaction(TransactionOption.option(isolation))
+                    .block();
+
+        }
+
+
+    }
 
 
     @AfterMethod
