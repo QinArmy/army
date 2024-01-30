@@ -68,6 +68,17 @@ public abstract class ExecutorSupport {
     }
 
 
+    protected final SqlLogMode readSqlLogMode(ExecutorFactorySupport factory) {
+        final SqlLogMode mode;
+        if (factory.sqlLogDynamic) {
+            mode = factory.armyEnv.getOrDefault(ArmyKey.SQL_LOG_MODE);
+        } else {
+            mode = factory.sqlLogMode;
+        }
+        return mode;
+    }
+
+
     protected final void printSqlIfNeed(final ExecutorFactorySupport factory, final String sessionName, final Logger log,
                                         final String sql) {
         final SqlLogMode mode;

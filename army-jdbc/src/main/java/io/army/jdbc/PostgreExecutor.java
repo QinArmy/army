@@ -92,6 +92,39 @@ abstract class PostgreExecutor extends JdbcExecutor {
         super(factory, conn, sessionName);
     }
 
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">SET TRANSACTION</a>
+     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-ISOLATION">transaction_isolation</a>
+     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-READ-ONLY">transaction_read_only</a>
+     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-DEFERRABLE">transaction_deferrable</a>
+     */
+    @Override
+    public final TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc) {
+        final String sql = "SHOW transaction_isolation ; SHOW transaction_read_only ; SHOW transaction_deferrable ";
+        try (final Statement statement = this.conn.createStatement()) {
+
+            printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
+
+            if (!statement.execute(sql)) {
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw driverError();
+            }
+            final Isolation isolation;
+            isolation = readIsolationAndClose(statement.getResultSet());
+
+            final boolean readOnly, deferrable;
+            readOnly = readBooleanFromMultiResult(statement);
+            deferrable = readBooleanFromMultiResult(statement);
+
+            return TransactionInfo.infoBuilder(false, isolation, readOnly)
+                    .option(DEFERRABLE, deferrable)
+                    .build();
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">SET TRANSACTION Statement</a>
      */
@@ -443,37 +476,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
         return value;
     }
 
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">SET TRANSACTION</a>
-     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-ISOLATION">transaction_isolation</a>
-     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-READ-ONLY">transaction_read_only</a>
-     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-DEFERRABLE">transaction_deferrable</a>
-     */
-    @Override
-    final TransactionInfo sessionTransactionCharacteristics() {
-        final String sql = "SHOW transaction_isolation ; SHOW transaction_read_only ; SHOW transaction_deferrable ";
-        try (final Statement statement = this.conn.createStatement()) {
-
-            printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
-
-            if (!statement.execute(sql)) {
-                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
-                throw driverError();
-            }
-            final Isolation isolation;
-            isolation = readIsolationAndClose(statement.getResultSet());
-
-            final boolean readOnly, deferrable;
-            readOnly = readBooleanFromMultiResult(statement);
-            deferrable = readBooleanFromMultiResult(statement);
-
-            return TransactionInfo.infoBuilder(false, isolation, readOnly)
-                    .option(DEFERRABLE, deferrable)
-                    .build();
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a>

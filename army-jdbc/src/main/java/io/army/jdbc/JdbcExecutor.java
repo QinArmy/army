@@ -154,7 +154,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         if (info != null) {
             return info;
         }
-        return sessionTransactionCharacteristics();
+        return sessionTransactionCharacteristics(Option.EMPTY_FUNC);
     }
 
     @Override
@@ -539,10 +539,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     @Nullable
     abstract TransactionInfo obtainTransaction();
 
-    /**
-     * <p>Query session level transaction characteristics
-     */
-    abstract TransactionInfo sessionTransactionCharacteristics();
 
     /**
      * @see #readIsolationAndClose(ResultSet)

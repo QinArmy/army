@@ -122,6 +122,17 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         }
     }
 
+    @Override
+    public final TransactionInfo sessionTransactionCharacteristics() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        try {
+            return this.executor.sessionTransactionCharacteristics(Option.EMPTY_FUNC);
+        } catch (Exception e) {
+            throw _ArmySession.wrapSessionError(e);
+        }
+    }
 
     @Override
     public final Object setSavePoint() {

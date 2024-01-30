@@ -30,7 +30,7 @@
             <groupId>io.jdbd</groupId>
             <artifactId>jdbd-spi</artifactId>
             <scope>provided</scope>
-            <version>0.12.4</version>
+            <version>0.12.5-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

@@ -30,6 +30,7 @@ import io.army.util._StringUtils;
 import io.jdbd.meta.DatabaseMetaData;
 import io.jdbd.meta.SchemaMeta;
 import io.jdbd.session.DatabaseSessionFactory;
+import io.jdbd.session.Option;
 import io.jdbd.session.ServerVersion;
 import reactor.core.publisher.Mono;
 
@@ -72,7 +73,7 @@ public final class JdbdExecutorFactoryProvider implements ReactiveExecutorFactor
     @Override
     public Mono<ServerMeta> createServerMeta(final Dialect usedDialect, final @Nullable Function<String, Database> func) {
         return Mono.from(this.sessionFactory.localSession())
-                .flatMap(session -> Mono.from(session.databaseMetaData().currentSchema())
+                .flatMap(session -> Mono.from(session.databaseMetaData().currentSchema(Option.EMPTY_OPTION_FUNC))
                         .map(schemaMeta -> mapServerMeta(schemaMeta, usedDialect, func))
                         .onErrorResume(error -> Mono.from(session.close()))
                         .concatWith(Mono.defer(() -> Mono.from(session.close())))

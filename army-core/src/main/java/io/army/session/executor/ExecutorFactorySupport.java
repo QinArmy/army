@@ -22,11 +22,11 @@ import io.army.env.SqlLogMode;
 
 public abstract class ExecutorFactorySupport {
 
-    final ArmyEnvironment armyEnv;
+    public final ArmyEnvironment armyEnv;
 
-    public final boolean sqlLogDynamic;
+    final boolean sqlLogDynamic;
 
-    public final SqlLogMode sqlLogMode;
+    final SqlLogMode sqlLogMode;
 
     protected ExecutorFactorySupport(ArmyEnvironment armyEnv) {
         this.armyEnv = armyEnv;

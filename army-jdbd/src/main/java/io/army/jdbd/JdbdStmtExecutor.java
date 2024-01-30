@@ -157,6 +157,13 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
+    public final Mono<TransactionInfo> sessionTransactionCharacteristics(final Function<Option<?>, ?> optionFunc) {
+        return Mono.from(this.session.sessionTransactionCharacteristics(mapToJdbdOptionFunc(optionFunc)))
+                .map(this::mapToArmyTransactionInfo)
+                .onErrorMap(this::wrapExecuteIfNeed);
+    }
+
+    @Override
     public final Mono<Void> setTransactionCharacteristics(TransactionOption option) {
         final io.jdbd.session.TransactionOption jdbdOption;
         try {
@@ -978,18 +985,17 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     final Function<io.jdbd.session.Option<?>, ?> addJdbdLogOptionIfNeed(final Function<io.jdbd.session.Option<?>, ?> func) {
-        final JdbdStmtExecutorFactory factory = this.factory;
 
         final Function<io.jdbd.session.Option<?>, ?> finalJdbdFunc;
-        if (factory.sqlLogMode != SqlLogMode.OFF || factory.sqlLogDynamic) {
+        if (readSqlLogMode(this.factory) == SqlLogMode.OFF) {
+            finalJdbdFunc = func;
+        } else {
             finalJdbdFunc = jdbdOption -> {
                 if (io.jdbd.session.Option.SQL_LOGGER == jdbdOption) {
                     return this.jdbdSqlLogger;
                 }
                 return func.apply(jdbdOption);
             };
-        } else {
-            finalJdbdFunc = func;
         }
         return finalJdbdFunc;
     }
@@ -1054,7 +1060,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         final io.jdbd.session.Isolation jdbdIsolation = mapToJdbdIsolation(option.isolation());
         final io.jdbd.session.TransactionOption jdbdTransactionOption;
-        if (armyOptionSet.size() == 0) {
+
+        final SqlLogMode sqlLogMode;
+        sqlLogMode = readSqlLogMode(this.factory);
+
+        if (armyOptionSet.size() == 0 && sqlLogMode == SqlLogMode.OFF) {
             jdbdTransactionOption = io.jdbd.session.TransactionOption.option(jdbdIsolation, option.isReadOnly());
         } else {
             final io.jdbd.session.TransactionOption.Builder builder;
@@ -1070,6 +1080,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             }
             builder.option(io.jdbd.session.Option.ISOLATION, jdbdIsolation)
                     .option(io.jdbd.session.Option.READ_ONLY, option.isReadOnly());
+
+            if (sqlLogMode != SqlLogMode.OFF) {
+                builder.option(io.jdbd.session.Option.SQL_LOGGER, this.jdbdSqlLogger);
+            }
+
             jdbdTransactionOption = builder.build();
         }
         return jdbdTransactionOption;

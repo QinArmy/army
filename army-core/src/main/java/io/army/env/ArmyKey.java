@@ -78,6 +78,11 @@ public class ArmyKey<T> {
     public static final ArmyKey<Boolean> TRUNCATED_TIME_TYPE = new ArmyKey<>("truncated.time_type", Boolean.class, Boolean.TRUE);
 
     public static final ArmyKey<NameMode> FUNC_NAME_MODE = new ArmyKey<>("func.name.mode", NameMode.class, NameMode.DEFAULT);
+
+    /**
+     * <p>Whether print meta sql or not ,when application startup.
+     */
+    public static final ArmyKey<Boolean> SQL_LOG_PRINT_META = new ArmyKey<>("sql.log.print_meta", Boolean.class, Boolean.FALSE);
     public static final ArmyKey<Boolean> SQL_LOG_DYNAMIC = new ArmyKey<>("sql.log.dynamic", Boolean.class, Boolean.FALSE);
 
     public static final ArmyKey<SqlLogMode> SQL_LOG_MODE = new ArmyKey<>("sql.log.mode", SqlLogMode.class, SqlLogMode.OFF);

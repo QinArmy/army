@@ -84,6 +84,45 @@ abstract class MySQLExecutor extends JdbcExecutor {
         super(factory, conn, sessionName);
     }
 
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_transaction_isolation">transaction_isolation</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_transaction_read_only">transaction_read_only</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_tx_isolation">tx_isolation</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_tx_read_only">tx_read_only</a>
+     */
+    @Override
+    public final TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc) {
+        final String sql;
+        final ServerMeta serverMeta = this.factory.serverMeta;
+        if (serverMeta.meetsMinimum(8, 0, 3)
+                || (serverMeta.meetsMinimum(5, 7, 20) && !serverMeta.meetsMinimum(8, 0, 0))) {
+            sql = "SELECT @@session.transaction_isolation AS txLevel,@@session.transaction_read_only AS txReadOnly";
+        } else {
+            sql = "SELECT @@session.tx_isolation AS txLevel,@@session.tx_read_only AS txReadOnly";
+        }
+
+        try (Statement statement = this.conn.createStatement()) {
+
+            try (ResultSet resultSet = statement.executeQuery(sql)) {
+
+                if (!resultSet.next()) {
+                    throw new DataAccessException("jdbc error");
+                }
+
+                final Isolation isolation;
+                final boolean readOnly;
+
+                isolation = readIsolation(resultSet.getString(1));
+                readOnly = resultSet.getBoolean(2);
+
+                return TransactionInfo.notInTransaction(isolation, readOnly);
+            }
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/set-transaction.html">SET TRANSACTION Statement</a>
      */
@@ -272,43 +311,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_transaction_isolation">transaction_isolation</a>
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_transaction_read_only">transaction_read_only</a>
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_tx_isolation">tx_isolation</a>
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_tx_read_only">tx_read_only</a>
-     */
-    @Override
-    final TransactionInfo sessionTransactionCharacteristics() {
-        final String sql;
-        final ServerMeta serverMeta = this.factory.serverMeta;
-        if (serverMeta.meetsMinimum(8, 0, 3)
-                || (serverMeta.meetsMinimum(5, 7, 20) && !serverMeta.meetsMinimum(8, 0, 0))) {
-            sql = "SELECT @@session.transaction_isolation AS txLevel,@@session.transaction_read_only AS txReadOnly";
-        } else {
-            sql = "SELECT @@session.tx_isolation AS txLevel,@@session.tx_read_only AS txReadOnly";
-        }
-
-        try (Statement statement = this.conn.createStatement()) {
-
-            try (ResultSet resultSet = statement.executeQuery(sql)) {
-
-                if (!resultSet.next()) {
-                    throw new DataAccessException("jdbc error");
-                }
-
-                final Isolation isolation;
-                final boolean readOnly;
-
-                isolation = readIsolation(resultSet.getString(1));
-                readOnly = resultSet.getBoolean(2);
-
-                return TransactionInfo.notInTransaction(isolation, readOnly);
-            }
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
 
     final Isolation readIsolation(final String level) {
         final Isolation isolation;

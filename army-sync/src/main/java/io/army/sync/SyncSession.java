@@ -77,7 +77,7 @@ public interface SyncSession extends Session, Closeable {
     SyncSessionFactory sessionFactory();
 
     /**
-     * <p>Get session transaction info
+     * <p>Get current transaction info,If session in transaction block,then return current transaction info; else equivalent to {@link #sessionTransactionCharacteristics()}.
      * <ul>
      *     <li>If session exists transaction ,then return transaction info</li>
      *     <li>Else query session level transaction info ,for example : isolation ,readonly etc.</li>
@@ -98,6 +98,21 @@ public interface SyncSession extends Session, Closeable {
      * @throws SessionException throw when
      */
     TransactionInfo transactionInfo();
+
+    /**
+     * <p>Query session-level transaction characteristics info
+     * <p><strong>NOTE</strong> : driver don't send message to database server before subscribing.
+     *
+     * @return {@link TransactionInfo}
+     * <p><strong>NOTE</strong> : the {@link TransactionInfo#inTransaction()} always is false,even if session in transaction block.
+     * @throws SessionException emit(not throw) when
+     *                           <ul>
+     *                              <li>network error</li>
+     *                              <li>sever response error message,see {@link ServerException}</li>
+     *                          </ul>
+     * @see #setTransactionCharacteristics(TransactionOption)
+     */
+    TransactionInfo sessionTransactionCharacteristics();
 
     /**
      * <p>This method is equivalent to following :
@@ -195,13 +210,17 @@ public interface SyncSession extends Session, Closeable {
      *     <li>This method is permitted within transactions ,but does not affect the current ongoing transaction.</li>
      *     <li>If you don't use appropriate default value,then appropriate characteristic does not affect new transaction,for example : {@link TransactionOption#isolation()} not null.</li>
      * </ul>
-     * <pre>For example MySQL database will execute following sql :
+     * <pre>For example:
      *     <code><br/>
+     *              TransactionOption.option(Isolation.REPEATABLE_READ)
+     *              MySQL database will execute following sql :
      *              SET SESSION TRANSACTION READ WRITE , ISOLATION LEVEL REPEATABLE READ
      *     </code>
      * </pre>
-     * <pre>For example PostgreSQL database will execute following sql :
+     * <pre>For example:
      *     <code><br/>
+     *              TransactionOption.option(Isolation.REPEATABLE_READ)
+     *              PostgreSQL database will execute following sql :
      *              SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE, ISOLATION LEVEL REPEATABLE READ
      *     </code>
      * </pre>

@@ -73,6 +73,8 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
     TransactionInfo transactionInfo() throws DataAccessException;
 
+    TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc) throws DataAccessException;
+
     void setTransactionCharacteristics(TransactionOption option) throws DataAccessException;
 
     Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException;

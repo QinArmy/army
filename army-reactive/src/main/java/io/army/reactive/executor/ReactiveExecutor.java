@@ -52,6 +52,8 @@ public interface ReactiveExecutor extends StmtExecutor, ReactiveCloseable {
 
     Mono<TransactionInfo> transactionInfo();
 
+    Mono<TransactionInfo> sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc);
+
     Mono<Void> setTransactionCharacteristics(TransactionOption option);
 
     Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc);

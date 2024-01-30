@@ -141,7 +141,7 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
             factory = ((ReadWriteSplittingFactory) factory).readWriteFactory(mapToJdbdOptionFunc(func));
         }
         return Mono.from(factory.localSession(this.sessionFactoryName, mapToJdbdOptionFunc(func)))
-                .map(session -> JdbdMetaExecutor.create(this.sessionFactoryName, session))
+                .map(session -> JdbdMetaExecutor.create(this, session))
                 .onErrorMap(this::wrapExecuteErrorIfNeed);
     }
 

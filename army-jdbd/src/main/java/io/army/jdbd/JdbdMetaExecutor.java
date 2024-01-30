@@ -16,46 +16,65 @@
 
 package io.army.jdbd;
 
+import io.army.env.ArmyKey;
+import io.army.env.SqlLogMode;
 import io.army.reactive.executor.ReactiveMetaExecutor;
 import io.army.schema.*;
 import io.army.session.executor.ExecutorSupport;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.jdbd.meta.*;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.Option;
+import io.jdbd.util.SqlLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-final class JdbdMetaExecutor implements ReactiveMetaExecutor {
+final class JdbdMetaExecutor extends ExecutorSupport implements ReactiveMetaExecutor {
 
-    static ReactiveMetaExecutor create(String sessionFactoryName, DatabaseSession session) {
-        return new JdbdMetaExecutor(sessionFactoryName, session);
+    static ReactiveMetaExecutor create(JdbdStmtExecutorFactory factory, DatabaseSession session) {
+        return new JdbdMetaExecutor(factory, session);
     }
 
-   // private static final Logger LOG = LoggerFactory.getLogger(JdbdMetaExecutor.class);
+    /**
+     * non-static
+     */
+    private final Logger logger = LoggerFactory.getLogger(JdbdMetaExecutor.class);
 
-
-    private final String sessionFactoryName;
+    private final JdbdStmtExecutorFactory factory;
 
     private final DatabaseSession session;
 
-    private JdbdMetaExecutor(String sessionFactoryName, DatabaseSession session) {
-        this.sessionFactoryName = sessionFactoryName;
+    private final SqlLogger jdbdSqlLogger;
+
+
+    private JdbdMetaExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session) {
+        this.factory = factory;
         this.session = session;
+        if (this.factory.armyEnv.getOrDefault(ArmyKey.SQL_LOG_PRINT_META) && readSqlLogMode(factory) != SqlLogMode.OFF) {
+            this.jdbdSqlLogger = this::jdbdSqlLogger;
+        } else {
+            this.jdbdSqlLogger = null;
+        }
     }
 
     @Override
     public Mono<SchemaInfo> extractInfo() {
         final DatabaseMetaData meta;
         meta = this.session.databaseMetaData();
-        return Mono.from(meta.currentSchema())
+
+        return Mono.from(meta.currentSchema(obtainDefaultOptionFunc()))
                 .flatMap(schemaMeta -> extractSchemaInfo(meta, schemaMeta));
 
     }
+
 
     @Override
     public Mono<Void> executeDdl(List<String> ddlList) {
@@ -83,7 +102,7 @@ final class JdbdMetaExecutor implements ReactiveMetaExecutor {
         return _StringUtils.builder(70)
                 .append(getClass().getName())
                 .append("[sessionFactoryName:")
-                .append(this.sessionFactoryName)
+                .append(this.factory.sessionFactoryName)
                 .append(",executorHash:")
                 .append(System.identityHashCode(this))
                 .append(']')
@@ -91,7 +110,24 @@ final class JdbdMetaExecutor implements ReactiveMetaExecutor {
     }
 
 
+
+
+
     /*-------------------below private methods -------------------*/
+
+    private Function<io.jdbd.session.Option<?>, ?> obtainDefaultOptionFunc() {
+        final Function<io.jdbd.session.Option<?>, ?> jdbdOptionFunc;
+        if (this.jdbdSqlLogger == null) {
+            jdbdOptionFunc = io.jdbd.session.Option.EMPTY_OPTION_FUNC;
+        } else {
+            jdbdOptionFunc = io.jdbd.session.Option.singleFunc(Option.SQL_LOGGER, this.jdbdSqlLogger);
+        }
+        return jdbdOptionFunc;
+    }
+
+    private void jdbdSqlLogger(final String sessionName, final int jdbdSessionHash, final String sql) {
+        printSqlIfNeed(this.factory, this.factory.sessionFactoryName, this.logger, sql);
+    }
 
 
     /**
@@ -99,7 +135,16 @@ final class JdbdMetaExecutor implements ReactiveMetaExecutor {
      */
     private Mono<SchemaInfo> extractSchemaInfo(final DatabaseMetaData meta, final SchemaMeta schemaMeta) {
 
-        return Flux.from(meta.tablesOfSchema(schemaMeta, Option.singleFunc(Option.TYPE_NAME, "TABLE,VIEW")))
+        final Map<io.jdbd.session.Option<?>, Object> optionMap;
+
+        optionMap = _Collections.hashMap();
+        optionMap.put(Option.TYPE_NAME, "TABLE,VIEW");
+
+        if (this.jdbdSqlLogger != null) {
+            optionMap.put(Option.SQL_LOGGER, this.jdbdSqlLogger);
+        }
+
+        return Flux.from(meta.tablesOfSchema(schemaMeta, optionMap::get))
                 .flatMap(tableMeta -> flatMapToTableBuilder(meta, tableMeta))
                 .collectMap(TableInfo.Builder::name, builder -> builder)
                 .map(builderMap -> mapToSchemaInfo(schemaMeta, builderMap));
@@ -123,9 +168,12 @@ final class JdbdMetaExecutor implements ReactiveMetaExecutor {
                 return Mono.error(ExecutorSupport.driverError());
         }// switch
 
-        return Flux.from(meta.columnsOfTable(tableMeta, Option.EMPTY_OPTION_FUNC))
+        final Function<io.jdbd.session.Option<?>, ?> optionFunc;
+        optionFunc = obtainDefaultOptionFunc();
+
+        return Flux.from(meta.columnsOfTable(tableMeta, optionFunc))
                 .doOnNext(columnMeta -> appendColumnInfo(tableBuilder, columnMeta))
-                .thenMany(meta.indexesOfTable(tableMeta, Option.EMPTY_OPTION_FUNC))
+                .thenMany(meta.indexesOfTable(tableMeta, optionFunc))
                 .doOnNext(indexMeta -> appendIndexInfo(tableBuilder, indexMeta))
                 .then(Mono.just(tableBuilder));
     }

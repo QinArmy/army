@@ -294,6 +294,13 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
         }
     }
 
+
+    @Nullable
+    @Override
+    public final TransactionInfo currentTransactionInfo() {
+        return obtainTransactionInfo();
+    }
+
     @Override
     public final Mono<TransactionInfo> transactionInfo() {
         final Mono<TransactionInfo> mono;
@@ -305,6 +312,18 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                     .onErrorMap(this::handleExecutionError);
         } else {
             mono = Mono.just(info);
+        }
+        return mono;
+    }
+
+    @Override
+    public final Mono<TransactionInfo> sessionTransactionCharacteristics() {
+        final Mono<TransactionInfo> mono;
+        if (isClosed()) {
+            mono = Mono.error(_Exceptions.sessionClosed(this));
+        } else {
+            mono = this.stmtExecutor.sessionTransactionCharacteristics(Option.EMPTY_FUNC)
+                    .onErrorMap(this::handleExecutionError);
         }
         return mono;
     }
