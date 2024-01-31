@@ -355,20 +355,20 @@
                                     <doctype>book</doctype>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>pdf</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>process-asciidoc</goal>
-                                </goals>
-                                <configuration>
-                                    <sourceDocumentName>index.adoc</sourceDocumentName>
-                                    <outputFile>army.pdf</outputFile>
-                                    <backend>pdf</backend>
-                                    <sourceDirectory>${project.basedir}/asciidoc</sourceDirectory>
-                                    <outputDirectory>${project.basedir}/asciidoc-pdf</outputDirectory>
-                                </configuration>
-                            </execution>
+                            <!--                            <execution>-->
+                            <!--                                <id>pdf</id>-->
+                            <!--                                <phase>generate-resources</phase>-->
+                            <!--                                <goals>-->
+                            <!--                                    <goal>process-asciidoc</goal>-->
+                            <!--                                </goals>-->
+                            <!--                                <configuration>-->
+                            <!--                                    <sourceDocumentName>index.adoc</sourceDocumentName>-->
+                            <!--                                    <outputFile>army.pdf</outputFile>-->
+                            <!--                                    <backend>pdf</backend>-->
+                            <!--                                    <sourceDirectory>${project.basedir}/asciidoc</sourceDirectory>-->
+                            <!--                                    <outputDirectory>${project.basedir}/asciidoc-pdf</outputDirectory>-->
+                            <!--                                </configuration>-->
+                            <!--                            </execution>-->
                         </executions>
                     </plugin>
                     <plugin>

@@ -109,7 +109,13 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         this.sessionName = sessionName;
         this.factory = factory;
         this.session = session;
-        this.jdbdSqlLogger = this::jdbdSqlLogger;
+
+        if (readSqlLogMode(factory) == SqlLogMode.OFF) {
+            this.jdbdSqlLogger = null;
+        } else {
+            this.jdbdSqlLogger = this::jdbdSqlLogger;
+        }
+
     }
 
 
@@ -987,7 +993,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     final Function<io.jdbd.session.Option<?>, ?> addJdbdLogOptionIfNeed(final Function<io.jdbd.session.Option<?>, ?> func) {
 
         final Function<io.jdbd.session.Option<?>, ?> finalJdbdFunc;
-        if (readSqlLogMode(this.factory) == SqlLogMode.OFF) {
+        if (this.jdbdSqlLogger == null) {
             finalJdbdFunc = func;
         } else {
             finalJdbdFunc = jdbdOption -> {
@@ -1011,7 +1017,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     /*-------------------below private instance methods-------------------*/
 
-    private void jdbdSqlLogger(final String sessionName, final int jdbdSessionHash, final String sql) {
+    private void jdbdSqlLogger(final String sql) {
         printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
     }
 
@@ -1081,7 +1087,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             builder.option(io.jdbd.session.Option.ISOLATION, jdbdIsolation)
                     .option(io.jdbd.session.Option.READ_ONLY, option.isReadOnly());
 
-            if (sqlLogMode != SqlLogMode.OFF) {
+            if (this.jdbdSqlLogger != null) {
                 builder.option(io.jdbd.session.Option.SQL_LOGGER, this.jdbdSqlLogger);
             }
 

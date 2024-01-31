@@ -125,7 +125,7 @@ final class JdbdMetaExecutor extends ExecutorSupport implements ReactiveMetaExec
         return jdbdOptionFunc;
     }
 
-    private void jdbdSqlLogger(final String sessionName, final int jdbdSessionHash, final String sql) {
+    private void jdbdSqlLogger(final String sql) {
         printSqlIfNeed(this.factory, this.factory.sessionFactoryName, this.logger, sql);
     }
 
