@@ -120,9 +120,49 @@ public class InsertTests extends SessionTestSupport {
                 .asInsert();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
-        final long rows;
-        rows = session.update(stmt);
-        Assert.assertEquals(rows, (long) regionList.size() << 1);
+
+        Assert.assertEquals(session.update(stmt), (long) regionList.size() << 1); // because of conflict
+
+    }
+
+    @VisibleMode(Visible.BOTH)
+    @Test(invocationCount = 3)
+    public void domainInsertOneParentWithConflict(final SyncLocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final ChinaRegion<?> region = createReginListWithCount(1).get(0);
+        session.save(region);
+
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.population, ChinaRegion_.parentId)
+                )
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
+                .value(region)
+                .as("c")
+                .onDuplicateKey()
+                .update(ChinaRegion_.population, SQLs.field("c", ChinaRegion_.population))
+                .comma(ChinaRegion_.regionGdp, SQLs.field("c", ChinaRegion_.regionGdp))
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final Long originalId = region.getId();
+        Assert.assertNotNull(originalId);
+
+        region.setId(null);
+
+
+        Assert.assertEquals(session.update(stmt), 2L); // because of conflict
+
+        Assert.assertEquals(region.getId(), originalId);
 
     }
 

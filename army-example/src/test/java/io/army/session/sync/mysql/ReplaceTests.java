@@ -38,7 +38,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void domainInsertOneParent(final SyncLocalSession session) {
+    public void domainReplaceOneParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -69,7 +69,48 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void domainInsertOneParentWithHintAndModifier(final SyncLocalSession session) {
+    public void domainReplaceOneParentWithConflict(final SyncLocalSession session) {
+
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final ChinaRegion<?> region;
+        region = createReginListWithCount(1).get(0);
+        session.save(region);
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = MySQLs.singleReplace()
+                .literalMode(LiteralMode.LITERAL)
+                .replaceInto(ChinaRegion_.T)
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
+                .value(region)
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final Long originalId;
+        originalId = region.getId();
+        Assert.assertNotNull(originalId);
+
+        region.setId(null);
+
+        Assert.assertEquals(session.update(stmt), 2L); // because of conflict
+        final Long newRowId;
+        newRowId = region.getId();
+        Assert.assertNotNull(newRowId);
+        Assert.assertTrue(newRowId > originalId); // old row is deleted and before the new row is inserted
+
+    }
+
+    @VisibleMode(Visible.BOTH)
+    @Test(invocationCount = 3)
+    public void domainReplaceOneParentWithHintAndModifier(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -104,7 +145,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void domainInsertParent(final SyncLocalSession session) {
+    public void domainReplaceParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -134,7 +175,7 @@ public class ReplaceTests extends SessionTestSupport {
     @Transactional
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void domainInsertOneChild(final SyncLocalSession session) {
+    public void domainReplaceOneChild(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -174,7 +215,7 @@ public class ReplaceTests extends SessionTestSupport {
     @Transactional
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void domainInsertOneChildWithHintAndModifier(final SyncLocalSession session) {
+    public void domainReplaceOneChildWithHintAndModifier(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -216,7 +257,7 @@ public class ReplaceTests extends SessionTestSupport {
 
 
     @Test(expectedExceptions = ErrorChildInsertException.class)
-    public void domainInsertChild(final SyncLocalSession session) { // don't use session
+    public void domainReplaceChild(final SyncLocalSession session) { // don't use session
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -249,7 +290,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void staticValuesInsertParent(final SyncLocalSession session) {
+    public void staticValuesReplaceParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
         final long startNanoSecond = System.nanoTime();
@@ -278,7 +319,7 @@ public class ReplaceTests extends SessionTestSupport {
     @Transactional
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void staticValuesInsertOneChild(final SyncLocalSession session) {
+    public void staticValuesReplaceOneChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
         final long startNanoSecond = System.nanoTime();
@@ -310,7 +351,7 @@ public class ReplaceTests extends SessionTestSupport {
 
 
     @Test(expectedExceptions = ErrorChildInsertException.class)
-    public void staticValuesInsertChild(final SyncLocalSession session) { // don't use session
+    public void staticValuesReplaceChild(final SyncLocalSession session) { // don't use session
         final Random random = ThreadLocalRandom.current();
 
         MySQLs.singleReplace()
@@ -345,7 +386,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void dynamicValuesInsertParent(final SyncLocalSession session) {
+    public void dynamicValuesReplaceParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
         final int rowCount = 3;
@@ -372,7 +413,7 @@ public class ReplaceTests extends SessionTestSupport {
     @Transactional
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void dynamicValuesInsertOneChild(final SyncLocalSession session) {
+    public void dynamicValuesReplaceOneChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
         final int rowCount = 1;
@@ -407,7 +448,7 @@ public class ReplaceTests extends SessionTestSupport {
     }
 
     @Test(expectedExceptions = ErrorChildInsertException.class)
-    public void dynamicValuesInsertChild(final SyncLocalSession session) { // don't use session
+    public void dynamicValuesReplaceChild(final SyncLocalSession session) { // don't use session
         final Random random = ThreadLocalRandom.current();
 
         final int rowCount = 3;
@@ -443,7 +484,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void assignmentInsertParent(final SyncLocalSession session) {
+    public void assignmentReplaceParent(final SyncLocalSession session) {
 
         final Random random = ThreadLocalRandom.current();
         final long startNanoSecond = System.nanoTime();
@@ -530,7 +571,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void queryInsertParent(final SyncLocalSession session) {
+    public void queryReplaceParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> parentList;
         parentList = createReginListWithCount(3);
         session.batchSave(parentList); // save parentList
@@ -558,7 +599,7 @@ public class ReplaceTests extends SessionTestSupport {
     @Transactional
     @VisibleMode(Visible.BOTH)
     @Test(invocationCount = 3)
-    public void queryInsertChild(final SyncLocalSession session) {
+    public void queryReplaceChild(final SyncLocalSession session) {
         final List<ChinaProvince> parentList;
         parentList = createProvinceListWithCount(3);
         session.batchSave(parentList); // save parentList
