@@ -541,14 +541,18 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #appendInsertCommonPart(_InsertContext, _MySQLInsert)
      */
     private void replaceModifiers(List<MySQLs.Modifier> modifierList, StringBuilder sqlBuilder) {
-        assert modifierList.size() == 1;
+        final int modifierSize = modifierList.size();
+        if (modifierSize == 0) {
+            return;
+        }
+
+        assert modifierSize == 1;
         final MySQLs.Modifier modifier = modifierList.get(0);
         if (modifier == MySQLs.LOW_PRIORITY
                 || modifier == MySQLs.DELAYED) {
             sqlBuilder.append(modifier.spaceRender());
         } else {
-            throw new CriteriaException(String.format("%s REPLACE don't support %s"
-                    , this.dialect, modifier));
+            throw new CriteriaException(String.format("%s REPLACE don't support %s", this.dialect, modifier));
         }
     }
 

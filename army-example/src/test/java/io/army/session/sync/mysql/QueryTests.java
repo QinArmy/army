@@ -17,7 +17,7 @@ import static io.army.criteria.impl.SQLs.*;
 
 
 @Test(dataProvider = "localSessionProvider")
-public class QueryTests extends SynSessionTestSupport {
+public class QueryTests extends SessionTestSupport {
 
 
     /**

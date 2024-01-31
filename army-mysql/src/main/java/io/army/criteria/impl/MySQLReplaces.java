@@ -16,7 +16,10 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Insert;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
+import io.army.criteria.SubQuery;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
@@ -281,9 +284,9 @@ abstract class MySQLReplaces extends InsertSupports {
             MySQLReplace._ComplexColumnDefaultSpec<I, T>,
             MySQLReplace._ValueColumnDefaultSpec<I, T>,
             Statement._DmlInsertClause<I>,
-            Statement._DmlInsertClause<I>>
+            MySQLReplace._StaticAssignmentSpec<I, T>>
             implements MySQLReplace._PartitionSpec<I, T>,
-            MySQLReplace._ComplexColumnDefaultSpec<I, T>,
+            MySQLReplace._StaticAssignmentSpec<I, T>,
             Statement._DmlInsertClause<I> {
 
         private final Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction;
@@ -616,7 +619,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
     static abstract class AssignmentReplaceStatement<I extends Insert>
             extends InsertSupports.AssignmentInsertStatement<I>
-            implements MySQLReplace, _MySQLInsert._MySQLAssignmentInsert, InsertStatement {
+            implements MySQLReplace, _MySQLInsert._MySQLAssignmentInsert, Insert {
 
         private final List<Hint> hintList;
 
@@ -740,7 +743,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
     static abstract class QueryReplaceStatement<I extends Insert>
             extends InsertSupports.QuerySyntaxInsertStatement<I>
-            implements MySQLReplace, _MySQLInsert._MySQLQueryInsert, InsertStatement {
+            implements MySQLReplace, _MySQLInsert._MySQLQueryInsert, Insert {
 
 
         private final List<Hint> hintList;
@@ -879,7 +882,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
 
-    }//PrimaryParentQueryReplaceStatement
+    } // PrimaryParentQueryReplaceStatement
 
 
 }

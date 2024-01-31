@@ -71,9 +71,20 @@ public interface MySQLReplace extends MySQLStatement {
 
     }
 
+    interface _MySQLStaticAssignmentClause<I extends Item, T>
+            extends InsertStatement._StaticAssignmentSetClause<T, _StaticAssignmentSpec<I, T>> {
+
+    }
+
+    interface _StaticAssignmentSpec<I extends Item, T> extends _MySQLStaticAssignmentClause<I, T>,
+            _DmlInsertClause<I> {
+
+    }
+
     interface _ColumnListSpec<I extends Item, T>
             extends InsertStatement._ColumnListParensClause<T, _ComplexColumnDefaultSpec<I, T>>,
-            _ValueColumnDefaultSpec<I, T> {
+            _MySQLStaticAssignmentClause<I, T>,
+            _ComplexColumnDefaultSpec<I, T> {
 
     }
 
@@ -177,6 +188,7 @@ public interface MySQLReplace extends MySQLStatement {
      *     */
     interface _PrimarySingleOptionSpec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_PrimarySingleNullOptionSpec<I>>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_PrimarySingleNullOptionSpec<I>>,
             _PrimarySingleNullOptionSpec<I> {
 
     }

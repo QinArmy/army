@@ -349,8 +349,8 @@ public abstract class _Exceptions {
 
     public static CriteriaException duplicateKeyAndPostIdInsert(ChildTableMeta<?> table) {
         String m;
-        m = String.format("%s don't support duplicate key clause or replace insert,because %s generator type is %s"
-                , table, table.parentMeta().id(), GeneratorType.POST);
+        m = String.format("insert multi-row , %s don't support duplicate key clause or replace insert,because %s generator type is %s, so database couldn't return correct multi parent ids",
+                table, table.parentMeta().id(), GeneratorType.POST);
         return new CriteriaException(m);
     }
 

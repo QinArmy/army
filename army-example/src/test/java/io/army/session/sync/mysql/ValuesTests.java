@@ -28,7 +28,7 @@ import static io.army.criteria.impl.SQLs.*;
  * </ul>
  */
 @Test(dataProvider = "localSessionProvider")
-public class ValuesTests extends SynSessionTestSupport {
+public class ValuesTests extends SessionTestSupport {
 
 
     @Test(invocationCount = 3)

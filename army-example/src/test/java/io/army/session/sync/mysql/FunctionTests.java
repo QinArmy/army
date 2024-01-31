@@ -41,7 +41,7 @@ import static io.army.criteria.impl.MySQLs.*;
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class FunctionTests extends SynSessionTestSupport {
+public class FunctionTests extends SessionTestSupport {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(FunctionTests.class);

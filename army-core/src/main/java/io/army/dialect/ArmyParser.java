@@ -3227,6 +3227,9 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleAssignmentInsert(_SqlContext, _Insert._AssignmentInsert, Visible)
      */
     private void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
+        if (parentStmt.insertRowCount() == 1) {
+            return;
+        }
         if (parentStmt.table().id().generatorType() == GeneratorType.POST
                 && parentStmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()

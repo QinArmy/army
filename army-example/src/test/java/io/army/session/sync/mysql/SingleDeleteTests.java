@@ -28,7 +28,7 @@ import static io.army.criteria.impl.SQLs.AS;
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/delete.html">DELETE Statement</a>
  */
 @Test(dataProvider = "localSessionProvider")
-public class SingleDeleteTests extends SynSessionTestSupport {
+public class SingleDeleteTests extends SessionTestSupport {
 
 
     @Test

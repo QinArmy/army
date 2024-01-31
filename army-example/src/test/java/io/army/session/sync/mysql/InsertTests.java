@@ -23,7 +23,7 @@ import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
-public class InsertTests extends SynSessionTestSupport {
+public class InsertTests extends SessionTestSupport {
 
 
     @Test(invocationCount = 3)
@@ -183,6 +183,7 @@ public class InsertTests extends SynSessionTestSupport {
         Assert.assertEquals(session.update(stmt), regionSize << 1);
 
     }
+
 
     @Transactional
     @Test(invocationCount = 3)
