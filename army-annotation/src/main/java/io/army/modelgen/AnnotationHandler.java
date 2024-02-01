@@ -318,13 +318,11 @@ final class AnnotationHandler {
     }
 
 
-    private void validateField(final String className, final String fieldName, final VariableElement field
-            , final Column column, final boolean discriminatorField) {
+    private void validateField(final String className, final String fieldName, final VariableElement field, final Column column, final boolean discriminatorField) {
         switch (fieldName) {
             case _MetaBridge.ID: {
                 if (field.asType().getKind().isPrimitive()) {
-                    this.errorMsgList.add(String.format("Field %s.%s couldn't be primitive."
-                            , className, fieldName));
+                    this.errorMsgList.add(String.format("Field %s.%s couldn't be primitive.", className, fieldName));
                 }
             }
             break;

@@ -257,7 +257,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 comment = "version that's update counter of row";
                 break;
             case _MetaBridge.VISIBLE:
-                comment = "visible for logic delete";
+                comment = "visible for soft delete";
                 break;
             default:
                 if (fieldMeta.javaType().isEnum()) {

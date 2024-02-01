@@ -80,7 +80,7 @@ public class ChinaRegion<T extends ChinaRegion<T>> {  // assume ChinaRegion exis
 
     // visible is optional field
     @Column
-    private Boolean visible; // 'visible' is army reserved field name,it representing table record's logic delete
+    private Boolean visible; // 'visible' is army reserved field name,it representing table record's soft delete
 
     @Column
     private RegionType regionType;

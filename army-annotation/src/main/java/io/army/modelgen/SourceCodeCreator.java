@@ -390,7 +390,7 @@ final class SourceCodeCreator {
                     comment = "version for optimistic lock";
                     break;
                 case _MetaBridge.VISIBLE:
-                    comment = "visible for logic delete";
+                    comment = "visible for soft delete";
                     break;
                 default: {
                     final TypeMirror fieldType = field.asType();

@@ -240,7 +240,12 @@ public class DomainUpdateTests extends SessionSupport {
         for (int i = 0; i < rowSize; i++) {
             states = rowList.get(i);
 
-            Assert.assertFalse(states.hasMoreResult());  // always false,because preferServerPrepare is true
+            if (i < lastIndex) {
+                Assert.assertTrue(states.hasMoreResult());
+            } else {
+                Assert.assertFalse(states.hasMoreResult());
+            }
+
 
             Assert.assertFalse(states.hasColumn());
             Assert.assertFalse(states.hasMoreFetch());
