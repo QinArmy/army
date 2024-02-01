@@ -98,7 +98,7 @@ public class DeleteTests extends SessionSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void batchDelete20Parent(final SyncLocalSession session) {
 
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);

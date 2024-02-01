@@ -312,27 +312,29 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     @Override
-    public final <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor,
-                                             SyncStmtOption option, Class<R> elementClass,
-                                             @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList,
-                                             final Function<Option<?>, ?> optionFunc)
+    public final List<Long> batchUpdateList(BatchStmt stmt, @Nullable IntFunction<List<Long>> listConstructor, SyncStmtOption option,
+                                            @Nullable LongConsumer consumer, Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
-        if (elementClass != Long.class && elementClass != ResultStates.class) {
-            throw new IllegalArgumentException("elementClass error");
-        }
-        final List<R> resultList;
+
+        final List<Long> resultList;
         if (option.isParseBatchAsMultiStmt()) {
-            resultList = executeMultiStmtBatchUpdate(stmt, listConstructor, option, elementClass, domainTable, optionFunc);
+            resultList = executeMultiStmtBatchUpdateAsLong(stmt, listConstructor, option, consumer);
         } else {
-            resultList = executeBatchUpdate(stmt, listConstructor, option, elementClass, domainTable, rowsList, optionFunc);
+            resultList = executeBatchUpdateAsLong(stmt, listConstructor, option, consumer);
         }
-        return resultList;
+        return Collections.unmodifiableList(resultList);
     }
 
     @Override
     public final Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc) {
-        // jdbc don't support
-        throw new UnsupportedOperationException();
+        final Stream<ResultStates> stream;
+
+        if (option.isParseBatchAsMultiStmt()) {
+            stream = executeMultiStmtBatchUpdate(stmt, option);
+        } else {
+            stream = executeBatchUpdate(stmt, option);
+        }
+        return stream;
     }
 
     @Nullable
@@ -1048,6 +1050,264 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw _Exceptions.batchCountNotMatch(stmtSize, list.size());
             }
             return list;
+        } catch (Exception e) {
+            throw wrapError(e);
+        }
+
+    }
+
+
+    /**
+     * @return a unmodified list
+     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, LongConsumer, Function)
+     */
+    private List<Long> executeMultiStmtBatchUpdateAsLong(BatchStmt stmt, @Nullable IntFunction<List<Long>> listConstructor,
+                                                         SyncStmtOption option, final @Nullable LongConsumer consumer) {
+        final List<List<SQLParam>> groupList;
+        groupList = stmt.groupList();
+        if (groupList.get(0).size() > 0) {
+            throw new IllegalArgumentException("stmt error");
+        }
+
+        try (Statement statement = this.conn.createStatement()) {
+
+            bindStatementOption(statement, stmt, option);
+
+            if (statement.execute(stmt.sqlText())) {
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                // sql error
+                throw _Exceptions.batchUpdateReturnResultSet();
+            }
+
+            final int stmtSize;
+            stmtSize = groupList.size();
+            final List<Long> resultList;
+            if (listConstructor == null) {
+                resultList = null;
+            } else if ((resultList = listConstructor.apply(stmtSize)) == null) {
+                throw _Exceptions.listConstructorError();
+            }
+
+            final boolean useLargeUpdate = this.factory.useLargeUpdate;
+            long updateCount;
+            int batchCount = 0;
+            while (true) {
+                if (useLargeUpdate) {
+                    updateCount = statement.getLargeUpdateCount();
+                } else {
+                    updateCount = statement.getUpdateCount();
+                }
+
+                if (updateCount == -1L) {
+                    // no more result
+                    break;
+                }
+                if (consumer != null) {
+                    consumer.accept(updateCount);
+                }
+                batchCount++;
+                if (resultList != null) {
+                    resultList.add(updateCount);
+                }
+                if (statement.getMoreResults()) {
+                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                    // sql error
+                    throw _Exceptions.batchUpdateReturnResultSet();
+                }
+
+            }
+
+            if (batchCount != stmtSize) {
+                throw _Exceptions.batchCountNotMatch(stmtSize, batchCount);
+            }
+            return _Collections.safeUnmodifiableList(resultList);
+        } catch (Exception e) {
+            throw wrapError(e);
+        }
+
+    }
+
+
+    /**
+     * @return a unmodified list
+     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, LongConsumer, Function)
+     */
+    private List<Long> executeBatchUpdateAsLong(BatchStmt stmt, @Nullable IntFunction<List<Long>> listConstructor,
+                                                SyncStmtOption option, final @Nullable LongConsumer consumer)
+            throws DataAccessException {
+
+        try (final PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
+
+            for (List<SQLParam> group : stmt.groupList()) {
+                bindParameter(statement, group);
+                statement.addBatch();
+            }
+
+            bindStatementOption(statement, stmt, option);
+
+            final List<Long> resultList;
+
+            if (this.factory.useLargeUpdate) {
+                final long[] affectedRowArray;
+                affectedRowArray = statement.executeLargeBatch();
+                if (listConstructor == null) {
+                    resultList = null;
+                } else if ((resultList = listConstructor.apply(affectedRowArray.length)) == null) {
+                    throw _Exceptions.listConstructorError();
+                }
+                for (long affectedRow : affectedRowArray) {
+                    if (consumer != null) {
+                        consumer.accept(affectedRow);
+                    }
+                    if (resultList != null) {
+                        resultList.add(affectedRow);
+                    }
+                }
+
+            } else {
+                final int[] affectedRowArray;
+                affectedRowArray = statement.executeBatch();
+                if (listConstructor == null) {
+                    resultList = null;
+                } else if ((resultList = listConstructor.apply(affectedRowArray.length)) == null) {
+                    throw _Exceptions.listConstructorError();
+                }
+
+                for (long affectedRow : affectedRowArray) {
+                    if (consumer != null) {
+                        consumer.accept(affectedRow);
+                    }
+                    if (resultList != null) {
+                        resultList.add(affectedRow);
+                    }
+                }
+            }
+            return _Collections.safeUnmodifiableList(resultList);
+        } catch (Exception e) {
+            throw wrapError(e);
+        }
+
+    }
+
+    /**
+     * @see #batchUpdate(BatchStmt, SyncStmtOption, Function)
+     */
+    private Stream<ResultStates> executeMultiStmtBatchUpdate(BatchStmt stmt, SyncStmtOption option) {
+        final List<List<SQLParam>> groupList;
+        groupList = stmt.groupList();
+        if (groupList.get(0).size() > 0) {
+            throw new IllegalArgumentException("stmt error");
+        }
+
+        try (Statement statement = this.conn.createStatement()) {
+
+            bindStatementOption(statement, stmt, option);
+
+            if (statement.execute(stmt.sqlText())) {
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                // sql error
+                throw _Exceptions.batchUpdateReturnResultSet();
+            }
+
+            final boolean useLargeUpdate = this.factory.useLargeUpdate;
+
+            final TransactionInfo info = obtainTransaction();
+            final SQLWarning jdbcWarning = statement.getWarnings();
+            final Warning warning;
+            if (jdbcWarning == null) {
+                warning = null;
+            } else {
+                warning = new ArmyWarning(jdbcWarning);
+            }
+
+            final int stmtSize;
+            stmtSize = groupList.size();
+
+            final List<ResultStates> resultList;
+            resultList = _Collections.arrayList(stmtSize);
+
+            long updateCount;
+            int batchNo = 0;
+            while (true) {
+                if (useLargeUpdate) {
+                    updateCount = statement.getLargeUpdateCount();
+                } else {
+                    updateCount = statement.getUpdateCount();
+                }
+
+                if (updateCount == -1L) {
+                    // no more result
+                    break;
+                }
+
+                batchNo++;
+
+                resultList.add(new MultiResultUpdateStates(batchNo, info, warning, updateCount, batchNo < stmtSize));
+
+                if (statement.getMoreResults()) {
+                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                    // sql error
+                    throw _Exceptions.batchUpdateReturnResultSet();
+                }
+
+            }
+
+            if (batchNo != stmtSize) {
+                throw _Exceptions.batchCountNotMatch(stmtSize, batchNo);
+            }
+            return resultList.stream();
+        } catch (Exception e) {
+            throw wrapError(e);
+        }
+
+    }
+
+    /**
+     * @see #batchUpdate(BatchStmt, SyncStmtOption, Function)
+     */
+    private Stream<ResultStates> executeBatchUpdate(BatchStmt stmt, SyncStmtOption option)
+            throws DataAccessException {
+
+        try (final PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
+
+            for (List<SQLParam> group : stmt.groupList()) {
+                bindParameter(statement, group);
+                statement.addBatch();
+            }
+
+            bindStatementOption(statement, stmt, option);
+
+            final int batchSize;
+            final IntToLongFunction arrayFunc;
+            if (this.factory.useLargeUpdate) {
+                final long[] affectedRowArray;
+                affectedRowArray = statement.executeLargeBatch();
+                batchSize = affectedRowArray.length;
+                arrayFunc = index -> affectedRowArray[index];
+            } else {
+                final int[] affectedRowArray;
+                affectedRowArray = statement.executeBatch();
+                batchSize = affectedRowArray.length;
+                arrayFunc = index -> affectedRowArray[index];
+            }
+
+
+            final TransactionInfo info = obtainTransaction();
+            final SQLWarning jdbcWarning = statement.getWarnings();
+            final Warning warning;
+            if (jdbcWarning == null) {
+                warning = null;
+            } else {
+                warning = new ArmyWarning(jdbcWarning);
+            }
+            final int lastItem = batchSize - 1;
+            final List<ResultStates> resultList = _Collections.arrayList(batchSize);
+            long rows;
+            for (int i = 0; i < batchSize; i++) {
+                rows = arrayFunc.applyAsLong(i);
+                resultList.add(new MultiResultUpdateStates(i + 1, info, warning, rows, i < lastItem));
+            }
+            return resultList.stream();
         } catch (Exception e) {
             throw wrapError(e);
         }

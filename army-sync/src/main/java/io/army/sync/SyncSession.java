@@ -486,12 +486,24 @@ public interface SyncSession extends Session, Closeable {
 
     <T> int batchSave(List<T> domainList, SyncStmtOption option);
 
+    /**
+     * @return a unmodified list
+     */
     List<Long> batchUpdate(BatchDmlStatement statement);
 
+    /**
+     * @return a unmodified list
+     */
     List<Long> batchUpdate(BatchDmlStatement statement, SyncStmtOption option);
 
+    /**
+     * @return a unmodified list
+     */
     List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor);
 
+    /**
+     * @return a unmodified list
+     */
     List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, SyncStmtOption option);
 
     Stream<ResultStates> batchUpdateAsStates(BatchDmlStatement statement);

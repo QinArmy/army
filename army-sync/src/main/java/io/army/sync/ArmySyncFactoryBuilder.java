@@ -128,7 +128,7 @@ final class ArmySyncFactoryBuilder
                 LOG.debug("Created {}", sessionFactory);
             }
             assert name.equals(sessionFactory.name());
-            assert sessionFactory.stmtExecutorFactory == this.stmtExecutorFactory;
+            assert sessionFactory.executorFactory == this.stmtExecutorFactory;
 
             //9. invoke beforeInitialize
             if (factoryAdvice != null) {
@@ -165,10 +165,9 @@ final class ArmySyncFactoryBuilder
      * @see #buildAfterScanTableMeta(String, Object, ArmyEnvironment)
      */
     private void initializingFactory(final ArmySyncSessionFactory sessionFactory) throws SessionFactoryException {
-        final Logger log = getLogger();
 
-        if (log.isDebugEnabled()) {
-            log.debug("Initializing {}", sessionFactory);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Initializing {}", sessionFactory);
         }
 
         // initializing schema
@@ -194,20 +193,12 @@ final class ArmySyncFactoryBuilder
      * @see #initializingFactory(ArmySyncSessionFactory)
      */
     private void initializingSchema(final ArmySyncSessionFactory sessionFactory, final DdlMode ddlMode) {
-        final Logger log = getLogger();
-
-        final String msgPrefix;
-        msgPrefix = String.format("Initializing database of %s[%s],%s[%s]",
-                SyncSessionFactory.class.getName(), sessionFactory.name(),
-                DdlMode.class.getName(), ddlMode);
-
-        log.info(msgPrefix);
 
         final long startTime;
         startTime = System.currentTimeMillis();
 
         final SyncExecutorFactory executorFactory;
-        executorFactory = sessionFactory.stmtExecutorFactory;
+        executorFactory = sessionFactory.executorFactory;
 
         try (MetaExecutor metaExecutor = executorFactory.metaExecutor(dataSourceFunc())) {
 
@@ -265,7 +256,14 @@ final class ArmySyncFactoryBuilder
                 default:
                     throw _Exceptions.unexpectedEnum(ddlMode);
             }
-            log.info("{},cost {} ms.", msgPrefix, System.currentTimeMillis() - startTime);
+
+            LOG.info("Initializing database of {}[{}],{}[{}],cost {} ms.",
+                    SyncSessionFactory.class.getName(),
+                    sessionFactory.name(),
+                    DdlMode.class.getName(),
+                    ddlMode,
+                    System.currentTimeMillis() - startTime
+            );
         } catch (Exception e) {
             String m = String.format("%s[%s] schema initializing failure.", SyncSessionFactory.class.getName(),
                     sessionFactory.name());

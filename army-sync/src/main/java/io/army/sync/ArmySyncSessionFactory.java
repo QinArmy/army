@@ -44,12 +44,16 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
     private static final AtomicIntegerFieldUpdater<ArmySyncSessionFactory> FACTORY_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmySyncSessionFactory.class, "factoryClosed");
 
-    final SyncExecutorFactory stmtExecutorFactory;
+    final SyncExecutorFactory executorFactory;
 
     final boolean sessionIdentifierEnable;
 
     final boolean buildInExecutor;
     final boolean jdbcDriver;
+
+    final boolean resultItemDriverSpi;
+
+
     private volatile int factoryClosed;
 
     /**
@@ -57,16 +61,23 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
      */
     private ArmySyncSessionFactory(ArmySyncFactoryBuilder builder) throws SessionFactoryException {
         super(builder);
-        this.stmtExecutorFactory = builder.stmtExecutorFactory;
-        assert this.stmtExecutorFactory != null;
+        this.executorFactory = builder.stmtExecutorFactory;
+        assert this.executorFactory != null;
         this.sessionIdentifierEnable = this.env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
-        this.buildInExecutor = this.stmtExecutorFactory.getClass().getPackage().getName().startsWith("io.army.jdbc.");
-        this.jdbcDriver = this.buildInExecutor || this.stmtExecutorFactory.driverSpiName().equalsIgnoreCase("JDBC");
+        this.buildInExecutor = this.executorFactory.getClass().getPackage().getName().startsWith("io.army.jdbc.");
+        this.jdbcDriver = this.buildInExecutor || this.executorFactory.driverSpiName().equalsIgnoreCase("JDBC");
+
+        if (this.jdbcDriver) {
+            this.resultItemDriverSpi = false;
+        } else {
+            this.resultItemDriverSpi = this.executorFactory.isResultItemDriverSpi();
+        }
     }
+
 
     @Override
     public String driverSpiName() {
-        return this.stmtExecutorFactory.driverSpiName();
+        return this.executorFactory.driverSpiName();
     }
 
     @Override
@@ -78,6 +89,11 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
     @Override
     public boolean isSync() {
         return true;
+    }
+
+    @Override
+    public boolean isResultItemDriverSpi() {
+        return this.resultItemDriverSpi;
     }
 
     @Override
@@ -127,7 +143,7 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
     @Override
     public <T> T valueOf(Option<T> option) {
         try {
-            return this.stmtExecutorFactory.valueOf(option);
+            return this.executorFactory.valueOf(option);
         } catch (Exception e) {
             throw wrapError(e);
         }
@@ -136,7 +152,7 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
     @Override
     public Set<Option<?>> optionSet() {
         try {
-            return this.stmtExecutorFactory.optionSet();
+            return this.executorFactory.optionSet();
         } catch (Exception e) {
             throw wrapError(e);
         }
@@ -153,13 +169,13 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
             return;
         }
         try {
-            this.stmtExecutorFactory.close();
+            this.executorFactory.close();
         } catch (Exception e) {
             throw wrapError(e);
         }
     }
 
-    static abstract class SyncBuilder<B, R> extends ArmySessionBuilder<B, R> {
+    static abstract class SyncBuilder<B, R> extends ArmySessionBuilder<ArmySyncSessionFactory, B, R> {
 
         SyncExecutor stmtExecutor;
 
@@ -187,8 +203,8 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
 
         @Override
         protected SyncLocalSession createSession(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) {
-            this.stmtExecutor = ((ArmySyncSessionFactory) this.factory)
-                    .stmtExecutorFactory.localExecutor(sessionName, readOnly, optionFunc);
+            this.stmtExecutor = this.factory
+                    .executorFactory.localExecutor(sessionName, readOnly, optionFunc);
             return ArmySyncLocalSession.create(this);
         }
 
@@ -205,7 +221,7 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
 
         @Override
         protected SyncRmSession createSession(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) {
-            this.stmtExecutor = ((ArmySyncSessionFactory) this.factory).stmtExecutorFactory
+            this.stmtExecutor = this.factory.executorFactory
                     .rmExecutor(sessionName, readOnly, optionFunc);
             return ArmySyncRmSession.create(this);
         }

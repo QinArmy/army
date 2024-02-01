@@ -31,7 +31,7 @@ import static io.army.criteria.impl.SQLs.*;
 public class ValuesTests extends SessionTestSupport {
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void simpleValues(final SyncLocalSession session) {
 
         final LocalDate now = LocalDate.now();
@@ -67,7 +67,7 @@ public class ValuesTests extends SessionTestSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void unionSimpleValues(final SyncLocalSession session) {
 
         final LocalDate now = LocalDate.now();
@@ -117,7 +117,7 @@ public class ValuesTests extends SessionTestSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void parensAndUnionValues(final SyncLocalSession session) {
 
         final LocalDate now = LocalDate.now();
@@ -169,7 +169,7 @@ public class ValuesTests extends SessionTestSupport {
 
     }
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void simpleSubValues(final SyncLocalSession session) {
 
         final LocalDate now = LocalDate.now();
@@ -207,7 +207,7 @@ public class ValuesTests extends SessionTestSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void parensAndUnionSubValues(final SyncLocalSession session) {
 
         final LocalDate now = LocalDate.now();
@@ -262,7 +262,7 @@ public class ValuesTests extends SessionTestSupport {
         Assert.assertEquals(rowList.size(), 8);
     }
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void simpleValueUnionSelect(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(4);
         session.batchSave(regionList);
@@ -303,7 +303,7 @@ public class ValuesTests extends SessionTestSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void parensSelectUnionValues(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(4);
         session.batchSave(regionList);
@@ -357,7 +357,7 @@ public class ValuesTests extends SessionTestSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void simpleUnionParens(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(4);
         session.batchSave(regionList);

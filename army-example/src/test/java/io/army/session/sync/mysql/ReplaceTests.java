@@ -37,7 +37,7 @@ public class ReplaceTests extends SessionTestSupport {
 
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainReplaceOneParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -68,7 +68,7 @@ public class ReplaceTests extends SessionTestSupport {
     }
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainReplaceOneParentWithConflict(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -109,7 +109,7 @@ public class ReplaceTests extends SessionTestSupport {
     }
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainReplaceOneParentWithHintAndModifier(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -144,7 +144,7 @@ public class ReplaceTests extends SessionTestSupport {
 
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainReplaceParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -155,7 +155,7 @@ public class ReplaceTests extends SessionTestSupport {
 
         final Insert stmt;
         stmt = MySQLs.singleReplace()
-                .ignoreReturnIds()
+                .ignoreReturnIds() // due to you use "domain" api replace multi-row , so you have to use ignoreReturnIds() option clause,because database couldn't return correct multi-row primary key value.
                 .replaceInto(ChinaRegion_.T)
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
                         .comma(ChinaRegion_.parentId)
@@ -163,18 +163,22 @@ public class ReplaceTests extends SessionTestSupport {
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::param, true)
                 .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
-                .values(regionList)
+                .values(regionList)  // here , "domain" api
                 .asInsert();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
 
         Assert.assertEquals(session.update(stmt), regionList.size());
 
+        for (ChinaRegion<?> region : regionList) {
+            Assert.assertNull(region.getId()); // because ignoreReturnIds() option clause.
+        }
+
     }
 
     @Transactional
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainReplaceOneChild(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -214,7 +218,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @Transactional
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainReplaceOneChildWithHintAndModifier(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -289,7 +293,7 @@ public class ReplaceTests extends SessionTestSupport {
     /*-------------------below static VALUES insert -------------------*/
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesReplaceParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -318,7 +322,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @Transactional
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesReplaceOneChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -385,7 +389,7 @@ public class ReplaceTests extends SessionTestSupport {
     /*-------------------below dynamic VALUES insert -------------------*/
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicValuesReplaceParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -412,7 +416,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @Transactional
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicValuesReplaceOneChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -483,7 +487,7 @@ public class ReplaceTests extends SessionTestSupport {
     /*-------------------below assignment insert -------------------*/
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void assignmentReplaceParent(final SyncLocalSession session) {
 
         final Random random = ThreadLocalRandom.current();
@@ -505,7 +509,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void assignmentReplaceOneChild(final SyncLocalSession session) {
         final ChinaProvince province = createProvinceListWithCount(1).get(0);
         province.setId(null);
@@ -537,7 +541,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void assignmentReplaceOneChildWithConflict(final SyncLocalSession session) {
         final ChinaProvince province = createProvinceListWithCount(1).get(0);
         session.save(province);
@@ -570,7 +574,7 @@ public class ReplaceTests extends SessionTestSupport {
     /*-------------------below query insert -------------------*/
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryReplaceParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> parentList;
         parentList = createReginListWithCount(3);
@@ -598,7 +602,7 @@ public class ReplaceTests extends SessionTestSupport {
 
     @Transactional
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryReplaceChild(final SyncLocalSession session) {
         final List<ChinaProvince> parentList;
         parentList = createProvinceListWithCount(3);

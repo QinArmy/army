@@ -23,6 +23,7 @@ import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.LocalDateType;
 import io.army.mapping.LocalTimeType;
 import io.army.mapping.MappingType;
+import io.army.session.Session;
 
 public abstract class MySQLs extends MySQLSyntax {
 
@@ -79,11 +80,16 @@ public abstract class MySQLs extends MySQLSyntax {
 
     /**
      * <p>create single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
-     * <p><strong>NOTE</strong> : if you specify ON DUPLICATE KEY UPDATE ,then
+     * <p><strong>NOTE</strong> : if you specify ON DUPLICATE KEY UPDATE ,then the affected-rows value per row is
      * <ul>
-     *     <li>The affected-rows value per row is 1 if the row is inserted as a new row</li>
+     *     <li>1 if the row is inserted as a new row</li>
      *     <li>2 if an existing row is updated</li>
      *     <li>0 if an existing row is set to its current values</li>
+     * </ul>
+     * <p><strong>Limitations</strong> of MySQL INSERT ON DUPLICATE KEY UPDATE clause :
+     * <ul>
+     *     <li>If target table contain 'visible' field,then ON DUPLICATE KEY UPDATE clause can only be used in {@link Visible#BOTH} mode,see {@link Session#visible()} and {@link io.army.env.ArmyKey#VISIBLE_MODE}</li>
+     *     <li>If target table contain the field whose {@link io.army.annotation.UpdateMode} is {@link io.army.annotation.UpdateMode#ONLY_NULL} or {@link io.army.annotation.UpdateMode#ONLY_DEFAULT},then you couldn't use ON DUPLICATE KEY UPDATE clause .</li>
      * </ul>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT statement</a>
@@ -93,6 +99,56 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
+    /**
+     * <p>Create single-table MySQL REPLACE statement api instance.
+     * <p><strong>Limitations</strong> of MySQL REPLACE statement :
+     * <ul>
+     *     <li>If target table contain 'visible' field,then MySQL REPLACE can only be used in {@link Visible#BOTH} mode,see {@link Session#visible()} and {@link io.army.env.ArmyKey#VISIBLE_MODE}</li>
+     *     <li>If target table contain the field whose {@link io.army.annotation.UpdateMode} is {@link io.army.annotation.UpdateMode#ONLY_NULL} or {@link io.army.annotation.UpdateMode#ONLY_DEFAULT},then you couldn't use MySQL REPLACE .</li>
+     *     <li>If you target table primary key is auto increment and you replace multi-row with "domain" syntax (see Example 3),then database will couldn't return correct multi-row primary key value , because of conflict. So you have to use ignoreReturnIds() option clause before replace into clause.</li>
+     * </ul>
+     * <pre>
+     *     <code><br/>
+     *    Example 3 :
+     *
+     *    &#64;VisibleMode(Visible.BOTH)
+     *    &#64;Test(invocationCount = 3)
+     *    public void domainReplaceParent(final SyncLocalSession session) {
+     *
+     *        assert ChinaRegion_.id.generatorType() == GeneratorType.POST; // primary key is auto increment
+     *
+     *        final List&lt;ChinaRegion&lt;?>> regionList = createReginListWithCount(3);
+     *
+     *        final long startNanoSecond = System.nanoTime();
+     *
+     *        final Insert stmt;
+     *        stmt = MySQLs.singleReplace()
+     *                .ignoreReturnIds() // due to you use "domain" api replace multi-row , so you have to use ignoreReturnIds() option clause,because database couldn't return correct multi-row primary key value.
+     *                .replaceInto(ChinaRegion_.T)
+     *                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+     *                        .comma(ChinaRegion_.parentId)
+     *                )
+     *                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+     *                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+     *                .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
+     *                .values(regionList)  // here , "domain" api
+     *                .asInsert();
+     *
+     *        statementCostTimeLog(session, LOG, startNanoSecond);
+     *
+     *        Assert.assertEquals(session.update(stmt), regionList.size());
+     *
+     *        for (ChinaRegion&lt;?> region : regionList) {
+     *            Assert.assertNull(region.getId()); // because ignoreReturnIds() option clause.
+     *        }
+     *
+     *    }
+     *     </code>
+     * </pre>
+     *
+     * @return MySQL REPLACE statement api instance.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/replace.html">REPLACE Statement</a>
+     */
     public static MySQLReplace._PrimaryOptionSpec singleReplace() {
         return MySQLReplaces.singleReplace();
     }

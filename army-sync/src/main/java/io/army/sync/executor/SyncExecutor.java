@@ -18,7 +18,6 @@ package io.army.sync.executor;
 
 
 import io.army.meta.ChildTableMeta;
-import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
@@ -28,9 +27,11 @@ import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtOption;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.LongConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -91,18 +92,15 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
             throws DataAccessException;
 
     /**
-     *  if jdbc ,always support this method,if jdbs throw {@link UnsupportedOperationException}
-     * @return a unmodified list.
-     * @throws OptimisticLockException when
+     * <p>This method is designed to be compatible with jdbc.
+     * <p>If listConstructor is null ,then this method always return {@link Collections#emptyList()}.
+     *
+     * @return a unmodified list
      */
-    <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor, SyncStmtOption option,
-                                Class<R> elementClass, @Nullable TableMeta<?> domainTable,
-                                @Nullable List<R> rowsList, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    List<Long> batchUpdateList(BatchStmt stmt, @Nullable IntFunction<List<Long>> listConstructor, SyncStmtOption option,
+                               @Nullable LongConsumer consumer, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
 
-    /**
-     * if jdbs ,always support this method,if jdbc throw {@link UnsupportedOperationException}
-     */
     Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
 

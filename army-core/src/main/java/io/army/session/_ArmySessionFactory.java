@@ -297,9 +297,10 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
 
     @SuppressWarnings("unchecked")
-    public static abstract class ArmySessionBuilder<B, R> implements SessionFactory.SessionBuilderSpec<B, R> {
+    public static abstract class ArmySessionBuilder<F extends _ArmySessionFactory, B, R>
+            implements SessionFactory.SessionBuilderSpec<B, R> {
 
-        public final _ArmySessionFactory factory;
+        public final F factory;
 
         String name;
 
@@ -310,7 +311,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         private Map<Option<?>, Object> dataSourceOptionMap;
 
-        public ArmySessionBuilder(_ArmySessionFactory factory) {
+        public ArmySessionBuilder(F factory) {
             this.factory = factory;
             this.readonly = factory.readonly;
         }
@@ -398,7 +399,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         public final boolean inOpenDriverSpi() {
             final boolean match;
-            switch (this.factory.driverSpiMode) {
+            final _ArmySessionFactory factory = this.factory;
+            switch (factory.driverSpiMode) {
                 case NEVER:
                     match = false;
                     break;
@@ -408,11 +410,11 @@ public abstract class _ArmySessionFactory implements SessionFactory {
                 case WHITE_LIST: {
                     final String sessionName = this.name;
                     assert sessionName != null;
-                    match = this.factory.driverSpiWhiteMap.containsKey(sessionName);
+                    match = factory.driverSpiWhiteMap.containsKey(sessionName);
                 }
                 break;
                 default:
-                    throw _Exceptions.unexpectedEnum(this.factory.driverSpiMode);
+                    throw _Exceptions.unexpectedEnum(factory.driverSpiMode);
             }
             return match;
         }

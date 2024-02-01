@@ -53,6 +53,10 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
 
     final ReactiveExecutorFactory executorFactory;
 
+    final boolean buildInExecutor;
+    final boolean jdbdDriver;
+
+    final boolean resultItemDriverSpi;
 
     private volatile int factoryClosed;
 
@@ -63,6 +67,15 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         super(builder);
         this.executorFactory = builder.stmtExecutorFactory;
         assert this.executorFactory != null;
+
+        this.buildInExecutor = this.executorFactory.getClass().getPackage().getName().startsWith("io.army.jdbd.");
+        this.jdbdDriver = this.buildInExecutor || this.executorFactory.driverSpiName().equalsIgnoreCase("JDBD");
+
+        if (this.jdbdDriver) {
+            this.resultItemDriverSpi = true;
+        } else {
+            this.resultItemDriverSpi = this.executorFactory.isResultItemDriverSpi();
+        }
     }
 
     @Override
@@ -79,6 +92,11 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
     @Override
     public boolean isSync() {
         return false;
+    }
+
+    @Override
+    public boolean isResultItemDriverSpi() {
+        return this.resultItemDriverSpi;
     }
 
     @Override
@@ -152,7 +170,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
     }
 
 
-    static abstract class ReactiveSessionBuilder<B, R> extends ArmySessionBuilder<B, R> {
+    static abstract class ReactiveSessionBuilder<B, R> extends ArmySessionBuilder<ArmyReactiveSessionFactory, B, R> {
 
         ReactiveExecutor stmtExecutor;
 
@@ -178,7 +196,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         protected Mono<ReactiveLocalSession> createSession(final String sessionName, final boolean readonly,
                                                            final Function<Option<?>, ?> optionFunc) {
             return Mono.defer(() ->
-                    ((ArmyReactiveSessionFactory) this.factory).executorFactory
+                    this.factory.executorFactory
                             .localExecutor(sessionName, readonly, optionFunc)
                             .map(this::createLocalSession)
                             .onErrorMap(_ArmySession::wrapIfNeed)
@@ -214,7 +232,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         protected Mono<ReactiveRmSession> createSession(final String sessionName, final boolean readonly,
                                                         final Function<Option<?>, ?> optionFunc) {
             return Mono.defer(() ->
-                    ((ArmyReactiveSessionFactory) this.factory).executorFactory
+                    this.factory.executorFactory
                             .rmExecutor(sessionName, readonly, optionFunc)
                             .map(this::createRmSession)
                             .onErrorMap(_ArmySession::wrapIfNeed)

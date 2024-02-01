@@ -155,15 +155,15 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
 
 
     @Override
-    public boolean supportSavePoints() {
-        //JDBC support save point api
-        return true;
+    public String driverSpiName() {
+        return "JDBC";
     }
 
 
     @Override
-    public String driverSpiName() {
-        return "JDBC";
+    public boolean isResultItemDriverSpi() {
+        // JDBC isn't ResultItem spi
+        return false;
     }
 
     @Override

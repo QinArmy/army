@@ -113,15 +113,14 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
     }
 
     @Override
-    public boolean supportSavePoints() {
-        // true,jdbd provider save point spi
-        return true;
-    }
-
-
-    @Override
     public String driverSpiName() {
         return "JDBD";
+    }
+
+    @Override
+    public boolean isResultItemDriverSpi() {
+        // JDBD is ResultItem spi
+        return true;
     }
 
     @Override

@@ -765,7 +765,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
     } // JdbcProcRecordMeta
 
 
-    private static final class ArmyWarning implements Warning {
+    static final class ArmyWarning implements Warning {
 
         private static final Set<Option<?>> OPTION_SET = ArrayUtils.asUnmodifiableSet(Option.SQL_STATE, Option.VENDOR_CODE);
 
@@ -778,7 +778,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         /**
          * @see JdbcExecutor#mapToArmyWarning(SQLWarning)
          */
-        private ArmyWarning(SQLWarning w) {
+        ArmyWarning(SQLWarning w) {
             final String m;
             m = w.getMessage();
             this.message = m == null ? "" : m;

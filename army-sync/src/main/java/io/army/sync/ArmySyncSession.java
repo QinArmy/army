@@ -32,9 +32,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,9 +45,10 @@ import java.util.stream.Stream;
  * </ul>
  * <p>This class extends {@link _ArmySession} and implements of {@link SyncSession}.
  *
+ * @see ArmySyncSessionFactory
  * @since 0.6.0
  */
-abstract class ArmySyncSession extends _ArmySession implements SyncSession {
+abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> implements SyncSession {
 
 
     final SyncExecutor executor;
@@ -83,7 +82,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final long sessionIdentifier() throws SessionException {
-        if (((ArmySyncSessionFactory) this.factory).sessionIdentifierEnable) {
+        if (this.factory.sessionIdentifierEnable) {
             return this.executor.sessionIdentifier();
         }
         return 0L;
@@ -95,7 +94,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             throw _Exceptions.sessionClosed(this);
         }
 
-        if (((ArmySyncSessionFactory) this.factory).jdbcDriver || !(this instanceof DriverSpiHolder)) {
+        if (this.factory.jdbcDriver || !(this instanceof DriverSpiHolder)) {
             // JDBC don't support to get the state from database client protocol.
             final TransactionInfo info = obtainTransactionInfo();
             return info != null && info.inTransaction();
@@ -384,7 +383,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement) {
-        return this.batchUpdate(statement, _Collections::arrayList, defaultOption());
+        return this.batchUpdate(statement, _Collections::arrayList, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -394,12 +393,36 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor) {
-        return this.batchUpdate(statement, listConstructor, defaultOption());
+        return this.batchUpdate(statement, listConstructor, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, SyncStmtOption option) {
-        return executeBatchUpdateList(statement, listConstructor, option, Long.class);
+        final List<Long> resultList;
+        if (this.factory.resultItemDriverSpi) {
+            if (!(statement instanceof _BatchStatement)) {
+                throw _ArmySession.wrapSessionError(_Exceptions.unexpectedStatement(statement));
+            }
+
+            final int batchSize;
+            batchSize = ((_BatchStatement) statement).paramList().size();
+
+            // and execute
+            try (Stream<ResultStates> stream = batchUpdateAsStates(statement, option)) {
+
+                final List<Long> tempList;
+                tempList = stream.map(ResultStates::affectedRows)
+                        .collect(Collectors.toCollection(() -> listConstructor.apply(batchSize)));
+
+                resultList = Collections.unmodifiableList(tempList);
+            } catch (Exception e) {
+                throw _ArmySession.wrapSessionError(e);
+            }
+        } else {
+            // JDBC driver here
+            resultList = executeBatchUpdateAsLong(statement, listConstructor, option);
+        }
+        return resultList;
     }
 
 
@@ -410,10 +433,6 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final Stream<ResultStates> batchUpdateAsStates(BatchDmlStatement statement, SyncStmtOption option) {
-        if (((ArmySyncSessionFactory) this.factory).jdbcDriver) {
-            return executeBatchUpdateList(statement, _Collections::arrayList, option, ResultStates.class)
-                    .stream();
-        }
         try {
             if (!(statement instanceof _BatchStatement)) {
                 throw _Exceptions.unexpectedStatement(statement);
@@ -427,17 +446,24 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             final TableMeta<?> domainTable;
             domainTable = getBatchUpdateDomainTable(statement);
 
+            final Consumer<ResultStates> optimisticLockValidator;
+            if (stmt.hasOptimistic()) {
+                optimisticLockValidator = statesOptimisticLockValidator(domainTable);
+            } else {
+                optimisticLockValidator = null;
+            }
+
             final Stream<ResultStates> stream, tempSteam;
             if (stmt instanceof BatchStmt) {
                 tempSteam = this.executor.batchUpdate((BatchStmt) stmt, option, Option.EMPTY_FUNC);
-                if (stmt.hasOptimistic()) {
-                    stream = tempSteam.peek(OPTIMISTIC_LOCK_VALIDATOR);
-                } else {
+                if (optimisticLockValidator == null) {
                     stream = tempSteam;
+                } else {
+                    stream = tempSteam.peek(optimisticLockValidator);
                 }
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
-            } else if (!this.inTransaction()) {
+            } else if (!inTransaction()) {
                 throw updateChildNoTransaction();
             } else {
                 assert domainTable instanceof ChildTableMeta; // fail, bug.
@@ -446,24 +472,15 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                 tempSteam = this.executor.batchUpdate(pairStmt.firstStmt(), option, Option.EMPTY_FUNC);
 
                 final List<ResultStates> childList;
-                if (stmt.hasOptimistic()) {
-                    childList = tempSteam.peek(OPTIMISTIC_LOCK_VALIDATOR)
-                            .collect(Collectors.toCollection(_Collections::arrayList));
-                } else {
+                if (optimisticLockValidator == null) {
                     childList = tempSteam.collect(Collectors.toCollection(_Collections::arrayList));
+                } else {
+                    childList = tempSteam.peek(optimisticLockValidator)
+                            .collect(Collectors.toCollection(_Collections::arrayList));
                 }
 
                 stream = this.executor.batchUpdate(pairStmt.secondStmt(), option, Option.EMPTY_FUNC)
-                        .peek(childStates -> {
-                            final int rowNumber = childStates.getResultNo();
-                            if (rowNumber < 1 || rowNumber > childList.size()) {
-                                throw new DataAccessException(String.format("executor return result no not in[1,%s)", childList.size()));
-                            } else if (childStates.affectedRows() != childList.get(rowNumber).affectedRows()) {
-                                throw _Exceptions.batchChildUpdateRowsError((ChildTableMeta<?>) domainTable, rowNumber, childList.get(rowNumber).affectedRows(),
-                                        childStates.affectedRows());
-                            }
-
-                        });
+                        .peek(batchUpdateStatesValidateParentRows(childList, (ChildTableMeta<?>) domainTable));
             }
             return stream;
         } catch (ChildUpdateException e) {
@@ -807,11 +824,12 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     /**
      * @see #batchUpdate(BatchDmlStatement, IntFunction, SyncStmtOption)
-     * @see #batchUpdateAsStates(BatchDmlStatement, SyncStmtOption)
      */
-    private <R> List<R> executeBatchUpdateList(BatchDmlStatement statement, IntFunction<List<R>> listConstructor,
-                                               SyncStmtOption option, Class<R> resultClass) {
+    private List<Long> executeBatchUpdateAsLong(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, SyncStmtOption option) {
         try {
+
+            Objects.requireNonNull(listConstructor);
+
             if (!(statement instanceof _BatchStatement)) {
                 throw _Exceptions.unexpectedStatement(statement);
             }
@@ -824,20 +842,29 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             final TableMeta<?> domainTable;
             domainTable = getBatchUpdateDomainTable(statement);
 
-            final List<R> resultList;
+            final LongConsumer optimisticLockValidator;
+            if (stmt.hasOptimistic()) {
+                optimisticLockValidator = rowsOptimisticLockValidator(domainTable);
+            } else {
+                optimisticLockValidator = null;
+            }
+
+            final List<Long> resultList;
             if (stmt instanceof BatchStmt) {
-                resultList = this.executor.batchUpdateList((BatchStmt) stmt, listConstructor, option, resultClass, domainTable, null, Option.EMPTY_FUNC);
+                resultList = this.executor.batchUpdateList((BatchStmt) stmt, listConstructor, option, optimisticLockValidator, Option.EMPTY_FUNC);
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
-            } else if (!this.inTransaction()) {
+            } else if (!inTransaction()) {
                 throw updateChildNoTransaction();
             } else {
                 assert domainTable instanceof ChildTableMeta; // fail, bug.
                 final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
 
-                final List<R> childList;
-                childList = this.executor.batchUpdateList(pairStmt.firstStmt(), listConstructor, option, resultClass, domainTable, null, Option.EMPTY_FUNC);
-                resultList = this.executor.batchUpdateList(pairStmt.secondStmt(), listConstructor, option, resultClass, domainTable, childList, Option.EMPTY_FUNC);
+                resultList = this.executor.batchUpdateList(pairStmt.firstStmt(), listConstructor, option, optimisticLockValidator, Option.EMPTY_FUNC);
+
+                final LongConsumer parentValidator;
+                parentValidator = batchUpdateValidateParentRows(resultList, (ChildTableMeta<?>) domainTable);
+                this.executor.batchUpdateList(pairStmt.secondStmt(), null, option, parentValidator, Option.EMPTY_FUNC);
             }
             return resultList;
         } catch (ChildUpdateException e) {
@@ -876,6 +903,73 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             return (Long) result;
         }
         return ((ResultStates) result).affectedRows();
+    }
+
+
+    /**
+     * @see #batchUpdate(BatchDmlStatement, IntFunction, SyncStmtOption)
+     */
+    private static LongConsumer rowsOptimisticLockValidator(final @Nullable TableMeta<?> domainTable) {
+        final int[] indexHolder = new int[]{0};
+        return rows -> {
+            final int index = indexHolder[0]++;
+            if (rows == 0L) {
+                throw _Exceptions.batchOptimisticLock(domainTable, index + 1, rows);
+            }
+        };
+    }
+
+
+    /**
+     * @see #batchUpdate(BatchDmlStatement, IntFunction, SyncStmtOption)
+     */
+    private static LongConsumer batchUpdateValidateParentRows(final List<Long> childList, final ChildTableMeta<?> domainTable) {
+        final int batchSize = childList.size();
+
+        final int[] indexHolder = new int[]{0};
+        return parentRows -> {
+            final int index = indexHolder[0]++;
+            if (index >= batchSize) {
+                throw _Exceptions.childBatchSizeError(domainTable, batchSize, index + 1);
+            }
+            if (parentRows != childList.get(index)) {
+                throw _Exceptions.batchChildUpdateRowsError(domainTable, index + 1, childList.get(index),
+                        parentRows);
+            }
+
+        };
+
+    }
+
+    /**
+     * @see #batchUpdateAsStates(BatchDmlStatement, SyncStmtOption)
+     */
+    private static Consumer<ResultStates> statesOptimisticLockValidator(final @Nullable TableMeta<?> domainTable) {
+        return states -> {
+            if (states.affectedRows() == 0L) {
+                throw _Exceptions.batchOptimisticLock(domainTable, states.getResultNo(), states.affectedRows());
+            }
+        };
+    }
+
+    /**
+     * @see #batchUpdateAsStates(BatchDmlStatement, SyncStmtOption)
+     */
+    private static Consumer<ResultStates> batchUpdateStatesValidateParentRows(final List<ResultStates> childList, final ChildTableMeta<?> domainTable) {
+        final int batchSize = childList.size();
+
+        return parentStates -> {
+            final int batchNo = parentStates.getResultNo();
+            if (batchNo > batchSize || !parentStates.hasMoreResult()) {
+                throw _Exceptions.childBatchSizeError(domainTable, batchSize, batchNo);
+            }
+            if (parentStates.affectedRows() != childList.get(batchNo - 1).affectedRows()) {
+                throw _Exceptions.batchChildUpdateRowsError(domainTable, batchNo, childList.get(batchNo - 1).affectedRows(),
+                        parentStates.affectedRows());
+            }
+
+        };
+
     }
 
 

@@ -9,7 +9,10 @@ import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.session.OptimisticLockException;
+import io.army.session.record.ResultStates;
 import io.army.sync.SyncLocalSession;
+import io.army.util._Collections;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -18,19 +21,22 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class DomainUpdateTests extends SessionSupport {
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void updateParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
 
         final BigDecimal gdpAmount = new BigDecimal("88888.66");
         final LocalDateTime now = LocalDateTime.now();
+
+        final long startNanoSecond = System.nanoTime();
 
         final Update stmt;
         stmt = SQLs.domainUpdate()
@@ -41,13 +47,15 @@ public class DomainUpdateTests extends SessionSupport {
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, gdpAmount, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .asUpdate();
 
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
         final long rows;
         rows = session.update(stmt);
         LOG.debug("session[name : {}] update {} rows", session.name(), rows);
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void batchUpdateParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
@@ -60,8 +68,111 @@ public class DomainUpdateTests extends SessionSupport {
 
         for (ChinaRegion<?> region : regionList) {
             map = new HashMap<>(5);
+
             map.put(ChinaRegion_.ID, region.getId());
             map.put(ChinaRegion_.REGION_GDP, randomDecimal(random));
+            map.put(ChinaRegion_.VERSION, region.getVersion());
+            paramList.add(map);
+        }
+
+        final long startNanoSecond = System.nanoTime();
+
+        final BatchUpdate stmt;
+        stmt = SQLs.batchDomainUpdate()
+                .update(ChinaRegion_.T, AS, "c")
+                .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .and(ChinaRegion_.version::equal, SQLs::namedParam)
+                .asUpdate()
+                .namedParamList(paramList);
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final List<Long> rowList;
+        rowList = session.batchUpdate(stmt);
+
+        Assert.assertEquals(rowList.size(), paramList.size());
+
+
+    }
+
+
+    @Test(invocationCount = 3, expectedExceptions = OptimisticLockException.class)
+    // because first execution time contain class loading time and class initialization time
+    public void batchUpdateParentWithOptimisticLock(final SyncLocalSession session) {
+        final int rowSize = 3, lastIndex = rowSize - 1;
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(rowSize);
+        session.batchSave(regionList);
+
+        final Random random = ThreadLocalRandom.current();
+        final LocalDateTime now = LocalDateTime.now();
+
+        final List<Map<String, Object>> paramList = new ArrayList<>(rowSize);
+        Map<String, Object> map;
+
+        ChinaRegion<?> region;
+        for (int i = 0; i < rowSize; i++) {
+            region = regionList.get(i);
+            map = new HashMap<>(5);
+
+            map.put(ChinaRegion_.ID, region.getId());
+            map.put(ChinaRegion_.REGION_GDP, randomDecimal(random));
+            if (i < lastIndex) {
+                map.put(ChinaRegion_.VERSION, region.getVersion());
+            } else {
+                map.put(ChinaRegion_.VERSION, 20);
+            }
+
+            paramList.add(map);
+        }
+
+        final long startNanoSecond = System.nanoTime();
+
+        final BatchUpdate stmt;
+        stmt = SQLs.batchDomainUpdate()
+                .update(ChinaRegion_.T, AS, "c")
+                .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .and(ChinaRegion_.version::equal, SQLs::namedParam)
+                .asUpdate()
+                .namedParamList(paramList);
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final List<Long> rowList;
+        rowList = session.batchUpdate(stmt);
+
+        Assert.fail();
+        Assert.assertEquals(rowList.size(), paramList.size());
+
+
+    }
+
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    public void batchUpdateParentAsStates(final SyncLocalSession session) {
+        final int rowSize = 3, lastIndex = rowSize - 1;
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(rowSize);
+        session.batchSave(regionList);
+
+        final Random random = ThreadLocalRandom.current();
+        final LocalDateTime now = LocalDateTime.now();
+
+        final List<Map<String, Object>> paramList = new ArrayList<>(rowSize);
+        Map<String, Object> map;
+
+        ChinaRegion<?> region;
+        for (int i = 0; i < rowSize; i++) {
+            region = regionList.get(i);
+            map = new HashMap<>(5);
+
+            map.put(ChinaRegion_.ID, region.getId());
+            map.put(ChinaRegion_.REGION_GDP, randomDecimal(random));
+            map.put(ChinaRegion_.VERSION, region.getVersion());
+
             paramList.add(map);
         }
 
@@ -73,19 +184,87 @@ public class DomainUpdateTests extends SessionSupport {
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .and(ChinaRegion_.version::equal, SQLs::namedParam)
                 .asUpdate()
                 .namedParamList(paramList);
 
-        final List<Long> rowList;
-        rowList = session.batchUpdate(stmt);
+        final List<ResultStates> rowList;
 
-        Assert.assertEquals(rowList.size(), paramList.size());
-        LOG.debug("session[name : {}] update {} rows", session.name(), rowList);
+        rowList = session.batchUpdateAsStates(stmt)
+                .collect(Collectors.toCollection(_Collections::arrayList));
+
+
+        Assert.assertEquals(rowSize, paramList.size());
+
+
+        ResultStates states;
+        for (int i = 0; i < rowSize; i++) {
+            states = rowList.get(i);
+
+            if (i < lastIndex) {
+                Assert.assertTrue(states.hasMoreResult());
+            } else {
+                Assert.assertFalse(states.hasMoreResult());
+            }
+            Assert.assertFalse(states.hasColumn());
+            Assert.assertFalse(states.hasMoreFetch());
+        }
+
+
+    }
+
+    @Test(invocationCount = 3, expectedExceptions = OptimisticLockException.class)
+    // because first execution time contain class loading time and class initialization time
+    public void batchUpdateParentAsStatesWithOptimisticLock(final SyncLocalSession session) {
+        final int rowSize = 3, lastIndex = rowSize - 1;
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(rowSize);
+        session.batchSave(regionList);
+
+        final Random random = ThreadLocalRandom.current();
+        final LocalDateTime now = LocalDateTime.now();
+
+        final List<Map<String, Object>> paramList = new ArrayList<>(rowSize);
+        Map<String, Object> map;
+
+        ChinaRegion<?> region;
+        for (int i = 0; i < rowSize; i++) {
+            region = regionList.get(i);
+            map = new HashMap<>(5);
+
+            map.put(ChinaRegion_.ID, region.getId());
+            map.put(ChinaRegion_.REGION_GDP, randomDecimal(random));
+            if (i < lastIndex) {
+                map.put(ChinaRegion_.VERSION, region.getVersion());
+            } else {
+                map.put(ChinaRegion_.VERSION, 20);
+            }
+
+            paramList.add(map);
+        }
+
+
+        final BatchUpdate stmt;
+        stmt = SQLs.batchDomainUpdate()
+                .update(ChinaRegion_.T, AS, "c")
+                .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0)
+                .and(ChinaRegion_.version::equal, SQLs::namedParam)
+                .asUpdate()
+                .namedParamList(paramList);
+
+        final List<ResultStates> rowList;
+        rowList = session.batchUpdateAsStates(stmt)
+                .collect(Collectors.toCollection(_Collections::arrayList));
+
+        Assert.fail();
+        Assert.assertNotNull(rowList);
 
     }
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void updateChild(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
         session.batchSave(regionList);
@@ -116,7 +295,7 @@ public class DomainUpdateTests extends SessionSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void batchUpdateChild(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
         session.batchSave(regionList);

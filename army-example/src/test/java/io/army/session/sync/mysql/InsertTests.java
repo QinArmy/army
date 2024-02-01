@@ -26,7 +26,7 @@ import static io.army.criteria.impl.SQLs.PERIOD;
 public class InsertTests extends SessionTestSupport {
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -60,7 +60,7 @@ public class InsertTests extends SessionTestSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertChild(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -95,7 +95,7 @@ public class InsertTests extends SessionTestSupport {
     }
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertParentWithConflict(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
@@ -126,7 +126,7 @@ public class InsertTests extends SessionTestSupport {
     }
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertOneParentWithConflict(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -169,7 +169,7 @@ public class InsertTests extends SessionTestSupport {
 
     /*-------------------below static VALUES insert -------------------*/
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesInsertParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -194,7 +194,7 @@ public class InsertTests extends SessionTestSupport {
     }
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesInsertParentWithConflict(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(2);
         session.batchSave(regionList);
@@ -226,7 +226,7 @@ public class InsertTests extends SessionTestSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesInsertChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -264,7 +264,7 @@ public class InsertTests extends SessionTestSupport {
 
     /*-------------------below dynamic VALUES insert -------------------*/
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicValuesInsertParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -291,7 +291,7 @@ public class InsertTests extends SessionTestSupport {
     }
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicValuesInsertChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -330,7 +330,7 @@ public class InsertTests extends SessionTestSupport {
     /*-------------------below assignment insert -------------------*/
 
     @VisibleMode(Visible.BOTH)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void assignmentInsertParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(1);
         session.batchSave(regionList);
@@ -358,7 +358,7 @@ public class InsertTests extends SessionTestSupport {
 
     @VisibleMode(Visible.BOTH)
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void assignmentInsertChild(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(1);
         session.batchSave(regionList);
@@ -399,7 +399,7 @@ public class InsertTests extends SessionTestSupport {
 
     /*-------------------below query insert -------------------*/
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryInsertParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> parentList;
         parentList = createReginListWithCount(3);
@@ -426,7 +426,7 @@ public class InsertTests extends SessionTestSupport {
     }
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryInsertChild(final SyncLocalSession session) {
         final List<ChinaProvince> parentList;
         parentList = createProvinceListWithCount(3);

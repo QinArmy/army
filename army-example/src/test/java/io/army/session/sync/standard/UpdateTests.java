@@ -23,7 +23,7 @@ import static io.army.criteria.impl.SQLs.*;
 public class UpdateTests extends SessionSupport {
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void updateParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
@@ -47,7 +47,7 @@ public class UpdateTests extends SessionSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void batchUpdateParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
@@ -82,7 +82,7 @@ public class UpdateTests extends SessionSupport {
         assertBatchSingleRows(rowList, regionList.size(), 1);
     }
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicUpdateParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
@@ -109,7 +109,7 @@ public class UpdateTests extends SessionSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicWhereUpdateParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
@@ -138,7 +138,7 @@ public class UpdateTests extends SessionSupport {
         Assert.assertEquals(rows, regionList.size());
     }
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void update20Parent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);

@@ -27,7 +27,7 @@ public class QueryTests extends SessionSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void query20WindowClause(final SyncLocalSession session) {
         final int regionSize = 3;
         final List<ChinaProvince> regionList = createProvinceListWithCount(regionSize);
@@ -74,7 +74,7 @@ public class QueryTests extends SessionSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void query20FullClause(final SyncLocalSession session) {
         final int regionSize = 3;
         final List<ChinaProvince> regionList = createProvinceListWithCount(regionSize);
@@ -130,7 +130,7 @@ public class QueryTests extends SessionSupport {
     }
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void batchQuery20WindowClause(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
         session.batchSave(regionList);
@@ -176,7 +176,7 @@ public class QueryTests extends SessionSupport {
         LOG.debug("{} rowList : \n{}", session.name(), JSON.toJSONString(rowList));
     }
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void unionQuery(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);

@@ -65,6 +65,11 @@ public interface SessionFactory extends CloseableSpec, OptionSpec {
 
     boolean isSupportSavePoints();
 
+    /**
+     * @see ExecutorFactory#isResultItemDriverSpi()
+     */
+    boolean isResultItemDriverSpi();
+
 
     boolean isReadonly();
 

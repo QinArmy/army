@@ -46,7 +46,7 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
     private static final Logger LOG = LoggerFactory.getLogger(InsertTests.class);
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertParent(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -77,7 +77,7 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertChildWithTowStmtUpdateMode(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -108,7 +108,7 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
 
     /*-------------------below values syntax tests -------------------*/
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesInsertParent(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -135,7 +135,7 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void valuesInsertChildWithTowStmtUpdateMode(final ReactiveLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -182,7 +182,7 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
 
     /*-------------------below query insert syntax-------------------*/
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryInsertParent(final ReactiveLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 

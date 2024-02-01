@@ -41,10 +41,6 @@ import java.util.function.Function;
 public interface ExecutorFactory extends CloseableSpec, OptionSpec {
 
 
-    /**
-     * @return true : underlying database driver provider save point spi.
-     */
-    boolean supportSavePoints();
 
     /**
      * <p>For example:
@@ -57,6 +53,11 @@ public interface ExecutorFactory extends CloseableSpec, OptionSpec {
      * @return driver spi name,The value returned typically is the name for this driver spi.
      */
     String driverSpiName();
+
+    /**
+     * @return JDBC always return false, JDBD always return true.
+     */
+    boolean isResultItemDriverSpi();
 
 
     /**

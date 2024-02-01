@@ -113,7 +113,7 @@ public class SingleDeleteTests extends SessionTestSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void batchDeleteParentStaticWithClause(final SyncLocalSession session) {
 
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
@@ -149,7 +149,7 @@ public class SingleDeleteTests extends SessionTestSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void hintAndModifier(final SyncLocalSession session) {
 
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);

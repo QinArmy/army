@@ -462,6 +462,10 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
+    public static DataAccessException batchUpdateReturnResultSet() {
+        return new DataAccessException("error,multi-statement batch update return ResultSet");
+    }
+
     public static MetaException dontSupportOnlyDefault(Dialect dialect) {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
     }

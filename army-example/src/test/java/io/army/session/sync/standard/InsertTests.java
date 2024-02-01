@@ -23,7 +23,7 @@ import static io.army.criteria.impl.SQLs.PERIOD;
 public class InsertTests extends SessionSupport {
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertParent(final SyncLocalSession session) {
 
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -137,7 +137,7 @@ public class InsertTests extends SessionSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsert20Child(final SyncLocalSession session) {
 
         if (isDontSupportWithClauseInInsert(session)) {
@@ -278,7 +278,7 @@ public class InsertTests extends SessionSupport {
     }
 
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesInsert20Parent(final SyncLocalSession session) {
 
         if (isDontSupportWithClauseInInsert(session)) {
@@ -335,7 +335,7 @@ public class InsertTests extends SessionSupport {
 
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesInsert20Child(final SyncLocalSession session) {
 
         if (isDontSupportWithClauseInInsert(session)) {
@@ -416,7 +416,7 @@ public class InsertTests extends SessionSupport {
 
     /*-------------------below dynamic VALUES insert -------------------*/
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicValuesInsertParent(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -442,7 +442,7 @@ public class InsertTests extends SessionSupport {
 
     }
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void dynamicValuesInsertChild(final SyncLocalSession session) {
         final Random random = ThreadLocalRandom.current();
 
@@ -487,7 +487,7 @@ public class InsertTests extends SessionSupport {
 
     /*-------------------below query insert -------------------*/
 
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryInsertParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> parentList;
         parentList = createReginListWithCount(3);
@@ -514,7 +514,7 @@ public class InsertTests extends SessionSupport {
     }
 
     @Transactional
-    @Test(invocationCount = 3)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryInsertChild(final SyncLocalSession session) {
         final List<ChinaProvince> parentList;
         parentList = createProvinceListWithCount(3);

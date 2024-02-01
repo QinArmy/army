@@ -50,14 +50,14 @@ import java.util.function.Consumer;
  *
  * @since 0.6.0
  */
-public abstract class _ArmySession implements Session {
+public abstract class _ArmySession<F extends _ArmySessionFactory> implements Session {
 
     protected static final String PSEUDO_SAVE_POINT = "ARMY_PSEUDO_SAVE_POINT";
 
     protected static final Consumer<ResultStates> OPTIMISTIC_LOCK_VALIDATOR = _ArmySession::validateOptimisticLock;
 
 
-    protected final _ArmySessionFactory factory;
+    protected final F factory;
 
     protected final String name;
 
@@ -66,7 +66,7 @@ public abstract class _ArmySession implements Session {
 
     private final Visible visible;
 
-    protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
+    protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<F, ?, ?> builder) {
 
         this.name = builder.name;
         this.readonly = builder.readonly;
