@@ -37,6 +37,7 @@ public interface ResultStates extends ResultItem, OptionSpec {
      */
     String message();
 
+
     boolean hasMoreResult();
 
 

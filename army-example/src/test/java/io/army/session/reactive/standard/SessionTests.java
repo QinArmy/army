@@ -10,7 +10,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 @Test(dataProvider = "localSessionProvider")
-public class SessionTests extends StandardReactiveSessionTestSupport {
+public class SessionTests extends SessionSupport {
 
 
     /**

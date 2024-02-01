@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -115,7 +116,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Mono<R> queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
-        return queryOne(statement, resultClass, defaultOption());
+        return queryOne(statement, resultClass, ArmyReactiveStmtOptions.DEFAULT);
     }
 
 
@@ -129,7 +130,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Mono<Optional<R>> queryOneNullable(SimpleDqlStatement statement, Class<R> resultClass) {
-        return queryOneNullable(statement, resultClass, defaultOption());
+        return queryOneNullable(statement, resultClass, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -142,7 +143,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return queryOneObject(statement, constructor, defaultOption());
+        return queryOneObject(statement, constructor, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -155,7 +156,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Mono<R> queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return queryOneRecord(statement, function, defaultOption());
+        return queryOneRecord(statement, function, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -168,7 +169,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<R> query(DqlStatement statement, Class<R> resultClass) {
-        return query(statement, resultClass, defaultOption());
+        return query(statement, resultClass, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -179,7 +180,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass) {
-        return this.queryNullable(statement, resultClass, defaultOption());
+        return this.queryNullable(statement, resultClass, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -189,7 +190,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
-        return this.queryObject(statement, constructor, defaultOption());
+        return this.queryObject(statement, constructor, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -199,7 +200,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecord(statement, function, defaultOption());
+        return this.queryRecord(statement, function, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -209,12 +210,12 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final Mono<ResultStates> save(Object domain) {
-        return update(ArmyCriteria.insertStmt(this, domain), defaultOption());
+        return update(ArmyCriteria.insertStmt(this, domain), ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
     public final Mono<ResultStates> update(SimpleDmlStatement statement) {
-        return update(statement, defaultOption());
+        return update(statement, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -232,12 +233,12 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <T> Mono<ResultStates> batchSave(List<T> domainList) {
-        return update(ArmyCriteria.batchInsertStmt(this, domainList), defaultOption());
+        return update(ArmyCriteria.batchInsertStmt(this, domainList), ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
     public final Flux<ResultStates> batchUpdate(BatchDmlStatement statement) {
-        return batchUpdate(statement, defaultOption());
+        return batchUpdate(statement, ArmyReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -252,9 +253,18 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
             final Stmt stmt;
             stmt = this.parseDmlStatement(statement, option);
 
+            final Consumer<ResultStates> optimisticLockValidator;
+            if (stmt.hasOptimistic()) {
+                optimisticLockValidator = OPTIMISTIC_LOCK_VALIDATOR;
+            } else {
+                optimisticLockValidator = null;
+            }
             if (stmt instanceof BatchStmt) {
-                flux = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option, Option.EMPTY_FUNC)
-                        .onErrorMap(this::handleExecutionError);
+                flux = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option, Option.EMPTY_FUNC);
+                if (optimisticLockValidator != null) {
+                    flux = flux.doOnNext(optimisticLockValidator);
+                }
+                flux = flux.onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (inTransaction()) {
@@ -264,8 +274,11 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
                 assert domainTable != null; // fail, bug.
 
-                flux = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option, Option.EMPTY_FUNC)
-                        .collectMap(ResultStates::getResultNo, states -> states, _Collections::hashMap)
+                flux = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option, Option.EMPTY_FUNC);
+                if (optimisticLockValidator != null) {
+                    flux = flux.doOnNext(optimisticLockValidator);
+                }
+                flux = flux.collectMap(ResultStates::getResultNo, states -> states, _Collections::hashMap)
                         .flatMapMany(statesMap -> validateBatchStates(this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option, Option.EMPTY_FUNC), statesMap, domainTable))
                         .onErrorMap(this::handlePairStmtError);
             } else {
@@ -574,23 +587,36 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
             final Stmt stmt;
             stmt = parseDmlStatement(statement, option);
+
+            final Consumer<ResultStates> optimisticLockValidator;
+            if (stmt.hasOptimistic()) {
+                optimisticLockValidator = OPTIMISTIC_LOCK_VALIDATOR;
+            } else {
+                optimisticLockValidator = null;
+            }
             if (stmt instanceof SimpleStmt) {
-                mono = this.stmtExecutor.update((SimpleStmt) stmt, option, Option.EMPTY_FUNC)
-                        .onErrorMap(this::handleExecutionError);
+                mono = this.stmtExecutor.update((SimpleStmt) stmt, option, Option.EMPTY_FUNC);
+                if (optimisticLockValidator != null) {
+                    mono = mono.doOnNext(optimisticLockValidator);
+                }
+                mono = mono.onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairStmt)) {
                 mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
             } else if (inTransaction()) {
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
 
-                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, Option.EMPTY_FUNC)
-                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.EMPTY_FUNC)
-                                .doOnSuccess(childStates -> {
-                                    if (childStates.affectedRows() != parentStates.affectedRows()) {
-                                        throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());
-                                    }
-                                })
-                        ).onErrorMap(this::handlePairStmtError);
+                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, Option.EMPTY_FUNC);
+                if (optimisticLockValidator != null) {
+                    mono = mono.doOnNext(optimisticLockValidator);
+                }
+                mono = mono.flatMap(childStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.EMPTY_FUNC)
+                        .doOnSuccess(parentStates -> {
+                            if (parentStates.affectedRows() != childStates.affectedRows()) {
+                                throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());
+                            }
+                        })
+                ).onErrorMap(this::handlePairStmtError);
 
             } else {
                 mono = Mono.error(updateChildNoTransaction());

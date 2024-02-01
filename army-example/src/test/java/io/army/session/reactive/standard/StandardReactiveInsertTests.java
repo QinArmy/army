@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
 import java.util.List;
 
 @Test(dataProvider = "localSessionProvider")
-public class StandardReactiveInsertTests extends StandardReactiveSessionTestSupport {
+public class StandardReactiveInsertTests extends SessionSupport {
 
     @Test
     public void domainInsert(final ReactiveLocalSession session) {

@@ -1300,12 +1300,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } else {
                 warning = new ArmyWarning(jdbcWarning);
             }
-            final int lastItem = batchSize - 1;
             final List<ResultStates> resultList = _Collections.arrayList(batchSize);
             long rows;
             for (int i = 0; i < batchSize; i++) {
                 rows = arrayFunc.applyAsLong(i);
-                resultList.add(new MultiResultUpdateStates(i + 1, info, warning, rows, i < lastItem));
+                resultList.add(new MultiResultUpdateStates(i + 1, info, warning, rows, false)); // always false ,because use server prepared
             }
             return resultList.stream();
         } catch (Exception e) {

@@ -226,8 +226,8 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
                 .append(this.name)
                 .append(",hash:")
                 .append(System.identityHashCode(this))
-                .append(",factory:")
-                .append(this.factory)
+                .append(",factoryName:")
+                .append(this.factory.name)
                 .append(']')
                 .toString();
     }
@@ -506,7 +506,12 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
 
     private static void validateOptimisticLock(final ResultStates states) {
         if (states.affectedRows() < 1L) {
-            throw _Exceptions.optimisticLock();
+            if (states.getResultNo() == 1 && !states.hasMoreResult()) {
+                throw _Exceptions.optimisticLock();
+            } else {
+                throw _Exceptions.batchOptimisticLock(null, states.getResultNo(), states.affectedRows());
+            }
+
         }
     }
 

@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 import static io.army.criteria.impl.SQLs.cases;
 
 @Test(dataProvider = "localSessionProvider")
-public class StandardReactiveFunctionTests extends StandardReactiveSessionTestSupport {
+public class StandardReactiveFunctionTests extends SessionSupport {
 
 
     @Test
