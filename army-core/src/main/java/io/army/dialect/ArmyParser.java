@@ -30,6 +30,7 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
+import io.army.env.EscapeMode;
 import io.army.env.NameMode;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
@@ -77,6 +78,10 @@ abstract class ArmyParser implements DialectParser {
     protected final MappingEnv mappingEnv;
 
     protected final ServerMeta serverMeta;
+
+    protected final EscapeMode literalEscapeMode;
+
+    protected final EscapeMode identifierEscapeMode;
 
 
     final boolean mockEnv;
@@ -158,6 +163,12 @@ abstract class ArmyParser implements DialectParser {
         assert this.serverMeta.serverDatabase().isCompatible(dialect);
         this.keyWordMap = _DialectUtils.createKeyWordMap(this.createKeyWordSet());
 
+        final ArmyEnvironment env;
+        env = dialectEnv.environment();
+
+        this.literalEscapeMode = env.getOrDefault(ArmyKey.LITERAL_ESCAPE_MODE);
+        this.identifierEscapeMode = env.getOrDefault(ArmyKey.IDENTIFIER_ESCAPE_MODE);
+
         this.childUpdateMode = this.childUpdateMode();
         this.aliasAfterAs = this.isTableAliasAfterAs();
         this.identifierQuote = this.identifierDelimitedQuote();
@@ -190,8 +201,6 @@ abstract class ArmyParser implements DialectParser {
         this.supportWithClauseInInsert = isSupportWithClauseInInsert();
         this.supportWindowClause = isSupportWindowClause();
 
-        final ArmyEnvironment env;
-        env = dialectEnv.environment();
         this.tableNameMode = env.getOrDefault(ArmyKey.TABLE_NAME_MODE);
         this.columnNameMode = env.getOrDefault(ArmyKey.COLUMN_NAME_MODE);
 

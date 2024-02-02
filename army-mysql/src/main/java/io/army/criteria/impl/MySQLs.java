@@ -229,15 +229,52 @@ public abstract class MySQLs extends MySQLSyntax {
     /**
      * <p>Create MySQL LOAD DATA statement instance.
      * <p><strong>Limitations</strong> of MySQL LOAD DATA statement :
-     * <ul>
-     *     <li>server local_infile system variables must be true</li>
-     *     <li>client allowLoadLocalInfile property must be true</li>
+     * <ol>
+     *     <li>Server local_infile system variables must be true</li>
+     *     <li>Client allowLoadLocalInfile property(JDBC/JDBD) must be true</li>
      *     <li>You have to use client-prepared statement or static statement,see {@link StmtOption#isPreferServerPrepare()} ,see following LOCAL INFILE Request</li>
-     * </ul>
+     *     <li>Due to the literal(in COLUMNS/LINES clause) use {@link io.army.env.EscapeMode#BACK_SLASH} and ignore {@link io.army.env.ArmyKey#LITERAL_ESCAPE_MODE},so you should guarantee sql mode NO_BACKSLASH_ESCAPES is disabled.</li>
+     * </ol>
+     *
+     * <pre>
+     *     <code><br/>
+     *
+     *     // Example 1 :
+     *
+     *    &#64;Test
+     *    public void singleLoadData(final SyncLocalSession session) {
+     *        final Path csvFile;
+     *        csvFile = MyPaths.myLocal("china_region.csv");
+     *        if (Files.notExists(csvFile)) {
+     *            return;
+     *        }
+     *
+     *        final DmlCommand stmt;
+     *        stmt = MySQLs.loadDataStmt()
+     *                .loadData(MySQLs.LOCAL)
+     *                .infile(csvFile)
+     *                .ignore()
+     *                .intoTable(ChinaRegion_.T)
+     *                .characterSet("utf8mb4")
+     *                .columns(s -> s.terminatedBy(","))
+     *                .lines(s -> s.terminatedBy("\n"))
+     *                .ignore(1, SQLs.LINES)
+     *                .set(ChinaRegion_.visible, SQLs::literal, true)
+     *                .set(ChinaRegion_.regionType, SQLs::literal, RegionType.NONE)
+     *                .asCommand();
+     *
+     *        final long rows;
+     *        rows = session.update(stmt, SyncStmtOption.preferServerPrepare(false));
+     *        LOG.debug("session[name : {}] rows {}", session.name(), rows);
+     *    }
+     *
+     *     </code>
+     * </pre>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile">Server local_infile system variables</a>
      * @see <a href="https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-security.html">client allowLoadLocalInfile property </a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_no_backslash_escapes">NO_BACKSLASH_ESCAPES</a>
      * @see <a href="https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_local_infile_request.html">LOCAL INFILE Request</a>
      */
     public static MySQLLoadData._LoadDataClause<DmlCommand> loadDataStmt() {

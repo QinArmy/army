@@ -37,6 +37,7 @@ public class LoadDataTests extends SessionTestSupport {
                 .intoTable(ChinaRegion_.T)
                 .characterSet("utf8mb4")
                 .columns(s -> s.terminatedBy(","))
+                .lines(s -> s.terminatedBy("\n"))
                 .ignore(1, SQLs.LINES)
                 .set(ChinaRegion_.visible, SQLs::literal, true)
                 .set(ChinaRegion_.regionType, SQLs::literal, RegionType.NONE)

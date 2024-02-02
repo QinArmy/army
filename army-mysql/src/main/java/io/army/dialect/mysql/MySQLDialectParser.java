@@ -24,6 +24,7 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.*;
+import io.army.env.EscapeMode;
 import io.army.mapping.StringType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -1118,7 +1119,7 @@ final class MySQLDialectParser extends MySQLParser {
         final String terminatedString;
         if ((terminatedString = loadData.columnTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, terminatedString, true, sqlBuilder);
         }
         //3. ENCLOSED BY
         final String enclosedChar;
@@ -1127,18 +1128,17 @@ final class MySQLDialectParser extends MySQLParser {
                 sqlBuilder.append(" OPTIONALLY");
             }
             sqlBuilder.append(" ENCLOSED BY ");
-            this.literal(StringType.INSTANCE, enclosedChar, sqlBuilder);//TODO check correct
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, enclosedChar, true, sqlBuilder);
         }
         //4. ESCAPED BY
         final String escapedChar;
         if ((escapedChar = loadData.columnEscapedBy()) != null) {
             sqlBuilder.append(" ESCAPED BY ");
-            if (escapedChar.equals("\\N")) {
-                sqlBuilder.append(escapedChar);
-            } else {
-                this.literal(StringType.INSTANCE, escapedChar, sqlBuilder);//TODO check correct
-            }
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, escapedChar, true, sqlBuilder);
+        }
 
+        if (terminatedString == null && enclosedChar == null && escapedChar == null) {
+            throw _Exceptions.castCriteriaApi();
         }
 
     }
@@ -1154,12 +1154,16 @@ final class MySQLDialectParser extends MySQLParser {
         //2. STARTING BY clause
         if ((startingString = loadData.linesStartingBy()) != null) {
             sqlBuilder.append(" STARTING BY ");
-            this.literal(StringType.INSTANCE, startingString, sqlBuilder);//TODO check correct
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, startingString, true, sqlBuilder);
         }
         //3. TERMINATED BY clause
         if ((terminatedString = loadData.linesTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, terminatedString, true, sqlBuilder);
+        }
+
+        if (startingString == null && terminatedString == null) {
+            throw _Exceptions.castCriteriaApi();
         }
     }
 

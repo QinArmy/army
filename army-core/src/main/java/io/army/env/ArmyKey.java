@@ -70,6 +70,10 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Boolean> UNRECOGNIZED_TYPE_ALLOWED = new ArmyKey<>("unrecognized_type_allowed", Boolean.class, Boolean.FALSE);
 
+    public static final ArmyKey<EscapeMode> LITERAL_ESCAPE_MODE = new ArmyKey<>("literal.escape_mode", EscapeMode.class, EscapeMode.DEFAULT);
+
+    public static final ArmyKey<EscapeMode> IDENTIFIER_ESCAPE_MODE = new ArmyKey<>("identifier.escape_mode", EscapeMode.class, EscapeMode.DEFAULT);
+
 
     /**
      * @see Column#scale()
@@ -89,6 +93,9 @@ public class ArmyKey<T> {
     public static final ArmyKey<SqlLogMode> SQL_LOG_MODE = new ArmyKey<>("sql.log.mode", SqlLogMode.class, SqlLogMode.OFF);
 
     public static final ArmyKey<Boolean> SQL_PARSING_COST_TIME = new ArmyKey<>("sql.log.sql_parsing_cost_time", Boolean.class, Boolean.FALSE);
+
+    public static final ArmyKey<Boolean> SQL_EXECUTION_COST_TIME = new ArmyKey<>("sql.log.sql_execution_cost_time", Boolean.class, Boolean.FALSE);
+
 
     public final String name;
 
@@ -186,7 +193,7 @@ public class ArmyKey<T> {
         }
 
 
-    }//ArmyKeyListHolder
+    } // ArmyKeyListHolder
 
 
 }

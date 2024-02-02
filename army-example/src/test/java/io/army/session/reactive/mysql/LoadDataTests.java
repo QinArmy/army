@@ -15,7 +15,6 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Test(dataProvider = "localSessionProvider")
 public class LoadDataTests extends SessionTestsSupport {
@@ -23,10 +22,12 @@ public class LoadDataTests extends SessionTestsSupport {
     @Test(enabled = false)
     public void singleLoadData(final ReactiveLocalSession session) {
         final Path csvFile;
-        csvFile = Paths.get(MyPaths.testResourcesPath().toString(), "my-local/china_region.csv");
+        csvFile = MyPaths.myLocal("china_region.csv");
         if (Files.notExists(csvFile)) {
             return;
         }
+
+        final long startNanoSecond = System.nanoTime();
 
         final DmlCommand stmt;
         stmt = MySQLs.loadDataStmt()
@@ -40,6 +41,8 @@ public class LoadDataTests extends SessionTestsSupport {
                 .set(ChinaRegion_.visible, SQLs::literal, true)
                 .set(ChinaRegion_.regionType, SQLs::literal, RegionType.NONE)
                 .asCommand();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final ResultStates states;
         states = session.update(stmt, ReactiveStmtOption.preferServerPrepare(false))

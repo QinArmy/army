@@ -16,17 +16,21 @@
 
 package io.army.dialect.mysql;
 
+import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
+import io.army.env.ArmyKey;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
+import io.army.util.HexUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
@@ -51,6 +55,20 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     MySQLParser(DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
+        switch (this.literalEscapeMode) {
+            case DEFAULT:
+            case BACK_SLASH:
+                break;
+            default:
+                String m = String.format("%s don't support %s for %s", this.dialect, this.literalEscapeMode, ArmyKey.LITERAL_ESCAPE_MODE.name);
+                throw new ArmyException(m);
+        }
+
+        if (this.identifierEscapeMode != EscapeMode.DEFAULT) {
+            String m = String.format("%s don't support %s for %s", this.dialect, this.identifierEscapeMode, ArmyKey.IDENTIFIER_ESCAPE_MODE.name);
+            throw new ArmyException(m);
+        }
+
         // Prior to / as of
         this.asOf80 = ((MySQLDialect) this.dialect).compareWith(MySQLDialect.MySQL80) >= 0;
     }
@@ -209,7 +227,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 if (!(value instanceof String)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                MySQLLiterals.mysqlEscapes((String) value, sqlBuilder);
+                MySQLLiterals.mysqlEscapes(this.literalEscapeMode, (String) value, true, sqlBuilder);
             }
             break;
             case BINARY:
@@ -229,6 +247,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 if (!(value instanceof Long)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
+                // https://dev.mysql.com/doc/refman/8.0/en/bit-value-literals.html
+
                 sqlBuilder.append("0b")
                         .append(Long.toBinaryString((Long) value));
             }
@@ -280,9 +300,9 @@ abstract class MySQLParser extends _ArmyDialectParser {
             case GEOMETRY: {
                 if (value instanceof byte[]) {
                     sqlBuilder.append("0x")
-                            .append(_Literals.hexEscapes((byte[]) value));
+                            .append(HexUtils.hexEscapesText(true, (byte[]) value));
                 } else if (value instanceof String) {
-                    MySQLLiterals.mysqlEscapes((String) value, sqlBuilder);
+                    MySQLLiterals.mysqlEscapes(this.literalEscapeMode, (String) value, true, sqlBuilder);
                 } else {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
