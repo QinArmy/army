@@ -16,11 +16,10 @@
 
 package io.army.criteria.mysql.unit;
 
-import io.army.criteria.Visible;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,7 @@ import org.testng.annotations.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class MySQLLoadDataUnitTests {
+public class MySQLLoadDataUnitTests extends MySQLUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLLoadDataUnitTests.class);
 
@@ -46,30 +45,23 @@ public class MySQLLoadDataUnitTests {
                     .infile(tempFile)
                     .ignore()
                     .intoTable(ChinaRegion_.T)
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
+                    .partition("p1")
                     .characterSet("utf8mb4")
 
-                    .columns()
-                    .terminatedBy(" ")
-                    .optionally()
-                    .enclosedBy('t')
-                    .escapedBy('f')
-
-                    .lines()
-                    .startingBy("row:")
-                    .terminatedBy("\n")
-                    .ignore(1)
-                    .rows()
-
-                    .leftParen(ChinaRegion_.name)
-                    .rightParen()
+                    .columns(s -> s.terminatedBy(" ")
+                            .enclosedBy('t')
+                            .escapedBy('f')
+                    )
+                    .lines(s -> s.startingBy("row:")
+                            .terminatedBy("\n")
+                    )
+                    .ignore(1, SQLs.LINES)
+                    .parens(s -> s.space(ChinaRegion_.name))
 
                     .set(ChinaRegion_.visible, SQLs::literal, true)
                     .asCommand();
 
-            printStmt(stmt);
+            printStmt(LOG, stmt);
         } finally {
             Files.deleteIfExists(tempFile);
         }
@@ -77,11 +69,62 @@ public class MySQLLoadDataUnitTests {
     }
 
 
-    private static void printStmt(final DmlCommand load) {
-        String sql;
-        for (MySQLDialect dialect : MySQLDialect.values()) {
-            sql = load.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
-            LOG.debug("{}:\n{}", dialect.name(), sql);
+    @Test
+    public void childLoadData() throws Exception {
+        final Path parentTempFile, childTempFile;
+        parentTempFile = Files.createTempFile("parent", ".temp");
+        childTempFile = Files.createTempFile("child", ".temp");
+
+        try {
+            final DmlCommand stmt;
+            stmt = MySQLs.loadDataStmt()
+                    .loadData(MySQLs.LOCAL)
+                    .infile(parentTempFile)
+                    .ignore()
+                    .intoTable(ChinaRegion_.T)
+                    .partition("p1")
+                    .characterSet("utf8mb4")
+
+                    .columns(s -> s.terminatedBy(" ")
+                            .enclosedBy('t')
+                            .escapedBy('f')
+                    )
+                    .lines(s -> s.startingBy("row:")
+                            .terminatedBy("\n")
+                    )
+                    .ignore(1, SQLs.LINES)
+                    .parens(s -> s.space(ChinaRegion_.name))
+
+                    .set(ChinaRegion_.visible, SQLs::literal, true)
+                    .asCommand()
+
+                    .child()
+
+                    .loadData(MySQLs.LOCAL)
+                    .infile(childTempFile)
+                    .ignore()
+                    .intoTable(ChinaProvince_.T)
+                    .partition("p1")
+                    .characterSet("utf8mb4")
+
+                    .columns(s -> s.terminatedBy(" ")
+                            .enclosedBy('t')
+                            .escapedBy('f')
+                    )
+                    .lines(s -> s.startingBy("row:")
+                            .terminatedBy("\n")
+                    )
+                    .ignore(1, SQLs.LINES)
+                    .parens(s -> s.space(ChinaProvince_.governor))
+
+                    .set(ChinaProvince_.governor, SQLs::literal, randomPerson())
+                    .asCommand();
+
+
+            printStmt(LOG, stmt);
+        } finally {
+            Files.deleteIfExists(parentTempFile);
+            Files.deleteIfExists(childTempFile);
         }
 
     }

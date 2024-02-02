@@ -968,13 +968,14 @@ abstract class ArmyParser implements DialectParser {
         return MultiDeleteContext.forChild(outerContext, stmt, this, visible);
     }
 
-    protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext
-            , final Predicate<FieldMeta<?>> predicate, final Visible visible) {
+    protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext,
+                                                           final Predicate<FieldMeta<?>> predicate, final Visible visible) {
         return OtherDmlContext.create(outerContext, predicate, this, visible);
     }
 
-    protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext
-            , final Predicate<FieldMeta<?>> predicate, final _OtherDmlContext parentContext) {
+    protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext,
+                                                           final Predicate<FieldMeta<?>> predicate,
+                                                           final _OtherDmlContext parentContext) {
         return OtherDmlContext.forChild(outerContext, predicate, (OtherDmlContext) parentContext);
     }
 

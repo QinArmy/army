@@ -21,7 +21,6 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
-import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.*;
@@ -989,8 +988,11 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    private _OtherDmlContext handleLoadData(@Nullable final _SqlContext outerContext, final _MySQLLoadData loadData
-            , final Visible visible) {
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
+     */
+    private _OtherDmlContext handleLoadData(@Nullable final _SqlContext outerContext, final _MySQLLoadData loadData,
+                                            final Visible visible) {
         final _OtherDmlContext context;
         if (loadData instanceof _MySQLLoadData._ChildLoadData) {
             final _MySQLLoadData parentLoad;
@@ -1010,6 +1012,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @see #handleLoadData(_SqlContext, _MySQLLoadData, Visible)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
     private void parseLoadData(final _MySQLLoadData loadData, final _OtherDmlContext context) {
         final TableMeta<?> insertTable;
@@ -1022,17 +1025,16 @@ final class MySQLDialectParser extends MySQLParser {
         }
         sqlBuilder.append("LOAD DATA");
         //2. modifiers
-        this.loadDataModifier(loadData.modifierList(), sqlBuilder);
+        loadDataModifier(loadData.modifierList(), sqlBuilder);
 
         //3. INFILE clause
-        this.loadDataInfileClause(loadData.fileName(), sqlBuilder);
+        loadDataInfileClause(loadData.fileName(), sqlBuilder);
 
         //4. REPLACE / IGNORE
         final SQLWords strategyOption;
         strategyOption = loadData.strategyOption();
         if (strategyOption != null) {
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(strategyOption.spaceRender());
+            sqlBuilder.append(strategyOption.spaceRender());
         }
         //5. INTO TABLE clause
         sqlBuilder.append(" INTO TABLE ");
@@ -1041,38 +1043,34 @@ final class MySQLDialectParser extends MySQLParser {
         //6. PARTITION clause
         this.partitionClause(loadData.partitionList(), sqlBuilder);
         //7. CHARACTER SET
-        final Object charset;
+        final String charset;
         if ((charset = loadData.charset()) != null) {
-            sqlBuilder.append(" CHARACTER SET '");
-            if (charset instanceof MySQLCharset) {
-                sqlBuilder.append(((MySQLCharset) charset).spaceRender());
-            } else if (charset instanceof String) {
-                identifier((String) charset, sqlBuilder);
-            } else {
-                String m = String.format("charset_name[%s] error.", charset);
-                throw new CriteriaException(m);
-            }
-            sqlBuilder.append(_Constant.QUOTE);
+            sqlBuilder.append(" CHARACTER SET ");
+            identifier(charset, sqlBuilder);
         }
 
         //8. FIELDS | COLUMNS clause
         final Boolean fieldKeyword;
         if ((fieldKeyword = loadData.fieldsKeyWord()) != null) {
-            this.loadDataFieldsColumnsClause(loadData, fieldKeyword, context);
+            this.loadDataFieldsColumnsClause(loadData, fieldKeyword, sqlBuilder);
         }
 
         //9. LINES clause
         if (loadData.linesClause()) {
-            this.loadDataLinesClause(loadData, context);
+            this.loadDataLinesClause(loadData, sqlBuilder);
         }
 
         //10. IGNORE clause
         final Long ignoreRows;
         if ((ignoreRows = loadData.ignoreRows()) != null) {
-            assert ignoreRows > -1;
             sqlBuilder.append(" IGNORE ")
-                    .append(ignoreRows)
-                    .append(" ROWS");
+                    .append(ignoreRows);
+            final SQLWords word = loadData.ignoreRowWord();
+            if (word != SQLs.LINES && word != SQLs.ROWS) {
+                String m = String.format("MySQL LOAD DATA statement IGNORE number ROWS|LINES clause don't support %s key word.", word);
+                throw new CriteriaException(m);
+            }
+            sqlBuilder.append(word.spaceRender());
         }
 
         //11. col_name_or_user_var
@@ -1089,6 +1087,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
     private void loadDataInfileClause(final Path path, final StringBuilder sqlBuilder) {
         if (Files.notExists(path)) {
@@ -1105,10 +1104,10 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
-    private void loadDataFieldsColumnsClause(final _MySQLLoadData loadData, final boolean fieldKeywords
-            , final _OtherDmlContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+    private void loadDataFieldsColumnsClause(final _MySQLLoadData loadData, final boolean fieldKeywords,
+                                             final StringBuilder sqlBuilder) {
         //1. FIELDS / COLUMNS keywords
         if (fieldKeywords) {
             sqlBuilder.append(" FIELDS");
@@ -1122,28 +1121,33 @@ final class MySQLDialectParser extends MySQLParser {
             this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
         }
         //3. ENCLOSED BY
-        final Character enclosedChar;
+        final String enclosedChar;
         if ((enclosedChar = loadData.columnEnclosedBy()) != null) {
             if (loadData.columnOptionallyEnclosed()) {
                 sqlBuilder.append(" OPTIONALLY");
             }
             sqlBuilder.append(" ENCLOSED BY ");
-            this.literal(StringType.INSTANCE, enclosedChar.toString(), sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, enclosedChar, sqlBuilder);//TODO check correct
         }
         //4. ESCAPED BY
-        final Character escapedChar;
+        final String escapedChar;
         if ((escapedChar = loadData.columnEscapedBy()) != null) {
             sqlBuilder.append(" ESCAPED BY ");
-            this.literal(StringType.INSTANCE, escapedChar.toString(), sqlBuilder);//TODO check correct
+            if (escapedChar.equals("\\N")) {
+                sqlBuilder.append(escapedChar);
+            } else {
+                this.literal(StringType.INSTANCE, escapedChar, sqlBuilder);//TODO check correct
+            }
+
         }
 
     }
 
     /**
      * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
-    private void loadDataLinesClause(final _MySQLLoadData loadData, final _OtherDmlContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+    private void loadDataLinesClause(final _MySQLLoadData loadData, final StringBuilder sqlBuilder) {
         //1. LINES keywords
         sqlBuilder.append(" LINES");
         final String startingString, terminatedString;
@@ -1161,6 +1165,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
     private void loadDataColumnOrVarListClause(final List<_Expression> columnOrVarList,
                                                final _OtherDmlContext context) {
@@ -1180,9 +1185,10 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
-    private void loadDataSetColumnPairClause(final List<_Pair<FieldMeta<?>, _Expression>> columnPairList
-            , final _OtherDmlContext context) {
+    private void loadDataSetColumnPairClause(final List<_Pair<FieldMeta<?>, _Expression>> columnPairList,
+                                             final _OtherDmlContext context) {
 
         final int columnPairSize;
         if ((columnPairSize = columnPairList.size()) > 0) {

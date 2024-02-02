@@ -38,6 +38,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+
+/**
+ * @see MySQLs#loadDataStmt()
+ */
 abstract class MySQLLoads {
 
     private MySQLLoads() {
@@ -229,7 +233,7 @@ abstract class MySQLLoads {
             MySQLLoadData._FieldsColumnsSpec<I, T>,
             MySQLLoadData._LinesSpec<I, T>,
             MySQLLoadData._ColumnTerminatedBySpec,
-            MySQLLoadData._LineTerminatedBySpec {
+            MySQLLoadData._StartingBySpec {
 
 
         private final List<MySQLs.Modifier> modifierList;
@@ -250,9 +254,9 @@ abstract class MySQLLoads {
 
         private boolean fieldsOptionally;
 
-        private Character fieldsEnclosedBy;
+        private String fieldsEnclosedBy;
 
-        private Character fieldsEscapedBy;
+        private String fieldsEscapedBy;
 
         private boolean linesClause;
 
@@ -267,8 +271,8 @@ abstract class MySQLLoads {
         private List<_Expression> columnExpList;
 
 
-        private PartitionClause(LoadDataClause<?> clause, TableMeta<T> insertTable
-                , Function<PartitionClause<?, ?>, I> function) {
+        private PartitionClause(LoadDataClause<?> clause, TableMeta<T> insertTable,
+                                Function<PartitionClause<?, ?>, I> function) {
             super(clause.context, insertTable);
 
             this.modifierList = clause.modifierList;
@@ -359,7 +363,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public MySQLLoadData._IgnoreLineSpec<I, T> lines(Consumer<MySQLLoadData._LineTerminatedBySpec> consumer) {
+        public MySQLLoadData._IgnoreLineSpec<I, T> lines(Consumer<MySQLLoadData._StartingBySpec> consumer) {
             this.linesClause = true;
             CriteriaUtils.invokeConsumer(this, consumer);
             if (this.linesStartingBy == null && this.linesTerminatedBy == null) {
@@ -369,7 +373,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public MySQLLoadData._IgnoreLineSpec<I, T> ifLines(Consumer<MySQLLoadData._LineTerminatedBySpec> consumer) {
+        public MySQLLoadData._IgnoreLineSpec<I, T> ifLines(Consumer<MySQLLoadData._StartingBySpec> consumer) {
             this.linesClause = true;
             CriteriaUtils.invokeConsumer(this, consumer);
             this.linesClause = this.linesStartingBy != null || this.linesTerminatedBy != null;
@@ -388,7 +392,7 @@ abstract class MySQLLoads {
 
         @Override
         public MySQLLoadData._ColumnOrVarListSpec<I, T> ignore(Supplier<Long> supplier, SQLs.LinesWord word) {
-            return this.ignore(CriteriaUtils.invokingSupplier(supplier), word);
+            return this.ignore(CriteriaUtils.invokeSupplier(supplier), word);
         }
 
         @Override
@@ -396,108 +400,178 @@ abstract class MySQLLoads {
             if (word != SQLs.LINES && word != SQLs.ROWS) {
                 throw CriteriaUtils.unknownWords(word);
             }
-            this.ignoreLine = CriteriaUtils.invokingSupplier(supplier);
+            this.ignoreLine = CriteriaUtils.invokeSupplier(supplier);
             this.ignoreLineWord = (SQLWords) word;
             return this;
         }
 
         @Override
         public MySQLLoadData._LoadSetSpec<I, T> parens(Consumer<Clause._VariadicExprSpaceClause> consumer) {
-            this.columnExpList = ClauseUtils.invokeVariadicExpressionClause(true, consumer);
+            this.columnExpList = ClauseUtils.invokeStaticExpressionClause(true, consumer);
             return this;
         }
 
         @Override
         public MySQLLoadData._LoadSetSpec<I, T> ifParens(Consumer<Clause._VariadicExprSpaceClause> consumer) {
-            this.columnExpList = ClauseUtils.invokeVariadicExpressionClause(false, consumer);
+            this.columnExpList = ClauseUtils.invokeStaticExpressionClause(false, consumer);
             return this;
         }
 
         @Override
         public MySQLLoadData._LoadSetSpec<I, T> parens(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> consumer) {
+            this.columnExpList = ClauseUtils.invokeDynamicExpressionClause(true, true, consumer);
             return this;
         }
 
         @Override
         public MySQLLoadData._LoadSetSpec<I, T> ifParens(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> consumer) {
+            this.columnExpList = ClauseUtils.invokeDynamicExpressionClause(false, true, consumer);
             return this;
         }
 
 
         @Override
-        public PartitionClause<I, T> terminatedBy(String string) {
+        public PartitionClause<I, T> terminatedBy(final @Nullable String string) {
+            if (string == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            if (this.linesClause) {
+                this.linesTerminatedBy = string;
+            } else {
+                this.fieldsTerminatedBy = string;
+            }
             return this;
         }
 
         @Override
         public PartitionClause<I, T> terminatedBy(Supplier<String> supplier) {
-            return this;
+            return this.terminatedBy(CriteriaUtils.invokeSupplier(supplier));
         }
 
         @Override
         public PartitionClause<I, T> ifTerminatedBy(Supplier<String> supplier) {
+            final String str;
+            str = CriteriaUtils.invokeIfSupplier(supplier);
+            if (str != null) {
+                terminatedBy(str);
+            }
             return this;
         }
 
         @Override
         public MySQLLoadData._EscapedByClause enclosedBy(char ch) {
-            return null;
+            this.fieldsOptionally = false;
+            this.fieldsEnclosedBy = String.valueOf(ch);
+            return this;
         }
 
         @Override
-        public MySQLLoadData._EscapedByClause ifEnclosedBy(Supplier<Character> supplier) {
-            return null;
+        public MySQLLoadData._EscapedByClause enclosedBy(final @Nullable String ch) {
+            if (ch == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.fieldsOptionally = false;
+            this.fieldsEnclosedBy = ch;
+            return this;
+        }
+
+        @Override
+        public MySQLLoadData._EscapedByClause ifEnclosedBy(Supplier<String> supplier) {
+            final String ch;
+            ch = CriteriaUtils.invokeIfSupplier(supplier);
+            if (ch == null) {
+                this.fieldsEnclosedBy = null;
+            } else {
+                this.fieldsOptionally = false;
+                this.fieldsEnclosedBy = ch;
+            }
+            return this;
         }
 
         @Override
         public MySQLLoadData._EscapedByClause optionallyEnclosedBy(char ch) {
-            return null;
+            this.fieldsOptionally = true;
+            this.fieldsEnclosedBy = String.valueOf(ch);
+            return this;
         }
 
         @Override
-        public MySQLLoadData._EscapedByClause ifOptionallyEnclosedBy(Supplier<Character> supplier) {
-            return null;
+        public MySQLLoadData._EscapedByClause optionallyEnclosedBy(final @Nullable String ch) {
+            if (ch == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.fieldsOptionally = true;
+            this.fieldsEnclosedBy = ch;
+            return this;
+        }
+
+        @Override
+        public MySQLLoadData._EscapedByClause ifOptionallyEnclosedBy(Supplier<String> supplier) {
+            final String ch;
+            ch = CriteriaUtils.invokeIfSupplier(supplier);
+            if (ch == null) {
+                this.fieldsEnclosedBy = null;
+            } else {
+                this.fieldsOptionally = true;
+                this.fieldsEnclosedBy = ch;
+            }
+            return this;
         }
 
 
         @Override
         public void escapedBy(char ch) {
-
+            this.fieldsEscapedBy = String.valueOf(ch);
         }
 
         @Override
-        public void ifEscapedBy(Supplier<Character> supplier) {
+        public void escapedBy(final @Nullable String ch) {
+            if (ch == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.fieldsEscapedBy = ch;
+        }
 
+        @Override
+        public void ifEscapedBy(Supplier<String> supplier) {
+            this.fieldsEscapedBy = CriteriaUtils.invokeIfSupplier(supplier);
         }
 
 
         @Override
-        public void startingBy(String string) {
-
+        public MySQLLoadData._TerminatedByClause startingBy(final @Nullable String string) {
+            if (string == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.linesStartingBy = string;
+            return this;
         }
 
         @Override
-        public void ifStartingBy(Supplier<String> supplier) {
-
+        public MySQLLoadData._TerminatedByClause ifStartingBy(Supplier<String> supplier) {
+            this.linesStartingBy = CriteriaUtils.invokeIfSupplier(supplier);
+            return this;
         }
 
 
         @Override
         public I asCommand() {
-            return null;
+            endAssignmentSetClause();
+            return this.function.apply(this);
         }
 
         private static CriteriaException dontAddFieldsClause() {
             return ContextStack.clearStackAndCriteriaError("you don't add any field clause");
         }
 
+
     } // PartitionClause
 
 
     static abstract class MySQLLoadDataStatement<I extends Item>
             extends CriteriaSupports.StatementMockSupport
-            implements _MySQLLoadData, Statement.StatementMockSpec
-            , MySQLLoadData, Statement._AsCommandClause<I> {
+            implements _MySQLLoadData, Statement.StatementMockSpec,
+            MySQLLoadData, Statement._AsCommandClause<I> {
 
 
         private final List<MySQLs.Modifier> modifierList;
@@ -510,7 +584,7 @@ abstract class MySQLLoads {
 
         private final List<String> partitionList;
 
-        private final Object charset;
+        private final String charset;
 
         private final Boolean fieldsKeyWords;
 
@@ -518,9 +592,9 @@ abstract class MySQLLoads {
 
         private final boolean columnOptionallyEnclosed;
 
-        private final Character columnEnclosedBy;
+        private final String columnEnclosedBy;
 
-        private final Character columnEscapedBy;
+        private final String columnEscapedBy;
 
         private final boolean linesClause;
 
@@ -529,7 +603,9 @@ abstract class MySQLLoads {
         private final String linesTerminatedBy;
 
 
-        private final Long ignoreRows;
+        private final Long ignoreRowNumber;
+
+        private final SQLWords ignoreRowWord;
 
         private final List<_Expression> columnOrUserVarList;
 
@@ -570,7 +646,8 @@ abstract class MySQLLoads {
                 this.linesTerminatedBy = null;
             }
 
-            this.ignoreRows = clause.ignoreLine;
+            this.ignoreRowNumber = clause.ignoreLine;
+            this.ignoreRowWord = clause.ignoreLineWord;
             this.columnOrUserVarList = _Collections.safeList(clause.columnExpList);
             this.columItemPairList = clause.assignmentPairList();
         }
@@ -635,7 +712,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public final Object charset() {
+        public final String charset() {
             return this.charset;
         }
 
@@ -655,12 +732,12 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public final Character columnEnclosedBy() {
+        public final String columnEnclosedBy() {
             return this.columnEnclosedBy;
         }
 
         @Override
-        public final Character columnEscapedBy() {
+        public final String columnEscapedBy() {
             return this.columnEscapedBy;
         }
 
@@ -681,7 +758,13 @@ abstract class MySQLLoads {
 
         @Override
         public final Long ignoreRows() {
-            return this.ignoreRows;
+            return this.ignoreRowNumber;
+        }
+
+        @Nullable
+        @Override
+        public SQLWords ignoreRowWord() {
+            return this.ignoreRowWord;
         }
 
         @Override

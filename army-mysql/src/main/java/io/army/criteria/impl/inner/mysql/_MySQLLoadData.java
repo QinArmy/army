@@ -47,7 +47,7 @@ public interface _MySQLLoadData extends _Statement, _DialectStatement {
     Boolean fieldsKeyWord();
 
     @Nullable
-    Object charset();
+    String charset();
 
     @Nullable
     String columnTerminatedBy();
@@ -55,10 +55,10 @@ public interface _MySQLLoadData extends _Statement, _DialectStatement {
     boolean columnOptionallyEnclosed();
 
     @Nullable
-    Character columnEnclosedBy();
+    String columnEnclosedBy();
 
     @Nullable
-    Character columnEscapedBy();
+    String columnEscapedBy();
 
     boolean linesClause();
 
@@ -70,6 +70,9 @@ public interface _MySQLLoadData extends _Statement, _DialectStatement {
 
     @Nullable
     Long ignoreRows();
+
+    @Nullable
+    SQLWords ignoreRowWord();
 
     List<_Expression> columnOrUserVarList();
 

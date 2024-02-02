@@ -159,7 +159,7 @@ abstract class CriteriaUtils {
         }
     }
 
-    static <T> T invokingSupplier(final @Nullable Supplier<T> supplier) {
+    static <T> T invokeSupplier(final @Nullable Supplier<T> supplier) {
         if (supplier == null) {
             throw ContextStack.clearStackAndNullPointer("Supplier is null");
         }
@@ -181,7 +181,7 @@ abstract class CriteriaUtils {
     }
 
     @Nullable
-    static <T> T invokingIfSupplier(final @Nullable Supplier<T> supplier) {
+    static <T> T invokeIfSupplier(final @Nullable Supplier<T> supplier) {
         if (supplier == null) {
             throw ContextStack.clearStackAndNullPointer("Supplier is null");
         }

@@ -38,7 +38,7 @@ import java.util.function.Supplier;
  * <p>This interface representing MySQL LOAD DATA Statement
  * <p>More document see {@link MySQLs#loadDataStmt()}
  *
- * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement/a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
  */
 public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
@@ -76,7 +76,9 @@ public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
         void escapedBy(char ch);
 
-        void ifEscapedBy(Supplier<Character> supplier);
+        void escapedBy(String ch);
+
+        void ifEscapedBy(Supplier<String> supplier);
     }
 
 
@@ -84,11 +86,15 @@ public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
         _EscapedByClause enclosedBy(char ch);
 
-        _EscapedByClause ifEnclosedBy(Supplier<Character> supplier);
+        _EscapedByClause enclosedBy(String ch);
+
+        _EscapedByClause ifEnclosedBy(Supplier<String> supplier);
 
         _EscapedByClause optionallyEnclosedBy(char ch);
 
-        _EscapedByClause ifOptionallyEnclosedBy(Supplier<Character> supplier);
+        _EscapedByClause optionallyEnclosedBy(String ch);
+
+        _EscapedByClause ifOptionallyEnclosedBy(Supplier<String> supplier);
 
     }
 
@@ -116,33 +122,20 @@ public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
     }
 
-    interface _StartingByClause extends Item {
+    interface _StartingBySpec extends _TerminatedByClause {
 
-        void startingBy(String string);
+        _TerminatedByClause startingBy(String string);
 
-        void ifStartingBy(Supplier<String> supplier);
-
-    }
-
-    interface _LineTerminatedBySpec extends _TerminatedByClause, _StartingByClause {
-
-        @Override
-        _StartingByClause terminatedBy(String string);
-
-        @Override
-        _StartingByClause terminatedBy(Supplier<String> supplier);
-
-        @Override
-        _StartingByClause ifTerminatedBy(Supplier<String> supplier);
+        _TerminatedByClause ifStartingBy(Supplier<String> supplier);
 
     }
 
 
     interface _LinesSpec<I extends Item, T> extends _IgnoreLineSpec<I, T> {
 
-        _IgnoreLineSpec<I, T> lines(Consumer<_LineTerminatedBySpec> consumer);
+        _IgnoreLineSpec<I, T> lines(Consumer<_StartingBySpec> consumer);
 
-        _IgnoreLineSpec<I, T> ifLines(Consumer<_LineTerminatedBySpec> consumer);
+        _IgnoreLineSpec<I, T> ifLines(Consumer<_StartingBySpec> consumer);
 
     }
 

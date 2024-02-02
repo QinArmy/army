@@ -73,6 +73,33 @@ abstract class ClauseUtils {
         }
     }
 
+    static List<_Expression> invokeDynamicExpressionClause(final boolean required, final boolean nonNull,
+                                                           final @Nullable Consumer<Consumer<Expression>> consumer) {
+        if (consumer == null) {
+            throw CriteriaUtils.consumerIsNull();
+        }
+        final List<_Expression> list = _Collections.arrayList();
+
+        final Consumer<Expression> clause;
+        clause = exp -> {
+            if (exp == null) {
+                if (nonNull) {
+                    throw ContextStack.clearStackAndNonArmyItem(null);
+                }
+            } else if (!(exp instanceof ArmyExpression)) {
+                throw ContextStack.clearStackAndNonArmyItem(exp);
+            }
+            list.add((ArmyExpression) exp);
+        };
+
+        CriteriaUtils.invokeConsumer(clause, consumer);
+
+        if (required && list.size() == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+        return _Collections.unmodifiableList(list);
+    }
+
 
     static List<String> staticStringClause(final boolean required, @Nullable Consumer<Clause._StaticStringSpaceClause> consumer) {
         final StaticStringClause clause;
@@ -82,7 +109,7 @@ abstract class ClauseUtils {
 
 
     @SuppressWarnings("unchecked")
-    static List<_Expression> invokeVariadicExpressionClause(boolean required, Consumer<Clause._VariadicExprSpaceClause> consumer) {
+    static List<_Expression> invokeStaticExpressionClause(boolean required, Consumer<Clause._VariadicExprSpaceClause> consumer) {
         final VariadicExpressionClause clause = new VariadicExpressionClause(required, null, null);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return (List<_Expression>) clause.endClause();
