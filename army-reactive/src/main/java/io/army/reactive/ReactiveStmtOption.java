@@ -46,6 +46,10 @@ public interface ReactiveStmtOption extends StmtOption {
         return ArmyReactiveStmtOptions.stateConsumer(consumer);
     }
 
+    static ReactiveStmtOption preferServerPrepare(boolean prefer) {
+        return ArmyReactiveStmtOptions.preferServerPrepare(prefer);
+    }
+
     static Builder builder() {
         return ArmyReactiveStmtOptions.builder();
     }

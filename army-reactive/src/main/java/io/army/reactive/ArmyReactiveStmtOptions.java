@@ -81,6 +81,13 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
         return DEFAULT;
     }
 
+    static ReactiveStmtOption preferServerPrepare(final boolean prefer) {
+        if (prefer) {
+            return DEFAULT;
+        }
+        return OnlyPreferServerPrepareOption.INSTANCE;
+    }
+
 
     static ReactiveStmtOption overrideTimeoutIfNeed(final ReactiveStmtOption option, final TransactionInfo info) {
         final Integer timeout;
@@ -267,6 +274,24 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
 
 
     } // OnlyStateConsumerOption
+
+
+    private static final class OnlyPreferServerPrepareOption extends DefaultReactiveStmtOption {
+
+        private static final OnlyPreferServerPrepareOption INSTANCE = new OnlyPreferServerPrepareOption();
+
+        /**
+         * @see ArmyReactiveStmtOptions#preferServerPrepare(boolean)
+         */
+        private OnlyPreferServerPrepareOption() {
+        }
+
+        @Override
+        public boolean isPreferServerPrepare() {
+            return false;
+        }
+
+    } // OnlyPreferServerPrepareOption
 
 
 }

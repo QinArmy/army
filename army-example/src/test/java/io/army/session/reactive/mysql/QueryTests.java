@@ -28,7 +28,7 @@ import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
-public class QueryTests extends MySQLReactiveSessionTestsSupport {
+public class QueryTests extends SessionTestsSupport {
 
 
     @Test

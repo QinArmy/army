@@ -16,9 +16,9 @@
 
 package io.army.criteria.dialect;
 
-import io.army.criteria.DmlStatement;
+import io.army.criteria.SimpleDmlStatement;
 
-public interface DmlCommand extends DmlStatement {
+public interface DmlCommand extends SimpleDmlStatement {
 
 
 }

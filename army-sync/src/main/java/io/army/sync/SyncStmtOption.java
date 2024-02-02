@@ -54,6 +54,10 @@ public interface SyncStmtOption extends StmtOption, StreamOption {
         return ArmySyncStmtOptions.commanderConsumer(consumer);
     }
 
+    static SyncStmtOption preferServerPrepare(boolean prefer) {
+        return ArmySyncStmtOptions.preferServerPrepare(prefer);
+    }
+
     static Builder builder() {
         return ArmySyncStmtOptions.builder();
     }

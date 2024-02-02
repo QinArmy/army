@@ -40,7 +40,7 @@ import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
-public class InsertTests extends MySQLReactiveSessionTestsSupport {
+public class InsertTests extends SessionTestsSupport {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(InsertTests.class);

@@ -97,6 +97,13 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
         return new OnlyCommanderOption(consumer);
     }
 
+    static SyncStmtOption preferServerPrepare(final boolean prefer) {
+        if (prefer) {
+            return DEFAULT;
+        }
+        return OnlyPreferServerPrepareOption.INSTANCE;
+    }
+
 
     static SyncStmtOption overrideOptionIfNeed(final SyncStmtOption option, final TransactionInfo info) {
         final Integer timeout;
@@ -466,6 +473,24 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
 
 
     } // OnlySplitSizeOption
+
+
+    private static final class OnlyPreferServerPrepareOption extends DefaultSyncStmtOption {
+
+        private static final OnlyPreferServerPrepareOption INSTANCE = new OnlyPreferServerPrepareOption();
+
+        /**
+         * @see ArmySyncStmtOptions#preferServerPrepare(boolean)
+         */
+        private OnlyPreferServerPrepareOption() {
+        }
+
+        @Override
+        public boolean isPreferServerPrepare() {
+            return false;
+        }
+
+    } // OnlyPreferServerPrepareOption
 
 
 }

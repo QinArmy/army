@@ -24,6 +24,7 @@ import io.army.mapping.LocalDateType;
 import io.army.mapping.LocalTimeType;
 import io.army.mapping.MappingType;
 import io.army.session.Session;
+import io.army.session.StmtOption;
 
 public abstract class MySQLs extends MySQLSyntax {
 
@@ -225,7 +226,20 @@ public abstract class MySQLs extends MySQLSyntax {
         return MySQLMultiDeletes.batch();
     }
 
-
+    /**
+     * <p>Create MySQL LOAD DATA statement instance.
+     * <p><strong>Limitations</strong> of MySQL LOAD DATA statement :
+     * <ul>
+     *     <li>server local_infile system variables must be true</li>
+     *     <li>client allowLoadLocalInfile property must be true</li>
+     *     <li>You have to use client-prepared statement or static statement,see {@link StmtOption#isPreferServerPrepare()} ,see following LOCAL INFILE Request</li>
+     * </ul>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile">Server local_infile system variables</a>
+     * @see <a href="https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-security.html">client allowLoadLocalInfile property </a>
+     * @see <a href="https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_local_infile_request.html">LOCAL INFILE Request</a>
+     */
     public static MySQLLoadData._LoadDataClause<DmlCommand> loadDataStmt() {
         return MySQLLoads.loadDataCommand(SQLs::identity);
     }

@@ -35,9 +35,6 @@ import io.army.util._Exceptions;
 import io.jdbd.Driver;
 import io.jdbd.session.DatabaseSessionFactory;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -47,15 +44,17 @@ public abstract class FactoryUtils {
     private FactoryUtils() {
     }
 
+
     public static SyncSessionFactory createArmyBankSyncFactory(final Database database) {
         final Properties properties = new Properties();
         properties.put("user", "army_w");
         properties.put("password", "army123");
 
-        if (isMyLocal()) {
+        if (MyPaths.isMyLocal()) {
             properties.put("sslMode", "DISABLED");
             if (database == Database.MySQL) {
                 properties.put("allowMultiQueries", "true");
+                properties.put("allowLoadLocalInfile", "true");
             }
 
         }
@@ -82,8 +81,9 @@ public abstract class FactoryUtils {
         map.put(Driver.PASSWORD, "army123");
         map.put("factoryWorkerCount", 10);
 
-        if (isMyLocal()) {
+        if (MyPaths.isMyLocal()) {
             map.put("sslMode", "DISABLED");
+            map.put("allowLoadLocalInfile", Boolean.TRUE);
         }
 
 
@@ -184,13 +184,6 @@ public abstract class FactoryUtils {
                 throw _Exceptions.unexpectedEnum(database);
         }
         return url;
-    }
-
-
-    private static boolean isMyLocal() {
-        final Path path;
-        path = Paths.get(System.getProperty("user.dir"), "src/test/java/io/army/my");
-        return Files.exists(path);
     }
 
 

@@ -280,7 +280,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
         try (final Statement statement = bindStatement(stmt, option)) {
 
-            final long rows, returnRows;
+            final long rows;
 
             if (statement instanceof PreparedStatement) {
                 if (this.factory.useLargeUpdate) {

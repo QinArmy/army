@@ -39,6 +39,8 @@ import java.util.function.Supplier;
  * <p>More document see {@link MySQLs#loadDataStmt()}
  *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile">Server local_infile system variables</a>
+ * @see <a href="https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-security.html">client allowLoadLocalInfile property </a>
  */
 public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
