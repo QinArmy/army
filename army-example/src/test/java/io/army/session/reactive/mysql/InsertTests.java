@@ -51,17 +51,22 @@ public class InsertTests extends MySQLReactiveSessionTestsSupport {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
-        regionList = this.createReginList();
+        regionList = createReginListWithCount(3);
+
+        final long startNanoSecond = System.nanoTime();
+
         final Insert stmt;
         stmt = MySQLs.singleInsert()
-                //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
                 .values(regionList)
                 .asInsert();
 
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
 
         final ResultStates states;
+
         states = session.update(stmt)
                 .block();
 

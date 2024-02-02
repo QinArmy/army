@@ -36,11 +36,24 @@ public interface Clause extends Item {
 
         _VariadicExprCommaClause comma(Expression exp);
 
+
+        _VariadicExprCommaClause comma(Expression exp1, Expression exp2);
+
+        _VariadicExprCommaClause comma(Expression exp1, Expression exp2, Expression exp3);
+
+        _VariadicExprCommaClause comma(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
+
     }
 
     interface _VariadicExprSpaceClause {
 
         _VariadicExprCommaClause space(Expression exp);
+
+        _VariadicExprCommaClause space(Expression exp1, Expression exp2);
+
+        _VariadicExprCommaClause space(Expression exp1, Expression exp2, Expression exp3);
+
+        _VariadicExprCommaClause space(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
 
     }
 

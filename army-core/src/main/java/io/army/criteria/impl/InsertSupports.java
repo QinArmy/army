@@ -35,10 +35,8 @@ import java.util.*;
 import java.util.function.*;
 
 /**
- * <p>
- * This class hold the base class(interface) of the implementation of all insert syntax interfaces.
- * <p>
- * Below is chinese signature:<br/>
+ * <p>This class hold the base class(interface) of the implementation of all insert syntax interfaces.
+ * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @since 0.6.0
@@ -2061,7 +2059,14 @@ abstract class InsertSupports {
 
         private void asInsertStatement() {
             _Assert.nonPrepared(this.prepared);
-            insertStatementGuard(this);
+
+            try {
+                insertStatementGuard(this);
+            } catch (Exception e) {
+                throw ContextStack.clearStackAndCause(e, e.getMessage());
+            } catch (Error e) {
+                throw ContextStack.clearStackAndError(e);
+            }
 
             //finally clear context
             final CriteriaContext context = this.context;

@@ -17,7 +17,7 @@
 package io.army.criteria.mysql.unit;
 
 import io.army.criteria.Visible;
-import io.army.criteria.dialect.SQLCommand;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
@@ -40,8 +40,8 @@ public class MySQLLoadDataUnitTests {
         tempFile = Files.createTempFile("mySQLLoadData", ".temp");
 
         try {
-            final SQLCommand stmt;
-            stmt = MySQLs.loadDataCommand()
+            final DmlCommand stmt;
+            stmt = MySQLs.loadDataStmt()
                     .loadData(MySQLs.LOCAL)
                     .infile(tempFile)
                     .ignore()
@@ -77,7 +77,7 @@ public class MySQLLoadDataUnitTests {
     }
 
 
-    private static void printStmt(final SQLCommand load) {
+    private static void printStmt(final DmlCommand load) {
         String sql;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             sql = load.mockAsString(dialect, Visible.ONLY_VISIBLE, true);

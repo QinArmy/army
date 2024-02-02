@@ -625,19 +625,13 @@ abstract class SqlWords {
 
     }//KeyWordRow
 
-    enum KeyWordRows implements SQLs.WordRows, SQLWords {
+    enum KeyWordRows implements SQLs.WordRows, Functions.ArmyKeyWord {
 
-        ROWS(" ROWS");
-
-        private final String spaceWord;
-
-        KeyWordRows(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        ROWS;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return " ROWS";
         }
 
         @Override
@@ -645,7 +639,24 @@ abstract class SqlWords {
             return SQLs.keyWordsToString(this);
         }
 
-    }//KeyWordRows
+    } //KeyWordRows
+
+
+    enum KeyWordLines implements SQLs.WordLines, Functions.ArmyKeyWord {
+
+        LINES;
+
+        @Override
+        public final String spaceRender() {
+            return " LINES";
+        }
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+    } //KeyWordLines
 
     enum KeyWordWithTies implements SQLs.WordsWithTies, SQLWords {
 

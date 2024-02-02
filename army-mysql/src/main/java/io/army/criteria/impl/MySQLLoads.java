@@ -16,25 +16,21 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Item;
-import io.army.criteria.SQLWords;
-import io.army.criteria.Statement;
-import io.army.criteria.dialect.SQLCommand;
+import io.army.criteria.*;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner.mysql._MySQLLoadData;
-import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
+import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -48,7 +44,7 @@ abstract class MySQLLoads {
         throw new UnsupportedOperationException();
     }
 
-    static <I extends Item> MySQLLoadData._LoadDataClause<I> loadDataCommand(Function<SQLCommand, I> function) {
+    static <I extends Item> MySQLLoadData._LoadDataClause<I> loadDataCommand(Function<DmlCommand, I> function) {
         return new PrimaryLoadDataClause<>(function);
     }
 
@@ -75,13 +71,12 @@ abstract class MySQLLoads {
             return CriteriaUtils.enumToString(this);
         }
 
-    }//StrategyOption
+    } //StrategyOption
 
+    @SuppressWarnings("unchecked")
     private static abstract class LoadDataClause<T extends LoadDataClause<T>> {
 
         final CriteriaContext context;
-
-        private final T THIS;
 
         private List<MySQLs.Modifier> modifierList;
 
@@ -90,31 +85,25 @@ abstract class MySQLLoads {
         private StrategyOption strategyOption;
 
 
-        @SuppressWarnings("unchecked")
         private LoadDataClause() {
             this.context = CriteriaContexts.otherPrimaryContext(MySQLUtils.DIALECT);
             ContextStack.push(this.context);
-            this.THIS = (T) this;
         }
 
 
         public final T loadData(MySQLs.Modifier local) {
-            if (local != MySQLs.LOCAL) {
-                throw ContextStack.criteriaError(this.context, String.format("%s isn't %s", local, MySQLs.LOCAL));
+            if (MySQLUtils.loadDataModifier(local) < 0) {
+                String m = String.format("MySQL LOAD DATA don't support %s", local);
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
             this.modifierList = Collections.singletonList(local);
-            return THIS;
+            return (T) this;
         }
 
         public final T loadData(List<MySQLs.Modifier> modifierList) {
-            if (!modifierList.contains(MySQLs.LOCAL)) {
-                String m = String.format("%s don't contains %s", modifierList, MySQLs.LOCAL);
-                throw ContextStack.criteriaError(this.context, m);
-            }
             this.modifierList = MySQLUtils.asModifierList(this.context, modifierList, MySQLUtils::loadDataModifier);
-            return THIS;
+            return (T) this;
         }
-
 
 
         public final T infile(final @Nullable Path filePath) {
@@ -124,11 +113,11 @@ abstract class MySQLLoads {
                 String m = String.format("%s not exists ", filePath);
                 throw ContextStack.clearStackAndCriteriaError(m);
             } else if (Files.isDirectory(filePath) || !Files.isReadable(filePath)) {
-                String m = String.format("%s isn't readable ", filePath);
+                String m = String.format("%s isn't readable file", filePath);
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
             this.fileName = filePath;
-            return THIS;
+            return (T) this;
         }
 
         public final T infile(Supplier<Path> supplier) {
@@ -138,13 +127,13 @@ abstract class MySQLLoads {
 
         public final T replace() {
             this.strategyOption = StrategyOption.REPLACE;
-            return THIS;
+            return (T) this;
         }
 
 
         public final T ignore() {
             this.strategyOption = StrategyOption.IGNORE;
-            return THIS;
+            return (T) this;
         }
 
 
@@ -154,7 +143,7 @@ abstract class MySQLLoads {
             } else {
                 this.strategyOption = null;
             }
-            return THIS;
+            return (T) this;
         }
 
 
@@ -164,36 +153,36 @@ abstract class MySQLLoads {
             } else {
                 this.strategyOption = null;
             }
-            return THIS;
+            return (T) this;
         }
 
 
-    }//LoadDataClause
+    } // LoadDataClause
 
     private static final class PrimaryLoadDataClause<I extends Item>
             extends LoadDataClause<PrimaryLoadDataClause<I>>
-            implements MySQLLoadData._LoadDataClause<I>
-            , MySQLLoadData._LocalInfileClause<I>
-            , MySQLLoadData._StrategyOptionSpec<I> {
+            implements MySQLLoadData._LoadDataClause<I>,
+            MySQLLoadData._LocalInfileClause<I>,
+            MySQLLoadData._StrategyOptionSpec<I> {
 
-        private final Function<SQLCommand, I> function;
+        private final Function<DmlCommand, I> function;
 
-        private PrimaryLoadDataClause(Function<SQLCommand, I> function) {
+        private PrimaryLoadDataClause(Function<DmlCommand, I> function) {
             this.function = function;
         }
 
         @Override
-        public <T> MySQLLoadData._PartitionSpec<I, T> intoTable(final @Nullable SingleTableMeta<T> table) {
+        public <T> MySQLLoadData._PartitionSpec<I, T> intoTable(final @Nullable SimpleTableMeta<T> table) {
             if (table == null) {
-                throw ContextStack.nullPointer(this.context);
+                throw ContextStack.clearStackAndNullPointer();
             }
             return new PartitionClause<>(this, table, this::simpleStmtEnd);
         }
 
         @Override
-        public <T> MySQLLoadData._PartitionSpec<MySQLLoadData._ParentLoadData<I, T>, T> intoTable(final @Nullable ParentTableMeta<T> table) {
+        public <T> MySQLLoadData._PartitionSpec<MySQLLoadData._ChildLoadData<I, T>, T> intoTable(final @Nullable ParentTableMeta<T> table) {
             if (table == null) {
-                throw ContextStack.nullPointer(this.context);
+                throw ContextStack.clearStackAndNullPointer();
             }
             return new PartitionClause<>(this, table, this::parentStmtEnd);
         }
@@ -202,8 +191,8 @@ abstract class MySQLLoads {
             return this.function.apply(new SimpleLoadDataStatement(clause).asCommand());
         }
 
-        private <T> MySQLLoadData._ParentLoadData<I, T> parentStmtEnd(PartitionClause<?, ?> clause) {
-            final Statement._AsCommandClause<MySQLLoadData._ParentLoadData<I, T>> spec;
+        private <T> MySQLLoadData._ChildLoadData<I, T> parentStmtEnd(PartitionClause<?, ?> clause) {
+            final Statement._AsCommandClause<MySQLLoadData._ChildLoadData<I, T>> spec;
             spec = new ParentLoadDataStatement<>(clause, this.function);
             return spec.asCommand();
         }
@@ -213,9 +202,9 @@ abstract class MySQLLoads {
 
     private static final class ChildLoadDataClause<I extends Item, P>
             extends LoadDataClause<ChildLoadDataClause<I, P>>
-            implements MySQLLoadData._ChildLoadDataClause<I, P>
-            , MySQLLoadData._ChildLocalInfileClause<I, P>
-            , MySQLLoadData._ChildStrategyOptionSpec<I, P> {
+            implements MySQLLoadData._ChildLoadDataClause<I, P>,
+            MySQLLoadData._ChildLocalInfileClause<I, P>,
+            MySQLLoadData._ChildStrategyOptionSpec<I, P> {
 
         private final Function<PartitionClause<?, ?>, I> function;
 
@@ -229,20 +218,18 @@ abstract class MySQLLoads {
         }
 
 
-    }//ChildLoadDataClause
+    } //ChildLoadDataClause
 
 
     private static final class PartitionClause<I extends Item, T>
             extends InsertSupports.AssignmentSetClause<
             T,
             MySQLLoadData._LoadSetSpec<I, T>>
-            implements MySQLLoadData._PartitionSpec<I, T>
-            , MySQLLoadData._ColumnTerminatedBySpec<I, T>
-            , MySQLLoadData._LineStartingBySpec<I, T>
-            , MySQLLoadData._LinesTerminatedBySpec<I, T>
-            , Statement._RightParenClause<MySQLLoadData._LoadSetSpec<I, T>>
-            , MySQLLoadData._StaticColumnDualClause<MySQLLoadData._LoadSetSpec<I, T>>
-            , MySQLLoadData._LineAfterIgnoreClause<I, T> {
+            implements MySQLLoadData._PartitionSpec<I, T>,
+            MySQLLoadData._FieldsColumnsSpec<I, T>,
+            MySQLLoadData._LinesSpec<I, T>,
+            MySQLLoadData._ColumnTerminatedBySpec,
+            MySQLLoadData._LineTerminatedBySpec {
 
 
         private final List<MySQLs.Modifier> modifierList;
@@ -253,9 +240,9 @@ abstract class MySQLLoads {
 
         private final Function<PartitionClause<?, ?>, I> function;
 
-        private List<String> partitionLit;
+        private List<String> partitionList;
 
-        private Object charset;
+        private String charsetName;
 
         private Boolean fieldsKeyWords;
 
@@ -274,6 +261,8 @@ abstract class MySQLLoads {
         private String linesTerminatedBy;
 
         private Long ignoreLine;
+
+        private SQLWords ignoreLineWord;
 
         private List<_Expression> columnExpList;
 
@@ -295,266 +284,214 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public Statement._LeftParenStringQuadraOptionalSpec<MySQLLoadData._CharsetSpec<I, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
-        }
-
-
-        @Override
-        public MySQLLoadData._FieldsColumnsSpec<I, T> characterSet(String charsetName) {
-            this.charset = charsetName;
+        public MySQLLoadData._CharsetSpec<I, T> partition(String first, String... rest) {
+            this.partitionList = ArrayUtils.unmodifiableListOf(first, rest);
             return this;
         }
 
         @Override
-        public MySQLLoadData._FieldsColumnsSpec<I, T> characterSet(MySQLCharset charset) {
-            this.charset = charset;
+        public MySQLLoadData._CharsetSpec<I, T> partition(Consumer<Consumer<String>> consumer) {
+            this.partitionList = CriteriaUtils.stringList(this.context, true, consumer);
+            return this;
+        }
+
+        @Override
+        public MySQLLoadData._CharsetSpec<I, T> ifPartition(Consumer<Consumer<String>> consumer) {
+            this.partitionList = CriteriaUtils.stringList(this.context, false, consumer);
+            return this;
+        }
+
+        @Override
+        public MySQLLoadData._FieldsColumnsSpec<I, T> characterSet(@Nullable String charsetName) {
+            if (charsetName == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.charsetName = charsetName;
             return this;
         }
 
         @Override
         public MySQLLoadData._FieldsColumnsSpec<I, T> ifCharacterSet(Supplier<String> supplier) {
-            this.charset = supplier.get();
+            this.charsetName = supplier.get();
             return this;
         }
 
         @Override
-        public MySQLLoadData._ColumnTerminatedBySpec<I, T> fields() {
+        public MySQLLoadData._LinesSpec<I, T> fields(Consumer<MySQLLoadData._ColumnTerminatedBySpec> consumer) {
             this.fieldsKeyWords = Boolean.TRUE;
+            CriteriaUtils.invokeConsumer(this, consumer);
+            if (this.fieldsTerminatedBy == null && this.fieldsEnclosedBy == null && this.fieldsEscapedBy == null) {
+                throw dontAddFieldsClause();
+            }
             return this;
         }
 
         @Override
-        public MySQLLoadData._ColumnTerminatedBySpec<I, T> columns() {
+        public MySQLLoadData._LinesSpec<I, T> columns(Consumer<MySQLLoadData._ColumnTerminatedBySpec> consumer) {
             this.fieldsKeyWords = Boolean.FALSE;
+            CriteriaUtils.invokeConsumer(this, consumer);
+            if (this.fieldsTerminatedBy == null && this.fieldsEnclosedBy == null && this.fieldsEscapedBy == null) {
+                throw dontAddFieldsClause();
+            }
+
             return this;
         }
 
+
         @Override
-        public MySQLLoadData._ColumnEnclosedBySpec<I, T> terminatedBy(final @Nullable String string) {
-            if (this.linesClause) {
-                if (string == null) {
-                    throw ContextStack.nullPointer(this.context);
-                }
-                this.linesTerminatedBy = string;
-            } else if (this.fieldsKeyWords != null) {
-                if (string == null) {
-                    throw ContextStack.nullPointer(this.context);
-                }
-                this.fieldsTerminatedBy = string;
+        public MySQLLoadData._LinesSpec<I, T> ifFields(Consumer<MySQLLoadData._ColumnTerminatedBySpec> consumer) {
+            this.fieldsKeyWords = Boolean.TRUE;
+            CriteriaUtils.invokeConsumer(this, consumer);
+            if (this.fieldsTerminatedBy == null && this.fieldsEnclosedBy == null && this.fieldsEscapedBy == null) {
+                this.fieldsKeyWords = null;
             }
             return this;
         }
 
         @Override
-        public MySQLLoadData._ColumnEnclosedBySpec<I, T> terminatedBy(Supplier<String> supplier) {
-            if (this.linesClause || this.fieldsKeyWords != null) {
-                this.terminatedBy(supplier.get());
+        public MySQLLoadData._LinesSpec<I, T> ifColumns(Consumer<MySQLLoadData._ColumnTerminatedBySpec> consumer) {
+            this.fieldsKeyWords = Boolean.FALSE;
+            CriteriaUtils.invokeConsumer(this, consumer);
+            if (this.fieldsTerminatedBy == null && this.fieldsEnclosedBy == null && this.fieldsEscapedBy == null) {
+                this.fieldsKeyWords = null;
             }
             return this;
         }
 
         @Override
-        public MySQLLoadData._ColumnEnclosedBySpec<I, T> ifTerminatedBy(Supplier<String> supplier) {
-            if (this.linesClause || this.fieldsKeyWords != null) {
-                final String string;
-                if ((string = supplier.get()) != null) {
-                    this.terminatedBy(string);
-                }
-            }
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._ColumnEnclosedByClause<I, T> optionally() {
-            this.fieldsOptionally = this.fieldsKeyWords != null;
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._ColumnEnclosedByClause<I, T> ifOptionally(BooleanSupplier predicate) {
-            this.fieldsOptionally = this.fieldsKeyWords != null && predicate.getAsBoolean();
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._ColumnEscapedBySpec<I, T> enclosedBy(char ch) {
-            this.fieldsEnclosedBy = this.fieldsKeyWords != null ? ch : null;
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._ColumnEscapedBySpec<I, T> enclosedBy(Supplier<Character> supplier) {
-            if (this.fieldsKeyWords != null) {
-                final Character ch;
-                if ((ch = supplier.get()) == null) {
-                    throw ContextStack.nullPointer(this.context);
-                }
-                this.fieldsEnclosedBy = ch;
-            } else {
-                this.fieldsEnclosedBy = null;
-            }
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._ColumnEscapedBySpec<I, T> ifEnclosedBy(Supplier<Character> supplier) {
-            this.fieldsEnclosedBy = this.fieldsKeyWords != null ? supplier.get() : null;
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._LinesSpec<I, T> escapedBy(char ch) {
-            this.fieldsEscapedBy = this.fieldsKeyWords != null ? ch : null;
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._LinesSpec<I, T> escapedBy(Supplier<Character> supplier) {
-            if (this.fieldsKeyWords != null) {
-                final Character ch;
-                if ((ch = supplier.get()) == null) {
-                    throw ContextStack.nullPointer(this.context);
-                }
-                this.fieldsEscapedBy = ch;
-            } else {
-                this.fieldsEscapedBy = null;
-            }
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._LinesSpec<I, T> ifEscapedBy(Supplier<Character> supplier) {
-            this.fieldsEscapedBy = this.fieldsKeyWords != null ? supplier.get() : null;
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._LineStartingBySpec<I, T> lines() {
+        public MySQLLoadData._IgnoreLineSpec<I, T> lines(Consumer<MySQLLoadData._LineTerminatedBySpec> consumer) {
             this.linesClause = true;
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._LinesTerminatedBySpec<I, T> startingBy(final @Nullable String string) {
-            if (!this.linesClause) {
-                this.linesStartingBy = null;
-            } else if (string == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else {
-                this.linesStartingBy = string;
+            CriteriaUtils.invokeConsumer(this, consumer);
+            if (this.linesStartingBy == null && this.linesTerminatedBy == null) {
+                throw ContextStack.clearStackAndCriteriaError("You don't add any lines clause");
             }
             return this;
         }
 
         @Override
-        public MySQLLoadData._LinesTerminatedBySpec<I, T> startingBy(Supplier<String> supplier) {
-            return this.startingBy(supplier.get());
-        }
-
-        @Override
-        public MySQLLoadData._LinesTerminatedBySpec<I, T> ifStartingBy(Supplier<String> supplier) {
-            this.linesStartingBy = this.linesClause ? supplier.get() : null;
+        public MySQLLoadData._IgnoreLineSpec<I, T> ifLines(Consumer<MySQLLoadData._LineTerminatedBySpec> consumer) {
+            this.linesClause = true;
+            CriteriaUtils.invokeConsumer(this, consumer);
+            this.linesClause = this.linesStartingBy != null || this.linesTerminatedBy != null;
             return this;
         }
 
         @Override
-        public Statement._RightParenClause<MySQLLoadData._LoadSetSpec<I, T>> leftParen(Consumer<Consumer<Expression>> consumer) {
-            consumer.accept(this::comma);
-            return this;
-        }
-
-        @Override
-        public Statement._RightParenClause<MySQLLoadData._LoadSetSpec<I, T>> leftParen(Expression fieldOrVar) {
-            return this.comma(fieldOrVar);
-        }
-
-        @Override
-        public MySQLLoadData._StaticColumnDualClause<MySQLLoadData._LoadSetSpec<I, T>> leftParen(Expression fieldOrVar1, Expression fieldOrVar2) {
-            this.comma(fieldOrVar1);
-            this.comma(fieldOrVar2);
-            return this;
-        }
-
-        @Override
-        public Statement._RightParenClause<MySQLLoadData._LoadSetSpec<I, T>> comma(final @Nullable Expression fieldOrVar) {
-            if (fieldOrVar == null) {
-                throw ContextStack.nullPointer(this.context);
+        public MySQLLoadData._ColumnOrVarListSpec<I, T> ignore(long rowNumber, SQLs.LinesWord word) {
+            if (word != SQLs.LINES && word != SQLs.ROWS) {
+                throw CriteriaUtils.unknownWords(word);
             }
-            List<_Expression> list = this.columnExpList;
-            if (list == null) {
-                list = _Collections.arrayList();
-                this.columnExpList = list;
-            } else if (!(list instanceof ArrayList)) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            list.add((ArmyExpression) fieldOrVar);
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._StaticColumnDualClause<MySQLLoadData._LoadSetSpec<I, T>> comma(Expression fieldOrVar1, Expression fieldOrVar2) {
-            this.comma(fieldOrVar1);
-            this.comma(fieldOrVar2);
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._LoadSetSpec<I, T> rightParen() {
-            final List<_Expression> list = this.columnExpList;
-            if (list == null) {
-                this.columnExpList = Collections.emptyList();
-            } else {
-                this.columnExpList = _Collections.unmodifiableList(list);
-            }
-            return this;
-        }
-
-        @Override
-        public MySQLLoadData._LineAfterIgnoreClause<I, T> ignore(long rowNumber) {
             this.ignoreLine = rowNumber;
+            this.ignoreLineWord = (SQLWords) word;
             return this;
         }
 
         @Override
-        public MySQLLoadData._LineAfterIgnoreClause<I, T> ignore(Supplier<Long> supplier) {
-            final Long num;
-            num = supplier.get();
-            if (num == null) {
-                throw ContextStack.nullPointer(this.context);
+        public MySQLLoadData._ColumnOrVarListSpec<I, T> ignore(Supplier<Long> supplier, SQLs.LinesWord word) {
+            return this.ignore(CriteriaUtils.invokingSupplier(supplier), word);
+        }
+
+        @Override
+        public MySQLLoadData._ColumnOrVarListSpec<I, T> ifIgnore(Supplier<Long> supplier, SQLs.LinesWord word) {
+            if (word != SQLs.LINES && word != SQLs.ROWS) {
+                throw CriteriaUtils.unknownWords(word);
             }
-            this.ignoreLine = num;
+            this.ignoreLine = CriteriaUtils.invokingSupplier(supplier);
+            this.ignoreLineWord = (SQLWords) word;
             return this;
         }
 
         @Override
-        public MySQLLoadData._ColumnOrVarListSpec<I, T> rows() {
+        public MySQLLoadData._LoadSetSpec<I, T> parens(Consumer<Clause._VariadicExprSpaceClause> consumer) {
+            this.columnExpList = ClauseUtils.invokeVariadicExpressionClause(true, consumer);
             return this;
         }
 
         @Override
-        public MySQLLoadData._LineAfterIgnoreClause<I, T> ifIgnore(Supplier<Long> supplier) {
-            this.ignoreLine = supplier.get();
+        public MySQLLoadData._LoadSetSpec<I, T> ifParens(Consumer<Clause._VariadicExprSpaceClause> consumer) {
+            this.columnExpList = ClauseUtils.invokeVariadicExpressionClause(false, consumer);
             return this;
         }
+
+        @Override
+        public MySQLLoadData._LoadSetSpec<I, T> parens(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> consumer) {
+            return this;
+        }
+
+        @Override
+        public MySQLLoadData._LoadSetSpec<I, T> ifParens(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> consumer) {
+            return this;
+        }
+
+
+        @Override
+        public PartitionClause<I, T> terminatedBy(String string) {
+            return this;
+        }
+
+        @Override
+        public PartitionClause<I, T> terminatedBy(Supplier<String> supplier) {
+            return this;
+        }
+
+        @Override
+        public PartitionClause<I, T> ifTerminatedBy(Supplier<String> supplier) {
+            return this;
+        }
+
+        @Override
+        public MySQLLoadData._EscapedByClause enclosedBy(char ch) {
+            return null;
+        }
+
+        @Override
+        public MySQLLoadData._EscapedByClause ifEnclosedBy(Supplier<Character> supplier) {
+            return null;
+        }
+
+        @Override
+        public MySQLLoadData._EscapedByClause optionallyEnclosedBy(char ch) {
+            return null;
+        }
+
+        @Override
+        public MySQLLoadData._EscapedByClause ifOptionallyEnclosedBy(Supplier<Character> supplier) {
+            return null;
+        }
+
+
+        @Override
+        public void escapedBy(char ch) {
+
+        }
+
+        @Override
+        public void ifEscapedBy(Supplier<Character> supplier) {
+
+        }
+
+
+        @Override
+        public void startingBy(String string) {
+
+        }
+
+        @Override
+        public void ifStartingBy(Supplier<String> supplier) {
+
+        }
+
 
         @Override
         public I asCommand() {
-            this.endAssignmentSetClause();
-            return this.function.apply(this);
+            return null;
         }
 
-
-        private MySQLLoadData._CharsetSpec<I, T> partitionEnd(final List<String> list) {
-            if (this.partitionLit != null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            this.partitionLit = list;
-            return this;
+        private static CriteriaException dontAddFieldsClause() {
+            return ContextStack.clearStackAndCriteriaError("you don't add any field clause");
         }
 
-
-    }//PartitionClause
+    } // PartitionClause
 
 
     static abstract class MySQLLoadDataStatement<I extends Item>
@@ -607,9 +544,9 @@ abstract class MySQLLoads {
             this.strategyOption = clause.strategyOption;
             this.targetTable = clause.insertTable;
 
-            this.partitionList = _Collections.safeList(clause.partitionLit);
+            this.partitionList = _Collections.safeList(clause.partitionList);
 
-            this.charset = clause.charset;
+            this.charset = clause.charsetName;
             this.fieldsKeyWords = clause.fieldsKeyWords;
 
             if (this.fieldsKeyWords == null) {
@@ -760,7 +697,7 @@ abstract class MySQLLoads {
 
     }//MySQLLoadDataStatement
 
-    private static final class SimpleLoadDataStatement extends MySQLLoadDataStatement<SQLCommand> {
+    private static final class SimpleLoadDataStatement extends MySQLLoadDataStatement<DmlCommand> {
 
         private SimpleLoadDataStatement(PartitionClause<?, ?> clause) {
             super(clause);
@@ -770,7 +707,7 @@ abstract class MySQLLoads {
     }//SimpleLoadDataStatement
 
 
-    private static final class ChildLoadDataStatement extends MySQLLoadDataStatement<SQLCommand>
+    private static final class ChildLoadDataStatement extends MySQLLoadDataStatement<DmlCommand>
             implements _MySQLLoadData._ChildLoadData {
 
         private final ParentLoadDataStatement<?, ?> parentStatement;
@@ -791,12 +728,12 @@ abstract class MySQLLoads {
 
 
     private static final class ParentLoadDataStatement<I extends Item, P>
-            extends MySQLLoadDataStatement<MySQLLoadData._ParentLoadData<I, P>>
-            implements MySQLLoadData._ParentLoadData<I, P> {
+            extends MySQLLoadDataStatement<MySQLLoadData._ChildLoadData<I, P>>
+            implements MySQLLoadData._ChildLoadData<I, P> {
 
-        private final Function<SQLCommand, I> function;
+        private final Function<DmlCommand, I> function;
 
-        private ParentLoadDataStatement(PartitionClause<?, ?> clause, Function<SQLCommand, I> function) {
+        private ParentLoadDataStatement(PartitionClause<?, ?> clause, Function<DmlCommand, I> function) {
             super(clause);
             assert this.targetTable instanceof ParentTableMeta;
             this.function = function;
@@ -815,7 +752,7 @@ abstract class MySQLLoads {
                 String m = String.format("%s isn't child of %s", childClause.insertTable, this.targetTable);
                 throw ContextStack.criteriaError(childClause.context, m);
             }
-            final SQLCommand childCommand;
+            final DmlCommand childCommand;
             childCommand = new ChildLoadDataStatement(this, childClause)
                     .asCommand();
             return this.function.apply(childCommand);

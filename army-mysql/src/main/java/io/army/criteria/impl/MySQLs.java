@@ -17,7 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SQLCommand;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.mysql.*;
 import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.LocalDateType;
@@ -226,7 +226,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLLoadData._LoadDataClause<SQLCommand> loadDataCommand() {
+    public static MySQLLoadData._LoadDataClause<DmlCommand> loadDataStmt() {
         return MySQLLoads.loadDataCommand(SQLs::identity);
     }
 

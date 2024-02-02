@@ -273,7 +273,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
         final ArrayList<Object> argList = _Collections.arrayList(3);
 
-        CriteriaUtils.invokeConsumer(FuncExpUtils.variadicExpressionClause(true, SQLs.COMMA, argList), expConsumer);
+        CriteriaUtils.invokeConsumer(ClauseUtils.variadicExpressionClause(true, SQLs.COMMA, argList), expConsumer);
 
         if (argList.size() == 0) {
             throw CriteriaUtils.dontAddAnyItem();
@@ -305,7 +305,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
         argList.add(distinct);
 
-        CriteriaUtils.invokeConsumer(FuncExpUtils.variadicExpressionClause(true, SQLs.COMMA, argList), expConsumer);
+        CriteriaUtils.invokeConsumer(ClauseUtils.variadicExpressionClause(true, SQLs.COMMA, argList), expConsumer);
 
         if (argList.size() < 2) {
             throw CriteriaUtils.dontAddAnyItem();

@@ -35,10 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 abstract class CriteriaUtils {
 
@@ -153,6 +150,43 @@ abstract class CriteriaUtils {
                 ((ArmyFuncClause) data).endClause();
             }
             return data;
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
+    static <T> T invokingSupplier(final @Nullable Supplier<T> supplier) {
+        if (supplier == null) {
+            throw ContextStack.clearStackAndNullPointer("Supplier is null");
+        }
+        try {
+
+            final T result;
+            result = supplier.get();
+            if (result == null) {
+                throw ContextStack.clearStackAndNullPointer("Supplier must return non-null.");
+            }
+            return result;
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
+    @Nullable
+    static <T> T invokingIfSupplier(final @Nullable Supplier<T> supplier) {
+        if (supplier == null) {
+            throw ContextStack.clearStackAndNullPointer("Supplier is null");
+        }
+        try {
+            return supplier.get();
         } catch (CriteriaException e) {
             throw ContextStack.clearStackAndCause(e, e.getMessage());
         } catch (Exception e) {

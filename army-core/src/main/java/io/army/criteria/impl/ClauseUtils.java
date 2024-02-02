@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Clause;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Item;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -78,6 +78,38 @@ abstract class ClauseUtils {
         final StaticStringClause clause;
         clause = new StaticStringClause(required);
         return invokeConsumer(clause, consumer);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    static List<_Expression> invokeVariadicExpressionClause(boolean required, Consumer<Clause._VariadicExprSpaceClause> consumer) {
+        final VariadicExpressionClause clause = new VariadicExpressionClause(required, null, null);
+        CriteriaUtils.invokeConsumer(clause, consumer);
+        return (List<_Expression>) clause.endClause();
+    }
+
+    static VariadicExpressionClause variadicExpressionClause(boolean required, @Nullable SQLWords separator, ArrayList<Object> expList) {
+        return new VariadicExpressionClause(required, separator, expList);
+    }
+
+
+    static List<?> endSingleClause(final boolean required, final int startLength, @Nullable List<Object> expList,
+                                   final Consumer<List<Object>> setter) {
+        if (expList == null) {
+            if (required) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            expList = Collections.emptyList();
+        } else if (required && (expList.size() - startLength) == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        } else if (expList instanceof ArrayList) {
+            expList = _Collections.unmodifiableList(expList);
+        } else {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+
+        setter.accept(expList);
+        return expList;
     }
 
 
@@ -175,6 +207,109 @@ abstract class ClauseUtils {
 
 
     } // StaticStringClause
+
+
+    static final class VariadicExpressionClause implements Clause._VariadicExprSpaceClause,
+            Clause._VariadicExprCommaClause {
+
+        private final boolean required;
+
+        private final SQLWords separator;
+
+        private final int startLength;
+
+        private List<Object> expList;
+
+        private VariadicExpressionClause(boolean required, @Nullable SQLWords separator, @Nullable ArrayList<Object> expList) {
+            this.required = required;
+            this.separator = separator;
+            this.expList = expList;
+
+            if (expList == null) {
+                this.startLength = 0;
+            } else {
+                this.startLength = expList.size();
+            }
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause space(Expression exp) {
+            return comma(exp);
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause space(Expression exp1, Expression exp2) {
+            comma(exp1);
+            return comma(exp2);
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause space(Expression exp1, Expression exp2, Expression exp3) {
+            comma(exp1);
+            comma(exp2);
+            return comma(exp3);
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause space(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
+            comma(exp1);
+            comma(exp2);
+            comma(exp3);
+            return comma(exp4);
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause comma(final @Nullable Expression exp) {
+            List<Object> expList = this.expList;
+            if (expList == null) {
+                this.expList = expList = _Collections.arrayList();
+            } else if (!(expList instanceof ArrayList)) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+
+            final SQLWords separator = this.separator;
+            if (separator != null && expList.size() > this.startLength) {
+                expList.add(separator);
+            }
+            if (!(exp instanceof ArmyExpression)) {
+                throw ContextStack.clearStackAndNonArmyItem(exp);
+            }
+            expList.add(exp);
+            return this;
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause comma(Expression exp1, Expression exp2) {
+            comma(exp1);
+            return comma(exp2);
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause comma(Expression exp1, Expression exp2, Expression exp3) {
+            comma(exp1);
+            comma(exp2);
+            return comma(exp3);
+        }
+
+        @Override
+        public Clause._VariadicExprCommaClause comma(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
+            comma(exp1);
+            comma(exp2);
+            comma(exp3);
+            return comma(exp4);
+        }
+
+        List<?> endClause() {
+            return endSingleClause(this.required, this.startLength, this.expList, this::setExpList);
+        }
+
+
+        private void setExpList(List<Object> expList) {
+            this.expList = expList;
+        }
+
+
+    } // VariadicExpressionClause
 
 
 }

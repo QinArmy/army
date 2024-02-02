@@ -19,6 +19,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.SQLWords;
 import io.army.util._StringUtils;
 
+@Deprecated
 public enum MySQLCharset implements SQLWords {
 
     armscii8(" armscii8"),

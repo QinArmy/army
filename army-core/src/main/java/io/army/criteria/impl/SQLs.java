@@ -81,6 +81,8 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordRows ROWS = SqlWords.KeyWordRows.ROWS;
 
+    public static final WordLines LINES = SqlWords.KeyWordLines.LINES;
+
     public static final WordInterval INTERVAL = SqlWords.KeyWordInterval.INTERVAL;
 
     public static final WordsWithTies WITH_TIES = SqlWords.KeyWordWithTies.WITH_TIES;
@@ -660,7 +662,22 @@ public abstract class SQLs extends SQLSyntax {
 
     }
 
-    public interface WordRows extends FetchRow {
+    /**
+     * <p>This interface is base interface of following :
+     * <ul>
+     *     <li>{@link WordRows}</li>
+     *     <li>{@link WordLines}</li>
+     * </ul>
+     */
+    public interface LinesWord {
+
+    }
+
+    public interface WordRows extends FetchRow, LinesWord {
+
+    }
+
+    public interface WordLines extends SQLWords, LinesWord {
 
     }
 

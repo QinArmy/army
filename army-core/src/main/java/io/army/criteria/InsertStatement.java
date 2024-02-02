@@ -48,7 +48,6 @@ public interface InsertStatement extends DmlStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     @Deprecated
@@ -62,8 +61,7 @@ public interface InsertStatement extends DmlStatement {
     }
 
     /**
-     * <p>
-     * This interface representing the option prefer output literal when output domain column,but not contain
+     * <p>This interface representing the option prefer output literal when output domain column,but not contain
      * comment expression
      *
      * <p>
@@ -71,10 +69,14 @@ public interface InsertStatement extends DmlStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      *
-     *
      * @since 0.6.0
      */
     interface _PreferLiteralClause<R> {
+
+        /**
+         * <p>Literal mode option clause can reduce placeholder('?') to avoid database server response SQL state 'HY000' : <br/>
+         * 'prepared statement contains too many placeholders',when you insert big batch rows (for example : 20000 rows)<br/>
+         */
         R literalMode(LiteralMode mode);
     }
 
@@ -98,17 +100,16 @@ public interface InsertStatement extends DmlStatement {
          *
          * <p>
          * satisfy all below:
-         *      <ul>
-         *          <li>exists conflict clause,eg:MySQL ON DUPLICATE KEY,PostgreSQL ON CONFLICT</li>
-         *          <li>non-migration mode,see {@link _MigrationOptionClause#migration()}</li>
-         *          <li>{@link io.army.annotation.GeneratorType} of primary key is {@link io.army.annotation.GeneratorType#POST}</li>
-         *          <li>insert table is {@link io.army.meta.SingleTableMeta} type</li>
-         *          <li>domain insert mode</li>
-         *          <li>insert multi-row</li>
-         *          <li>don't support RETURNING clause or conflict clause is ignorable(eg:DO NOTHING,WHERE)</li>
-         *      </ul>
-         *      you have to specified this insert option or throw {@link CriteriaException}.
-         *
+         * <ul>
+         *     <li>exists conflict clause,eg:MySQL ON DUPLICATE KEY,PostgreSQL ON CONFLICT</li>
+         *     <li>non-migration mode,see {@link _MigrationOptionClause#migration()}</li>
+         *     <li>{@link io.army.annotation.GeneratorType} of primary key is {@link io.army.annotation.GeneratorType#POST}</li>
+         *     <li>insert table is {@link io.army.meta.SingleTableMeta} type</li>
+         *     <li>domain insert mode</li>
+         *     <li>insert multi-row</li>
+         *     <li>don't support RETURNING clause or conflict clause is ignorable(eg:DO NOTHING,WHERE)</li>
+         * </ul>
+         * you have to specified this insert option or throw {@link CriteriaException}.
          */
         R ignoreReturnIds();
 
@@ -165,14 +166,12 @@ public interface InsertStatement extends DmlStatement {
         /**
          * <p>
          * INSERT static column list parens clause
-         *
          */
         R parens(Consumer<_StaticColumnSpaceClause<T>> consumer);
 
         /**
          * <p>
          * INSERT dynamic column list parens clause
-         *
          *
          * @param space see {@link SQLs#SPACE}
          */
@@ -288,9 +287,6 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
-
-
-
     interface _ChildPartClause<CR> {
 
         CR child();
@@ -359,7 +355,6 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
-
     interface _ValuesParensClause<T, R extends Item> extends Item {
 
         R parens(Consumer<_StaticValueSpaceClause<T>> consumer);
@@ -388,7 +383,6 @@ public interface InsertStatement extends DmlStatement {
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *
      */
     interface _StaticAssignmentSetClause<T, R> extends Item {
 
@@ -414,7 +408,6 @@ public interface InsertStatement extends DmlStatement {
         <K, V> R ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> valueOperator, Function<K, V> function, K key);
 
     }
-
 
 
     interface _DynamicAssignmentSetClause<T, SD> {

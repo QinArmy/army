@@ -68,6 +68,7 @@ abstract class ContextStack {
         final CriteriaContext currentContext;
         currentContext = stack.getLast();
         if (context != currentContext) {
+            HOLDER.remove();
             // no bug,never here
             String m = String.format("%s and current %s not match,reject pop.", context, currentContext);
             throw new IllegalArgumentException(m);
@@ -76,6 +77,7 @@ abstract class ContextStack {
             HOLDER.remove();
             stack.clear();
         } else if (stack.removeLast() != currentContext) {
+            HOLDER.remove();
             // Stack no bug,never here
             throw new IllegalStateException("stack state error");
         }
@@ -105,6 +107,7 @@ abstract class ContextStack {
                 LOG.trace("push {}", context);
             }
         } else {
+            HOLDER.remove();
             //no bug,never here
             String m = String.format("outer context[%s] and current[%s] not match,reject push",
                     outerContext, stack.peek());
@@ -126,15 +129,6 @@ abstract class ContextStack {
         return stack == null || stack.size() == 0;
     }
 
-    static void addEndLise(final Runnable listener, final Supplier<CriteriaException> errorHandler) {
-        final Stack stack;
-        if ((stack = HOLDER.get()) == null) {
-            throw errorHandler.get();
-        }
-        stack.getLast().addEndEventListener(listener);
-    }
-
-
     static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
         clearStackOnError(criteriaContext);
         return supplier.get();
@@ -148,11 +142,7 @@ abstract class ContextStack {
 
     static void assertNonNull(@Nullable Object obj) {
         if (obj == null) {
-            final Stack stack = HOLDER.get();
-            if (stack != null) {
-                HOLDER.remove();
-                stack.clear();
-            }
+            HOLDER.remove();
             throw new NullPointerException();
         }
     }
@@ -175,10 +165,7 @@ abstract class ContextStack {
     }
 
     static CriteriaException clearStackAnd(Supplier<CriteriaException> supplier) {
-        final Stack stack = HOLDER.get();
-        if (stack != null) {
-            HOLDER.remove();
-        }
+        HOLDER.remove();
         return supplier.get();
     }
 
@@ -188,36 +175,23 @@ abstract class ContextStack {
     }
 
     static <T, E extends ArmyException> E clearStackAnd(Function<T, E> function, @Nullable T input) {
-        final Stack stack = HOLDER.get();
-        if (stack != null) {
-            HOLDER.remove();
-        }
+        HOLDER.remove();
         return function.apply(input);
     }
 
     static Error clearStackAndError(final Error cause) {
-        final Stack stack = HOLDER.get();
-        if (stack != null) {
-            HOLDER.remove();
-        }
+        HOLDER.remove();
         return cause;
     }
 
     static <T, U, E extends ArmyException> E clearStackAnd(BiFunction<T, U, E> function, @Nullable T input1,
                                                            @Nullable U input2) {
-        final Stack stack = HOLDER.get();
-        if (stack != null) {
-            HOLDER.remove();
-        }
+        HOLDER.remove();
         return function.apply(input1, input2);
     }
 
     static NullPointerException clearStackAndNullPointer() {
-        final Stack stack = HOLDER.get();
-        if (stack != null) {
-            HOLDER.remove();
-            stack.clear();
-        }
+        HOLDER.remove();
         return new NullPointerException();
     }
 
@@ -241,11 +215,7 @@ abstract class ContextStack {
 
 
     static RuntimeException clearStackAndNonArmyItem(final @Nullable Item exp) {
-        final Stack stack;
-        if ((stack = HOLDER.get()) != null) {
-            HOLDER.remove();
-            stack.clear();
-        }
+        HOLDER.remove();
         final RuntimeException e;
         if (exp == null) {
             e = new NullPointerException();

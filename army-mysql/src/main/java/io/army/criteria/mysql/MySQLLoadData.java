@@ -16,15 +16,16 @@
 
 package io.army.criteria.mysql;
 
+import io.army.criteria.Clause;
 import io.army.criteria.Expression;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
-import io.army.criteria.Statement;
-import io.army.criteria.dialect.SQLCommand;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
+import io.army.criteria.impl.SQLs;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
-import io.army.meta.SingleTableMeta;
+import io.army.meta.SimpleTableMeta;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -32,144 +33,129 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public interface MySQLLoadData extends MySQLStatement, SQLCommand {
+
+/**
+ * <p>This interface representing MySQL LOAD DATA Statement
+ * <p>More document see {@link MySQLs#loadDataStmt()}
+ *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement/a>
+ */
+public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
 
-    interface _LoadSetSpec<I extends Item, T> extends InsertStatement._StaticAssignmentSetClause<T, _LoadSetSpec<I, T>>
-            , _AsCommandClause<I> {
-
-    }
-
-    interface _StaticColumnDualClause<VR> extends Statement._RightParenClause<VR> {
-
-        Statement._RightParenClause<VR> comma(Expression fieldOrVar);
-
-        _StaticColumnDualClause<VR> comma(Expression fieldOrVar1, Expression fieldOrVar2);
-
-    }
-
-
-    interface _ColumnOrVarListClause<VR> {
-
-
-        Statement._RightParenClause<VR> leftParen(Consumer<Consumer<Expression>> consumer);
-
-        Statement._RightParenClause<VR> leftParen(Expression fieldOrVar);
-
-        _StaticColumnDualClause<VR> leftParen(Expression fieldOrVar1, Expression fieldOrVar2);
-
-    }
-
-    interface _ColumnOrVarListSpec<I extends Item, T> extends _ColumnOrVarListClause<_LoadSetSpec<I, T>>
-            , _LoadSetSpec<I, T> {
+    interface _LoadSetSpec<I extends Item, T> extends InsertStatement._StaticAssignmentSetClause<T, _LoadSetSpec<I, T>>,
+            _AsCommandClause<I> {
 
     }
 
 
-    interface _LineAfterIgnoreClause<I extends Item, T> {
+    interface _ColumnOrVarListSpec<I extends Item, T> extends _LoadSetSpec<I, T> {
 
-        _ColumnOrVarListSpec<I, T> rows();
+        _LoadSetSpec<I, T> parens(Consumer<Clause._VariadicExprSpaceClause> consumer);
+
+        _LoadSetSpec<I, T> ifParens(Consumer<Clause._VariadicExprSpaceClause> consumer);
+
+        _LoadSetSpec<I, T> parens(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> consumer);
+
+        _LoadSetSpec<I, T> ifParens(SQLs.SymbolSpace space, Consumer<Consumer<Expression>> consumer);
 
     }
 
 
     interface _IgnoreLineSpec<I extends Item, T> extends _ColumnOrVarListSpec<I, T> {
 
-        _LineAfterIgnoreClause<I, T> ignore(long rowNumber);
+        _ColumnOrVarListSpec<I, T> ignore(long rowNumber, SQLs.LinesWord word);
 
-        _LineAfterIgnoreClause<I, T> ignore(Supplier<Long> supplier);
+        _ColumnOrVarListSpec<I, T> ignore(Supplier<Long> supplier, SQLs.LinesWord word);
 
-        _LineAfterIgnoreClause<I, T> ifIgnore(Supplier<Long> supplier);
-    }
-
-    interface _TerminatedByClause<I extends Item, T> {
-
-        _IgnoreLineSpec<I, T> terminatedBy(String string);
-
-        _IgnoreLineSpec<I, T> terminatedBy(Supplier<String> supplier);
-
-        _IgnoreLineSpec<I, T> ifTerminatedBy(Supplier<String> supplier);
-
+        _ColumnOrVarListSpec<I, T> ifIgnore(Supplier<Long> supplier, SQLs.LinesWord word);
     }
 
 
-    interface _LinesTerminatedBySpec<I extends Item, T> extends _TerminatedByClause<I, T>
-            , _IgnoreLineSpec<I, T> {
+    interface _EscapedByClause {
+
+        void escapedBy(char ch);
+
+        void ifEscapedBy(Supplier<Character> supplier);
+    }
+
+
+    interface _EnclosedBySpec extends _EscapedByClause, Item {
+
+        _EscapedByClause enclosedBy(char ch);
+
+        _EscapedByClause ifEnclosedBy(Supplier<Character> supplier);
+
+        _EscapedByClause optionallyEnclosedBy(char ch);
+
+        _EscapedByClause ifOptionallyEnclosedBy(Supplier<Character> supplier);
 
     }
 
 
-    interface _LineStartingBySpec<I extends Item, T> extends _TerminatedByClause<I, T> {
+    interface _TerminatedByClause {
 
-        _LinesTerminatedBySpec<I, T> startingBy(String string);
+        Item terminatedBy(String string);
 
-        _LinesTerminatedBySpec<I, T> startingBy(Supplier<String> supplier);
+        Item terminatedBy(Supplier<String> supplier);
 
-        _LinesTerminatedBySpec<I, T> ifStartingBy(Supplier<String> supplier);
+        Item ifTerminatedBy(Supplier<String> supplier);
+
+    }
+
+    interface _ColumnTerminatedBySpec extends _TerminatedByClause, _EnclosedBySpec {
+
+        @Override
+        _EnclosedBySpec terminatedBy(String string);
+
+        @Override
+        _EnclosedBySpec terminatedBy(Supplier<String> supplier);
+
+        @Override
+        _EnclosedBySpec ifTerminatedBy(Supplier<String> supplier);
+
+    }
+
+    interface _StartingByClause extends Item {
+
+        void startingBy(String string);
+
+        void ifStartingBy(Supplier<String> supplier);
+
+    }
+
+    interface _LineTerminatedBySpec extends _TerminatedByClause, _StartingByClause {
+
+        @Override
+        _StartingByClause terminatedBy(String string);
+
+        @Override
+        _StartingByClause terminatedBy(Supplier<String> supplier);
+
+        @Override
+        _StartingByClause ifTerminatedBy(Supplier<String> supplier);
+
     }
 
 
     interface _LinesSpec<I extends Item, T> extends _IgnoreLineSpec<I, T> {
 
-        _LineStartingBySpec<I, T> lines();
+        _IgnoreLineSpec<I, T> lines(Consumer<_LineTerminatedBySpec> consumer);
+
+        _IgnoreLineSpec<I, T> ifLines(Consumer<_LineTerminatedBySpec> consumer);
 
     }
 
-
-    interface _ColumnEscapedBySpec<I extends Item, T> extends _LinesSpec<I, T> {
-
-        _LinesSpec<I, T> escapedBy(char ch);
-
-        _LinesSpec<I, T> escapedBy(Supplier<Character> supplier);
-
-        _LinesSpec<I, T> ifEscapedBy(Supplier<Character> supplier);
-
-    }
-
-    interface _ColumnEnclosedByClause<I extends Item, T> {
-
-        _ColumnEscapedBySpec<I, T> enclosedBy(char ch);
-
-        _ColumnEscapedBySpec<I, T> enclosedBy(Supplier<Character> supplier);
-
-        _ColumnEscapedBySpec<I, T> ifEnclosedBy(Supplier<Character> supplier);
-    }
-
-    interface _OptionallySpec<I extends Item, T> extends _ColumnEnclosedByClause<I, T> {
-
-        _ColumnEnclosedByClause<I, T> optionally();
-
-        _ColumnEnclosedByClause<I, T> ifOptionally(BooleanSupplier predicate);
-    }
-
-
-    interface _ColumnEnclosedBySpec<I extends Item, T> extends _OptionallySpec<I, T>
-            , _ColumnEscapedBySpec<I, T> {
-
-    }
-
-
-    interface _ColumnTerminatedBySpec<I extends Item, T>
-            extends _TerminatedByClause<I, T>
-            , _ColumnEnclosedBySpec<I, T> {
-
-        @Override
-        _ColumnEnclosedBySpec<I, T> terminatedBy(String string);
-
-        @Override
-        _ColumnEnclosedBySpec<I, T> terminatedBy(Supplier<String> supplier);
-
-        @Override
-        _ColumnEnclosedBySpec<I, T> ifTerminatedBy(Supplier<String> supplier);
-
-
-    }
 
     interface _FieldsColumnsSpec<I extends Item, T> extends _LinesSpec<I, T> {
 
-        _ColumnTerminatedBySpec<I, T> fields();
+        _LinesSpec<I, T> fields(Consumer<_ColumnTerminatedBySpec> consumer);
 
-        _ColumnTerminatedBySpec<I, T> columns();
+        _LinesSpec<I, T> columns(Consumer<_ColumnTerminatedBySpec> consumer);
+
+        _LinesSpec<I, T> ifFields(Consumer<_ColumnTerminatedBySpec> consumer);
+
+        _LinesSpec<I, T> ifColumns(Consumer<_ColumnTerminatedBySpec> consumer);
     }
 
 
@@ -177,14 +163,12 @@ public interface MySQLLoadData extends MySQLStatement, SQLCommand {
 
         _FieldsColumnsSpec<I, T> characterSet(String charsetName);
 
-        _FieldsColumnsSpec<I, T> characterSet(MySQLCharset charset);
-
         _FieldsColumnsSpec<I, T> ifCharacterSet(Supplier<String> supplier);
 
     }
 
-    interface _PartitionSpec<I extends Item, T> extends _PartitionClause_0<_CharsetSpec<I, T>>
-            , _CharsetSpec<I, T> {
+    interface _PartitionSpec<I extends Item, T> extends _PartitionClause<_CharsetSpec<I, T>>,
+            _CharsetSpec<I, T> {
 
     }
 
@@ -192,7 +176,6 @@ public interface MySQLLoadData extends MySQLStatement, SQLCommand {
     interface _ChildIntoTableClause<I extends Item, P> {
 
         <T> _PartitionSpec<I, T> intoTable(ComplexTableMeta<P, T> table);
-
     }
 
     interface _ChildStrategyOptionSpec<I extends Item, P> extends _ChildIntoTableClause<I, P> {
@@ -224,7 +207,7 @@ public interface MySQLLoadData extends MySQLStatement, SQLCommand {
 
     }
 
-    interface _ParentLoadData<I extends Item, P> extends SQLCommand {
+    interface _ChildLoadData<I extends Item, P> extends DmlCommand {
 
         _ChildLoadDataClause<I, P> child();
 
@@ -233,9 +216,9 @@ public interface MySQLLoadData extends MySQLStatement, SQLCommand {
 
     interface _IntoTableClause<I extends Item> {
 
-        <T> _PartitionSpec<I, T> intoTable(SingleTableMeta<T> table);
+        <T> _PartitionSpec<I, T> intoTable(SimpleTableMeta<T> table);
 
-        <T> _PartitionSpec<_ParentLoadData<I, T>, T> intoTable(ParentTableMeta<T> table);
+        <T> _PartitionSpec<_ChildLoadData<I, T>, T> intoTable(ParentTableMeta<T> table);
 
     }
 

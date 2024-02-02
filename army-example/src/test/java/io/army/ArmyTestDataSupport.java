@@ -151,12 +151,8 @@ public abstract class ArmyTestDataSupport {
         final Random random = ThreadLocalRandom.current();
         final List<ChinaRegion<?>> list = _Collections.arrayList();
         ChinaRegion<?> c;
-        final LocalDateTime now = LocalDateTime.now();
         for (int i = 0; i < rowCount; i++) {
             c = new ChinaRegion<>()
-                    .setCreateTime(now)
-                    .setUpdateTime(now)
-
                     .setName(randomRegion(random))
                     .setRegionType(RegionType.NONE)
                     .setRegionGdp(randomDecimal(random))
