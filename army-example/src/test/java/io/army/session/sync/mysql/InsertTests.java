@@ -9,6 +9,7 @@ import io.army.criteria.annotaion.VisibleMode;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
+import io.army.session.record.ResultStates;
 import io.army.sync.SyncLocalSession;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
@@ -54,6 +55,49 @@ public class InsertTests extends SessionTestSupport {
         rows = session.update(stmt);
 
         Assert.assertEquals(rows, regionList.size());
+
+        assertChinaRegionAfterNoConflictInsert(regionList);
+
+    }
+
+
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    public void domainInsertParentAsStates(final SyncLocalSession session) {
+
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                //.literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
+                .values(regionList)
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        final ResultStates states;
+        states = session.updateAsStates(stmt);
+
+        Assert.assertEquals(states.affectedRows(), regionList.size());
+
+        Assert.assertFalse(states.isBatch());
+        Assert.assertFalse(states.hasMoreResult());
+        Assert.assertFalse(states.hasMoreFetch());
+        Assert.assertFalse(states.inTransaction());
+
+        Assert.assertFalse(states.hasColumn());
+        Assert.assertEquals(states.rowCount(), 0L);
+        Assert.assertEquals(states.lastInsertedId(), regionList.get(0).getId());
 
         assertChinaRegionAfterNoConflictInsert(regionList);
 

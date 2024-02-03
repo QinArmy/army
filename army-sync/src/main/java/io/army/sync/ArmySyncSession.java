@@ -18,6 +18,7 @@ package io.army.sync;
 
 import io.army.ArmyException;
 import io.army.criteria.*;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.inner.*;
 import io.army.env.SqlLogMode;
 import io.army.meta.ChildTableMeta;
@@ -792,6 +793,10 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             }
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
+        } else if (statement instanceof DmlCommand) { // eg : MySQL LOAD DATA statement
+            final PairStmt pairStmt = (PairStmt) stmt;
+            this.executor.update(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_FUNC);
+            result = this.executor.update(pairStmt.secondStmt(), option, resultClass, Option.EMPTY_FUNC);
         } else if (inTransaction()) {
             final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
             final PairStmt pairStmt = (PairStmt) stmt;

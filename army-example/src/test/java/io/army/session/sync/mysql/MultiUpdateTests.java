@@ -160,11 +160,9 @@ public class MultiUpdateTests extends SessionTestSupport {
         final BigDecimal gdpAmount = Decimals.valueOf("88888.66");
         final LocalDateTime now = LocalDateTime.now();
 
-
         final long startNanoSecond = System.nanoTime();
 
         final Supplier<List<Hint>> hintSupplier = () -> Collections.singletonList(MySQLs.setVar("foreign_key_checks=OFF"));
-
         final Update stmt;
         stmt = MySQLs.multiUpdate()
                 .with("cte").as(sw -> sw.select(ChinaRegion_.id)
@@ -188,7 +186,6 @@ public class MultiUpdateTests extends SessionTestSupport {
                 .asUpdate();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
-
         Assert.assertEquals(session.update(stmt), regionList.size());
     }
 

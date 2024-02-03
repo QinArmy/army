@@ -52,62 +52,42 @@ public class LoadDataTests extends SessionTestSupport {
 
 
     @Test
-    public void childLoadData(final SyncLocalSession session) throws Exception {
+    public void childLoadData(final SyncLocalSession session) {
         final Path parentTempFile, childTempFile;
-        parentTempFile = Files.createTempFile("parent", ".temp");
-        childTempFile = Files.createTempFile("child", ".temp");
+        parentTempFile = MyPaths.myLocal("china_region_parent.csv");
+        childTempFile = MyPaths.myLocal("china_province.csv");
 
-        try {
-            final DmlCommand stmt;
-            stmt = MySQLs.loadDataStmt()
-                    .loadData(MySQLs.LOCAL)
-                    .infile(parentTempFile)
-                    .ignore()
-                    .intoTable(ChinaRegion_.T)
-                    .partition("p1")
-                    .characterSet("utf8mb4")
+        final DmlCommand stmt;
+        stmt = MySQLs.loadDataStmt()
+                .loadData(MySQLs.LOCAL)
+                .infile(parentTempFile)
+                .ignore()
+                .intoTable(ChinaRegion_.T)
+                .characterSet("utf8mb4")
+                .columns(s -> s.terminatedBy(","))
+                .lines(s -> s.terminatedBy("\n"))
+                .ignore(1, SQLs.LINES)
+                .parens(s -> s.space(ChinaRegion_.name))
+                .set(ChinaRegion_.regionType, SQLs::literal, RegionType.NONE)
+                .asCommand()
 
-                    .columns(s -> s.terminatedBy(" ")
-                            .enclosedBy('t')
-                            .escapedBy('f')
-                    )
-                    .lines(s -> s.startingBy("row:")
-                            .terminatedBy("\n")
-                    )
-                    .ignore(1, SQLs.LINES)
-                    .parens(s -> s.space(ChinaRegion_.name))
+                .child()
 
-                    .set(ChinaRegion_.visible, SQLs::literal, true)
-                    .asCommand()
+                .loadData(MySQLs.LOCAL)
+                .infile(childTempFile)
+                .ignore()
+                .intoTable(ChinaProvince_.T)
+                .characterSet("utf8mb4")
+                .columns(s -> s.terminatedBy(","))
+                .lines(s -> s.terminatedBy("\n"))
+                .ignore(1, SQLs.LINES)
+                .asCommand();
 
-                    .child()
-
-                    .loadData(MySQLs.LOCAL)
-                    .infile(childTempFile)
-                    .ignore()
-                    .intoTable(ChinaProvince_.T)
-                    .partition("p1")
-                    .characterSet("utf8mb4")
-
-                    .columns(s -> s.terminatedBy(" ")
-                            .enclosedBy('t')
-                            .escapedBy('f')
-                    )
-                    .lines(s -> s.startingBy("row:")
-                            .terminatedBy("\n")
-                    )
-                    .ignore(1, SQLs.LINES)
-                    .parens(s -> s.space(ChinaProvince_.governor))
-
-                    .set(ChinaProvince_.governor, SQLs::literal, randomPerson())
-                    .asCommand();
-
-
-            session.update(stmt);
-        } finally {
-            Files.deleteIfExists(parentTempFile);
-            Files.deleteIfExists(childTempFile);
-        }
+        final long rows;
+        rows = session.update(stmt, SyncStmtOption.preferServerPrepare(false));
+        LOG.debug("session[name : {}] rows {}", session.name(), rows);
 
     }
+
+
 }

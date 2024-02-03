@@ -345,7 +345,7 @@ public abstract class _DialectUtils {
             map.putIfAbsent(keyWord.toUpperCase(Locale.ROOT), Boolean.TRUE);
         }
 
-        for (String keyWord : requiredKeyWordMap().keySet()) {
+        for (String keyWord : fieldCoreKeyWordMap().keySet()) {
             map.putIfAbsent(keyWord.toUpperCase(Locale.ROOT), Boolean.TRUE);
         }
         return Collections.unmodifiableMap(map);
@@ -413,12 +413,27 @@ public abstract class _DialectUtils {
     /**
      * @see #createKeyWordMap(Set)
      */
-    private static Map<String, Boolean> requiredKeyWordMap() {
+    private static Map<String, Boolean> fieldCoreKeyWordMap() {
         final Map<String, Boolean> map;
         map = _Collections.hashMap();
 
-        map.put("SELECT", Boolean.TRUE); //TODO
+        map.put("SELECT", Boolean.TRUE);
+        map.put("WITH", Boolean.TRUE);
+        map.put("RECURSIVE", Boolean.TRUE);
+        map.put("COMMENT", Boolean.TRUE);
+
+        map.put("INSERT", Boolean.TRUE);
+        map.put("INTO", Boolean.TRUE);
+        map.put("VALUES", Boolean.TRUE);
+
+        map.put("UPDATE", Boolean.TRUE);
+        map.put("FROM", Boolean.TRUE);
         map.put("DELETE", Boolean.TRUE);
+        map.put("SET", Boolean.TRUE);
+
+        map.put("WHERE", Boolean.TRUE);
+        map.put("AND", Boolean.TRUE);
+
         return map;
     }
 

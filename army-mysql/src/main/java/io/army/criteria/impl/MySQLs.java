@@ -241,7 +241,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * <pre>
      *     <code><br/>
      *
-     *     // Example 1 :
+     *    // Example 01 :
      *
      *    &#64;Test
      *    public void singleLoadData(final SyncLocalSession session) {
@@ -268,6 +268,46 @@ public abstract class MySQLs extends MySQLSyntax {
      *        final long rows;
      *        rows = session.update(stmt, SyncStmtOption.preferServerPrepare(false));
      *        LOG.debug("session[name : {}] rows {}", session.name(), rows);
+     *    }
+     *
+     *    // Example 02 :
+     *
+     *    &#64;Test
+     *    public void childLoadData(final SyncLocalSession session) {
+     *        final Path parentTempFile, childTempFile;
+     *        parentTempFile = MyPaths.myLocal("china_region_parent.csv");
+     *        childTempFile = MyPaths.myLocal("china_province.csv");
+     *
+     *        final DmlCommand stmt;
+     *        stmt = MySQLs.loadDataStmt()
+     *                .loadData(MySQLs.LOCAL)
+     *                .infile(parentTempFile)
+     *                .ignore()
+     *                .intoTable(ChinaRegion_.T)
+     *                .characterSet("utf8mb4")
+     *                .columns(s -> s.terminatedBy(","))
+     *                .lines(s -> s.terminatedBy("\n"))
+     *                .ignore(1, SQLs.LINES)
+     *                .parens(s -> s.space(ChinaRegion_.name))
+     *                .set(ChinaRegion_.regionType, SQLs::literal, RegionType.NONE)
+     *                .asCommand()
+     *
+     *                .child()
+     *
+     *                .loadData(MySQLs.LOCAL)
+     *                .infile(childTempFile)
+     *                .ignore()
+     *                .intoTable(ChinaProvince_.T)
+     *                .characterSet("utf8mb4")
+     *                .columns(s -> s.terminatedBy(","))
+     *                .lines(s -> s.terminatedBy("\n"))
+     *                .ignore(1, SQLs.LINES)
+     *                .asCommand();
+     *
+     *        final long rows;
+     *        rows = session.update(stmt, SyncStmtOption.preferServerPrepare(false));
+     *        LOG.debug("session[name : {}] rows {}", session.name(), rows);
+     *
      *    }
      *
      *     </code>
