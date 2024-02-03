@@ -2085,6 +2085,25 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
 
         @Override
+        public boolean isSupportInsertId() {
+            return this.jdbdStates.isSupportInsertId();
+        }
+
+        @Override
+        public long lastInsertedId() throws DataAccessException {
+            try {
+                return this.jdbdStates.lastInsertedId();
+            } catch (JdbdException e) {
+                throw new DataAccessException(e);
+            }
+        }
+
+        @Override
+        public boolean isBatch() {
+            return this.jdbdStates.isBatch();
+        }
+
+        @Override
         public boolean inTransaction() {
             try {
                 return this.jdbdStates.inTransaction();

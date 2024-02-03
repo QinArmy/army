@@ -361,10 +361,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
 
     }
 
-    /*-------------------below private methods -------------------*/
-
-
-    private SqlLogMode obtainSqlLogMode() {
+    protected final SqlLogMode obtainSqlLogMode() {
         SqlLogMode mode;
         final _ArmySessionFactory factory = this.factory;
         if (factory.sqlLogDynamic) {
@@ -383,6 +380,9 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
         }
         return mode;
     }
+
+    /*-------------------below private methods -------------------*/
+
 
     private void printSql(final SqlLogMode mode, final Stmt stmt, final long startNanoSecond) {
 
@@ -421,10 +421,10 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
     }
 
 
-    protected final void printExecutionCostTimeLog(final Logger logger, final Stmt stmt, final long startNanoSecond) {
+    protected final void printExecutionCostTimeLog(final Logger logger, final Stmt stmt, final SqlLogMode sqlLogMode,
+                                                   final long startNanoSecond) {
 
-        final SqlLogMode mode;
-        if (startNanoSecond < 1L || (mode = obtainSqlLogMode()) == SqlLogMode.OFF) {
+        if (startNanoSecond < 1L || sqlLogMode == SqlLogMode.OFF) {
             return;
         }
 
@@ -444,7 +444,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
                 .append(System.identityHashCode(this))
                 .append("]\n");
 
-        this.factory.dialectParser.printStmt(stmt, mode.beautify, builder::append);
+        this.factory.dialectParser.printStmt(stmt, sqlLogMode.beautify, builder::append);
 
 
         builder.append("\nsql execution cost ")
@@ -455,7 +455,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
                 .append(nano)
                 .append(" nano");
 
-        if (mode.debug) {
+        if (sqlLogMode.debug) {
             logger.debug(builder.toString());
         } else {
             logger.info(builder.toString());

@@ -557,6 +557,8 @@ public abstract class Stmts {
 
         private final boolean hasConflictClause;
 
+        private final boolean armyAppendReturning;
+
         private PostStmt(InsertStmtParams params) {
             super(params);
             this.paramList = params.paramList();
@@ -567,6 +569,7 @@ public abstract class Stmts {
             this.idSelectionIndex = params.idSelectionIndex();
             this.consumer = params.idConsumer();
             this.hasConflictClause = params.hasConflictClause();
+            this.armyAppendReturning = params.isArmyAppendReturning();
         }
 
         @Override
@@ -593,6 +596,11 @@ public abstract class Stmts {
         @Override
         public final boolean hasConflictClause() {
             return this.hasConflictClause;
+        }
+
+        @Override
+        public final boolean isArmyAppendReturning() {
+            return this.armyAppendReturning;
         }
 
         @Override

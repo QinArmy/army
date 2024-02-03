@@ -19,6 +19,7 @@ package io.army.sync;
 import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.env.SqlLogMode;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.*;
@@ -555,49 +556,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     /*-------------------below private methods -------------------*/
 
-    private SyncStmtOption defaultOption() {
-        final TransactionInfo info;
-        info = obtainTransactionInfo();
-
-        final SyncStmtOption option;
-        if (info == null) {
-            option = ArmySyncStmtOptions.DEFAULT;
-        } else {
-            option = ArmySyncStmtOptions.overrideOptionIfNeed(ArmySyncStmtOptions.DEFAULT, info);
-        }
-        return option;
-    }
-
-    private SyncStmtOption replaceIfNeed(final SyncStmtOption option) {
-        final TransactionInfo info;
-
-        final SyncStmtOption newOption;
-        if (option instanceof ArmySyncStmtOptions.TransactionOverrideOption
-                || (info = obtainTransactionInfo()) == null) {
-            newOption = option;
-        } else {
-            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info);
-        }
-        return newOption;
-    }
-
-    private SyncStmtOption replaceForQueryIfNeed(final boolean hasOptimistic,
-                                                 final SyncStmtOption option) {
-        final TransactionInfo info;
-
-        final SyncStmtOption newOption;
-        if (hasOptimistic) {
-            newOption = ArmySyncStmtOptions.overrideOptionWithOptimisticLockIfNeed(option, OPTIMISTIC_LOCK_VALIDATOR,
-                    obtainTransactionInfo());
-        } else if (option instanceof ArmySyncStmtOptions.TransactionOverrideOption
-                || (info = obtainTransactionInfo()) == null) {
-            newOption = option;
-        } else {
-            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info);
-        }
-        return newOption;
-    }
-
 
     private <R> Stream<R> executeQuery(final DqlStatement statement, final SyncStmtOption optionOfUser,
                                        final BiFunction<SingleSqlStmt, SyncStmtOption, Stream<R>> exeFunc) {
@@ -608,7 +566,11 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             stmt = parseDqlStatement(statement, optionOfUser);
 
             final SyncStmtOption option;
-            option = replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser); // for transaction timeout and optimistic lock
+            if (this.factory.sqlExecutionCostTime) {
+                option = replaceForQueryExecutionLogger(optionOfUser, stmt);  // for transaction timeout and optimistic lock and execution log
+            } else {
+                option = replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, null); // for transaction timeout and optimistic lock
+            }
 
             final Stream<R> stream;
             if (stmt instanceof SimpleStmt) {
@@ -625,6 +587,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 // TODO add for firebird
                 throw _Exceptions.unexpectedStmt(stmt);
             }
+
             return stream;
         } catch (ChildUpdateException e) {
             rollbackOnlyOnError(e);
@@ -638,6 +601,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         }
 
     }
+
 
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
@@ -740,11 +704,15 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         final SyncStmtOption option;
         option = replaceIfNeed(userOption);
 
+        final SqlLogMode sqlLogMode;
         final long executionStartNanoSecond;
-        if (this.factory.sqlExecutionCostTime) {
-            executionStartNanoSecond = System.nanoTime();
-        } else {
+        if (!this.factory.sqlExecutionCostTime) {
+            sqlLogMode = SqlLogMode.OFF;
             executionStartNanoSecond = -1L;
+        } else if ((sqlLogMode = obtainSqlLogMode()) == SqlLogMode.OFF) {
+            executionStartNanoSecond = -1L;
+        } else {
+            executionStartNanoSecond = System.nanoTime();
         }
 
 
@@ -784,8 +752,8 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             throw updateChildNoTransaction();
         }
 
-        if (executionStartNanoSecond > 0L) {
-            printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
+        if (sqlLogMode != SqlLogMode.OFF) {
+            printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
         }
         return states;
     }
@@ -804,11 +772,15 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         final Stmt stmt;
         stmt = parseDmlStatement(statement, option);
 
+        final SqlLogMode sqlLogMode;
         final long executionStartNanoSecond;
-        if (this.factory.sqlExecutionCostTime) {
-            executionStartNanoSecond = System.nanoTime();
-        } else {
+        if (!this.factory.sqlExecutionCostTime) {
+            sqlLogMode = SqlLogMode.OFF;
             executionStartNanoSecond = -1L;
+        } else if ((sqlLogMode = obtainSqlLogMode()) == SqlLogMode.OFF) {
+            executionStartNanoSecond = -1L;
+        } else {
+            executionStartNanoSecond = System.nanoTime();
         }
 
         final R result;
@@ -846,7 +818,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         }
 
         if (executionStartNanoSecond > 0L) {
-            printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
+            printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
         }
         return result;
     }
@@ -907,6 +879,71 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 ((_Statement) statement).clear();
             }
         }
+    }
+
+
+    private SyncStmtOption defaultOption() {
+        final TransactionInfo info;
+        info = obtainTransactionInfo();
+
+        final SyncStmtOption option;
+        if (info == null) {
+            option = ArmySyncStmtOptions.DEFAULT;
+        } else {
+            option = ArmySyncStmtOptions.overrideOptionIfNeed(ArmySyncStmtOptions.DEFAULT, info);
+        }
+        return option;
+    }
+
+    private SyncStmtOption replaceIfNeed(final SyncStmtOption option) {
+        final TransactionInfo info;
+
+        final SyncStmtOption newOption;
+        if (option instanceof ArmySyncStmtOptions.TransactionOverrideOption
+                || (info = obtainTransactionInfo()) == null) {
+            newOption = option;
+        } else {
+            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info);
+        }
+        return newOption;
+    }
+
+    private SyncStmtOption replaceForQueryIfNeed(final boolean hasOptimistic, final SyncStmtOption option,
+                                                 final @Nullable Consumer<ResultStates> consumer) {
+        final TransactionInfo info;
+
+        final SyncStmtOption newOption;
+        if (hasOptimistic) {
+            newOption = ArmySyncStmtOptions.overrideOptionWithOptimisticLockIfNeed(option, OPTIMISTIC_LOCK_VALIDATOR,
+                    obtainTransactionInfo());
+        } else if (option instanceof ArmySyncStmtOptions.TransactionOverrideOption
+                || (info = obtainTransactionInfo()) == null) {
+            newOption = option;
+        } else {
+            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info);
+        }
+        return newOption;
+    }
+
+    /**
+     * @see #executeQuery(DqlStatement, SyncStmtOption, BiFunction)
+     */
+    private SyncStmtOption replaceForQueryExecutionLogger(final SyncStmtOption optionOfUser, final Stmt stmt) {
+        final SqlLogMode sqlLogMode;
+        if ((sqlLogMode = obtainSqlLogMode()) == SqlLogMode.OFF) {
+            return replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, null);
+        }
+
+        final long executionStartNanoSecond;
+        executionStartNanoSecond = System.nanoTime();
+
+        final Consumer<ResultStates> logConsumer;
+        logConsumer = states -> {
+            if (!states.hasMoreResult()) {
+                printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
+            }
+        };
+        return replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, logConsumer);
     }
 
 

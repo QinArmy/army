@@ -43,4 +43,6 @@ public interface InsertStmtParams extends DmlStmtParams {
 
     boolean hasConflictClause();
 
+    boolean isArmyAppendReturning();
+
 }

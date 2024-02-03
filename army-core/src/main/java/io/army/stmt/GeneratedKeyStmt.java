@@ -40,5 +40,7 @@ public interface GeneratedKeyStmt extends SimpleStmt, SingleSqlStmt.IdSelectionI
 
     boolean hasConflictClause();
 
+    boolean isArmyAppendReturning();
+
 
 }

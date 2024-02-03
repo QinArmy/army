@@ -7,11 +7,13 @@ import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sync.SyncLocalSession;
 import io.army.util.RowMaps;
+import io.army.util._Collections;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.army.criteria.impl.SQLs.*;
 
@@ -72,7 +74,9 @@ public class QueryTests extends SessionTestSupport {
                 .asValues();
 
         final List<Map<String, Object>> rowList;
-        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+        rowList = session.queryObject(stmt, RowMaps::hashMap)
+                .collect(Collectors.toCollection(_Collections::arrayList));
+
         Assert.assertEquals(rowList.size(), 4);
 
     }

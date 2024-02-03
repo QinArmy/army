@@ -20,6 +20,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
 import io.army.mapping.OffsetTimeType;
+import io.army.meta.ServerMeta;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.FieldType;
@@ -835,17 +836,34 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     private static abstract class JdbcResultStates implements ResultStates {
 
-        private static final Set<Option<?>> OPTION_SET = ArrayUtils.asUnmodifiableSet(Option.IN_TRANSACTION, Option.READ_ONLY);
+        private static final Set<Option<?>> OPTION_SET = Collections.singleton(Option.READ_ONLY);
 
+        final ServerMeta serverMeta;
 
         private final TransactionInfo info;
 
         private final Warning warning;
 
 
-        private JdbcResultStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
+        private JdbcResultStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning) {
+            this.serverMeta = serverMeta;
             this.info = info;
             this.warning = warning;
+        }
+
+        @Override
+        public final boolean isSupportInsertId() {
+            final boolean support;
+            switch (this.serverMeta.serverDatabase()) {
+                case PostgreSQL:
+                    support = this.serverMeta.major() < 12;
+                    break;
+                case MySQL:
+                case H2:
+                default:
+                    support = true;
+            }
+            return support;
         }
 
         @Override
@@ -866,24 +884,47 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return this.warning;
         }
 
+        @SuppressWarnings("unchecked")
         @Nullable
         @Override
         public final <T> T valueOf(final Option<T> option) {
-            final TransactionInfo info = this.info;
-            final T value;
-            if (info == null) {
-                value = null;
-            } else if (option == Option.IN_TRANSACTION || option == Option.READ_ONLY) {
-                value = info.valueOf(option);
-            } else {
-                value = null;
+            final Boolean value;
+            switch (this.serverMeta.serverDatabase()) {
+                case MySQL: {
+                    final TransactionInfo info = this.info;
+                    if (info != null && option == Option.READ_ONLY) {
+                        value = info.isReadOnly();
+                    } else {
+                        value = null;
+                    }
+                }
+                break;
+                case PostgreSQL:
+                default:
+                    value = null;
             }
-            return value;
+
+            return (T) value;
         }
 
         @Override
         public final Set<Option<?>> optionSet() {
-            return OPTION_SET;
+            final Set<Option<?>> optionSet;
+            switch (this.serverMeta.serverDatabase()) {
+                case MySQL:
+                    optionSet = OPTION_SET;
+                    break;
+                case PostgreSQL:
+                default:
+                    optionSet = Collections.emptySet();
+            }
+            return optionSet;
+        }
+
+        final DataAccessException dontSupportLastInsertedId() {
+            String m = String.format("database[%s  %s] don't support lastInsertedId() method.",
+                    this.serverMeta.serverDatabase().name(), this.serverMeta.version());
+            return new DataAccessException(m);
         }
 
 
@@ -892,8 +933,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     private static abstract class JdbcUpdateStates extends JdbcResultStates {
 
-        private JdbcUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
-            super(info, warning);
+        private JdbcUpdateStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning) {
+            super(serverMeta, info, warning);
         }
 
         @Override
@@ -924,11 +965,19 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final long affectedRows;
 
-        private JdbcQueryStates(@Nullable TransactionInfo info, @Nullable Warning warning, long rowCount,
-                                long affectedRows) {
-            super(info, warning);
+        private JdbcQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning,
+                                long rowCount, long affectedRows) {
+            super(serverMeta, info, warning);
             this.rowCount = rowCount;
             this.affectedRows = affectedRows;
+        }
+
+        @Override
+        public final long lastInsertedId() throws DataAccessException {
+            if (!isSupportInsertId()) {
+                throw dontSupportLastInsertedId();
+            }
+            return 0L;
         }
 
         @Override
@@ -956,10 +1005,16 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final boolean moreFetch;
 
-        SingleQueryStates(@Nullable TransactionInfo info, @Nullable Warning warning, long rowCount, boolean moreFetch,
-                          long affectedRows) {
-            super(info, warning, rowCount, affectedRows);
+        SingleQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning,
+                          long rowCount, boolean moreFetch, long affectedRows) {
+            super(serverMeta, info, warning, rowCount, affectedRows);
             this.moreFetch = moreFetch;
+        }
+
+        @Override
+        public boolean isBatch() {
+            // non-batch
+            return false;
         }
 
         @Override
@@ -987,13 +1042,22 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final int resultNo;
 
+        private final boolean batch;
+
         private final boolean moreResult;
 
-        MultiResultQueryStates(int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
+        MultiResultQueryStates(ServerMeta serverMeta, int resultNo, boolean batch,
+                               @Nullable TransactionInfo info, @Nullable Warning warning,
                                long rowCount, boolean moreResult, long affectedRows) {
-            super(info, warning, rowCount, affectedRows);
+            super(serverMeta, info, warning, rowCount, affectedRows);
             this.resultNo = resultNo;
+            this.batch = batch;
             this.moreResult = moreResult;
+        }
+
+        @Override
+        public boolean isBatch() {
+            return this.batch;
         }
 
         @Override
@@ -1017,11 +1081,28 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     static final class SingleUpdateStates extends JdbcUpdateStates {
 
+        private final long firstId;
         private final long affectedRows;
 
-        SingleUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning, long affectedRows) {
-            super(info, warning);
+        SingleUpdateStates(ServerMeta serverMeta, @Nullable TransactionInfo info, long firstId, @Nullable Warning warning,
+                           long affectedRows) {
+            super(serverMeta, info, warning);
+            this.firstId = firstId;
             this.affectedRows = affectedRows;
+        }
+
+        @Override
+        public long lastInsertedId() throws DataAccessException {
+            if (!isSupportInsertId()) {
+                throw dontSupportLastInsertedId();
+            }
+            return this.firstId;
+        }
+
+        @Override
+        public boolean isBatch() {
+            // non-batch
+            return false;
         }
 
         @Override
@@ -1049,16 +1130,32 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final int resultNo;
 
+        private final boolean batch;
+
         private final long affectedRows;
 
         private final boolean moreResult;
 
-        MultiResultUpdateStates(int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
+        MultiResultUpdateStates(ServerMeta serverMeta, int resultNo, boolean batch, @Nullable TransactionInfo info, @Nullable Warning warning,
                                 long affectedRows, boolean moreResult) {
-            super(info, warning);
+            super(serverMeta, info, warning);
             this.resultNo = resultNo;
+            this.batch = batch;
             this.affectedRows = affectedRows;
             this.moreResult = moreResult;
+        }
+
+        @Override
+        public long lastInsertedId() throws DataAccessException {
+            if (!isSupportInsertId()) {
+                throw dontSupportLastInsertedId();
+            }
+            return 0L;
+        }
+
+        @Override
+        public boolean isBatch() {
+            return this.batch;
         }
 
         @Override

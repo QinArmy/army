@@ -860,7 +860,6 @@ public abstract class ExecutorSupport {
         return new DataAccessException("driver error");
     }
 
-
     public static MetaException beforeBindMethodError(MappingType type, DataType dataType,
                                                       @Nullable Object returnValue) {
         String m = String.format("%s beforeBind() method return type %s and %s type not match.",

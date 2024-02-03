@@ -16,6 +16,7 @@
 
 package io.army.session.record;
 
+import io.army.session.DataAccessException;
 import io.army.session.OptionSpec;
 import io.army.session.Warning;
 
@@ -27,6 +28,28 @@ public interface ResultStates extends ResultItem, OptionSpec {
     Consumer<ResultStates> IGNORE_STATES = states -> {
     };
 
+    /**
+     * Whether support {@link #lastInsertedId()} method or not.
+     * <p>If false ,then database usually support RETURNING clause,it better than lastInsertedId ,for example : PostgreSQL
+     *
+     * @return true : support
+     */
+    boolean isSupportInsertId();
+
+    /**
+     * the last inserted id, a unsigned long .
+     * <strong>NOTE</strong>:
+     * <ul>
+     *     <li>when {@link #isSupportInsertId()} is false,throw {@link DataAccessException} . now database usually support RETURNING clause,it better than lastInsertedId ,for example : PostgreSQL</li>
+     *     <li>when use multi-row insert syntax ,the last inserted id is the first row id.</li>
+     *     <li>If you use multi-row insert syntax and exists conflict clause(e.g : MySQL ON DUPLICATE KEY UPDATE),then database never return correct lastInsertedId</li>
+     *     <li>Due to army auto append RETURNING id for INSERT statement if database support(eg: postgre),so database server don't return last inserted id</li>
+     * </ul>
+     *
+     * @return the last inserted id
+     * @throws DataAccessException throw when {@link #isSupportInsertId()} return false
+     */
+    long lastInsertedId() throws DataAccessException;
 
     boolean inTransaction();
 
@@ -36,6 +59,14 @@ public interface ResultStates extends ResultItem, OptionSpec {
      * @return empty or  success info(maybe contain warning info)
      */
     String message();
+
+
+    /**
+     * <p>Test this result whether is one of batch result ot not.
+     *
+     * @return true : this result is one of batch result.
+     */
+    boolean isBatch();
 
 
     /**
