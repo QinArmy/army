@@ -25,7 +25,6 @@ import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.*;
 import io.army.env.EscapeMode;
-import io.army.mapping.StringType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
@@ -1100,7 +1099,8 @@ final class MySQLDialectParser extends MySQLParser {
             throw new CriteriaException(m);
         }
         sqlBuilder.append(" INFILE ");
-        this.literal(StringType.INSTANCE, path.toAbsolutePath().toString(), sqlBuilder);
+
+        MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, path.toAbsolutePath().toString(), true, sqlBuilder);
     }
 
     /**

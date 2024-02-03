@@ -448,3 +448,4 @@ public class HowToStartTests {
 
 ```
 
+![Alt text](./local-doc/image/mysql-load-data.png "MySQL LOAD DATA")
