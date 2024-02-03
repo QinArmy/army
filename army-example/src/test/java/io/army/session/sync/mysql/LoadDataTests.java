@@ -56,6 +56,9 @@ public class LoadDataTests extends SessionTestSupport {
         final Path parentTempFile, childTempFile;
         parentTempFile = MyPaths.myLocal("china_region_parent.csv");
         childTempFile = MyPaths.myLocal("china_province.csv");
+        if (Files.notExists(parentTempFile) || Files.notExists(childTempFile)) {
+            return;
+        }
 
         final DmlCommand stmt;
         stmt = MySQLs.loadDataStmt()
@@ -68,7 +71,7 @@ public class LoadDataTests extends SessionTestSupport {
                 .lines(s -> s.terminatedBy("\n"))
                 .ignore(1, SQLs.LINES)
                 .parens(s -> s.space(ChinaRegion_.name))
-                .set(ChinaRegion_.regionType, SQLs::literal, RegionType.NONE)
+                .set(ChinaRegion_.regionType, SQLs::literal, RegionType.PROVINCE)
                 .asCommand()
 
                 .child()

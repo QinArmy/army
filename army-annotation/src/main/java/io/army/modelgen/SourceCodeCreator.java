@@ -569,7 +569,7 @@ final class SourceCodeCreator {
                 .append("\t\tthrow _TableMetaFactory.tableFiledSizeError(")
                 .append(simpleClassName)
                 .append(".class,")
-                .append(fieldCount)
+                .append(varFieldSize)
                 .append(");\n")
                 .append(MEMBER_PRE)
                 .append("\t}\n")

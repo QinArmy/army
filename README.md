@@ -130,9 +130,7 @@ public abstract class ChinaRegion_ {
 
         final int fieldSize = T.fieldList().size();
         if (fieldSize != 10) {
-            String m = String.format("Domain[%s] field count[%s] error,please check you whether create(delete) field or not,if yes then you must recompile.",
-                    ChinaRegion.class.getName(), fieldSize);
-            throw new IllegalStateException(m);
+           throw _TableMetaFactory.tableFiledSizeError(ChinaRegion.class,fieldSize);
         }
     }
 

@@ -289,7 +289,7 @@ public abstract class MySQLs extends MySQLSyntax {
      *                .lines(s -> s.terminatedBy("\n"))
      *                .ignore(1, SQLs.LINES)
      *                .parens(s -> s.space(ChinaRegion_.name))
-     *                .set(ChinaRegion_.regionType, SQLs::literal, RegionType.NONE)
+     *                .set(ChinaRegion_.regionType, SQLs::literal, RegionType.PROVINCE)
      *                .asCommand()
      *
      *                .child()
