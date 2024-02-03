@@ -199,37 +199,37 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
-        return onlyOneRow(this.queryList(statement, resultClass, _Collections::arrayList, defaultOption()));
+        return onlyOneRow(this.queryList(statement, resultClass, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));
     }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        return onlyOneRow(this.queryList(statement, resultClass, _Collections::arrayList, option));
+        return onlyOneRow(this.queryList(statement, resultClass, _Collections::arrayListWithCapacity1, option));
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return onlyOneRow(this.queryObjectList(statement, constructor, _Collections::arrayList, defaultOption()));
+        return onlyOneRow(this.queryObjectList(statement, constructor, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        return onlyOneRow(this.queryObjectList(statement, constructor, _Collections::arrayList, option));
+        return onlyOneRow(this.queryObjectList(statement, constructor, _Collections::arrayListWithCapacity1, option));
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayList, defaultOption()));
+        return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayList, option));
+        return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayListWithCapacity1, option));
     }
 
     @Override
     public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass) {
-        return queryList(statement, resultClass, _Collections::arrayList, defaultOption());
+        return queryList(statement, resultClass, _Collections::arrayList, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -239,7 +239,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return queryList(statement, resultClass, listConstructor, defaultOption());
+        return queryList(statement, resultClass, listConstructor, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -253,7 +253,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor) {
-        return this.queryObjectList(statement, constructor, _Collections::arrayList, defaultOption());
+        return this.queryObjectList(statement, constructor, _Collections::arrayList, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -263,7 +263,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
-        return this.queryObjectList(statement, constructor, listConstructor, defaultOption());
+        return this.queryObjectList(statement, constructor, listConstructor, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -275,7 +275,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecordList(statement, function, _Collections::arrayList, defaultOption());
+        return this.queryRecordList(statement, function, _Collections::arrayList, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -285,7 +285,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
-        return this.queryRecordList(statement, function, listConstructor, defaultOption());
+        return this.queryRecordList(statement, function, listConstructor, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -297,7 +297,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> query(DqlStatement statement, Class<R> resultClass) {
-        return this.query(statement, resultClass, defaultOption());
+        return this.query(statement, resultClass, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -307,7 +307,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
-        return this.queryObject(statement, constructor, defaultOption());
+        return this.queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -317,7 +317,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecord(statement, function, defaultOption());
+        return this.queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -330,7 +330,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <T> int save(T domain) {
-        return save(domain, defaultOption());
+        return save(domain, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -345,7 +345,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final long update(SimpleDmlStatement statement) {
-        return updateAsResult(statement, defaultOption(), Long.class);
+        return updateAsResult(statement, ArmySyncStmtOptions.DEFAULT, Long.class);
     }
 
     @Override
@@ -356,7 +356,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final ResultStates updateAsStates(SimpleDmlStatement statement) {
-        return updateAsResult(statement, defaultOption(), ResultStates.class);
+        return updateAsResult(statement, ArmySyncStmtOptions.DEFAULT, ResultStates.class);
     }
 
     @Override
@@ -366,7 +366,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <T> int batchSave(List<T> domainList) {
-        return batchSave(domainList, defaultOption());
+        return batchSave(domainList, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -429,7 +429,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final Stream<ResultStates> batchUpdateAsStates(BatchDmlStatement statement) {
-        return batchUpdateAsStates(statement, defaultOption());
+        return batchUpdateAsStates(statement, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
@@ -881,20 +881,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         }
     }
 
-
-    private SyncStmtOption defaultOption() {
-        final TransactionInfo info;
-        info = obtainTransactionInfo();
-
-        final SyncStmtOption option;
-        if (info == null) {
-            option = ArmySyncStmtOptions.DEFAULT;
-        } else {
-            option = ArmySyncStmtOptions.overrideOptionIfNeed(ArmySyncStmtOptions.DEFAULT, info);
-        }
-        return option;
-    }
-
     private SyncStmtOption replaceIfNeed(final SyncStmtOption option) {
         final TransactionInfo info;
 
@@ -903,24 +889,29 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 || (info = obtainTransactionInfo()) == null) {
             newOption = option;
         } else {
-            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info);
+            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info, null);
         }
         return newOption;
     }
 
     private SyncStmtOption replaceForQueryIfNeed(final boolean hasOptimistic, final SyncStmtOption option,
-                                                 final @Nullable Consumer<ResultStates> consumer) {
+                                                 @Nullable Consumer<ResultStates> consumer) {
         final TransactionInfo info;
-
         final SyncStmtOption newOption;
-        if (hasOptimistic) {
-            newOption = ArmySyncStmtOptions.overrideOptionWithOptimisticLockIfNeed(option, OPTIMISTIC_LOCK_VALIDATOR,
-                    obtainTransactionInfo());
+        if (hasOptimistic || consumer != null) {
+            if (hasOptimistic) {
+                if (consumer == null) {
+                    consumer = OPTIMISTIC_LOCK_VALIDATOR;
+                } else {
+                    consumer = OPTIMISTIC_LOCK_VALIDATOR.andThen(consumer);
+                }
+            }
+            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, obtainTransactionInfo(), consumer);
         } else if (option instanceof ArmySyncStmtOptions.TransactionOverrideOption
                 || (info = obtainTransactionInfo()) == null) {
             newOption = option;
         } else {
-            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info);
+            newOption = ArmySyncStmtOptions.overrideOptionIfNeed(option, info, null);
         }
         return newOption;
     }

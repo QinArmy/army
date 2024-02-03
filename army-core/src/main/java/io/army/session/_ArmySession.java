@@ -549,13 +549,13 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
     }
 
     private static void validateOptimisticLock(final ResultStates states) {
-        if (states.affectedRows() < 1L) {
-            if (states.getResultNo() == 1 && !states.hasMoreResult()) {
-                throw _Exceptions.optimisticLock();
-            } else {
-                throw _Exceptions.batchOptimisticLock(null, states.getResultNo(), states.affectedRows());
-            }
-
+        if (states.affectedRows() > 0L) {
+            return;
+        }
+        if (states.isBatch()) {
+            throw _Exceptions.batchOptimisticLock(null, states.getResultNo(), states.affectedRows());
+        } else {
+            throw _Exceptions.optimisticLock();
         }
     }
 

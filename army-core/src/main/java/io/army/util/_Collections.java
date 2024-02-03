@@ -157,6 +157,10 @@ public abstract class _Collections {
         return new FinalArrayList<>();
     }
 
+    public static <E> ArrayList<E> arrayListWithCapacity1() {
+        return new FinalArrayList<>(1);
+    }
+
     public static <E> ArrayList<E> arrayList(int initialCapacity) {
         return new FinalArrayList<>(initialCapacity);
     }

@@ -355,27 +355,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         return stream;
     }
 
-    @Nullable
-    @Override
-    public final <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option)
-            throws DataAccessException {
-        return executeQueryOne(stmt, option, beanReaderFunc(stmt, resultClass));
-    }
-
-    @Nullable
-    @Override
-    public final <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option)
-            throws DataAccessException {
-        return this.executeQueryOne(stmt, option, objectReaderFunc(stmt, constructor));
-    }
-
-    @Nullable
-    @Override
-    public final <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
-            throws DataAccessException {
-        return this.executeQueryOne(stmt, option, recordReaderFunc(stmt.selectionList(), function));
-    }
-
     @Override
     public final <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option)
             throws DataAccessException {
@@ -1479,90 +1458,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #queryOne(SimpleStmt, Class, SyncStmtOption)
-     * @see #queryOneObject(SimpleStmt, Supplier, SyncStmtOption)
-     * @see #queryOneRecord(SimpleStmt, Function, SyncStmtOption)
-     */
-    @Nullable
-    private <R> R executeQueryOne(final SimpleStmt stmt, final SyncStmtOption option,
-                                  final Function<ResultSetMetaData, RowReader<R>> function)
-            throws DataAccessException {
-
-        try (Statement statement = bindStatement(stmt, option)) {
-
-            try (ResultSet resultSet = jdbcExecuteQuery(statement, stmt.sqlText())) {
-
-                final RowReader<R> rowReader;
-                rowReader = function.apply(resultSet.getMetaData());
-
-                final R row;
-
-                if (resultSet.next()) {
-                    if (stmt instanceof GeneratedKeyStmt) {
-                        readOneInsertRowId(resultSet, rowReader, (GeneratedKeyStmt) stmt);
-                    }
-                    row = rowReader.readOneRow(resultSet);
-                    if (resultSet.next()) {
-                        throw new NonSingleRowException("Database response more than one row");
-                    }
-                } else {
-                    row = null;
-                }
-
-                final Consumer<ResultStates> consumer;
-                consumer = option.stateConsumer();
-                if (consumer != ResultStates.IGNORE_STATES) {
-                    final Warning w;
-                    w = mapToArmyWarning(statement.getWarnings());
-                    final long affectedRows;
-                    if (stmt.stmtType() == StmtType.QUERY) {
-                        affectedRows = 0L;
-                    } else {
-                        affectedRows = 1L;
-                    }
-                    consumer.accept(new SingleQueryStates(this.factory.serverMeta, obtainTransaction(), w, 1L, false, affectedRows));
-                }
-                return row;
-            }
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-
-    }
-
-
-    /**
-     * @see #executeQueryOne(SimpleStmt, SyncStmtOption, Function)
-     */
-    private void readOneInsertRowId(final ResultSet resultSet, final RowReader<?> rowReader, final GeneratedKeyStmt stmt)
-            throws SQLException {
-
-        if (stmt.rowSize() != 1) {
-            // no bug, never here
-            String m = String.format("insert row number[%s] not 1", stmt.rowSize());
-            throw new CriteriaException(m);
-        }
-
-        final PrimaryFieldMeta<?> idField = stmt.idField();
-        final MappingType type = idField.mappingType();
-        final MappingEnv env = this.factory.mappingEnv;
-        final int idSelectionIndex = stmt.idSelectionIndex();
-
-        final DataType idSqlType = rowReader.dataTypeArray[idSelectionIndex];
-
-        Object idValue;
-        // below read id value
-        idValue = get(resultSet, idSelectionIndex + 1, type, idSqlType); // read id column
-        if (idValue == null) {
-            throw _Exceptions.idValueIsNull(0, idField);
-        }
-        idValue = type.afterGet(idSqlType, env, idValue); // MappingType convert id column
-        stmt.setGeneratedIdValue(0, idValue);     // set id column
-
-    }
-
-
-    /**
      * @see #query(SingleSqlStmt, Class, SyncStmtOption)
      * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption)
      * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption)
@@ -2441,7 +2336,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         abstract void handleError(Error cause);
 
-        final void emitSingleResultStates(RowReader<R> rowReader, final long rowCount) {
+        final void emitSingleResultStates(final long rowCount) {
             final Consumer<ResultStates> consumer;
             consumer = this.option.stateConsumer();
             if (consumer == ResultStates.IGNORE_STATES) {
@@ -2458,7 +2353,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 final ResultStates states;
                 states = new SingleQueryStates(this.executor.factory.serverMeta,
-                        rowReader.executor.obtainTransaction(),
+                        this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
                         rowCount, false, affectedRows
                 );
@@ -2686,7 +2581,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } else if (fetchSize < 1
                     && (readSize == 0 || (readSize > 0 && readRowCount < readSize))) {
                 // readRowSet() dont' emit ResultStates,so here emit
-                emitSingleResultStates(this.rowReader, this.totalRowCount);
+                emitSingleResultStates(this.totalRowCount);
                 close();
             }
             return readRowCount > 0;
@@ -2828,7 +2723,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 if (this.rowIndex != ((GeneratedKeyStmt) this.stmt).rowSize()) {
                     throw insertedRowsAndGenerateIdNotMatch(((GeneratedKeyStmt) this.stmt).rowSize(), rowIndex);
                 }
-                emitSingleResultStates(rowReader, rowIndex); // here ,rowIndex not rowIndex + 1
+                emitSingleResultStates(rowIndex); // here ,rowIndex not rowIndex + 1
                 close();
             }
             return readRowCount > 0;
@@ -2944,7 +2839,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 if (rowIndex != firstList.size()) {
                     throw _Exceptions.parentChildRowsNotMatch(executor.sessionName, rowIndex, firstList.size());
                 }
-                emitSingleResultStates(rowReader, rowIndex);
+                emitSingleResultStates(rowIndex);
                 close();
             }
             return readRowCount > 0;

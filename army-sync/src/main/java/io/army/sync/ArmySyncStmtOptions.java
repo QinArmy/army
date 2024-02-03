@@ -105,57 +105,47 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
     }
 
 
-    static SyncStmtOption overrideOptionIfNeed(final SyncStmtOption option, final TransactionInfo info) {
+    static SyncStmtOption overrideOptionIfNeed(final SyncStmtOption option, final @Nullable TransactionInfo info,
+                                               final @Nullable Consumer<ResultStates> armyConsumer) {
+
+
         final Integer timeout;
-        timeout = info.valueOf(Option.TIMEOUT_MILLIS);
-        if ((timeout == null || option instanceof TransactionOverrideOption)) {
+        final Long startMillis;
+        if (info == null) {
+            timeout = null;
+            startMillis = null;
+        } else {
+            timeout = info.valueOf(Option.TIMEOUT_MILLIS);
+            startMillis = info.valueOf(Option.START_MILLIS);
+            assert timeout == null || startMillis != null;
+        }
+
+        if ((timeout == null && armyConsumer == null) || option instanceof TransactionOverrideOption) {
             return option;
         }
-        final Long startMillis;
-        startMillis = info.valueOf(Option.START_MILLIS);
-        assert startMillis != null;
 
-        final TransactionOverrideOption newOption;
-        if ((option == DEFAULT || option instanceof OnlyTimeoutOption)) {
-            newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
-        } else {
-            newOption = new ArmySyncOverrideOption(option, timeout, startMillis, option.stateConsumer());
-        }
-        return newOption;
-    }
-
-    /**
-     * @param validator optimistic lock validator
-     */
-    static SyncStmtOption overrideOptionWithOptimisticLockIfNeed(final SyncStmtOption option,
-                                                                 final Consumer<ResultStates> validator,
-                                                                 final @Nullable TransactionInfo info) {
-        final Consumer<ResultStates> consumerOfUser, consumer;
+        final Consumer<ResultStates> finalConsumer, consumerOfUser;
         consumerOfUser = option.stateConsumer();
-        if (consumerOfUser == ResultStates.IGNORE_STATES) {
-            consumer = validator;
+        if (armyConsumer == null) {
+            finalConsumer = consumerOfUser;
+        } else if (consumerOfUser == ResultStates.IGNORE_STATES) {
+            finalConsumer = armyConsumer;
         } else {
-            consumer = validator.andThen(consumerOfUser);
+            finalConsumer = armyConsumer.andThen(consumerOfUser);
         }
 
-        final Integer timeout;
-
-        if (info == null || (timeout = info.valueOf(Option.TIMEOUT_MILLIS)) == null) {
-            return replaceStateConsumer(option, consumer);
-        }
-
-        final Long startMillis;
-        startMillis = info.valueOf(Option.START_MILLIS);
-        assert startMillis != null;
 
         final SyncStmtOption newOption;
-        if ((option == DEFAULT || option instanceof SyncTimeoutOption)) {
-            newOption = new TimeoutAndStateConsumerOption(timeout, startMillis, consumer);
+        if (timeout != null && (option == DEFAULT || option instanceof OnlyTimeoutOption) && armyConsumer == null) {
+            newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
+        } else if (timeout != null) {
+            newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer);
         } else {
-            newOption = new ArmySyncOverrideOption(option, timeout, startMillis, consumer);
+            newOption = new OnlyStateConsumerOption(finalConsumer);
         }
         return newOption;
     }
+
 
     static SyncStmtOption replaceStateConsumer(final SyncStmtOption option, final Consumer<ResultStates> consumer) {
         final SyncStmtOption newOption;
