@@ -84,22 +84,29 @@ public interface ResultStates extends ResultItem, OptionSpec {
 
     /**
      * @return true representing exists server cursor and the last row don't send.
+     * @see #hasColumn()
      */
     boolean hasMoreFetch();
 
     /**
+     * <p>Test result whether is query result or not.
+     *
      * @return <ul>
      * <li>true : this instance representing the terminator of query result (eg: SELECT command)</li>
      * <li>false : this instance representing the update result (eg: INSERT/UPDATE/DELETE command)</li>
      * </ul>
+     * @see #rowCount()
      */
     boolean hasColumn();
 
     /**
-     * @return the row count.<ul>
-     * <li>If use fetch (eg: {@code  Statement#setFetchSize(int)} , {@code  RefCursor}) , then the row count representing only the row count of current fetch result.</li>
-     * <li>Else then the row count representing the total row count of query result.</li>
+     * @return the row count.
+     * <ul>
+     *     <li>If {@link #hasColumn()} is false, then 0</li>
+     *     <li>Else if use fetch (eg: {@code  Statement#setFetchSize(int)} , {@code  RefCursor}) , then the row count representing only the row count of current fetch result.</li>
+     *     <li>Else then the row count representing the total row count of query result.</li>
      * </ul>
+     * @see #hasColumn()
      */
     long rowCount();
 

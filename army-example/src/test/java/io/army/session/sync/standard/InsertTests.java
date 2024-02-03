@@ -6,6 +6,7 @@ import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.Windows;
 import io.army.example.bank.domain.user.*;
+import io.army.session.record.ResultStates;
 import io.army.sync.SyncLocalSession;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
@@ -47,6 +48,51 @@ public class InsertTests extends SessionSupport {
         rows = session.update(stmt);
 
         Assert.assertEquals(rows, regionList.size());
+
+        assertChinaRegionAfterNoConflictInsert(regionList);
+
+    }
+
+
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    public void domainInsertParentAsStates(final SyncLocalSession session) {
+
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+
+        final Insert stmt;
+        stmt = SQLs.singleInsert()
+                //.literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
+                .values(regionList)
+                .asInsert();
+
+        final ResultStates states;
+        states = session.updateAsStates(stmt);
+
+        Assert.assertFalse(states.isBatch());
+        Assert.assertFalse(states.hasMoreResult());
+
+        Assert.assertEquals(states.affectedRows(), regionList.size());
+
+        Assert.assertFalse(states.inTransaction());
+
+        if (states.hasColumn()) {
+            Assert.assertEquals(states.rowCount(), regionList.size());
+        } else {
+            Assert.assertEquals(states.rowCount(), 0L);
+        }
+
+        if (states.isSupportInsertId()) {
+            Assert.assertEquals(states.lastInsertedId(), regionList.get(0).getId());
+        }
 
         assertChinaRegionAfterNoConflictInsert(regionList);
 

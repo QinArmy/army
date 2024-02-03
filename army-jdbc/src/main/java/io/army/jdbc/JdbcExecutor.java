@@ -278,6 +278,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final R r;
             if (resultClass == Long.class) {
                 r = (R) Long.valueOf(rows);
+            } else if (returningId) {
+                r = (R) new SingleQueryStates(this.factory.serverMeta, obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows, false, rows);
             } else {
                 r = (R) new SingleUpdateStates(this.factory.serverMeta, obtainTransaction(), firstId, mapToArmyWarning(statement.getWarnings()), rows);
             }
