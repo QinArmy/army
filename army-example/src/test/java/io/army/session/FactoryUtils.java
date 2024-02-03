@@ -20,10 +20,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import io.army.dialect.Database;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.postgre.PostgreDialect;
-import io.army.env.ArmyEnvironment;
-import io.army.env.ArmyKey;
-import io.army.env.SqlLogMode;
-import io.army.env.StandardEnvironment;
+import io.army.env.*;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.util.FastJsonCodec;
 import io.army.reactive.ReactiveFactoryBuilder;
@@ -131,12 +128,14 @@ public abstract class FactoryUtils {
 
         map.put(ArmyKey.SQL_PARSING_COST_TIME.name, Boolean.TRUE);
 
+        map.put(ArmyKey.SQL_EXECUTION_COST_TIME.name, Boolean.TRUE);
+
         map.put(ArmyKey.QUALIFIED_TABLE_NAME_ENABLE.name, Boolean.FALSE);
 
 
-//         map.put(ArmyKey.DATABASE_NAME_MODE.name, NameMode.UPPER_CASE);
-//        map.put(ArmyKey.TABLE_NAME_MODE.name, NameMode.UPPER_CASE);
-//        map.put(ArmyKey.COLUMN_NAME_MODE.name, NameMode.UPPER_CASE);
+        map.put(ArmyKey.DATABASE_NAME_MODE.name, NameMode.DEFAULT);
+        map.put(ArmyKey.TABLE_NAME_MODE.name, NameMode.DEFAULT);
+        map.put(ArmyKey.COLUMN_NAME_MODE.name, NameMode.DEFAULT);
         return StandardEnvironment.from(map);
     }
 

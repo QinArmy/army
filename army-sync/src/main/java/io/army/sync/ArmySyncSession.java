@@ -728,13 +728,25 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
 
     /**
-     * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
+     * @param userOption the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #updateAsResult(SimpleDmlStatement, SyncStmtOption, Class)
      */
-    private <R> R executeInsert(InsertStatement statement, SyncStmtOption option, Class<R> resultClass)
+    private <R> R executeInsert(InsertStatement statement, SyncStmtOption userOption, Class<R> resultClass)
             throws ArmyException {
+
         final Stmt stmt;
         stmt = this.parseInsertStatement(statement);
+
+        final SyncStmtOption option;
+        option = replaceIfNeed(userOption);
+
+        final long executionStartNanoSecond;
+        if (this.factory.sqlExecutionCostTime) {
+            executionStartNanoSecond = System.nanoTime();
+        } else {
+            executionStartNanoSecond = -1L;
+        }
+
 
         final R states;
 
@@ -771,19 +783,33 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         } else {
             throw updateChildNoTransaction();
         }
+
+        if (executionStartNanoSecond > 0L) {
+            printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
+        }
         return states;
     }
 
 
     /**
-     * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
+     * @param userOption the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #updateAsResult(SimpleDmlStatement, SyncStmtOption, Class)
      */
-    private <R> R executeUpdate(SimpleDmlStatement statement, SyncStmtOption option, final Class<R> resultClass)
+    private <R> R executeUpdate(SimpleDmlStatement statement, SyncStmtOption userOption, final Class<R> resultClass)
             throws ArmyException {
+
+        final SyncStmtOption option;
+        option = replaceIfNeed(userOption);
 
         final Stmt stmt;
         stmt = parseDmlStatement(statement, option);
+
+        final long executionStartNanoSecond;
+        if (this.factory.sqlExecutionCostTime) {
+            executionStartNanoSecond = System.nanoTime();
+        } else {
+            executionStartNanoSecond = -1L;
+        }
 
         final R result;
         if (stmt instanceof SimpleStmt) {
@@ -817,6 +843,10 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
         } else {
             throw updateChildNoTransaction();
+        }
+
+        if (executionStartNanoSecond > 0L) {
+            printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
         }
         return result;
     }

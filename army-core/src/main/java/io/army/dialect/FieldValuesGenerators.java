@@ -142,13 +142,14 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         //1. check id
         field = nonChild.id();
-        if (field.generatorType() == null && wrapper.isNullValueParam(field)) {
+        final GeneratorType generatorType;
+        generatorType = field.generatorType();
+        if (generatorType == null && wrapper.isNullValueParam(field)) {
             throw _Exceptions.nonNullField(field);
         }
-        if (field.generatorType() == GeneratorType.POST) {
+        if (generatorType == GeneratorType.POST) {
             wrapper.set(field, null);
         }
-
 
         //2. create time
         field = nonChild.getField(_MetaBridge.CREATE_TIME);

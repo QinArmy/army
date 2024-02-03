@@ -421,7 +421,51 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
     }
 
 
+    protected final void printExecutionCostTimeLog(final Logger logger, final Stmt stmt, final long startNanoSecond) {
+
+        final SqlLogMode mode;
+        if (startNanoSecond < 1L || (mode = obtainSqlLogMode()) == SqlLogMode.OFF) {
+            return;
+        }
+
+        final long costNano, millis, micro, nano;
+        costNano = System.nanoTime() - startNanoSecond;
+
+        millis = costNano / 1000_000L;
+        micro = (costNano % 1000_000L) / 1000L;
+        nano = costNano % 1000L;
+
+
+        final StringBuilder builder = new StringBuilder(256);
+
+        builder.append("session[name : ")
+                .append(this.name)
+                .append(" , hash : ")
+                .append(System.identityHashCode(this))
+                .append("]\n");
+
+        this.factory.dialectParser.printStmt(stmt, mode.beautify, builder::append);
+
+
+        builder.append("\nsql execution cost ")
+                .append(millis)
+                .append(" millis ")
+                .append(micro)
+                .append(" micro ")
+                .append(nano)
+                .append(" nano");
+
+        if (mode.debug) {
+            logger.debug(builder.toString());
+        } else {
+            logger.info(builder.toString());
+        }
+
+    }
+
+
     /*-------------------below static method -------------------*/
+
 
     protected static void assertTransactionInfo(final @Nullable TransactionInfo info, final TransactionOption option) {
         assert info != null;

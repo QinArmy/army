@@ -52,9 +52,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     protected static final ConcurrentMap<String, Boolean> FACTORY_MAP = _Collections.concurrentHashMap(3);
 
-    protected final String name;
-
     public final ArmyEnvironment env;
+
+    protected final String name;
 
     protected final SchemaMeta schemaMeta;
 
@@ -84,6 +84,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     final SqlLogMode sqlLogMode;
 
+    public final boolean sqlExecutionCostTime;
+
     final boolean sqlParsingCostTime;
 
 
@@ -94,9 +96,12 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         if (FACTORY_MAP.containsKey(name)) {
             throw new SessionFactoryException(String.format("factory name[%s] duplication", name));
         }
-        this.name = name;
         this.env = env;
+
+        this.name = name;
         this.driverSpiMode = env.getOrDefault(ArmyKey.DRIVER_SPI_MODE);
+
+
         this.schemaMeta = Objects.requireNonNull(support.schemaMeta);
         this.tableMap = Objects.requireNonNull(support.tableMap);
 
@@ -112,11 +117,19 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         this.visibleMode = env.getOrDefault(ArmyKey.VISIBLE_MODE);
         this.visibleWhiteMap = createWhitMap(this.visibleMode, env, ArmyKey.VISIBLE_SESSION_WHITE_LIST);
 
+        this.driverSpiWhiteMap = createWhitMap(this.driverSpiMode, env, ArmyKey.DRIVER_SPI_SESSION_WHITE_LIST);
+
+
         this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
         this.sqlLogMode = env.getOrDefault(ArmyKey.SQL_LOG_MODE);
-        this.sqlParsingCostTime = env.getOrDefault(ArmyKey.SQL_PARSING_COST_TIME);
 
-        this.driverSpiWhiteMap = createWhitMap(this.driverSpiMode, env, ArmyKey.DRIVER_SPI_SESSION_WHITE_LIST);
+        if (!this.sqlLogDynamic && this.sqlLogMode == SqlLogMode.OFF) {
+            this.sqlParsingCostTime = this.sqlExecutionCostTime = false;
+        } else {
+            this.sqlParsingCostTime = env.getOrDefault(ArmyKey.SQL_PARSING_COST_TIME);
+            this.sqlExecutionCostTime = env.getOrDefault(ArmyKey.SQL_EXECUTION_COST_TIME);
+        }
+
 
     }
 

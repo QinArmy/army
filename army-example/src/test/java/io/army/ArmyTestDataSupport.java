@@ -28,7 +28,6 @@ import org.testng.Assert;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -149,7 +148,7 @@ public abstract class ArmyTestDataSupport {
 
     protected final List<ChinaRegion<?>> createReginListWithCount(final int rowCount) {
         final Random random = ThreadLocalRandom.current();
-        final List<ChinaRegion<?>> list = _Collections.arrayList();
+        final List<ChinaRegion<?>> list = _Collections.arrayList(rowCount);
         ChinaRegion<?> c;
         for (int i = 0; i < rowCount; i++) {
             c = new ChinaRegion<>()
@@ -198,7 +197,7 @@ public abstract class ArmyTestDataSupport {
 
     protected final List<ChinaProvince> createProvinceListWithCount(final int rowCount) {
         final Random random = ThreadLocalRandom.current();
-        final List<ChinaProvince> list = _Collections.arrayList();
+        final List<ChinaProvince> list = _Collections.arrayList(rowCount);
         ChinaProvince c;
         for (int i = 0; i < rowCount; i++) {
             c = new ChinaProvince()
@@ -331,14 +330,15 @@ public abstract class ArmyTestDataSupport {
 
 
     private static StringBuilder randomSuffix(final Random random, final String value) {
-        return _StringUtils.builder()
+        return _StringUtils.builder(90)
                 .append(value)
                 .append('@')
-                .append(Instant.now())
+                .append(random.nextLong())
                 .append('#')
-                .append((random.nextLong() % 100))
+                .append((random.nextLong()))
                 .append('#')
-                .append(random.nextInt(Integer.MAX_VALUE) % 100);
+                .append(random.nextLong())
+                ;
     }
 
 

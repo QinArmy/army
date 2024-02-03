@@ -18,7 +18,7 @@ package io.army.env;
 
 public enum SqlLogMode {
 
-    OFF(false, false),
+    OFF(false, true),
     SIMPLE(false, false),
     BEAUTIFY(true, false),
     DEBUG(false, true),

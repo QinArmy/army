@@ -55,7 +55,7 @@ abstract class MySQLLiterals extends _Literals {
         boolean existBackSlash = false;
         int lastWritten = 0;
 
-        char charAfterBachSlash = _Constant.NUL_CHAR;
+        char charAfterBachSlash;
 
         for (int i = 0; i < valueLength; i++) {
             switch (literal.charAt(i)) {

@@ -33,7 +33,7 @@ public class AbstractChinaRegion<T extends AbstractChinaRegion<T>> extends BaseV
     @Column
     private RegionType regionType;
 
-    @Column(precision = 60, nullable = false, comment = "china region name")
+    @Column(precision = 80, nullable = false, comment = "china region name")
     private String name;
 
     @Column(precision = 16, scale = 2, defaultValue = "0.00", nullable = false, comment = "china region GDP")

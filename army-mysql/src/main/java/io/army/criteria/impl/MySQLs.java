@@ -85,12 +85,14 @@ public abstract class MySQLs extends MySQLSyntax {
      * <ul>
      *     <li>1 if the row is inserted as a new row</li>
      *     <li>2 if an existing row is updated</li>
-     *     <li>0 if an existing row is set to its current values</li>
+     *     <li>0 if an existing row is set to its current values,but due to army auto set 'updateTime' field,so actually never 0</li>
      * </ul>
      * <p><strong>Limitations</strong> of MySQL INSERT ON DUPLICATE KEY UPDATE clause :
      * <ul>
      *     <li>If target table contain 'visible' field,then ON DUPLICATE KEY UPDATE clause can only be used in {@link Visible#BOTH} mode,see {@link Session#visible()} and {@link io.army.env.ArmyKey#VISIBLE_MODE}</li>
      *     <li>If target table contain the field whose {@link io.army.annotation.UpdateMode} is {@link io.army.annotation.UpdateMode#ONLY_NULL} or {@link io.army.annotation.UpdateMode#ONLY_DEFAULT},then you couldn't use ON DUPLICATE KEY UPDATE clause .</li>
+     *     <li>If target table primary key is auto increment and you insert multi-row {@link io.army.meta.ChildTableMeta} ,then you couldn't use ON DUPLICATE KEY UPDATE clause ,because database server will couldn't return correct multi-row primary key value if conflict occur.</li>
+     *     <li>If target table primary key is auto increment and you insert multi-row with "domain" syntax (see Example 3),then database will couldn't return correct multi-row primary key value , because of conflict. So you have to use ignoreReturnIds() option clause before insert into clause.</li>
      * </ul>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT statement</a>
@@ -106,7 +108,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * <ul>
      *     <li>If target table contain 'visible' field,then MySQL REPLACE can only be used in {@link Visible#BOTH} mode,see {@link Session#visible()} and {@link io.army.env.ArmyKey#VISIBLE_MODE}</li>
      *     <li>If target table contain the field whose {@link io.army.annotation.UpdateMode} is {@link io.army.annotation.UpdateMode#ONLY_NULL} or {@link io.army.annotation.UpdateMode#ONLY_DEFAULT},then you couldn't use MySQL REPLACE .</li>
-     *     <li>If you target table primary key is auto increment and you replace multi-row with "domain" syntax (see Example 3),then database will couldn't return correct multi-row primary key value , because of conflict. So you have to use ignoreReturnIds() option clause before replace into clause.</li>
+     *     <li>If target table primary key is auto increment and you replace multi-row with "domain" syntax (see Example 3),then database will couldn't return correct multi-row primary key value , because of conflict. So you have to use ignoreReturnIds() option clause before replace into clause.</li>
      * </ul>
      * <pre>
      *     <code><br/>
