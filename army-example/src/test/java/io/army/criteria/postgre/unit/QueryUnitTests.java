@@ -30,9 +30,9 @@ import org.testng.annotations.Test;
 
 import static io.army.criteria.impl.Postgres.jsonbPathQueryTz;
 
-public class PostgreQueryUnitTests extends PostgreUnitTests {
+public class QueryUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreQueryUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QueryUnitTests.class);
 
 
     @Test

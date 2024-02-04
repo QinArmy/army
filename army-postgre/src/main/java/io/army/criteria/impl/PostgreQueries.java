@@ -705,8 +705,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         window.endWindowClause();
         List<_Window> list = this.windowList;
         if (list == null) {
-            list = _Collections.arrayList();
-            this.windowList = list;
+            this.windowList = list = _Collections.arrayList();
         } else if (!(list instanceof ArrayList)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
@@ -726,8 +725,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     private PostgreQueries<I> onAddLockBlock(final _LockBlock block) {
         List<_LockBlock> lockBlockList = this.lockBlockList;
         if (lockBlockList == null) {
-            lockBlockList = new ArrayList<>(2);
-            this.lockBlockList = lockBlockList;
+            this.lockBlockList = lockBlockList = _Collections.arrayList();
         } else if (!(lockBlockList instanceof ArrayList)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }

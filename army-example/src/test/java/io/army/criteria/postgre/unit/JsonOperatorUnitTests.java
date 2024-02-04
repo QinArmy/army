@@ -33,10 +33,10 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
-public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
+public class JsonOperatorUnitTests extends PostgreUnitTests {
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreJsonOperatorUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JsonOperatorUnitTests.class);
 
 
     /**

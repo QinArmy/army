@@ -660,6 +660,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     public final void clear() {
+        _Assert.prepared(this.prepared);
         this.partitionByList = null;
         this.frameUnits = null;
         this.betweenExtent = null;

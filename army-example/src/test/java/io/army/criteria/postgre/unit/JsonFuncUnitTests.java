@@ -43,9 +43,9 @@ import static io.army.criteria.impl.SQLs.row;
 import static io.army.criteria.impl.SQLs.space;
 import static io.army.criteria.impl.SQLs.*;
 
-public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
+public class JsonFuncUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreJsonFuncUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JsonFuncUnitTests.class);
 
 
     /**

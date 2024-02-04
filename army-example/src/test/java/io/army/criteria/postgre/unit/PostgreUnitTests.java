@@ -35,7 +35,6 @@ abstract class PostgreUnitTests extends CriteriaUnitTests {
         for (PostgreDialect dialect : PostgreDialect.values()) {
             // statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
             logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, visible, true));
-            // break;
         }
 
     }

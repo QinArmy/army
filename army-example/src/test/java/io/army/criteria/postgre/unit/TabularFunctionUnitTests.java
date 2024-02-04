@@ -32,9 +32,9 @@ import static io.army.criteria.impl.Postgres.array;
 import static io.army.criteria.impl.Postgres.unnest;
 import static io.army.criteria.impl.SQLs.*;
 
-public class PostgreTabularFunctionUnitTests extends PostgreUnitTests {
+public class TabularFunctionUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreTabularFunctionUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TabularFunctionUnitTests.class);
 
     /**
      * @see Postgres#unnest(Expression)

@@ -36,9 +36,9 @@ import java.util.function.Consumer;
 import static io.army.criteria.impl.Postgres.*;
 import static io.army.criteria.impl.SQLs.*;
 
-public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
+public class XmlFuncUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreXmlFuncUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XmlFuncUnitTests.class);
 
     /**
      * @see Postgres#xmlElement(WordName, String, XmlAttributes, Expression...)

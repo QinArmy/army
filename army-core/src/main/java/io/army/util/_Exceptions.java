@@ -382,7 +382,7 @@ public abstract class _Exceptions {
         final TableMeta<?> insertTable = nonChildStmt.table();
         final PrimaryFieldMeta<?> idField = insertTable.id();
         final String f;
-        f = "%s %s is %s and insert multi row and exists ignorable conflict clause,so couldn't return multi ids. %s";
+        f = "%s %s is %s and insert multi row and exists ignorable conflict clause,so database couldn't return multi ids. %s";
         String m = String.format(f, idField, GeneratorType.class.getName(), GeneratorType.POST, tip);
 
         return function.apply(m);

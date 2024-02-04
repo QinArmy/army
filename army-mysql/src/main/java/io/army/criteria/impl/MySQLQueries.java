@@ -671,8 +671,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         window.endWindowClause();
         List<_Window> windowList = this.windowList;
         if (windowList == null) {
-            windowList = _Collections.arrayList();
-            this.windowList = windowList;
+            this.windowList = windowList = _Collections.arrayList();
         } else if (!(window instanceof ArrayList)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }

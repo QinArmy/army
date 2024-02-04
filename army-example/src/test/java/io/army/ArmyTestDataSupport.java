@@ -166,12 +166,16 @@ public abstract class ArmyTestDataSupport {
 
 
     protected final List<ChinaCity> createCityList() {
+        return createCityListWithCount(3);
+    }
+
+
+    protected final List<ChinaCity> createCityListWithCount(final int count) {
         final Random random = ThreadLocalRandom.current();
-        final List<ChinaCity> list = _Collections.arrayList();
+        final List<ChinaCity> list = _Collections.arrayList(count);
         ChinaCity c;
-        final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
-        for (int i = 0; i < rowSize; i++) {
+        for (int i = 0; i < count; i++) {
             c = new ChinaCity()
                     .setId(Math.abs(random.nextLong()))
                     .setCreateTime(now)
@@ -237,13 +241,12 @@ public abstract class ArmyTestDataSupport {
     }
 
 
-    protected final List<PillPerson> createPersonList() {
-        final List<PillPerson> list = _Collections.arrayList();
+    protected final List<PillPerson> createPersonList(final int rowCount) {
+        final List<PillPerson> list = _Collections.arrayList(rowCount);
         PillPerson u;
-        final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
 
-        for (int i = 0; i < rowSize; i++) {
+        for (int i = 0; i < rowCount; i++) {
             u = new PillPerson();
 
             u.setIdentityId(i + 1L);
@@ -262,13 +265,12 @@ public abstract class ArmyTestDataSupport {
     }
 
 
-    protected final List<PillUser<?>> createUserList() {
-        final List<PillUser<?>> list = _Collections.arrayList();
+    protected final List<PillUser<?>> createUserList(final int rowCount) {
+        final List<PillUser<?>> list = _Collections.arrayList(rowCount);
         PillUser<?> u;
-        final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
 
-        for (int i = 0; i < rowSize; i++) {
+        for (int i = 0; i < rowCount; i++) {
             u = new PillUser<>();
 
             u.setIdentityId(i + 1L);
@@ -278,6 +280,27 @@ public abstract class ArmyTestDataSupport {
 
             u.setIdentityType(IdentityType.PERSON);
             u.setNickName("脉兽" + 1);
+
+            list.add(u);
+
+        }
+        return list;
+    }
+
+
+    protected final List<BankPerson> createBankPersonListWithCount(final int rowCount) {
+        final List<BankPerson> list = _Collections.arrayList(rowCount);
+        BankPerson u;
+        final LocalDateTime now = LocalDateTime.now();
+
+        for (int i = 0; i < rowCount; i++) {
+            u = new BankPerson();
+
+
+            u.setCreateTime(now);
+            u.setUpdateTime(now);
+
+            u.setNickName("妖侠" + 1);
 
             list.add(u);
 

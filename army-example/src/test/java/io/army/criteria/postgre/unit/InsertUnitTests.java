@@ -24,18 +24,16 @@ import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
-import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-public class PostgreInsertUnitTests extends PostgreUnitTests {
+public class InsertUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InsertUnitTests.class);
 
 
     @Test
@@ -63,6 +61,7 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
     public void domainReturnInsertParentPost() {
         final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
+                .ignoreReturnIds()
                 .insertInto(ChinaRegion_.T).as("cr")
                 .overridingSystemValue()
                 .values(this::createReginList)
@@ -82,14 +81,14 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
 
 
     @Test
-    public void domainInsertChildPost() {
-        final List<ChinaCity> cityList;
-        cityList = this.createCityList();
+    public void domainInsertOneChildPost() {
+        final ChinaCity city;
+        city = createCityListWithCount(1).get(0);
         final Insert stmt;
         stmt = Postgres.singleInsert()
                 .insertInto(ChinaRegion_.T).as("cr")
                 .overridingSystemValue()
-                .values(cityList)
+                .value(city)
                 .onConflict()
                 .parens(s -> s.space(ChinaRegion_.parentId).collation("de_DE").space("int8_bloom_ops")
                         .comma(ChinaRegion_.createTime).space("timestamp_ops")
@@ -103,7 +102,7 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
 
                 .insertInto(ChinaCity_.T).as("cc")
                 .overridingUserValue()
-                .values(cityList)
+                .value(city)
                 .asInsert();
 
         printStmt(LOG, stmt, Visible.BOTH);
@@ -135,32 +134,11 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
 
     }
 
-    @Test(enabled = false, expectedExceptions = ErrorChildInsertException.class)  // TODO fix ? for postgre
+    @Test
     public void domainInsertChildPostWithChildDoNothing() {
         final List<ChinaCity> cityList;
         cityList = this.createCityList();
 
-        Postgres.singleInsert()
-                .insertInto(ChinaRegion_.T).as("cr")
-                .overridingSystemValue()
-                .values(cityList)
-                .asInsert()
-
-                .child()
-
-                .insertInto(ChinaCity_.T).as("cc")
-                .overridingUserValue()
-                .values(cityList)
-                .onConflict()
-                .doNothing()   // here , couldn't use DO NOTHING clause, because child insert row count will error.
-                .asInsert();
-
-    }
-
-    @Test
-    public void domainReturningInsertChildPost() {
-        final List<ChinaCity> cityList;
-        cityList = this.createCityList();
         final Insert stmt;
         stmt = Postgres.singleInsert()
                 .insertInto(ChinaRegion_.T).as("cr")
@@ -173,7 +151,33 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
                 .insertInto(ChinaCity_.T).as("cc")
                 .overridingUserValue()
                 .values(cityList)
+                .onConflict()
+                .doNothing()
                 .asInsert();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    @Test
+    public void domainReturningInsertChildPost() {
+        final List<ChinaCity> cityList;
+        cityList = this.createCityList();
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T).as("cr")
+                .overridingSystemValue()
+                .values(cityList)
+                .returningAll()
+                .asReturningInsert()
+
+                .child()
+
+                .insertInto(ChinaCity_.T).as("cc")
+                .overridingUserValue()
+                .values(cityList)
+                .returningAll()
+                .asReturningInsert();
 
         printStmt(LOG, stmt);
     }
@@ -182,7 +186,7 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
     @Test
     public void domainInsertChild() {
         final List<BankPerson> bankPersonList;
-        bankPersonList = this.createBankPersonList();
+        bankPersonList = this.createBankPersonListWithCount(3);
 
         final Insert stmt;
         stmt = Postgres.singleInsert()
@@ -229,26 +233,6 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
     }
 
 
-    private List<BankPerson> createBankPersonList() {
-        final List<BankPerson> list = _Collections.arrayList();
-        BankPerson u;
-        final int rowSize = 3;
-        final LocalDateTime now = LocalDateTime.now();
-
-        for (int i = 0; i < rowSize; i++) {
-            u = new BankPerson();
-
-
-            u.setCreateTime(now);
-            u.setUpdateTime(now);
-
-            u.setNickName("妖侠" + 1);
-
-            list.add(u);
-
-        }
-        return list;
-    }
 
 
 }

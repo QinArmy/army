@@ -33,9 +33,9 @@ import static io.army.criteria.impl.Postgres.*;
 import static io.army.criteria.impl.SQLs.ASTERISK;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
-public class PostgreFuncUnitTests extends PostgreUnitTests {
+public class FuncUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreFuncUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FuncUnitTests.class);
 
     /**
      * @see SQLs#cases()

@@ -36,9 +36,9 @@ import java.util.Map;
 import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
-public class PostgreUpdateUnitTests extends PostgreUnitTests {
+public class UpdateUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreUpdateUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UpdateUnitTests.class);
 
 
     @Test

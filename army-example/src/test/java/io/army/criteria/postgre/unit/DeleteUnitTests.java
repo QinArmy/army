@@ -35,9 +35,9 @@ import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.*;
 
-public class PostgreDeleteUnitTests extends PostgreUnitTests {
+public class DeleteUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreDeleteUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeleteUnitTests.class);
 
 
     @Test

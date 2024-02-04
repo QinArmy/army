@@ -29,9 +29,9 @@ import org.testng.annotations.Test;
 import static io.army.criteria.impl.Postgres.lower;
 import static io.army.criteria.impl.Postgres.upper;
 
-public class PostgreTypeUnitTests extends PostgreUnitTests {
+public class TypeUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreTypeUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TypeUnitTests.class);
 
     /**
      * @see Postgres#upper(Expression)

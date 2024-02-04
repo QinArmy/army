@@ -27,9 +27,9 @@ import org.testng.annotations.Test;
 
 import static io.army.criteria.impl.SQLs.AS;
 
-public class PostgreOperatorUnitTests extends PostgreUnitTests {
+public class OperatorUnitTests extends PostgreUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreOperatorUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OperatorUnitTests.class);
 
     @Test
     public void similarTo() {

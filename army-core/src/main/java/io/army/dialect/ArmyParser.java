@@ -1789,8 +1789,6 @@ abstract class ArmyParser implements DialectParser {
             validator.accept(window);
             window.prepared();
             window.appendSql(sqlBuilder, context);
-            window.clear();
-
         }
 
     }
