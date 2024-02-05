@@ -502,12 +502,24 @@ abstract class PostgreExecutor extends JdbcExecutor {
         return isolation;
     }
 
+    final void handleAutoCommitAfterTransactionEndForPostgreFetchSize() {
+        try {
+            if (!this.conn.getAutoCommit()) {
+                // see postgre jdbc fetch size
+                // see io.army.jdbc.JdbcExecutor.bindStatementOption()
+                this.conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
 
     /*-------------------below private static  -------------------*/
 
 
     /**
-     * @see #sessionTransactionCharacteristics()
+     * @see #sessionTransactionCharacteristics(Function)
      */
     private static boolean readBooleanFromMultiResult(Statement statement) throws SQLException {
         if (!statement.getMoreResults()) {
@@ -648,6 +660,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             executeSimpleStaticStatement(builder.toString(), LOG);
 
+            handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+
             final TransactionInfo newInfo;
             if (chain) {
                 newInfo = TransactionInfo.forChain(currentInfo);
@@ -660,6 +674,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
 
     } // LocalExecutor
+
 
     private static class RmExecutor extends PostgreExecutor implements SyncRmStmtExecutor {
 
@@ -764,6 +779,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
 
             executeSimpleStaticStatement(builder.toString(), LOG);
+            handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
             this.transactionInfo = null; // clear current transaction info
             return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
         }
@@ -802,9 +818,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
 
             executeSimpleStaticStatement(builder.toString(), LOG);
-
             if ((flags & RmSession.TM_ONE_PHASE) != 0) {
                 this.transactionInfo = null; // clear for one phase
+                handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+
             }
         }
 
@@ -838,6 +855,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             if (onePhaseRollback) {
                 this.transactionInfo = null; // clear for one phase
+                handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+
             }
 
         }

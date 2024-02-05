@@ -120,7 +120,7 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
             assert timeout == null || startMillis != null;
         }
 
-        if ((timeout == null && armyConsumer == null) || option instanceof TransactionOverrideOption) {
+        if (timeout == null && armyConsumer == null) {
             return option;
         }
 
@@ -136,12 +136,20 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
 
 
         final SyncStmtOption newOption;
-        if (timeout != null && (option == DEFAULT || option instanceof OnlyTimeoutOption) && armyConsumer == null) {
-            newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
-        } else if (timeout != null) {
-            newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer);
+        if (timeout == null) {
+            if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
+                newOption = new OnlyStateConsumerOption(finalConsumer);
+            } else {
+                newOption = new ArmySyncOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer);
+            }
+        } else if (finalConsumer == ResultStates.IGNORE_STATES) {
+            if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
+                newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
+            } else {
+                newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer);
+            }
         } else {
-            newOption = new OnlyStateConsumerOption(finalConsumer);
+            newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer);
         }
         return newOption;
     }

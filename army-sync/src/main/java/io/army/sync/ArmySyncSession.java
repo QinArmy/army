@@ -947,7 +947,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
         final Consumer<ResultStates> logConsumer;
         logConsumer = states -> {
-            if (!states.hasMoreResult()) {
+            if (!states.hasMoreResult() && !states.hasMoreFetch()) {
                 printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
             }
         };

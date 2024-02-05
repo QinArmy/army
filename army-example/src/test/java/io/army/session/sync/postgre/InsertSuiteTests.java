@@ -55,6 +55,7 @@ public class InsertSuiteTests extends SessionTestSupport {
     private static final Logger LOG = LoggerFactory.getLogger(InsertSuiteTests.class);
 
 
+    // @Transactional
     @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertParent(final SyncLocalSession session) {
 
@@ -155,6 +156,8 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         final Consumer<ResultStates> statesConsumer;
         statesConsumer = states -> {
+            flagHolder[0] = true;
+
             Assert.assertEquals(states.affectedRows(), regionList.size());
             if (states.isSupportInsertId()) {
                 Assert.assertEquals(states.lastInsertedId(), 0L);
@@ -169,7 +172,7 @@ public class InsertSuiteTests extends SessionTestSupport {
             Assert.assertTrue(states.hasColumn());
             Assert.assertEquals(states.rowCount(), regionList.size());
 
-            flagHolder[0] = true;
+
         };
 
         final List<ChinaRegion<?>> resultList;
@@ -180,6 +183,82 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         assertChinaRegionAfterNoConflictInsert(regionList);
 
+    }
+
+    @Transactional
+    @Test
+//(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    public void returningDomainInsertParentWithFetch(final SyncLocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final int fetchSize = 5;
+
+        final List<ChinaRegion<?>> regionList;
+        regionList = createReginListWithCount(fetchSize * 60 + 1);
+
+        final long startNanoSecond = System.nanoTime();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T).as("c")
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values(regionList)
+                .returningAll()
+                .asReturningInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final boolean[] flagHolder = new boolean[1];
+        final int[] fetchRowHolder = new int[]{0};
+        final Consumer<ResultStates> statesConsumer;
+        statesConsumer = states -> {
+            flagHolder[0] = true;
+
+            final long currentFetchRow;
+            currentFetchRow = states.rowCount();
+
+
+            Assert.assertEquals(states.affectedRows(), currentFetchRow);
+            fetchRowHolder[0] += (int) currentFetchRow;
+
+            if (currentFetchRow < fetchSize) {
+                Assert.assertFalse(states.hasMoreFetch());
+            } else {
+                Assert.assertEquals(currentFetchRow, fetchSize);
+                if (fetchRowHolder[0] == regionList.size()) {
+                    Assert.assertFalse(states.hasMoreFetch());
+                } else {
+                    Assert.assertTrue(states.hasMoreFetch());
+                }
+            }
+            if (states.isSupportInsertId()) {
+                Assert.assertEquals(states.lastInsertedId(), 0L);
+            }
+
+            Assert.assertEquals(states.batchSize(), 0);
+            Assert.assertEquals(states.resultNo(), 1);
+
+            Assert.assertFalse(states.hasMoreResult());
+            Assert.assertTrue(states.inTransaction()); // postgre jdbc command autoCommit
+
+        };
+
+        final SyncStmtOption stmtOption;
+        stmtOption = SyncStmtOption.builder()
+                .stateConsumer(statesConsumer)
+                .fetchSize(fetchSize)
+                .build();
+
+        final List<ChinaRegion<?>> rowList;
+        rowList = session.queryList(stmt, ChinaRegion_.CLASS, stmtOption);
+
+        Assert.assertEquals(rowList.size(), regionList.size());
+        Assert.assertEquals(rowList.size(), fetchRowHolder[0]);
+        Assert.assertTrue(flagHolder[0]);
+
+        assertChinaRegionAfterNoConflictInsert(regionList);
     }
 
 
@@ -211,7 +290,7 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final boolean[] flagHolder = new boolean[1];
+        final boolean[] flagHolder = new boolean[]{false};
 
         final Consumer<ResultStates> statesConsumer;
         statesConsumer = states -> {
@@ -227,6 +306,7 @@ public class InsertSuiteTests extends SessionTestSupport {
             Assert.assertFalse(states.hasMoreFetch());
             Assert.assertFalse(states.inTransaction());
             Assert.assertTrue(states.hasColumn());
+
             Assert.assertEquals(states.rowCount(), states.affectedRows());
 
             flagHolder[0] = true;

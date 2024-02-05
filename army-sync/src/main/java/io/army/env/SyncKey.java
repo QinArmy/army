@@ -16,11 +16,14 @@
 
 package io.army.env;
 
+
 import javax.annotation.Nullable;
 
 public final class SyncKey<T> extends ArmyKey<T> {
 
     public static final SyncKey<Boolean> JDBC_FORBID_V18 = new SyncKey<>("sync.jdbc.v18", Boolean.class, Boolean.FALSE);
+
+    public static final SyncKey<Boolean> POSTGRE_FETCH_SIZE_AUTO_COMMIT = new SyncKey<>("sync.jdbc.postgre.fetch_size_auto_commit", Boolean.class, Boolean.TRUE);
 
     public static final SyncKey<Boolean> SESSION_IDENTIFIER_ENABLE = new SyncKey<>("sync.session.identifier.enable", Boolean.class, Boolean.FALSE);
 

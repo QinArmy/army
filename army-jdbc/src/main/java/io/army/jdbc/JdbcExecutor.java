@@ -23,6 +23,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.dialect._Constant;
+import io.army.env.SyncKey;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnsignedBigintType;
@@ -238,10 +239,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             firstIdHolder = new long[1];
         }
 
+
         try (final Statement statement = bindInsertStatement(stmt, option, generatedKeys)) {
-
             final long rows;
-
 
             if (returningId) {
                 if (statement instanceof PreparedStatement) {
@@ -1243,7 +1243,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         final List<SQLParam> paramGroup;
         paramGroup = stmt.paramGroup();
-
         final Statement statement;
         if (!option.isPreferServerPrepare() && paramGroup.size() == 0 && option.fetchSize() == 0) {
             statement = this.conn.createStatement();
@@ -1316,6 +1315,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final int fetchSize = option.fetchSize();
             if (fetchSize > 0) {
                 statement.setFetchSize(fetchSize);
+                if (this instanceof PostgreExecutor
+                        && this.conn.getAutoCommit()
+                        && inTransaction()
+                        && this.factory.armyEnv.getOrDefault(SyncKey.POSTGRE_FETCH_SIZE_AUTO_COMMIT)) {
+                    // see org.postgresql.core.QueryExecutor.QUERY_FORWARD_CURSOR
+                    // see org.postgresql.jdbc.PgStatement.executeInternal()
+                    this.conn.setAutoCommit(false); // postgre command ,see io.army.jdbc.PostgreExecutor.handleAutoCommitAfterTransactionEndForPostgreFetchSize()
+                }
             } else if (fetchSize == 0
                     && option.isPreferClientStream()
                     && this instanceof MySQLExecutor) {
@@ -1510,7 +1517,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } else {
                 spliterator = new SimpleRowSpliterator<>(statement, resultSet, rowReader, stmt, option);
             }
-
             return assembleStream(spliterator, option);
         } catch (Throwable e) {
             closeResultSetAndStatement(resultSet, statement);
@@ -2364,6 +2370,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw handleException(e);
             } catch (Error e) {
                 handleError(e);
+                throw e;
             }
         }
 
@@ -2393,6 +2400,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw handleException(e);
             } catch (Error e) {
                 handleError(e);
+                throw e;
             }
         }
 
@@ -2422,6 +2430,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw handleException(e);
             } catch (Error e) {
                 handleError(e);
+                throw e;
             }
         }
 
@@ -2454,6 +2463,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw handleException(e);
             } catch (Error e) {
                 handleError(e);
+                throw e;
             }
         }
 
@@ -2630,36 +2640,38 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private long readWithFetchSize(final ResultSet resultSet, final RowReader<R> rowReader, final int readSize,
                                        final Consumer<? super R> action) throws SQLException {
 
-            final int fetchSize = this.fetchSize;
+            final int fetchSize = this.fetchSize, maxIntValue = Integer.MAX_VALUE;
             assert fetchSize > 0;
 
-            int currentFetchRows = this.currentFetchRows;
+            int readRowCount = 0, currentFetchRows = this.currentFetchRows;
             long bigReadCount = 0L;
             boolean interrupt = false;
             while (resultSet.next()) {
 
-                if (currentFetchRows == 0 && bigReadCount > 0L) {
-                    // emit ResultStates
+                if (currentFetchRows == fetchSize) {
                     emitMoreFetchStates(fetchSize, true);
+                    currentFetchRows = 0;
                 }
 
                 action.accept(rowReader.readOneRow(resultSet));
                 currentFetchRows++;
-
-                if (readSize > 0 && currentFetchRows == readSize) {
-                    interrupt = true;
-                    break;
-                }
+                readRowCount++;
 
                 if (this.canceled) { // canceled must after readRowCount++; because of OptimisticLockException
                     interrupt = true;
                     break;
                 }
 
-                if (currentFetchRows == fetchSize) {
-                    bigReadCount += currentFetchRows;
-                    currentFetchRows = 0;
+                if (readSize > 0 && readRowCount == readSize) {
+                    interrupt = true;
+                    break;
                 }
+
+                if (readRowCount == maxIntValue) {
+                    bigReadCount += readRowCount;
+                    readRowCount = 0;
+                }
+
 
             } // while loop
 
@@ -2668,13 +2680,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 close();
             }
 
-            bigReadCount += currentFetchRows;
-
-            if (currentFetchRows == fetchSize) {
-                this.currentFetchRows = 0;
-            } else {
-                this.currentFetchRows = currentFetchRows;
-            }
+            bigReadCount += readRowCount;
+            this.currentFetchRows = currentFetchRows;
             return bigReadCount;
         }
 
@@ -2686,6 +2693,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private int rowIndex;
 
+        private int currentFetchRows = 0;
 
         /**
          * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
@@ -2715,15 +2723,21 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final DataType idSqlType = rowReader.dataTypeArray[idSelectionIndex];
 
-            final int rowSize = stmt.rowSize(), idColumnIndexBaseOne = idSelectionIndex + 1;
+            final int rowSize = stmt.rowSize(), idColumnIndexBaseOne = idSelectionIndex + 1, fetchSize = this.fetchSize;
 
             Object idValue;
-            int readRowCount = 0, rowIndex = this.rowIndex;
+            int readRowCount = 0, rowIndex = this.rowIndex, currentFetchRows = this.currentFetchRows;
             boolean interrupt = false;
             while (resultSet.next()) {
 
                 if (rowIndex == rowSize) {
                     throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
+                }
+
+                if (currentFetchRows == fetchSize) {
+                    // emit ResultStates
+                    emitMoreFetchStates(fetchSize, true);
+                    currentFetchRows = 0;
                 }
 
                 // below read id value
@@ -2738,19 +2752,22 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 readRowCount++;
                 rowIndex++;
+                currentFetchRows++;
+
+                if (this.canceled) { // canceled must after readRowCount++; because of OptimisticLockException
+                    break;
+                }
 
                 if (readSize > 0 && readRowCount == readSize) {
                     interrupt = true;
                     break;
                 }
 
-                if (this.canceled) { // canceled must after readRowCount++; because of OptimisticLockException
-                    break;
-                }
 
             } // while loop
 
             this.rowIndex = rowIndex;
+            this.currentFetchRows = currentFetchRows;
 
             if (rowIndex == 0 && this.hasOptimistic) {
                 throw _Exceptions.optimisticLock();
@@ -2762,7 +2779,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 if (this.rowIndex != ((GeneratedKeyStmt) this.stmt).rowSize()) {
                     throw insertedRowsAndGenerateIdNotMatch(((GeneratedKeyStmt) this.stmt).rowSize(), rowIndex);
                 }
-                emitSingleResultStates(rowIndex); // here ,rowIndex not rowIndex + 1
+                if (fetchSize > 0) {
+                    emitMoreFetchStates(currentFetchRows, false);
+                } else {
+                    emitSingleResultStates(rowIndex); // here ,rowIndex not rowIndex + 1
+                }
                 close();
             }
             return readRowCount > 0;
@@ -3203,7 +3224,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
 
             try {
-                return (T) this.resultSet.getObject(this.meta.checkIndexAndToBasedOne(indexBasedZero), columnClass);
+                return this.resultSet.getObject(this.meta.checkIndexAndToBasedOne(indexBasedZero), columnClass);
             } catch (Exception e) {
                 throw this.executor.handleException(e);
             }
