@@ -38,7 +38,7 @@ public class InsertTests extends SessionTestSupport {
 
         final Insert stmt;
         stmt = MySQLs.singleInsert()
-                //.literalMode(LiteralMode.LITERAL)
+                //  .literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T)
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
                         .comma(ChinaRegion_.parentId)

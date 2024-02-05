@@ -24,6 +24,10 @@ import java.util.function.Consumer;
 
 public interface SyncStmtOption extends StmtOption, StreamOption {
 
+    static SyncStmtOption defaultOption() {
+        return ArmySyncStmtOptions.DEFAULT;
+    }
+
 
     static SyncStmtOption fetchSize(int value) {
         return ArmySyncStmtOptions.fetchSize(value);

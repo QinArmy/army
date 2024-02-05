@@ -74,7 +74,6 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     /**
      * <p>
      * package constructor
-     *
      */
     @SuppressWarnings("unchecked")
     protected _ArmyPostgreRangeType(final PostgreType dataType, final Class<?> javaType,
@@ -195,7 +194,11 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
 
     }
 
+    @Nullable
     protected final Object deserialize(final String text) {
+        if (PostgreRangeType.INFINITY.equals(text)) {
+            return null;
+        }
         final Object value;
         switch (this.dataType) {
             case INT4RANGE:

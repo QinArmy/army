@@ -18,7 +18,9 @@ package io.army.session;
 
 public interface StmtOption extends StmtOptionSpec {
 
-
+    /**
+     * @see io.army.criteria.LiteralMode#LITERAL
+     */
     boolean isPreferServerPrepare();
 
     /**

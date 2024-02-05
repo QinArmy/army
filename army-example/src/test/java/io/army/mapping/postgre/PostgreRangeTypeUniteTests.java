@@ -141,7 +141,11 @@ public class PostgreRangeTypeUniteTests {
     }
 
 
+    @Nullable
     private LocalDateTime parseDateTime(final String text) {
+        if (PostgreRangeType.INFINITY.equals(text)) {
+            return null;
+        }
         return LocalDateTime.parse(text, _TimeUtils.DATETIME_FORMATTER_6);
     }
 

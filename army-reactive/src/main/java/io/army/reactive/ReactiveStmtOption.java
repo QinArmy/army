@@ -24,6 +24,10 @@ import java.util.function.Consumer;
 
 public interface ReactiveStmtOption extends StmtOption {
 
+    static ReactiveStmtOption defaultOption() {
+        return ArmyReactiveStmtOptions.DEFAULT;
+    }
+
 
     static ReactiveStmtOption fetchSize(int value) {
         return ArmyReactiveStmtOptions.fetchSize(value);

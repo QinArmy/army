@@ -247,14 +247,14 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
         SQLs.query()
                 .select(BankUser_.nickName)
-                .from(() -> SQLs.subQuery()
+                .from(BankUser_.T, AS, "bu")
+                .join(() -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
                         .from(ChinaProvince_.T, AS, "p")
                         .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
                         .where(ChinaProvince_.governor::equal, SQLs.field("bu", BankUser_.nickName))
                         .asQuery()
-                ).as("ps")
-                .join(BankUser_.T, AS, "bu").on(BankUser_.id::equal, SQLs.refField("ps", ChinaProvince_.ID))
+                ).as("ps").on(BankUser_.id::equal, SQLs.refField("ps", ChinaProvince_.ID))
                 .where(BankUser_.nickName::equal, SQLs::param, map.get("nickName"))
                 .asQuery();
 

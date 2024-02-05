@@ -434,8 +434,14 @@ public abstract class PostgreArrays extends ArrayMappings {
             offset++;
         }
 
-        final int dimension;
+        final int classDimension, dimension;
         dimension = dimensionOfArray(text, offset, length);
+
+        if ((classDimension = ArrayUtils.dimensionOf(javaType)) != dimension) {
+            String m = String.format("%s dimension[%s] and postgre array dimension[%s] not match",
+                    javaType.getName(), classDimension, dimension);
+            throw new IllegalArgumentException(m);
+        }
         return _parseArray(javaType, text, nonNull, offset, length, delimiter, dimension, 1, false, function);
     }
 
@@ -484,14 +490,10 @@ public abstract class PostgreArrays extends ArrayMappings {
         arrayLength = parseArrayLength(text, offset, end);
 
         final Class<?> componentType;
+        componentType = javaType.getComponentType();
         final boolean oneDimension;
-        if (dimensionIndex < dimension) {
-            componentType = javaType.getComponentType();
-            oneDimension = false;
-        } else {
-            componentType = javaType;
-            oneDimension = true;
-        }
+        oneDimension = dimensionIndex >= dimension;
+
         final Object array;
         array = Array.newInstance(componentType, arrayLength);
         if (arrayLength == 0) {

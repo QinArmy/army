@@ -190,7 +190,13 @@ public abstract class ArrayUtils {
     }
 
     public static int dimensionOf(final Class<?> arrayType) {
-        assert arrayType.isArray();
+        if (List.class.isAssignableFrom(arrayType)) {
+            return 1;
+        }
+
+        if (!arrayType.isArray()) {
+            throw new IllegalArgumentException(String.format("%s isn't array no list", arrayType.getName()));
+        }
         int dimension = 1;
         Class<?> componentType;
         componentType = arrayType.getComponentType();

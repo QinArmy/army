@@ -16,6 +16,8 @@
 
 package io.army.criteria;
 
+import io.army.session.StmtOption;
+
 public enum LiteralMode {
 
     DEFAULT,
@@ -23,6 +25,7 @@ public enum LiteralMode {
 
     /**
      * the fields that is managed by army output literal , but child id that is created by database.
+     * @see StmtOption#isPreferServerPrepare()
      */
     LITERAL;
 

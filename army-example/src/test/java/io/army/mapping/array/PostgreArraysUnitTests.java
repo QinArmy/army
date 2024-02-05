@@ -171,35 +171,6 @@ public class PostgreArraysUnitTests {
         Assert.assertEquals(array, new String[][]{{"I love \\\"army\\\""}, {"My Name is zoro."}});
     }
 
-    @Deprecated
-    @Test(enabled = false)
-    public void parseArrayLengthMap() {
-//        String text;
-//         int[] meta;
-//
-//        text = "[1:1]";
-//        meta = PostgreArrays.parseArrayLengthMap(int[].class, text, 0, text.length());
-//        Assert.assertEquals(map.size(), 1);
-//        Assert.assertEquals(map.get(int[].class), Integer.valueOf(1));
-//
-//        text = " [ 1 : 1 ]";
-//        map = PostgreArrays.parseArrayLengthMap(int[].class, text, 0, text.length());
-//        Assert.assertEquals(map.size(), 1);
-//        Assert.assertEquals(map.get(int[].class), Integer.valueOf(1));
-//
-//        text = "[1:1][-2:-1]";
-//        map = PostgreArrays.parseArrayLengthMap(int[][].class, text, 0, text.length());
-//        Assert.assertEquals(map.size(), 2);
-//        Assert.assertEquals(map.get(int[][].class), Integer.valueOf(1));
-//        Assert.assertEquals(map.get(int[].class), Integer.valueOf(2));
-//
-//        text = " [ 1 : 1 ] [-2:-1 ]";
-//        map = PostgreArrays.parseArrayLengthMap(int[][].class, text, 0, text.length());
-//        Assert.assertEquals(map.size(), 2);
-//        Assert.assertEquals(map.get(int[][].class), Integer.valueOf(1));
-//        Assert.assertEquals(map.get(int[].class), Integer.valueOf(2));
-
-    }
 
     @Test
     public void nonNullError() {

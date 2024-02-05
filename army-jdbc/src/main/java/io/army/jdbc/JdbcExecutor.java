@@ -1245,7 +1245,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         paramGroup = stmt.paramGroup();
 
         final Statement statement;
-        if (!option.isPreferServerPrepare() && paramGroup.size() == 0) {
+        if (!option.isPreferServerPrepare() && paramGroup.size() == 0 && option.fetchSize() == 0) {
             statement = this.conn.createStatement();
         } else {
             statement = this.conn.prepareStatement(stmt.sqlText(), generatedKeys);
@@ -1276,7 +1276,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         paramGroup = stmt.paramGroup();
 
         final Statement statement;
-        if (!option.isPreferServerPrepare() && paramGroup.size() == 0) {
+        if (!option.isPreferServerPrepare() && paramGroup.size() == 0 && option.fetchSize() == 0) {
             statement = this.conn.createStatement();
         } else {
             statement = this.conn.prepareStatement(stmt.sqlText());
@@ -1312,7 +1312,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             statement.setQueryTimeout(option.restSeconds());
         }
 
-        if (stmt.stmtType() == StmtType.QUERY && stmt.selectionList().size() > 0) {
+        if (stmt.selectionList().size() > 0) {
             final int fetchSize = option.fetchSize();
             if (fetchSize > 0) {
                 statement.setFetchSize(fetchSize);
