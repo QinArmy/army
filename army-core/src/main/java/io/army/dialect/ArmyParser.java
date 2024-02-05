@@ -28,6 +28,7 @@ import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
 import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
+import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.EscapeMode;
@@ -134,6 +135,8 @@ abstract class ArmyParser implements DialectParser {
      */
     final boolean truncatedTimeType;
 
+    final boolean supportLastInsertedId;
+
     private final String qualifiedSchemaName;
     private final NameMode tableNameMode;
 
@@ -206,6 +209,7 @@ abstract class ArmyParser implements DialectParser {
 
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
         this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
+        this.supportLastInsertedId = this.database != Database.PostgreSQL || this.dialect.compareWith(PostgreDialect.POSTGRE12) < 0;
         this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
 
         this.unrecognizedTypeAllowed = env.getOrDefault(ArmyKey.UNRECOGNIZED_TYPE_ALLOWED);

@@ -89,15 +89,15 @@ public class InsertTests extends SessionTestSupport {
         states = session.updateAsStates(stmt);
 
         Assert.assertEquals(states.affectedRows(), regionList.size());
-
+        Assert.assertEquals(states.lastInsertedId(), regionList.get(0).getId());
         Assert.assertEquals(states.batchSize(), 0);
+        Assert.assertEquals(states.resultNo(), 1);
+
         Assert.assertFalse(states.hasMoreResult());
         Assert.assertFalse(states.hasMoreFetch());
         Assert.assertFalse(states.inTransaction());
-
         Assert.assertFalse(states.hasColumn());
         Assert.assertEquals(states.rowCount(), 0L);
-        Assert.assertEquals(states.lastInsertedId(), regionList.get(0).getId());
 
         assertChinaRegionAfterNoConflictInsert(regionList);
 

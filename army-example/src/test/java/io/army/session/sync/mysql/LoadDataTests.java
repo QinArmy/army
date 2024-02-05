@@ -10,6 +10,7 @@ import io.army.example.bank.domain.user.RegionType;
 import io.army.session.MyPaths;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncStmtOption;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.Test;
 
 import java.nio.file.Files;
@@ -51,6 +52,7 @@ public class LoadDataTests extends SessionTestSupport {
     }
 
 
+    @Transactional
     @Test
     public void childLoadData(final SyncLocalSession session) {
         final Path parentTempFile, childTempFile;

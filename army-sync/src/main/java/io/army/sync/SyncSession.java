@@ -484,7 +484,11 @@ public interface SyncSession extends Session, Closeable {
 
     <T> int batchSave(List<T> domainList);
 
+    <T> int batchSave(List<T> domainList, LiteralMode literalMode);
+
     <T> int batchSave(List<T> domainList, SyncStmtOption option);
+
+    <T> int batchSave(List<T> domainList, LiteralMode literalMode, SyncStmtOption option);
 
     /**
      * @return a unmodified list

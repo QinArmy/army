@@ -1138,7 +1138,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final ServerMeta serverMeta = this.factory.serverMeta;
 
             long updateCount;
-            int batchNo = 0;
+            int resultNo = 0;
             while (true) {
                 if (useLargeUpdate) {
                     updateCount = statement.getLargeUpdateCount();
@@ -1151,9 +1151,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     break;
                 }
 
-                batchNo++;
+                resultNo++;
 
-                resultList.add(new SingleUpdateStates(serverMeta, 1, info, 0L, warning, updateCount, batchNo < stmtSize));
+                resultList.add(new SingleUpdateStates(serverMeta, resultNo, info, 0L, warning, updateCount, resultNo < stmtSize));
 
                 if (statement.getMoreResults()) {
                     statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
@@ -1163,8 +1163,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             }
 
-            if (batchNo != stmtSize) {
-                throw _Exceptions.batchCountNotMatch(stmtSize, batchNo);
+            if (resultNo != stmtSize) {
+                throw _Exceptions.batchCountNotMatch(stmtSize, resultNo);
             }
             return resultList.stream();
         } catch (Exception e) {
@@ -2433,6 +2433,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
 
             try {
+                final long affectedRows;
+                if (this.stmtType == StmtType.QUERY) {
+                    affectedRows = 0;
+                } else {
+                    affectedRows = fetchRows;
+                }
+
                 final ResultStates states;
                 states = new SingleQueryStates(this.executor.factory.serverMeta,
                         1,
@@ -2440,7 +2447,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                         mapToArmyWarning(this.statement.getWarnings()),
                         fetchRows,
                         moreFetch,
-                        0L);   // currently, update don't support fetch size
+                        affectedRows);   // currently, update don't support fetch size
 
                 consumer.accept(states);
             } catch (Exception e) {

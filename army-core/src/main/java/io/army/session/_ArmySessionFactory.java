@@ -126,8 +126,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         if (!this.sqlLogDynamic && this.sqlLogMode == SqlLogMode.OFF) {
             this.sqlParsingCostTime = this.sqlExecutionCostTime = false;
         } else {
-            this.sqlParsingCostTime = env.getOrDefault(ArmyKey.SQL_PARSING_COST_TIME);
-            this.sqlExecutionCostTime = env.getOrDefault(ArmyKey.SQL_EXECUTION_COST_TIME);
+            this.sqlParsingCostTime = env.getOrDefault(ArmyKey.SQL_LOG_PARSING_COST_TIME);
+            this.sqlExecutionCostTime = env.getOrDefault(ArmyKey.SQL_LOG_EXECUTION_COST_TIME);
         }
 
 

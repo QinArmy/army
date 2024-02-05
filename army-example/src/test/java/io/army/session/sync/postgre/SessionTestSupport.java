@@ -19,9 +19,9 @@ package io.army.session.sync.postgre;
 import io.army.dialect.Database;
 import io.army.session.sync.SyncSessionTestSupport;
 
-abstract class PostgreSessionTestSupport extends SyncSessionTestSupport {
+abstract class SessionTestSupport extends SyncSessionTestSupport {
 
-    PostgreSessionTestSupport() {
+    SessionTestSupport() {
         super(Database.PostgreSQL);
     }
 

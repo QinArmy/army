@@ -18,7 +18,6 @@ package io.army.sync;
 
 import io.army.ArmyException;
 import io.army.criteria.*;
-import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.inner.*;
 import io.army.env.SqlLogMode;
 import io.army.meta.ChildTableMeta;
@@ -367,13 +366,27 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <T> int batchSave(List<T> domainList) {
-        return batchSave(domainList, ArmySyncStmtOptions.DEFAULT);
+        return batchSave(domainList, LiteralMode.DEFAULT, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
+    public final <T> int batchSave(List<T> domainList, LiteralMode literalMode) {
+        return batchSave(domainList, literalMode, ArmySyncStmtOptions.DEFAULT);
+    }
+
+
+    @Override
     public final <T> int batchSave(List<T> domainList, SyncStmtOption option) {
+        return batchSave(domainList, LiteralMode.DEFAULT, option);
+    }
+
+    @Override
+    public final <T> int batchSave(List<T> domainList, LiteralMode literalMode, SyncStmtOption option) {
+        if (domainList.size() == 0) {
+            throw new IllegalArgumentException("domainList must non-empty.");
+        }
         final long rowCount;
-        rowCount = this.update(ArmyCriteria.batchInsertStmt(this, domainList), option);
+        rowCount = update(ArmyCriteria.batchInsertStmt(this, literalMode, domainList), option);
 
         if (rowCount > domainList.size()) {
             String m = String.format("insert row count[%s] and expected row count[%s] not match.",
@@ -382,6 +395,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         }
         return (int) rowCount;
     }
+
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement) {
@@ -793,11 +807,9 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             }
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
-        } else if (statement instanceof DmlCommand) { // eg : MySQL LOAD DATA statement
-            final PairStmt pairStmt = (PairStmt) stmt;
-            this.executor.update(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_FUNC);
-            result = this.executor.update(pairStmt.secondStmt(), option, resultClass, Option.EMPTY_FUNC);
-        } else if (inTransaction()) {
+        } else if (!inTransaction()) {
+            throw updateChildNoTransaction();
+        } else if (statement instanceof NarrowDmlStatement) {
             final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
             final PairStmt pairStmt = (PairStmt) stmt;
 
@@ -817,11 +829,11 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 throw _Exceptions.parentChildRowsNotMatch(this, domainTable, obtainAffectedRows(result),
                         obtainAffectedRows(childResult));
             }
-
-        } else {
-            throw updateChildNoTransaction();
+        } else { // eg : MySQL LOAD DATA statement
+            final PairStmt pairStmt = (PairStmt) stmt;
+            this.executor.update(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_FUNC);
+            result = this.executor.update(pairStmt.secondStmt(), option, resultClass, Option.EMPTY_FUNC);
         }
-
         if (executionStartNanoSecond > 0L) {
             printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
         }

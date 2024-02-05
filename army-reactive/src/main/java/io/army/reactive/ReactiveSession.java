@@ -16,10 +16,7 @@
 
 package io.army.reactive;
 
-import io.army.criteria.BatchDmlStatement;
-import io.army.criteria.DqlStatement;
-import io.army.criteria.SimpleDmlStatement;
-import io.army.criteria.SimpleDqlStatement;
+import io.army.criteria.*;
 import io.army.session.*;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
@@ -179,7 +176,9 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
 
     /*-------------------below save methods-------------------*/
 
-    Mono<ResultStates> save(Object domain);
+    <T> Mono<ResultStates> save(T domain);
+
+    <T> Mono<ResultStates> save(T domain, ReactiveStmtOption option);
 
     /*-------------------below update methods-------------------*/
 
@@ -191,6 +190,12 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
     /*-------------------below batchSave methods-------------------*/
 
     <T> Mono<ResultStates> batchSave(List<T> domainList);
+
+    <T> Mono<ResultStates> batchSave(List<T> domainList, LiteralMode literalMode);
+
+    <T> Mono<ResultStates> batchSave(List<T> domainList, ReactiveStmtOption option);
+
+    <T> Mono<ResultStates> batchSave(List<T> domainList, LiteralMode literalMode, ReactiveStmtOption option);
 
 
     /*-------------------below batchUpdate methods-------------------*/

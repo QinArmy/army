@@ -32,7 +32,7 @@ import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
-public class QuerySuiteTests extends PostgreSessionTestSupport {
+public class QuerySuiteTests extends SessionTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(QuerySuiteTests.class);
 

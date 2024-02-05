@@ -29,7 +29,9 @@ import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
 import io.army.session.Isolation;
 import io.army.session.TransactionOption;
+import io.army.session.record.ResultStates;
 import io.army.sync.SyncLocalSession;
+import io.army.sync.SyncStmtOption;
 import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
 import io.army.util.ImmutableHashMap;
@@ -43,11 +45,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class InsertSuiteTests extends PostgreSessionTestSupport {
+public class InsertSuiteTests extends SessionTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(InsertSuiteTests.class);
 
@@ -71,7 +74,57 @@ public class InsertSuiteTests extends PostgreSessionTestSupport {
 
         statementCostTimeLog(session, LOG, startNanoSecond);
 
+        Assert.assertFalse(stmt instanceof _ReturningDml);
+
         Assert.assertEquals(session.update(stmt), regionList.size());
+        assertChinaRegionAfterNoConflictInsert(regionList);
+
+    }
+
+
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    public void domainInsertParentAsStates(final SyncLocalSession session) {
+
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                //  .literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T)
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::param, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs::param, 0)
+                .values(regionList)
+                .asInsert();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
+        Assert.assertFalse(stmt instanceof _ReturningDml);
+
+
+        final ResultStates states;
+        states = session.updateAsStates(stmt);
+
+        Assert.assertEquals(states.affectedRows(), regionList.size());
+        if (states.isSupportInsertId()) {
+            Assert.assertEquals(states.lastInsertedId(), regionList.get(0).getId());
+        }
+        Assert.assertEquals(states.batchSize(), 0);
+        Assert.assertEquals(states.resultNo(), 1);
+
+        Assert.assertFalse(states.hasMoreResult());
+        Assert.assertFalse(states.hasMoreFetch());
+        Assert.assertFalse(states.inTransaction());
+        Assert.assertTrue(states.hasColumn());      // army auto append RETURNING id clause,because ChinaRegion primary key is auto increment
+        Assert.assertEquals(states.rowCount(), regionList.size());
+
         assertChinaRegionAfterNoConflictInsert(regionList);
 
     }
@@ -98,14 +151,37 @@ public class InsertSuiteTests extends PostgreSessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        final boolean[] flagHolder = new boolean[1];
+
+        final Consumer<ResultStates> statesConsumer;
+        statesConsumer = states -> {
+            Assert.assertEquals(states.affectedRows(), regionList.size());
+            if (states.isSupportInsertId()) {
+                Assert.assertEquals(states.lastInsertedId(), 0L);
+            }
+
+            Assert.assertEquals(states.batchSize(), 0);
+            Assert.assertEquals(states.resultNo(), 1);
+
+            Assert.assertFalse(states.hasMoreResult());
+            Assert.assertFalse(states.hasMoreFetch());
+            Assert.assertFalse(states.inTransaction());
+            Assert.assertTrue(states.hasColumn());
+            Assert.assertEquals(states.rowCount(), regionList.size());
+
+            flagHolder[0] = true;
+        };
+
         final List<ChinaRegion<?>> resultList;
-        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS, SyncStmtOption.stateConsumer(statesConsumer));
 
         Assert.assertEquals(resultList.size(), regionList.size());
+        Assert.assertTrue(flagHolder[0]);
 
         assertChinaRegionAfterNoConflictInsert(regionList);
 
     }
+
 
     @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void domainInsertParentWithDoNothing(final SyncLocalSession session) {
@@ -113,6 +189,7 @@ public class InsertSuiteTests extends PostgreSessionTestSupport {
 
         final List<ChinaRegion<?>> regionList;
         regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
 
         final long startNanoSecond = System.nanoTime();
 
@@ -134,10 +211,32 @@ public class InsertSuiteTests extends PostgreSessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final List<ChinaRegion<?>> resultList;
-        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
+        final boolean[] flagHolder = new boolean[1];
 
-        Assert.assertEquals(resultList.size(), regionList.size());
+        final Consumer<ResultStates> statesConsumer;
+        statesConsumer = states -> {
+            Assert.assertEquals(states.affectedRows(), 0L);
+            if (states.isSupportInsertId()) {
+                Assert.assertEquals(states.lastInsertedId(), 0L);
+            }
+
+            Assert.assertEquals(states.batchSize(), 0);
+            Assert.assertEquals(states.resultNo(), 1);
+
+            Assert.assertFalse(states.hasMoreResult());
+            Assert.assertFalse(states.hasMoreFetch());
+            Assert.assertFalse(states.inTransaction());
+            Assert.assertTrue(states.hasColumn());
+            Assert.assertEquals(states.rowCount(), states.affectedRows());
+
+            flagHolder[0] = true;
+        };
+
+        final List<ChinaRegion<?>> resultList;
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS, SyncStmtOption.stateConsumer(statesConsumer));
+
+        Assert.assertEquals(resultList.size(), 0L); // because conflict do nothing
+        Assert.assertTrue(flagHolder[0]);
 
 
     }

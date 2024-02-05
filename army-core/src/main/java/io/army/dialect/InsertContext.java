@@ -188,11 +188,22 @@ abstract class InsertContext extends StatementContext
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
         final boolean needReturnId, cannotReturnId;
-        needReturnId = !this.migration
+        if (!(!this.migration
                 && targetStmt instanceof PrimaryStatement
-                && idField.generatorType() == GeneratorType.POST
-                && ((targetStmt instanceof _Insert._DomainInsert && !((_Insert._DomainInsert) targetStmt).isIgnoreReturnIds()) || domainStmt instanceof _Insert._ChildInsert);
-
+                && idField.generatorType() == GeneratorType.POST)) {
+            needReturnId = false;
+        } else if (targetStmt instanceof _Insert._QueryInsert) {
+            needReturnId = false;
+        } else if (domainStmt instanceof _Insert._ChildInsert) {
+            needReturnId = true;
+        } else if (targetStmt instanceof _Insert._DomainInsert) {
+            needReturnId = !((_Insert._DomainInsert) targetStmt).isIgnoreReturnIds();
+        } else {
+            // here , just for ResultStates.lastInsertedId() of JDBC executor;
+            needReturnId = parser.supportLastInsertedId
+                    && !(targetStmt instanceof _ReturningDml)
+                    && !this.hasConflictClause;
+        }
 
         cannotReturnId = this.hasConflictClause
                 && targetStmt.insertRowCount() > 1

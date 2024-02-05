@@ -18,6 +18,7 @@ package io.army.util;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Insert;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.*;
@@ -61,23 +62,25 @@ public abstract class ArmyCriteria {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Insert batchInsertStmt(final Session session, final List<T> domainList) {
+    public static <T> Insert batchInsertStmt(final Session session, LiteralMode literalMode, final List<T> domainList) {
         final TableMeta<T> table;
         table = (TableMeta<T>) session.tableMeta(domainList.get(0).getClass());
-        return batchInsertStmtOf(table, domainList);
+        return batchInsertStmtOf(table, literalMode, domainList);
     }
 
-    public static <T> Insert batchInsertStmtOf(final TableMeta<T> table, final List<T> domainList) {
+    public static <T> Insert batchInsertStmtOf(final TableMeta<T> table, LiteralMode literalMode, final List<T> domainList) {
         final Insert stmt;
         if (table instanceof SimpleTableMeta) {
             stmt = SQLs.singleInsert()
+                    .literalMode(literalMode)
                     .insertInto((SimpleTableMeta<T>) table)
                     .values(domainList)
                     .asInsert();
         } else if (table instanceof ChildTableMeta) {
-            stmt = childBatchInsertStatement((ChildTableMeta<T>) table, domainList);
+            stmt = childBatchInsertStatement((ChildTableMeta<T>) table, literalMode, domainList);
         } else {
             stmt = SQLs.singleInsert()
+                    .literalMode(literalMode)
                     .insertInto((ParentTableMeta<T>) table)
                     .values(domainList)
                     .asInsert();
@@ -187,10 +190,12 @@ public abstract class ArmyCriteria {
 
 
     private static <P, T extends P> Insert childBatchInsertStatement(final ChildTableMeta<T> table,
+                                                                     final LiteralMode literalMode,
                                                                      final List<T> domainList) {
         final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
 
         return SQLs.singleInsert()
+                .literalMode(literalMode)
                 .insertInto(child.parentMeta())
                 .values(domainList)
                 .asInsert()

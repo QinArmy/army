@@ -101,6 +101,7 @@ public interface ResultStates extends ResultItem, OptionSpec {
 
     /**
      * <p>Test result whether is query result or not.
+     * <p><strong>NOTE</strong> : Army auto append RETURNING id clause for INSERT statement that primary key is auto increment.
      *
      * @return <ul>
      * <li>true : this instance representing the terminator of query result (eg: SELECT command)</li>

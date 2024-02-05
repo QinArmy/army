@@ -209,8 +209,13 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
     }
 
     @Override
-    public final Mono<ResultStates> save(Object domain) {
-        return update(ArmyCriteria.insertStmt(this, domain), ArmyReactiveStmtOptions.DEFAULT);
+    public final <T> Mono<ResultStates> save(T domain) {
+        return save(domain, ArmyReactiveStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T> Mono<ResultStates> save(T domain, ReactiveStmtOption option) {
+        return update(ArmyCriteria.insertStmt(this, domain), option);
     }
 
     @Override
@@ -233,7 +238,25 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <T> Mono<ResultStates> batchSave(List<T> domainList) {
-        return update(ArmyCriteria.batchInsertStmt(this, domainList), ArmyReactiveStmtOptions.DEFAULT);
+        return batchSave(domainList, LiteralMode.DEFAULT, ArmyReactiveStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T> Mono<ResultStates> batchSave(List<T> domainList, LiteralMode literalMode) {
+        return batchSave(domainList, literalMode, ArmyReactiveStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T> Mono<ResultStates> batchSave(List<T> domainList, ReactiveStmtOption option) {
+        return batchSave(domainList, LiteralMode.DEFAULT, option);
+    }
+
+    @Override
+    public final <T> Mono<ResultStates> batchSave(List<T> domainList, LiteralMode literalMode, ReactiveStmtOption option) {
+        if (domainList.size() == 0) {
+            throw new IllegalArgumentException("domainList must non-empty.");
+        }
+        return update(ArmyCriteria.batchInsertStmt(this, literalMode, domainList), option);
     }
 
     @Override
