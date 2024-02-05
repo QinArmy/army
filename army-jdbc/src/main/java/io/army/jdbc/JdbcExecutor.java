@@ -279,9 +279,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             if (resultClass == Long.class) {
                 r = (R) Long.valueOf(rows);
             } else if (returningId) {
-                r = (R) new SingleQueryStates(this.factory.serverMeta, obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows, false, rows);
+                r = (R) new SingleQueryStates(this.factory.serverMeta, 1, obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows, false, rows);
             } else {
-                r = (R) new SingleUpdateStates(this.factory.serverMeta, obtainTransaction(), firstId, mapToArmyWarning(statement.getWarnings()), rows);
+                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), firstId, mapToArmyWarning(statement.getWarnings()), rows, false);
             }
             return r;
         } catch (Exception e) {
@@ -321,7 +321,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     && Boolean.TRUE.equals(optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR))) {
                 r = (R) createNamedCursor(statement, rows, optionFunc);
             } else {
-                r = (R) new SingleUpdateStates(this.factory.serverMeta, obtainTransaction(), 0L, mapToArmyWarning(statement.getWarnings()), rows);
+                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), 0L, mapToArmyWarning(statement.getWarnings()), rows, false);
             }
             return r;
         } catch (Exception e) {
@@ -1153,7 +1153,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 batchNo++;
 
-                resultList.add(new MultiResultUpdateStates(serverMeta, batchNo, false, info, warning, updateCount, batchNo < stmtSize));
+                resultList.add(new SingleUpdateStates(serverMeta, 1, info, 0L, warning, updateCount, batchNo < stmtSize));
 
                 if (statement.getMoreResults()) {
                     statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
@@ -1211,13 +1211,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } else {
                 warning = new ArmyWarning(jdbcWarning);
             }
-            final int lastIndex = batchSize - 1;
             final ServerMeta serverMeta = this.factory.serverMeta;
             final List<ResultStates> resultList = _Collections.arrayList(batchSize);
             long rows;
             for (int i = 0; i < batchSize; i++) {
                 rows = arrayFunc.applyAsLong(i);
-                resultList.add(new MultiResultUpdateStates(serverMeta, i + 1, true, info, warning, rows, i < lastIndex));
+                resultList.add(new BatchUpdateStates(serverMeta, 1, info, batchSize, i + 1, warning, rows));
             }
             return resultList.stream();
         } catch (Exception e) {
@@ -2092,7 +2091,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             super(r.executor, r.selectionList, r.dataTypeArray, Object.class);
             this.function = r.function;
             this.valueArray = new Object[r.dataTypeArray.length];
-            this.meta = new JdbcStmtRecordMeta(r.meta.getResultNo() + 1, r.executor, r.dataTypeArray, r.selectionList, meta);
+            this.meta = new JdbcStmtRecordMeta(r.meta.resultNo() + 1, r.executor, r.dataTypeArray, r.selectionList, meta);
         }
 
 
@@ -2355,6 +2354,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 final ResultStates states;
                 states = new SingleQueryStates(this.executor.factory.serverMeta,
+                        1,
                         this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
                         rowCount, false, affectedRows
@@ -2367,7 +2367,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
         }
 
-        final void emitMultiResultStates(final int resultNo, final boolean batch, final long rowCount, final boolean moreResult) {
+        final void emitMultiResultStates(final int resultNo, final long rowCount, final boolean moreResult) {
             final Consumer<ResultStates> consumer;
             consumer = this.option.stateConsumer();
             if (consumer == ResultStates.IGNORE_STATES) {
@@ -2384,9 +2384,38 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 final ResultStates states;
                 states = new MultiResultQueryStates(this.executor.factory.serverMeta,
-                        resultNo, batch, this.info,
+                        resultNo, this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
                         rowCount, moreResult, affectedRows
+                );
+                consumer.accept(states);
+            } catch (Exception e) {
+                throw handleException(e);
+            } catch (Error e) {
+                handleError(e);
+            }
+        }
+
+        final void emitBatchQueryStates(final int batchSize, final int batchNo, final long rowCount) {
+            final Consumer<ResultStates> consumer;
+            consumer = this.option.stateConsumer();
+            if (consumer == ResultStates.IGNORE_STATES) {
+                return;
+            }
+
+            try {
+                final long affectedRows;
+                if (this.stmtType == StmtType.QUERY) {
+                    affectedRows = 0;
+                } else {
+                    affectedRows = rowCount;
+                }
+
+                final ResultStates states;
+                states = new BatchQueryStates(this.executor.factory.serverMeta, this.info,
+                        batchSize, batchNo,
+                        mapToArmyWarning(this.statement.getWarnings()),
+                        rowCount, affectedRows
                 );
                 consumer.accept(states);
             } catch (Exception e) {
@@ -2406,6 +2435,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             try {
                 final ResultStates states;
                 states = new SingleQueryStates(this.executor.factory.serverMeta,
+                        1,
                         this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
                         fetchRows,
@@ -2916,7 +2946,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         @Override
         final boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
             final boolean hasOptimistic = this.stmt.hasOptimistic();
-            final boolean batchStmt = this instanceof BatchRowSpliterator;
+            final int batchSize;
+            if (this instanceof BatchRowSpliterator) {
+                batchSize = this.stmt.groupList().size();
+            } else {
+                batchSize = 0;
+            }
 
             RowReader<R> rowReader = this.rowReader;
 
@@ -2942,7 +2977,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 this.resultSet = resultSet = nextResultSet();
                 if (!this.canceled) {
                     // emit ResultStates
-                    emitMultiResultStates(this.resultNo, batchStmt, this.currentResultTotalRows, resultSet != null);
+                    if (batchSize > 0) {
+                        emitBatchQueryStates(batchSize, this.resultNo, this.currentResultTotalRows);
+                    } else {
+                        emitMultiResultStates(this.resultNo, this.currentResultTotalRows, resultSet != null);
+                    }
                 }
 
                 // reset for next result set
@@ -2951,7 +2990,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 if (resultSet != null && rowReader instanceof RecordRowReader) {
                     rowReader = new RecordRowReader<>((RecordRowReader<R>) rowReader, resultSet.getMetaData());
                     this.rowReader = rowReader;
-                    assert rowReader.getResultNo() == this.resultNo;
+                    assert rowReader.resultNo() == this.resultNo;
                 }
 
             }// for loop
@@ -3307,6 +3346,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             try {
                 final ResultStates states;
                 states = new SingleQueryStates(this.executor.factory.serverMeta,
+                        1,
                         this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
                         rowCount, false, 0L

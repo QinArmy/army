@@ -18,6 +18,7 @@ package io.army.session.record;
 
 import io.army.session.DataAccessException;
 import io.army.session.OptionSpec;
+import io.army.session.StmtOption;
 import io.army.session.Warning;
 
 import javax.annotation.Nullable;
@@ -27,6 +28,24 @@ public interface ResultStates extends ResultItem, OptionSpec {
 
     Consumer<ResultStates> IGNORE_STATES = states -> {
     };
+
+    /**
+     * <p>Get batch statement batch size.
+     * <p><strong>NOTE</strong>: if {@link StmtOption#isParseBatchAsMultiStmt()} is true , then always return 0.
+     *
+     * @return 0 or batch size.
+     */
+    int batchSize();
+
+    /**
+     * <p>Get batch No (based 1)
+     *
+     * @return <ul>
+     * <li>If {@link #batchSize()} is 0, then 0</li>
+     * <li>Else batch No (based 1)</li>
+     * </ul>
+     */
+    int batchNo();
 
     /**
      * Whether support {@link #lastInsertedId()} method or not.
@@ -59,14 +78,6 @@ public interface ResultStates extends ResultItem, OptionSpec {
      * @return empty or  success info(maybe contain warning info)
      */
     String message();
-
-
-    /**
-     * <p>Test this result whether is one of batch result ot not.
-     *
-     * @return true : this result is one of batch result.
-     */
-    boolean isBatch();
 
 
     /**

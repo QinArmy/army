@@ -77,7 +77,7 @@ public class InsertTests extends SessionSupport {
         final ResultStates states;
         states = session.updateAsStates(stmt);
 
-        Assert.assertFalse(states.isBatch());
+        Assert.assertEquals(states.batchSize(), 0);
         Assert.assertFalse(states.hasMoreResult());
         Assert.assertFalse(states.hasMoreFetch());
 

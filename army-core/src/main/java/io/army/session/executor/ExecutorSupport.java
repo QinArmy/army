@@ -894,7 +894,7 @@ public abstract class ExecutorSupport {
         }
 
         @Override
-        public final int getResultNo() {
+        public final int resultNo() {
             return this.resultNo;
         }
 
@@ -1051,8 +1051,8 @@ public abstract class ExecutorSupport {
 
 
         @Override
-        public final int getResultNo() {
-            return getRecordMeta().getResultNo();
+        public final int resultNo() {
+            return getRecordMeta().resultNo();
         }
 
         @Override

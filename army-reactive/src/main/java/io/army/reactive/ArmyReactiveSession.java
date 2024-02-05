@@ -278,7 +278,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
                 if (optimisticLockValidator != null) {
                     flux = flux.doOnNext(optimisticLockValidator);
                 }
-                flux = flux.collectMap(ResultStates::getResultNo, states -> states, _Collections::hashMap)
+                flux = flux.collectMap(ResultStates::resultNo, states -> states, _Collections::hashMap)
                         .flatMapMany(statesMap -> validateBatchStates(this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option, Option.EMPTY_FUNC), statesMap, domainTable))
                         .onErrorMap(this::handlePairStmtError);
             } else {
@@ -780,16 +780,16 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
         @Override
         public void onNext(final ResultStates states) {
             final ResultStates childStates;
-            childStates = this.statesMap.get(states.getResultNo());
+            childStates = this.statesMap.get(states.resultNo());
             if (childStates == null) {
                 String m = String.format("Not found %s for batch item[%s] , %s", ResultStates.class.getName(),
-                        states.getResultNo(), this.domainTable);
+                        states.resultNo(), this.domainTable);
                 ERROR.compareAndSet(this, null, new ChildUpdateException(m));
             } else if (childStates.affectedRows() == states.affectedRows()) {
                 this.sink.next(states);
             } else {
                 final ChildUpdateException e;
-                e = _Exceptions.batchChildUpdateRowsError(this.domainTable, states.getResultNo(), childStates.affectedRows(),
+                e = _Exceptions.batchChildUpdateRowsError(this.domainTable, states.resultNo(), childStates.affectedRows(),
                         states.affectedRows());
                 ERROR.compareAndSet(this, null, e);
             }

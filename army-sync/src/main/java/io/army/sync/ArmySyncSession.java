@@ -1010,7 +1010,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     private static Consumer<ResultStates> statesOptimisticLockValidator(final @Nullable TableMeta<?> domainTable) {
         return states -> {
             if (states.affectedRows() == 0L) {
-                throw _Exceptions.batchOptimisticLock(domainTable, states.getResultNo(), states.affectedRows());
+                throw _Exceptions.batchOptimisticLock(domainTable, states.resultNo(), states.affectedRows());
             }
         };
     }
@@ -1022,7 +1022,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         final int batchSize = childList.size();
 
         return parentStates -> {
-            final int batchNo = parentStates.getResultNo();
+            final int batchNo = parentStates.resultNo();
             if (batchNo > batchSize || !parentStates.hasMoreResult()) {
                 throw _Exceptions.childBatchSizeError(domainTable, batchSize, batchNo);
             }

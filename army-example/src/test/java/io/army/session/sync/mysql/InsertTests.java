@@ -90,7 +90,7 @@ public class InsertTests extends SessionTestSupport {
 
         Assert.assertEquals(states.affectedRows(), regionList.size());
 
-        Assert.assertFalse(states.isBatch());
+        Assert.assertEquals(states.batchSize(), 0);
         Assert.assertFalse(states.hasMoreResult());
         Assert.assertFalse(states.hasMoreFetch());
         Assert.assertFalse(states.inTransaction());

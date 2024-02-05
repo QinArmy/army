@@ -32,9 +32,9 @@ import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
-public class PostgreQuerySuiteTests extends PostgreSuiteTests {
+public class QuerySuiteTests extends PostgreSessionTestSupport {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgreQuerySuiteTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QuerySuiteTests.class);
 
     @Test
     public void selectDomain(final SyncLocalSession syncSession) {

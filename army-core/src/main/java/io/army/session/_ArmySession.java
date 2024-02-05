@@ -552,8 +552,8 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
         if (states.affectedRows() > 0L) {
             return;
         }
-        if (states.isBatch()) {
-            throw _Exceptions.batchOptimisticLock(null, states.getResultNo(), states.affectedRows());
+        if (states.batchSize() > 0) {
+            throw _Exceptions.batchOptimisticLock(null, states.batchNo(), states.affectedRows());
         } else {
             throw _Exceptions.optimisticLock();
         }

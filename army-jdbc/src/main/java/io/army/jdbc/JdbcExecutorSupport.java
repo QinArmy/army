@@ -840,15 +840,23 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         final ServerMeta serverMeta;
 
+        private final int resultNo;
+
         private final TransactionInfo info;
 
         private final Warning warning;
 
 
-        private JdbcResultStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning) {
+        private JdbcResultStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning) {
             this.serverMeta = serverMeta;
+            this.resultNo = resultNo;
             this.info = info;
             this.warning = warning;
+        }
+
+        @Override
+        public final int resultNo() {
+            return this.resultNo;
         }
 
         @Override
@@ -933,8 +941,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     private static abstract class JdbcUpdateStates extends JdbcResultStates {
 
-        private JdbcUpdateStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning) {
-            super(serverMeta, info, warning);
+        private JdbcUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning) {
+            super(serverMeta, resultNo, info, warning);
         }
 
         @Override
@@ -965,9 +973,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final long affectedRows;
 
-        private JdbcQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning,
+        private JdbcQueryStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
                                 long rowCount, long affectedRows) {
-            super(serverMeta, info, warning);
+            super(serverMeta, resultNo, info, warning);
             this.rowCount = rowCount;
             this.affectedRows = affectedRows;
         }
@@ -1005,22 +1013,20 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final boolean moreFetch;
 
-        SingleQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, @Nullable Warning warning,
+        SingleQueryStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
                           long rowCount, boolean moreFetch, long affectedRows) {
-            super(serverMeta, info, warning, rowCount, affectedRows);
+            super(serverMeta, resultNo, info, warning, rowCount, affectedRows);
             this.moreFetch = moreFetch;
         }
 
         @Override
-        public boolean isBatch() {
-            // non-batch
-            return false;
+        public int batchSize() {
+            return 0;
         }
 
         @Override
-        public int getResultNo() {
-            // always 1 for single result
-            return 1;
+        public int batchNo() {
+            return 0;
         }
 
         @Override
@@ -1040,29 +1046,25 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     static final class MultiResultQueryStates extends JdbcQueryStates {
 
-        private final int resultNo;
-
-        private final boolean batch;
 
         private final boolean moreResult;
 
-        MultiResultQueryStates(ServerMeta serverMeta, int resultNo, boolean batch,
+        MultiResultQueryStates(ServerMeta serverMeta, int resultNo,
                                @Nullable TransactionInfo info, @Nullable Warning warning,
                                long rowCount, boolean moreResult, long affectedRows) {
-            super(serverMeta, info, warning, rowCount, affectedRows);
-            this.resultNo = resultNo;
-            this.batch = batch;
+            super(serverMeta, resultNo, info, warning, rowCount, affectedRows);
             this.moreResult = moreResult;
         }
 
+
         @Override
-        public boolean isBatch() {
-            return this.batch;
+        public int batchSize() {
+            return 0;
         }
 
         @Override
-        public int getResultNo() {
-            return this.resultNo;
+        public int batchNo() {
+            return 0;
         }
 
         @Override
@@ -1079,16 +1081,58 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     } // MultiResultQueryStates
 
+
+    static final class BatchQueryStates extends JdbcQueryStates {
+
+        private final int batchSize;
+
+        private final int batchNo;
+
+        BatchQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, int batchSize, int batchNo, @Nullable Warning warning,
+                         long rowCount, long affectedRows) {
+            super(serverMeta, 1, info, warning, rowCount, affectedRows);
+            this.batchSize = batchSize;
+            this.batchNo = batchNo;
+        }
+
+
+        @Override
+        public int batchSize() {
+            return this.batchSize;
+        }
+
+        @Override
+        public int batchNo() {
+            return this.batchNo;
+        }
+
+        @Override
+        public boolean hasMoreResult() {
+            return this.batchNo < this.batchSize;
+        }
+
+        @Override
+        public boolean hasMoreFetch() {
+            // always false for batch-query
+            return false;
+        }
+
+
+    } // BatchQueryStates
+
     static final class SingleUpdateStates extends JdbcUpdateStates {
 
         private final long firstId;
         private final long affectedRows;
 
-        SingleUpdateStates(ServerMeta serverMeta, @Nullable TransactionInfo info, long firstId, @Nullable Warning warning,
-                           long affectedRows) {
-            super(serverMeta, info, warning);
+        private final boolean moreResult;
+
+        SingleUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, long firstId, @Nullable Warning warning,
+                           long affectedRows, boolean moreResult) {
+            super(serverMeta, resultNo, info, warning);
             this.firstId = firstId;
             this.affectedRows = affectedRows;
+            this.moreResult = moreResult;
         }
 
         @Override
@@ -1099,68 +1143,17 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return this.firstId;
         }
 
+
         @Override
-        public boolean isBatch() {
+        public int batchSize() {
             // non-batch
-            return false;
+            return 0;
         }
 
         @Override
-        public int getResultNo() {
-            // always 1 for single result
-            return 1;
-        }
-
-        @Override
-        public long affectedRows() {
-            return this.affectedRows;
-        }
-
-        @Override
-        public boolean hasMoreResult() {
-            // always false for single result
-            return false;
-        }
-
-
-    } // SingleUpdateStates
-
-
-    static final class MultiResultUpdateStates extends JdbcUpdateStates {
-
-        private final int resultNo;
-
-        private final boolean batch;
-
-        private final long affectedRows;
-
-        private final boolean moreResult;
-
-        MultiResultUpdateStates(ServerMeta serverMeta, int resultNo, boolean batch, @Nullable TransactionInfo info, @Nullable Warning warning,
-                                long affectedRows, boolean moreResult) {
-            super(serverMeta, info, warning);
-            this.resultNo = resultNo;
-            this.batch = batch;
-            this.affectedRows = affectedRows;
-            this.moreResult = moreResult;
-        }
-
-        @Override
-        public long lastInsertedId() throws DataAccessException {
-            if (!isSupportInsertId()) {
-                throw dontSupportLastInsertedId();
-            }
-            return 0L;
-        }
-
-        @Override
-        public boolean isBatch() {
-            return this.batch;
-        }
-
-        @Override
-        public int getResultNo() {
-            return this.resultNo;
+        public int batchNo() {
+            // non-batch
+            return 0;
         }
 
         @Override
@@ -1174,7 +1167,58 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
 
-    } // MultiResultUpdateStates
+    } // SingleUpdateStates
+
+
+    static final class BatchUpdateStates extends JdbcUpdateStates {
+
+        private final int batchSize;
+
+        private final int batchNo;
+
+        private final long affectedRows;
+
+        BatchUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, int batchSize, int batchNo,
+                          @Nullable Warning warning, long affectedRows) {
+            super(serverMeta, resultNo, info, warning);
+            this.batchSize = batchSize;
+            this.batchNo = batchNo;
+            this.affectedRows = affectedRows;
+        }
+
+        @Override
+        public long lastInsertedId() throws DataAccessException {
+            if (!isSupportInsertId()) {
+                throw dontSupportLastInsertedId();
+            }
+            return 0L;
+        }
+
+
+        @Override
+        public int batchSize() {
+            // non-batch
+            return this.batchSize;
+        }
+
+        @Override
+        public int batchNo() {
+            // non-batch
+            return this.batchNo;
+        }
+
+        @Override
+        public long affectedRows() {
+            return this.affectedRows;
+        }
+
+        @Override
+        public boolean hasMoreResult() {
+            return this.batchNo < this.batchSize;
+        }
+
+
+    } // BatchUpdateStates
 
     interface XaConnectionExecutor {
 

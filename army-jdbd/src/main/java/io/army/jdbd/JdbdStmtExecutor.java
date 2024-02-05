@@ -1162,7 +1162,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
-        return new ArmyResultStates(jdbdStates, this.factory);
+        return new JdbdResultStates(jdbdStates, this.factory);
     }
 
 
@@ -1555,7 +1555,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             final int columnCount;
             if (dataTypeArray[0] == null
                     || (this instanceof CurrentRecordRowReader
-                    && getResultNo() < dataRow.getResultNo())) {
+                    && resultNo() < dataRow.resultNo())) {
                 columnCount = dataRow.getColumnCount();
                 if (columnCount != dataTypeArray.length) {
                     throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, dataTypeArray.length);
@@ -1966,10 +1966,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             if (meta == null) {
                 resultNo = 1;
             } else {
-                resultNo = meta.getResultNo() + 1;
+                resultNo = meta.resultNo() + 1;
             }
 
-            if (resultNo != rowMeta.getResultNo()) {
+            if (resultNo != rowMeta.resultNo()) {
                 throw driverError();
             }
 
@@ -2039,7 +2039,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     }// JdbdMultiResultSpec
 
-    private static final class ArmyResultStates implements ResultStates {
+    private static final class JdbdResultStates implements ResultStates {
 
         private final io.jdbd.result.ResultStates jdbdStates;
 
@@ -2050,7 +2050,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         private Set<Option<?>> optionSet;
 
 
-        private ArmyResultStates(io.jdbd.result.ResultStates jdbdStates,
+        private JdbdResultStates(io.jdbd.result.ResultStates jdbdStates,
                                  JdbdStmtExecutorFactory executorFactory) {
             this.jdbdStates = jdbdStates;
             this.executorFactory = executorFactory;
@@ -2080,8 +2080,18 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
 
         @Override
-        public int getResultNo() {
-            return this.jdbdStates.getResultNo();
+        public int batchSize() {
+            return this.jdbdStates.batchSize();
+        }
+
+        @Override
+        public int batchNo() {
+            return this.jdbdStates.batchNo();
+        }
+
+        @Override
+        public int resultNo() {
+            return this.jdbdStates.resultNo();
         }
 
         @Override
@@ -2096,11 +2106,6 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             } catch (JdbdException e) {
                 throw new DataAccessException(e);
             }
-        }
-
-        @Override
-        public boolean isBatch() {
-            return this.jdbdStates.isBatch();
         }
 
         @Override

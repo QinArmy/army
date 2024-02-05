@@ -25,7 +25,7 @@ public interface ResultItem {
      *
      * @return result no (based one)
      */
-    int getResultNo();
+    int resultNo();
 
 
     interface ResultAccessSpec {
