@@ -383,9 +383,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         ResultSet resultSet = null;
         try {
             statement = bindStatement(stmt, option);
-
-            bindStatementOption(statement, stmt, option);
-
             resultSet = jdbcExecuteQuery(statement, stmt.sqlText());
 
             final SecondRowReader<R> rowReader;
@@ -398,7 +395,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         } catch (Exception e) {
             closeResultSetAndStatement(resultSet, statement);
             throw handleException(e);
-        } catch (Throwable e) {
+        } catch (Error e) {
             closeResultSetAndStatement(resultSet, statement);
             throw e;
         }
@@ -1323,8 +1320,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     this.conn.setAutoCommit(false); // postgre command ,see io.army.jdbc.PostgreExecutor.handleAutoCommitAfterTransactionEndForPostgreFetchSize()
                 }
             } else if (fetchSize == 0
-                    && option.isPreferClientStream()
-                    && this instanceof MySQLExecutor) {
+                    && this instanceof MySQLExecutor
+                    && option.isPreferClientStream()) {
                 statement.setFetchSize(Integer.MIN_VALUE);
             }
         }

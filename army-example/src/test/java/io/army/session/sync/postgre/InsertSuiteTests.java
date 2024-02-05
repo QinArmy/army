@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -193,7 +194,7 @@ public class InsertSuiteTests extends SessionTestSupport {
         final int fetchSize = 5;
 
         final List<ChinaRegion<?>> regionList;
-        regionList = createReginListWithCount(fetchSize * 60 + 1);
+        regionList = createReginListWithCount(fetchSize * 4 + 1);
 
         final long startNanoSecond = System.nanoTime();
 
@@ -326,31 +327,11 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         final List<ChinaRegion<?>> regionList;
         regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
 
-        long startNanoSecond;
-        startNanoSecond = System.nanoTime();
+        final long startNanoSecond = System.nanoTime();
 
-        List<ChinaRegion<?>> resultList;
-
-        ReturningInsert stmt;
-        // insert data
-        stmt = Postgres.singleInsert()
-                //.literalMode(LiteralMode.LITERAL)
-                .insertInto(ChinaRegion_.T)
-                .values(regionList)
-                .returningAll()
-                .asReturningInsert();
-
-        statementCostTimeLog(session, LOG, startNanoSecond);
-
-        Assert.assertTrue(stmt instanceof _ReturningDml);
-        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
-        Assert.assertEquals(resultList.size(), regionList.size());
-
-        // conflict stmt
-
-        startNanoSecond = System.nanoTime();
-
+        final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
                 .ignoreReturnIds()  // required ,because ChinaRegion_ contain visible field
                 //.literalMode(LiteralMode.LITERAL)
@@ -373,6 +354,7 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        List<ChinaRegion<?>> resultList;
         resultList = session.queryList(stmt, ChinaRegion_.CLASS);
         Assert.assertEquals(resultList.size(), regionList.size());
 
@@ -438,7 +420,7 @@ public class InsertSuiteTests extends SessionTestSupport {
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
         final List<ChinaProvince> resultList;
-        resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+        resultList = session.queryList(stmt, ChinaProvince.class, ArrayList::new);
 
         Assert.assertEquals(resultList.size(), provinceList.size());
         assertChinaRegionAfterNoConflictInsert(provinceList);

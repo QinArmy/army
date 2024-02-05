@@ -652,8 +652,10 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
             final Stream<R> stream;
             if (firstStmtIsQuery) {
+                // TODO 验证 行数
                 stream = this.executor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList);
             } else {
+                // TODO 验证 行数,fetch size
                 final long parentRows = rows;
                 final Consumer<ResultStates> statesConsumer;
                 statesConsumer = states -> {
