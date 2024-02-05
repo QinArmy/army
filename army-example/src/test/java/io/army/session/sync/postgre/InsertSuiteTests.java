@@ -186,8 +186,7 @@ public class InsertSuiteTests extends SessionTestSupport {
     }
 
     @Transactional
-    @Test
-//(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningDomainInsertParentWithFetch(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 

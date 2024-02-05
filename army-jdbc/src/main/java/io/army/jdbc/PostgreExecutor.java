@@ -660,7 +660,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             executeSimpleStaticStatement(builder.toString(), LOG);
 
-            handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+            if (this.factory.postgreFetchSizeAutoCommit) {
+                handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+            }
 
             final TransactionInfo newInfo;
             if (chain) {
@@ -779,7 +781,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
 
             executeSimpleStaticStatement(builder.toString(), LOG);
-            handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+            if (this.factory.postgreFetchSizeAutoCommit) {
+                handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+            }
             this.transactionInfo = null; // clear current transaction info
             return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
         }
@@ -820,7 +824,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
             executeSimpleStaticStatement(builder.toString(), LOG);
             if ((flags & RmSession.TM_ONE_PHASE) != 0) {
                 this.transactionInfo = null; // clear for one phase
-                handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+                if (this.factory.postgreFetchSizeAutoCommit) {
+                    handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+                }
 
             }
         }
@@ -855,7 +861,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             if (onePhaseRollback) {
                 this.transactionInfo = null; // clear for one phase
-                handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+                if (this.factory.postgreFetchSizeAutoCommit) {
+                    handleAutoCommitAfterTransactionEndForPostgreFetchSize(); // handle for fetch size
+                }
 
             }
 

@@ -23,7 +23,6 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.dialect._Constant;
-import io.army.env.SyncKey;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnsignedBigintType;
@@ -1316,9 +1315,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             if (fetchSize > 0) {
                 statement.setFetchSize(fetchSize);
                 if (this instanceof PostgreExecutor
+                        && this.factory.postgreFetchSizeAutoCommit
                         && this.conn.getAutoCommit()
-                        && inTransaction()
-                        && this.factory.armyEnv.getOrDefault(SyncKey.POSTGRE_FETCH_SIZE_AUTO_COMMIT)) {
+                        && inTransaction()) {
                     // see org.postgresql.core.QueryExecutor.QUERY_FORWARD_CURSOR
                     // see org.postgresql.jdbc.PgStatement.executeInternal()
                     this.conn.setAutoCommit(false); // postgre command ,see io.army.jdbc.PostgreExecutor.handleAutoCommitAfterTransactionEndForPostgreFetchSize()

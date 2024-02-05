@@ -88,6 +88,8 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
 
     final boolean sessionIdentifierEnable;
 
+    final boolean postgreFetchSizeAutoCommit;
+
     private final String dataSourceCloseMethod;
 
     private final String sessionFactoryName;
@@ -140,6 +142,11 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
         this.dataSourceCloseMethod = env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
         this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
         this.sessionIdentifierEnable = env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
+        if (this.serverDatabase == Database.PostgreSQL) {
+            this.postgreFetchSizeAutoCommit = this.armyEnv.getOrDefault(SyncKey.POSTGRE_FETCH_SIZE_AUTO_COMMIT);
+        } else {
+            this.postgreFetchSizeAutoCommit = false;
+        }
 
         this.sessionFactoryName = provider.sessionFactoryName;
         this.dataSource = provider.dataSource;
