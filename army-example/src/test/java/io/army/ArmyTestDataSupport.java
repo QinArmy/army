@@ -347,6 +347,9 @@ public abstract class ArmyTestDataSupport {
                 Assert.assertTrue(id > lastId);
             }
             lastId = id;
+
+            Assert.assertNotNull(chinaRegion.getCreateTime());
+            Assert.assertNotNull(chinaRegion.getUpdateTime());
         }
 
     }

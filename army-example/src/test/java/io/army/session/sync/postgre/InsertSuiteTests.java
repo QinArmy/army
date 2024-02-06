@@ -17,24 +17,20 @@
 package io.army.session.sync.postgre;
 
 
-import com.alibaba.fastjson2.JSON;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.Select;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
-import io.army.session.Isolation;
-import io.army.session.TransactionOption;
 import io.army.session.record.ResultStates;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncStmtOption;
-import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
 import io.army.util.ImmutableHashMap;
+import io.army.util.RowMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -494,7 +490,8 @@ public class InsertSuiteTests extends SessionTestSupport {
     }
 
 
-    @Test(groups = Groups.DOMAIN_INSERT)
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningDomainInsertChildMapWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -517,44 +514,16 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        try {
 
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+        final List<Map<String, Object>> resultList;
+        resultList = session.queryObjectList(stmt, RowMaps::hashMap, ImmutableArrayList::arrayList);
 
-            final List<Map<String, Object>> resultList;
-            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
-
-            Assert.assertEquals(resultList.size(), provinceList.size());
-
-            for (ChinaProvince province : provinceList) {
-                Assert.assertNotNull(province.getId()); // database generated key
-            }
-
-            for (Map<String, Object> map : resultList) {
-
-                Assert.assertFalse(map instanceof ImmutableHashMap);
-                Assert.assertNotNull(map.get(ChinaRegion_.ID));
-
-                // parent fields
-                Assert.assertNotNull(map.get(ChinaRegion_.CREATE_TIME));
-                Assert.assertNotNull(map.get(ChinaRegion_.UPDATE_TIME));
-
-                // child fields
-                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
-                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
-            }
-            session.commitIfExists();
-            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        } catch (Exception e) {
-            LOG.error("insert child error", e);
-            session.rollbackIfExists();
-            throw e;
-        }
+        Assert.assertEquals(resultList.size(), provinceList.size());
 
     }
 
-
-    @Test(groups = Groups.DOMAIN_INSERT)
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningDomainInsertChildMapDiffMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -576,48 +545,18 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        final List<Map<String, Object>> resultList;
+        resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
-        try {
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
-
-            final List<Map<String, Object>> resultList;
-            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
-
-            Assert.assertEquals(resultList.size(), provinceList.size());
-
-            for (ChinaProvince province : provinceList) {
-                Assert.assertNotNull(province.getId()); // database generated key
-            }
-
-            for (Map<String, Object> map : resultList) {
-
-                Assert.assertFalse(map instanceof ImmutableHashMap);
-
-                // parent fields
-                Assert.assertNull(map.get(ChinaRegion_.CREATE_TIME));
-                Assert.assertNull(map.get(ChinaRegion_.UPDATE_TIME));
-
-                // child fields
-                Assert.assertNotNull(map.get(ChinaRegion_.ID));
-                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
-                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
-            }
-            session.commitIfExists();
-            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        } catch (Exception e) {
-            LOG.error("insert child error", e);
-
-            session.rollbackIfExists();
-
-            throw e;
-        }
+        Assert.assertEquals(resultList.size(), provinceList.size());
+        assertChinaRegionAfterNoConflictInsert(provinceList);
 
     }
 
 
     /*-------------------below values syntax tests -------------------*/
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesInsertParent(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -640,11 +579,11 @@ public class InsertSuiteTests extends SessionTestSupport {
         final long rows;
         rows = session.update(stmt);
 
-        Assert.assertEquals(rows, 2);
+        Assert.assertEquals(rows, 2L);
 
     }
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void staticValuesReturningInsertParent(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -669,19 +608,11 @@ public class InsertSuiteTests extends SessionTestSupport {
         resultList = session.queryList(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
 
         Assert.assertEquals(resultList.size(), 2);
-
-        for (ChinaRegion<?> region : resultList) {
-            Assert.assertNotNull(region.getId());
-
-            Assert.assertNotNull(region.getCreateTime());
-            Assert.assertNotNull(region.getUpdateTime());
-        }
-
-        LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        assertChinaRegionAfterNoConflictInsert(resultList);
 
     }
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void valuesInsertParentWithDoNothing(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -713,54 +644,26 @@ public class InsertSuiteTests extends SessionTestSupport {
 
     }
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void valuesInsertParentWithUpdateSet(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(2);
+        session.batchSave(regionList);
+
         final Random random = ThreadLocalRandom.current();
 
-        final String regionName1, regionName2;
-        regionName1 = randomRegion(random);
-        regionName2 = randomRegion(random);
-
-        List<ChinaRegion<?>> resultList;
-
-        ReturningInsert stmt;
-
-        // insert data
-        stmt = Postgres.singleInsert()
-                //.literalMode(LiteralMode.LITERAL)
-                .insertInto(ChinaRegion_.T)
-                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
-                .values()
-                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName1)
-                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
-                ).comma()
-                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName2)
-                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
-                )
-                .returningAll()
-                .asReturningInsert();
-
-        Assert.assertTrue(stmt instanceof _ReturningDml);
-
-        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
-
-        Assert.assertEquals(resultList.size(), 2);
-
         // conflict stmt
-
+        final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
                 .insertInto(ChinaRegion_.T).as("c")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
                 .values()
-                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName1)
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionList.get(0).getName())
                         .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
                         .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
                 ).comma()
-                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName2)
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionList.get(1).getName())
                         .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
                         .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
                 )
@@ -775,17 +678,17 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        final List<ChinaRegion<?>> resultList;
         resultList = session.queryList(stmt, ChinaRegion_.CLASS);
 
         Assert.assertEquals(resultList.size(), 2);
-
-        LOG.debug("{}", JSON.toJSONString(resultList));
 
 
     }
 
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void valuesInsertChildWithTowStmtUpdateMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -821,22 +724,13 @@ public class InsertSuiteTests extends SessionTestSupport {
         Assert.assertFalse(stmt instanceof _ReturningDml);
 
 
-        try {
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
-
-            Assert.assertEquals(session.update(stmt), 2);
-            session.commitIfExists();
-        } catch (Exception e) {
-            LOG.error("insert child error", e);
-            session.rollbackIfExists();
-            throw e;
-        }
+        Assert.assertEquals(session.update(stmt), 2);
 
     }
 
 
     @Transactional
-    @Test
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningValuesInsertChildWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -873,10 +767,15 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        final boolean[] statesHolder = new boolean[]{false};
+        final int[] flagsHolder = new int[]{0};
         final Consumer<ResultStates> statesConsumer;
         statesConsumer = states -> {
-            statesHolder[0] = true;
+            flagsHolder[0]++;
+            if (flagsHolder[0] == 1) {
+                Assert.assertFalse(states.isStatesOfSecondDmlQuery());
+            } else {
+                Assert.assertTrue(states.isStatesOfSecondDmlQuery());
+            }
 
             Assert.assertTrue(states.inTransaction());
             Assert.assertEquals(states.batchSize(), 0);
@@ -895,11 +794,12 @@ public class InsertSuiteTests extends SessionTestSupport {
         resultList = session.queryList(stmt, ChinaProvince.class, ArrayList::new, SyncStmtOption.stateConsumer(statesConsumer));
 
         Assert.assertEquals(resultList.size(), 2L);
-        Assert.assertTrue(statesHolder[0]);
+        Assert.assertEquals(flagsHolder[0], 2);
 
     }
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningValuesInsertDiffMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -935,38 +835,15 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        try {
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+        final List<ChinaProvince> resultList;
+        resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
-            final List<ChinaProvince> resultList;
-            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
-
-            Assert.assertEquals(resultList.size(), 2);
-
-
-            for (ChinaProvince province : resultList) {
-                // parent fields
-                Assert.assertNull(province.getCreateTime());
-                Assert.assertNull(province.getUpdateTime());
-
-                // child fields
-                Assert.assertNotNull(province.getId());
-                Assert.assertNotNull(province.getGovernor());
-                Assert.assertNotNull(province.getProvincialCapital());
-
-            }
-
-            session.commitIfExists();
-            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        } catch (Exception e) {
-            LOG.error("insert child error", e);
-            session.rollbackIfExists();
-            throw e;
-        }
+        Assert.assertEquals(resultList.size(), 2);
     }
 
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningMapValuesInsertChildWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -1003,41 +880,16 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        final List<Map<String, Object>> resultList;
+        resultList = session.queryObjectList(stmt, RowMaps::hashMap, ArrayList::new);
 
-        try {
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
-
-            final List<Map<String, Object>> resultList;
-            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
-
-            Assert.assertEquals(resultList.size(), 2);
-
-
-            for (Map<String, Object> map : resultList) {
-
-                Assert.assertFalse(map instanceof ImmutableHashMap);
-                Assert.assertNotNull(map.get(ChinaRegion_.ID));
-
-                // parent fields
-                Assert.assertNotNull(map.get(ChinaRegion_.CREATE_TIME));
-                Assert.assertNotNull(map.get(ChinaRegion_.UPDATE_TIME));
-
-                // child fields
-                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
-                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
-            }
-            session.commitIfExists();
-            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        } catch (Exception e) {
-            LOG.error("insert child error", e);
-            session.rollbackIfExists();
-            throw e;
-        }
+        Assert.assertEquals(resultList.size(), 2);
 
     }
 
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningMapValuesInsertDiffMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -1073,45 +925,20 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        final List<Map<String, Object>> resultList;
+        resultList = session.queryObjectList(stmt, RowMaps::hashMap, ArrayList::new);
 
-        try {
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
-
-            final List<Map<String, Object>> resultList;
-            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
-
-            Assert.assertEquals(resultList.size(), 2);
-
-
-            for (Map<String, Object> map : resultList) {
-
-                Assert.assertFalse(map instanceof ImmutableHashMap);
-
-                // parent fields
-                Assert.assertNull(map.get(ChinaRegion_.CREATE_TIME));
-                Assert.assertNull(map.get(ChinaRegion_.UPDATE_TIME));
-
-                // child fields
-                Assert.assertNotNull(map.get(ChinaRegion_.ID));
-                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
-                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
-            }
-
-            session.commitIfExists();
-            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        } catch (Exception e) {
-            LOG.error("insert child error", e);
-            session.rollbackIfExists();
-            throw e;
-        }
+        Assert.assertEquals(resultList.size(), 2);
 
     }
 
     /*-------------------below query insert syntax-------------------*/
 
-    @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void queryInsertParent(final SyncLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
 
         final Insert stmt;
         stmt = Postgres.singleInsert()
@@ -1120,26 +947,21 @@ public class InsertSuiteTests extends SessionTestSupport {
                 .space()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.NONE)
-                .and(SQLs::notExists, Postgres.subQuery()
-                        .select(HistoryChinaRegion_.id)
-                        .from(HistoryChinaRegion_.T, AS, "h")
-                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
-                        ::asQuery
-                )
-                .limit(SQLs::literal, 2)
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
                 .asQuery()
                 .asInsert();
 
-        final long rows;
-        rows = session.update(stmt);
-        LOG.debug("query insert rows : {}", rows);
-        Assert.assertTrue(rows > 0);
+        Assert.assertEquals(session.update(stmt), regionList.size());
+
     }
 
-    @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningQueryInsertParent(final SyncLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+        session.batchSave(regionList);
 
         final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
@@ -1148,52 +970,28 @@ public class InsertSuiteTests extends SessionTestSupport {
                 .space()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.NONE)
-                .and(SQLs::notExists, Postgres.subQuery()
-                        .select(HistoryChinaRegion_.id)
-                        .from(HistoryChinaRegion_.T, AS, "h")
-                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
-                        ::asQuery
-                )
-                .limit(SQLs::literal, 2)
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.NONE)
                 .asQuery()
                 .returningAll()
                 .asReturningInsert();
 
-        final List<ChinaRegion<?>> resultList;
-        resultList = session.queryList(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
+        final List<ChinaRegion<?>> rowList;
+        rowList = session.queryList(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
 
-
-        Assert.assertTrue(resultList.size() > 0);
-        LOG.debug("query insert rows : {}\n resultList : {}", resultList.size(), JSON.toJSONString(resultList));
-
+        Assert.assertEquals(rowList.size(), regionList.size());
 
     }
 
-    @Test//(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void returningQueryInsertChildWithTwoStmtQueryMode(final SyncLocalSession session) {
         //TODO consider child table query insert two stmt mode reasonable ？for example firebird
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final int maxRowCount = 10;
-
-        final Select select;
-        select = Postgres.query()
-                .select(ChinaRegion_.id)
-                .from(ChinaProvince_.T, AS, "p")
-                .join(ChinaRegion_.T, AS, "c").on(ChinaProvince_.id::equal, ChinaRegion_.id)
-                .where(SQLs::notExists, Postgres.subQuery()
-                        .select(HistoryChinaProvince_.id)
-                        .from(HistoryChinaProvince_.T, AS, "h")
-                        .join(HistoryChinaRegion_.T, AS, "hc").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
-                        .where(HistoryChinaProvince_.id::equal, ChinaProvince_.id)
-                        ::asQuery
-                )
-                .limit(SQLs::literal, maxRowCount)
-                .asQuery();
-
-        final List<Long> idList;
-        idList = session.queryList(select, Long.class);
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+        session.batchSave(regionList);
+        final List<Long> reginIdList = extractRegionIdList(regionList);
 
         final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
@@ -1202,7 +1000,7 @@ public class InsertSuiteTests extends SessionTestSupport {
                 .space()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id::in, SPACE, SQLs::rowParam, idList)
+                .where(ChinaRegion_.id::in, SPACE, SQLs::rowParam, reginIdList)
                 .and(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.PROVINCE)
                 .orderBy(ChinaRegion_.id)
                 .asQuery()
@@ -1216,28 +1014,16 @@ public class InsertSuiteTests extends SessionTestSupport {
                 .select("p", PERIOD, ChinaProvince_.T)
                 .from(ChinaProvince_.T, AS, "p")
                 .join(ChinaRegion_.T, AS, "c").on(ChinaProvince_.id::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                .where(ChinaRegion_.id.in(SQLs::rowParam, reginIdList))
                 .orderBy(ChinaProvince_.id)
                 .asQuery()
                 .returningAll()
                 .asReturningInsert();
 
-        try {
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
 
-            final List<ChinaProvince> resultList;
-            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
-
-
-            final int resultRows = resultList.size();
-            Assert.assertTrue(resultRows > 0 && resultRows <= maxRowCount);
-
-            session.commitIfExists();
-            LOG.debug("query insert rows : {}\n resultList : {}", resultList.size(), JSON.toJSONString(resultList));
-        } catch (Exception e) {
-            session.rollbackIfExists();
-            throw e;
-        }
+        final List<ChinaProvince> rowList;
+        rowList = session.queryList(stmt, ChinaProvince.class, ArrayList::new);
+        Assert.assertEquals(rowList.size(), reginIdList.size());
 
     }
 
@@ -1245,12 +1031,9 @@ public class InsertSuiteTests extends SessionTestSupport {
     @Test
     public void subDomainInsertChild(final SyncLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
-
         final List<ChinaProvince> provinceList;
         provinceList = this.createProvinceList();
-
         final Insert stmt;
-
         stmt = Postgres.singleInsert()
                 .literalMode(LiteralMode.LITERAL)
                 .with("parent").as(s -> s.literalMode(LiteralMode.LITERAL)
@@ -1263,8 +1046,7 @@ public class InsertSuiteTests extends SessionTestSupport {
                                 )
                                 .from("parent")
                                 .asQuery()
-                )
-                .space()
+                ).space()
                 .insertInto(ChinaProvince_.T)
                 .defaultValue(ChinaProvince_.id, Postgres.scalarSubQuery()
                         .select(s -> s.space(SQLs.refField("p", ChinaRegion_.ID)))
@@ -1276,12 +1058,7 @@ public class InsertSuiteTests extends SessionTestSupport {
                 .asInsert();
 
         Assert.assertFalse(stmt instanceof _ReturningDml);
-
-        final long rows;
-        rows = session.update(stmt);
-        LOG.debug("{} rows : {}", session.name(), rows);
-        Assert.assertEquals(rows, provinceList.size());
-
+        Assert.assertEquals(session.update(stmt), provinceList.size());
     }
 
 
