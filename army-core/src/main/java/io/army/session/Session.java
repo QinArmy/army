@@ -17,7 +17,6 @@
 package io.army.session;
 
 
-import io.army.criteria.Visible;
 import io.army.meta.TableMeta;
 
 import javax.annotation.Nullable;
@@ -36,13 +35,8 @@ import java.util.Set;
  *
  * @see SessionFactory
  */
-public interface Session extends CloseableSpec, OptionSpec {
+public interface Session extends CloseableSpec, SessionSpec {
 
-
-    /**
-     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
-     */
-    String name();
 
     /**
      * <p>
@@ -178,11 +172,6 @@ public interface Session extends CloseableSpec, OptionSpec {
      */
     boolean isSync();
 
-
-    /**
-     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
-     */
-    Visible visible();
 
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
