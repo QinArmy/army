@@ -5,7 +5,7 @@
     <parent>
         <artifactId>army</artifactId>
         <groupId>io.qinarmy</groupId>
-        <version>0.6.4-SNAPSHOT</version><!--Army maven version-->
+        <version>0.6.4</version><!--Army maven version-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>io.jdbd.mysql</groupId>
             <artifactId>jdbd-mysql</artifactId>
-            <version>0.11.7-SNAPSHOT</version>
+            <version>0.11.7</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
