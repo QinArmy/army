@@ -39,19 +39,21 @@ abstract class PostgreLiterals extends _Literals {
         if (!(value instanceof String)) {//TODO think long string
             throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
         }
+        final String literal = (String) value;
 
-        final char[] charArray = ((String) value).toCharArray();
-        final int startIndex;
+        final int startIndex, literalLength;
         startIndex = sqlBuilder.length();
+        literalLength = literal.length();
 
         sqlBuilder.append(_Constant.QUOTE);
+
         int lastWritten = 0;
         char followChar = _Constant.NUL_CHAR;
-        for (int i = 0; i < charArray.length; i++) {
-            switch (charArray[i]) {
+        for (int i = 0; i < literalLength; i++) {
+            switch (literal.charAt(i)) {
                 case _Constant.QUOTE: {
                     if (i > lastWritten) {
-                        sqlBuilder.append(charArray, lastWritten, i - lastWritten);
+                        sqlBuilder.append(literal, lastWritten, i);
                     }
                     sqlBuilder.append(_Constant.QUOTE);
                     lastWritten = i;//not i + 1 as current char wasn't written
@@ -83,17 +85,17 @@ abstract class PostgreLiterals extends _Literals {
             }
 
             if (i > lastWritten) {
-                sqlBuilder.append(charArray, lastWritten, i - lastWritten);
+                sqlBuilder.append(literal, lastWritten, i);
             }
             sqlBuilder.append(_Constant.BACK_SLASH)
                     .append(followChar);
             lastWritten = i + 1;
 
 
-        }// for
+        } // for loop
 
-        if (lastWritten < charArray.length) {
-            sqlBuilder.append(charArray, lastWritten, charArray.length - lastWritten);
+        if (lastWritten < literalLength) {
+            sqlBuilder.append(literal, lastWritten, literalLength);
         }
         if (followChar != _Constant.NUL_CHAR) {
             sqlBuilder.insert(startIndex, 'E');
