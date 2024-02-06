@@ -1027,6 +1027,11 @@ abstract class ArmyParser implements DialectParser {
 
     }
 
+
+    protected final _InsertContext handleInsertStmtFromWithClause(_SqlContext withContext, _Insert insert) {
+        return handleInsertStmt(withContext, insert, ((StatementContext) withContext).sessionSpec);
+    }
+
     protected final _InsertContext handleInsertStmt(final @Nullable _SqlContext outerContext, final _Insert insert,
                                                     final SessionSpec sessionSpec) {
         final _InsertContext context;

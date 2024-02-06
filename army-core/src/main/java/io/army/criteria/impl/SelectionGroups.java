@@ -341,19 +341,17 @@ abstract class SelectionGroups {
             assert size > 0;
 
             Selection selection;
-            String safeFieldAlias;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 selection = selectionList.get(i);
-                safeFieldAlias = parser.identifier(selection.label());
+
                 sqlBuilder.append(_Constant.SPACE)
                         .append(safeAlias)
-                        .append(_Constant.PERIOD)
-                        .append(safeFieldAlias)
-                        .append(_Constant.SPACE_AS_SPACE)
-                        .append(safeFieldAlias);
+                        .append(_Constant.PERIOD);
+                parser.identifier(selection.label(), sqlBuilder);
+
             }
         }
 

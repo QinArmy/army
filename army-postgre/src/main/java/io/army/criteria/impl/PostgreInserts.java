@@ -1585,7 +1585,6 @@ abstract class PostgreInserts extends InsertSupports {
 
             final ParentDomainSubInsert parentSubInsert;
             parentSubInsert = (ParentDomainSubInsert) parentSubInsert(this, clause.insertRowCount(), clause.cteList);
-            ;
             parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable, clause.originalDomainList());
             this.parentStmt = parentSubInsert;
         }

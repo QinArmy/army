@@ -112,14 +112,14 @@ final class PostgreDialectParser extends PostgreParser {
         if (spec.isRecursive()) {
             sqlBuilder.append(_Constant.SPACE_RECURSIVE);
         }
+        sqlBuilder.append(_Constant.SPACE);
+
         _PostgreCte cte;
         SubStatement subStatement;
         List<String> columnAliasList;
         for (int i = 0, columnSize; i < cteSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            } else {
-                sqlBuilder.append(_Constant.SPACE);
             }
             cte = (_PostgreCte) cteList.get(i);
 
@@ -128,12 +128,11 @@ final class PostgreDialectParser extends PostgreParser {
             columnAliasList = cte.columnAliasList();
             columnSize = columnAliasList.size();
             if (columnSize > 0) {
-                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN)
+                        .append(_Constant.SPACE);
                 for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
-                    if (i > 0) {
+                    if (columnIndex > 0) {
                         sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-                    } else {
-                        sqlBuilder.append(_Constant.SPACE);
                     }
                     this.identifier(columnAliasList.get(columnIndex), sqlBuilder);
                 }
@@ -145,7 +144,7 @@ final class PostgreDialectParser extends PostgreParser {
             if (subStatement instanceof SubQuery) {
                 this.handleQuery((SubQuery) subStatement, context);
             } else if (subStatement instanceof _Insert) {
-                this.handleInsertStmt(context, (_Insert) subStatement, context.sessionSpec());
+                this.handleInsertStmtFromWithClause(context, (_Insert) subStatement);
             } else {
                 //TODO
                 throw new UnsupportedOperationException();

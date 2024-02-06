@@ -1036,12 +1036,13 @@ public class InsertSuiteTests extends SessionTestSupport {
         final Insert stmt;
         stmt = Postgres.singleInsert()
                 .literalMode(LiteralMode.LITERAL)
-                .with("parent").as(s -> s.literalMode(LiteralMode.LITERAL)
+                .with("parent").as(sw -> sw.literalMode(LiteralMode.LITERAL)
                         .insertInto(ChinaRegion_.T)
                         .values(provinceList)
                         .returning(ChinaRegion_.id)
                         .asReturningInsert()
-                ).comma("parent_row_id").as(s -> s.select(ss -> ss.space(Postgres.rowNumber().over().as("rowNumber"))
+                ).comma("parent_row_id")
+                .as(sw -> sw.select(s -> s.space(Postgres.rowNumber().over().as("rowNumber"))
                                         .comma(SQLs.refField("parent", ChinaRegion_.ID))
                                 )
                                 .from("parent")
@@ -1059,6 +1060,12 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertFalse(stmt instanceof _ReturningDml);
         Assert.assertEquals(session.update(stmt), provinceList.size());
+
+        for (ChinaProvince province : provinceList) {
+            Assert.assertNull(province.getId());
+            Assert.assertEquals(province.getRegionType(), RegionType.PROVINCE);
+        }
+
     }
 
 

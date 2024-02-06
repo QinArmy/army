@@ -1370,7 +1370,7 @@ public abstract class _Exceptions {
 
 
     public static IllegalOneStmtModeException oneStmtModePostChildNoIdExpression(final Database database, final ChildTableMeta<?> child) {
-        String m = String.format("error,you use %s one statement mode values syntax insert %s,but no child id default expression",
+        String m = String.format("error,you use %s one statement mode values syntax insert %s,but no child id default scalar expression",
                 database, child);
         return new IllegalOneStmtModeException(m);
     }
