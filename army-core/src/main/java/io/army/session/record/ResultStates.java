@@ -140,7 +140,7 @@ public interface ResultStates extends ResultItem, OptionSpec {
      *    &#64;Test
      *    public void returningDomainInsertChildWithTowStmtQueryMode(final SyncLocalSession session) {
      *
-     *        final List<ChinaProvince> provinceList;
+     *        final List&lt;ChinaProvince> provinceList;
      *        provinceList = createProvinceListWithCount(3);
      *
      *        final ReturningInsert stmt;
@@ -159,7 +159,7 @@ public interface ResultStates extends ResultItem, OptionSpec {
      *
      *        final int[] flagHolder = new int[]{0};
      *
-     *        final Consumer<ResultStates> statesConsumer;
+     *        final Consumer&lt;ResultStates> statesConsumer;
      *        statesConsumer = states -> {
      *            flagHolder[0] ++;
      *
@@ -187,7 +187,7 @@ public interface ResultStates extends ResultItem, OptionSpec {
      *
      *        };
      *
-     *        final List<ChinaProvince> resultList;
+     *        final List&lt;ChinaProvince> resultList;
      *        resultList = session.queryList(stmt, ChinaProvince.class, ArrayList::new,SyncStmtOption.stateConsumer(statesConsumer));
      *
      *        Assert.assertEquals(resultList.size(), provinceList.size());
