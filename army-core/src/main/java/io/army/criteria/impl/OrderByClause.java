@@ -292,11 +292,11 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
             }
             final Stmt stmt;
             if (this instanceof SelectStatement) {
-                stmt = parser.select((SelectStatement) this, false, visible);
+                stmt = parser.select((SelectStatement) this, false, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof Values) {
-                stmt = parser.values((Values) this, visible);
+                stmt = parser.values((Values) this, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof DqlStatement) {
-                stmt = parser.dialectDql((DqlStatement) this, visible);
+                stmt = parser.dialectDql((DqlStatement) this, _MockDialects.sessionSpecFor(visible));
             } else {
                 throw new IllegalStateException("unknown statement");
             }

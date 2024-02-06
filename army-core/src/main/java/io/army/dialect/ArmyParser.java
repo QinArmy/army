@@ -39,9 +39,10 @@ import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.schema.SchemaResult;
 import io.army.schema._FieldResult;
-import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
+import io.army.session.SessionSpec;
 import io.army.sqltype.DataType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.SingleParam;
@@ -254,12 +255,12 @@ abstract class ArmyParser implements DialectParser {
      * {@inheritDoc}
      */
     @Override
-    public final Stmt insert(final InsertStatement statement, final Visible visible) {
+    public final Stmt insert(final InsertStatement statement, final SessionSpec sessionSpec) {
         if (statement instanceof _Insert._ChildInsert
                 && _DialectUtils.isIllegalTwoStmtMode((_Insert._ChildInsert) statement)) {
             throw _Exceptions.illegalTwoStmtMode();
         }
-        return this.createInsertStmt(this.handleInsert(null, statement, visible));
+        return this.createInsertStmt(this.handleInsert(null, statement, sessionSpec.visible()));
     }
 
 
@@ -267,13 +268,13 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final Stmt update(final UpdateStatement update, final boolean useMultiStmt, final Visible visible) {
+    public final Stmt update(final UpdateStatement update, final boolean useMultiStmt, final SessionSpec sessionSpec) {
         final Stmt stmt;
         if (useMultiStmt) {
-            stmt = this.updateWithMultiStmt(MultiStmtBatchContext.create(this, visible), update)
+            stmt = this.updateWithMultiStmt(MultiStmtBatchContext.create(this, sessionSpec.visible()), update)
                     .build();
         } else {
-            stmt = this.handleUpdate(null, update, visible, null)
+            stmt = this.handleUpdate(null, update, sessionSpec.visible(), null)
                     .build();
         }
         return stmt;
@@ -281,26 +282,26 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final Stmt delete(final DeleteStatement delete, boolean useMultiStmt, final Visible visible) {
+    public final Stmt delete(final DeleteStatement delete, boolean useMultiStmt, final SessionSpec sessionSpec) {
         final Stmt stmt;
         if (useMultiStmt) {
-            stmt = this.deleteWithMultiStmt(MultiStmtBatchContext.create(this, visible), delete)
+            stmt = this.deleteWithMultiStmt(MultiStmtBatchContext.create(this, sessionSpec.visible()), delete)
                     .build();
         } else {
-            stmt = this.handleDelete(null, delete, visible, null)
+            stmt = this.handleDelete(null, delete, sessionSpec.visible(), null)
                     .build();
         }
         return stmt;
     }
 
     @Override
-    public final Stmt select(final SelectStatement select, final boolean useMultiStmt, final Visible visible) {
+    public final Stmt select(final SelectStatement select, final boolean useMultiStmt, final SessionSpec sessionSpec) {
         final Stmt stmt;
         if (useMultiStmt) {
-            stmt = this.selectWithMultiSmt(MultiStmtBatchContext.create(this, visible), select)
+            stmt = this.selectWithMultiSmt(MultiStmtBatchContext.create(this, sessionSpec.visible()), select)
                     .build();
         } else {
-            stmt = handleSelect(null, select, visible, null)
+            stmt = handleSelect(null, select, sessionSpec.visible(), null)
                     .build();
         }
         return stmt;
@@ -308,25 +309,25 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final Stmt values(final Values values, final Visible visible) {
-        return handleValues(null, values, visible)
+    public final Stmt values(final Values values, final SessionSpec sessionSpec) {
+        return handleValues(null, values, sessionSpec.visible())
                 .build();
     }
 
 
     @Override
-    public final Stmt dialectDml(final DmlStatement statement, final Visible visible) {
-        return this.createDialectStmt(this.handleDialectDml(null, statement, visible));
+    public final Stmt dialectDml(final DmlStatement statement, final SessionSpec sessionSpec) {
+        return this.createDialectStmt(this.handleDialectDml(null, statement, sessionSpec.visible()));
     }
 
     @Override
-    public final Stmt dialectDql(final DqlStatement statement, final Visible visible) {
+    public final Stmt dialectDql(final DqlStatement statement, final SessionSpec sessionSpec) {
         throw new UnsupportedOperationException();
     }
 
 
     @Override
-    public final List<String> schemaDdl(final _SchemaResult schemaResult) {
+    public final List<String> schemaDdl(final SchemaResult schemaResult) {
         final DdlParser ddlDialect;
         ddlDialect = createDdlDialect();
 
@@ -789,7 +790,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #update(UpdateStatement, boolean, Visible)
+     * @see #update(UpdateStatement, boolean, SessionSpec)
      */
     protected void assertUpdate(UpdateStatement update) {
         throw standardParserDontSupportDialect(this.dialect);
@@ -880,7 +881,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #dialectDml(DmlStatement, Visible)
+     * @see #dialectDml(DmlStatement, SessionSpec)
      */
     protected _PrimaryContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement
             , Visible visible) {
@@ -888,7 +889,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #dialectDql(DqlStatement, Visible)
+     * @see #dialectDql(DqlStatement, SessionSpec)
      */
     protected _PrimaryContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement
             , Visible visible) {
@@ -998,7 +999,7 @@ abstract class ArmyParser implements DialectParser {
      *               <ul>
      *                  <li>{@link InsertStatement}</li>
      *               </ul>
-     * @see #insert(InsertStatement, Visible)
+     * @see #insert(InsertStatement, SessionSpec)
      */
     protected final _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final InsertStatement insert,
                                                 final Visible visible) {
@@ -2292,7 +2293,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #select(SelectStatement, boolean, Visible)
+     * @see #select(SelectStatement, boolean, SessionSpec)
      */
     private MultiStmtContext selectWithMultiSmt(final MultiStmtContext multiStmtContext,
                                                 final SelectStatement select) {
@@ -2321,7 +2322,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #select(SelectStatement, boolean, Visible)
+     * @see #select(SelectStatement, boolean, SessionSpec)
      * @see #selectWithMultiSmt(MultiStmtContext, SelectStatement)
      * @see #handleQuery(Query, _SqlContext)
      */
@@ -2406,7 +2407,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #values(Values, Visible)
+     * @see #values(Values, SessionSpec)
      */
     private _ValuesContext handleValues(final @Nullable _SqlContext outerContext, final Values stmt, final Visible visible) {
         stmt.prepared();
@@ -2456,7 +2457,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #update(UpdateStatement, boolean, Visible)
+     * @see #update(UpdateStatement, boolean, SessionSpec)
      */
     private MultiStmtContext updateWithMultiStmt(final MultiStmtContext stmtContext, final UpdateStatement update) {
         final int batchSize = ((_BatchStatement) update).paramList().size();
@@ -2492,7 +2493,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #update(UpdateStatement, boolean, Visible)
+     * @see #update(UpdateStatement, boolean, SessionSpec)
      * @see #updateWithMultiStmt(MultiStmtContext, UpdateStatement)
      */
     private _UpdateContext handleUpdate(final @Nullable _SqlContext outerContext, final UpdateStatement stmt,
@@ -2729,7 +2730,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #delete(DeleteStatement, boolean, Visible)
+     * @see #delete(DeleteStatement, boolean, SessionSpec)
      */
     private MultiStmtContext deleteWithMultiStmt(final MultiStmtContext stmtContext, final DeleteStatement delete) {
         final int batchSize = ((_BatchStatement) delete).paramList().size();
@@ -2767,7 +2768,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #delete(DeleteStatement, boolean, Visible)
+     * @see #delete(DeleteStatement, boolean, SessionSpec)
      * @see #deleteWithMultiStmt(MultiStmtContext, DeleteStatement)
      */
     private _DeleteContext handleDelete(final @Nullable _SqlContext outerContext, final DeleteStatement stmt,
@@ -3252,7 +3253,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #insert(InsertStatement, Visible)
+     * @see #insert(InsertStatement, SessionSpec)
      */
     private Stmt createInsertStmt(final _InsertContext context) {
         final _InsertContext parentContext;
@@ -3268,8 +3269,8 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #dialectDml(DmlStatement, Visible)
-     * @see #dialectDql(DqlStatement, Visible)
+     * @see #dialectDml(DmlStatement, SessionSpec)
+     * @see #dialectDql(DqlStatement, SessionSpec)
      */
     private Stmt createDialectStmt(_PrimaryContext context) {
         return context.build();

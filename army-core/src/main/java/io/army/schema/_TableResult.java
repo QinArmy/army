@@ -23,7 +23,7 @@ import io.army.meta.TableMeta;
 import java.util.List;
 
 /**
- * @see _SchemaResult
+ * @see SchemaResult
  */
 public interface _TableResult {
 

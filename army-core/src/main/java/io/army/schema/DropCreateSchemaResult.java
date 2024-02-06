@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-final class DropCreateSchemaResult implements _SchemaResult {
+final class DropCreateSchemaResult implements SchemaResult {
 
 
     private final String catalog;

@@ -39,7 +39,10 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -517,77 +520,6 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
     } // AggregateCompositeWindowFunc
 
 
-    /**
-     * @see #groupConcatFunc(SQLs.ArgDistinct, List, GroupConcatInnerClause)
-     */
-    private static final class GroupConcatFunction extends OperationExpression.SqlFunctionExpression {
-
-        private final SQLs.ArgDistinct distinct;
-
-        private final List<ArmyExpression> expList;
-
-        private final GroupConcatInnerClause clause;
-
-        private GroupConcatFunction(@Nullable SQLs.ArgDistinct distinct, List<ArmyExpression> expList
-                , @Nullable GroupConcatInnerClause clause) {
-            super("GROUP_CONCAT", StringType.INSTANCE);
-            assert expList.size() > 0;
-            this.distinct = distinct;
-            this.expList = expList;
-            this.clause = clause;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.distinct, this.expList, this.clause, this.returnType);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof GroupConcatFunction) {
-                final GroupConcatFunction o = (GroupConcatFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.distinct == this.distinct
-                        && o.expList.equals(this.expList)
-                        && Objects.equals(o.clause, this.clause)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-
-        @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-
-            if (this.distinct != null) {
-                sqlBuilder.append(this.distinct.spaceRender());
-            }
-            FunctionUtils.appendArguments(this.distinct, this.expList, context);
-
-            if (this.clause != null) {
-                this.clause.appendSql(sqlBuilder, context);
-            }
-        }
-
-        @Override
-        void argToString(final StringBuilder builder) {
-            if (this.distinct != null) {
-                builder.append(this.distinct.spaceRender());
-            }
-            FunctionUtils.argumentsToString(this.distinct, this.expList, builder);
-
-            if (this.clause != null) {
-                builder.append(this.clause);
-            }
-        }
-
-
-    }//GroupConcatFunction
 
     /**
      * @see #groupConcatClause(Consumer)
@@ -684,19 +616,19 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
             final Stmt stmt;
             if (statement instanceof SelectStatement) {
-                stmt = context.parser().select((Select) statement, false, this.visible);
+                stmt = context.parser().select((Select) statement, false, context.sessionSpec());
             } else if (statement instanceof InsertStatement) {
-                stmt = context.parser().insert((InsertStatement) statement, this.visible);
+                stmt = context.parser().insert((InsertStatement) statement, context.sessionSpec());
             } else if (statement instanceof UpdateStatement) {
-                stmt = context.parser().update((UpdateStatement) statement, false, this.visible);
+                stmt = context.parser().update((UpdateStatement) statement, false, context.sessionSpec());
             } else if (statement instanceof DeleteStatement) {
-                stmt = context.parser().delete((DeleteStatement) statement, false, this.visible);
+                stmt = context.parser().delete((DeleteStatement) statement, false, context.sessionSpec());
             } else if (statement instanceof Values) {
-                stmt = context.parser().values((Values) statement, this.visible);
+                stmt = context.parser().values((Values) statement, context.sessionSpec());
             } else if (statement instanceof DqlStatement) {
-                stmt = context.parser().dialectDql((DqlStatement) statement, this.visible);
+                stmt = context.parser().dialectDql((DqlStatement) statement, context.sessionSpec());
             } else if (statement instanceof DmlStatement) {
-                stmt = context.parser().dialectDml((DmlStatement) statement, this.visible);
+                stmt = context.parser().dialectDml((DmlStatement) statement, context.sessionSpec());
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();

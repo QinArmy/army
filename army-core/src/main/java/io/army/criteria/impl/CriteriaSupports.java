@@ -244,19 +244,19 @@ abstract class CriteriaSupports {
             }
             final Stmt stmt;
             if (this instanceof SelectStatement) {
-                stmt = parser.select((SelectStatement) this, false, visible);
+                stmt = parser.select((SelectStatement) this, false, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof InsertStatement) {
-                stmt = parser.insert((InsertStatement) this, visible);
+                stmt = parser.insert((InsertStatement) this, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof UpdateStatement) {
-                stmt = parser.update((UpdateStatement) this, false, visible);
+                stmt = parser.update((UpdateStatement) this, false, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof DeleteStatement) {
-                stmt = parser.delete((DeleteStatement) this, false, visible);
+                stmt = parser.delete((DeleteStatement) this, false, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof Values) {
-                stmt = parser.values((Values) this, visible);
+                stmt = parser.values((Values) this, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof DqlStatement) {
-                stmt = parser.dialectDql((DqlStatement) this, visible);
+                stmt = parser.dialectDql((DqlStatement) this, _MockDialects.sessionSpecFor(visible));
             } else if (this instanceof DmlStatement) {
-                stmt = parser.dialectDml((DmlStatement) this, visible);
+                stmt = parser.dialectDml((DmlStatement) this, _MockDialects.sessionSpecFor(visible));
             } else {
                 throw new IllegalStateException("unknown statement");
             }

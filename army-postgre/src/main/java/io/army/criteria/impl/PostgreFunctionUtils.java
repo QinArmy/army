@@ -962,7 +962,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final SimpleStmt stmt;
-            stmt = (SimpleStmt) context.parser().select(this.query, false, this.visible);
+            stmt = (SimpleStmt) context.parser().select(this.query, false, context.sessionSpec());
             if (stmt.paramGroup().size() > 0) {
                 throw new CriteriaException("query expression couldn't have any parameter.");
             }

@@ -21,6 +21,7 @@ import io.army.criteria.SQLParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
 import io.army.meta.TypeMeta;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 
@@ -75,6 +76,8 @@ public interface _SqlContext extends SqlContextSpec {
     String identifier(String identifier);
 
     Visible visible();
+
+    SessionSpec sessionSpec();
 
 
 }

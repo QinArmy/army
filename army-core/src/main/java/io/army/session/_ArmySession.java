@@ -270,21 +270,21 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
 
         final Stmt stmt;
         if (statement instanceof SelectStatement) {
-            stmt = this.factory.dialectParser.select((SelectStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
+            stmt = this.factory.dialectParser.select((SelectStatement) statement, option.isParseBatchAsMultiStmt(), this);
         } else if (statement instanceof Values) {
-            stmt = this.factory.dialectParser.values((Values) statement, this.visible);
+            stmt = this.factory.dialectParser.values((Values) statement, this);
         } else if (!(statement instanceof DmlStatement)) {
-            stmt = this.factory.dialectParser.dialectDql(statement, this.visible);
+            stmt = this.factory.dialectParser.dialectDql(statement, this);
         } else if (statement instanceof InsertStatement) {
-            stmt = this.factory.dialectParser.insert((InsertStatement) statement, this.visible);
+            stmt = this.factory.dialectParser.insert((InsertStatement) statement, this);
         } else if (statement instanceof _Statement._ChildStatement) {
             throw new ArmyException("current api don't support child dml statement.");
         } else if (statement instanceof UpdateStatement) {
-            stmt = this.factory.dialectParser.update((UpdateStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
+            stmt = this.factory.dialectParser.update((UpdateStatement) statement, option.isParseBatchAsMultiStmt(), this);
         } else if (statement instanceof DeleteStatement) {
-            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
+            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, option.isParseBatchAsMultiStmt(), this);
         } else {
-            stmt = this.factory.dialectParser.dialectDml((DmlStatement) statement, this.visible);
+            stmt = this.factory.dialectParser.dialectDml((DmlStatement) statement, this);
         }
 
         if (logMode != SqlLogMode.OFF) {
@@ -306,7 +306,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
         }
 
         final Stmt stmt;
-        stmt = this.factory.dialectParser.insert(statement, this.visible);
+        stmt = this.factory.dialectParser.insert(statement, this);
         if (logMode != SqlLogMode.OFF) {
             printSql(logMode, stmt, startNanoSecond);
         }
@@ -326,11 +326,11 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
 
         final Stmt stmt;
         if (statement instanceof UpdateStatement) {
-            stmt = this.factory.dialectParser.update((UpdateStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
+            stmt = this.factory.dialectParser.update((UpdateStatement) statement, option.isParseBatchAsMultiStmt(), this);
         } else if (statement instanceof DeleteStatement) {
-            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
+            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, option.isParseBatchAsMultiStmt(), this);
         } else {
-            stmt = this.factory.dialectParser.dialectDml(statement, this.visible);
+            stmt = this.factory.dialectParser.dialectDml(statement, this);
         }
 
         if (logMode != SqlLogMode.OFF) {

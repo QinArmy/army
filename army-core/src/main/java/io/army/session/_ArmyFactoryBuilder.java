@@ -32,8 +32,8 @@ import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
+import io.army.schema.SchemaResult;
 import io.army.schema._FieldResult;
-import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
 import io.army.session.executor.ExecutorFactoryProvider;
 import io.army.util.HexUtils;
@@ -243,7 +243,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         return Collections.emptyMap();
     }
 
-    protected final List<String> parseMetaDdl(_ArmySessionFactory sessionFactory, _SchemaResult schemaResult) {
+    protected final List<String> parseMetaDdl(_ArmySessionFactory sessionFactory, SchemaResult schemaResult) {
         return sessionFactory.dialectParser.schemaDdl(schemaResult);
     }
 
@@ -444,7 +444,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
      * @return true : error
      */
     @Nullable
-    protected static SessionFactoryException validateSchema(SessionFactory sessionFactory, _SchemaResult schemaResult) {
+    protected static SessionFactoryException validateSchema(SessionFactory sessionFactory, SchemaResult schemaResult) {
 
         final StringBuilder builder = new StringBuilder()
                 .append(sessionFactory)

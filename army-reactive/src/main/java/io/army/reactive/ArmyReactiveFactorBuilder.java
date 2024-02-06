@@ -28,8 +28,8 @@ import io.army.reactive.executor.ReactiveExecutorFactory;
 import io.army.reactive.executor.ReactiveExecutorFactoryProvider;
 import io.army.reactive.executor.ReactiveMetaExecutor;
 import io.army.schema.SchemaInfo;
+import io.army.schema.SchemaResult;
 import io.army.schema._SchemaComparer;
-import io.army.schema._SchemaResult;
 import io.army.session.DdlMode;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmyFactoryBuilder;
@@ -210,7 +210,7 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
     private Mono<Void> updateSchemaIfNeed(final ArmyReactiveSessionFactory sessionFactory,
                                           final ReactiveMetaExecutor executor, final SchemaInfo schemaInfo,
                                           final DdlMode ddlMode) {
-        final _SchemaResult schemaResult;
+        final SchemaResult schemaResult;
         switch (ddlMode) {
             case VALIDATE:
             case UPDATE: {
@@ -224,7 +224,7 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
             case DROP_CREATE: {
                 final Collection<TableMeta<?>> tableCollection;
                 tableCollection = sessionFactory.tableMap().values();
-                schemaResult = _SchemaResult.dropCreate(schemaInfo.catalog(), schemaInfo.schema(), tableCollection);
+                schemaResult = SchemaResult.dropCreate(schemaInfo.catalog(), schemaInfo.schema(), tableCollection);
             }
             break;
             default:

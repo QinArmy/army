@@ -39,8 +39,8 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     }
 
     @Override
-    public final _SchemaResult compare(SchemaInfo schemaInfo, SchemaMeta schemaMeta,
-                                       Collection<TableMeta<?>> tableMetas) {
+    public final io.army.schema.SchemaResult compare(SchemaInfo schemaInfo, SchemaMeta schemaMeta,
+                                                     Collection<TableMeta<?>> tableMetas) {
         if (compareSchema(schemaInfo, schemaMeta)) {
             String m = String.format("_SchemaInfo[%s,%s] and %s not match,serverMeta[%s].",
                     schemaInfo.catalog(), schemaInfo.schema(), schemaMeta, this.serverMeta);
@@ -190,7 +190,7 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     }
 
 
-    private static final class SchemaResult implements _SchemaResult {
+    private static final class SchemaResult implements io.army.schema.SchemaResult {
 
         private final String catalog;
 

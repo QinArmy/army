@@ -191,6 +191,11 @@ public final class Option<T> {
     public static final Option<Boolean> AUTO_COMMIT = Option.from("AUTO COMMIT", Boolean.class);
 
     /**
+     * true : text value support backslash escapes
+     */
+    public static final Option<Boolean> BACKSLASH_ESCAPES = Option.from("BACKSLASH ESCAPES", Boolean.class);
+
+    /**
      * <p>
      * representing the XID option of {@link TransactionInfo#valueOf(Option)} from {@link RmSession}.
      * <br/>

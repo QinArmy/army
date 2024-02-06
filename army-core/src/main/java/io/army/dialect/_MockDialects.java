@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 
+import io.army.criteria.Visible;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
@@ -25,20 +26,40 @@ import io.army.generator.FieldGenerator;
 import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
+import io.army.session.Option;
+import io.army.session.SessionSpec;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 public abstract class _MockDialects implements DialectEnv {
 
-    private static final ConcurrentMap<Dialect, DialectParser> DIALECT_MAP = new ConcurrentHashMap<>();
-
 
     public static DialectParser from(final Dialect dialect) {
-        return DIALECT_MAP.computeIfAbsent(dialect, _MockDialects::createDialectParser);
+        return MockDialectEnv.DIALECT_MAP.computeIfAbsent(dialect, _MockDialects::createDialectParser);
+    }
+
+    public static SessionSpec sessionSpecFor(final Visible visible) {
+        final SessionSpec mockSession;
+        switch (visible) {
+            case ONLY_VISIBLE:
+                mockSession = MockSession.MOCK_ONLY_VISIBLE;
+                break;
+            case ONLY_NON_VISIBLE:
+                mockSession = MockSession.MOCK_ONLY_NON_VISIBLE;
+                break;
+            case BOTH:
+                mockSession = MockSession.MOCK_BOTH;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(visible);
+        }
+        return mockSession;
     }
 
     private static void tryLoadJsonCodec() {
@@ -72,7 +93,45 @@ public abstract class _MockDialects implements DialectEnv {
     }
 
 
+    private enum MockSession implements SessionSpec {
+
+        MOCK_ONLY_VISIBLE(Visible.ONLY_VISIBLE),
+        MOCK_ONLY_NON_VISIBLE(Visible.ONLY_NON_VISIBLE),
+        MOCK_BOTH(Visible.BOTH);
+
+        private final Visible visible;
+
+        MockSession(Visible visible) {
+            this.visible = visible;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Nullable
+        @Override
+        public final <T> T valueOf(Option<T> option) {
+            if (option == Option.BACKSLASH_ESCAPES) {
+                return (T) Boolean.TRUE;
+            }
+            return null;
+        }
+
+        @Override
+        public final Set<Option<?>> optionSet() {
+            return Collections.singleton(Option.BACKSLASH_ESCAPES);
+        }
+
+        @Override
+        public final Visible visible() {
+            return this.visible;
+        }
+
+
+    } // MockSession
+
+
     private static final class MockDialectEnv extends _MockDialects {
+
+        private static final ConcurrentMap<Dialect, DialectParser> DIALECT_MAP = _Collections.concurrentHashMap();
 
         private final ArmyEnvironment env;
 

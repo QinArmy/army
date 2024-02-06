@@ -27,8 +27,8 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.schema.SchemaInfo;
+import io.army.schema.SchemaResult;
 import io.army.schema._SchemaComparer;
-import io.army.schema._SchemaResult;
 import io.army.session.DdlMode;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmyFactoryBuilder;
@@ -207,7 +207,7 @@ final class ArmySyncFactoryBuilder
             schemaInfo = metaExecutor.extractInfo();
 
             //2.compare schema meta and schema info.
-            final _SchemaResult schemaResult;
+            final SchemaResult schemaResult;
             switch (ddlMode) {
                 case VALIDATE:
                 case UPDATE: {
@@ -221,7 +221,7 @@ final class ArmySyncFactoryBuilder
                 case DROP_CREATE: {
                     final Collection<TableMeta<?>> tableCollection;
                     tableCollection = sessionFactory.tableMap().values();
-                    schemaResult = _SchemaResult.dropCreate(schemaInfo.catalog(), schemaInfo.schema(), tableCollection);
+                    schemaResult = SchemaResult.dropCreate(schemaInfo.catalog(), schemaInfo.schema(), tableCollection);
                 }
                 break;
                 default:

@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 
-public interface _SchemaResult {
+public interface SchemaResult {
 
     @Nullable
     String catalog();
@@ -36,7 +36,7 @@ public interface _SchemaResult {
 
     List<_TableResult> changeTableList();
 
-    static _SchemaResult dropCreate(@Nullable String catalog, @Nullable String schema, Collection<TableMeta<?>> tables) {
+    static SchemaResult dropCreate(@Nullable String catalog, @Nullable String schema, Collection<TableMeta<?>> tables) {
         return new DropCreateSchemaResult(catalog, schema, tables);
     }
 

@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
 import io.army.stmt.StmtParams;
@@ -298,6 +299,11 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
         return this.visible;
     }
 
+    @Override
+    public final SessionSpec sessionSpec() {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public final String sql() {

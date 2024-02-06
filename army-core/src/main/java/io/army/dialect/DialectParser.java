@@ -19,7 +19,8 @@ package io.army.dialect;
 import io.army.criteria.*;
 import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
-import io.army.schema._SchemaResult;
+import io.army.schema.SchemaResult;
+import io.army.session.SessionSpec;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 
@@ -40,7 +41,7 @@ public interface DialectParser {
      *     <li>{@link io.army.stmt.PairStmt}</li>
      * </ul>
      */
-    Stmt insert(InsertStatement insert, Visible visible);
+    Stmt insert(InsertStatement insert, SessionSpec sessionSpec);
 
     /**
      * @return one of <ul>
@@ -48,7 +49,7 @@ public interface DialectParser {
      * <li>{@link io.army.stmt.BatchStmt}</li>
      * </ul>
      */
-    Stmt update(UpdateStatement update, boolean useMultiStmt, Visible visible);
+    Stmt update(UpdateStatement update, boolean useMultiStmt, SessionSpec sessionSpec);
 
     /**
      * @return one of <ul>
@@ -56,7 +57,7 @@ public interface DialectParser {
      * <li>{@link io.army.stmt.BatchStmt}</li>
      * </ul>
      */
-    Stmt delete(DeleteStatement delete, boolean useMultiStmt, Visible visible);
+    Stmt delete(DeleteStatement delete, boolean useMultiStmt, SessionSpec sessionSpec);
 
     /**
      * @return one of <ul>
@@ -64,22 +65,21 @@ public interface DialectParser {
      * <li>{@link io.army.stmt.BatchStmt}</li>
      * </ul>
      */
-    Stmt select(SelectStatement select, boolean useMultiStmt, Visible visible);
+    Stmt select(SelectStatement select, boolean useMultiStmt, SessionSpec sessionSpec);
 
-    Stmt values(Values values, Visible visible);
+    Stmt values(Values values, SessionSpec sessionSpec);
 
 
-    default Stmt dialectDml(DmlStatement statement, Visible visible) {
+    default Stmt dialectDml(DmlStatement statement, SessionSpec sessionSpec) {
         throw new UnsupportedOperationException();
     }
 
-    default Stmt dialectDql(DqlStatement statement, Visible visible) {
+    default Stmt dialectDql(DqlStatement statement, SessionSpec sessionSpec) {
         throw new UnsupportedOperationException();
     }
 
 
-
-    default List<String> schemaDdl(_SchemaResult schemaResult) {
+    default List<String> schemaDdl(SchemaResult schemaResult) {
         throw new UnsupportedOperationException();
     }
 
