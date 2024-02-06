@@ -131,7 +131,7 @@ public class MySQLValuesUnitTests extends MySQLUnitTests {
                 .asQuery();
 
         final String sql, expectedSql;
-        expectedSql = "SELECT s.column_0 AS column_0 , s.column_1 AS column_1 , s.column_2 AS column_2 , s.column_3 AS column_3 , s.column_4 AS column_4 , s.column_5 AS column_5 , s.column_6 AS column_6 FROM ( ( VALUES ROW( 1 , '海问香' , 9999.88 , DATE '2024-01-19' , 'MONDAY' , TRUE , 1 + 3 ) , ROW( 2 , '大仓' , 9999.66 , DATE '2024-01-20' , 'SUNDAY' , TRUE , 13 - 3 ) , ROW( 3 , '卡拉肖克·玲' , 6666.88 , DATE '2024-01-16' , 'FRIDAY' , TRUE , 3 - 3 ) , ROW( 4 , '幽弥狂' , 8888.88 , DATE '2024-01-11' , 'TUESDAY' , FALSE , 81 / 3 ) ORDER BY column_1 , 2 DESC LIMIT 4 ) ) AS s JOIN china_region AS c ON s.column_0 = c.id WHERE c.id = 1 AND c.`visible` = TRUE";
+        expectedSql = "SELECT s.column_0 , s.column_1 , s.column_2 , s.column_3 , s.column_4 , s.column_5 , s.column_6 FROM ( ( VALUES ROW( 1 , '海问香' , 9999.88 , DATE '2024-01-19' , 'MONDAY' , TRUE , 1 + 3 ) , ROW( 2 , '大仓' , 9999.66 , DATE '2024-01-20' , 'SUNDAY' , TRUE , 13 - 3 ) , ROW( 3 , '卡拉肖克·玲' , 6666.88 , DATE '2024-01-16' , 'FRIDAY' , TRUE , 3 - 3 ) , ROW( 4 , '幽弥狂' , 8888.88 , DATE '2024-01-11' , 'TUESDAY' , FALSE , 81 / 3 ) ORDER BY column_1 , 2 DESC LIMIT 4 ) ) AS s JOIN china_region AS c ON s.column_0 = c.id WHERE c.id = 1 AND c.`visible` = TRUE";
         sql = stmt.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, false);
         Assert.assertEquals(sql, expectedSql);
 
