@@ -2,10 +2,10 @@ package io.army.dialect;
 
 import io.army.criteria.Selection;
 import io.army.criteria.Values;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._PrimaryRowSet;
 import io.army.criteria.impl.inner._Selection;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
@@ -17,8 +17,8 @@ import java.util.List;
 final class ParensValuesContext extends StatementContext implements _ValuesContext, _ParenRowSetContext {
 
     static ParensValuesContext create(@Nullable _SqlContext outerContext, Values values, ArmyParser parser,
-                                      Visible visible) {
-        return new ParensValuesContext((StatementContext) outerContext, values, parser, visible);
+                                      SessionSpec sessionSpec) {
+        return new ParensValuesContext((StatementContext) outerContext, values, parser, sessionSpec);
     }
 
     static ParensValuesContext forParens(_SqlContext original) {
@@ -30,13 +30,13 @@ final class ParensValuesContext extends StatementContext implements _ValuesConte
 
     @SuppressWarnings("unchecked")
     private ParensValuesContext(@Nullable StatementContext parentOrOuterContext, Values values, ArmyParser parser,
-                                Visible visible) {
-        super(parentOrOuterContext, parser, visible);
+                                SessionSpec sessionSpec) {
+        super(parentOrOuterContext, parser, sessionSpec);
         this.selectionList = (List<_Selection>) ((_PrimaryRowSet) values).selectItemList();
     }
 
     private ParensValuesContext(StatementContext original) {
-        super(original, original.parser, original.visible);
+        super(original, original.parser, original.sessionSpec);
         this.selectionList = null;
     }
 

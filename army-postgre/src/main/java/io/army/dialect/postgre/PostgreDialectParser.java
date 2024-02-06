@@ -27,6 +27,7 @@ import io.army.dialect.*;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -144,7 +145,7 @@ final class PostgreDialectParser extends PostgreParser {
             if (subStatement instanceof SubQuery) {
                 this.handleQuery((SubQuery) subStatement, context);
             } else if (subStatement instanceof _Insert) {
-                this.handleInsertStmt(context, (_Insert) subStatement, context.visible());
+                this.handleInsertStmt(context, (_Insert) subStatement, context.sessionSpec());
             } else {
                 //TODO
                 throw new UnsupportedOperationException();
@@ -374,14 +375,14 @@ final class PostgreDialectParser extends PostgreParser {
 
     @Override
     protected _PrimaryContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement,
-                                               Visible visible) {
-        return super.handleDialectDml(outerContext, statement, visible);
+                                               SessionSpec sessionSpec) {
+        return super.handleDialectDml(outerContext, statement, sessionSpec);
     }
 
     @Override
     protected _PrimaryContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement,
-                                               Visible visible) {
-        return super.handleDialectDql(outerContext, statement, visible);
+                                               SessionSpec sessionSpec) {
+        return super.handleDialectDql(outerContext, statement, sessionSpec);
     }
 
 

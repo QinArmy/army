@@ -39,7 +39,7 @@ final class SimpleSubQueryContext extends MultiTableQueryContext implements _Sub
     private final StatementContext outerContext;
 
     private SimpleSubQueryContext(StatementContext outerContext, SubQuery subQuery, TableContext tableContext) {
-        super(outerContext, subQuery, tableContext, outerContext.parser, outerContext.visible);
+        super(outerContext, subQuery, tableContext, outerContext.parser, outerContext.sessionSpec);
         this.outerContext = outerContext;
     }
 

@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -29,19 +30,19 @@ import java.util.function.ObjIntConsumer;
 
 final class QueryInsertContext extends InsertContext implements _QueryInsertContext {
 
-    static QueryInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._QueryInsert stmt
-            , ArmyParser dialect, Visible visible) {
-        return new QueryInsertContext((StatementContext) outerContext, stmt, dialect, visible);
+    static QueryInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._QueryInsert stmt,
+                                        ArmyParser dialect, SessionSpec sessionSpec) {
+        return new QueryInsertContext((StatementContext) outerContext, stmt, dialect, sessionSpec);
     }
 
-    static QueryInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+    static QueryInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt,
+                                        ArmyParser dialect, SessionSpec sessionSpec) {
         assert outerContext == null || outerContext instanceof MultiStmtContext;
-        return new QueryInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
+        return new QueryInsertContext((StatementContext) outerContext, domainStmt, dialect, sessionSpec);
     }
 
-    static QueryInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
-            , QueryInsertContext parentContext) {
+    static QueryInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt,
+                                       QueryInsertContext parentContext) {
         return new QueryInsertContext((StatementContext) outerContext, domainStmt, parentContext);
     }
 
@@ -58,9 +59,9 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
      * @see #forSingle(_SqlContext, _Insert._QueryInsert, ArmyParser, Visible)
      * @see #forParent(_SqlContext, _Insert._ChildQueryInsert, ArmyParser, Visible)
      */
-    private QueryInsertContext(@Nullable StatementContext outerContext, _Insert._QueryInsert domainStmt
-            , ArmyParser parser, Visible visible) {
-        super(outerContext, domainStmt, parser, visible);
+    private QueryInsertContext(@Nullable StatementContext outerContext, _Insert._QueryInsert domainStmt,
+                               ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, domainStmt, parser, sessionSpec);
 
 
         final _Insert._QueryInsert targetStmt;

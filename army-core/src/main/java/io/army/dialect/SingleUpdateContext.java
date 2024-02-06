@@ -17,8 +17,8 @@
 package io.army.dialect;
 
 import io.army.criteria.TableField;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.session.SessionSpec;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
@@ -26,13 +26,13 @@ import java.util.List;
 
 final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdateContext {
 
-    static SingleUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
-            , ArmyParser dialect, Visible visible) {
-        return new SingleUpdateContext((StatementContext) outerContext, stmt, dialect, visible);
+    static SingleUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt,
+                                      ArmyParser dialect, SessionSpec sessionSpec) {
+        return new SingleUpdateContext((StatementContext) outerContext, stmt, dialect, sessionSpec);
     }
 
-    static SingleUpdateContext forParent(_SingleUpdate._ChildUpdate stmt, ArmyParser dialect, Visible visible) {
-        return new SingleUpdateContext(null, stmt, dialect, visible);
+    static SingleUpdateContext forParent(_SingleUpdate._ChildUpdate stmt, ArmyParser dialect, SessionSpec sessionSpec) {
+        return new SingleUpdateContext(null, stmt, dialect, sessionSpec);
     }
 
     static SingleUpdateContext forChild(_SingleUpdate._ChildUpdate stmt, SingleUpdateContext parentContext) {
@@ -44,9 +44,9 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
 
     private List<TableField> conditionFieldList;
 
-    private SingleUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate stmt, ArmyParser dialect
-            , Visible visible) {
-        super(outerContext, stmt, dialect, visible);
+    private SingleUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate stmt, ArmyParser dialect,
+                                SessionSpec sessionSpec) {
+        super(outerContext, stmt, dialect, sessionSpec);
         this.parentContext = null;
     }
 

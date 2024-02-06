@@ -20,12 +20,12 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.SqlField;
 import io.army.criteria.TableField;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
@@ -60,8 +60,8 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
      * <p>For {@link SingleTableMeta}
      */
     SingleTableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser,
-                          Visible visible) {
-        super(outerContext, stmt, parser, visible);
+                          SessionSpec sessionSpec) {
+        super(outerContext, stmt, parser, sessionSpec);
 
         this.domainTable = stmt.table();
         if (this.domainTable instanceof ChildTableMeta) {
@@ -95,7 +95,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
      * @see #decideParentContext(SingleTableDmlContext)
      */
     SingleTableDmlContext(_SingleDml stmt, SingleTableDmlContext parentContext) {
-        super(decideParentContext(parentContext), stmt, parentContext.parser, parentContext.visible);
+        super(decideParentContext(parentContext), stmt, parentContext.parser, parentContext.sessionSpec);
 
         this.domainTable = stmt.table();
         this.targetTable = this.domainTable;

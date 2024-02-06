@@ -26,6 +26,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.SessionSpec;
 import io.army.stmt.*;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -125,8 +126,8 @@ abstract class InsertContext extends StatementContext
      * For {@link  io.army.meta.SingleTableMeta}
      */
     InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt,
-                  ArmyParser parser, Visible visible) {
-        super(outerContext, parser, visible);
+                  ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, parser, sessionSpec);
         this.parentContext = null;
         final _Insert targetStmt;
         if (domainStmt instanceof _Insert._ChildInsert) {
@@ -269,7 +270,7 @@ abstract class InsertContext extends StatementContext
      */
     InsertContext(@Nullable StatementContext outerContext, final _Insert._ChildInsert stmt,
                   final InsertContext parentContext) {
-        super(outerContext, parentContext.parser, parentContext.visible);
+        super(outerContext, parentContext.parser, parentContext.sessionSpec);
 
         this.parentContext = parentContext;
         this.twoStmtMode = parentContext.twoStmtMode;

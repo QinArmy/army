@@ -18,8 +18,8 @@ package io.army.dialect;
 
 import io.army.criteria.Query;
 import io.army.criteria.SelectStatement;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Query;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 
@@ -27,10 +27,10 @@ final class SimpleSelectContext extends MultiTableQueryContext implements  _Sele
 
 
     static SimpleSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser parser,
-                                      Visible visible) {
+                                      SessionSpec sessionSpec) {
         final TableContext tableContext;
-        tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), parser, visible);
-        return new SimpleSelectContext((StatementContext) outerContext, select, tableContext, parser, visible);
+        tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), parser, sessionSpec.visible());
+        return new SimpleSelectContext((StatementContext) outerContext, select, tableContext, parser, sessionSpec);
     }
 
     static SimpleSelectContext create(final _SqlContext outerCtx, final SelectStatement select) {
@@ -39,13 +39,13 @@ final class SimpleSelectContext extends MultiTableQueryContext implements  _Sele
 
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), parser, outerContext.visible);
-        return new SimpleSelectContext(outerContext, select, tableContext, parser, outerContext.visible);
+        return new SimpleSelectContext(outerContext, select, tableContext, parser, outerContext.sessionSpec);
     }
 
 
     private SimpleSelectContext(@Nullable StatementContext outerContext, Query query,
-                                TableContext tableContext, ArmyParser parser, Visible visible) {
-        super(outerContext, query, tableContext, parser, visible);
+                                TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, query, tableContext, parser, sessionSpec);
     }
 
 

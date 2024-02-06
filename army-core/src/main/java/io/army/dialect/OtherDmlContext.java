@@ -16,8 +16,8 @@
 
 package io.army.dialect;
 
-import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.Stmt;
 import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
@@ -29,8 +29,8 @@ import java.util.function.Predicate;
 final class OtherDmlContext extends StatementContext implements _OtherDmlContext {
 
     static OtherDmlContext create(@Nullable _SqlContext outerContext, Predicate<FieldMeta<?>> predicate,
-                                  ArmyParser parser, Visible visible) {
-        return new OtherDmlContext((StatementContext) outerContext, predicate, parser, visible);
+                                  ArmyParser parser, SessionSpec sessionSpec) {
+        return new OtherDmlContext((StatementContext) outerContext, predicate, parser, sessionSpec);
     }
 
     static OtherDmlContext forChild(@Nullable _SqlContext outerContext, Predicate<FieldMeta<?>> predicate,
@@ -43,15 +43,15 @@ final class OtherDmlContext extends StatementContext implements _OtherDmlContext
 
 
     private OtherDmlContext(@Nullable StatementContext outerContext, Predicate<FieldMeta<?>> predicate,
-                            ArmyParser parser, Visible visible) {
-        super(outerContext, parser, visible);
+                            ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, parser, sessionSpec);
         this.predicate = predicate;
         this.parentContext = null;
     }
 
     private OtherDmlContext(@Nullable StatementContext outerContext, Predicate<FieldMeta<?>> predicate,
                             OtherDmlContext parentContext) {
-        super(outerContext, parentContext.parser, parentContext.visible);
+        super(outerContext, parentContext.parser, parentContext.sessionSpec);
         this.predicate = predicate;
         this.parentContext = parentContext;
     }

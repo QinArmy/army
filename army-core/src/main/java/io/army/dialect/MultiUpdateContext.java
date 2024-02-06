@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.SessionSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -31,27 +32,27 @@ import java.util.Map;
 
 final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpdateContext {
 
-    static MultiUpdateContext create(@Nullable _SqlContext outerContext, _MultiUpdate statement, ArmyParser dialect
-            , Visible visible) {
+    static MultiUpdateContext create(@Nullable _SqlContext outerContext, _MultiUpdate statement, ArmyParser dialect,
+                                     SessionSpec sessionSpec) {
         final TableContext tableContext;
-        tableContext = TableContext.forUpdate(statement, dialect, visible);
-        return new MultiUpdateContext((StatementContext) outerContext, statement, tableContext, dialect, visible);
+        tableContext = TableContext.forUpdate(statement, dialect, sessionSpec.visible());
+        return new MultiUpdateContext((StatementContext) outerContext, statement, tableContext, dialect, sessionSpec);
     }
 
     static MultiUpdateContext forChild(@Nullable _SqlContext outerContext, _SingleUpdate stmt, ArmyParser dialect
-            , Visible visible) {
+            , SessionSpec sessionSpec) {
         final TableContext tableContext;
         tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
-        return new MultiUpdateContext((StatementContext) outerContext, stmt, tableContext, dialect, visible);
+        return new MultiUpdateContext((StatementContext) outerContext, stmt, tableContext, dialect, sessionSpec);
     }
 
 
     private List<SqlField> conditionFieldList;
 
 
-    private MultiUpdateContext(@Nullable StatementContext outerContext, _Update stmt, TableContext tableContext
-            , ArmyParser dialect, Visible visible) {
-        super(outerContext,stmt, tableContext, dialect, visible);
+    private MultiUpdateContext(@Nullable StatementContext outerContext, _Update stmt, TableContext tableContext,
+                               ArmyParser dialect, SessionSpec sessionSpec) {
+        super(outerContext, stmt, tableContext, dialect, sessionSpec);
     }
 
 

@@ -17,10 +17,10 @@
 package io.army.dialect;
 
 import io.army.criteria.TabularItem;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DmlStatement;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -41,9 +41,9 @@ abstract class MultiTableDmlContext extends NarrowDmlStmtContext implements _Mul
 
     final Map<String, String> childAliasToParentAlias;
 
-    MultiTableDmlContext(@Nullable StatementContext outerContext, _DmlStatement stmt
-            , TableContext tableContext, ArmyParser parser, Visible visible) {
-        super(outerContext, stmt, parser, visible);
+    MultiTableDmlContext(@Nullable StatementContext outerContext, _DmlStatement stmt,
+                         TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, stmt, parser, sessionSpec);
         this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
         this.multiTableContext = new MultiTableContext(this, tableContext, null, null);
     }

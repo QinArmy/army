@@ -17,10 +17,10 @@
 package io.army.dialect;
 
 import io.army.criteria.TabularItem;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 
@@ -30,8 +30,8 @@ abstract class SingleJoinableDmlContext extends SingleTableDmlContext implements
     final MultiTableContext multiTableContext;
 
     SingleJoinableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt,
-                             TableContext tableContext, ArmyParser parser, Visible visible) {
-        super(outerContext, stmt, parser, visible);
+                             TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, stmt, parser, sessionSpec);
         this.multiTableContext = new MultiTableContext(this, tableContext, null, null);
     }
 

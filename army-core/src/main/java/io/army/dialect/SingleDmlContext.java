@@ -16,9 +16,9 @@
 
 package io.army.dialect;
 
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
@@ -26,8 +26,8 @@ import javax.annotation.Nullable;
 abstract class SingleDmlContext extends SingleTableDmlContext {
 
 
-    SingleDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
-        super(outerContext, stmt, parser, visible);
+    SingleDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, stmt, parser, sessionSpec);
     }
 
     SingleDmlContext(_SingleDml stmt, SingleTableDmlContext parentContext) {

@@ -17,9 +17,9 @@
 package io.army.dialect;
 
 import io.army.criteria.TableField;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -29,8 +29,8 @@ import java.util.List;
 final class DomainUpdateContext extends DomainDmlStmtContext implements _SingleUpdateContext {
 
     static DomainUpdateContext forSingle(@Nullable _SqlContext outerContext, _DomainUpdate stmt, ArmyParser parser,
-                                         Visible visible) {
-        return new DomainUpdateContext((StatementContext) outerContext, stmt, parser, visible);
+                                         SessionSpec sessionSpec) {
+        return new DomainUpdateContext((StatementContext) outerContext, stmt, parser, sessionSpec);
     }
 
     static DomainUpdateContext forChild(_DomainUpdate stmt, DomainUpdateContext parentContext) {
@@ -43,8 +43,8 @@ final class DomainUpdateContext extends DomainDmlStmtContext implements _SingleU
     private List<FieldMeta<?>> conditionFieldList;
 
     private DomainUpdateContext(@Nullable StatementContext outerContext, _DomainUpdate stmt, ArmyParser parser,
-                                Visible visible) {
-        super(outerContext, stmt, parser, visible);
+                                SessionSpec sessionSpec) {
+        super(outerContext, stmt, parser, sessionSpec);
         this.parentContext = null;
     }
 

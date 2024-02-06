@@ -19,11 +19,11 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.SqlValueParam;
-import io.army.criteria.Visible;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.meta.*;
+import io.army.session.SessionSpec;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
 import io.army.struct.CodeEnum;
@@ -40,16 +40,16 @@ final class AssignmentInsertContext extends InsertContext
         implements _AssignmentInsertContext, InsertStmtParams {
 
     static AssignmentInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._AssignmentInsert stmt,
-                                             ArmyParser dialect, Visible visible) {
+                                             ArmyParser dialect, SessionSpec sessionSpec) {
         assert !(stmt instanceof _Insert._ChildAssignmentInsert);
-        return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
+        return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, sessionSpec);
     }
 
     static AssignmentInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt,
-                                             ArmyParser dialect, Visible visible) {
+                                             ArmyParser dialect, SessionSpec sessionSpec) {
         assert outerContext == null || outerContext instanceof MultiStmtContext;
 
-        return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
+        return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, sessionSpec);
     }
 
     static AssignmentInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt,
@@ -68,12 +68,12 @@ final class AssignmentInsertContext extends InsertContext
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
      *
-     * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser, Visible)
-     * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
+     * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser, SessionSpec)
+     * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser, SessionSpec)
      */
     private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._AssignmentInsert domainStmt,
-                                    ArmyParser dialect, Visible visible) {
-        super(outerContext, domainStmt, dialect, visible);
+                                    ArmyParser dialect, SessionSpec sessionSpec) {
+        super(outerContext, domainStmt, dialect, sessionSpec);
 
         if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
             this.pairList = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().assignmentPairList();

@@ -27,6 +27,7 @@ import io.army.dialect.*;
 import io.army.env.EscapeMode;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.SessionSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -473,12 +474,12 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected _PrimaryContext handleDialectDml(final @Nullable _SqlContext outerContext, final DmlStatement statement
-            , final Visible visible) {
+    protected _PrimaryContext handleDialectDml(final @Nullable _SqlContext outerContext, final DmlStatement statement,
+                                               final SessionSpec sessionSpec) {
         final _PrimaryContext context;
         if (statement instanceof MySQLLoadData) {
             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
-            context = this.handleLoadData(outerContext, (_MySQLLoadData) statement, visible);
+            context = this.handleLoadData(outerContext, (_MySQLLoadData) statement, sessionSpec);
         } else {
             throw _Exceptions.unknownStatement(statement, this.dialect);
         }
@@ -486,9 +487,9 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected _PrimaryContext handleDialectDql(final @Nullable _SqlContext outerContext, final DqlStatement statement
-            , final Visible visible) {
-        return super.handleDialectDql(outerContext, statement, visible);
+    protected _PrimaryContext handleDialectDql(final @Nullable _SqlContext outerContext, final DqlStatement statement,
+                                               final SessionSpec sessionSpec) {
+        return super.handleDialectDql(outerContext, statement, sessionSpec);
     }
 
     /*-----------------------below private method-----------------------*/
@@ -992,26 +993,26 @@ final class MySQLDialectParser extends MySQLParser {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
     private _OtherDmlContext handleLoadData(@Nullable final _SqlContext outerContext, final _MySQLLoadData loadData,
-                                            final Visible visible) {
+                                            final SessionSpec sessionSpec) {
         final _OtherDmlContext context;
         if (loadData instanceof _MySQLLoadData._ChildLoadData) {
             final _MySQLLoadData parentLoad;
             parentLoad = ((_MySQLLoadData._ChildLoadData) loadData).parentLoadData();
 
             final _OtherDmlContext parentContext;
-            parentContext = this.createOtherDmlContext(outerContext, parentLoad.table()::isThisField, visible);
+            parentContext = this.createOtherDmlContext(outerContext, parentLoad.table()::isThisField, sessionSpec);
             this.parseLoadData(parentLoad, parentContext);
 
             context = this.createOtherDmlContext(outerContext, loadData.table()::isThisField, parentContext);
         } else {
-            context = this.createOtherDmlContext(outerContext, loadData.table()::isThisField, visible);
+            context = this.createOtherDmlContext(outerContext, loadData.table()::isThisField, sessionSpec);
         }
         this.parseLoadData(loadData, context);
         return context;
     }
 
     /**
-     * @see #handleLoadData(_SqlContext, _MySQLLoadData, Visible)
+     * @see #handleLoadData(_SqlContext, _MySQLLoadData, SessionSpec)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
     private void parseLoadData(final _MySQLLoadData loadData, final _OtherDmlContext context) {

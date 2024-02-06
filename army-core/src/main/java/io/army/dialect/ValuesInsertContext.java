@@ -24,6 +24,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.meta.*;
+import io.army.session.SessionSpec;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
 import io.army.struct.CodeEnum;
@@ -41,20 +42,20 @@ import java.util.function.ObjIntConsumer;
 final class ValuesInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
 
 
-    static ValuesInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._ValuesInsert stmt
-            , ArmyParser dialect, Visible visible) {
+    static ValuesInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._ValuesInsert stmt,
+                                         ArmyParser dialect, SessionSpec sessionSpec) {
         _DialectUtils.checkDefaultValueMap(stmt);
-        return new ValuesInsertContext((StatementContext) outerContext, stmt, dialect, visible);
+        return new ValuesInsertContext((StatementContext) outerContext, stmt, dialect, sessionSpec);
     }
 
-    static ValuesInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+    static ValuesInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert domainStmt,
+                                         ArmyParser dialect, SessionSpec sessionSpec) {
 
-        return new ValuesInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
+        return new ValuesInsertContext((StatementContext) outerContext, domainStmt, dialect, sessionSpec);
     }
 
-    static ValuesInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert insert
-            , ValuesInsertContext parentContext) {
+    static ValuesInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert insert,
+                                        ValuesInsertContext parentContext) {
         return new ValuesInsertContext((StatementContext) outerContext, insert, parentContext);
     }
 
@@ -77,9 +78,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      * @see #forSingle(_SqlContext, _Insert._ValuesInsert, ArmyParser, Visible)
      * @see #forParent(_SqlContext, _Insert._ChildValuesInsert, ArmyParser, Visible)
      */
-    private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ValuesInsert domainStmt
-            , ArmyParser parser, Visible visible) {
-        super(outerContext, domainStmt, parser, visible);
+    private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ValuesInsert domainStmt,
+                                ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, domainStmt, parser, sessionSpec);
 
         if (domainStmt instanceof _Insert._ChildValuesInsert) {
             this.rowList = ((_Insert._ChildValuesInsert) domainStmt).parentStmt().rowPairList();

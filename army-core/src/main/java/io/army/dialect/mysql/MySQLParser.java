@@ -344,7 +344,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see #update(UpdateStatement, boolean, Visible)
+     * @see #update(UpdateStatement, boolean, io.army.session.SessionSpec)
      */
     @Override
     protected final void parseDomainChildUpdate(final _SingleUpdate update, final _UpdateContext ctx) {

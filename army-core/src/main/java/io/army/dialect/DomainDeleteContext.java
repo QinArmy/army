@@ -16,16 +16,16 @@
 
 package io.army.dialect;
 
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DomainDelete;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 
 final class DomainDeleteContext extends DomainDmlStmtContext implements _SingleDeleteContext {
 
     static DomainDeleteContext forSingle(@Nullable _SqlContext outerContext, _DomainDelete stmt, ArmyParser parser,
-                                         Visible visible) {
-        return new DomainDeleteContext((StatementContext) outerContext, stmt, parser, visible);
+                                         SessionSpec sessionSpec) {
+        return new DomainDeleteContext((StatementContext) outerContext, stmt, parser, sessionSpec);
     }
 
     static DomainDeleteContext forChild(_DomainDelete stmt, DomainDeleteContext parentContext) {
@@ -35,9 +35,9 @@ final class DomainDeleteContext extends DomainDmlStmtContext implements _SingleD
 
     final DomainDeleteContext parentContext;
 
-    private DomainDeleteContext(@Nullable StatementContext outerContext, _DomainDelete stmt
-            , ArmyParser parser, Visible visible) {
-        super(outerContext, stmt, parser, visible);
+    private DomainDeleteContext(@Nullable StatementContext outerContext, _DomainDelete stmt,
+                                ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, stmt, parser, sessionSpec);
         this.parentContext = null;
     }
 

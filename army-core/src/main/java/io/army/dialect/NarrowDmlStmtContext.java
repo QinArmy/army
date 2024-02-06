@@ -17,10 +17,10 @@
 package io.army.dialect;
 
 import io.army.criteria.Selection;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DmlStatement;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.criteria.impl.inner._SelectItem;
+import io.army.session.SessionSpec;
 import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmt;
 import io.army.stmt.StmtType;
@@ -48,9 +48,9 @@ abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements
     private final List<? extends _SelectItem> returningList;
 
 
-    NarrowDmlStmtContext(@Nullable StatementContext parentOrOuterContext, _DmlStatement stmt
-            , ArmyParser parser, Visible visible) {
-        super(parentOrOuterContext, stmt, parser, visible);
+    NarrowDmlStmtContext(@Nullable StatementContext parentOrOuterContext, _DmlStatement stmt,
+                         ArmyParser parser, SessionSpec sessionSpec) {
+        super(parentOrOuterContext, stmt, parser, sessionSpec);
 
         this.versionPredicate = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
 

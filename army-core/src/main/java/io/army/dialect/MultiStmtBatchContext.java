@@ -17,8 +17,8 @@
 package io.army.dialect;
 
 import io.army.criteria.Selection;
-import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.MultiStmtBatchStmt;
 import io.army.stmt.StmtType;
@@ -30,8 +30,8 @@ import java.util.List;
 
 final class MultiStmtBatchContext extends StatementContext implements MultiStmtContext {
 
-    static MultiStmtBatchContext create(ArmyParser parser, Visible visible) {
-        return new MultiStmtBatchContext(parser, visible);
+    static MultiStmtBatchContext create(ArmyParser parser, SessionSpec sessionSpec) {
+        return new MultiStmtBatchContext(parser, sessionSpec);
     }
 
 
@@ -45,8 +45,8 @@ final class MultiStmtBatchContext extends StatementContext implements MultiStmtC
 
     private int batchNumber;
 
-    private MultiStmtBatchContext(ArmyParser parser, Visible visible) {
-        super(null, parser, visible);
+    private MultiStmtBatchContext(ArmyParser parser, SessionSpec sessionSpec) {
+        super(null, parser, sessionSpec);
     }
 
     @Override

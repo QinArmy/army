@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._Statement;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.Stmt;
 import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
@@ -45,8 +46,8 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
 
 
     MultiTableQueryContext(@Nullable StatementContext outerContext, Query query, TableContext tableContext,
-                           ArmyParser parser, Visible visible) {
-        super(outerContext, (_Statement) query, parser, visible);
+                           ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, (_Statement) query, parser, sessionSpec);
 
         this.selectItemList = ((_Query) query).selectItemList();
         if (query instanceof SubQuery) {

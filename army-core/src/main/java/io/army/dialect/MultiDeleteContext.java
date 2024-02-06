@@ -16,37 +16,36 @@
 
 package io.army.dialect;
 
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.meta.ChildTableMeta;
+import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 
 final class MultiDeleteContext extends MultiTableDmlContext implements _MultiDeleteContext {
 
-    static MultiDeleteContext create(@Nullable _SqlContext outerContext, _MultiDelete stmt, ArmyParser dialect
-            , Visible visible) {
+    static MultiDeleteContext create(@Nullable _SqlContext outerContext, _MultiDelete stmt, ArmyParser dialect,
+                                     SessionSpec sessionSpec) {
         final TableContext tableContext;
-        tableContext = TableContext.forDelete(stmt, dialect, visible);
+        tableContext = TableContext.forDelete(stmt, dialect, sessionSpec.visible());
 
-        return new MultiDeleteContext((StatementContext) outerContext, stmt, tableContext, dialect, visible);
+        return new MultiDeleteContext((StatementContext) outerContext, stmt, tableContext, dialect, sessionSpec);
     }
 
-    static MultiDeleteContext forChild(@Nullable _SqlContext outerContext, _SingleDelete stmt, ArmyParser dialect
-            , Visible visible) {
+    static MultiDeleteContext forChild(@Nullable _SqlContext outerContext, _SingleDelete stmt, ArmyParser dialect,
+                                       SessionSpec sessionSpec) {
         final TableContext tableContext;
         tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
-        return new MultiDeleteContext((StatementContext) outerContext, stmt, tableContext, dialect, visible);
+        return new MultiDeleteContext((StatementContext) outerContext, stmt, tableContext, dialect, sessionSpec);
     }
 
 
-
-    private MultiDeleteContext(@Nullable StatementContext outerContext, _Delete stmt, TableContext tableContext
-            , ArmyParser dialect, Visible visible) {
-        super(outerContext,stmt, tableContext, dialect, visible);
+    private MultiDeleteContext(@Nullable StatementContext outerContext, _Delete stmt, TableContext tableContext,
+                               ArmyParser dialect, SessionSpec sessionSpec) {
+        super(outerContext, stmt, tableContext, dialect, sessionSpec);
     }
 
 

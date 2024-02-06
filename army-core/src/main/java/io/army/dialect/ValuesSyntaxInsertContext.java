@@ -17,9 +17,9 @@
 package io.army.dialect;
 
 import io.army.criteria.NullMode;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Insert;
 import io.army.meta.PrimaryFieldMeta;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 
@@ -30,8 +30,8 @@ abstract class ValuesSyntaxInsertContext extends InsertContext implements _Value
 
 
     ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, final _Insert._ValuesSyntaxInsert stmt,
-                              ArmyParser parser, Visible visible) {
-        super(outerContext, stmt, parser, visible);
+                              ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, stmt, parser, sessionSpec);
 
         final _Insert._ValuesSyntaxInsert targetStmt;
         if (stmt instanceof _Insert._ChildInsert) {
@@ -44,8 +44,8 @@ abstract class ValuesSyntaxInsertContext extends InsertContext implements _Value
     }
 
 
-    ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, _Insert._ChildInsert stmt
-            , ValuesSyntaxInsertContext parentContext) {
+    ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, _Insert._ChildInsert stmt,
+                              ValuesSyntaxInsertContext parentContext) {
         super(outerContext, stmt, parentContext);
         this.nullMode = ((_Insert._ValuesSyntaxInsert) stmt).nullHandle();
         assert this.nullMode == parentContext.nullMode;

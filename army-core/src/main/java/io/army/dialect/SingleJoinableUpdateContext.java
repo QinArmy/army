@@ -17,12 +17,12 @@
 package io.army.dialect;
 
 import io.army.criteria.TableField;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._JoinableUpdate;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.ChildTableMeta;
+import io.army.session.SessionSpec;
 
 import javax.annotation.Nullable;
 
@@ -30,17 +30,17 @@ final class SingleJoinableUpdateContext extends SingleJoinableDmlContext impleme
 
 
     static SingleJoinableUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt,
-                                              ArmyParser parser, Visible visible) {
+                                              ArmyParser parser, SessionSpec sessionSpec) {
         final TableContext tableContext;
         if (stmt instanceof _JoinableUpdate) {
-            tableContext = TableContext.forUpdate((_JoinableUpdate) stmt, parser, visible);
+            tableContext = TableContext.forUpdate((_JoinableUpdate) stmt, parser, sessionSpec.visible());
         } else if (stmt instanceof _DomainUpdate && stmt.table() instanceof ChildTableMeta) {
             tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), parser);
         } else {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        return new SingleJoinableUpdateContext((StatementContext) outerContext, stmt, tableContext, parser, visible);
+        return new SingleJoinableUpdateContext((StatementContext) outerContext, stmt, tableContext, parser, sessionSpec);
     }
 
     static SingleJoinableUpdateContext forCte(SingleJoinableUpdateContext outerContext, _SingleUpdate stmt) {
@@ -54,27 +54,26 @@ final class SingleJoinableUpdateContext extends SingleJoinableDmlContext impleme
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        return new SingleJoinableUpdateContext(outerContext, stmt, tableContext, outerContext.parser, outerContext.visible);
+        return new SingleJoinableUpdateContext(outerContext, stmt, tableContext, outerContext.parser, outerContext.sessionSpec);
     }
 
 
-    static SingleJoinableUpdateContext forParent(_SingleUpdate._ChildUpdate stmt, ArmyParser parser
-            , Visible visible) {
+    static SingleJoinableUpdateContext forParent(_SingleUpdate._ChildUpdate stmt, ArmyParser parser, SessionSpec sessionSpec) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
 
-    static SingleJoinableUpdateContext forChild(_SingleUpdate._ChildUpdate stmt
-            , SingleJoinableUpdateContext parentContext) {
+    static SingleJoinableUpdateContext forChild(_SingleUpdate._ChildUpdate stmt,
+                                                SingleJoinableUpdateContext parentContext) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
 
     private SingleJoinableUpdateContext(@Nullable StatementContext outerContext, _SingleDml stmt,
-                                        TableContext tableContext, ArmyParser parser, Visible visible) {
-        super(outerContext, stmt, tableContext, parser, visible);
+                                        TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, stmt, tableContext, parser, sessionSpec);
     }
 
     private SingleJoinableUpdateContext(_SingleUpdate stmt, SingleJoinableUpdateContext parentOrOuterContext,

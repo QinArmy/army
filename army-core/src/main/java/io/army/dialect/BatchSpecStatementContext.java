@@ -19,9 +19,9 @@ package io.army.dialect;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Statement;
+import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
@@ -52,8 +52,8 @@ abstract class BatchSpecStatementContext extends StatementContext implements Bat
 
 
     BatchSpecStatementContext(@Nullable StatementContext parentOrOuterContext, _Statement stmt, ArmyParser parser,
-                              Visible visible) {
-        super(parentOrOuterContext, parser, visible);
+                              SessionSpec sessionSpec) {
+        super(parentOrOuterContext, parser, sessionSpec);
 
         if (stmt instanceof _BatchStatement) {
             this.paramList = ((_BatchStatement) stmt).paramList();

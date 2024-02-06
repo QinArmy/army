@@ -16,8 +16,8 @@
 
 package io.army.dialect;
 
-import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
@@ -27,8 +27,8 @@ import javax.annotation.Nullable;
 
 final class ParenSubRowSetContext extends StatementContext implements _ParenRowSetContext {
 
-    static ParenSubRowSetContext forSimple(@Nullable _SqlContext outerContext, ArmyParser parser, Visible visible) {
-        return new ParenSubRowSetContext((StatementContext) outerContext, parser, visible);
+    static ParenSubRowSetContext forSimple(@Nullable _SqlContext outerContext, ArmyParser parser, SessionSpec sessionSpec) {
+        return new ParenSubRowSetContext((StatementContext) outerContext, parser, sessionSpec);
     }
 
 
@@ -40,8 +40,8 @@ final class ParenSubRowSetContext extends StatementContext implements _ParenRowS
     private final StatementContext outerContext;
 
 
-    ParenSubRowSetContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {
-        super(outerContext, parser, visible);
+    ParenSubRowSetContext(@Nullable StatementContext outerContext, ArmyParser parser, SessionSpec sessionSpec) {
+        super(outerContext, parser, sessionSpec);
         this.outerContext = outerContext;
     }
 

@@ -16,16 +16,16 @@
 
 package io.army.dialect;
 
-import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.StmtType;
 
 final class LiteralMultiStmtContext extends StatementContext {
 
 
-    LiteralMultiStmtContext(ArmyParser parser, Visible visible) {
-        super(null, parser, visible);
+    private LiteralMultiStmtContext(ArmyParser parser, SessionSpec sessionSpec) {
+        super(null, parser, sessionSpec);
     }
 
 

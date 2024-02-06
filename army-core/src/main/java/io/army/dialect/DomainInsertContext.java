@@ -23,11 +23,11 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.NullMode;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
+import io.army.session.SessionSpec;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
 import io.army.struct.CodeEnum;
@@ -46,21 +46,21 @@ import java.util.function.ObjIntConsumer;
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
 
 
-    static DomainInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._DomainInsert insert
-            , ArmyParser dialect, Visible visible) {
+    static DomainInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._DomainInsert insert,
+                                         ArmyParser dialect, SessionSpec sessionSpec) {
         assert !(insert instanceof _Insert._ChildDomainInsert);
-        return new DomainInsertContext((StatementContext) outerContext, insert, dialect, visible);
+        return new DomainInsertContext((StatementContext) outerContext, insert, dialect, sessionSpec);
     }
 
 
-    static DomainInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+    static DomainInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert domainStmt,
+                                         ArmyParser dialect, SessionSpec sessionSpec) {
 
-        return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
+        return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, sessionSpec);
     }
 
-    static DomainInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert insert
-            , DomainInsertContext parentContext) {
+    static DomainInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert insert,
+                                        DomainInsertContext parentContext) {
 
         return new DomainInsertContext((StatementContext) outerContext, insert, parentContext);
     }
@@ -76,8 +76,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
      * create for {@link  SingleTableMeta}
      */
     private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._DomainInsert domainStmt,
-                                ArmyParser dialect, Visible visible) {
-        super(outerContext, domainStmt, dialect, visible);
+                                ArmyParser dialect, SessionSpec sessionSpec) {
+        super(outerContext, domainStmt, dialect, sessionSpec);
 
         this.domainList = domainStmt.domainList();
         this.wrapper = new DomainWrapper(this, domainStmt);

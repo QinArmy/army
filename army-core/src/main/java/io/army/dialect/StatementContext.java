@@ -20,6 +20,8 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
+import io.army.session.Option;
+import io.army.session.Session;
 import io.army.session.SessionSpec;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
@@ -28,10 +30,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
 
@@ -47,29 +46,36 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     protected final ArmyParser parser;
 
+    protected final SessionSpec sessionSpec;
+
     protected final Visible visible;
 
     protected final StringBuilder sqlBuilder;
 
     private final ParamAccepter paramAccepter;
 
-    protected StatementContext(ArmyParser parser, Visible visible) {
-        this(null, parser, visible);
+
+    private SessionSpec sessionWrapper;
+
+    protected StatementContext(ArmyParser parser, SessionSpec sessionSpec) {
+        this(null, parser, sessionSpec);
     }
 
 
     protected StatementContext(StatementContext outerContext) {
-        this(outerContext, outerContext.parser, outerContext.visible);
+        this(outerContext, outerContext.parser, outerContext.sessionSpec);
     }
 
-    protected StatementContext(@Nullable StatementContext parentOrOuterContext, ArmyParser parser, Visible visible) {
+    protected StatementContext(@Nullable StatementContext parentOrOuterContext, ArmyParser parser, SessionSpec sessionSpec) {
         if (parentOrOuterContext == null) {
             this.parser = parser;
-            this.visible = visible;
+            this.sessionSpec = sessionSpec;
+            this.visible = sessionSpec.visible();
             this.sqlBuilder = new StringBuilder(128);
         } else {
             this.parser = parentOrOuterContext.parser;
             this.visible = parentOrOuterContext.visible;
+            this.sessionSpec = parentOrOuterContext.sessionSpec;
             this.sqlBuilder = parentOrOuterContext.sqlBuilder;
         }
 
@@ -301,9 +307,16 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     @Override
     public final SessionSpec sessionSpec() {
-        // TODO
-        throw new UnsupportedOperationException();
+        SessionSpec sessionSpec = this.sessionSpec;
+        if (sessionSpec instanceof Session) {
+            sessionSpec = this.sessionWrapper;
+            if (sessionSpec == null) {
+                this.sessionWrapper = sessionSpec = new SessionWrapper(this.sessionSpec);
+            }
+        }
+        return sessionSpec;
     }
+
 
     @Override
     public final String sql() {
@@ -438,7 +451,7 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
         }
 
 
-    }//ParamConsumer
+    } // ParamConsumer
 
 
     private static final class ParamAccepterWithOuter extends ParamAccepter {
@@ -451,7 +464,39 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
             this.outerAccepter = outerAccepter;
         }
 
-    }//ParamConsumerWithOuter
+    } // ParamConsumerWithOuter
+
+
+    private static final class SessionWrapper implements SessionSpec {
+
+        private final SessionSpec sessionSpec;
+
+        private SessionWrapper(SessionSpec sessionSpec) {
+            this.sessionSpec = sessionSpec;
+        }
+
+        @Nullable
+        @Override
+        public <T> T valueOf(Option<T> option) {
+            return this.sessionSpec.valueOf(option);
+        }
+
+        @Override
+        public Set<Option<?>> optionSet() {
+            return this.sessionSpec.optionSet();
+        }
+
+        @Override
+        public String name() {
+            return this.sessionSpec.name();
+        }
+
+        @Override
+        public Visible visible() {
+            return this.sessionSpec.visible();
+        }
+
+    } // SessionWrapper
 
 
 }

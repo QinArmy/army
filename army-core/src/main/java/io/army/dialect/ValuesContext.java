@@ -19,10 +19,10 @@ package io.army.dialect;
 import io.army.criteria.Selection;
 import io.army.criteria.Values;
 import io.army.criteria.ValuesQuery;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._ValuesQuery;
 import io.army.meta.FieldMeta;
+import io.army.session.SessionSpec;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
@@ -33,15 +33,16 @@ import java.util.List;
 
 final class ValuesContext extends StatementContext implements _ValuesContext {
 
-    static ValuesContext create(@Nullable _SqlContext outerContext, ValuesQuery stmt, ArmyParser dialect, Visible visible) {
-        return new ValuesContext((StatementContext) outerContext, stmt, dialect, visible);
+    static ValuesContext create(@Nullable _SqlContext outerContext, ValuesQuery stmt, ArmyParser dialect, SessionSpec sessionSpec) {
+        return new ValuesContext((StatementContext) outerContext, stmt, dialect, sessionSpec);
     }
 
 
     private final List<_Selection> selectionList;
 
-    private ValuesContext(@Nullable StatementContext outerContext, ValuesQuery stmt, ArmyParser dialect, Visible visible) {
-        super(outerContext, dialect, visible);
+    private ValuesContext(@Nullable StatementContext outerContext, ValuesQuery stmt, ArmyParser dialect,
+                          SessionSpec sessionSpec) {
+        super(outerContext, dialect, sessionSpec);
         if (outerContext == null && stmt instanceof Values) {
             this.selectionList = ((_ValuesQuery) stmt).selectItemList();
         } else {
