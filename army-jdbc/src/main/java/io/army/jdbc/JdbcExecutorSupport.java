@@ -963,6 +963,12 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return 0L;
         }
 
+        @Override
+        public final boolean isStatesOfSecondDmlQuery() {
+            // non
+            return false;
+        }
+
 
     } // JdbcUpdateStates
 
@@ -1013,10 +1019,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final boolean moreFetch;
 
+        private final boolean secondDmlQuery;
+
+
         SingleQueryStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
-                          long rowCount, boolean moreFetch, long affectedRows) {
+                          long rowCount, boolean moreFetch, long affectedRows, boolean secondDmlQuery) {
             super(serverMeta, resultNo, info, warning, rowCount, affectedRows);
             this.moreFetch = moreFetch;
+            this.secondDmlQuery = secondDmlQuery;
         }
 
         @Override
@@ -1041,6 +1051,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
 
+        @Override
+        public boolean isStatesOfSecondDmlQuery() {
+            return this.secondDmlQuery;
+        }
+
     } // SingleQueryStates
 
 
@@ -1049,11 +1064,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final boolean moreResult;
 
+        private final boolean secondDmlQuery;
+
         MultiResultQueryStates(ServerMeta serverMeta, int resultNo,
                                @Nullable TransactionInfo info, @Nullable Warning warning,
-                               long rowCount, boolean moreResult, long affectedRows) {
+                               long rowCount, boolean moreResult, long affectedRows, boolean secondDmlQuery) {
             super(serverMeta, resultNo, info, warning, rowCount, affectedRows);
             this.moreResult = moreResult;
+            this.secondDmlQuery = secondDmlQuery;
         }
 
 
@@ -1078,6 +1096,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return false;
         }
 
+        @Override
+        public boolean isStatesOfSecondDmlQuery() {
+            return this.secondDmlQuery;
+        }
+
 
     } // MultiResultQueryStates
 
@@ -1088,11 +1111,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final int batchNo;
 
-        BatchQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, int batchSize, int batchNo, @Nullable Warning warning,
-                         long rowCount, long affectedRows) {
+        private final boolean secondDmlQuery;
+
+        BatchQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, int batchSize, int batchNo,
+                         @Nullable Warning warning, long rowCount, long affectedRows, boolean secondDmlQuery) {
             super(serverMeta, 1, info, warning, rowCount, affectedRows);
             this.batchSize = batchSize;
             this.batchNo = batchNo;
+            this.secondDmlQuery = secondDmlQuery;
         }
 
 
@@ -1115,6 +1141,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         public boolean hasMoreFetch() {
             // always false for batch-query
             return false;
+        }
+
+        @Override
+        public boolean isStatesOfSecondDmlQuery() {
+            return this.secondDmlQuery;
         }
 
 

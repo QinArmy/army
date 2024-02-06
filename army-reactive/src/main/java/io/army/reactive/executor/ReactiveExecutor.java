@@ -17,14 +17,16 @@
 package io.army.reactive.executor;
 
 
-import io.army.meta.ChildTableMeta;
 import io.army.reactive.ReactiveCloseable;
 import io.army.reactive.ReactiveStmtOption;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
-import io.army.stmt.*;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.SingleSqlStmt;
+import io.army.stmt.TwoStmtQueryStmt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -78,14 +80,6 @@ public interface ReactiveExecutor extends StmtExecutor, ReactiveCloseable {
 
     <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList);
 
-    <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option,
-                               ChildTableMeta<?> childTable);
-
-    <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option,
-                                     ChildTableMeta<?> childTable);
-
-    <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option,
-                                     ChildTableMeta<?> childTable);
 
 
     /**

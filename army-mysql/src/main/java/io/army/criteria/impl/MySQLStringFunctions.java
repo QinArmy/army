@@ -664,7 +664,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when argument error
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
      */
-    public static SimpleExpression fieldInSet(Object str, Object strList) {
+    public static SimpleExpression findInSet(Object str, Object strList) {
         FuncExpUtils.assertTextExp(str);
         FuncExpUtils.assertTextExp(strList);
         return LiteralFunctions.twoArgFunc("FIND_IN_SET", str, strList, IntegerType.INSTANCE);

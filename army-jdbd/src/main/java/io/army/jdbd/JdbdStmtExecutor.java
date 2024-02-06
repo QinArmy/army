@@ -24,7 +24,10 @@ import io.army.criteria.Selection;
 import io.army.env.SqlLogMode;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.reactive.ReactiveStmtOption;
 import io.army.reactive.executor.ReactiveExecutor;
 import io.army.reactive.executor.ReactiveLocalExecutor;
@@ -367,7 +370,27 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
-            flux = executeQuery(stmt, mapRecordFunc(stmt, function), option);
+            final Consumer<ResultStates> armyConsumer;
+            armyConsumer = option.stateConsumer();
+            final Consumer<io.jdbd.result.ResultStates> jdbdConsumer;
+            if (armyConsumer == ResultStates.IGNORE_STATES) {
+                jdbdConsumer = io.jdbd.result.ResultStates.IGNORE_STATES;
+            } else {
+                jdbdConsumer = states -> {
+                    final ResultStates armyStates;
+                    armyStates = new JdbdResultStates(states, this.factory, true);
+                    try {
+                        armyConsumer.accept(armyStates);
+                    } catch (Exception e) {
+                        String m = String.format("%s %s throw error, %s", ResultStates.class.getName(),
+                                armyConsumer, e.getMessage());
+                        throw new ArmyException(m);
+                    }
+                };
+            }
+
+            flux = Flux.from(bindStatement(stmt, option).executeQuery(mapRecordFunc(stmt, function), jdbdConsumer))
+                    .onErrorMap(this::wrapExecuteIfNeed);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
         }
@@ -388,23 +411,6 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         return flux;
     }
 
-    @Override
-    public final <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option,
-                                            ChildTableMeta<?> childTable) {
-        return Flux.error(new UnsupportedOperationException());
-    }
-
-    @Override
-    public final <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor,
-                                                  ReactiveStmtOption option, ChildTableMeta<?> childTable) {
-        return Flux.error(new UnsupportedOperationException());
-    }
-
-    @Override
-    public final <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function,
-                                                  ReactiveStmtOption option, ChildTableMeta<?> childTable) {
-        return Flux.error(new UnsupportedOperationException());
-    }
 
 
 
@@ -1162,7 +1168,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
-        return new JdbdResultStates(jdbdStates, this.factory);
+        return new JdbdResultStates(jdbdStates, this.factory, false);
     }
 
 
@@ -2045,15 +2051,18 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private final JdbdStmtExecutorFactory executorFactory;
 
+        private final boolean secondDmlQuery;
+
         private Warning warning;
 
         private Set<Option<?>> optionSet;
 
 
         private JdbdResultStates(io.jdbd.result.ResultStates jdbdStates,
-                                 JdbdStmtExecutorFactory executorFactory) {
+                                 JdbdStmtExecutorFactory executorFactory, boolean secondDmlQuery) {
             this.jdbdStates = jdbdStates;
             this.executorFactory = executorFactory;
+            this.secondDmlQuery = secondDmlQuery;
         }
 
         @SuppressWarnings("unchecked")
@@ -2159,6 +2168,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         @Override
         public long rowCount() {
             return this.jdbdStates.rowCount();
+        }
+
+        @Override
+        public boolean isStatesOfSecondDmlQuery() {
+            return this.secondDmlQuery;
         }
 
 

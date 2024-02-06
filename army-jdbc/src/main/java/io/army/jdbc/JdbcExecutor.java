@@ -278,7 +278,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             if (resultClass == Long.class) {
                 r = (R) Long.valueOf(rows);
             } else if (returningId) {
-                r = (R) new SingleQueryStates(this.factory.serverMeta, 1, obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows, false, rows);
+                r = (R) new SingleQueryStates(this.factory.serverMeta, 1, obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows, false, rows, false);
             } else {
                 r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), firstId, mapToArmyWarning(statement.getWarnings()), rows, false);
             }
@@ -2250,8 +2250,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             this.info = executor.obtainTransaction();
             this.statement = statement;
             this.option = option;
-            this.stmtType = stmtType;
 
+            this.stmtType = stmtType;
             this.fetchSize = option.fetchSize();
             assert this.fetchSize > -1;
         }
@@ -2353,13 +2353,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 } else {
                     affectedRows = rowCount;
                 }
+                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
 
                 final ResultStates states;
                 states = new SingleQueryStates(this.executor.factory.serverMeta,
                         1,
                         this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, false, affectedRows
+                        rowCount, false, affectedRows, secondDmlQuery
                 );
                 consumer.accept(states);
             } catch (Exception e) {
@@ -2385,11 +2386,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     affectedRows = rowCount;
                 }
 
+                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
+
                 final ResultStates states;
                 states = new MultiResultQueryStates(this.executor.factory.serverMeta,
                         resultNo, this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, moreResult, affectedRows
+                        rowCount, moreResult, affectedRows, secondDmlQuery
                 );
                 consumer.accept(states);
             } catch (Exception e) {
@@ -2415,11 +2418,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     affectedRows = rowCount;
                 }
 
+                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
+
                 final ResultStates states;
                 states = new BatchQueryStates(this.executor.factory.serverMeta, this.info,
                         batchSize, batchNo,
                         mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, affectedRows
+                        rowCount, affectedRows, secondDmlQuery
                 );
                 consumer.accept(states);
             } catch (Exception e) {
@@ -2445,6 +2450,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     affectedRows = fetchRows;
                 }
 
+                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
+
                 final ResultStates states;
                 states = new SingleQueryStates(this.executor.factory.serverMeta,
                         1,
@@ -2452,7 +2459,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                         mapToArmyWarning(this.statement.getWarnings()),
                         fetchRows,
                         moreFetch,
-                        affectedRows);   // currently, update don't support fetch size
+                        affectedRows,
+                        secondDmlQuery);   // currently, update don't support fetch size
 
                 consumer.accept(states);
             } catch (Exception e) {
@@ -3377,7 +3385,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                         1,
                         this.info,
                         mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, false, 0L
+                        rowCount, false, 0L, false
                 );
                 consumer.accept(states);
             } catch (Exception e) {

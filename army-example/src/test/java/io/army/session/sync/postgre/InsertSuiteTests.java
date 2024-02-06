@@ -419,13 +419,46 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        final int[] flagHolder = new int[]{0};
+
+        final Consumer<ResultStates> statesConsumer;
+        statesConsumer = states -> {
+            flagHolder[0]++;
+
+            if (flagHolder[0] == 1) {
+                Assert.assertFalse(states.isStatesOfSecondDmlQuery());
+            } else {
+                Assert.assertTrue(states.isStatesOfSecondDmlQuery());
+            }
+
+            Assert.assertEquals(states.affectedRows(), provinceList.size());
+            if (states.isSupportInsertId()) {
+                Assert.assertEquals(states.lastInsertedId(), provinceList.get(0).getId());
+            }
+
+            Assert.assertEquals(states.batchSize(), 0);
+            Assert.assertEquals(states.batchNo(), 0);
+            Assert.assertEquals(states.resultNo(), 1);
+
+            Assert.assertFalse(states.hasMoreResult());
+            Assert.assertFalse(states.hasMoreFetch());
+            Assert.assertTrue(states.inTransaction());
+            Assert.assertTrue(states.hasColumn());
+
+            Assert.assertEquals(states.rowCount(), states.affectedRows());
+
+
+        };
+
         final List<ChinaProvince> resultList;
-        resultList = session.queryList(stmt, ChinaProvince.class, ArrayList::new);
+        resultList = session.queryList(stmt, ChinaProvince.class, ArrayList::new, SyncStmtOption.stateConsumer(statesConsumer));
 
         Assert.assertEquals(resultList.size(), provinceList.size());
+        Assert.assertEquals(flagHolder[0], 2);
         assertChinaRegionAfterNoConflictInsert(provinceList);
 
     }
+
 
     @Transactional
     @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
@@ -802,7 +835,8 @@ public class InsertSuiteTests extends SessionTestSupport {
     }
 
 
-    @Test(groups = Groups.VALUES_INSERT)
+    @Transactional
+    @Test
     public void returningValuesInsertChildWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -839,36 +873,29 @@ public class InsertSuiteTests extends SessionTestSupport {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
+        final boolean[] statesHolder = new boolean[]{false};
+        final Consumer<ResultStates> statesConsumer;
+        statesConsumer = states -> {
+            statesHolder[0] = true;
 
-        try {
-            session.startTransaction(TransactionOption.option(Isolation.READ_COMMITTED));
+            Assert.assertTrue(states.inTransaction());
+            Assert.assertEquals(states.batchSize(), 0);
+            Assert.assertEquals(states.batchNo(), 0);
+            Assert.assertTrue(states.hasColumn());
 
-            final List<ChinaProvince> resultList;
-            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+            Assert.assertEquals(states.affectedRows(), states.rowCount());
+            Assert.assertEquals(states.rowCount(), 2L);
+            Assert.assertFalse(states.hasMoreResult());
+            Assert.assertFalse(states.hasMoreFetch());
 
-            Assert.assertEquals(resultList.size(), 2);
+        };
 
 
-            for (ChinaProvince province : resultList) {
-                Assert.assertNotNull(province.getId());
+        final List<ChinaProvince> resultList;
+        resultList = session.queryList(stmt, ChinaProvince.class, ArrayList::new, SyncStmtOption.stateConsumer(statesConsumer));
 
-                // parent fields
-                Assert.assertNotNull(province.getCreateTime());
-                Assert.assertNotNull(province.getUpdateTime());
-
-                // child fields
-                Assert.assertNotNull(province.getGovernor());
-                Assert.assertNotNull(province.getProvincialCapital());
-            }
-
-            session.commitIfExists();
-
-            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
-        } catch (Exception e) {
-            LOG.error("insert child error", e);
-            session.rollbackIfExists();
-            throw e;
-        }
+        Assert.assertEquals(resultList.size(), 2L);
+        Assert.assertTrue(statesHolder[0]);
 
     }
 
