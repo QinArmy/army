@@ -43,7 +43,6 @@ public interface TransactionInfo extends TransactionSpec {
      * @return non-null
      */
     @Nonnull
-    @Override
     Isolation isolation();
 
     /**
@@ -79,7 +78,7 @@ public interface TransactionInfo extends TransactionSpec {
 
 
     static InfoBuilder builder(boolean inTransaction, Isolation isolation, boolean readOnly) {
-        return ArmyTransactionInfo.builder(inTransaction, isolation, readOnly);
+        return ArmyTransactionInfo.infoBuilder(inTransaction, isolation, readOnly);
     }
 
 

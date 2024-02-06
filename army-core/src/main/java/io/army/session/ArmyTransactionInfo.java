@@ -104,7 +104,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
     }
 
 
-    static InfoBuilder builder(boolean inTransaction, @Nullable Isolation isolation, boolean readOnly) {
+    static InfoBuilder infoBuilder(boolean inTransaction, @Nullable Isolation isolation, boolean readOnly) {
         if (isolation == null) {
             throw new NullPointerException("isolation must non-null");
         } else if (isolation == Isolation.PSEUDO) {

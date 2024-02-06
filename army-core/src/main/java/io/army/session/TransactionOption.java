@@ -50,7 +50,7 @@ public interface TransactionOption extends TransactionSpec {
     }
 
     static Builder builder() {
-        return ArmyTransactionOption.builder();
+        return ArmyTransactionOption.optionBuilder();
     }
 
     interface Builder {

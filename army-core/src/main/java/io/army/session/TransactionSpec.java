@@ -1,21 +1,15 @@
 package io.army.session;
 
-import javax.annotation.Nullable;
-
 /**
  * <p>Package interface
+ * <p>This interface is base interface of following :
+ * <ul>
+ *     <li>{@link TransactionOption}</li>
+ *     <li>{@link TransactionInfo}</li>
+ * </ul>
  */
 interface TransactionSpec extends OptionSpec {
 
-
-    /**
-     * <p>This transaction isolation.
-     *
-     * @see TransactionOption
-     * @see TransactionInfo
-     */
-    @Nullable
-    Isolation isolation();
 
 
     /**

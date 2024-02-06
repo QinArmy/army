@@ -48,7 +48,7 @@ final class ArmyTransactionOption implements TransactionOption {
     }
 
 
-    static Builder builder() {
+    static Builder optionBuilder() {
         return new TransactionOptionBuilder();
     }
 
