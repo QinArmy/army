@@ -2730,7 +2730,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
                 }
 
-                if (currentFetchRows == fetchSize) {
+                if (fetchSize > 0 && currentFetchRows == fetchSize) {
                     // emit ResultStates
                     emitMoreFetchStates(fetchSize, true);
                     currentFetchRows = 0;
@@ -2748,7 +2748,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 readRowCount++;
                 rowIndex++;
-                currentFetchRows++;
+
+                if (fetchSize > 0) {
+                    currentFetchRows++;
+                }
+
 
                 if (this.canceled) { // canceled must after readRowCount++; because of OptimisticLockException
                     break;

@@ -25,12 +25,12 @@ import javax.annotation.Nullable;
  * <p>The developer of {@link io.army.session.executor.StmtExecutor} can create the instance of this interface by following :
  * <ul>
  *     <li>{@link #notInTransaction(Isolation, boolean)}</li>
- *     <li>{@link #infoBuilder(boolean, Isolation, boolean)}</li>
+ *     <li>{@link #builder(boolean, Isolation, boolean)}</li>
  * </ul>
  *
  * @since 0.6.0
  */
-public interface TransactionInfo extends TransactionOption {
+public interface TransactionInfo extends TransactionSpec {
 
 
     /**
@@ -78,8 +78,7 @@ public interface TransactionInfo extends TransactionOption {
     <T> T valueOf(Option<T> option);
 
 
-
-    static InfoBuilder infoBuilder(boolean inTransaction, Isolation isolation, boolean readOnly) {
+    static InfoBuilder builder(boolean inTransaction, Isolation isolation, boolean readOnly) {
         return ArmyTransactionInfo.builder(inTransaction, isolation, readOnly);
     }
 
@@ -109,11 +108,6 @@ public interface TransactionInfo extends TransactionOption {
      */
     static TransactionInfo pseudoEnd(final TransactionInfo info, final int flags) {
         return ArmyTransactionInfo.pseudoEnd(info, flags);
-    }
-
-    @Deprecated
-    static <T> TransactionInfo replaceOption(TransactionInfo info, Option<T> option, T value) {
-        throw new UnsupportedOperationException();
     }
 
     /**

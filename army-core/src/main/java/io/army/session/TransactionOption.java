@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
  * @see TransactionInfo
  * @since 0.6.0
  */
-public interface TransactionOption extends OptionSpec {
+public interface TransactionOption extends TransactionSpec {
 
     /**
      * <p>This transaction isolation.
@@ -36,27 +36,6 @@ public interface TransactionOption extends OptionSpec {
     @Nullable
     Isolation isolation();
 
-
-    /**
-     * @return true : transaction is read-only.
-     */
-    boolean isReadOnly();
-
-    /**
-     * <p>
-     * override {@link Object#toString()}
-     * <p>
-     * <br/>
-     *
-     * @return transaction info, contain
-     * <ul>
-     *     <li>implementation class name</li>
-     *     <li>transaction info</li>
-     *     <li>{@link System#identityHashCode(Object)}</li>
-     * </ul>
-     */
-    @Override
-    String toString();
 
     static TransactionOption option() {
         return ArmyTransactionOption.option(null, false);

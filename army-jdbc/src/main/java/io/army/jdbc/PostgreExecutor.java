@@ -117,7 +117,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             readOnly = readBooleanFromMultiResult(statement);
             deferrable = readBooleanFromMultiResult(statement);
 
-            return TransactionInfo.infoBuilder(false, isolation, readOnly)
+            return TransactionInfo.builder(false, isolation, readOnly)
                     .option(DEFERRABLE, deferrable)
                     .build();
         } catch (Exception e) {
@@ -604,7 +604,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final TransactionInfo.InfoBuilder infoBuilder;
-            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder = TransactionInfo.builder(true, finalIsolation, readOnly);
             infoBuilder.option(option);
             if (deferrable != null) {
                 infoBuilder.option(DEFERRABLE, deferrable);
@@ -969,7 +969,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final TransactionInfo.InfoBuilder infoBuilder;
-            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder = TransactionInfo.builder(true, finalIsolation, readOnly);
             infoBuilder.option(xid, flags, XaStates.ACTIVE, option);
 
             if (deferrable != null) {

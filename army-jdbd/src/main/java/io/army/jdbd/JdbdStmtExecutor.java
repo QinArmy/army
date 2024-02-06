@@ -1039,7 +1039,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     @SuppressWarnings("unchecked")
     private TransactionInfo mapToArmyTransactionInfo(final io.jdbd.session.TransactionInfo info) {
         final TransactionInfo.InfoBuilder builder;
-        builder = TransactionInfo.infoBuilder(info.inTransaction(), mapToArmyIsolation(info.isolation()), info.isReadOnly());
+        builder = TransactionInfo.builder(info.inTransaction(), mapToArmyIsolation(info.isolation()), info.isReadOnly());
 
         Option<?> armyOption;
         for (io.jdbd.session.Option<?> jdbdOption : info.optionSet()) {

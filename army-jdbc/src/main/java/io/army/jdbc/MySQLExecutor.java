@@ -412,7 +412,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final TransactionInfo.InfoBuilder infoBuilder;
-            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder = TransactionInfo.builder(true, finalIsolation, readOnly);
             infoBuilder.option(option);
             if (consistentSnapshot != null) {
                 infoBuilder.option(WITH_CONSISTENT_SNAPSHOT, consistentSnapshot);
@@ -570,7 +570,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
             final TransactionInfo.InfoBuilder infoBuilder;
-            infoBuilder = TransactionInfo.infoBuilder(true, finalIsolation, readOnly);
+            infoBuilder = TransactionInfo.builder(true, finalIsolation, readOnly);
             infoBuilder.option(xid, flags, XaStates.ACTIVE, option);
 
             final TransactionInfo info;
