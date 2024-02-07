@@ -464,7 +464,7 @@ final class PostgreDialectParser extends PostgreParser {
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                         .append(context.safeTableAlias(table, alias));
                 if (block instanceof _PostgreTableBlock) {
-                    this.postgreTableSampleClause((_PostgreTableBlock) block, context);
+                    this.postgreTableSampleClause((_PostgreTableBlock) block, sqlBuilder, context);
                 }
             } else if (tabularItem instanceof DerivedTable) {
                 if (block instanceof _ModifierTabularBlock
@@ -558,10 +558,23 @@ final class PostgreDialectParser extends PostgreParser {
 
     /**
      * @see #postgreFromItemsClause(List, _MultiTableStmtContext, boolean)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">SELECT syntax</a>
      */
-    private void postgreTableSampleClause(final _PostgreTableBlock block, final _SqlContext context) {
-        //TODO
-        throw new UnsupportedOperationException();
+    private void postgreTableSampleClause(final _PostgreTableBlock block, final StringBuilder sqlBuilder, final _SqlContext context) {
+        _Expression expression;
+        expression = block.sampleMethod();
+        if (expression != null) {
+            sqlBuilder.append(" TABLESAMPLE");
+            expression.appendSql(sqlBuilder, context);
+        }
+        expression = block.seed();
+        if (expression != null) {
+            sqlBuilder.append(" REPEATABLE")
+                    .append(_Constant.LEFT_PAREN);
+            expression.appendSql(sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
     }
 
 
