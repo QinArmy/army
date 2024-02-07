@@ -36,34 +36,32 @@
             <artifactId>army-mysql</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.oceanbase</groupId>
-            <artifactId>oceanbase-client</artifactId>
-            <version>2.4.3</version>
-        </dependency>
-        <dependency>
             <groupId>io.qinarmy</groupId>
             <artifactId>army-postgre</artifactId>
         </dependency>
 
 
         <dependency>
-            <groupId>io.jdbd.mysql</groupId>
-            <artifactId>jdbd-mysql</artifactId>
-            <version>0.11.8-SNAPSHOT</version>
+            <groupId>io.projectreactor.netty</groupId>
+            <artifactId>reactor-netty-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-native-kqueue</artifactId>
-            <version>${netty.version}</version>
             <classifier>${netty.native.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-native-unix-common</artifactId>
-            <version>${netty.version}</version>
             <classifier>${netty.native.classifier}</classifier>
         </dependency>
 
+        <!-- JDBC driver start -->
+        <dependency>
+            <groupId>com.oceanbase</groupId>
+            <artifactId>oceanbase-client</artifactId>
+            <version>2.4.3</version>
+        </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -87,10 +85,26 @@
             <artifactId>h2</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+
+        <!-- JDBC driver end -->
+
+        <!-- JDBD driver start -->
+
+        <dependency>
+            <groupId>io.jdbd.mysql</groupId>
+            <artifactId>jdbd-mysql</artifactId>
+        </dependency>
+
         <!--        <dependency>-->
         <!--            <groupId>io.jdbd</groupId>-->
         <!--            <artifactId>jdbd-postgre</artifactId>-->
         <!--        </dependency>-->
+
+        <!-- JDBD driver end -->
 
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -156,10 +170,8 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-        </dependency>
+
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>

@@ -1028,7 +1028,7 @@ public class InsertSuiteTests extends SessionTestSupport {
     }
 
 
-    @Test
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void subDomainInsertChild(final SyncLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
         final List<ChinaProvince> provinceList;

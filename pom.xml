@@ -71,16 +71,23 @@
 
         <mssql-jdbc.version>8.2.2.jre13</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
-        <mysql.versioin>8.0.28</mysql.versioin>
-        <postgresql.version>42.6.0</postgresql.version>
+
         <!-- javax  -->
         <jsr305.version>3.0.2</jsr305.version>
         <army.version>${project.version}</army.version>
         <ali.druid.version>1.1.20</ali.druid.version>
         <r2dbc-postgresql.version>0.8.4.RELEASE</r2dbc-postgresql.version>
 
-        <netty.version>4.1.96.Final</netty.version>
+        <reactor.netty.version>1.1.15</reactor.netty.version>
+        <netty.version>4.1.106.Final</netty.version>
         <netty.native.classifier>osx-x86_64</netty.native.classifier>
+
+        <mysql.versioin>8.3.0</mysql.versioin>
+        <postgresql.version>42.6.0</postgresql.version>
+
+
+        <jdbd.version>0.12.7-SNAPSHOT</jdbd.version>
+        <jdbd.mysql.version>0.11.9-SNAPSHOT</jdbd.mysql.version>
     </properties>
 
     <dependencyManagement>
@@ -196,14 +203,46 @@
             <dependency>
                 <groupId>com.mysql</groupId>
                 <artifactId>mysql-connector-j</artifactId>
-                <version>8.1.0</version>
+                <version>${mysql.versioin}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.jdbd</groupId>
+                <artifactId>jdbd-spi</artifactId>
+                <version>${jdbd.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jdbd.mysql</groupId>
+                <artifactId>jdbd-mysql</artifactId>
+                <version>${jdbd.mysql.version}</version>
+            </dependency>
+
 
             <!--            <dependency>-->
             <!--                <groupId>io.jdbd</groupId>-->
             <!--                <artifactId>jdbd-postgre</artifactId>-->
             <!--                <version>${jdbd.version}</version>-->
             <!--            </dependency>-->
+
+            <dependency>
+                <groupId>io.projectreactor.netty</groupId>
+                <artifactId>reactor-netty-core</artifactId>
+                <version>${reactor.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-kqueue</artifactId>
+                <version>${netty.version}</version>
+                <classifier>${netty.native.classifier}</classifier>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <version>${netty.version}</version>
+                <classifier>${netty.native.classifier}</classifier>
+            </dependency>
+
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>

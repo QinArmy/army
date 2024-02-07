@@ -625,7 +625,9 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
                 mono = mono.onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairStmt)) {
                 mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
-            } else if (inTransaction()) {
+            } else if (!inTransaction()) {
+                mono = Mono.error(updateChildNoTransaction());
+            } else if (statement instanceof NarrowDmlStatement) {
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
 
@@ -640,9 +642,10 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
                             }
                         })
                 ).onErrorMap(this::handlePairStmtError);
-
             } else {
-                mono = Mono.error(updateChildNoTransaction());
+                final PairStmt pairStmt = (PairStmt) stmt;
+                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option, Option.EMPTY_FUNC)
+                        .then(this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.EMPTY_FUNC));
             }
         } catch (Throwable e) {
             mono = Mono.error(_ArmySession.wrapIfNeed(e));
