@@ -43,6 +43,20 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
         }
     }
 
+    public static void assertSubInsert(final SubStatement insert) {
+        if (insert instanceof _Insert._DomainInsert || insert instanceof _Insert._ValuesInsert) {
+            if (!(insert instanceof PostgreInserts.PostgreValueSyntaxInsertStatement)) {
+                throw nonArmyStatement(insert);
+            }
+        } else if (insert instanceof _Insert._QueryInsert) {
+            if (!(insert instanceof PostgreInserts.PostgreQueryInsertStatement)) {
+                throw nonArmyStatement(insert);
+            }
+        } else {
+            throw nonArmyStatement(insert);
+        }
+    }
+
     public static void assertUpdate(final UpdateStatement update) {
         if (update instanceof _ReturningDml) {
             if (!(update instanceof PostgreUpdates.PostgreUpdateWrapper)) {
@@ -54,6 +68,12 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
 
     }
 
+    public static void assertSubUpdate(final SubStatement update) {
+        if (!(update instanceof PostgreUpdates.PostgreSubUpdate)) {
+            throw nonArmyStatement(update);
+        }
+    }
+
     public static void assertDelete(final DeleteStatement stmt) {
         if (stmt instanceof _ReturningDml) {
             if (!(stmt instanceof PostgreDeletes.PostgreReturningDeleteWrapper)) {
@@ -63,6 +83,13 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
             throw nonArmyStatement(stmt);
         }
     }
+
+    public static void assertSubDelete(final SubStatement stmt) {
+        if (!(stmt instanceof PostgreDeletes.SubSimpleDelete)) {
+            throw nonArmyStatement(stmt);
+        }
+    }
+
 
 
     public static void assertRowSet(final RowSet rowSet) {

@@ -16,6 +16,7 @@
 
 package io.army.dialect;
 
+import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._DomainDelete;
 import io.army.criteria.impl.inner._JoinableDelete;
 import io.army.criteria.impl.inner._SingleDelete;
@@ -41,6 +42,19 @@ final class SingleJoinableDeleteContext extends SingleJoinableDmlContext impleme
         return new SingleJoinableDeleteContext((StatementContext) outerContext, stmt, tableContext, parser, sessionSpec);
     }
 
+    static SingleJoinableDeleteContext forCte(_SqlContext outerContext, _SingleDelete stmt) {
+        assert stmt instanceof SubStatement;
+        final StatementContext context = (StatementContext) outerContext;
+        final TableContext tableContext;
+        if (stmt instanceof _JoinableDelete) {
+            tableContext = TableContext.forDelete((_JoinableDelete) stmt, context.parser, context.visible);
+        } else {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return new SingleJoinableDeleteContext(context, stmt, tableContext, context.parser, context.sessionSpec);
+    }
+
 
     static SingleJoinableDeleteContext forParent(_SingleDelete._ChildDelete stmt, ArmyParser parser,
                                                  SessionSpec sessionSpec) {
@@ -63,12 +77,6 @@ final class SingleJoinableDeleteContext extends SingleJoinableDmlContext impleme
                                         TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
         super(outerContext, stmt, tableContext, parser, sessionSpec);
         this.parentContext = null;
-    }
-
-    private SingleJoinableDeleteContext(_SingleDelete stmt, SingleJoinableDeleteContext parentContext,
-                                        TableContext tableContext) {
-        super(stmt, parentContext, tableContext);
-        this.parentContext = parentContext;
     }
 
 

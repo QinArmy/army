@@ -866,7 +866,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }//BatchPrimarySimpleDelete
 
 
-    private static final class SubSimpleDelete<I extends Item> extends PostgreDeletes<I, I>
+    static final class SubSimpleDelete<I extends Item> extends PostgreDeletes<I, I>
             implements SubStatement, _ReturningDml {
 
         private final Function<SubStatement, I> function;

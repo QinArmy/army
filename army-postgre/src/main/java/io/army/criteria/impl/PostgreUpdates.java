@@ -830,7 +830,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     }//PostgreBatchUpdate
 
 
-    private static final class PostgreSubUpdate<I extends Item, T> extends PostgreUpdates<I, I, T>
+    static final class PostgreSubUpdate<I extends Item, T> extends PostgreUpdates<I, I, T>
             implements SubStatement, _ReturningDml {
 
         private final Function<SubStatement, I> function;

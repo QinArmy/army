@@ -967,11 +967,20 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected final _SingleUpdateContext createSingleUpdateContext(final @Nullable _SqlContext outerContext
-            , final _SingleUpdate stmt, final SessionSpec sessionSpec) {
+    protected final _SingleUpdateContext createSingleUpdateContext(final @Nullable _SqlContext outerContext,
+                                                                   final _SingleUpdate stmt, final SessionSpec sessionSpec) {
         return SingleUpdateContext.create(outerContext, stmt, this, sessionSpec);
     }
 
+
+    protected final _SingleUpdateContext createJoinableUpdateContextForCte(_SqlContext withContext, _SingleUpdate stmt) {
+        return SingleJoinableUpdateContext.forCte(withContext, stmt);
+    }
+
+
+    protected final _SingleDeleteContext createJoinableDeleteContextForCte(_SqlContext withContext, _SingleDelete stmt) {
+        return SingleJoinableDeleteContext.forCte(withContext, stmt);
+    }
     protected final _MultiUpdateContext createMultiUpdateContext(final @Nullable _SqlContext outerContext
             , final _SingleUpdate stmt, final SessionSpec sessionSpec) {
         return MultiUpdateContext.forChild(outerContext, stmt, this, sessionSpec);
@@ -995,60 +1004,9 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    /**
-     * @param insert possibly be below :
-     *               <ul>
-     *                  <li>{@link InsertStatement}</li>
-     *               </ul>
-     * @see #insert(InsertStatement, SessionSpec)
-     */
-    protected final _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final InsertStatement insert,
-                                                final SessionSpec sessionSpec) {
-        insert.prepared();
-        if (insert instanceof StandardInsert) {
-            _SQLConsultant.assertStandardInsert(insert);
-        } else {
-            this.assertInsert(insert);
-        }
-
-        //below validate insert statement
-        if (!(insert instanceof StandardInsert)) {
-            if (_DialectUtils.isIllegalConflict((_Insert) insert, sessionSpec.visible())) {
-                throw _Exceptions.conflictClauseAndVisibleNotMatch(this.dialect, (_Insert) insert, sessionSpec.visible());
-            } else if (insert instanceof _Insert._ChildInsert) {
-                final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
-                if (_DialectUtils.isIllegalChildPostInsert(childStmt)) {
-                    throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
-                }
-            }
-        }
-
-        return this.handleInsertStmt(outerContext, (_Insert) insert, sessionSpec);
-
-    }
-
-
     protected final _InsertContext handleInsertStmtFromWithClause(_SqlContext withContext, _Insert insert) {
         return handleInsertStmt(withContext, insert, ((StatementContext) withContext).sessionSpec);
     }
-
-    protected final _InsertContext handleInsertStmt(final @Nullable _SqlContext outerContext, final _Insert insert,
-                                                    final SessionSpec sessionSpec) {
-        final _InsertContext context;
-        if (insert instanceof _Insert._DomainInsert) {
-            context = handleDomainInsert(outerContext, (_Insert._DomainInsert) insert, sessionSpec);
-        } else if (insert instanceof _Insert._ValuesInsert) {
-            context = handleValueInsert(outerContext, (_Insert._ValuesInsert) insert, sessionSpec);
-        } else if (insert instanceof _Insert._AssignmentInsert) {
-            context = handleAssignmentInsert(outerContext, (_Insert._AssignmentInsert) insert, sessionSpec);
-        } else if (insert instanceof _Insert._QueryInsert) {
-            context = handleQueryInsert(outerContext, (_Insert._QueryInsert) insert, sessionSpec);
-        } else {
-            throw _Exceptions.unknownStatement(insert, this.dialect); // possibly sub statement
-        }
-        return context;
-    }
-
 
     protected final void handleRowSet(final RowSet rowSet, final _SqlContext original) {
         //3. parse RowSet
@@ -2163,8 +2121,8 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleInsert(_SqlContext, InsertStatement, SessionSpec)
      */
-    private _ValueSyntaxInsertContext handleDomainInsert(final @Nullable _SqlContext outerContext
-            , final _Insert._DomainInsert insert, final SessionSpec sessionSpec) {
+    private _ValueSyntaxInsertContext handleDomainInsert(final @Nullable _SqlContext outerContext,
+                                                         final _Insert._DomainInsert insert, final SessionSpec sessionSpec) {
         final boolean standardStmt = insert instanceof StandardInsert;
         final _ValueSyntaxInsertContext context;
         if (insert instanceof _Insert._ChildDomainInsert) {
@@ -2495,6 +2453,61 @@ abstract class ArmyParser implements DialectParser {
             stmtContext.endChildItem();
         }
         return stmtContext.batchStmtEnd();
+    }
+
+
+    /**
+     * @param insert possibly be below :
+     *               <ul>
+     *                  <li>{@link InsertStatement}</li>
+     *               </ul>
+     * @see #insert(InsertStatement, SessionSpec)
+     * @see #handleInsertStmtFromWithClause(_SqlContext, _Insert)
+     */
+    private _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final InsertStatement insert,
+                                        final SessionSpec sessionSpec) {
+        insert.prepared();
+        if (insert instanceof StandardInsert) {
+            _SQLConsultant.assertStandardInsert(insert);
+        } else {
+            this.assertInsert(insert);
+        }
+
+        //below validate insert statement
+        if (!(insert instanceof StandardInsert)) {
+            if (_DialectUtils.isIllegalConflict((_Insert) insert, sessionSpec.visible())) {
+                throw _Exceptions.conflictClauseAndVisibleNotMatch(this.dialect, (_Insert) insert, sessionSpec.visible());
+            } else if (insert instanceof _Insert._ChildInsert) {
+                final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
+                if (_DialectUtils.isIllegalChildPostInsert(childStmt)) {
+                    throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
+                }
+            }
+        }
+
+        return this.handleInsertStmt(outerContext, (_Insert) insert, sessionSpec);
+
+    }
+
+    /**
+     * @see #handleInsert(_SqlContext, InsertStatement, SessionSpec)
+     * @see #handleInsertStmtFromWithClause(_SqlContext, _Insert)
+     */
+    private _InsertContext handleInsertStmt(final @Nullable _SqlContext outerContext, final _Insert insert,
+                                            final SessionSpec sessionSpec) {
+        final _InsertContext context;
+        if (insert instanceof _Insert._DomainInsert) {
+            context = handleDomainInsert(outerContext, (_Insert._DomainInsert) insert, sessionSpec);
+        } else if (insert instanceof _Insert._ValuesInsert) {
+            context = handleValueInsert(outerContext, (_Insert._ValuesInsert) insert, sessionSpec);
+        } else if (insert instanceof _Insert._AssignmentInsert) {
+            context = handleAssignmentInsert(outerContext, (_Insert._AssignmentInsert) insert, sessionSpec);
+        } else if (insert instanceof _Insert._QueryInsert) {
+            context = handleQueryInsert(outerContext, (_Insert._QueryInsert) insert, sessionSpec);
+        } else {
+            throw _Exceptions.unknownStatement(insert, this.dialect); // possibly sub statement
+        }
+        return context;
     }
 
 

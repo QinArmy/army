@@ -36,8 +36,7 @@ import java.util.List;
 
 
 /**
- * <p>
- * This class is the implementation of {@link DialectParser} for  PostgreSQL dialect criteria api.
+ * <p>This class is the implementation of {@link DialectParser} for  PostgreSQL dialect criteria api.
  * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
@@ -117,6 +116,7 @@ final class PostgreDialectParser extends PostgreParser {
         _PostgreCte cte;
         SubStatement subStatement;
         List<String> columnAliasList;
+
         for (int i = 0, columnSize; i < cteSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
@@ -141,13 +141,22 @@ final class PostgreDialectParser extends PostgreParser {
             sqlBuilder.append(_Constant.SPACE_AS)
                     .append(_Constant.SPACE_LEFT_PAREN);
             subStatement = cte.subStatement();
+            subStatement.prepared();
             if (subStatement instanceof SubQuery) {
                 this.handleQuery((SubQuery) subStatement, context);
             } else if (subStatement instanceof _Insert) {
+                _PostgreConsultant.assertSubInsert(subStatement);
                 this.handleInsertStmtFromWithClause(context, (_Insert) subStatement);
+            } else if (subStatement instanceof _Update) {
+                _PostgreConsultant.assertSubUpdate(subStatement);
+                parseSingleUpdate((_SingleUpdate) subStatement, createJoinableUpdateContextForCte(context, (_SingleUpdate) subStatement));
+            } else if (subStatement instanceof _Delete) {
+                _PostgreConsultant.assertSubDelete(subStatement);
+                parseSingleDelete((_SingleDelete) subStatement, createJoinableDeleteContextForCte(context, (_SingleDelete) subStatement));
+            } else if (subStatement instanceof SubValues) {
+                handleValuesQuery((ValuesQuery) subStatement, context);
             } else {
-                //TODO
-                throw new UnsupportedOperationException();
+                throw _Exceptions.unexpectedStatement(subStatement);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -171,11 +180,14 @@ final class PostgreDialectParser extends PostgreParser {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">SELECT Statement</a>
+     */
     @Override
     protected void parseSimpleQuery(final _Query query, final _SimpleQueryContext context) {
         final _PostgreQuery stmt = (_PostgreQuery) query;
         // 1. WITH clause
-        this.parseWithClause(stmt, context);
+        this.postgreWithClause(stmt, context);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -237,17 +249,36 @@ final class PostgreDialectParser extends PostgreParser {
     }
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-values.html">VALUES Statement</a>
+     */
     @Override
-    protected void parseSimpleValues(_ValuesQuery values, _ValuesContext context) {
-        super.parseSimpleValues(values, context);
+    protected void parseSimpleValues(final _ValuesQuery values, final _ValuesContext context) {
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        //1. VALUES keyword
+        sqlBuilder.append(_Constant.VALUES);
+        //2. row_constructor_list
+        valuesClauseOfValues(context, null, values.rowList());
+        //3. ORDER BY clause
+        orderByClause(values.orderByList(), context);
+
+        //4. LIMIT clause
+        postgreLimitClause((_PostgreValues) values, context);
+
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">UPDATE Statement</a>
+     */
     @Override
     protected void parseSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
         final _PostgreUpdate stmt = (_PostgreUpdate) update;
 
         // 1. WITH clause
-        this.parseWithClause(stmt, context);
+        this.postgreWithClause(stmt, context);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -305,12 +336,15 @@ final class PostgreDialectParser extends PostgreParser {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-delete.html">DELETE Statement</a>
+     */
     @Override
     protected void parseSingleDelete(final _SingleDelete delete, final _SingleDeleteContext context) {
         final _PostgreDelete stmt = (_PostgreDelete) delete;
 
         // 1. WITH clause
-        this.parseWithClause(stmt, context);
+        this.postgreWithClause(stmt, context);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -526,7 +560,8 @@ final class PostgreDialectParser extends PostgreParser {
      * @see #postgreFromItemsClause(List, _MultiTableStmtContext, boolean)
      */
     private void postgreTableSampleClause(final _PostgreTableBlock block, final _SqlContext context) {
-
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
 
@@ -542,7 +577,7 @@ final class PostgreDialectParser extends PostgreParser {
             ((_Insert._OneStmtChildInsert) stmt).validParentDomain();
         }
 
-        this.parseWithClause(stmt, context);
+        postgreWithClause(stmt, context);
 
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
@@ -833,6 +868,7 @@ final class PostgreDialectParser extends PostgreParser {
     /**
      * @see #parseClauseAfterRightParen(_ParensRowSet, _ParenRowSetContext)
      * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
+     * @see #parseSimpleValues(_ValuesQuery, _ValuesContext)
      * @see #parseSimpleValues(_ValuesQuery, _ValuesContext)
      */
     private static void postgreLimitClause(final _Statement._SQL2008LimitClauseSpec stmt, final _SqlContext context) {

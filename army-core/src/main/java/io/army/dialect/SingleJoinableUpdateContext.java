@@ -16,6 +16,7 @@
 
 package io.army.dialect;
 
+import io.army.criteria.SubStatement;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._JoinableUpdate;
@@ -43,18 +44,18 @@ final class SingleJoinableUpdateContext extends SingleJoinableDmlContext impleme
         return new SingleJoinableUpdateContext((StatementContext) outerContext, stmt, tableContext, parser, sessionSpec);
     }
 
-    static SingleJoinableUpdateContext forCte(SingleJoinableUpdateContext outerContext, _SingleUpdate stmt) {
+    static SingleJoinableUpdateContext forCte(_SqlContext outerContext, _SingleUpdate stmt) {
+        assert stmt instanceof SubStatement;
+        final StatementContext context = (StatementContext) outerContext;
 
         final TableContext tableContext;
         if (stmt instanceof _JoinableUpdate) {
-            tableContext = TableContext.forUpdate((_JoinableUpdate) stmt, outerContext.parser, outerContext.visible);
-        } else if (stmt instanceof _DomainUpdate && stmt.table() instanceof ChildTableMeta) {
-            tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), outerContext.parser);
+            tableContext = TableContext.forUpdate((_JoinableUpdate) stmt, context.parser, context.visible);
         } else {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        return new SingleJoinableUpdateContext(outerContext, stmt, tableContext, outerContext.parser, outerContext.sessionSpec);
+        return new SingleJoinableUpdateContext(context, stmt, tableContext, context.parser, context.sessionSpec);
     }
 
 
@@ -74,11 +75,6 @@ final class SingleJoinableUpdateContext extends SingleJoinableDmlContext impleme
     private SingleJoinableUpdateContext(@Nullable StatementContext outerContext, _SingleDml stmt,
                                         TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
         super(outerContext, stmt, tableContext, parser, sessionSpec);
-    }
-
-    private SingleJoinableUpdateContext(_SingleUpdate stmt, SingleJoinableUpdateContext parentOrOuterContext,
-                                        TableContext tableContext) {
-        super(stmt, parentOrOuterContext, tableContext);
     }
 
 
