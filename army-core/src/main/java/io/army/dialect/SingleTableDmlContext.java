@@ -20,7 +20,10 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.SqlField;
 import io.army.criteria.TableField;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Delete;
+import io.army.criteria.impl.inner._SingleDml;
+import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._Update;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
@@ -64,18 +67,22 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         super(outerContext, stmt, parser, sessionSpec);
 
         this.domainTable = stmt.table();
-        if (this.domainTable instanceof ChildTableMeta) {
-            this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
-        } else {
-            this.targetTable = this.domainTable;
-        }
         this.domainTableAlias = stmt.tableAlias();
-        if (this.domainTable instanceof ChildTableMeta
-                && (stmt instanceof _DomainUpdate || stmt instanceof _DomainDelete)) {
+
+        if (stmt instanceof _Statement._ChildStatement) {
+            this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
+            this.targetTableAlias = _DialectUtils.parentAlias(this.domainTableAlias);
+        } else if (!(this.domainTable instanceof ChildTableMeta)) {
+            this.targetTable = this.domainTable;
+            this.targetTableAlias = this.domainTableAlias;
+        } else if (stmt instanceof _SingleDml._DomainDml) {
+            this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
             this.targetTableAlias = _DialectUtils.parentAlias(this.domainTableAlias);
         } else {
+            this.targetTable = this.domainTable;
             this.targetTableAlias = this.domainTableAlias;
         }
+
         this.safeTargetTableAlias = parser.identifier(this.targetTableAlias);
 
         if ((stmt instanceof _Update && parser.supportSingleUpdateAlias)

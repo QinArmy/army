@@ -25,9 +25,8 @@ import io.army.meta.TableMeta;
 import javax.annotation.Nullable;
 
 /**
- * <p>
- * This interface representing Postgre UPDATE syntax.
- * * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">Postgre UPDATE syntax</a>
+ * <p>This interface representing Postgre UPDATE syntax.
+ * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">Postgre UPDATE syntax</a>
  *
  * @since 0.6.0
  */

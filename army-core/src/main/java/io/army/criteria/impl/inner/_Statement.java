@@ -130,6 +130,13 @@ public interface _Statement extends Statement {
 
     }
 
+    /**
+     * <p>This interface is base interface of following :
+     * <ul>
+     *     <li>{@link io.army.criteria.impl.inner._SingleUpdate._ChildUpdate}</li>
+     *     <li>{@link io.army.criteria.impl.inner._SingleDelete._ChildDelete}</li>
+     * </ul>
+     */
     interface _ChildStatement {
 
         TableMeta<?> table();

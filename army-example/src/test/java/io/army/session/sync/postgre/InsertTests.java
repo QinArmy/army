@@ -31,8 +31,6 @@ import io.army.sync.SyncStmtOption;
 import io.army.util.ImmutableArrayList;
 import io.army.util.ImmutableHashMap;
 import io.army.util.RowMaps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -47,9 +45,8 @@ import java.util.function.Consumer;
 import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
-public class InsertSuiteTests extends SessionTestSupport {
+public class InsertTests extends SessionTestSupport {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InsertSuiteTests.class);
 
 
     // @Transactional
