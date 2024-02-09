@@ -28,7 +28,7 @@ import io.army.stmt.Stmt;
  *
  * @since 0.6.0
  */
-interface PrimaryQueryContext extends _PrimaryContext {
+interface PrimaryQueryContext extends _StmtContext {
 
     @Override
     Stmt build();

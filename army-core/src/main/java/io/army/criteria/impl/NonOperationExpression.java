@@ -32,6 +32,7 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+import io.army.stmt.SingleParam;
 
 import javax.annotation.Nullable;
 import java.util.function.BiFunction;
@@ -450,6 +451,14 @@ abstract class NonOperationExpression implements ArmyExpression {
         return NullWord.INSTANCE;
     }
 
+    static Expression updateTimeParamPlaceHolder() {
+        return UpdateTimePlaceHolderExpression.PARAM_PLACEHOLDER;
+    }
+
+    static Expression updateTimeLiteralPlaceHolder() {
+        return UpdateTimePlaceHolderExpression.LITERAL_PLACEHOLDER;
+    }
+
 
     static CriteriaException unsupportedOperation(NonOperationExpression expression) {
         return ContextStack.clearStackAndCriteriaError(expression.operationErrorMessage());
@@ -583,6 +592,42 @@ abstract class NonOperationExpression implements ArmyExpression {
 
 
     } // NullType
+
+
+    private static final class UpdateTimePlaceHolderExpression extends NonOperationExpression
+            implements SqlValueParam.SingleAnonymousValue,
+            SingleParam, ArmySimpleExpression {
+
+        private static final UpdateTimePlaceHolderExpression PARAM_PLACEHOLDER = new UpdateTimePlaceHolderExpression();
+
+        private static final UpdateTimePlaceHolderExpression LITERAL_PLACEHOLDER = new UpdateTimePlaceHolderExpression();
+
+        private UpdateTimePlaceHolderExpression() {
+        }
+
+
+        @Override
+        public TypeMeta typeMeta() {
+            throw new UnsupportedOperationException("updateTime placeholder don't support this operation");
+        }
+
+        @Override
+        public void appendSql(StringBuilder sqlBuilder, _SqlContext context) {
+            if (this == PARAM_PLACEHOLDER) {
+                throw new CriteriaException("SQLs.UPDATE_TIME_PARAM_PLACEHOLDER present in error context");
+            } else {
+                throw new CriteriaException("SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER present in error context");
+            }
+        }
+
+        @Nullable
+        @Override
+        public Object value() {
+            return null;
+        }
+
+
+    } // UpdateTimePlaceHolderExpression
 
 
 }

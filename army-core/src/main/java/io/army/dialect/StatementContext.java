@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.session.Option;
 import io.army.session.Session;
 import io.army.session.SessionSpec;
@@ -40,7 +41,7 @@ import java.util.function.IntSupplier;
  *
  * @since 0.6.0
  */
-abstract class StatementContext implements _PrimaryContext, StmtParams {
+abstract class StatementContext implements _StmtContext, StmtParams {
 
     static final String SPACE_PLACEHOLDER = " ?";
 
@@ -156,7 +157,6 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     @Override
     public final void appendParam(final SQLParam sqlParam) {
-
         final ArrayList<SQLParam> paramList = this.paramAccepter.paramList;
         if (sqlParam instanceof SingleParam) {
             this.sqlBuilder.append(SPACE_PLACEHOLDER);
@@ -335,6 +335,27 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     final boolean hasNamedParam() {
         return this.paramAccepter.hasNamedParam;
+    }
+
+    /**
+     * @see InsertContext#appendSetLeftItem(SqlField, Expression)
+     * @see SingleUpdateContext#appendSetLeftItem(SqlField, Expression)
+     * @see MultiUpdateContext#appendSetLeftItem(SqlField, Expression)
+     */
+    final void appendUpdateTimePlaceholder(final FieldMeta<?> updateTime, final Expression updateTimePlaceholder) {
+        if (!_MetaBridge.UPDATE_TIME.equals(updateTime.fieldName())) {
+            final String m = String.format("Expression %s present in error context", updateTimePlaceholder);
+            throw new CriteriaException(m);
+        } else if (updateTimePlaceholder == SQLs.UPDATE_TIME_PARAM_PLACEHOLDER) {
+            this.sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
+            appendParam(SQLs.param(updateTime, this.parser.createUpdateTimeValue(updateTime)));
+        } else if (updateTimePlaceholder == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
+            this.sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
+            appendLiteral(updateTime, this.parser.createUpdateTimeValue(updateTime));
+        } else {
+            // no bug,never here
+            throw _Exceptions.illegalExpression(updateTimePlaceholder);
+        }
     }
 
 

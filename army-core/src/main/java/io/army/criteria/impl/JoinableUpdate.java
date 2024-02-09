@@ -360,8 +360,7 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
         }
         List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null) {
-            itemPairList = _Collections.arrayList();
-            this.itemPairList = itemPairList;
+            this.itemPairList = itemPairList = _Collections.arrayList();
         } else if (!(itemPairList instanceof ArrayList)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }

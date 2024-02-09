@@ -682,17 +682,11 @@ abstract class SqlWords {
 
     enum KeyWordOny implements SQLs.WordOnly, SQLWords {
 
-        ONLY(" ONLY");
-
-        private final String spaceWord;
-
-        KeyWordOny(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+        ONLY;
 
         @Override
         public final String spaceRender() {
-            return this.spaceWord;
+            return _Constant.SPACE_ONLY;
         }
 
         @Override

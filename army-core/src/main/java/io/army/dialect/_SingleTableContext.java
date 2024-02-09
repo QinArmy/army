@@ -18,7 +18,7 @@ package io.army.dialect;
 
 import io.army.meta.TableMeta;
 
-interface _SingleTableContext extends _PrimaryContext {
+interface _SingleTableContext extends _StmtContext {
 
     TableMeta<?> targetTable();
 

@@ -25,7 +25,7 @@ package io.army.dialect;
  * @see _SubQueryContext
  * @since 0.6.0
  */
-public interface _SimpleQueryContext extends _PrimaryContext, _MultiTableStmtContext, SelectItemListContext {
+public interface _SimpleQueryContext extends _StmtContext, _MultiTableStmtContext, SelectItemListContext {
 
 
 }

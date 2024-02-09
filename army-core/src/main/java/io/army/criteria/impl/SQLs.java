@@ -209,6 +209,8 @@ public abstract class SQLs extends SQLSyntax {
      */
     public static final LiteralExpression BATCH_NO_LITERAL = SQLs.namedLiteral(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
 
+    public static final Expression UPDATE_TIME_LITERAL_PLACEHOLDER = NonOperationExpression.updateTimeLiteralPlaceHolder();
+
     /*-------------------below param -------------------*/
 
     public static final ParamExpression PARAM_0 = SQLs.param(IntegerType.INSTANCE, 0);
@@ -216,6 +218,8 @@ public abstract class SQLs extends SQLSyntax {
     public static final ParamExpression PARAM_1 = SQLs.param(IntegerType.INSTANCE, 1);
 
     public static final ParamExpression PARAM_DECIMAL_0 = SQLs.param(BigDecimalType.INSTANCE, BigDecimal.ZERO);
+
+    public static final Expression UPDATE_TIME_PARAM_PLACEHOLDER = NonOperationExpression.updateTimeParamPlaceHolder();
 
     /**
      * @see #TRUE
@@ -831,18 +835,34 @@ public abstract class SQLs extends SQLSyntax {
         @Override
         public final void appendItemPair(final StringBuilder sqlBuilder, final _SetClauseContext context) {
             final SqlField field = this.field;
-            //1. append left item
-            context.appendSetLeftItem(field);
-            //2. append operator
-            if (this instanceof OperatorItemPair) {
-                ((OperatorItemPair) this).operator
-                        .appendOperator(field, sqlBuilder, context);
+            final _Expression right = (_Expression) this.right;
+
+            if (right == SQLs.UPDATE_TIME_PARAM_PLACEHOLDER) {
+                if (this instanceof OperatorItemPair) {
+                    throw placeholderError("UPDATE_TIME_PARAM_PLACEHOLDER");
+                }
+                context.appendSetLeftItem(field, right); //  append left item
+            } else if (right == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
+                if (this instanceof OperatorItemPair) {
+                    throw placeholderError("UPDATE_TIME_LITERAL_PLACEHOLDER");
+                }
+                context.appendSetLeftItem(field, right); //  append left item
             } else {
-                sqlBuilder.append(_Constant.SPACE_EQUAL);
+                context.appendSetLeftItem(field, null); //  append left item
+                //2. append operator
+                if (this instanceof OperatorItemPair) {
+                    ((OperatorItemPair) this).operator
+                            .appendOperator(field, sqlBuilder, context);
+                } else {
+                    sqlBuilder.append(_Constant.SPACE_EQUAL);
+                }
+                //3. append right item
+                ((_Expression) this.right).appendSql(sqlBuilder, context);
             }
-            //3. append right item
-            ((_Expression) this.right).appendSql(sqlBuilder, context);
+
+
         }
+
 
         @Override
         public final SqlField field() {
@@ -865,6 +885,11 @@ public abstract class SQLs extends SQLSyntax {
             }
             builder.append(this.right);
             return builder.toString();
+        }
+
+        private CriteriaException placeholderError(final String name) {
+            String m = String.format("SQLs.%s don't support %s", name, ((OperatorItemPair) this).operator.name());
+            throw new CriteriaException(m);
         }
 
     }//FieldItemPair
@@ -923,7 +948,7 @@ public abstract class SQLs extends SQLSyntax {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                context.appendSetLeftItem(fieldList.get(i));
+                context.appendSetLeftItem(fieldList.get(i), null);
             }
             //3. append right paren
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

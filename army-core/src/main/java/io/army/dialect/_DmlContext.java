@@ -16,6 +16,7 @@
 
 package io.army.dialect;
 
+import io.army.criteria.Expression;
 import io.army.criteria.SqlField;
 import io.army.meta.FieldMeta;
 import io.army.stmt.BatchStmt;
@@ -36,7 +37,7 @@ import java.util.List;
  *
  * @since 0.6.0
  */
-public  interface _DmlContext extends _PrimaryContext {
+public interface _DmlContext extends _StmtContext {
 
     @Nullable
     _DmlContext parentContext();
@@ -55,7 +56,9 @@ public  interface _DmlContext extends _PrimaryContext {
 
     interface _SetClauseContextSpec {
 
-        void appendSetLeftItem(SqlField dataField);
+        boolean isAppendedUpdateTime();
+
+        void appendSetLeftItem(SqlField dataField, @Nullable Expression updateTimePlaceholder);
 
 
     }

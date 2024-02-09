@@ -150,28 +150,29 @@ public class UpdateTests extends SessionTestSupport {
     }
 
     @Transactional
-    @Test
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void updateChild(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
         session.batchSave(regionList);
-
-        final BigDecimal amount = Decimals.valueOf("8866.66");
-        final LocalDateTime now = LocalDateTime.now();
 
         final long startNanoSecond = System.nanoTime();
 
         final Update stmt;
         stmt = Postgres.singleUpdate()
-                .update(ChinaProvince_.T, AS, "c")
-                .set(ChinaProvince_.governor, SQLs::param, randomPerson())
-                .where(ChinaProvince_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .with("child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
+                        .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                        .where(ChinaProvince_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                        .returning(ChinaProvince_.id)
+                        .asReturningUpdate()
+                ).space()
+                .update(ChinaRegion_.T, AS, "c")
+                .set(ChinaRegion_.updateTime, SQLs.UPDATE_TIME_PARAM_PLACEHOLDER)
+                .from("child_cte")
+                .where(ChinaRegion_.id::equal, SQLs.refField("child_cte", ChinaRegion_.ID))
                 .asUpdate();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
-
-
         Assert.assertEquals(session.update(stmt), regionList.size());
-
     }
 
 

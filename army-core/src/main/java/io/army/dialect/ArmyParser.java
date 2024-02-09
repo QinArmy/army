@@ -45,7 +45,6 @@ import io.army.schema._TableResult;
 import io.army.session.SessionSpec;
 import io.army.sqltype.DataType;
 import io.army.stmt.MultiStmt;
-import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util.*;
@@ -883,16 +882,16 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #dialectDml(DmlStatement, SessionSpec)
      */
-    protected _PrimaryContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement,
-                                               SessionSpec sessionSpec) {
+    protected _StmtContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement,
+                                            SessionSpec sessionSpec) {
         throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
      * @see #dialectDql(DqlStatement, SessionSpec)
      */
-    protected _PrimaryContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement,
-                                               SessionSpec sessionSpec) {
+    protected _StmtContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement,
+                                            SessionSpec sessionSpec) {
         throw standardParserDontSupportDialect(this.dialect);
     }
 
@@ -981,6 +980,7 @@ abstract class ArmyParser implements DialectParser {
     protected final _SingleDeleteContext createJoinableDeleteContextForCte(_SqlContext withContext, _SingleDelete stmt) {
         return SingleJoinableDeleteContext.forCte(withContext, stmt);
     }
+
     protected final _MultiUpdateContext createMultiUpdateContext(final @Nullable _SqlContext outerContext
             , final _SingleUpdate stmt, final SessionSpec sessionSpec) {
         return MultiUpdateContext.forChild(outerContext, stmt, this, sessionSpec);
@@ -1858,11 +1858,11 @@ abstract class ArmyParser implements DialectParser {
         final String childAlias, safeChildAlias, safeParentAlias;
         if ((childAlias = childContext.tableAlias()) == null) {
             safeChildAlias = this.safeObjectName(childTable);
-            safeParentAlias = this.identifier(_DialectUtils.parentAlias(childTable.tableName()));
+            safeParentAlias = this.identifier(parentAlias(childTable.tableName()));
         } else {
             safeChildAlias = childContext.safeTableAlias();
             assert safeChildAlias != null;
-            safeParentAlias = this.identifier(_DialectUtils.parentAlias(childAlias));
+            safeParentAlias = this.identifier(parentAlias(childAlias));
         }
 
         final StringBuilder sqlBuilder;
@@ -2039,60 +2039,64 @@ abstract class ArmyParser implements DialectParser {
      * @see #multiTableSetClause(_MultiUpdate, _MultiUpdateContext)
      * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
      */
-    protected final void appendUpdateTimeAndVersion(final SingleTableMeta<?> table
-            , final @Nullable String safeTableAlias, final _PrimaryContext context, final boolean firstItem) {
+    protected final void appendUpdateTimeAndVersion(final SingleTableMeta<?> table,
+                                                    final @Nullable String safeTableAlias,
+                                                    final _StmtContext context, final boolean firstItem) {
 
-        FieldMeta<?> field;
-        field = table.getField(_MetaBridge.UPDATE_TIME);
-
-        final Class<?> javaType = field.javaType();
-        final Temporal updateTimeValue;
-        if (javaType == LocalDateTime.class) {
-            updateTimeValue = LocalDateTime.now();
-        } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.mappingEnv.zoneOffset());
-        } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.mappingEnv.zoneOffset());
-        } else {
-            // FieldMeta no bug,never here
-            throw _Exceptions.dontSupportJavaType(field, javaType);
-        }
+        final FieldMeta<?> updateTime, version;
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
-        if (firstItem) {
-            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
-        } else {
-            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-        }
+
         final boolean outputLeftItemAlias = safeTableAlias != null
                 && !(context instanceof _InsertContext)
                 && this.setClauseTableAlias;
 
-        if (outputLeftItemAlias) {
-            sqlBuilder.append(safeTableAlias)
-                    .append(_Constant.PERIOD);
-        }
-        this.safeObjectName(field, sqlBuilder)
-                .append(_Constant.SPACE_EQUAL);
-
-        if (context instanceof InsertContext) {
-            final InsertContext insertContext = (InsertContext) context;
-            insertContext.appendInsertValue(insertContext.literalMode, field, updateTimeValue);
-        } else if (context.isUpdateTimeOutputParam()) {
-            context.appendParam(SingleParam.build(field, updateTimeValue));
+        if (((_DmlContext._SetClauseContextSpec) context).isAppendedUpdateTime()) {
+            updateTime = null;
         } else {
-            sqlBuilder.append(_Constant.SPACE);
-            this.literal(field, updateTimeValue, sqlBuilder);
+            updateTime = table.getField(_MetaBridge.UPDATE_TIME);
+
+            final Temporal updateTimeValue;
+            updateTimeValue = createUpdateTimeValue(updateTime);
+
+            if (firstItem) {
+                sqlBuilder.append(_Constant.SPACE_SET_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            }
+
+            if (outputLeftItemAlias) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(_Constant.PERIOD);
+            }
+            this.safeObjectName(updateTime, sqlBuilder)
+                    .append(_Constant.SPACE_EQUAL);
+
+            if (context instanceof InsertContext) {
+                final InsertContext insertContext = (InsertContext) context;
+                insertContext.appendInsertValue(insertContext.literalMode, updateTime, updateTimeValue);
+            } else if (context.isUpdateTimeOutputParam()) {
+                context.appendParam(SQLs.param(updateTime, updateTimeValue));
+            } else {
+                context.appendLiteral(updateTime, updateTimeValue);
+            }
         }
 
-        if ((field = table.tryGetField(_MetaBridge.VERSION)) == null) {
+        if ((version = table.tryGetField(_MetaBridge.VERSION)) == null) {
             return;
         }
 
+        if (updateTime != null) {
+            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+        } else if (firstItem) {
+            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
+        } else {
+            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+        }
+
         final String versionColumnName;
-        versionColumnName = this.safeObjectName(field);
-        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+        versionColumnName = this.safeObjectName(version);
 
         if (outputLeftItemAlias) {
             sqlBuilder.append(safeTableAlias)
@@ -2112,6 +2116,29 @@ abstract class ArmyParser implements DialectParser {
 
 
     /*-------------------below package method -------------------*/
+
+
+    /**
+     * @see #appendUpdateTimeAndVersion(SingleTableMeta, String, _StmtContext, boolean)
+     * @see InsertContext#appendSetLeftItem(SqlField, Expression)
+     * @see SingleUpdateContext#appendSetLeftItem(SqlField, Expression)
+     * @see MultiUpdateContext#appendSetLeftItem(SqlField, Expression)
+     */
+    final Temporal createUpdateTimeValue(final FieldMeta<?> updateTime) {
+        final Temporal updateTimeValue;
+        final Class<?> javaType = updateTime.javaType();
+        if (javaType == LocalDateTime.class) {
+            updateTimeValue = LocalDateTime.now();
+        } else if (javaType == OffsetDateTime.class) {
+            updateTimeValue = OffsetDateTime.now(this.mappingEnv.zoneOffset());
+        } else if (javaType == ZonedDateTime.class) {
+            updateTimeValue = ZonedDateTime.now(this.mappingEnv.zoneOffset());
+        } else {
+            // FieldMeta no bug,never here
+            throw _Exceptions.dontSupportJavaType(updateTime, javaType);
+        }
+        return updateTimeValue;
+    }
 
 
 
@@ -3291,8 +3318,15 @@ abstract class ArmyParser implements DialectParser {
      * @see #dialectDml(DmlStatement, SessionSpec)
      * @see #dialectDql(DqlStatement, SessionSpec)
      */
-    private Stmt createDialectStmt(_PrimaryContext context) {
+    private Stmt createDialectStmt(_StmtContext context) {
         return context.build();
+    }
+
+    /*-------------------below protected static methods -------------------*/
+
+
+    protected static String parentAlias(final String tableAlias) {
+        return "p_of_" + tableAlias;
     }
 
 

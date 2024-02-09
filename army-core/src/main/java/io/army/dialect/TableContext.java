@@ -61,7 +61,7 @@ final class TableContext {
     static TableContext forChild(final ChildTableMeta<?> table, final String tableAlias, final ArmyParser dialect) {
         final Map<String, TabularItem> aliasToTable = new HashMap<>(4);
         aliasToTable.put(tableAlias, table);
-        final String parentAlias = _DialectUtils.parentAlias(tableAlias);
+        final String parentAlias = ArmyParser.parentAlias(tableAlias);
         aliasToTable.put(parentAlias, table.parentMeta());
 
         final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>(4);

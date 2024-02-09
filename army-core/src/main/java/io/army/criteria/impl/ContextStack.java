@@ -148,7 +148,6 @@ abstract class ContextStack {
     }
 
 
-    @Deprecated
     static CriteriaException castCriteriaApi(CriteriaContext criteriaContext) {
         clearStackOnError(criteriaContext);
         return _Exceptions.castCriteriaApi();

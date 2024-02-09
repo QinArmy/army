@@ -22,10 +22,10 @@ import io.army.stmt.MultiStmt;
 
 import java.util.function.BiConsumer;
 
-interface MultiStmtContext extends _PrimaryContext {
+interface MultiStmtContext extends _StmtContext {
 
 
-    default <S extends _Statement, C extends _PrimaryContext> void appendStmt(BiConsumer<S, C> consumer, S statement, C context) {
+    default <S extends _Statement, C extends _StmtContext> void appendStmt(BiConsumer<S, C> consumer, S statement, C context) {
         throw new UnsupportedOperationException();
     }
 

@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 import io.army.annotation.UpdateMode;
+import io.army.criteria.Expression;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.SqlField;
 import io.army.criteria.TableField;
@@ -25,6 +26,7 @@ import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._Update;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -58,6 +60,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
 
     final String safeTargetTableName;
 
+    private boolean appendedUpdateTime;
 
     /**
      * <p>For {@link SingleTableMeta}
@@ -71,13 +74,13 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
 
         if (stmt instanceof _Statement._ChildStatement) {
             this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
-            this.targetTableAlias = _DialectUtils.parentAlias(this.domainTableAlias);
+            this.targetTableAlias = ArmyParser.parentAlias(this.domainTableAlias);
         } else if (!(this.domainTable instanceof ChildTableMeta)) {
             this.targetTable = this.domainTable;
             this.targetTableAlias = this.domainTableAlias;
         } else if (stmt instanceof _SingleDml._DomainDml) {
             this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
-            this.targetTableAlias = _DialectUtils.parentAlias(this.domainTableAlias);
+            this.targetTableAlias = ArmyParser.parentAlias(this.domainTableAlias);
         } else {
             this.targetTable = this.domainTable;
             this.targetTableAlias = this.domainTableAlias;
@@ -140,8 +143,14 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         return this.safeTargetTableAlias;
     }
 
+
     @Override
-    public final void appendSetLeftItem(final SqlField dataField) {
+    public final boolean isAppendedUpdateTime() {
+        return this.appendedUpdateTime;
+    }
+
+    @Override
+    public final void appendSetLeftItem(final SqlField dataField, final @Nullable Expression updateTimePlaceholder) {
         assert this instanceof _UpdateContext;
         if (!(dataField instanceof TableField)) {
             throw _Exceptions.immutableField(dataField);
@@ -154,7 +163,11 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
             throw _Exceptions.immutableField(field);
         } else if (this.targetTable instanceof SingleTableMeta) {
             final String fieldName = field.fieldName();
-            if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
+            if (_MetaBridge.UPDATE_TIME.equals(fieldName)) {
+                if (updateTimePlaceholder == null) {
+                    throw _Exceptions.armyManageField(field);
+                }
+            } else if (_MetaBridge.VERSION.equals(fieldName)) {
                 throw _Exceptions.armyManageField(field);
             }
         }
@@ -189,6 +202,17 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
             default:
                 //no-op
         }
+
+        if (updateTimePlaceholder != null) {
+            this.appendedUpdateTime = true;
+            if (field instanceof FieldMeta) {
+                appendUpdateTimePlaceholder((FieldMeta<?>) field, updateTimePlaceholder);
+            } else {
+                appendUpdateTimePlaceholder(field.fieldMeta(), updateTimePlaceholder);
+            }
+        }
+
+
     }
 
 

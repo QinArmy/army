@@ -120,6 +120,8 @@ abstract class InsertContext extends StatementContext
      */
     private boolean outputFieldTableAlias;
 
+    private boolean appendedUpdateTime;
+
 
     /**
      * <p>
@@ -537,7 +539,12 @@ abstract class InsertContext extends StatementContext
     }
 
     @Override
-    public void appendSetLeftItem(final SqlField dataField) {
+    public final boolean isAppendedUpdateTime() {
+        return false;
+    }
+
+    @Override
+    public void appendSetLeftItem(final SqlField dataField, final @Nullable Expression updateTimePlaceholder) {
         final FieldMeta<?> field;
         final String fieldName = dataField.fieldName();
         final UpdateMode mode;
@@ -548,7 +555,9 @@ abstract class InsertContext extends StatementContext
             throw _Exceptions.unknownColumn(dataField);
         } else if (!(this.valuesClauseEnd && this.hasConflictClause && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
-        } else if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
+        } else if (updateTimePlaceholder == null && _MetaBridge.UPDATE_TIME.equals(fieldName)) {
+            throw _Exceptions.armyManageField(field);
+        } else if (_MetaBridge.VERSION.equals(fieldName)) {
             throw _Exceptions.armyManageField(field);
         } else switch ((mode = field.updateMode())) {
             case IMMUTABLE:
@@ -580,7 +589,13 @@ abstract class InsertContext extends StatementContext
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
         this.parser.safeObjectName(field, sqlBuilder);
 
+        if (updateTimePlaceholder != null) {
+            this.appendedUpdateTime = true;
+            appendUpdateTimePlaceholder(field, updateTimePlaceholder);
+        }
+
     }
+
 
     @Override
     public final void appendFieldList() {

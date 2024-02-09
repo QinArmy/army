@@ -366,6 +366,12 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException illegalExpression(Expression expression) {
+        String m = String.format("error,illegal expression %s", expression);
+        return new CriteriaException(m);
+    }
+
+
     public static CriteriaException cannotReturnPostId(final _Insert domainStmt) {
         final String tip;
         final _Insert nonChildStmt;

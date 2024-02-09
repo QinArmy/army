@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.session.SessionSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -49,6 +50,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
 
     private List<SqlField> conditionFieldList;
 
+    private boolean appendedUpdateTime;
 
     private MultiUpdateContext(@Nullable StatementContext outerContext, _Update stmt, TableContext tableContext,
                                ArmyParser dialect, SessionSpec sessionSpec) {
@@ -86,8 +88,14 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
         return singleTableAlias;
     }
 
+
     @Override
-    public void appendSetLeftItem(final SqlField dataField) {
+    public boolean isAppendedUpdateTime() {
+        return this.appendedUpdateTime;
+    }
+
+    @Override
+    public void appendSetLeftItem(final SqlField dataField, final @Nullable Expression updateTimePlaceholder) {
         final UpdateMode updateMode;
         if (dataField instanceof TableField) {
             updateMode = ((TableField) dataField).updateMode();
@@ -106,23 +114,28 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
             throw _Exceptions.immutableField(dataField);
         }
 
+        final String fieldName = dataField.fieldName();
+
+        if (updateTimePlaceholder == null && dataField instanceof TableField && _MetaBridge.UPDATE_TIME.equals(fieldName)) {
+            throw _Exceptions.armyManageField((TableField) dataField);
+        }
+
         final StringBuilder sqlBuilder = this.sqlBuilder;
         if (!(dataField instanceof TableField)) {
             final DerivedField field = (DerivedField) dataField;
             final String tableAlias = field.tableAlias();
             final TabularItem tableItem = this.multiTableContext.aliasToTable.get(tableAlias);
             if (!(tableItem instanceof DerivedTable)
-                    || ((_DerivedTable) tableItem).refSelection(field.fieldName()) == null) {
+                    || ((_DerivedTable) tableItem).refSelection(fieldName) == null) {
                 throw _Exceptions.unknownColumn(field);
             }
             final String safeTableAlias;
             safeTableAlias = this.multiTableContext.getAliasToSafeAlias().get(tableAlias);
             assert safeTableAlias != null;
-            sqlBuilder
-                    .append(_Constant.SPACE)
+            sqlBuilder.append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.PERIOD);
-            this.parser.identifier(field.fieldName(), sqlBuilder);
+            this.parser.identifier(fieldName, sqlBuilder);
         } else if (dataField instanceof FieldMeta) {
             final FieldMeta<?> field = (FieldMeta<?>) dataField;
             final String safeTableAlias;
@@ -131,8 +144,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
                 //self-join
                 throw _Exceptions.selfJoinNonQualifiedField(field);
             }
-            sqlBuilder
-                    .append(_Constant.SPACE)
+            sqlBuilder.append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.PERIOD);
             this.parser.safeObjectName(field, sqlBuilder);
@@ -170,6 +182,18 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
             break;
             default:
                 //no-op
+        }
+
+        if (updateTimePlaceholder != null) {
+            this.appendedUpdateTime = true;
+            if (dataField instanceof FieldMeta) {
+                appendUpdateTimePlaceholder((FieldMeta<?>) dataField, updateTimePlaceholder);
+            } else if (dataField instanceof QualifiedField) {
+                appendUpdateTimePlaceholder(((QualifiedField<?>) dataField).fieldMeta(), updateTimePlaceholder);
+            } else {
+                // no bug,never here
+                throw _Exceptions.illegalExpression(dataField);
+            }
         }
 
     }

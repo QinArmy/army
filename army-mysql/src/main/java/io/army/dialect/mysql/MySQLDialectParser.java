@@ -474,9 +474,9 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected _PrimaryContext handleDialectDml(final @Nullable _SqlContext outerContext, final DmlStatement statement,
-                                               final SessionSpec sessionSpec) {
-        final _PrimaryContext context;
+    protected _StmtContext handleDialectDml(final @Nullable _SqlContext outerContext, final DmlStatement statement,
+                                            final SessionSpec sessionSpec) {
+        final _StmtContext context;
         if (statement instanceof MySQLLoadData) {
             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
             context = this.handleLoadData(outerContext, (_MySQLLoadData) statement, sessionSpec);
@@ -487,8 +487,8 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected _PrimaryContext handleDialectDql(final @Nullable _SqlContext outerContext, final DqlStatement statement,
-                                               final SessionSpec sessionSpec) {
+    protected _StmtContext handleDialectDql(final @Nullable _SqlContext outerContext, final DqlStatement statement,
+                                            final SessionSpec sessionSpec) {
         return super.handleDialectDql(outerContext, statement, sessionSpec);
     }
 

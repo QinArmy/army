@@ -222,10 +222,6 @@ public abstract class _DialectUtils {
     /*################################## blow package method ##################################*/
 
 
-    static String parentAlias(final String tableAlias) {
-        return "p_of_" + tableAlias;
-    }
-
     static void validateTableAlias(final String tableAlias) {
         if (!_StringUtils.hasText(tableAlias)) {
             throw new CriteriaException("Alias of table or sub query must has text.");

@@ -80,7 +80,6 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     /**
      * <p>
      * create new simple(non-batch) single-table UPDATE statement that is primary statement.
-     *
      */
     static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> simple() {
         return new PrimarySimpleUpdateClause();
@@ -90,7 +89,6 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     /**
      * <p>
      * create new simple(non-batch) single-table UPDATE statement that is sub statement in with clause.
-     *
      */
     static <I extends Item> PostgreUpdate._SingleWithSpec<I, I> subSimpleUpdate(CriteriaContext outerContext,
                                                                                 Function<SubStatement, I> function) {
@@ -100,7 +98,6 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     /**
      * <p>
      * create new batch single-table UPDATE statement that is primary statement.
-     *
      */
     static PostgreUpdate._SingleWithSpec<_BatchUpdateParamSpec, _BatchReturningUpdateParamSpec> batchUpdate() {
         return new PrimaryBatchUpdateClause();
@@ -537,8 +534,14 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
     @Override
     public final List<? extends _SelectItem> returningList() {
-        // use wrapper,never here
-        throw new UnsupportedOperationException();
+        if (!(this instanceof _ReturningDml)) {
+            throw new UnsupportedOperationException();
+        }
+        final List<_SelectItem> returningList = this.returningList;
+        if (returningList == null || returningList instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return returningList;
     }
 
     @Override

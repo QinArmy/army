@@ -24,6 +24,8 @@ import io.army.criteria.impl._PostgreConsultant;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre.*;
 import io.army.dialect.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -96,19 +98,23 @@ final class PostgreDialectParser extends PostgreParser {
     }
 
 
+    /**
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #appendParentForUpdateChild(_PostgreUpdate, _SingleUpdateContext, String, String)
+     */
     @Override
-    protected void postgreWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
-        final List<_Cte> cteList = spec.cteList();
+    protected void postgreWithClause(final List<_Cte> cteList, final boolean recursive, final _SqlContext mainContext) {
+
         final int cteSize = cteList.size();
         if (cteSize == 0) {
             return;
         }
         final StringBuilder sqlBuilder;
-        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+        if ((sqlBuilder = mainContext.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
         sqlBuilder.append(_Constant.WITH);
-        if (spec.isRecursive()) {
+        if (recursive) {
             sqlBuilder.append(_Constant.SPACE_RECURSIVE);
         }
         sqlBuilder.append(_Constant.SPACE);
@@ -143,18 +149,18 @@ final class PostgreDialectParser extends PostgreParser {
             subStatement = cte.subStatement();
             subStatement.prepared();
             if (subStatement instanceof SubQuery) {
-                this.handleQuery((SubQuery) subStatement, context);
+                this.handleQuery((SubQuery) subStatement, mainContext);
             } else if (subStatement instanceof _Insert) {
                 _PostgreConsultant.assertSubInsert(subStatement);
-                this.handleInsertStmtFromWithClause(context, (_Insert) subStatement);
+                this.handleInsertStmtFromWithClause(mainContext, (_Insert) subStatement);
             } else if (subStatement instanceof _Update) {
                 _PostgreConsultant.assertSubUpdate(subStatement);
-                parseSingleUpdate((_SingleUpdate) subStatement, createJoinableUpdateContextForCte(context, (_SingleUpdate) subStatement));
+                parseSingleUpdate((_SingleUpdate) subStatement, createJoinableUpdateContextForCte(mainContext, (_SingleUpdate) subStatement));
             } else if (subStatement instanceof _Delete) {
                 _PostgreConsultant.assertSubDelete(subStatement);
-                parseSingleDelete((_SingleDelete) subStatement, createJoinableDeleteContextForCte(context, (_SingleDelete) subStatement));
+                parseSingleDelete((_SingleDelete) subStatement, createJoinableDeleteContextForCte(mainContext, (_SingleDelete) subStatement));
             } else if (subStatement instanceof SubValues) {
-                handleValuesQuery((ValuesQuery) subStatement, context);
+                handleValuesQuery((ValuesQuery) subStatement, mainContext);
             } else {
                 throw _Exceptions.unexpectedStatement(subStatement);
             }
@@ -187,7 +193,7 @@ final class PostgreDialectParser extends PostgreParser {
     protected void parseSimpleQuery(final _Query query, final _SimpleQueryContext context) {
         final _PostgreQuery stmt = (_PostgreQuery) query;
         // 1. WITH clause
-        this.postgreWithClause(stmt, context);
+        this.postgreWithClause(stmt.cteList(), stmt.isRecursive(), context);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -270,6 +276,7 @@ final class PostgreDialectParser extends PostgreParser {
 
     }
 
+
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">UPDATE Statement</a>
      */
@@ -278,7 +285,7 @@ final class PostgreDialectParser extends PostgreParser {
         final _PostgreUpdate stmt = (_PostgreUpdate) update;
 
         // 1. WITH clause
-        this.postgreWithClause(stmt, context);
+        this.postgreWithClause(stmt.cteList(), stmt.isRecursive(), context);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -292,7 +299,7 @@ final class PostgreDialectParser extends PostgreParser {
         onlyModifier = stmt.modifier();
         if (onlyModifier != null) {
             assert onlyModifier == SQLs.ONLY;
-            sqlBuilder.append(onlyModifier.spaceRender());
+            sqlBuilder.append(_Constant.SPACE_ONLY);
         }
         // 4. table name
         sqlBuilder.append(_Constant.SPACE);
@@ -336,6 +343,7 @@ final class PostgreDialectParser extends PostgreParser {
 
     }
 
+
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-delete.html">DELETE Statement</a>
      */
@@ -344,7 +352,7 @@ final class PostgreDialectParser extends PostgreParser {
         final _PostgreDelete stmt = (_PostgreDelete) delete;
 
         // 1. WITH clause
-        this.postgreWithClause(stmt, context);
+        this.postgreWithClause(stmt.cteList(), stmt.isRecursive(), context);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -407,15 +415,96 @@ final class PostgreDialectParser extends PostgreParser {
     }
 
     @Override
-    protected _PrimaryContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement,
-                                               SessionSpec sessionSpec) {
+    protected _StmtContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement,
+                                            SessionSpec sessionSpec) {
         return super.handleDialectDml(outerContext, statement, sessionSpec);
     }
 
     @Override
-    protected _PrimaryContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement,
-                                               SessionSpec sessionSpec) {
+    protected _StmtContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement,
+                                            SessionSpec sessionSpec) {
         return super.handleDialectDql(outerContext, statement, sessionSpec);
+    }
+
+
+    /*-------------------below private methods -------------------*/
+
+
+    /**
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">UPDATE Statement</a>
+     */
+    private void appendParentForUpdateChild(final _PostgreUpdate childStmt, final _SingleUpdateContext childContext,
+                                            final String childCteName, final @Nullable String parentCteName) {
+
+        final ChildTableMeta<?> child = (ChildTableMeta<?>) childStmt.table();
+        assert childContext.targetTable() == child;
+
+        final ParentTableMeta<?> parent = child.parentMeta();
+
+        assert _StringUtils.hasText(childCteName);
+
+        final StringBuilder sqlBuilder = childContext.sqlBuilder();
+
+        if (parentCteName != null) {
+            sqlBuilder.append(_Constant.SPACE);
+            identifier(parentCteName, sqlBuilder);
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                    .append(_Constant.LEFT_PAREN);
+        }
+
+        // 2. UPDATE key word
+        sqlBuilder.append(_Constant.SPACE)
+                .append(_Constant.UPDATE)
+                .append(_Constant.SPACE_ONLY)
+                .append(_Constant.SPACE);
+        // 3. parent table name and alias
+        safeObjectName(parent, sqlBuilder);
+
+        final String safeParentTableAlias;
+        safeParentTableAlias = identifier(parentAlias(childStmt.tableAlias()));
+
+        // 4. SET clause
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                .append(safeParentTableAlias);
+
+        appendUpdateTimeAndVersion(parent, safeParentTableAlias, childContext, true);
+
+        // 5. FROM clause
+        sqlBuilder.append(_Constant.SPACE_FROM_SPACE);
+        final String safeChildCteName;
+        safeChildCteName = identifier(childCteName);
+
+        // 6. WHERE clause
+        sqlBuilder.append(safeChildCteName)
+                .append(_Constant.SPACE_WHERE)
+                .append(_Constant.SPACE)
+                .append(safeParentTableAlias)
+                .append(_Constant.PERIOD);
+
+        safeObjectName(parent.id());
+
+        sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE)
+                .append(safeChildCteName)
+                .append(_Constant.PERIOD);
+        identifier(child.id().fieldName());
+
+        // append discriminator
+        discriminator(child, safeParentTableAlias, childContext);
+
+        // 7. RETURNING child RETURNING clause
+        if (childStmt instanceof PrimaryStatement
+                && childStmt instanceof _ReturningDml
+                && childStmt.returningList().size() > 0) {
+            sqlBuilder.append(_Constant.SPACE_RETURNING)
+                    .append(safeChildCteName)
+                    .append(".*");
+        }
+
+        if (parentCteName != null) {
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
     }
 
 
@@ -590,7 +679,7 @@ final class PostgreDialectParser extends PostgreParser {
             ((_Insert._OneStmtChildInsert) stmt).validParentDomain();
         }
 
-        postgreWithClause(stmt, context);
+        this.postgreWithClause(stmt.cteList(), stmt.isRecursive(), context);
 
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
@@ -944,6 +1033,30 @@ final class PostgreDialectParser extends PostgreParser {
         }
 
 
+    }
+
+
+    /**
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
+     */
+    private static boolean isNotJoinOnlyCte(final _Statement._JoinableStatement stmt) {
+        final List<_TabularBlock> blockList;
+        blockList = stmt.tableBlockList();
+        return !(blockList.size() == 1 && blockList.get(0).tableItem() instanceof _Cte);
+    }
+
+    /**
+     * @param childName child table alias or child cte name
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #postgreWithClause(List, boolean, _SqlContext)
+     */
+    private static String parentCteName(final String childName) {
+        return _StringUtils.builder(childName.length() + 18)
+                .append("_army_")
+                .append(childName)
+                .append("_parent_cte_")
+                .toString();
     }
 
 

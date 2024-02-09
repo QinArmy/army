@@ -40,6 +40,7 @@ import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 abstract class PostgreParser extends _ArmyDialectParser {
@@ -78,14 +79,19 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void parseWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
+        final List<_Cte> cteList;
+        cteList = spec.cteList();
+        if (cteList.size() == 0) {
+            return;
+        }
         if (spec instanceof StandardStatement) {
-            withSubQuery(spec.isRecursive(), spec.cteList(), context, _SQLConsultant::assertStandardCte);
+            withSubQuery(spec.isRecursive(), cteList, context, _SQLConsultant::assertStandardCte);
         } else {
-            postgreWithClause(spec, context);
+            postgreWithClause(cteList, spec.isRecursive(), context);
         }
     }
 
-    protected void postgreWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
+    protected void postgreWithClause(List<_Cte> cteList, boolean recursive, _SqlContext mainContext) {
         throw _Exceptions.dontSupportWithClause(this.dialect);
     }
 
