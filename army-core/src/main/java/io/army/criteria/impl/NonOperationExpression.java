@@ -626,6 +626,20 @@ abstract class NonOperationExpression implements ArmyExpression {
             return null;
         }
 
+        @Override
+        public String toString() {
+            final String m;
+            if (this == SQLs.UPDATE_TIME_PARAM_PLACEHOLDER) {
+                m = "SQLs.UPDATE_TIME_PARAM_PLACEHOLDER";
+            } else if (this == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
+                m = "SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER";
+            } else {
+                // no bug,never here
+                throw new IllegalStateException();
+            }
+            return m;
+        }
+
 
     } // UpdateTimePlaceHolderExpression
 

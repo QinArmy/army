@@ -24,8 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.SQLs.AND;
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class UpdateTests extends SessionTestSupport {
@@ -166,7 +165,7 @@ public class UpdateTests extends SessionTestSupport {
                         .asReturningUpdate()
                 ).space()
                 .update(ChinaRegion_.T, AS, "c")
-                .set(ChinaRegion_.updateTime, SQLs.UPDATE_TIME_PARAM_PLACEHOLDER)
+                .set(ChinaRegion_.updateTime, UPDATE_TIME_PARAM_PLACEHOLDER)
                 .from("child_cte")
                 .where(ChinaRegion_.id::equal, SQLs.refField("child_cte", ChinaRegion_.ID))
                 .asUpdate();

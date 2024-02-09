@@ -329,7 +329,7 @@ final class PostgreDialectParser extends PostgreParser {
         this.dmlWhereClause(stmt.wherePredicateList(), context);
         context.appendConditionFields();
 
-        //TODO discriminator
+        // dialect update api never append discriminator
         if (existsFromClause) {
             this.multiTableVisible(tableBlockList, (_MultiTableStmtContext) context, false);
         } else if (updateTable instanceof SingleTableMeta) {
