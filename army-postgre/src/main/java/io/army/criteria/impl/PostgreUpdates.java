@@ -775,12 +775,16 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
         @Override
         Update onAsPostgreUpdate() {
+            PostgreUtils.validateDmlInWithClause(cteList(), this);
             return this;
         }
 
         @Override
         ReturningUpdate onAsReturningUpdate() {
-            return new ReturningUpdateWrapper(this);
+            final ReturningUpdateWrapper stmt;
+            stmt = new ReturningUpdateWrapper(this);
+            PostgreUtils.validateDmlInWithClause(stmt.cteList(), stmt);
+            return stmt;
         }
 
 
@@ -804,6 +808,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.paramList = CriteriaUtils.paramList(paramList);
+            PostgreUtils.validateDmlInWithClause(cteList(), this);
             return this;
         }
 
@@ -827,7 +832,10 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         }
 
         private <P> BatchReturningUpdate createBatchReturningUpdate(List<P> paramList) {
-            return new PostgreBatchReturningUpdate(this, paramList);
+            final PostgreBatchReturningUpdate stmt;
+            stmt = new PostgreBatchReturningUpdate(this, paramList);
+            PostgreUtils.validateDmlInWithClause(stmt.cteList(), stmt);
+            return stmt;
         }
 
     }//PostgreBatchUpdate

@@ -46,8 +46,8 @@ final class TableContext {
 
     final Map<String, String> childAliasToParentAlias;
 
-    private TableContext(Map<String, TabularItem> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias
-            , @Nullable Map<String, String> childAliasToParentAlias) {
+    private TableContext(Map<String, TabularItem> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias,
+                         @Nullable Map<String, String> childAliasToParentAlias) {
         this.aliasToTable = _Collections.unmodifiableMap(aliasToTable);
         this.tableToSafeAlias = _Collections.unmodifiableMap(tableToSafeAlias);
         if (childAliasToParentAlias == null) {
@@ -361,8 +361,8 @@ final class TableContext {
 
 
     @Nullable
-    private static TableField findParentId(final ChildTableMeta<?> child, final String alias
-            , final List<_Predicate> predicateList) {
+    private static TableField findParentId(final ChildTableMeta<?> child, final String alias,
+                                           final List<_Predicate> predicateList) {
         TableField parentId = null;
         for (_Predicate predicate : predicateList) {
             parentId = predicate.findParentId(child, alias);
