@@ -59,6 +59,7 @@ abstract class PostgreUtils extends CriteriaUtils {
 
         _PostgreCte cte;
         SubStatement subStatement;
+        List<_Cte> subCteList;
 
         TableMeta<?> targetTable;
         ParentTableMeta<?> parent;
@@ -74,6 +75,11 @@ abstract class PostgreUtils extends CriteriaUtils {
         for (int cteIndex = 0, predicateSize, tabularItemSize; cteIndex < cteSize; cteIndex++) {
             cte = (_PostgreCte) cteList.get(cteIndex);
             subStatement = cte.subStatement();
+
+            subCteList = ((_Statement._WithClauseSpec) subStatement).cteList();
+            if (subCteList.size() > 0) {
+                validateDmlInWithClause(subCteList, (PostgreStatement) subStatement);
+            }
 
             if (!(subStatement instanceof _SingleDml)) {
                 continue;
@@ -267,7 +273,7 @@ abstract class PostgreUtils extends CriteriaUtils {
     }
 
     /**
-     * @param currentCteIndex  -1 or positive
+     * @param currentCteIndex -1 or positive
      * @see #validateDmlInWithClause(List, PostgreStatement)
      */
     @Nullable

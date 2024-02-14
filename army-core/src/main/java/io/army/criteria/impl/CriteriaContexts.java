@@ -1221,10 +1221,6 @@ abstract class CriteriaContexts {
             }
             final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             if (aliasToBlock == null) {
-                if (this instanceof JoinableSingleDmlContext
-                        && tableAlias.equals(((JoinableSingleDmlContext) this).tableAlias)) {
-                    return ((JoinableSingleDmlContext) this).targetTable;
-                }
                 return null;
             }
             final _TabularBlock block;

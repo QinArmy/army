@@ -148,6 +148,7 @@ public class UpdateTests extends SessionTestSupport {
 
     }
 
+
     @Transactional
     @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void updateChildBeforeParent(final SyncLocalSession session) {
