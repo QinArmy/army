@@ -401,7 +401,7 @@ final class PostgreDialectParser extends PostgreParser {
         // 8. WHERE clause
         this.dmlWhereClause(stmt.wherePredicateList(), context);
 
-        //TODO discriminator
+        //don't append discriminator,because criteria api validated
         if (existsFromClause) {
             this.multiTableVisible(tableBlockList, (_MultiTableStmtContext) context, false);
         } else if (deleteTable instanceof SingleTableMeta) {

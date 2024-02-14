@@ -18,14 +18,14 @@ package io.army.criteria.postgre.unit;
 
 import io.army.criteria.BatchUpdate;
 import io.army.criteria.IllegalOneStmtModeException;
+import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.dialect.BatchReturningUpdate;
+import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
-import io.army.example.bank.domain.user.ChinaProvince_;
-import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.example.bank.domain.user.HistoryChinaRegion_;
+import io.army.example.bank.domain.user.*;
 import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,6 +192,7 @@ public class UpdateUnitTests extends PostgreUnitTests {
 
     }
 
+
     @Test(expectedExceptions = IllegalOneStmtModeException.class)
     public void updateChildBeforeParentCteError() {
         final List<Long> idList = Arrays.asList(1L, 2L, 3L, 4L);
@@ -218,6 +219,126 @@ public class UpdateUnitTests extends PostgreUnitTests {
                 .from("child_cte")
                 .where(ChinaRegion_.id::equal, SQLs.refField("child_cte", ChinaRegion_.ID))
                 .asUpdate();
+
+        Assert.fail();
+        printStmt(LOG, stmt);
+
+    }
+
+
+    @Test(expectedExceptions = IllegalOneStmtModeException.class)
+    public void updateChildBeforeParentCteErrorWithInsertParent() {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+
+        final List<Long> idList = Arrays.asList(1L, 2L, 3L, 4L);
+
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                .with("first_child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
+                        .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaProvince_.id.in(SQLs::rowParam, idList))
+                        .and(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .returning(SQLs.field("p", ChinaProvince_.id).as("myId"))
+                        .asReturningUpdate()
+                ).space()
+                .insertInto(ChinaRegion_.T)
+                .values(regionList)
+                .asInsert();
+
+        Assert.fail();
+        printStmt(LOG, stmt);
+
+    }
+
+
+    @Test(expectedExceptions = IllegalOneStmtModeException.class)
+    public void updateChildBeforeParentCteErrorWithReturningInsertParent() {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
+
+        final List<Long> idList = Arrays.asList(1L, 2L, 3L, 4L);
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .with("first_child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
+                        .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaProvince_.id.in(SQLs::rowParam, idList))
+                        .and(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .returning(SQLs.field("p", ChinaProvince_.id).as("myId"))
+                        .asReturningUpdate()
+                ).space()
+                .insertInto(ChinaRegion_.T)
+                .values(regionList)
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.fail();
+        printStmt(LOG, stmt);
+
+    }
+
+
+    @Test(expectedExceptions = IllegalOneStmtModeException.class)
+    public void updateChildBeforeParentCteErrorWithInsertChild() {
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+
+        final List<Long> idList = Arrays.asList(1L, 2L, 3L, 4L);
+
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .values(regionList)
+                .asInsert()
+
+                .child()
+
+                .with("first_child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
+                        .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaProvince_.id.in(SQLs::rowParam, idList))
+                        .and(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .returning(SQLs.field("p", ChinaProvince_.id).as("myId"))
+                        .asReturningUpdate()
+                ).space()
+                .insertInto(ChinaProvince_.T)
+                .values(regionList)
+                .asInsert();
+
+        Assert.fail();
+        printStmt(LOG, stmt);
+
+    }
+
+
+    @Test(expectedExceptions = IllegalOneStmtModeException.class)
+    public void updateChildBeforeParentCteErrorWithReturningInsertChild() {
+        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+
+        final List<Long> idList = Arrays.asList(1L, 2L, 3L, 4L);
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .values(regionList)
+                .returningAll()
+                .asReturningInsert()
+
+                .child()
+
+                .with("first_child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
+                        .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaProvince_.id.in(SQLs::rowParam, idList))
+                        .and(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .returning(SQLs.field("p", ChinaProvince_.id).as("myId"))
+                        .asReturningUpdate()
+                ).space()
+                .insertInto(ChinaProvince_.T)
+                .values(regionList)
+                .returningAll()
+                .asReturningInsert();
+
 
         Assert.fail();
         printStmt(LOG, stmt);

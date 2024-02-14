@@ -26,6 +26,7 @@ import io.army.criteria.impl.inner.postgre._PostgreInsert;
 import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.criteria.postgre.PostgreQuery;
+import io.army.criteria.postgre.PostgreStatement;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;
@@ -95,6 +96,11 @@ abstract class PostgreInserts extends InsertSupports {
 
     /*-------------------below private method -------------------*/
 
+    private static <T extends InsertStatement> T insertIdentity(final T stmt) {
+        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreStatement) stmt);
+        return stmt;
+    }
+
     private static <P> PostgreInsert._ParentInsert<P> parentInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
         final Statement._DmlInsertClause<PostgreInsert._ParentInsert<P>> spec;
         final InsertMode mode;
@@ -113,11 +119,7 @@ abstract class PostgreInserts extends InsertSupports {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         handleParentUnknownDomain(clause.cteList);
-
-        final PostgreInsert._ParentInsert<P> stmt;
-        stmt = spec.asInsert();
-        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
-        return stmt;
+        return insertIdentity(spec.asInsert());
     }
 
     private static <P> PostgreInsert._ParentReturnInsert<P> parentReturningEnd(PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -138,11 +140,7 @@ abstract class PostgreInserts extends InsertSupports {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         handleParentUnknownDomain(clause.cteList);
-
-        final PostgreInsert._ParentReturnInsert<P> stmt;
-        stmt = spec.asReturningInsert();
-        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
-        return stmt;
+        return insertIdentity(spec.asReturningInsert());
     }
 
     private static Insert insertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -180,10 +178,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
         handleParentUnknownDomain(clause.cteList);
 
-        final Insert stmt;
-        stmt = spec.asInsert();
-        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
-        return stmt;
+        return insertIdentity(spec.asInsert());
     }
 
 
@@ -220,10 +215,7 @@ abstract class PostgreInserts extends InsertSupports {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         handleParentUnknownDomain(clause.cteList);
-        final ReturningInsert stmt;
-        stmt = spec.asReturningInsert();
-        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
-        return stmt;
+        return insertIdentity(spec.asReturningInsert());
     }
 
 
@@ -364,7 +356,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
 
-    }//PrimaryInsertIntoClause
+    } //PrimaryInsertIntoClause
 
 
     private static final class ChildInsertIntoClause<P> extends ChildDynamicWithClause<
@@ -376,12 +368,12 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final Function<PostgreComplexValuesClause<?, ?, ?>, ReturningInsert> dqlFunction;
 
-        private ChildInsertIntoClause(ValueSyntaxOptions parentOption
-                , Function<PostgreComplexValuesClause<?, ?, ?>, Insert> dmlFunction
-                , Function<PostgreComplexValuesClause<?, ?, ?>, ReturningInsert> dqlFunction) {
+        private ChildInsertIntoClause(ValueSyntaxOptions parentOption,
+                                      Function<PostgreComplexValuesClause<?, ?, ?>, Insert> dmlFunction,
+                                      Function<PostgreComplexValuesClause<?, ?, ?>, ReturningInsert> dqlFunction) {
             super(parentOption, CriteriaContexts.primaryInsertContext(PostgreUtils.DIALECT, null));
-            this.dmlFunction = dmlFunction;
-            this.dqlFunction = dqlFunction;
+            this.dmlFunction = dmlFunction.andThen(PostgreInserts::insertIdentity);
+            this.dqlFunction = dqlFunction.andThen(PostgreInserts::insertIdentity);
             ContextStack.push(this.context);
         }
 
@@ -408,7 +400,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
 
-    }//ChildInsertIntoClause
+    } // ChildInsertIntoClause
 
     private static final class ComplexInsertIntoClause<I extends Item> extends NonQueryWithCteOption<
             PostgreInsert._ComplexNullOptionSpec<I>,
