@@ -150,19 +150,33 @@ public class UpdateTests extends SessionTestSupport {
 
     @Transactional
     @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
-    public void updateChild(final SyncLocalSession session) {
-        final List<ChinaProvince> regionList = createProvinceListWithCount(3);
+    public void updateChildBeforeParent(final SyncLocalSession session) {
+        final List<ChinaProvince> regionList = createProvinceListWithCount(6);
         session.batchSave(regionList);
+
+        final List<Long> idList = extractRegionIdList(regionList);
 
         final long startNanoSecond = System.nanoTime();
 
         final Update stmt;
         stmt = Postgres.singleUpdate()
-                .with("child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
+                .with("first_child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
                         .set(ChinaProvince_.governor, SQLs::param, randomPerson())
                         .from(ChinaRegion_.T, AS, "c")
-                        .where(ChinaProvince_.id::equal, ChinaRegion_.id)
-                        .and(ChinaProvince_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                        .where(ChinaProvince_.id.in(SQLs::rowParam, idList.subList(0, 3)))
+                        .and(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .returning(SQLs.field("p", ChinaProvince_.id).as("myId"))
+                        .asReturningUpdate()
+                ).comma("first_parent_cte").as(sw -> sw.update(ChinaRegion_.T, AS, "c")
+                        .set(ChinaRegion_.updateTime, UPDATE_TIME_PARAM_PLACEHOLDER)
+                        .from("first_child_cte")
+                        .where(ChinaRegion_.id::equal, SQLs.refField("first_child_cte", "myId"))
+                        .asUpdate()
+                ).comma("child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "p")
+                        .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaProvince_.id.in(SQLs::rowParam, idList.subList(3, 6)))
+                        .and(ChinaProvince_.id::equal, ChinaRegion_.id)
                         .returning(ChinaProvince_.id)
                         .asReturningUpdate()
                 ).space()
@@ -173,7 +187,45 @@ public class UpdateTests extends SessionTestSupport {
                 .asUpdate();
 
         statementCostTimeLog(session, LOG, startNanoSecond);
-        Assert.assertEquals(session.update(stmt), regionList.size());
+        Assert.assertEquals(session.update(stmt), 3L);
+    }
+
+    @Transactional
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    public void updateChildAfterParent(final SyncLocalSession session) {
+        final List<ChinaProvince> regionList = createProvinceListWithCount(6);
+        session.batchSave(regionList);
+
+        final List<Long> idList = extractRegionIdList(regionList);
+
+        final long startNanoSecond = System.nanoTime();
+
+        final Update stmt;
+        stmt = Postgres.singleUpdate()
+                .with("first_parent_cte").as(sw -> sw.update(ChinaRegion_.T, AS, "p")
+                        .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, randomDecimal())
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, idList.subList(0, 3)))
+                        .returning(SQLs.field("p", ChinaRegion_.id).as("myId"))
+                        .asReturningUpdate()
+                ).comma("first_child_cte").as(sw -> sw.update(ChinaProvince_.T, AS, "c")
+                        .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                        .from("first_parent_cte")
+                        .where(ChinaProvince_.id::equal, SQLs.refField("first_parent_cte", "myId"))
+                        .asUpdate()
+                ).comma("parent_cte").as(sw -> sw.update(ChinaRegion_.T, AS, "p")
+                        .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, randomDecimal())
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, idList.subList(3, 6)))
+                        .returning(ChinaRegion_.id)
+                        .asReturningUpdate()
+                ).space()
+                .update(ChinaProvince_.T, AS, "c")
+                .set(ChinaProvince_.governor, SQLs::param, randomPerson())
+                .from("parent_cte")
+                .where(ChinaProvince_.id::equal, SQLs.refField("parent_cte", ChinaProvince_.ID))
+                .asUpdate();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
+        Assert.assertEquals(session.update(stmt), 3L);
     }
 
 

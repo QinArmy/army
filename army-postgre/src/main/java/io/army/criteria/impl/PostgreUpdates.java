@@ -842,7 +842,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
     static final class PostgreSubUpdate<I extends Item, T> extends PostgreUpdates<I, I, T>
-            implements SubStatement, _ReturningDml {
+            implements SubStatement {
 
         private final Function<SubStatement, I> function;
 
@@ -859,11 +859,11 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
         @Override
         I onAsReturningUpdate() {
-            return this.function.apply(this);
+            return this.function.apply(new PostgreSubReturningUpdate(this));
         }
 
 
-    }//PostgreSubUpdate
+    } // PostgreSubUpdate
 
 
     private static abstract class PostgreUpdateClause<I extends Item, Q extends Item>
@@ -1124,7 +1124,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         }
 
 
-    }//PostgreUpdateWrapper
+    } // PostgreUpdateWrapper
 
 
     private static final class ReturningUpdateWrapper extends PostgreUpdateWrapper
@@ -1135,7 +1135,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         }
 
 
-    }//ReturningUpdateWrapper
+    } // ReturningUpdateWrapper
 
 
     private static final class PostgreBatchReturningUpdate extends PostgreUpdateWrapper
@@ -1154,7 +1154,21 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         }
 
 
-    }//PostgreBatchReturningUpdate
+    } // PostgreBatchReturningUpdate
+
+
+    /**
+     * @see PostgreSubUpdate
+     */
+    static final class PostgreSubReturningUpdate extends PostgreUpdateWrapper
+            implements SubStatement, _ReturningDml {
+
+        private PostgreSubReturningUpdate(PostgreSubUpdate<?, ?> stmt) {
+            super(stmt);
+        }
+
+
+    } // PostgreSubReturningUpdate
 
 
 }

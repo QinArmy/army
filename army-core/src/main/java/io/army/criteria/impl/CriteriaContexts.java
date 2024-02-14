@@ -1215,9 +1215,16 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final TableMeta<?> getTable(final String tableAlias) {
+        public final TableMeta<?> getTable(final @Nullable String tableAlias) {
+            if (tableAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
             final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             if (aliasToBlock == null) {
+                if (this instanceof JoinableSingleDmlContext
+                        && tableAlias.equals(((JoinableSingleDmlContext) this).tableAlias)) {
+                    return ((JoinableSingleDmlContext) this).targetTable;
+                }
                 return null;
             }
             final _TabularBlock block;
@@ -1699,6 +1706,16 @@ abstract class CriteriaContexts {
 
             final StatementContext outerContext = this.outerContext;
 
+            final TableMeta<?> dmlTargetTable;
+            final String dmlTargetTableAlias;
+            if (this instanceof JoinableSingleDmlContext) {
+                dmlTargetTable = ((JoinableSingleDmlContext) this).targetTable;
+                dmlTargetTableAlias = ((JoinableSingleDmlContext) this).tableAlias;
+            } else {
+                dmlTargetTable = null;
+                dmlTargetTableAlias = null;
+            }
+
             String tableAlias;
             TableMeta<?> firstFieldTable;
             _TabularBlock block;
@@ -1710,9 +1727,10 @@ abstract class CriteriaContexts {
 
                     if (firstFieldTable == null) {
                         firstFieldTable = field.tableMeta();
-
                         tableAlias = aliasEntry.getKey();
-                        if (aliasToBlock != null && (block = aliasToBlock.get(tableAlias)) != null) {
+                        if (firstFieldTable == dmlTargetTable && tableAlias.equals(dmlTargetTableAlias)) {
+                            belongToThisLevel = true;
+                        } else if (aliasToBlock != null && (block = aliasToBlock.get(tableAlias)) != null) {
                             if (block.tableItem() != firstFieldTable) {
                                 throw unknownQualifiedField(field);
                             }

@@ -19,7 +19,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
-import io.army.criteria.impl.inner.postgre._PostgreDelete;
 import io.army.criteria.impl.inner.postgre._PostgreUpdate;
 import io.army.criteria.postgre.FuncColumnDefCommaClause;
 import io.army.criteria.postgre.PostgreDelete;
@@ -56,10 +55,9 @@ abstract class PostgreUtils extends CriteriaUtils {
 
 
     static void validateDmlInWithClause(final List<_Cte> cteList, final @Nullable PostgreStatement mainStmt) {
-        final int cteSize = cteList.size();
+        final int cteSize = cteList.size(), lastCteIndex = cteSize - 1;
 
         _PostgreCte cte;
-        _SingleDml stmt;
         SubStatement subStatement;
 
         TableMeta<?> targetTable;
@@ -77,17 +75,10 @@ abstract class PostgreUtils extends CriteriaUtils {
             cte = (_PostgreCte) cteList.get(cteIndex);
             subStatement = cte.subStatement();
 
-            if (subStatement instanceof PostgreUpdate) {
-                stmt = (_PostgreUpdate) subStatement;
-                if (!((targetTable = stmt.table()) instanceof ChildTableMeta)) {
-                    continue;
-                }
-            } else if (subStatement instanceof PostgreDelete) {
-                stmt = (_PostgreDelete) subStatement;
-                if (!((targetTable = stmt.table()) instanceof ChildTableMeta)) {
-                    continue;
-                }
-            } else {
+            if (!(subStatement instanceof _SingleDml)) {
+                continue;
+            }
+            if (!((targetTable = ((_PostgreUpdate) subStatement).table()) instanceof ChildTableMeta)) {
                 continue;
             }
 
@@ -99,16 +90,23 @@ abstract class PostgreUtils extends CriteriaUtils {
                 throw cteChildNoJoinParent(cte.name(), child, childAlias);
             }
 
+            predicateList = ((_SingleDml) subStatement).wherePredicateList();
+            predicateSize = predicateList.size();
+            parent = ((ChildTableMeta<?>) targetTable).parentMeta();
+
             if (tabularItemSize == 1
                     && subStatement instanceof PostgreUpdate
-                    && blockList.get(0).tableItem() instanceof _Cte) { // join parent cte
-                validateParentCte(child, cte, cteList, cteIndex, ((_PostgreUpdate) subStatement).wherePredicateList());
+                    && blockList.get(0).tableItem() instanceof _Cte
+                    && predicateSize == 1) { // join parent cte
+
+                refField = idFieldEqualCteIdField(predicateList.get(0), child.id());
+                if (refField == null || cteIndex == 0) {
+                    throw cteChildNoJoinParent(cte.name(), child, childAlias);
+                }
+                validateParentCte(child, childAlias, blockList.get(0), cte.name(), refField);
                 continue;
             }
 
-
-            predicateList = ((_SingleDml) subStatement).wherePredicateList();
-            predicateSize = predicateList.size();
 
             parentId = null;
             for (int predicateIndex = 0; predicateIndex < predicateSize; predicateIndex++) {
@@ -118,16 +116,15 @@ abstract class PostgreUtils extends CriteriaUtils {
                 }
             }
 
-            parent = ((ChildTableMeta<?>) targetTable).parentMeta();
 
             if (parentId == null) {
                 final String idFieldName = child.id().fieldName();
                 String m = String.format("Cte[%s] WHERE no the predicate %s.%s = %s.%s", cte.name(), child, idFieldName,
                         parent, idFieldName);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             }
 
-            refField = null;
+            refField = null; // clear
             for (int blockIndex = 0; blockIndex < tabularItemSize; blockIndex++) {
                 block = blockList.get(blockIndex);
                 if (block.tableItem() != parent) {
@@ -139,8 +136,13 @@ abstract class PostgreUtils extends CriteriaUtils {
                     continue;
                 }
 
-                refField = validateParentTable(child, cte, cteIndex, cteList);
-                if (refField == null || !(stmt instanceof _ReturningDml)) {
+                if (cteIndex < lastCteIndex) {
+                    refField = validateParentTable(child, cte, cteIndex, cteList);
+                }
+                if (refField == null && mainStmt instanceof _SingleDml && ((_SingleDml) mainStmt).table() == parent) {
+                    refField = validateParentTableFromMainStmt(parent.id(), cte.name(), (_SingleDml) mainStmt);
+                }
+                if (refField == null || !(subStatement instanceof _ReturningDml)) {
                     throw cteChildNoJoinParent(cte.name(), child, childAlias);
                 }
 
@@ -152,9 +154,35 @@ abstract class PostgreUtils extends CriteriaUtils {
 
             } // block loop for
 
+            if (refField == null) {
+                throw cteChildNoJoinParent(cte.name(), child, childAlias);
+            }
+
 
         } // for loop
 
+        if (mainStmt instanceof PrimaryStatement
+                && mainStmt instanceof _PostgreUpdate
+                && (targetTable = ((_SingleDml) mainStmt).table()) instanceof ChildTableMeta) { // here never DELETE statement
+
+            blockList = ((_JoinableUpdate) mainStmt).tableBlockList();
+            child = (ChildTableMeta<?>) targetTable;
+            childAlias = ((_SingleDml) mainStmt).tableAlias();
+            if (blockList.size() != 1 || !((blockList.get(0)).tableItem() instanceof _Cte)) {
+                throw cteChildNoJoinParent(null, child, childAlias);
+            }
+            predicateList = ((_SingleDml) mainStmt).wherePredicateList();
+            if (predicateList.size() != 1 || cteSize == 0) {
+                throw cteChildNoJoinParent(null, child, childAlias);
+            }
+            refField = idFieldEqualCteIdField(predicateList.get(0), child.id());
+
+            if (refField == null) {
+                throw cteChildNoJoinParent(null, child, childAlias);
+            }
+
+            validateParentCte(child, childAlias, blockList.get(0), null, refField);
+        }
 
     }
 
@@ -200,26 +228,51 @@ abstract class PostgreUtils extends CriteriaUtils {
     /**
      * @see #validateDmlInWithClause(List, PostgreStatement)
      */
-    private static CriteriaException cteChildNoJoinParent(String cteName, ChildTableMeta<?> child, String tableAlias) {
-        String m = String.format("Cte[%s] %s [alias : %s] is child ,but don't join parent or cte of parent",
+    private static CriteriaException cteChildNoJoinParent(@Nullable String cteName, ChildTableMeta<?> child, String tableAlias) {
+        if (cteName == null) {
+            cteName = "";
+        } else {
+            cteName = "Cte " + cteName + " ";
+        }
+        String m = String.format("%s%s [alias : %s] is child ,but don't join parent or cte of parent",
                 cteName, child, tableAlias);
-        return ContextStack.clearStackAndCriteriaError(m);
+        return ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
     }
 
     /**
      * @see #validateDmlInWithClause(List, PostgreStatement)
      */
-    private static void validateParentCte(final ChildTableMeta<?> child, final _Cte cte, final List<_Cte> cteList,
-                                          final int index, final List<_Predicate> predicateList) {
+    private static void validateParentCte(final ChildTableMeta<?> child, String childAlias, final _TabularBlock block,
+                                          final @Nullable String childCteName, final DerivedField refField) {
+        final ParentTableMeta<?> parent = child.parentMeta();
+
+        final _Cte parentCte = (_Cte) block.tableItem();
+        final SubStatement subStatement;
+        subStatement = parentCte.subStatement();
+
+        if (!(subStatement instanceof _PostgreUpdate)) {
+            throw cteChildNoJoinParent(childCteName, child, childAlias);
+        }
+
+        if (((_PostgreUpdate) subStatement).table() != parent) {
+            throw cteChildNoJoinParent(childCteName, child, childAlias);
+        }
+
+        if (!(subStatement instanceof _ReturningDml)) {
+            throw cteChildNoJoinParent(childCteName, child, childAlias);
+        }
+
+        validatePrimaryIdSelection(child, childAlias, ((_Statement._ReturningListSpec) subStatement), refField);
 
     }
 
     /**
+     * @param currentCteIndex  -1 or positive
      * @see #validateDmlInWithClause(List, PostgreStatement)
      */
     @Nullable
-    private static DerivedField validateParentTable(final ChildTableMeta<?> child, final _Cte childCte, final int index,
-                                                    final List<_Cte> cteList) {
+    private static DerivedField validateParentTable(final ChildTableMeta<?> child, final _Cte childCte,
+                                                    final int currentCteIndex, final List<_Cte> cteList) {
         final int cteSize = cteList.size();
         final _SingleDml childSubStatement = (_SingleDml) childCte.subStatement();
         final boolean childIsUpdate = childSubStatement instanceof PostgreUpdate;
@@ -233,11 +286,9 @@ abstract class PostgreUtils extends CriteriaUtils {
         _TabularBlock block;
 
         List<_Predicate> predicateList;
-        _Predicate predicate;
-        Expressions.DualPredicate dualPredicate;
         DerivedField derivedField = null;
-        boolean leftId, rightId;
-        for (int i = index + 1; i < cteSize; i++) {
+        String childCteAlias;
+        for (int i = currentCteIndex + 1; i < cteSize; i++) {
             parentCte = cteList.get(i);
             subStatement = parentCte.subStatement();
 
@@ -275,38 +326,16 @@ abstract class PostgreUtils extends CriteriaUtils {
                 continue;
             }
 
-            predicate = predicateList.get(0);
-            if (!(predicate instanceof Expressions.DualPredicate)) {
-                continue;
-            }
-            dualPredicate = (Expressions.DualPredicate) predicate;
-
-            leftId = rightId = false;
-            if (dualPredicate.left == parentId) {
-                leftId = true;
-            } else if (dualPredicate.left instanceof QualifiedField) {
-                leftId = ((QualifiedField<?>) dualPredicate.left).fieldMeta() == parentId;
-            } else if (dualPredicate.right == parentId) {
-                rightId = true;
-            } else if (dualPredicate.right instanceof QualifiedField) {
-                rightId = ((QualifiedField<?>) dualPredicate.right).fieldMeta() == parentId;
-            }
-
-            if (leftId) {
-                if (!(dualPredicate.right instanceof DerivedField)) {
-                    continue;
-                }
-                derivedField = (DerivedField) dualPredicate.right;
-            } else if (rightId) {
-                if (!(dualPredicate.left instanceof DerivedField)) {
-                    continue;
-                }
-                derivedField = (DerivedField) dualPredicate.left;
-            } else {
+            derivedField = idFieldEqualCteIdField(predicateList.get(0), parentId);
+            if (derivedField == null) {
                 continue;
             }
 
-            if (derivedField.tableAlias().equals(refCte.name())) {
+            childCteAlias = block.alias();
+            if (!_StringUtils.hasText(childCteAlias)) {
+                childCteAlias = refCte.name();
+            }
+            if (childCteAlias.equals(derivedField.tableAlias())) {
                 break;
             }
 
@@ -359,6 +388,7 @@ abstract class PostgreUtils extends CriteriaUtils {
         } // loop for
 
         if (selection == null) {
+            // no bug,never here
             throw CriteriaUtils.unknownSelection(label);
         }
 
@@ -371,7 +401,96 @@ abstract class PostgreUtils extends CriteriaUtils {
                 && alias.equals(((QualifiedField<?>) tableField).tableAlias()));
     }
 
+    /**
+     * @see #validateDmlInWithClause(List, PostgreStatement)
+     */
+    @Nullable
+    private static DerivedField validateParentTableFromMainStmt(final PrimaryFieldMeta<?> idField, final String refCteName,
+                                                                final _SingleDml mainStmt) {
+        final List<_TabularBlock> blockList = ((_Statement._JoinableStatement) mainStmt).tableBlockList();
 
+        if (blockList.size() != 1 || !(blockList.get(0).tableItem() instanceof _Cte)) {
+            return null;
+        }
+
+        final List<_Predicate> predicateList = mainStmt.wherePredicateList();
+
+        if (predicateList.size() != 1) {
+            return null;
+        }
+
+        final _TabularBlock cteBlock = blockList.get(0);
+        final _Cte refCte = (_Cte) cteBlock.tableItem();
+
+        if (!refCte.name().equals(refCteName)) {
+            return null;
+        }
+
+        final DerivedField field;
+        field = idFieldEqualCteIdField(predicateList.get(0), idField);
+        if (field == null) {
+            return null;
+        }
+
+
+        String cteAlias;
+        cteAlias = cteBlock.alias();
+        if (!_StringUtils.hasText(cteAlias)) {
+            cteAlias = refCte.name();
+        }
+
+        if (!field.tableAlias().equals(cteAlias)) {
+            return null;
+        }
+        return field;
+    }
+
+
+    /**
+     * @see #validateParentTableFromMainStmt(PrimaryFieldMeta, String, _SingleDml)
+     * @see #validateParentTable(ChildTableMeta, _Cte, int, List)
+     * @see #validateParentCte(ChildTableMeta, String, _TabularBlock, String, DerivedField)
+     */
+    @Nullable
+    private static DerivedField idFieldEqualCteIdField(final _Predicate predicate, final PrimaryFieldMeta<?> idField) {
+
+        if (!(predicate instanceof Expressions.DualPredicate)) {
+            return null;
+        }
+
+        final Expressions.DualPredicate dualPredicate = (Expressions.DualPredicate) predicate;
+
+        boolean leftId, rightId;
+        leftId = rightId = false;
+        if (dualPredicate.left == idField) {
+            leftId = true;
+        } else if (dualPredicate.left instanceof QualifiedField) {
+            leftId = ((QualifiedField<?>) dualPredicate.left).fieldMeta() == idField;
+        } else if (dualPredicate.right == idField) {
+            rightId = true;
+        } else if (dualPredicate.right instanceof QualifiedField) {
+            rightId = ((QualifiedField<?>) dualPredicate.right).fieldMeta() == idField;
+        }
+
+        final DerivedField derivedField;
+        if (leftId) {
+            if (dualPredicate.right instanceof DerivedField) {
+                derivedField = (DerivedField) dualPredicate.right;
+            } else {
+                derivedField = null;
+            }
+        } else if (rightId) {
+            if (dualPredicate.left instanceof DerivedField) {
+                derivedField = (DerivedField) dualPredicate.left;
+            } else {
+                derivedField = null;
+            }
+
+        } else {
+            derivedField = null;
+        }
+        return derivedField;
+    }
 
 
 

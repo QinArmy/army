@@ -69,7 +69,11 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
     }
 
     public static void assertSubUpdate(final SubStatement update) {
-        if (!(update instanceof PostgreUpdates.PostgreSubUpdate)) {
+        if (update instanceof _ReturningDml) {
+            if (!(update instanceof PostgreUpdates.PostgreSubReturningUpdate)) {
+                throw nonArmyStatement(update);
+            }
+        } else if (!(update instanceof PostgreUpdates.PostgreSubUpdate)) {
             throw nonArmyStatement(update);
         }
     }

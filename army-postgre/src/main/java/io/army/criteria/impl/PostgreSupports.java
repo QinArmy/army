@@ -321,15 +321,13 @@ abstract class PostgreSupports extends CriteriaSupports {
                     this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
                             ((_DerivedTable) subStatement).refAllSelection(), this.name);
                 }
-            } else if (subStatement instanceof _ReturningDml) {
-                if (this.columnAliasList.size() == 0) {
-                    this.selectionMap = CriteriaUtils.createDerivedSelectionMap(((_ReturningDml) subStatement).returningList());
-                } else {
-                    this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
-                            _DialectUtils.flatSelectItem(((_ReturningDml) subStatement).returningList()), this.name);
-                }
-            } else {
+            } else if (!(subStatement instanceof _ReturningDml)) {
                 this.selectionMap = null;
+            } else if (this.columnAliasList.size() == 0) {
+                this.selectionMap = CriteriaUtils.createDerivedSelectionMap(((_ReturningDml) subStatement).returningList());
+            } else {
+                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
+                        _DialectUtils.flatSelectItem(((_ReturningDml) subStatement).returningList()), this.name);
             }
 
         }
