@@ -806,11 +806,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
         @Override
         Delete asPostgreDelete() {
+            PostgreUtils.validateDmlInWithClause(cteList(), this);
             return this;
         }
 
         @Override
         ReturningDelete onAsReturningDelete() {
+            PostgreUtils.validateDmlInWithClause(cteList(), this);
             //ReturningDelete must be wrapped
             return new PrimaryReturningDeleteWrapper(this);
         }
@@ -850,11 +852,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
         @Override
         _BatchDeleteParamSpec asPostgreDelete() {
+            PostgreUtils.validateDmlInWithClause(cteList(), this);
             return this;
         }
 
         @Override
         _BatchReturningDeleteParamSpec onAsReturningDelete() {
+            PostgreUtils.validateDmlInWithClause(cteList(), this);
             return this::createBatchReturningDelete;
         }
 
@@ -867,7 +871,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
 
     static final class SubSimpleDelete<I extends Item> extends PostgreDeletes<I, I>
-            implements SubStatement, _ReturningDml {
+            implements SubStatement {
 
         private final Function<SubStatement, I> function;
 
@@ -886,8 +890,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
         @Override
         I onAsReturningDelete() {
-            // sub update statement don't need wrapper
-            return this.function.apply(this);
+            return this.function.apply(new PostgreSubReturningDelete(this));
         }
 
 
@@ -896,7 +899,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
 
     static abstract class PostgreReturningDeleteWrapper extends CriteriaSupports.StatementMockSupport
-            implements PostgreDelete, _PostgreDelete {
+            implements PostgreDelete, _PostgreDelete, _ReturningDml {
 
         private final boolean recursive;
 
@@ -1008,18 +1011,18 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
 
     private static final class PrimaryReturningDeleteWrapper extends PostgreReturningDeleteWrapper
-            implements ReturningDelete, _ReturningDml {
+            implements ReturningDelete {
 
         private PrimaryReturningDeleteWrapper(PrimarySimpleDelete stmt) {
             super(stmt);
         }
 
 
-    }//PrimaryReturningDeleteWrapper
+    } // PrimaryReturningDeleteWrapper
 
 
     private static final class BatchReturningDeleteWrapper extends PostgreReturningDeleteWrapper
-            implements BatchReturningDelete, _BatchStatement, _ReturningDml {
+            implements BatchReturningDelete, _BatchStatement {
 
         private final List<?> paramList;
 
@@ -1033,7 +1036,16 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
             return this.paramList;
         }
 
-    }//BatchReturningDeleteWrapper
+    } // BatchReturningDeleteWrapper
+
+    static final class PostgreSubReturningDelete extends PostgreReturningDeleteWrapper
+            implements SubStatement {
+
+        private PostgreSubReturningDelete(SubSimpleDelete<?> stmt) {
+            super(stmt);
+        }
+
+    } // PostgreSubReturningDelete
 
 
 }

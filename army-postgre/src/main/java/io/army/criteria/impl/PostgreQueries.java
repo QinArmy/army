@@ -84,7 +84,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
     static WithSpec<Select> simpleQuery() {
-        return new SimpleSelect<>(null, null, SQLs::identity);
+        return new SimpleSelect<>(null, null, PostgreQueries::postgreIdentitySelect);
     }
 
     static WithSpec<_BatchSelectParamSpec> batchQuery() {
@@ -114,6 +114,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     private static _BatchSelectParamSpec mapToBatchSelect(final Select select) {
+        if (select instanceof _Statement._WithClauseSpec) {
+            PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) select).cteList(), (PostgreQuery) select);
+        }
         final _BatchSelectParamSpec spec;
         if (select instanceof _Query) {
             spec = ((SimpleSelect<?>) select)::wrapToBatchSelect;
@@ -126,6 +129,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             throw new IllegalArgumentException();
         }
         return spec;
+    }
+
+    private static Select postgreIdentitySelect(final Select select) {
+        if (select instanceof _Statement._WithClauseSpec) {
+            PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) select).cteList(), (PostgreQuery) select);
+        }
+        return select;
     }
 
     private SQLs.Modifier groupByModifier;

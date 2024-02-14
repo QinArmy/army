@@ -46,10 +46,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * <p>
- * This class hold the implementation of postgre insert syntax interfaces.
- * <p>
- * Below is chinese signature:<br/>
+ * <p>This class hold the implementation of postgre insert syntax interfaces.
+ * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @since 0.6.0
@@ -115,7 +113,11 @@ abstract class PostgreInserts extends InsertSupports {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         handleParentUnknownDomain(clause.cteList);
-        return spec.asInsert();
+
+        final PostgreInsert._ParentInsert<P> stmt;
+        stmt = spec.asInsert();
+        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
+        return stmt;
     }
 
     private static <P> PostgreInsert._ParentReturnInsert<P> parentReturningEnd(PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -136,7 +138,11 @@ abstract class PostgreInserts extends InsertSupports {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         handleParentUnknownDomain(clause.cteList);
-        return spec.asReturningInsert();
+
+        final PostgreInsert._ParentReturnInsert<P> stmt;
+        stmt = spec.asReturningInsert();
+        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
+        return stmt;
     }
 
     private static Insert insertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -173,7 +179,11 @@ abstract class PostgreInserts extends InsertSupports {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         handleParentUnknownDomain(clause.cteList);
-        return spec.asInsert();
+
+        final Insert stmt;
+        stmt = spec.asInsert();
+        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
+        return stmt;
     }
 
 
@@ -210,7 +220,10 @@ abstract class PostgreInserts extends InsertSupports {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         handleParentUnknownDomain(clause.cteList);
-        return spec.asReturningInsert();
+        final ReturningInsert stmt;
+        stmt = spec.asReturningInsert();
+        PostgreUtils.validateDmlInWithClause(((_Statement._WithClauseSpec) stmt).cteList(), (PostgreQuery) stmt);
+        return stmt;
     }
 
 

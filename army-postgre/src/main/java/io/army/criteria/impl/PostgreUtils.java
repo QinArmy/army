@@ -84,13 +84,13 @@ abstract class PostgreUtils extends CriteriaUtils {
             if (!(subStatement instanceof _SingleDml)) {
                 continue;
             }
-            if (!((targetTable = ((_PostgreUpdate) subStatement).table()) instanceof ChildTableMeta)) {
+            if (!((targetTable = ((_SingleDml) subStatement).table()) instanceof ChildTableMeta)) {
                 continue;
             }
 
             child = (ChildTableMeta<?>) targetTable;
             childAlias = ((_SingleDml) subStatement).tableAlias();
-            blockList = ((_JoinableUpdate) subStatement).tableBlockList();
+            blockList = ((_Statement._JoinableStatement) subStatement).tableBlockList();
 
             if ((tabularItemSize = blockList.size()) == 0) {
                 throw cteChildNoJoinParent(cte.name(), child, childAlias);
@@ -171,7 +171,7 @@ abstract class PostgreUtils extends CriteriaUtils {
                 && mainStmt instanceof _PostgreUpdate
                 && (targetTable = ((_SingleDml) mainStmt).table()) instanceof ChildTableMeta) { // here never DELETE statement
 
-            blockList = ((_JoinableUpdate) mainStmt).tableBlockList();
+            blockList = ((_Statement._JoinableStatement) mainStmt).tableBlockList();
             child = (ChildTableMeta<?>) targetTable;
             childAlias = ((_SingleDml) mainStmt).tableAlias();
             if (blockList.size() != 1 || !((blockList.get(0)).tableItem() instanceof _Cte)) {

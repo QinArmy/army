@@ -1008,7 +1008,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
     static abstract class PostgreUpdateWrapper extends CriteriaSupports.StatementMockSupport
-            implements PostgreUpdate, _PostgreUpdate {
+            implements PostgreUpdate, _PostgreUpdate, _ReturningDml {
 
         private final boolean recursive;
 
@@ -1128,7 +1128,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
     private static final class ReturningUpdateWrapper extends PostgreUpdateWrapper
-            implements ReturningUpdate, _ReturningDml {
+            implements ReturningUpdate {
 
         private ReturningUpdateWrapper(PostgreSimpleUpdate<?> stmt) {
             super(stmt);
@@ -1139,7 +1139,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
     private static final class PostgreBatchReturningUpdate extends PostgreUpdateWrapper
-            implements BatchReturningUpdate, _BatchStatement, _ReturningDml {
+            implements BatchReturningUpdate, _BatchStatement {
 
         private final List<?> paramList;
 
@@ -1161,7 +1161,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
      * @see PostgreSubUpdate
      */
     static final class PostgreSubReturningUpdate extends PostgreUpdateWrapper
-            implements SubStatement, _ReturningDml {
+            implements SubStatement {
 
         private PostgreSubReturningUpdate(PostgreSubUpdate<?, ?> stmt) {
             super(stmt);

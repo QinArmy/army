@@ -89,7 +89,11 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
     }
 
     public static void assertSubDelete(final SubStatement stmt) {
-        if (!(stmt instanceof PostgreDeletes.SubSimpleDelete)) {
+        if (stmt instanceof _ReturningDml) {
+            if (!(stmt instanceof PostgreDeletes.PostgreSubReturningDelete)) {
+                throw nonArmyStatement(stmt);
+            }
+        } else if (!(stmt instanceof PostgreDeletes.SubSimpleDelete)) {
             throw nonArmyStatement(stmt);
         }
     }
