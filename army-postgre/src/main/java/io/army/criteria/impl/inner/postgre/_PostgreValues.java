@@ -19,7 +19,7 @@ package io.army.criteria.impl.inner.postgre;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._ValuesQuery;
 
-public interface _PostgreValues extends _ValuesQuery, _Statement._WithClauseSpec, _Statement._SQL2008LimitClauseSpec {
+public interface _PostgreValues extends _ValuesQuery, _Statement._SQL2008LimitClauseSpec {
 
 
 }

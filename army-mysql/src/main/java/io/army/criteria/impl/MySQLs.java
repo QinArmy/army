@@ -51,8 +51,6 @@ public abstract class MySQLs extends MySQLSyntax {
     public static final Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
     public static final Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
 
-    public static final WordsAtTimeZone AT_TIME_ZONE = MySQLWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
-
 
     /**
      * <p>The {@link MappingType} of function return type: {@link  LocalDateType}
@@ -332,9 +330,5 @@ public abstract class MySQLs extends MySQLSyntax {
 
     }
 
-
-    public interface WordsAtTimeZone extends SQLWords {
-
-    }
 
 }

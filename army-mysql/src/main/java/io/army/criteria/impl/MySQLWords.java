@@ -87,30 +87,5 @@ abstract class MySQLWords {
 
     }//WordDistinct
 
-    enum KeyWordsAtTimeZone implements MySQLs.WordsAtTimeZone {
-
-        AT_TIME_ZONE(" AT TIME ZONE");
-
-
-        private final String spaceWord;
-
-        KeyWordsAtTimeZone(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return MySQLSyntax.keyWordsToString(this);
-        }
-
-
-    }//KeyWordsAtTimeZone
-
 
 }

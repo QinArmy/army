@@ -55,7 +55,6 @@ public interface PostgreCtes extends CteBuilderSpec {
 
    PostgreQuery._DynamicCteParensSpec subQuery(String name);
 
-   PostgreValues._DynamicCteParensSpec subValues(String name);
 
 
 }

@@ -28,9 +28,9 @@ import io.army.criteria.ValuesQuery;
 public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
 
-    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
-            _StaticIntersectClause<_QueryWithComplexSpec<I>>,
-            _StaticExceptClause<_QueryWithComplexSpec<I>> {
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryComplexSpec<I>>,
+            _StaticIntersectClause<_QueryComplexSpec<I>>,
+            _StaticExceptClause<_QueryComplexSpec<I>> {
 
     }
 
@@ -105,26 +105,8 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
     }
 
 
-    interface _ValuesSpec<I extends Item> extends _PostgreValuesClause<I>,
-            _DynamicParensRowSetClause<WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
-
-    }
-
-    /**
-     * <p>This interface is public interface that developer can directly use.
-     */
-    interface WithSpec<I extends Item> extends _PostgreDynamicWithClause<_ValuesSpec<I>>,
-            PostgreQuery._PostgreStaticWithClause<_ValuesSpec<I>>,
-            _ValuesSpec<I> {
-
-    }
-
-    interface _ValuesDynamicCteAsClause extends _PostgreDynamicCteAsClause<WithSpec<_CommaClause<PostgreCtes>>,
-            _CommaClause<PostgreCtes>> {
-
-    }
-
-    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_ValuesDynamicCteAsClause>, _ValuesDynamicCteAsClause {
+    interface ValuesSpec<I extends Item> extends _PostgreValuesClause<I>,
+            _DynamicParensRowSetClause<ValuesSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -136,8 +118,8 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
     }
 
     interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
-            _PostgreDynamicWithClause<_QueryComplexSpec<I>>,
-            PostgreQuery._PostgreStaticWithClause<_QueryComplexSpec<I>> {
+            _PostgreDynamicWithClause<PostgreQuery._PostgreSelectClause<I>>,
+            PostgreQuery._PostgreStaticWithClause<PostgreQuery._PostgreSelectClause<I>> {
 
     }
 

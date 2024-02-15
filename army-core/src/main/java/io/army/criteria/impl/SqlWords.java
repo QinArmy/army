@@ -994,4 +994,20 @@ abstract class SqlWords {
     } //  KeyWordsGroupBy
 
 
+    enum KeyWordsAtTimeZone implements SQLs.WordsAtTimeZone, Functions.ArmyKeyWord {
+
+        AT_TIME_ZONE;
+
+        @Override
+        public final String spaceRender() {
+            return " AT TIME ZONE";
+        }
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+
+    } // KeyWordsAtTimeZone
 }

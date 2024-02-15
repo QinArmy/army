@@ -237,13 +237,13 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
      *
      * @param timestampValue    non-null {@link Expression}
-     * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
+     * @param atTimeZone        {@link SQLs#AT_TIME_ZONE}
      * @param timezoneSpecifier non-null
      * @param as                {@link SQLs#AS}
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static SimpleExpression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static SimpleExpression cast(final Expression timestampValue, SQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime) {
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime, null);
     }
@@ -253,13 +253,13 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
      *
      * @param timestampValue    non-null {@link Expression}
-     * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
+     * @param atTimeZone        {@link SQLs#AT_TIME_ZONE}
      * @param timezoneSpecifier non-null
      * @param as                {@link SQLs#AS}
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static SimpleExpression cast(Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static SimpleExpression cast(Expression timestampValue, SQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime, Expression precision) {
         Objects.requireNonNull(precision);
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime, precision);
@@ -271,13 +271,13 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
      *
      * @param timestampValue    non-null {@link Expression}
-     * @param atTimeZone        {@link MySQLs#AT_TIME_ZONE}
+     * @param atTimeZone        {@link SQLs#AT_TIME_ZONE}
      * @param timezoneSpecifier non-null
      * @param as                {@link SQLs#AS}
      * @param dateTime          must be {@link MySQLCastType#DATETIME}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
-    public static SimpleExpression cast(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    public static SimpleExpression cast(final Expression timestampValue, SQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime, int precision) {
         return _castDateTime(timestampValue, atTimeZone, timezoneSpecifier, as, dateTime
                 , SQLs.literal(IntegerType.INSTANCE, precision));
@@ -518,14 +518,14 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
 
 
     /**
-     * @see #cast(Expression, MySQLs.WordsAtTimeZone, Expression, SQLs.WordAs, MySQLCastType)
-     * @see #cast(Expression, MySQLs.WordsAtTimeZone, Expression, SQLs.WordAs, MySQLCastType, int)
-     * @see #cast(Expression, MySQLs.WordsAtTimeZone, Expression, SQLs.WordAs, MySQLCastType, Expression)
+     * @see #cast(Expression, SQLs.WordsAtTimeZone, Expression, SQLs.WordAs, MySQLCastType)
+     * @see #cast(Expression, SQLs.WordsAtTimeZone, Expression, SQLs.WordAs, MySQLCastType, int)
+     * @see #cast(Expression, SQLs.WordsAtTimeZone, Expression, SQLs.WordAs, MySQLCastType, Expression)
      */
-    private static SimpleExpression _castDateTime(final Expression timestampValue, MySQLs.WordsAtTimeZone atTimeZone
+    private static SimpleExpression _castDateTime(final Expression timestampValue, SQLs.WordsAtTimeZone atTimeZone
             , final Expression timezoneSpecifier, SQLs.WordAs as, MySQLCastType dateTime
             , @Nullable Expression precision) {
-        assert atTimeZone == MySQLs.AT_TIME_ZONE && as == SQLs.AS;
+        assert atTimeZone == SQLs.AT_TIME_ZONE && as == SQLs.AS;
 
         final String name = "CAST";
         if (dateTime != MySQLCastType.DATETIME) {

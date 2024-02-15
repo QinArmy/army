@@ -2042,7 +2042,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
 
-    }//PostgreRowsFromSpaceClause
+    } // PostgreRowsFromSpaceClause
 
 
 }

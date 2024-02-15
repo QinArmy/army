@@ -1161,6 +1161,12 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException funcNotFoundMappingType(String funcName, Object value) {
+        String m = String.format("function[%s] Not found default %s for %s.", funcName, MappingType.class.getName(),
+                ClassUtils.safeClassName(value));
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException unknownRowElement(Object element) {
         String m = String.format("unknown row element %s", element);
         return new CriteriaException(m);

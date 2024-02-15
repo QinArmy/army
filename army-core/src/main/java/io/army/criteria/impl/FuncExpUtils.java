@@ -262,7 +262,8 @@ abstract class FuncExpUtils {
     }
 
 
-    static void appendLiteral(final @Nullable Object literal, final StringBuilder sqlBuilder, final _SqlContext context) {
+    static void appendLiteral(final String funcName, final @Nullable Object literal, final StringBuilder sqlBuilder,
+                              final _SqlContext context) {
         if (literal == null) {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (literal instanceof Expression) {
@@ -271,21 +272,22 @@ abstract class FuncExpUtils {
             final MappingType type;
             type = _MappingFactory.getDefaultIfMatch(literal.getClass());
             if (type == null) {
-                throw _Exceptions.notFoundMappingType(literal);
+                throw _Exceptions.funcNotFoundMappingType(funcName, literal);
             }
             context.appendLiteral(type, literal);
         }
 
     }
 
-    static void appendLiteralList(final List<?> literalList, final StringBuilder sqlBuilder, final _SqlContext context) {
+    static void appendLiteralList(final String funcName, final List<?> literalList, final StringBuilder sqlBuilder,
+                                  final _SqlContext context) {
         final int size = literalList.size();
 
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            FuncExpUtils.appendLiteral(literalList.get(i), sqlBuilder, context);
+            FuncExpUtils.appendLiteral(funcName, literalList.get(i), sqlBuilder, context);
         }
 
     }

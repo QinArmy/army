@@ -244,7 +244,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
         @Override
         final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.argument, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.argument, sqlBuilder, context);
         }
 
         @Override
@@ -333,7 +333,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
         @Override
         final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.argList, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override

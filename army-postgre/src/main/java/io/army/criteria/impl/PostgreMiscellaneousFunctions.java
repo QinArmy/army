@@ -45,11 +45,11 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     }
 
 
+
     /*-------------------below Comparison Functions -------------------*/
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  IntegerType}
+     * <p>The {@link MappingType} of function return type: {@link  IntegerType}
      *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE">Comparison Functions</a>

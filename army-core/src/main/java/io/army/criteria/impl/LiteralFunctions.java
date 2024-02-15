@@ -26,7 +26,10 @@ import io.army.function.ExpressionOperator;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.TextType;
+import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
+import io.army.sqltype.DataType;
+import io.army.sqltype.MySQLType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -172,7 +175,6 @@ abstract class LiteralFunctions {
     }
 
 
-
     private static final class ZeroArgFunc extends OperationExpression.SqlFunctionExpression
             implements FunctionUtils.NoArgFunction {
 
@@ -210,7 +212,7 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.arg, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.arg, sqlBuilder, context);
         }
 
         @Override
@@ -236,9 +238,9 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
         }
 
         @Override
@@ -270,13 +272,13 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            FuncExpUtils.appendLiteral(this.three, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.three, sqlBuilder, context);
         }
 
         @Override
@@ -302,7 +304,7 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            FuncExpUtils.appendLiteralList(this.argList, sqlBuilder, context);
+            FuncExpUtils.appendLiteralList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override
@@ -376,7 +378,7 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
         }
 
         @Override
@@ -402,9 +404,9 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
         }
 
         @Override
@@ -437,13 +439,13 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            FuncExpUtils.appendLiteral(this.one, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            FuncExpUtils.appendLiteral(this.two, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            FuncExpUtils.appendLiteral(this.three, sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.three, sqlBuilder, context);
         }
 
         @Override
@@ -470,7 +472,7 @@ abstract class LiteralFunctions {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            FuncExpUtils.appendLiteralList(this.argList, sqlBuilder, context);
+            FuncExpUtils.appendLiteralList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override
@@ -507,7 +509,7 @@ abstract class LiteralFunctions {
                 }
                 context.appendLiteral(StringType.INSTANCE, entry.getKey());
                 sqlBuilder.append(_Constant.COMMA);
-                FuncExpUtils.appendLiteral(entry.getValue(), sqlBuilder, context);
+                FuncExpUtils.appendLiteral(this.name, entry.getValue(), sqlBuilder, context);
 
                 count++;
 
@@ -590,27 +592,29 @@ abstract class LiteralFunctions {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
-            context.appendFuncName(true, "CASE");
+            final String funcName = "CASE";
+
+            context.appendFuncName(true, funcName);
 
             final Object caseValue = this.caseValue;
             if (caseValue != null) {
-                FuncExpUtils.appendLiteral(caseValue, sqlBuilder, context);
+                FuncExpUtils.appendLiteral(funcName, caseValue, sqlBuilder, context);
             }
             _Pair<Object, Object> pair;
             for (int i = 0; i < pairSize; i++) {
                 pair = expPairList.get(i);
 
                 sqlBuilder.append(" WHEN");
-                FuncExpUtils.appendLiteral(pair.first, sqlBuilder, context);
+                FuncExpUtils.appendLiteral(funcName, pair.first, sqlBuilder, context);
                 sqlBuilder.append(" THEN");
-                FuncExpUtils.appendLiteral(pair.second, sqlBuilder, context);
+                FuncExpUtils.appendLiteral(funcName, pair.second, sqlBuilder, context);
 
             }
 
             final Object elseExpression = this.elseExpression;
             if (elseExpression != null) {
                 sqlBuilder.append(" ELSE");
-                FuncExpUtils.appendLiteral(elseExpression, sqlBuilder, context);
+                FuncExpUtils.appendLiteral(funcName, elseExpression, sqlBuilder, context);
             }
 
             sqlBuilder.append(" END");
@@ -953,5 +957,143 @@ abstract class LiteralFunctions {
         }
 
 
-    }//NoParensFunction
+    } // NoParensFunction
+
+    private static final class StandardCastFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final Object expression;
+
+        private final MappingType type;
+
+        private StandardCastFunc(Object expression, MappingType type) {
+            super("CAST", true, type);
+            this.expression = expression;
+            this.type = typeMeta();
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            FuncExpUtils.appendLiteral(this.name, this.expression, sqlBuilder, context);
+
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+
+            final ServerMeta serverMeta = context.parser().serverMeta();
+            final DataType dataType = this.type.map(serverMeta);
+            final String typeName;
+            switch (serverMeta.serverDatabase()) {
+                case MySQL:
+                    typeName = castFuncAppendMySQLDataType(dataType, serverMeta);
+                    break;
+                case PostgreSQL:
+                    castFuncAppendPostgreDataType(dataType, sqlBuilder);
+                    break;
+                default:
+            }
+
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+
+        }
+
+
+    } // StandardCastFunc
+
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast">CAST(expr AS type [ARRAY])</a>
+     */
+    private static String castFuncAppendMySQLDataType(final DataType dataTyp, final ServerMeta meta) {
+        if (!(dataTyp instanceof MySQLType)) {
+            throw new CriteriaException("");
+        }
+        String typeName;
+        switch ((MySQLType) dataTyp) {
+
+            case TINYINT:
+            case SMALLINT:
+            case MEDIUMINT:
+            case INT:
+            case BIGINT:
+                typeName = "SIGNED";
+                break;
+            case TINYINT_UNSIGNED:
+            case SMALLINT_UNSIGNED:
+            case MEDIUMINT_UNSIGNED:
+            case INT_UNSIGNED:
+            case BIGINT_UNSIGNED:
+                typeName = "UNSIGNED";
+                break;
+            case DECIMAL:
+            case DECIMAL_UNSIGNED:
+                typeName = "DECIMAL";
+                break;
+            case DOUBLE: {
+                if (meta.major() > 8) {
+                    typeName = "DOUBLE";
+                } else {
+                    typeName = "FLOAT";
+                }
+            }
+            break;
+            case FLOAT:
+                typeName = "FLOAT";
+                break;
+            case TIME:
+            case DATE:
+            case DATETIME:
+            case YEAR:
+            case JSON:
+            case GEOMETRY:
+            case POINT:
+            case LINESTRING:
+            case POLYGON:
+            case MULTIPOINT:
+            case MULTIPOLYGON:
+            case MULTILINESTRING:
+            case GEOMETRYCOLLECTION:
+                typeName = dataTyp.typeName();
+                break;
+            case ENUM:
+            case CHAR:
+            case VARCHAR:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT:
+            case LONGTEXT:
+                typeName = "CHAR";
+                break;
+            case BIT:
+            case BINARY:
+            case VARBINARY:
+            case TINYBLOB:
+            case BLOB:
+            case MEDIUMBLOB:
+            case LONGBLOB:
+                typeName = "BINARY";
+                break;
+            case BOOLEAN:
+            case SET:
+            case NULL:
+            case UNKNOWN:
+            default: {
+                String m = String.format("function[CAST] database[%s] don't support %s",
+                        meta.serverDatabase().name(), dataTyp.typeName());
+                throw new CriteriaException(m);
+            }
+
+        } // switch
+
+        return typeName;
+    }
+
+    private static void castFuncAppendPostgreDataType(final DataType dataTyp, final StringBuilder sqlBuilder) {
+
+    }
+
+
 }

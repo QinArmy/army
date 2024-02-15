@@ -259,11 +259,11 @@ public abstract class Postgres extends PostgreSyntax {
         return PostgreDeletes.batchDelete();
     }
 
-    public static PostgreValues.WithSpec<Values> simpleValues() {
+    public static PostgreValues.ValuesSpec<Values> valuesStmt() {
         return PostgreSimpleValues.simpleValues();
     }
 
-    public static PostgreValues.WithSpec<SubValues> subValues() {
+    public static PostgreValues.ValuesSpec<SubValues> subValues() {
         return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }
 

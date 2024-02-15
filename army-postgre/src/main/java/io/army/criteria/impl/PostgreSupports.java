@@ -1180,43 +1180,6 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//DynamicQueryParensClause
 
 
-    private static final class DynamicValuesParensClause extends CteParensClause<PostgreValues._ValuesDynamicCteAsClause>
-            implements PostgreValues._DynamicCteParensSpec {
-
-        private final PostgreCteBuilder builder;
-
-        private Postgres.WordMaterialized modifier;
-
-        /**
-         * @see PostgreCteBuilder#subValues(String)
-         */
-        private DynamicValuesParensClause(String name, PostgreCteBuilder builder) {
-            super(name, builder.context);
-            this.builder = builder;
-        }
-
-        @Override
-        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreValues.WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
-            return this.as(null, function);
-        }
-
-        @Override
-        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
-                                                             Function<PostgreValues.WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
-            this.modifier = modifier;
-            return function.apply(PostgreSimpleValues.subValues(this.context, this::subValuesEnd));
-        }
-
-        private DialectStatement._CommaClause<PostgreCtes> subValuesEnd(final SubValues statement) {
-            final PostgreCte cte;
-            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
-            this.context.onAddCte(cte);
-            return this.builder;
-        }
-
-
-    }//DynamicValuesParensClause
-
     private static final class PostgreCteBuilder implements PostgreCtes, CteBuilder,
             DialectStatement._CommaClause<PostgreCtes> {
 
@@ -1267,13 +1230,6 @@ abstract class PostgreSupports extends CriteriaSupports {
             return new DynamicQueryParensClause(name, this);
         }
 
-
-        @Override
-        public PostgreValues._DynamicCteParensSpec subValues(String name) {
-            this.endLastCte();
-
-            return new DynamicValuesParensClause(name, this);
-        }
 
         @Override
         public boolean isRecursive() {

@@ -191,6 +191,8 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final SQLWords COMMA = SqlWords.FuncWord.COMMA;
 
+    public static final WordsAtTimeZone AT_TIME_ZONE = SqlWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
+
     /*-------------------below literal -------------------*/
 
     public static final LiteralExpression LITERAL_0 = SQLs.literal(IntegerType.INSTANCE, 0);
@@ -800,6 +802,10 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public interface WordsGroupBy extends IndexHintPurpose {
+
+    }
+
+    public interface WordsAtTimeZone extends SQLWords {
 
     }
 
