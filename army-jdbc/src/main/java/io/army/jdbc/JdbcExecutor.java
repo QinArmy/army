@@ -1062,6 +1062,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final String sql;
             sql = parseCursorMove(safeCursorName, direction, rowCount);
 
+            printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
+
             final int rows;
             rows = statement.executeUpdate(sql);
 

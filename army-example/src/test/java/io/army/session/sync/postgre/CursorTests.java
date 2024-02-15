@@ -48,6 +48,7 @@ public class CursorTests extends SessionTestSupport {
             }
             firstRow = cursor.fetchOne(Direction.FIRST, ChinaRegion_.CLASS, ResultStates.IGNORE_STATES);
             LOG.debug("{} firstRow : {}", session.name(), firstRow);
+            cursor.move(Direction.LAST);
         }
 
     }
