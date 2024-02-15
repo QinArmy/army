@@ -29,7 +29,6 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.record.ResultStates;
 import io.army.stmt.Stmt;
-import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
@@ -384,10 +383,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
     }
 
     protected final Function<Option<?>, ?> declareCursorOptionFunc() {
-        Map<Option<?>, Object> map = _Collections.hashMap(5);
-        map.put(Option.ARMY_SESSION, this);
-        map.put(StmtCursor.CURSOR_STMT, Boolean.TRUE);
-        return map::get;
+        return Collections.singletonMap(Option.ARMY_SESSION, this)::get;
     }
 
     /*-------------------below private methods -------------------*/

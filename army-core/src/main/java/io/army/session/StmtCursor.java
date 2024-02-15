@@ -36,7 +36,6 @@ import java.util.List;
  */
 public interface StmtCursor extends Cursor {
 
-    Option<Boolean> CURSOR_STMT = Option.from("CURSOR STMT", Boolean.class);
 
     List<? extends Selection> selectionList();
 

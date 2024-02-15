@@ -847,11 +847,17 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         private final Warning warning;
 
 
-        private JdbcResultStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning) {
+        private final SyncStmtCursor stmtCursor;
+
+
+        private JdbcResultStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info,
+                                 @Nullable Warning warning,
+                                 @Nullable SyncStmtCursor stmtCursor) {
             this.serverMeta = serverMeta;
             this.resultNo = resultNo;
             this.info = info;
             this.warning = warning;
+            this.stmtCursor = stmtCursor;
         }
 
         @Override
@@ -896,7 +902,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Nullable
         @Override
         public final <T> T valueOf(final Option<T> option) {
-            final Boolean value;
+            final Object value;
             switch (this.serverMeta.serverDatabase()) {
                 case MySQL: {
                     final TransactionInfo info = this.info;
@@ -907,7 +913,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                     }
                 }
                 break;
-                case PostgreSQL:
+                case PostgreSQL: {
+                    if (SyncStmtCursor.SYNC_STMT_CURSOR.equals(option)) {
+                        value = this.stmtCursor;
+                    } else {
+                        value = null;
+                    }
+                }
+                break;
                 default:
                     value = null;
             }
@@ -922,7 +935,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 case MySQL:
                     optionSet = OPTION_SET;
                     break;
-                case PostgreSQL:
+                case PostgreSQL: {
+                    if (this.stmtCursor == null) {
+                        optionSet = Collections.emptySet();
+                    } else {
+                        optionSet = OPTION_SET;
+                    }
+                }
+                break;
                 default:
                     optionSet = Collections.emptySet();
             }
@@ -941,8 +961,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     private static abstract class JdbcUpdateStates extends JdbcResultStates {
 
-        private JdbcUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning) {
-            super(serverMeta, resultNo, info, warning);
+        private JdbcUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info,
+                                 @Nullable Warning warning, @Nullable SyncStmtCursor stmtCursor) {
+            super(serverMeta, resultNo, info, warning, stmtCursor);
         }
 
         @Override
@@ -981,7 +1002,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private JdbcQueryStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
                                 long rowCount, long affectedRows) {
-            super(serverMeta, resultNo, info, warning);
+            super(serverMeta, resultNo, info, warning, null);
             this.rowCount = rowCount;
             this.affectedRows = affectedRows;
         }
@@ -1159,8 +1180,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         private final boolean moreResult;
 
         SingleUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, long firstId, @Nullable Warning warning,
-                           long affectedRows, boolean moreResult) {
-            super(serverMeta, resultNo, info, warning);
+                           long affectedRows, boolean moreResult, @Nullable SyncStmtCursor stmtCursor) {
+            super(serverMeta, resultNo, info, warning, stmtCursor);
             this.firstId = firstId;
             this.affectedRows = affectedRows;
             this.moreResult = moreResult;
@@ -1211,7 +1232,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         BatchUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, int batchSize, int batchNo,
                           @Nullable Warning warning, long affectedRows) {
-            super(serverMeta, resultNo, info, warning);
+            super(serverMeta, resultNo, info, warning, null);
             this.batchSize = batchSize;
             this.batchNo = batchNo;
             this.affectedRows = affectedRows;
@@ -1259,13 +1280,13 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     }
 
-    protected static class ArmySyncStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
+    protected static class JdbcSyncStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
 
         final JdbcExecutor executor;
 
         private boolean cursorClosed;
 
-        private ArmySyncStmtCursor(JdbcExecutor executor, DeclareCursorStmt stmt, Session session) {
+        JdbcSyncStmtCursor(JdbcExecutor executor, DeclareCursorStmt stmt, Session session) {
             super(stmt, session);
             this.executor = executor;
         }
@@ -1464,7 +1485,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
 
-    } // ArmySyncStmtCursor
+    } // JdbcSyncStmtCursor
 
 
 }

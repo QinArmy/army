@@ -40,6 +40,7 @@ import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
 import io.army.sync.StreamOption;
+import io.army.sync.SyncSession;
 import io.army.sync.SyncStmtOption;
 import io.army.sync.executor.SyncExecutor;
 import io.army.type.ImmutableSpec;
@@ -280,7 +281,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } else if (returningId) {
                 r = (R) new SingleQueryStates(this.factory.serverMeta, 1, obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows, false, rows, false);
             } else {
-                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), firstId, mapToArmyWarning(statement.getWarnings()), rows, false);
+                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), firstId, mapToArmyWarning(statement.getWarnings()), rows, false, null);
             }
             return r;
         } catch (Exception e) {
@@ -316,11 +317,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final R r;
             if (resultClass == Long.class) {
                 r = (R) Long.valueOf(rows);
-            } else if (optionFunc != Option.EMPTY_FUNC
-                    && Boolean.TRUE.equals(optionFunc.apply(StmtCursor.CURSOR_STMT))) {
-                r = (R) createNamedCursor(statement, rows, optionFunc);
+            } else if (stmt instanceof DeclareCursorStmt) {
+                r = (R) createNamedCursor((DeclareCursorStmt) stmt, statement, rows, optionFunc);
             } else {
-                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), 0L, mapToArmyWarning(statement.getWarnings()), rows, false);
+                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), 0L, mapToArmyWarning(statement.getWarnings()), rows, false, null);
             }
             return r;
         } catch (Exception e) {
@@ -546,8 +546,20 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      */
     @SuppressWarnings("unused")
-    ResultStates createNamedCursor(Statement statement, long rows, Function<Option<?>, ?> optionFunc) {
-        throw new UnsupportedOperationException();
+    ResultStates createNamedCursor(DeclareCursorStmt stmt, Statement statement, long rows, Function<Option<?>, ?> optionFunc)
+            throws SQLException {
+
+        final SyncSession session = (SyncSession) optionFunc.apply(Option.ARMY_SESSION);
+        if (session == null) {
+            throw new IllegalArgumentException("session is null");
+        }
+        final JdbcSyncStmtCursor stmtCursor = new JdbcSyncStmtCursor(this, stmt, session);
+
+        final ResultStates states;
+        states = new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), 0L,
+                mapToArmyWarning(statement.getWarnings()), rows, false, stmtCursor);
+
+        return states;
     }
 
     final void handleInTransaction(final StringBuilder builder, final HandleMode mode) {
@@ -1056,7 +1068,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             return new SingleUpdateStates(this.factory.serverMeta, 1,
                     obtainTransaction(), 0L,
                     mapToArmyWarning(statement.getWarnings()), rows,
-                    false);
+                    false, null);
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -1093,12 +1105,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #executeCursorFetch(String, Direction, long, Function, Consumer)
-     * @see #executeCursorFetchObject(DeclareCursorStmt, Direction, long, Supplier, Consumer)
-     * @see #executeCursorFetchRecord(DeclareCursorStmt, Direction, long, Function, Consumer)
-     * @see #executeCursorFetchResultItem(DeclareCursorStmt, Direction, long)
+     * @see #executeCursorFetch(DeclareCursorStmt, Direction, Long, Class, Consumer)
+     * @see #executeCursorFetchObject(DeclareCursorStmt, Direction, Long, Supplier, Consumer)
+     * @see #executeCursorFetchRecord(DeclareCursorStmt, Direction, Long, Function, Consumer)
+     * @see #executeCursorFetchResultItem(DeclareCursorStmt, Direction, Long)
      */
-    private <R> Stream<R> executeCursorFetch(final String safeCursorName, final Direction direction, final long rowCount,
+    private <R> Stream<R> executeCursorFetch(final String safeCursorName, final Direction direction, final @Nullable Long rowCount,
                                              final Function<ResultSetMetaData, RowReader<R>> function,
                                              Consumer<ResultStates> consumer) {
 
@@ -1320,7 +1332,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 resultNo++;
 
-                resultList.add(new SingleUpdateStates(serverMeta, resultNo, info, 0L, warning, updateCount, resultNo < stmtSize));
+                resultList.add(new SingleUpdateStates(serverMeta, resultNo, info, 0L, warning, updateCount, resultNo < stmtSize, null));
 
                 if (statement.getMoreResults()) {
                     statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
