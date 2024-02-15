@@ -57,7 +57,7 @@ public class CursorTests extends SessionTestSupport {
                     break;
                 }
             }
-            firstRow = cursor.fetchOne(Direction.FIRST, ChinaRegion_.CLASS, ResultStates.IGNORE_STATES);
+            firstRow = cursor.fetchOneObject(Direction.FIRST, ChinaRegion_::constructor, ResultStates.IGNORE_STATES);
             LOG.debug("{} firstRow : {}", session.name(), firstRow);
             cursor.move(Direction.LAST);
         }
