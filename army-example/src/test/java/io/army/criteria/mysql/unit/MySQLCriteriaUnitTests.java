@@ -76,7 +76,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
         final Update stmt;
         stmt = MySQLs.singleUpdate()
                 .update(supplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE))
-                .space(ChinaCity_.T)
+                .space(ChinaRegion_.T)
                 .partition("p2", "p1")
                 .as("t")
                 .useIndex(FOR, ORDER_BY, "uni_name_region_type")
