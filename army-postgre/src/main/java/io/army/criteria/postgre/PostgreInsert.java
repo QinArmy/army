@@ -83,9 +83,8 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
-    interface _ConflictDoNothingClause<I extends Item, Q extends Item> {
+    interface _ConflictDoNothingClause<I extends Item, Q extends Item> extends _DoNothingClause<_ReturningSpec<I, Q>> {
 
-        _ReturningSpec<I, Q> doNothing();
 
     }
 

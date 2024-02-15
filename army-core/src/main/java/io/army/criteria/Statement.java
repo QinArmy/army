@@ -1845,6 +1845,16 @@ public interface Statement extends Item {
         R space();
     }
 
+    interface _DoNothingClause<R extends Item> {
+
+        R doNothing();
+
+    }
+
+    interface _EndFlag extends Item {
+
+    }
+
     interface _DeferContextSpec {
 
 //        /**

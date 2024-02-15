@@ -537,11 +537,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         this.lockBlockList = null;
     }
 
-    @Override
-    final Dialect statementDialect() {
-        return PostgreUtils.DIALECT;
-    }
-
 
     @Override
     final List<Postgres.Modifier> asModifierList(@Nullable List<Postgres.Modifier> modifiers) {

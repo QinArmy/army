@@ -114,22 +114,20 @@ abstract class CriteriaSupports {
     }
 
 
-    static abstract class WithClause<B extends CteBuilderSpec, WE extends Item>
+    static abstract class WithClause<B extends CteBuilderSpec, WE extends Item> extends StatementMockSupport
             implements DialectStatement._DynamicWithClause<B, WE>,
             _Statement._WithClauseSpec, CriteriaContextSpec {
-
-        final CriteriaContext context;
 
         private boolean recursive;
 
         private List<_Cte> cteList;
 
         WithClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
+            super(context);
             if (spec != null) {
                 this.recursive = spec.isRecursive();
                 this.cteList = spec.cteList();
             }
-            this.context = context;
         }
 
         @Override

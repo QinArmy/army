@@ -60,8 +60,11 @@ public class CursorTests extends SessionTestSupport {
                 }
             }
             firstRow = cursor.fetchOneObject(Direction.FIRST, ChinaRegion_::constructor, ResultStates.IGNORE_STATES);
-            LOG.debug("{} firstRow : {}", session.name(), firstRow);
+            LOG.debug("{} firstRow : {}", session.name(), JSON.toJSONString(firstRow));
             cursor.move(Direction.LAST);
+
+            cursor.fetch(Direction.FORWARD_ALL, ChinaRegion_.CLASS, ResultStates.IGNORE_STATES)
+                    .forEach(System.out::println);
         }
 
     }
@@ -101,6 +104,8 @@ public class CursorTests extends SessionTestSupport {
                         } else if (item instanceof ResultRecordMeta) {
                             Assert.assertNull(recordMetaHolder[0]);
                             recordMetaHolder[0] = (ResultRecordMeta) item;
+                        } else {
+                            Assert.fail();
                         }
                     });
 

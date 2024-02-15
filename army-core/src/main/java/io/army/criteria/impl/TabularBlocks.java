@@ -292,7 +292,6 @@ abstract class TabularBlocks {
     }//FromClauseCteBlock
 
 
-    @SuppressWarnings("unchecked")
     static abstract class JoinClauseBlock<R extends Item> implements _TabularBlock, Statement._OnClause<R> {
 
         private final _JoinType joinType;
@@ -302,6 +301,7 @@ abstract class TabularBlocks {
         private List<_Predicate> predicateList;
 
         JoinClauseBlock(_JoinType joinType, R clause) {
+            // don't check joinType
             this.joinType = joinType;
             this.clause = clause;
         }

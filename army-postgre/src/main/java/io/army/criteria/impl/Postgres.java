@@ -254,17 +254,92 @@ public abstract class Postgres extends PostgreSyntax {
         return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }
 
+
+    /**
+     * <p>Create postgre DECLARE statement.
+     * <pre>
+     *     <code><br/>
+     *    &#64;Transactional(readOnly = true)
+     *    &#64;Test
+     *    public void readOnlyCursor(final SyncLocalSession session) {
+     *        final List&lt;ChinaRegion&lt;?>> regionList = createReginListWithCount(300);
+     *        session.batchSave(regionList);
+     *
+     *        final DeclareCursor stmt;
+     *        stmt = Postgres.declareStmt()
+     *                .declare("my_china_region_cursor").cursor()
+     *                .forSpace()
+     *                .select("c", PERIOD, ChinaRegion_.T)
+     *                .from(ChinaRegion_.T, AS, "c")
+     *                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+     *                .orderBy(ChinaRegion_.id)
+     *                .limit(SQLs::literal, regionList.size())
+     *                .asQuery()
+     *                .asCommand();
+     *
+     *        final ResultStates states;
+     *        states = session.updateAsStates(stmt);
+     *
+     *        try (SyncStmtCursor cursor = states.nonNullOf(SyncStmtCursor.SYNC_STMT_CURSOR)) {
+     *            ChinaRegion&lt;?> region, firstRow;
+     *            int rowCount = 0;
+     *            while ((region = cursor.next(ChinaRegion_.CLASS)) != null) {
+     *                LOG.debug("region : {}", region);
+     *                rowCount++;
+     *                if (rowCount > 200) {
+     *                    break;
+     *                }
+     *            }
+     *            firstRow = cursor.fetchOneObject(Direction.FIRST, ChinaRegion_::constructor, ResultStates.IGNORE_STATES);
+     *            LOG.debug("{} firstRow : {}", session.name(), firstRow);
+     *            cursor.move(Direction.LAST);
+     *
+     *            cursor.fetch(Direction.FORWARD_ALL, ChinaRegion_.CLASS, ResultStates.IGNORE_STATES)
+     *                    .forEach(System.out::println);
+     *        }
+     *
+     *    }
+     *     </code>
+     * </pre>
+     *
+     * @see #closeCursor(String)
+     * @see #closeAllCursor()
+     * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">DECLARE — define a cursor</a>
+     */
     public static PostgreCursor._PostgreDeclareClause declareStmt() {
         return PostgreDeclareCursors.declare();
     }
 
-
+    /**
+     * <p>Create postgre CLOSE statement.
+     *
+     * @see #closeCursor(String)
+     * @see #declareStmt()
+     * @see <a href="https://www.postgresql.org/docs/current/sql-close.html">CLOSE — close a cursor</a>
+     */
     public static SimpleDmlStatement closeCursor(String name) {
         return PostgreSupports.closeCursor(name);
     }
 
+    /**
+     * <p>Create postgre CLOSE statement.
+     *
+     * @see #declareStmt()
+     * @see #closeAllCursor()
+     * @see <a href="https://www.postgresql.org/docs/current/sql-close.html">CLOSE — close a cursor</a>
+     */
     public static SimpleDmlStatement closeAllCursor() {
         return PostgreSupports.closeAllCursor();
+    }
+
+
+    /**
+     * <p>Create postgre single-table MERGE statement.
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>
+     */
+    static PostgreMerge._WithSpec singleMerge() {
+        return PostgreMerges.mergeStmt(null);
     }
 
 

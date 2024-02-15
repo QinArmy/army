@@ -1309,6 +1309,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private CloseCursorStatement(Object targetCursor) {
             super(CriteriaContexts.otherPrimaryContext(PostgreUtils.DIALECT));
+            // here don't need to push context
             assert targetCursor instanceof String || targetCursor == SQLs.ALL;
             this.targetCursor = targetCursor;
         }
@@ -1332,7 +1333,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public void clear() {
-            // no-op
+            // no-op,  here don't need to push context
         }
 
 
