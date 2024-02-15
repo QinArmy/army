@@ -33,6 +33,7 @@ import io.army.meta.TypeMeta;
 import io.army.session.*;
 import io.army.session.record.*;
 import io.army.sqltype.*;
+import io.army.stmt.DeclareCursorStmt;
 import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -1337,24 +1338,24 @@ public abstract class ExecutorSupport {
 
     protected static abstract class ArmyStmtCursor implements StmtCursor {
 
-        protected final String name;
+        protected final DeclareCursorStmt stmt;
 
         protected final Session session;
 
-        private final List<? extends Selection> selectionList;
+        protected final List<? extends Selection> selectionList;
 
         private Map<String, Selection> selectionMap;
 
-        protected ArmyStmtCursor(String name, Session session, List<? extends Selection> selectionList) {
-            this.name = name;
+        protected ArmyStmtCursor(DeclareCursorStmt stmt, Session session) {
+            this.stmt = stmt;
             this.session = session;
-            this.selectionList = selectionList;
+            this.selectionList = stmt.selectionList();
         }
 
 
         @Override
         public final String name() {
-            return this.name;
+            return this.stmt.cursorName();
         }
 
 

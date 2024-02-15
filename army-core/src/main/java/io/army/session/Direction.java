@@ -82,4 +82,58 @@ public enum Direction {
     }
 
 
+    public final boolean isNotOneRow() {
+        final boolean match;
+        switch (this) {
+            case FIRST:
+            case LAST:
+            case PRIOR:
+            case NEXT:
+            case FORWARD:
+            case BACKWARD:
+                match = false;
+                break;
+            default:
+                match = true;
+        }
+        return match;
+    }
+
+
+    public final boolean isNotSupportRowCount() {
+        final boolean match;
+        switch (this) {
+            case FORWARD:
+            case BACKWARD:
+            case ABSOLUTE:
+            case RELATIVE:
+                match = false;
+                break;
+            default:
+                match = true;
+        }
+        return match;
+    }
+
+
+    public final boolean isNotNoRowCount() {
+        final boolean match;
+        switch (this) {
+            case FIRST:
+            case LAST:
+            case PRIOR:
+            case NEXT:
+            case FORWARD:
+            case BACKWARD:
+            case BACKWARD_ALL:
+            case FORWARD_ALL:
+                match = false;
+                break;
+            default:
+                match = true;
+        }
+        return match;
+    }
+
+
 }

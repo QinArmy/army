@@ -514,8 +514,104 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
     }
 
+    @Override
+    final String parseCursorFetch(final String safeCursorName, Direction direction, @Nullable Long rowCount) {
+        final StringBuilder builder = new StringBuilder(45);
+        builder.append("FETCH ");
+
+        appendCursorDirection(builder, direction, rowCount);
+
+        return builder.append(_Constant.SPACE_FROM)
+                .append(_Constant.SPACE)
+                .append(safeCursorName)
+                .toString();
+    }
+
+    @Override
+    final String parseCursorMove(final String safeCursorName, Direction direction, @Nullable Long rowCount) {
+        final StringBuilder builder = new StringBuilder(45);
+        builder.append("MOVE ");
+
+        appendCursorDirection(builder, direction, rowCount);
+
+        return builder.append(_Constant.SPACE_FROM)
+                .append(_Constant.SPACE)
+                .append(safeCursorName)
+                .toString();
+    }
+
+    @Override
+    final String parseCursorClose(final String safeCursorName) {
+        return _StringUtils.builder(6 + safeCursorName.length())
+                .append("CLOSE ")
+                .append(safeCursorName)
+                .toString();
+    }
+
+
+
 
     /*-------------------below private static  -------------------*/
+
+    private static void appendCursorDirection(final StringBuilder builder, Direction direction, @Nullable Long rowCount) {
+        switch (direction) {
+            case NEXT:
+                builder.append("NEXT");
+                break;
+            case PRIOR:
+                builder.append("PRIOR");
+                break;
+            case FIRST:
+                builder.append("FIRST");
+                break;
+            case LAST:
+                builder.append("LAST");
+                break;
+            case FORWARD: {
+                builder.append("FORWARD");
+                if (rowCount != null) {
+                    builder.append(_Constant.SPACE)
+                            .append(rowCount);
+                }
+            }
+            break;
+            case BACKWARD: {
+                builder.append("BACKWARD");
+                if (rowCount != null) {
+                    builder.append(_Constant.SPACE)
+                            .append(rowCount);
+                }
+            }
+            break;
+            case RELATIVE: {
+                if (rowCount == null) {
+                    // no bug,never here
+                    throw new IllegalArgumentException();
+                }
+                builder.append("RELATIVE ")
+                        .append(rowCount);
+            }
+            break;
+            case ABSOLUTE: {
+                if (rowCount == null) {
+                    // no bug,never here
+                    throw new IllegalArgumentException();
+                }
+                builder.append("ABSOLUTE ")
+                        .append(rowCount);
+            }
+            break;
+            case FORWARD_ALL:
+                builder.append("FORWARD ALL");
+                break;
+            case BACKWARD_ALL:
+                builder.append("BACKWARD ALL");
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(direction);
+
+        }
+    }
 
 
     /**

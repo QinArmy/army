@@ -32,6 +32,7 @@ import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.DataRecord;
+import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
@@ -958,14 +959,158 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         return new RmSessionException(cause.getMessage(), cause, RmSessionException.XAER_RMERR);
     }
 
-    final <R> Stream<R> executeCursorFetch(final Statement statement, final String sql,
-                                           final Function<ResultSetMetaData, RowReader<R>> function,
-                                           Consumer<ResultStates> consumer) throws SQLException {
 
+    final <R> Stream<R> executeCursorFetch(final DeclareCursorStmt stmt, final Direction direction,
+                                           final @Nullable Long rowCount, final Class<R> resultClass,
+                                           final Consumer<ResultStates> consumer) {
+
+        final Function<ResultSetMetaData, RowReader<R>> readerFunc;
+        readerFunc = meta -> {
+            final DataType[] dataTypeArray;
+
+            try {
+                dataTypeArray = createSqlTypArray(meta);
+            } catch (SQLException e) {
+                throw handleException(e);
+            }
+            final List<? extends Selection> selectionList = stmt.selectionList();
+            final RowReader<R> rowReader;
+            if (selectionList.size() == 1) {
+                rowReader = new SingleColumnRowReader<>(this, selectionList, dataTypeArray, resultClass);
+            } else {
+                rowReader = new BeanRowReader<>(this, selectionList, resultClass, dataTypeArray);
+            }
+            return rowReader;
+        };
+
+        return executeCursorFetch(stmt.safeCursorName(), direction, rowCount, readerFunc, consumer);
+    }
+
+    final <R> Stream<R> executeCursorFetchObject(final DeclareCursorStmt stmt, final Direction direction,
+                                                 final @Nullable Long rowCount, final Supplier<R> constructor,
+                                                 final Consumer<ResultStates> consumer) {
+
+        final Function<ResultSetMetaData, RowReader<R>> readerFunc;
+        readerFunc = meta -> {
+            final DataType[] dataTypeArray;
+
+            try {
+                dataTypeArray = createSqlTypArray(meta);
+            } catch (SQLException e) {
+                throw handleException(e);
+            }
+            return new ObjectReader<>(this, stmt.selectionList(), false, dataTypeArray, constructor);
+        };
+
+        return executeCursorFetch(stmt.safeCursorName(), direction, rowCount, readerFunc, consumer);
+    }
+
+    final <R> Stream<R> executeCursorFetchRecord(final DeclareCursorStmt stmt, final Direction direction,
+                                                 final @Nullable Long rowCount, final Function<CurrentRecord, R> function,
+                                                 final Consumer<ResultStates> consumer) {
+
+        final Function<ResultSetMetaData, RowReader<R>> readerFunc;
+        readerFunc = meta -> {
+            final DataType[] dataTypeArray;
+
+            try {
+                dataTypeArray = createSqlTypArray(meta);
+            } catch (SQLException e) {
+                throw handleException(e);
+            }
+            return new RecordRowReader<>(this, stmt.selectionList(), dataTypeArray, function, meta);
+        };
+
+        return executeCursorFetch(stmt.safeCursorName(), direction, rowCount, readerFunc, consumer);
+    }
+
+    final Stream<ResultItem> executeCursorFetchResultItem(final DeclareCursorStmt stmt, final Direction direction,
+                                                          final @Nullable Long rowCount) {
+
+        final Function<ResultSetMetaData, RowReader<ResultItem>> readerFunc;
+        readerFunc = meta -> {
+            final DataType[] dataTypeArray;
+
+            try {
+                dataTypeArray = createSqlTypArray(meta);
+            } catch (SQLException e) {
+                throw handleException(e);
+            }
+            return new ResultItemRowReader(this, stmt.selectionList(), dataTypeArray, meta);
+        };
+
+        return executeCursorFetch(stmt.safeCursorName(), direction, rowCount, readerFunc, ResultStates.IGNORE_STATES);
+    }
+
+
+    final ResultStates executeCursorMove(final String safeCursorName, final Direction direction, final @Nullable Long rowCount) {
+
+        try (Statement statement = this.conn.createStatement()) {
+
+            final String sql;
+            sql = parseCursorMove(safeCursorName, direction, rowCount);
+
+            final int rows;
+            rows = statement.executeUpdate(sql);
+
+            return new SingleUpdateStates(this.factory.serverMeta, 1,
+                    obtainTransaction(), 0L,
+                    mapToArmyWarning(statement.getWarnings()), rows,
+                    false);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    final void executeCursorClose(final String safeCursorName) {
+        try (Statement statement = this.conn.createStatement()) {
+            final String sql;
+            sql = parseCursorClose(safeCursorName);
+
+            printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
+
+            statement.executeUpdate(sql);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+
+    String parseCursorFetch(String safeCursorName, Direction direction, @Nullable Long rowCount) {
+        throw new UnsupportedOperationException("not Override");
+    }
+
+    String parseCursorMove(String safeCursorName, Direction direction, @Nullable Long rowCount) {
+        throw new UnsupportedOperationException("not Override");
+    }
+
+
+    String parseCursorClose(String safeCursorName) {
+        throw new UnsupportedOperationException("not Override");
+    }
+
+    /*################################## blow private method ##################################*/
+
+
+    /**
+     * @see #executeCursorFetch(String, Direction, long, Function, Consumer)
+     * @see #executeCursorFetchObject(DeclareCursorStmt, Direction, long, Supplier, Consumer)
+     * @see #executeCursorFetchRecord(DeclareCursorStmt, Direction, long, Function, Consumer)
+     * @see #executeCursorFetchResultItem(DeclareCursorStmt, Direction, long)
+     */
+    private <R> Stream<R> executeCursorFetch(final String safeCursorName, final Direction direction, final long rowCount,
+                                             final Function<ResultSetMetaData, RowReader<R>> function,
+                                             Consumer<ResultStates> consumer) {
+
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
+            statement = this.conn.createStatement();
 
-            statement.clearWarnings();
+            final String sql;
+            sql = parseCursorFetch(safeCursorName, direction, rowCount);
+
+            printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
 
             resultSet = statement.executeQuery(sql);
 
@@ -973,22 +1118,19 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             rowReader = function.apply(resultSet.getMetaData());
 
             final CursorRowSpliterator<R> spliterator;
-            spliterator = new CursorRowSpliterator<>(this, resultSet, statement.getWarnings(), rowReader, consumer);
+            spliterator = new CursorRowSpliterator<>(this, statement, resultSet, statement.getWarnings(), rowReader, consumer);
 
             return StreamSupport.stream(spliterator, false)
                     .onClose(spliterator::closeStream); // close event
-        } catch (Throwable e) {
-            if (resultSet != null) {
-                closeResource(resultSet);
-            }
+        } catch (Exception e) {
+            closeResultSetAndStatement(resultSet, statement);
+            throw handleException(e);
+        } catch (Error e) {
+            closeResultSetAndStatement(resultSet, statement);
             throw e;
         }
 
     }
-
-
-
-    /*################################## blow private method ##################################*/
 
 
     /**
@@ -2103,7 +2245,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }//ObjectReader
 
 
-    private static final class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
+    private static class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
 
         private final JdbcStmtRecordMeta meta;
 
@@ -2133,25 +2275,25 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
         @Override
-        public ArmyResultRecordMeta getRecordMeta() {
+        public final ArmyResultRecordMeta getRecordMeta() {
             return this.meta;
         }
 
         @Override
-        public long rowNumber() {
+        public final long rowNumber() {
             return this.rowNumber;
         }
 
 
         @Override
-        public Object get(int indexBasedZero) {
+        public final Object get(int indexBasedZero) {
             return this.valueArray[indexBasedZero];
         }
 
         /*-------------------below protected -------------------*/
 
         @Override
-        protected Object[] copyValueArray() {
+        protected final Object[] copyValueArray() {
             final Object[] array = new Object[this.valueArray.length];
             System.arraycopy(this.valueArray, 0, array, 0, array.length);
             return array;
@@ -2161,20 +2303,20 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         /*-------------------below package methods -------------------*/
 
         @Override
-        ObjectAccessor createRow() {
+        final ObjectAccessor createRow() {
             // just return accessor
             this.rowNumber++;
             return RECORD_PSEUDO_ACCESSOR;
         }
 
         @Override
-        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+        final void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
             this.valueArray[indexBasedZero] = value;
         }
 
         @Nullable
         @Override
-        public R endOneRow() {
+        final R endOneRow() {
             final R r;
             r = this.function.apply(this);
             if (r instanceof CurrentRecord) {
@@ -2184,7 +2326,21 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-    } //RecordRowReader
+    } // RecordRowReader
+
+    private static final class ResultItemRowReader extends RecordRowReader<ResultItem> {
+
+        private ResultItemRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
+                                    DataType[] dataTypeArray, ResultSetMetaData meta) {
+            super(executor, selectionList, dataTypeArray, CurrentRecord::asResultRecord, meta);
+        }
+
+        private ResultItemRowReader(ResultItemRowReader r, ResultSetMetaData meta) {
+            super(r, meta);
+        }
+
+
+    } // ResultItemRowReader
 
     private static final class SecondRowReader<R> extends RowReader<R> {
 
@@ -2951,6 +3107,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private final JdbcExecutor executor;
 
+        private final Statement statement;
+
         private final ResultSet resultSet;
 
         private final SQLWarning sqlWarning;
@@ -2963,9 +3121,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private boolean closed;
 
-        private CursorRowSpliterator(JdbcExecutor executor, ResultSet resultSet, @Nullable SQLWarning sqlWarning,
-                                     RowReader<R> rowReader, Consumer<ResultStates> consumer) {
+        private CursorRowSpliterator(JdbcExecutor executor, Statement statement, ResultSet resultSet,
+                                     @Nullable SQLWarning sqlWarning, RowReader<R> rowReader, Consumer<ResultStates> consumer) {
             this.executor = executor;
+            this.statement = statement;
             this.resultSet = resultSet;
             this.sqlWarning = sqlWarning;
             this.rowReader = rowReader;
@@ -3080,8 +3239,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             bigReadCount += readRowCount;
             this.totalRowCount += bigReadCount;
             if (!interrupt) {
-                if (this.consumer != ResultStates.IGNORE_STATES) {
-                    emitResultStates();
+                if (rowReader instanceof ResultItemRowReader || this.consumer != ResultStates.IGNORE_STATES) {
+                    emitResultStates(action);
                 }
                 closeStream();
             }
@@ -3093,10 +3252,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 return;
             }
             this.closed = true;
-            closeResource(this.resultSet);
+            closeResultSetAndStatement(this.resultSet, this.statement);
         }
 
-        private void emitResultStates() {
+        private void emitResultStates(final Consumer<? super R> action) {
             final ResultStates states;
             states = new SingleQueryStates(this.executor.factory.serverMeta,
                     1,
@@ -3105,7 +3264,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     this.totalRowCount, false, 0, false
             );
 
-            this.consumer.accept(states);
+            if (this.rowReader instanceof ResultItemRowReader) {
+                action.accept((R) states);
+            } else if (this.consumer != ResultStates.IGNORE_STATES) {
+                this.consumer.accept(states);
+            }
         }
 
 

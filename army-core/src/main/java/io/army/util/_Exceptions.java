@@ -215,6 +215,26 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("%s is immutable.", tableItem));
     }
 
+    public static IllegalArgumentException cursorDirectionNotOneRow(Direction direction) {
+        String m = String.format("cursor direction[%s] isn't onw row", direction.name());
+        return new IllegalArgumentException(m);
+    }
+
+    public static IllegalArgumentException cursorDirectionNoRowCount(Direction direction) {
+        String m = String.format("cursor direction[%s] must be used with row count", direction.name());
+        return new IllegalArgumentException(m);
+    }
+
+    public static IllegalArgumentException cursorDirectionDontSupportRowCount(Direction direction) {
+        String m = String.format("cursor direction[%s] don't support row count", direction.name());
+        return new IllegalArgumentException(m);
+    }
+
+    public static DataAccessException cursorHaveClosed(String name) {
+        String m = String.format("cursor[%s] have closed", name);
+        return new DataAccessException(m);
+    }
+
     public static CriteriaException armyManageField(TableField field) {
         final String m;
         m = String.format("%s is managed by army,\nbelow is managed by army:\n%s,\n%s,\n%s,\n%s\n%s%s"

@@ -26,6 +26,7 @@ import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.*;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
+import io.army.stmt.DeclareCursorStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.sync.SyncProcCursor;
 import io.army.sync.SyncSession;
@@ -33,10 +34,7 @@ import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
 import io.army.type.BlobPath;
 import io.army.type.TextPath;
-import io.army.util.ArrayUtils;
-import io.army.util._Collections;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
+import io.army.util.*;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;
@@ -1261,13 +1259,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     }
 
-    protected static abstract class ArmySyncStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
+    protected static class ArmySyncStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
 
         final JdbcExecutor executor;
 
+        private boolean cursorClosed;
 
-        ArmySyncStmtCursor(String name, SyncSession session, List<? extends Selection> selectionList, JdbcExecutor executor) {
-            super(name, session, selectionList);
+        private ArmySyncStmtCursor(JdbcExecutor executor, DeclareCursorStmt stmt, Session session) {
+            super(stmt, session);
             this.executor = executor;
         }
 
@@ -1292,69 +1291,108 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Nullable
         @Override
         public final <R> R fetchOne(Direction direction, Class<R> resultClass, Consumer<ResultStates> consumer) {
-            return null;
+            if (direction.isNotOneRow()) {
+                throw _Exceptions.cursorDirectionNotOneRow(direction);
+            }
+            return StreamUtils.collectAtMostOneRow(executeFetch(direction, null, resultClass, consumer));
         }
 
         @Nullable
         @Override
         public final <R> R fetchOneObject(Direction direction, Supplier<R> constructor, Consumer<ResultStates> consumer) {
-            return null;
-        }
-
-        @Override
-        public final <R> Stream<R> fetch(Direction direction, Class<R> resultClass, Consumer<ResultStates> consumer) {
-            return null;
-        }
-
-        @Override
-        public final <R> Stream<R> fetchObject(Direction direction, Supplier<R> constructor, Consumer<ResultStates> consumer) {
-            return null;
-        }
-
-        @Override
-        public final <R> Stream<R> fetch(Direction direction, long count, Class<R> resultClass, Consumer<ResultStates> consumer) {
-            return null;
-        }
-
-        @Override
-        public final <R> Stream<R> fetchObject(Direction direction, long count, Supplier<R> constructor, Consumer<ResultStates> consumer) {
-            return null;
+            if (direction.isNotOneRow()) {
+                throw _Exceptions.cursorDirectionNotOneRow(direction);
+            }
+            return StreamUtils.collectAtMostOneRow(executeFetchObject(direction, null, constructor, consumer));
         }
 
         @Nullable
         @Override
         public final <R> R fetchOneRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
-            return null;
+            if (direction.isNotOneRow()) {
+                throw _Exceptions.cursorDirectionNotOneRow(direction);
+            }
+            return StreamUtils.collectAtMostOneRow(executeFetchRecord(direction, null, function, consumer));
+        }
+
+        @Override
+        public final <R> Stream<R> fetch(Direction direction, Class<R> resultClass, Consumer<ResultStates> consumer) {
+            if (direction.isNotNoRowCount()) {
+                throw _Exceptions.cursorDirectionNoRowCount(direction);
+            }
+            return executeFetch(direction, null, resultClass, consumer);
+        }
+
+        @Override
+        public final <R> Stream<R> fetch(Direction direction, long count, Class<R> resultClass, Consumer<ResultStates> consumer) {
+            if (direction.isNotSupportRowCount()) {
+                throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
+            }
+            return executeFetch(direction, count, resultClass, consumer);
+        }
+
+        @Override
+        public final <R> Stream<R> fetchObject(Direction direction, Supplier<R> constructor, Consumer<ResultStates> consumer) {
+            if (direction.isNotNoRowCount()) {
+                throw _Exceptions.cursorDirectionNoRowCount(direction);
+            }
+            return executeFetchObject(direction, null, constructor, consumer);
+        }
+
+        @Override
+        public final <R> Stream<R> fetchObject(Direction direction, long count, Supplier<R> constructor, Consumer<ResultStates> consumer) {
+            if (direction.isNotSupportRowCount()) {
+                throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
+            }
+            return executeFetchObject(direction, count, constructor, consumer);
         }
 
         @Override
         public final <R> Stream<R> fetchRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
-            return null;
+            if (direction.isNotNoRowCount()) {
+                throw _Exceptions.cursorDirectionNoRowCount(direction);
+            }
+            return executeFetchRecord(direction, null, function, consumer);
         }
 
         @Override
         public final <R> Stream<R> fetchRecord(Direction direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
-            return null;
+            if (direction.isNotSupportRowCount()) {
+                throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
+            }
+            return executeFetchRecord(direction, count, function, consumer);
         }
 
         @Override
         public final Stream<ResultItem> fetchRecord(Direction direction) {
-            return null;
+            if (direction.isNotNoRowCount()) {
+                throw _Exceptions.cursorDirectionNoRowCount(direction);
+            }
+            return this.executor.executeCursorFetchResultItem(this.stmt, direction, null);
         }
 
         @Override
         public final Stream<ResultItem> fetchRecord(Direction direction, long count) {
-            return null;
+            if (direction.isNotSupportRowCount()) {
+                throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
+            }
+            return this.executor.executeCursorFetchResultItem(this.stmt, direction, count);
         }
 
         @Override
         public final ResultStates move(Direction direction) {
-            return null;
+            if (direction.isNotNoRowCount()) {
+                throw _Exceptions.cursorDirectionNoRowCount(direction);
+            }
+            return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, null);
         }
 
         @Override
         public final ResultStates move(Direction direction, long count) {
-            return null;
+            if (direction.isNotSupportRowCount()) {
+                throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
+            }
+            return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, count);
         }
 
         @Nullable
@@ -1374,32 +1412,59 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return (SyncSession) this.session;
         }
 
-
-    } // ArmySyncStmtCursor
-
-
-    static final class PostgreStmtCursor extends ArmySyncStmtCursor {
-
-
-        private boolean cursorClosed;
-
-        PostgreStmtCursor(String name, SyncSession session, List<? extends Selection> selectionList, JdbcExecutor executor) {
-            super(name, session, selectionList, executor);
-        }
-
-
         @Override
-        public boolean isClosed() {
+        public final boolean isClosed() {
             return this.cursorClosed;
         }
 
         @Override
-        public void close() throws DataAccessException {
-
+        public final void close() throws DataAccessException {
+            if (this.cursorClosed) {
+                return;
+            }
+            this.cursorClosed = true;
+            this.executor.executeCursorClose(this.stmt.safeCursorName());
         }
 
 
-    } // PostgreStmtCursor
+        private <R> Stream<R> executeFetch(Direction direction, @Nullable Long count, @Nullable Class<R> resultClass,
+                                           @Nullable Consumer<ResultStates> consumer) {
+            if (resultClass == null) {
+                throw new NullPointerException();
+            } else if (consumer == null) {
+                throw new NullPointerException();
+            } else if (isClosed()) {
+                throw _Exceptions.cursorHaveClosed(this.name());
+            }
+            return this.executor.executeCursorFetch(this.stmt, direction, count, resultClass, consumer);
+        }
+
+        private <R> Stream<R> executeFetchObject(Direction direction, @Nullable Long count, @Nullable Supplier<R> constructor,
+                                                 @Nullable Consumer<ResultStates> consumer) {
+            if (constructor == null) {
+                throw new NullPointerException();
+            } else if (consumer == null) {
+                throw new NullPointerException();
+            } else if (isClosed()) {
+                throw _Exceptions.cursorHaveClosed(this.name());
+            }
+            return this.executor.executeCursorFetchObject(this.stmt, direction, count, constructor, consumer);
+        }
+
+        private <R> Stream<R> executeFetchRecord(Direction direction, @Nullable Long count, @Nullable Function<CurrentRecord, R> function,
+                                                 @Nullable Consumer<ResultStates> consumer) {
+            if (function == null) {
+                throw new NullPointerException();
+            } else if (consumer == null) {
+                throw new NullPointerException();
+            } else if (isClosed()) {
+                throw _Exceptions.cursorHaveClosed(this.name());
+            }
+            return this.executor.executeCursorFetchRecord(this.stmt, direction, count, function, consumer);
+        }
+
+
+    } // ArmySyncStmtCursor
 
 
 }
