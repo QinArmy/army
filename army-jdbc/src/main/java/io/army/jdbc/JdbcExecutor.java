@@ -39,7 +39,6 @@ import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
 import io.army.sync.StreamOption;
-import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
 import io.army.sync.executor.SyncExecutor;
 import io.army.type.ImmutableSpec;
@@ -317,7 +316,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             if (resultClass == Long.class) {
                 r = (R) Long.valueOf(rows);
             } else if (optionFunc != Option.EMPTY_FUNC
-                    && Boolean.TRUE.equals(optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR))) {
+                    && Boolean.TRUE.equals(optionFunc.apply(StmtCursor.CURSOR_STMT))) {
                 r = (R) createNamedCursor(statement, rows, optionFunc);
             } else {
                 r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), 0L, mapToArmyWarning(statement.getWarnings()), rows, false);

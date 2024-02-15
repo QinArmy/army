@@ -802,7 +802,14 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
         final R result;
         if (stmt instanceof SimpleStmt) {
-            result = this.executor.update((SimpleStmt) stmt, option, resultClass, Option.EMPTY_FUNC);
+            final Function<Option<?>, ?> optionFunc;
+            if (statement instanceof DeclareCursor) {
+                optionFunc = declareCursorOptionFunc();
+            } else {
+                optionFunc = Option.EMPTY_FUNC;
+            }
+
+            result = this.executor.update((SimpleStmt) stmt, option, resultClass, optionFunc);
 
             if (stmt.hasOptimistic() && obtainAffectedRows(result) == 0) {
                 throw _Exceptions.optimisticLock();

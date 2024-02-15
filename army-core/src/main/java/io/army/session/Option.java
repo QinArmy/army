@@ -269,6 +269,8 @@ public final class Option<T> {
 
     public static final Option<String> USER = Option.from("USER", String.class);
 
+    public static final Option<Session> ARMY_SESSION = Option.from("ARMY SESSION", Session.class);
+
 
     private final String name;
 

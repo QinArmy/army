@@ -39,10 +39,8 @@ import java.util.stream.Stream;
 public interface SyncStmtCursor extends StmtCursor, SyncCursor {
 
     /**
-     * <p>
-     * When this option is supported by {@link ResultStates},this option representing the statement that produce
+     * <p>When this option is supported by {@link ResultStates},this option representing the statement that produce
      * the {@link ResultStates} declare a cursor. For example : execute postgre DECLARE command.
-     * <br/>
      *
      * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
      */

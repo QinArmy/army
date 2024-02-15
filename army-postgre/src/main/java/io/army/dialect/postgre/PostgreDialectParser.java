@@ -417,7 +417,15 @@ final class PostgreDialectParser extends PostgreParser {
     @Override
     protected _StmtContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement,
                                             SessionSpec sessionSpec) {
-        return super.handleDialectDml(outerContext, statement, sessionSpec);
+        final _StmtContext context;
+        if (statement instanceof DeclareCursor) {
+            _PostgreConsultant.assertDeclareCursor((DeclareCursor) statement);
+            context = createOtherDmlContext(outerContext, field -> false, sessionSpec);
+            parseDeclareCursor(context, (_PostgreDeclareCursor) statement);
+        } else {
+            throw _Exceptions.unexpectedStatement(statement);
+        }
+        return context;
     }
 
     @Override
@@ -428,6 +436,65 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     /*-------------------below private methods -------------------*/
+
+    /**
+     * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
+     */
+    private void parseDeclareCursor(final _StmtContext context, final _PostgreDeclareCursor stmt) {
+        final StringBuilder sqlBuilder;
+
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
+        sqlBuilder.append("DECLARE ");
+
+        final String name = stmt.cursorName();
+        if (!_StringUtils.hasText(name)) {
+            throw _Exceptions.cursorNameNoText();
+        }
+
+        identifier(name, sqlBuilder);
+
+        if (stmt.isBinary()) {
+            sqlBuilder.append(" BINARY");
+        }
+
+        final Boolean sensitive, scroll, hold;
+        sensitive = stmt.sensitiveMode();
+        scroll = stmt.scrollMode();
+        hold = stmt.holdMode();
+
+        if (sensitive != null) {
+            if (sensitive) {
+                sqlBuilder.append(" ASENSITIVE");
+            } else {
+                sqlBuilder.append(" INSENSITIVE");
+            }
+        }
+
+        if (scroll != null) {
+            if (!scroll) {
+                sqlBuilder.append(" NO");
+            }
+            sqlBuilder.append(" SCROLL");
+        }
+
+        if (hold != null) {
+            if (hold) {
+                sqlBuilder.append(" WITH");
+            } else {
+                sqlBuilder.append(" WITHOUT");
+            }
+            sqlBuilder.append(" HOLD");
+        }
+
+        sqlBuilder.append(" FOR");
+
+        handleQuery(stmt.forQuery(), context); // here handleQuery not handleSubQuery()
+
+
+    }
 
 
     /**

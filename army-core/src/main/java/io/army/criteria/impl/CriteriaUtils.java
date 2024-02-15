@@ -180,6 +180,21 @@ abstract class CriteriaUtils {
         }
     }
 
+    static boolean invokeBooleanSupplier(final @Nullable BooleanSupplier supplier) {
+        if (supplier == null) {
+            throw ContextStack.clearStackAndNullPointer("Supplier is null");
+        }
+        try {
+            return supplier.getAsBoolean();
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
     @Nullable
     static <T> T invokeIfSupplier(final @Nullable Supplier<T> supplier) {
         if (supplier == null) {

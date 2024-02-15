@@ -21,6 +21,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
@@ -229,14 +230,21 @@ abstract class CriteriaSupports {
         public final String toString() {
             final String s;
             if (this instanceof PrimaryStatement && ((PrimaryStatement) this).isPrepared()) {
-                s = this.mockAsString(this.statementDialect(), Visible.ONLY_VISIBLE, true);
+                Dialect dialect = this.context.dialect();
+                if (dialect instanceof StandardDialect) {
+                    dialect = MySQLDialect.MySQL57;
+                }
+                s = this.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }
             return s;
         }
 
-        abstract Dialect statementDialect();
+        @Deprecated
+        Dialect statementDialect() {
+            return this.context.dialect();
+        }
 
         private Stmt parseStatement(final DialectParser parser, final Visible visible) {
             if (!(this instanceof PrimaryStatement)) {
@@ -284,7 +292,6 @@ abstract class CriteriaSupports {
         /**
          * <p>
          * private constructor for {@link  #stringQuadra(CriteriaContext, Function)}
-         *
          */
         private ParenStringConsumerClause(CriteriaContext context, Function<List<String>, RR> function) {
             this.context = context;
@@ -294,7 +301,6 @@ abstract class CriteriaSupports {
         /**
          * <p>
          * package constructor for sub class
-         *
          */
         ParenStringConsumerClause(CriteriaContext context) {
             assert this.getClass() != ParenStringConsumerClause.class;

@@ -202,6 +202,10 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException cursorNameNoText() {
+        return new CriteriaException("cursor name must have text.");
+    }
+
 
     public static CriteriaException immutableField(SqlField field) {
         return new CriteriaException(String.format("%s is immutable.", field));

@@ -23,13 +23,12 @@ import io.army.mapping.OffsetTimeType;
 import io.army.meta.ServerMeta;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
-import io.army.session.record.FieldType;
-import io.army.session.record.KeyType;
-import io.army.session.record.ResultStates;
+import io.army.session.record.*;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.SimpleStmt;
 import io.army.sync.SyncProcCursor;
+import io.army.sync.SyncSession;
 import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
 import io.army.type.BlobPath;
@@ -46,7 +45,10 @@ import java.math.BigInteger;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * <p>This class is base class of {@link JdbcExecutor}.
@@ -1258,6 +1260,146 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         void closeXaConnection() throws SQLException;
 
     }
+
+    protected static abstract class ArmySyncStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
+
+        final JdbcExecutor executor;
+
+
+        ArmySyncStmtCursor(String name, SyncSession session, List<? extends Selection> selectionList, JdbcExecutor executor) {
+            super(name, session, selectionList);
+            this.executor = executor;
+        }
+
+        @Nullable
+        @Override
+        public final <R> R next(Class<R> resultClass) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public final <R> R nextObject(Supplier<R> constructor) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public final <R> R nextRecord(Function<CurrentRecord, R> function) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public final <R> R fetchOne(Direction direction, Class<R> resultClass, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public final <R> R fetchOneObject(Direction direction, Supplier<R> constructor, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Override
+        public final <R> Stream<R> fetch(Direction direction, Class<R> resultClass, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Override
+        public final <R> Stream<R> fetchObject(Direction direction, Supplier<R> constructor, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Override
+        public final <R> Stream<R> fetch(Direction direction, long count, Class<R> resultClass, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Override
+        public final <R> Stream<R> fetchObject(Direction direction, long count, Supplier<R> constructor, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public final <R> R fetchOneRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Override
+        public final <R> Stream<R> fetchRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Override
+        public final <R> Stream<R> fetchRecord(Direction direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
+            return null;
+        }
+
+        @Override
+        public final Stream<ResultItem> fetchRecord(Direction direction) {
+            return null;
+        }
+
+        @Override
+        public final Stream<ResultItem> fetchRecord(Direction direction, long count) {
+            return null;
+        }
+
+        @Override
+        public final ResultStates move(Direction direction) {
+            return null;
+        }
+
+        @Override
+        public final ResultStates move(Direction direction, long count) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public final <T> T valueOf(Option<T> option) {
+            // return null
+            return null;
+        }
+
+        @Override
+        public final Set<Option<?>> optionSet() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public final SyncSession session() {
+            return (SyncSession) this.session;
+        }
+
+
+    } // ArmySyncStmtCursor
+
+
+    static final class PostgreStmtCursor extends ArmySyncStmtCursor {
+
+
+        private boolean cursorClosed;
+
+        PostgreStmtCursor(String name, SyncSession session, List<? extends Selection> selectionList, JdbcExecutor executor) {
+            super(name, session, selectionList, executor);
+        }
+
+
+        @Override
+        public boolean isClosed() {
+            return this.cursorClosed;
+        }
+
+        @Override
+        public void close() throws DataAccessException {
+
+        }
+
+
+    } // PostgreStmtCursor
 
 
 }

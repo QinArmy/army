@@ -29,6 +29,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.record.ResultStates;
 import io.army.stmt.Stmt;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * <p>This class is all implementation of {@link Session}.
@@ -379,6 +381,13 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
             mode = SqlLogMode.OFF;
         }
         return mode;
+    }
+
+    protected final Function<Option<?>, ?> declareCursorOptionFunc() {
+        Map<Option<?>, Object> map = _Collections.hashMap(5);
+        map.put(Option.ARMY_SESSION, this);
+        map.put(StmtCursor.CURSOR_STMT, Boolean.TRUE);
+        return map::get;
     }
 
     /*-------------------below private methods -------------------*/

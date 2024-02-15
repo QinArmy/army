@@ -267,6 +267,10 @@ public abstract class Postgres extends PostgreSyntax {
         return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }
 
+    public static PostgreCursor._PostgreDeclareClause declareStmt() {
+        return PostgreDeclareCursors.declare();
+    }
+
     public interface _XmlNamedElementClause {
 
         _XmlNamedElementClause accept(Expression value, SQLs.WordAs as, String name);

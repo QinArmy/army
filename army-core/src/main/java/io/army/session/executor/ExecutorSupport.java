@@ -174,6 +174,17 @@ public abstract class ExecutorSupport {
         return _Collections.unmodifiableMap(map);
     }
 
+    protected static Map<String, Selection> createLabelToSelectionMap(final List<? extends Selection> selectionList) {
+        final int selectionSize = selectionList.size();
+        final Map<String, Selection> map = _Collections.hashMapForSize(selectionSize);
+        Selection selection;
+        for (int i = 0; i < selectionSize; i++) {
+            selection = selectionList.get(i);
+            map.put(selection.label(), selection); // If alias duplication,then override.
+        }
+        return _Collections.unmodifiableMap(map);
+    }
+
     /**
      * This method is designed for second query,so :
      * <ul>
@@ -1322,6 +1333,59 @@ public abstract class ExecutorSupport {
         }
 
     }// PseudoWriterAccessor
+
+
+    protected static abstract class ArmyStmtCursor implements StmtCursor {
+
+        protected final String name;
+
+        protected final Session session;
+
+        private final List<? extends Selection> selectionList;
+
+        private Map<String, Selection> selectionMap;
+
+        protected ArmyStmtCursor(String name, Session session, List<? extends Selection> selectionList) {
+            this.name = name;
+            this.session = session;
+            this.selectionList = selectionList;
+        }
+
+
+        @Override
+        public final String name() {
+            return this.name;
+        }
+
+
+        @Override
+        public final List<? extends Selection> selectionList() {
+            return this.selectionList;
+        }
+
+        @Override
+        public final Selection selection(final int indexBasedZero) {
+            if (indexBasedZero < 0 || indexBasedZero >= this.selectionList.size()) {
+                String m = String.format("index[%s] not in [0,%s)", indexBasedZero, this.selectionList.size());
+                throw new IllegalArgumentException(m);
+            }
+            return this.selectionList.get(indexBasedZero);
+        }
+
+        @Override
+        public final Selection selection(final String name) {
+            Map<String, Selection> map = this.selectionMap;
+            if (map == null) {
+                this.selectionMap = map = createLabelToSelectionMap(this.selectionList);
+            }
+            return map.get(name);
+        }
+
+
+    } // ArmyStmtCursor
+
+
+
 
 
 }
