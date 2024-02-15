@@ -3225,6 +3225,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             return bits;
         }
 
+        @SuppressWarnings("unchecked")
         private boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
             final int maxValue = Integer.MAX_VALUE;
             final ResultSet resultSet = this.resultSet;
@@ -3234,6 +3235,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             long bigReadCount = 0L;
             boolean interrupt = false;
             while (resultSet.next()) {
+
+                if (readRowCount == 0
+                        && bigReadCount == 0
+                        && this.totalRowCount == 0L
+                        && rowReader instanceof ResultItemRowReader) {
+                    action.accept((R) rowReader.getRecordMeta());
+                }
 
                 action.accept(rowReader.readOneRow(resultSet));
                 readRowCount++;
@@ -3269,6 +3277,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             closeResultSetAndStatement(this.resultSet, this.statement);
         }
 
+        @SuppressWarnings("unchecked")
         private void emitResultStates(final Consumer<? super R> action) {
             final ResultStates states;
             states = new SingleQueryStates(this.executor.factory.serverMeta,

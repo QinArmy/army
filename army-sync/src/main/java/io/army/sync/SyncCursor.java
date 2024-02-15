@@ -61,9 +61,9 @@ public interface SyncCursor extends Cursor, AutoCloseable {
 
     <R> Stream<R> fetchRecord(Direction direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    Stream<ResultItem> fetchRecord(Direction direction);
+    Stream<ResultItem> fetch(Direction direction);
 
-    Stream<ResultItem> fetchRecord(Direction direction, long count);
+    Stream<ResultItem> fetch(Direction direction, long count);
 
     ResultStates move(Direction direction);
 

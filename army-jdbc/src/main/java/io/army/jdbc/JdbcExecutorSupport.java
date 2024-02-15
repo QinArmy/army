@@ -1385,7 +1385,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
-        public final Stream<ResultItem> fetchRecord(Direction direction) {
+        public final Stream<ResultItem> fetch(Direction direction) {
             if (direction.isNotNoRowCount()) {
                 throw _Exceptions.cursorDirectionNoRowCount(direction);
             }
@@ -1393,7 +1393,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
-        public final Stream<ResultItem> fetchRecord(Direction direction, long count) {
+        public final Stream<ResultItem> fetch(Direction direction, long count) {
             if (direction.isNotSupportRowCount()) {
                 throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
             }
