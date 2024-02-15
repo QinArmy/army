@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.criteria.postgre.unit;
+package io.army.criteria.postgre.statement;
 
 import io.army.criteria.BatchUpdate;
 import io.army.criteria.IllegalOneStmtModeException;

@@ -48,7 +48,11 @@ public enum PostgreType implements SqlType {
     NO_CAST_INTEGER(INTEGER.typeName, INTEGER.armyType, INTEGER.javaType),
 
     BIGINT("BIGINT", ArmyType.BIGINT, Long.class),
+
+    NO_CAST_BIGINT(BIGINT.typeName, BIGINT.armyType, BIGINT.javaType),
     DECIMAL("DECIMAL", ArmyType.DECIMAL, BigDecimal.class),
+
+    NO_CAST_DECIMAL(DECIMAL.typeName, DECIMAL.armyType, DECIMAL.javaType),
 
     REAL("REAL", ArmyType.FLOAT, Float.class),
     FLOAT8("FLOAT8", ArmyType.DOUBLE, Double.class),

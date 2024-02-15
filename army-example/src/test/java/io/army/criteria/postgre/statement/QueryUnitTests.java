@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.criteria.postgre.unit;
+package io.army.criteria.postgre.statement;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import static io.army.criteria.impl.Postgres.jsonbPathQueryTz;
+import static io.army.criteria.impl.SQLs.*;
 
 public class QueryUnitTests extends PostgreUnitTests {
 
@@ -45,6 +46,8 @@ public class QueryUnitTests extends PostgreUnitTests {
                         }, s -> s.selection(SQLs.literalValue("aa'")::as, "aa\\nbb", PillUser_.id)
                 ).from(PillUser_.T, SQLs.AS, "u")
                 .orderBy(PillUser_.id)
+                .offset(SQLs::literal, 1, ROWS)
+                .fetch(FIRST, SQLs::literal, 4, ROWS, ONLY)
                 .asQuery();
 
         printStmt(LOG, stmt);

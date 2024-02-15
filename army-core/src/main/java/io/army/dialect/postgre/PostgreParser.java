@@ -137,6 +137,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 throw ExecutorSupport.mapMethodError(type, dataType);
             case NO_CAST_INTEGER:
             case NO_CAST_TEXT:
+            case NO_CAST_BIGINT:
+            case NO_CAST_DECIMAL:
                 sqlBuilder.append(_Constant.NULL);
                 break;
             default: {
@@ -201,12 +203,26 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         .append("::BIGINT");
             }
             break;
+            case NO_CAST_BIGINT: {
+                if (!(value instanceof Long)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(value);
+            }
+            break;
             case DECIMAL: {
                 if (!(value instanceof BigDecimal)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(((BigDecimal) value).toPlainString())
                         .append("::DECIMAL");
+            }
+            break;
+            case NO_CAST_DECIMAL: {
+                if (!(value instanceof BigDecimal)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(((BigDecimal) value).toPlainString());
             }
             break;
             case FLOAT8: {
