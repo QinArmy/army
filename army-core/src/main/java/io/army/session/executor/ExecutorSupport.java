@@ -1358,6 +1358,10 @@ public abstract class ExecutorSupport {
             return this.stmt.cursorName();
         }
 
+        @Override
+        public final String safeName() {
+            return this.stmt.safeCursorName();
+        }
 
         @Override
         public final List<? extends Selection> selectionList() {

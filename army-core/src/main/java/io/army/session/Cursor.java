@@ -36,7 +36,16 @@ import io.army.session.record.ResultStates;
  */
 public interface Cursor extends CloseableSpec, OptionSpec {
 
+
+    /**
+     * <p>Get cursor name from DECLARE cursor statement or stored procedure.
+     * <p>Postgre example 1 : my_cursor -> my_cursor
+     * <p>Postgre example 2 : myCursor -> myCursor
+     *
+     * @see StmtCursor#safeName()
+     */
     String name();
+
 
     /**
      * Get The {@link Session} that create this instance.

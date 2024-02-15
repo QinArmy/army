@@ -36,6 +36,15 @@ import java.util.List;
  */
 public interface StmtCursor extends Cursor {
 
+    /**
+     * <p>Get safe cursor name.
+     * <p>Postgre example 1 : my_cursor -> my_cursor
+     * <p>Postgre example 2 : myCursor -> "myCursor"
+     *
+     * @see #name()
+     */
+    String safeName();
+
 
     List<? extends Selection> selectionList();
 
