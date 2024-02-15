@@ -1274,19 +1274,19 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Nullable
         @Override
         public final <R> R next(Class<R> resultClass) {
-            return null;
+            return fetchOne(Direction.NEXT, resultClass, ResultStates.IGNORE_STATES);
         }
 
         @Nullable
         @Override
         public final <R> R nextObject(Supplier<R> constructor) {
-            return null;
+            return fetchOneObject(Direction.NEXT, constructor, ResultStates.IGNORE_STATES);
         }
 
         @Nullable
         @Override
         public final <R> R nextRecord(Function<CurrentRecord, R> function) {
-            return null;
+            return fetchOneRecord(Direction.NEXT, function, ResultStates.IGNORE_STATES);
         }
 
         @Nullable

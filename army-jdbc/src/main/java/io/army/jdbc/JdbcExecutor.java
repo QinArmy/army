@@ -958,6 +958,36 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         return new RmSessionException(cause.getMessage(), cause, RmSessionException.XAER_RMERR);
     }
 
+    final <R> Stream<R> executeCursorFetch(final Statement statement, final String sql,
+                                           final Function<ResultSetMetaData, RowReader<R>> function,
+                                           Consumer<ResultStates> consumer) throws SQLException {
+
+        ResultSet resultSet = null;
+        try {
+
+            statement.clearWarnings();
+
+            resultSet = statement.executeQuery(sql);
+
+            final RowReader<R> rowReader;
+            rowReader = function.apply(resultSet.getMetaData());
+
+            final CursorRowSpliterator<R> spliterator;
+            spliterator = new CursorRowSpliterator<>(this, resultSet, statement.getWarnings(), rowReader, consumer);
+
+            return StreamSupport.stream(spliterator, false)
+                    .onClose(spliterator::closeStream); // close event
+        } catch (Throwable e) {
+            if (resultSet != null) {
+                closeResource(resultSet);
+            }
+            throw e;
+        }
+
+    }
+
+
+
     /*################################## blow private method ##################################*/
 
 
@@ -1763,6 +1793,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     /*-------------------below private static methods -------------------*/
 
+    private static NullPointerException actionIsNull() {
+        return new NullPointerException("Action consumer is null");
+    }
+
 
     /**
      * <p>Invoke {@link PreparedStatement#executeQuery()} or {@link Statement#executeQuery(String)} for {@link ResultSet} auto close.
@@ -1785,6 +1819,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 actualCount);
         return new DataAccessException(m);
     }
+
+
 
 
     /*-------------------below static class -------------------*/
@@ -2534,11 +2570,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-        private static NullPointerException actionIsNull() {
-            return new NullPointerException("Action consumer is null");
-        }
-
-
     }//JdbcRowSpliterator
 
 
@@ -2914,6 +2945,171 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     } // SimpleSecondSpliterator
+
+
+    private static final class CursorRowSpliterator<R> implements Spliterator<R> {
+
+        private final JdbcExecutor executor;
+
+        private final ResultSet resultSet;
+
+        private final SQLWarning sqlWarning;
+
+        private final RowReader<R> rowReader;
+
+        private final Consumer<ResultStates> consumer;
+
+        private long totalRowCount;
+
+        private boolean closed;
+
+        private CursorRowSpliterator(JdbcExecutor executor, ResultSet resultSet, @Nullable SQLWarning sqlWarning,
+                                     RowReader<R> rowReader, Consumer<ResultStates> consumer) {
+            this.executor = executor;
+            this.resultSet = resultSet;
+            this.sqlWarning = sqlWarning;
+            this.rowReader = rowReader;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public boolean tryAdvance(final @Nullable Consumer<? super R> action) {
+            if (this.closed) {
+                return false;
+            }
+            try {
+                if (action == null) {
+                    throw actionIsNull();
+                }
+                return readRowStream(1, action);
+            } catch (Exception e) {
+                closeStream();
+                throw this.executor.handleException(e);
+            } catch (Error e) {
+                closeStream();
+                throw e;
+            }
+        }
+
+        @Override
+        public void forEachRemaining(final @Nullable Consumer<? super R> action) {
+            if (this.closed) {
+                return;
+            }
+
+            try {
+                if (action == null) {
+                    throw actionIsNull();
+                }
+                readRowStream(0, action);
+            } catch (Exception e) {
+                closeStream();
+                throw this.executor.handleException(e);
+            } catch (Error e) {
+                closeStream();
+                throw e;
+            }
+        }
+
+        @Nullable
+        @Override
+        public Spliterator<R> trySplit() {
+            final int splitSize = 100;
+
+            final List<R> itemList;
+            itemList = _Collections.arrayList(splitSize);
+
+            try {
+                readRowStream(splitSize, itemList::add);
+            } catch (Exception e) {
+                closeStream();
+                throw this.executor.handleException(e);
+            } catch (Error e) {
+                closeStream();
+                throw e;
+            }
+
+            final Spliterator<R> spliterator;
+            if (itemList.size() == 0) {
+                spliterator = null;
+            } else {
+                spliterator = itemList.spliterator();
+            }
+            return spliterator;
+        }
+
+        @Override
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        @Override
+        public int characteristics() {
+            int bits = 0;
+            if (this.rowReader instanceof BeanRowReader || this.rowReader instanceof ObjectReader) {
+                bits |= NONNULL;
+            }
+            return bits;
+        }
+
+        private boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
+            final int maxValue = Integer.MAX_VALUE;
+            final ResultSet resultSet = this.resultSet;
+            final RowReader<R> rowReader = this.rowReader;
+
+            int readRowCount = 0;
+            long bigReadCount = 0L;
+            boolean interrupt = false;
+            while (resultSet.next()) {
+
+                action.accept(rowReader.readOneRow(resultSet));
+                readRowCount++;
+
+                if (readSize > 0 && readRowCount == readSize) {
+                    interrupt = true;
+                    break;
+                }
+
+                if (readRowCount == maxValue) {
+                    bigReadCount += readRowCount;
+                    readRowCount = 0;
+                }
+
+            } // while loop
+
+            bigReadCount += readRowCount;
+            this.totalRowCount += bigReadCount;
+            if (!interrupt) {
+                if (this.consumer != ResultStates.IGNORE_STATES) {
+                    emitResultStates();
+                }
+                closeStream();
+            }
+            return bigReadCount > 0L;
+        }
+
+        private void closeStream() {
+            if (this.closed) {
+                return;
+            }
+            this.closed = true;
+            closeResource(this.resultSet);
+        }
+
+        private void emitResultStates() {
+            final ResultStates states;
+            states = new SingleQueryStates(this.executor.factory.serverMeta,
+                    1,
+                    this.executor.obtainTransaction(),
+                    mapToArmyWarning(this.sqlWarning),
+                    this.totalRowCount, false, 0, false
+            );
+
+            this.consumer.accept(states);
+        }
+
+
+    } // CursorRowSpliterator
 
 
     /**
