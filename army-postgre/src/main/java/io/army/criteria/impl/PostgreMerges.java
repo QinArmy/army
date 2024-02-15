@@ -1,19 +1,43 @@
+/*
+ * Copyright 2023-2043 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.army.criteria.impl;
 
+import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._TabularBlock;
+import io.army.criteria.impl.inner.postgre._PostgreMerge;
 import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.criteria.postgre.PostgreQuery;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Collections;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -104,8 +128,15 @@ abstract class PostgreMerges {
 
         private _TabularBlock sourceBlock;
 
-        private MergeUsingClause(PrimaryMergeIntoClause clause, @Nullable SQLs.WordOnly targetOnly, TableMeta<T> targetTable,
+        private List<_PostgreMerge._WhenPair> pairList;
+
+        private MergeUsingClause(PrimaryMergeIntoClause clause, @Nullable SQLs.WordOnly targetOnly, @Nullable TableMeta<T> targetTable,
                                  String targetAlias, Function<MergeUsingClause<?, ?>, I> function) {
+            if (targetTable == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!_StringUtils.hasText(targetAlias)) {
+                throw ContextStack.clearStackAnd(_Exceptions::tableAliasIsEmpty);
+            }
             this.context = clause.context;
             this.recursive = clause.isRecursive();
             this.cteList = clause.cteList();
@@ -173,14 +204,167 @@ abstract class PostgreMerges {
 
         @Override
         public I asCommand() {
-            if (this.sourceBlock == null) {
+            final List<_PostgreMerge._WhenPair> list = this.pairList;
+            if (this.sourceBlock == null || list == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
+            this.pairList = _Collections.unmodifiableList(list);
             return this.function.apply(this);
+        }
+
+
+        private PostgreMerge._MergeWhenSpec<T, I> onWhenEnd(final _PostgreMerge._WhenPair pair) {
+            List<_PostgreMerge._WhenPair> list = this.pairList;
+            if (list == null) {
+                this.pairList = list = _Collections.arrayList();
+            } else if (!(list instanceof ArrayList)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+
+            list.add(pair);
+            return this;
         }
 
 
     } // MergeWhenClause
 
+
+    private static final class MatchWhenWhenPair<T, I extends Item> extends WhereClause<
+            Object,
+            PostgreMerge._MatchedThenClause<T, I>,
+            Object,
+            Object,
+            Object,
+            Object,
+            Object> implements PostgreMerge._MatchedThenClause<T, I>,
+            PostgreMerge._MatchedMergeActionSpec<T>,
+            _PostgreMerge._WhenMatchedPair,
+            Statement._EndFlag {
+
+        private MergeUsingClause<T, I> clause;
+
+        private boolean delete;
+
+        private boolean doNothing;
+
+        private MatchWhenWhenPair(MergeUsingClause<T, I> clause) {
+            super(clause.context);
+            this.clause = clause;
+        }
+
+        @Override
+        public PostgreMerge._MergeWhenSpec<T, I> then(Function<PostgreMerge._MatchedMergeActionSpec<T>, Statement._EndFlag> function) {
+            final MergeUsingClause<T, I> clause = this.clause;
+            if (clause == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            CriteriaUtils.invokeFunction(function, this);
+            this.clause = null;
+            return clause.onWhenEnd(this);
+        }
+
+        @Override
+        public PostgreMerge._MergeUpdateSetClause<T> update() {
+            return null;
+        }
+
+        @Override
+        public Statement._EndFlag delete() {
+            if (this.clause == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            this.delete = true;
+            return this;
+        }
+
+        @Override
+        public Statement._EndFlag doNothing() {
+            if (this.clause == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            this.doNothing = true;
+            return this;
+        }
+
+        @Override
+        public boolean isDelete() {
+            return this.delete;
+        }
+
+        @Override
+        public boolean isDoNothing() {
+            return this.doNothing;
+        }
+
+
+    } // MatchWhenWhenPair
+
+
+    private static final class NotMatchWhenWhenPair<T, I extends Item> extends WhereClause<
+            Object,
+            PostgreMerge._NotMatchedThenClause<T, I>,
+            Object,
+            Object,
+            Object,
+            Object,
+            Object> implements PostgreMerge._NotMatchedThenClause<T, I>,
+            PostgreMerge._NotMatchedMergeActionClause<T>,
+            _PostgreMerge._WhenNotMatchedPair,
+            Statement._EndFlag {
+
+        private MergeUsingClause<T, I> clause;
+
+        private boolean doNothing;
+
+        private NotMatchWhenWhenPair(MergeUsingClause<T, I> clause) {
+            super(clause.context);
+            this.clause = clause;
+        }
+
+
+        @Override
+        public PostgreMerge._MergeWhenSpec<T, I> then(Function<PostgreMerge._NotMatchedMergeActionClause<T>, Statement._EndFlag> function) {
+            final MergeUsingClause<T, I> clause = this.clause;
+            if (clause == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            CriteriaUtils.invokeFunction(function, this);
+            this.clause = null;
+            return clause.onWhenEnd(this);
+        }
+
+
+        @Override
+        public PostgreMerge._MergeInsertOverridingValueSpec<T> insert() {
+            return null;
+        }
+
+        @Override
+        public PostgreMerge._MergeInsertOverridingValueSpec<T> insert(Consumer<InsertStatement._StaticColumnSpaceClause<T>> consumer) {
+            return null;
+        }
+
+        @Override
+        public PostgreMerge._MergeInsertOverridingValueSpec<T> insert(SQLs.SymbolSpace space, Consumer<Consumer<FieldMeta<T>>> consumer) {
+            return null;
+        }
+
+        @Override
+        public Statement._EndFlag doNothing() {
+            if (this.clause == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            this.doNothing = true;
+            return this;
+        }
+
+
+        @Override
+        public boolean isDoNothing() {
+            return this.doNothing;
+        }
+
+
+    } // MatchWhenWhenPair
 
 }
