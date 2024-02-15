@@ -144,7 +144,6 @@ public abstract class Postgres extends PostgreSyntax {
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_catalog → name</a>
      */
     public static final Expression CURRENT_CATALOG = LiteralFunctions.noParensFunc("current_catalog", TextType.INSTANCE);
@@ -152,7 +151,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_user → name</a>
      */
@@ -163,7 +161,6 @@ public abstract class Postgres extends PostgreSyntax {
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">session_user → name</a>
      */
     public static final Expression SESSION_USER = LiteralFunctions.noParensFunc("session_user", TextType.INSTANCE);
@@ -172,7 +169,6 @@ public abstract class Postgres extends PostgreSyntax {
      * <p>
      * The {@link MappingType} of function return type: {@link  TextType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">user → name</a>
      */
     public static final Expression USER = LiteralFunctions.noParensFunc("user", TextType.INSTANCE);
@@ -180,7 +176,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create single-table INSERT statement that is primary statement.
-     *
      */
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return PostgreInserts.singleInsert();
@@ -189,7 +184,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create simple(non-batch) SELECT statement that is primary statement.
-     *
      */
     public static PostgreQuery.WithSpec<Select> query() {
         return PostgreQueries.simpleQuery();
@@ -198,7 +192,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create batch SELECT statement that is primary statement.
-     *
      */
     public static PostgreQuery.WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
         return PostgreQueries.batchQuery();
@@ -208,7 +201,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create SUB-SELECT statement that is sub query statement.
-     *
      */
     public static PostgreQuery.WithSpec<SubQuery> subQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), SQLs::identity);
@@ -217,7 +209,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create SUB-SELECT statement that is sub query statement and would be converted to {@link Expression}.
-     *
      */
     public static PostgreQuery.WithSpec<Expression> scalarSubQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
@@ -226,7 +217,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create simple(non-batch) single-table UPDATE statement that is primary statement.
-     *
      */
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
         return PostgreUpdates.simple();
@@ -235,7 +225,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create batch single-table UPDATE statement that is primary statement.
-     *
      */
     public static PostgreUpdate._SingleWithSpec<Statement._BatchUpdateParamSpec, Statement._BatchReturningUpdateParamSpec> batchSingleUpdate() {
         return PostgreUpdates.batchUpdate();
@@ -244,7 +233,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create simple(non-batch) single-table DELETE statement that is primary statement.
-     *
      */
     public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
         return PostgreDeletes.simpleDelete();
@@ -253,7 +241,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * create batch single-table DELETE statement that is primary statement.
-     *
      */
     public static PostgreDelete._SingleWithSpec<Statement._BatchDeleteParamSpec, Statement._BatchReturningDeleteParamSpec> batchSingleDelete() {
         return PostgreDeletes.batchDelete();
@@ -270,6 +257,16 @@ public abstract class Postgres extends PostgreSyntax {
     public static PostgreCursor._PostgreDeclareClause declareStmt() {
         return PostgreDeclareCursors.declare();
     }
+
+
+    public static SimpleDmlStatement closeCursor(String name) {
+        return PostgreSupports.closeCursor(name);
+    }
+
+    public static SimpleDmlStatement closeAllCursor() {
+        return PostgreSupports.closeAllCursor();
+    }
+
 
     public interface _XmlNamedElementClause {
 
@@ -324,7 +321,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * This interface not start with underscore, so this interface can present in application developer code.
-     *
      *
      * @since 0.6.0
      */
@@ -382,7 +378,6 @@ public abstract class Postgres extends PostgreSyntax {
     /**
      * <p>
      * This interface not start with underscore, so this interface can present in application developer code.
-     *
      *
      * @since 0.6.0
      */

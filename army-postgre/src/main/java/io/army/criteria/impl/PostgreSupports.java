@@ -68,6 +68,17 @@ abstract class PostgreSupports extends CriteriaSupports {
         return new NoOperationStaticCteSearchSpec<>(cteFunction, endSupplier);
     }
 
+    static SimpleDmlStatement closeCursor(String name) {
+        if (!_StringUtils.hasText(name)) {
+            throw _Exceptions.cursorNameNoText();
+        }
+        return new CloseCursorStatement(name);
+    }
+
+    static SimpleDmlStatement closeAllCursor() {
+        return new CloseCursorStatement(SQLs.ALL);
+    }
+
 
     @SuppressWarnings("unchecked")
     static abstract class PostgreTableOnBlock<TR, RR, OR extends Item>
@@ -290,7 +301,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final Postgres.WordMaterialized modifier;
 
-         final SubStatement subStatement;
+        final SubStatement subStatement;
 
         private final _SelectionMap selectionMap;
         private final _SearchClause searchClause;
@@ -1285,7 +1296,47 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
 
-    }//PostgreWindow
+    } // PostgreWindow
+
+
+    /**
+     * @see #closeCursor(String)
+     * @see #closeAllCursor()
+     */
+    static final class CloseCursorStatement extends StatementMockSupport implements SimpleDmlStatement, _CloseCursor {
+
+        private final Object targetCursor;
+
+        private CloseCursorStatement(Object targetCursor) {
+            super(CriteriaContexts.otherPrimaryContext(PostgreUtils.DIALECT));
+            assert targetCursor instanceof String || targetCursor == SQLs.ALL;
+            this.targetCursor = targetCursor;
+        }
+
+
+        @Override
+        public Object targetCursor() {
+            return this.targetCursor;
+        }
+
+        @Override
+        public void prepared() {
+            // no-op
+        }
+
+        @Override
+        public boolean isPrepared() {
+            return true;
+        }
+
+
+        @Override
+        public void clear() {
+            // no-op
+        }
+
+
+    } // CloseCursorStatement
 
 
 }

@@ -3,11 +3,13 @@ package io.army.session.sync.postgre;
 
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.DeclareCursor;
+import io.army.criteria.SimpleDmlStatement;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.session.Direction;
+import io.army.session.DriverException;
 import io.army.session.record.ResultRecord;
 import io.army.session.record.ResultRecordMeta;
 import io.army.session.record.ResultStates;
@@ -106,7 +108,46 @@ public class CursorTests extends SessionTestSupport {
             Assert.assertNotNull(recordMetaHolder[0]);
             Assert.assertEquals(rowCountHolder[0], regionList.size());
 
+            Assert.assertEquals(recordStatesHolder[0].resultNo(), 1);
+            Assert.assertEquals(recordStatesHolder[0].rowCount(), regionList.size());
+
+        } catch (DriverException e) {
+            LOG.error("sqlState : {} ,  code:{}", e.getSqlState(), e.getVendorCode());
+            throw e;
         }
+
+
+    }
+
+
+    @Transactional(readOnly = true)
+    @Test
+    public void closeCursor(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(10);
+        session.batchSave(regionList);
+
+        SimpleDmlStatement stmt;
+        stmt = Postgres.closeAllCursor();
+
+        session.update(stmt);
+
+        final String cursorName = "my_item_cursorForClose";
+        stmt = Postgres.declareStmt()
+                .declare(cursorName).cursor()
+                .forSpace()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .orderBy(ChinaRegion_.id)
+                .asQuery()
+                .asCommand();
+
+        final ResultStates states;
+        states = session.updateAsStates(stmt);
+        Assert.assertNotNull(states);
+
+        stmt = Postgres.closeCursor(cursorName);
+        session.update(stmt);
 
 
     }

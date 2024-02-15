@@ -26,6 +26,7 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.session.DriverException;
 import io.army.session.Option;
 import io.army.session.executor.ExecutorFactorySupport;
 import io.army.sync.executor.MetaExecutor;
@@ -333,9 +334,9 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
             error = (ArmyException) cause;
         } else if (cause instanceof SQLException) {
             // TODO convert to  ServerException
-            error = new DataAccessException(cause.getMessage(), cause);
+            error = new DriverException(cause, ((SQLException) cause).getSQLState(), ((SQLException) cause).getErrorCode());
         } else {
-            error = _Exceptions.unknownError(cause);
+            error = new DataAccessException(cause);
         }
         return error;
     }

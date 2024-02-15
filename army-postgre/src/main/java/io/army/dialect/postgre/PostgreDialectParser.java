@@ -17,10 +17,7 @@
 package io.army.dialect.postgre;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
-import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl._PostgreConsultant;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre.*;
 import io.army.dialect.*;
@@ -422,6 +419,23 @@ final class PostgreDialectParser extends PostgreParser {
             _PostgreConsultant.assertDeclareCursor((DeclareCursor) statement);
             context = createDeclareCursorContext(outerContext, (_PostgreDeclareCursor) statement, sessionSpec);
             parseDeclareCursor((_CursorStmtContext) context, (_PostgreDeclareCursor) statement);
+        } else if (statement instanceof _CloseCursor) {
+            _PostgreConsultant.assertCloseCursor((_CloseCursor) statement);
+            context = createOtherDmlContext(outerContext, predicate -> false, sessionSpec);
+
+            final StringBuilder sqlBuilder;
+            if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            sqlBuilder.append("CLOSE ");
+            final Object targetCursor = ((_CloseCursor) statement).targetCursor();
+            if (targetCursor instanceof String) {
+                identifier((String) targetCursor, sqlBuilder);
+            } else if (targetCursor == SQLs.ALL) {
+                sqlBuilder.append("ALL");
+            } else {
+                throw new CriteriaException("unknown targetCursor");
+            }
         } else {
             throw _Exceptions.unexpectedStatement(statement);
         }

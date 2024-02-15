@@ -1282,6 +1282,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     protected static class JdbcSyncStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
 
+        private static final String INVALID_CURSOR_NAME = "34000";
+
         final JdbcExecutor executor;
 
         private boolean cursorClosed;
@@ -1389,7 +1391,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotNoRowCount()) {
                 throw _Exceptions.cursorDirectionNoRowCount(direction);
             }
-            return this.executor.executeCursorFetchResultItem(this.stmt, direction, null);
+            try {
+                return this.executor.executeCursorFetchResultItem(this.stmt, direction, null);
+            } catch (DriverException e) {
+                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
+                    this.cursorClosed = true;
+                }
+                throw e;
+            }
         }
 
         @Override
@@ -1397,7 +1406,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotSupportRowCount()) {
                 throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
             }
-            return this.executor.executeCursorFetchResultItem(this.stmt, direction, count);
+            try {
+                return this.executor.executeCursorFetchResultItem(this.stmt, direction, count);
+            } catch (DriverException e) {
+                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
+                    this.cursorClosed = true;
+                }
+                throw e;
+            }
         }
 
         @Override
@@ -1405,7 +1421,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotNoRowCount()) {
                 throw _Exceptions.cursorDirectionNoRowCount(direction);
             }
-            return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, null);
+            try {
+                return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, null);
+            } catch (DriverException e) {
+                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
+                    this.cursorClosed = true;
+                }
+                throw e;
+            }
         }
 
         @Override
@@ -1413,7 +1436,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotSupportRowCount()) {
                 throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
             }
-            return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, count);
+            try {
+                return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, count);
+            } catch (DriverException e) {
+                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
+                    this.cursorClosed = true;
+                }
+                throw e;
+            }
         }
 
         @Nullable
@@ -1457,7 +1487,15 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             } else if (isClosed()) {
                 throw _Exceptions.cursorHaveClosed(this.name());
             }
-            return this.executor.executeCursorFetch(this.stmt, direction, count, resultClass, consumer);
+
+            try {
+                return this.executor.executeCursorFetch(this.stmt, direction, count, resultClass, consumer);
+            } catch (DriverException e) {
+                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
+                    this.cursorClosed = true;
+                }
+                throw e;
+            }
         }
 
         private <R> Stream<R> executeFetchObject(Direction direction, @Nullable Long count, @Nullable Supplier<R> constructor,
@@ -1469,7 +1507,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             } else if (isClosed()) {
                 throw _Exceptions.cursorHaveClosed(this.name());
             }
-            return this.executor.executeCursorFetchObject(this.stmt, direction, count, constructor, consumer);
+            try {
+                return this.executor.executeCursorFetchObject(this.stmt, direction, count, constructor, consumer);
+            } catch (DriverException e) {
+                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
+                    this.cursorClosed = true;
+                }
+                throw e;
+            }
         }
 
         private <R> Stream<R> executeFetchRecord(Direction direction, @Nullable Long count, @Nullable Function<CurrentRecord, R> function,
@@ -1481,7 +1526,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             } else if (isClosed()) {
                 throw _Exceptions.cursorHaveClosed(this.name());
             }
-            return this.executor.executeCursorFetchRecord(this.stmt, direction, count, function, consumer);
+            try {
+                return this.executor.executeCursorFetchRecord(this.stmt, direction, count, function, consumer);
+            } catch (DriverException e) {
+                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
+                    this.cursorClosed = true;
+                }
+                throw e;
+            }
         }
 
 

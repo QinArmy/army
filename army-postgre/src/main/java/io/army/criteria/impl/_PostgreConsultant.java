@@ -133,6 +133,12 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
         }
     }
 
+    public static void assertCloseCursor(final _CloseCursor stmt) {
+        if (!(stmt instanceof PostgreSupports.CloseCursorStatement)) {
+            throw nonArmyStatement(stmt);
+        }
+    }
+
     public static int queryModifier(final SQLWords modifier) {
         final int level;
         if (modifier == Postgres.DISTINCT || modifier == Postgres.ALL) {
