@@ -350,6 +350,9 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final long update(SimpleDmlStatement statement, SyncStmtOption option) {
+        if (statement instanceof DeclareCursor) {
+            throw new IllegalArgumentException("declare cursor statement should use updateAsStates() method");
+        }
         return updateAsResult(statement, option, Long.class);
     }
 

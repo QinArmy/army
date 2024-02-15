@@ -997,6 +997,11 @@ abstract class ArmyParser implements DialectParser {
         return OtherDmlContext.create(outerContext, predicate, this, sessionSpec);
     }
 
+    protected final _CursorStmtContext createDeclareCursorContext(@Nullable _SqlContext outerContext, _DeclareCursor stmt,
+                                                                  SessionSpec sessionSpec) {
+        return DeclareCursorContext.create(outerContext, stmt, this, sessionSpec);
+    }
+
     protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext,
                                                            final Predicate<FieldMeta<?>> predicate,
                                                            final _OtherDmlContext parentContext) {

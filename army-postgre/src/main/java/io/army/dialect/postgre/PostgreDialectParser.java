@@ -420,8 +420,8 @@ final class PostgreDialectParser extends PostgreParser {
         final _StmtContext context;
         if (statement instanceof DeclareCursor) {
             _PostgreConsultant.assertDeclareCursor((DeclareCursor) statement);
-            context = createOtherDmlContext(outerContext, field -> false, sessionSpec);
-            parseDeclareCursor(context, (_PostgreDeclareCursor) statement);
+            context = createDeclareCursorContext(outerContext, (_PostgreDeclareCursor) statement, sessionSpec);
+            parseDeclareCursor((_CursorStmtContext) context, (_PostgreDeclareCursor) statement);
         } else {
             throw _Exceptions.unexpectedStatement(statement);
         }
@@ -440,7 +440,7 @@ final class PostgreDialectParser extends PostgreParser {
     /**
      * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
      */
-    private void parseDeclareCursor(final _StmtContext context, final _PostgreDeclareCursor stmt) {
+    private void parseDeclareCursor(final _CursorStmtContext context, final _PostgreDeclareCursor stmt) {
         final StringBuilder sqlBuilder;
 
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
@@ -449,12 +449,9 @@ final class PostgreDialectParser extends PostgreParser {
 
         sqlBuilder.append("DECLARE ");
 
-        final String name = stmt.cursorName();
-        if (!_StringUtils.hasText(name)) {
-            throw _Exceptions.cursorNameNoText();
-        }
+        assert context.cursorName().equals(stmt.cursorName());
 
-        identifier(name, sqlBuilder);
+        sqlBuilder.append(context.safeCursorName());
 
         if (stmt.isBinary()) {
             sqlBuilder.append(" BINARY");
@@ -479,6 +476,8 @@ final class PostgreDialectParser extends PostgreParser {
             }
             sqlBuilder.append(" SCROLL");
         }
+
+        sqlBuilder.append(" CURSOR");
 
         if (hold != null) {
             if (hold) {

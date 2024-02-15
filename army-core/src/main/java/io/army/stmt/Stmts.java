@@ -75,6 +75,10 @@ public abstract class Stmts {
         return stmt;
     }
 
+    public static DeclareCursorStmt declareCursorStmt(CursorStmtParams params) {
+        return new ArmyDeclareCursorStmt(params);
+    }
+
     public static BatchStmt batchQueryStmt(final StmtParams params, final List<?> paramList) {
         // TODO add code for firebird database
         return new BatchQueryStmt(params, createParamGroupList(params, paramList));
@@ -511,7 +515,33 @@ public abstract class Stmts {
         }
 
 
-    }//QueryStmt
+    } // QueryStmt
+
+
+    private static final class ArmyDeclareCursorStmt extends QueryStmt implements DeclareCursorStmt {
+
+        private final String name;
+
+        private final String safeName;
+
+        private ArmyDeclareCursorStmt(CursorStmtParams params) {
+            super(params);
+            this.name = params.cursorName();
+            this.safeName = params.safeCursorName();
+        }
+
+        @Override
+        public String cursorName() {
+            return this.name;
+        }
+
+        @Override
+        public String safeCursorName() {
+            return this.safeName;
+        }
+
+
+    } // ArmyDeclareCursorStmt
 
     private static final class TwoStmtModeQueryStmtIml extends QueryStmt implements TwoStmtQueryStmt {
 

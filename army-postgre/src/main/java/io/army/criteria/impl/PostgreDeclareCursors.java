@@ -44,6 +44,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
     private PostgreDeclareCursors() {
         super(CriteriaContexts.otherPrimaryContext(PostgreUtils.DIALECT));
+        ContextStack.push(this.context);
     }
 
 
@@ -191,6 +192,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
         if (this.cursorName == null || this.query == null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
+        ContextStack.pop(this.context);
         this.prepared = Boolean.TRUE;
         return this;
     }

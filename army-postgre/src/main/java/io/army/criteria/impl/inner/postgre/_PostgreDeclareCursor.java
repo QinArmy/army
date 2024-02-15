@@ -17,14 +17,12 @@
 
 package io.army.criteria.impl.inner.postgre;
 
-import io.army.criteria.SubQuery;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._DeclareCursor;
 
 import javax.annotation.Nullable;
 
-public interface _PostgreDeclareCursor extends _Statement {
+public interface _PostgreDeclareCursor extends _DeclareCursor {
 
-    String cursorName();
 
     boolean isBinary();
 
@@ -37,8 +35,6 @@ public interface _PostgreDeclareCursor extends _Statement {
     @Nullable
     Boolean holdMode();
 
-
-    SubQuery forQuery();
 
 
 }
