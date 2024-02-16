@@ -2344,7 +2344,7 @@ abstract class InsertSupports {
         if (parentSubInsert != null) {
             return parentSubInsert;
         }
-        return parentSubInsert(childStmt, rowCount, childStmt.getContext().accessCteList());
+        return parentSubInsert(childStmt, rowCount, ((_Statement._WithClauseSpec) childStmt).cteList());
     }
 
 

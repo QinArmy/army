@@ -460,8 +460,11 @@ final class PostgreDialectParser extends PostgreParser {
      * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>
      */
     private void parseMerge(final _PostgreMerge stmt, final _JoinableMergeContext context) {
-        final StringBuilder sqlBuilder;
 
+
+        postgreWithClause(stmt.cteList(), stmt.isRecursive(), context);
+
+        final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
