@@ -159,6 +159,14 @@ abstract class CriteriaContexts {
         return context;
     }
 
+    /**
+     * currently ,just for postgre merge statement
+     */
+    static CriteriaContext subJoinableInsertContext(final Dialect dialect, CriteriaContext outerContext) {
+        Objects.requireNonNull(outerContext);
+        return new SubJoinableInsertContext(dialect, outerContext);
+    }
+
     static CriteriaContext primarySingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryDispatcherContext ctx;
         if (spec == null) {
@@ -1940,7 +1948,6 @@ abstract class CriteriaContexts {
          * @see #onAddDerived(_TabularBlock, _SelectionMap, String)
          */
         private boolean validateLateralRef(final DerivedTable table, final Set<String> aliasSet) {
-            final CriteriaContext context;
             final boolean contains;
             if (table instanceof OrderByClause.UnionSubRowSet) {
                 RowSet rowSet;
@@ -2088,7 +2095,18 @@ abstract class CriteriaContexts {
         public final <T> QualifiedField<T> field(final @Nullable String tableAlias, final FieldMeta<T> field) {
             if (tableAlias == null) {
                 throw ContextStack.clearStackAndNullPointer();
-            } else if (!tableAlias.equals(this.rowAlias) && !tableAlias.equals(this.tableAlias)) {
+            }
+            if (this instanceof SubJoinableInsertContext) {
+                final _TabularBlock block = ((SubJoinableInsertContext) this).block;
+                if (tableAlias.equals(block.alias())) {
+                    if (field.tableMeta() != block.tableItem()) {
+                        throw unknownQualifiedField(tableAlias, field);
+                    }
+                    return getOrCreateField(tableAlias, field);
+                }
+            }
+
+            if (!tableAlias.equals(this.rowAlias) && !tableAlias.equals(this.tableAlias)) {
                 throw unknownQualifiedField(tableAlias, field);
             } else if (this.insertTable != field.tableMeta()) {
                 // currently,postgre sub-insert don't support outer field
@@ -2108,12 +2126,6 @@ abstract class CriteriaContexts {
 
         /*-------------------below package methods -------------------*/
 
-        @Nullable
-        @Override
-        final DerivedField refOuterOrMoreOuterField(final String derivedAlias, final String fieldName) {
-            // currently,postgre sub-insert don't support outer field, so always null
-            return null;
-        }
 
         @Nullable
         @Override
@@ -2121,6 +2133,14 @@ abstract class CriteriaContexts {
             if (tableAlias == null) {
                 throw ContextStack.clearStackAndNullPointer();
             }
+
+            if (this instanceof SubJoinableInsertContext) {
+                final _TabularBlock block = ((SubJoinableInsertContext) this).block;
+                if (tableAlias.equals(block.alias()) && field.tableMeta() == block.tableItem()) {
+                    return getOrCreateField(tableAlias, field);
+                }
+            }
+
             final QualifiedField<T> qualifiedField;
             if (!tableAlias.equals(this.rowAlias) && !tableAlias.equals(this.tableAlias)) {
                 qualifiedField = null;
@@ -2219,6 +2239,13 @@ abstract class CriteriaContexts {
             super(dialect, null);
         }
 
+        @Nullable
+        @Override
+        DerivedField refOuterOrMoreOuterField(String derivedAlias, String fieldName) {
+            // currently,postgre sub-insert don't support outer field, so always null
+            return null;
+        }
+
 
     }// PrimaryInsertContext
 
@@ -2232,7 +2259,159 @@ abstract class CriteriaContexts {
             super(dialect, outerContext);
         }
 
+        @Nullable
+        @Override
+        DerivedField refOuterOrMoreOuterField(String derivedAlias, String fieldName) {
+            // currently,postgre sub-insert don't support outer field, so always null
+            return null;
+        }
+
+
     }//SubInsertContext
+
+
+    /**
+     * currently ,just for postgre merge statement
+     */
+    private static final class SubJoinableInsertContext extends InsertContext implements SubContext {
+
+        private _TabularBlock block;
+
+        private Map<String, DerivedField> derivedFieldMap;
+
+        /**
+         * @see #subJoinableInsertContext(Dialect, CriteriaContext)
+         */
+        private SubJoinableInsertContext(Dialect dialect, CriteriaContext outerContext) {
+            super(dialect, outerContext);
+        }
+
+
+        @Override
+        public void onAddBlock(final @Nullable _TabularBlock block) {
+            if (block == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (this.block != null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            this.block = block;
+        }
+
+        @Override
+        public DerivedField refField(final @Nullable String derivedAlias, final String fieldName) {
+            if (derivedAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+
+            final Map<String, DerivedField> derivedFieldMap = this.derivedFieldMap;
+
+            final _SelectionMap selectionMap;
+
+            final DerivedField field, tempField;
+            if (derivedFieldMap != null && (tempField = derivedFieldMap.get(fieldName)) != null) {
+                field = tempField;
+            } else if ((selectionMap = getDerived(derivedAlias)) != null) {
+                field = getOrCreateDerivedField(selectionMap, derivedAlias, fieldName);
+            } else if (isInWithClause()) {
+                throw unknownDerivedField(derivedAlias, fieldName);
+            } else {
+                final StatementContext outerContext = this.outerContext;
+                assert outerContext != null;
+                field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+                if (field == null) {
+                    throw unknownDerivedField(derivedAlias, fieldName);
+                }
+                // no LATERAL
+            }
+            return field;
+        }
+
+        @Override
+        public _SelectionMap getDerived(final @Nullable String derivedAlias) {
+            if (derivedAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+
+            final TabularItem item;
+            final _TabularBlock block = this.block;
+
+            final _SelectionMap selectionMap;
+            if (block == null) {
+                selectionMap = null;
+            } else if ((item = block.tableItem()) instanceof _Cte) {
+                selectionMap = (_SelectionMap) item;
+            } else if (block instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) block;
+            } else if (item instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) item;
+            } else {
+                String m = String.format("error,'%s' isn't derived table alias or cte alias", derivedAlias);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            return selectionMap;
+        }
+
+
+        @Nullable
+        @Override
+        DerivedField refOuterOrMoreOuterField(final @Nullable String derivedAlias, final String fieldName) {
+            if (derivedAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+
+            final Map<String, DerivedField> derivedFieldMap = this.derivedFieldMap;
+
+            final _SelectionMap selectionMap;
+
+            final DerivedField field, tempField;
+            if (derivedFieldMap != null && (tempField = derivedFieldMap.get(fieldName)) != null) {
+                field = tempField;
+            } else if ((selectionMap = getDerived(derivedAlias)) != null) {
+                field = getOrCreateDerivedField(selectionMap, derivedAlias, fieldName);
+            } else if (isInWithClause()) {
+                field = null;
+            } else {
+                final StatementContext outerContext = this.outerContext;
+                assert outerContext != null;
+                field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+                // no LATERAL
+            }
+            return field;
+        }
+
+        private DerivedField getOrCreateDerivedField(final _SelectionMap selectionMap,
+                                                     final String derivedAlias, final String fieldName) {
+            Map<String, DerivedField> derivedFieldMap = this.derivedFieldMap;
+
+            DerivedField field;
+            if (derivedFieldMap == null) {
+                this.derivedFieldMap = derivedFieldMap = _Collections.hashMap();
+                field = null;
+            } else {
+                field = derivedFieldMap.get(fieldName);
+            }
+
+            if (field != null) {
+                return field;
+            }
+
+            final Selection selection;
+            selection = selectionMap.refSelection(fieldName);
+            if (selection == null) {
+                throw invalidRef(this, derivedAlias, fieldName);
+            }
+            if (selection instanceof FieldSelection) { // for codec field
+                field = new FieldSelectionField(derivedAlias, (FieldSelection) selection);
+            } else {
+                field = new ImmutableDerivedField(derivedAlias, selection);
+            }
+            derivedFieldMap.put(fieldName, field);
+            return field;
+
+        }
+
+
+    } // SubJoinableInsertContext
 
 
     private static abstract class SingleDmlContext extends StatementContext {

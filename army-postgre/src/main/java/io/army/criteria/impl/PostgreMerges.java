@@ -27,6 +27,7 @@ import io.army.criteria.postgre.PostgreQuery;
 import io.army.meta.FieldMeta;
 import io.army.meta.SimpleTableMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -93,7 +94,7 @@ abstract class PostgreMerges {
         }
 
         private PostgreMerge simpleEnd(MergeUsingClause<?, ?> clause) {
-            return null;
+            return new MergeInsertStatement(clause);
         }
 
 
@@ -102,7 +103,8 @@ abstract class PostgreMerges {
 
     private static final class MergeUsingClause<T, I extends Item> implements
             PostgreMerge._MergeUsingClause<T, I>,
-            PostgreMerge._MergeWhenSpec<T, I> {
+            PostgreMerge._MergeWhenSpec<T, I>,
+            PostgreMerge._MergeDynamicWhenClause<T> {
 
         private final CriteriaContext context;
 
@@ -121,6 +123,8 @@ abstract class PostgreMerges {
         private _TabularBlock sourceBlock;
 
         private List<_PostgreMerge._WhenPair> pairList;
+
+        private int dynamicPairCount;
 
         private MergeUsingClause(PrimaryMergeIntoClause clause, @Nullable SQLs.WordOnly targetOnly, @Nullable TableMeta<T> targetTable,
                                  String targetAlias, Function<MergeUsingClause<?, ?>, I> function) {
@@ -201,6 +205,38 @@ abstract class PostgreMerges {
         }
 
         @Override
+        public PostgreMerge._MergeWhenSpec<T, I> when(Consumer<PostgreMerge._MergeDynamicWhenClause<T>> consumer) {
+            if (this.sourceBlock == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            List<_PostgreMerge._WhenPair> list = this.pairList;
+            if (list == null) {
+                this.dynamicPairCount = 0;
+            } else {
+                this.dynamicPairCount = list.size();
+            }
+            CriteriaUtils.invokeConsumer(this, consumer);
+
+            list = this.pairList;
+            if (list == null || this.dynamicPairCount != list.size()) {
+                throw ContextStack.clearStackAndCriteriaError("Dynamic WHEN clause malformation,please dynamic WHEN clause");
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreMerge._MatchedDynamicThenClause<T> matched() {
+            this.dynamicPairCount++;
+            return new MatchWhenWhenPair<>(this);
+        }
+
+        @Override
+        public PostgreMerge._NotMatchedDynamicThenClause<T> notMatched() {
+            this.dynamicPairCount++;
+            return new NotMatchWhenWhenPair<>(this);
+        }
+
+        @Override
         public I asCommand() {
             final List<_PostgreMerge._WhenPair> list = this.pairList;
             if (this.sourceBlock == null || list == null) {
@@ -210,7 +246,7 @@ abstract class PostgreMerges {
             return this.function.apply(this);
         }
 
-        private PostgreMerge._MergeWhenSpec<T, I> onWhenEnd(final _PostgreMerge._WhenPair pair) {
+        private MergeUsingClause<T, I> onWhenEnd(final _PostgreMerge._WhenPair pair) {
             List<_PostgreMerge._WhenPair> list = this.pairList;
             if (list == null) {
                 this.pairList = list = _Collections.arrayList();
@@ -235,6 +271,7 @@ abstract class PostgreMerges {
             Object,
             Object> implements PostgreMerge._MatchedThenClause<T, I>,
             PostgreMerge._MatchedMergeActionSpec<T>,
+            PostgreMerge._MatchedDynamicThenClause<T>,
             _PostgreMerge._WhenMatchedPair,
             Statement._EndFlag {
 
@@ -255,7 +292,7 @@ abstract class PostgreMerges {
         }
 
         @Override
-        public PostgreMerge._MergeWhenSpec<T, I> then(Function<PostgreMerge._MatchedMergeActionSpec<T>, Statement._EndFlag> function) {
+        public MergeUsingClause<T, I> then(Function<PostgreMerge._MatchedMergeActionSpec<T>, Statement._EndFlag> function) {
             // firstly, end and condition clause
             this.endWhereClauseIfNeed();
 
@@ -352,6 +389,7 @@ abstract class PostgreMerges {
             Object,
             Object> implements PostgreMerge._NotMatchedThenClause<T, I>,
             PostgreMerge._NotMatchedMergeActionClause<T>,
+            PostgreMerge._NotMatchedDynamicThenClause<T>,
             _PostgreMerge._WhenNotMatchedPair,
             InsertSupports.ValueSyntaxOptions,
             Statement._EndFlag {
@@ -371,14 +409,14 @@ abstract class PostgreMerges {
         private _Insert subInsertStmt;
 
         private NotMatchWhenWhenPair(MergeUsingClause<T, I> usingClause) {
-            super(CriteriaContexts.subInsertContext(usingClause.context.dialect(), null, usingClause.context));
+            super(CriteriaContexts.subJoinableInsertContext(usingClause.context.dialect(), usingClause.context));
             this.usingClause = usingClause;
             ContextStack.push(this.context);
         }
 
 
         @Override
-        public PostgreMerge._MergeWhenSpec<T, I> then(Function<PostgreMerge._NotMatchedMergeActionClause<T>, Statement._EndFlag> function) {
+        public MergeUsingClause<T, I> then(Function<PostgreMerge._NotMatchedMergeActionClause<T>, Statement._EndFlag> function) {
             // firstly, end and condition clause
             this.endWhereClauseIfNeed();
 
@@ -512,6 +550,9 @@ abstract class PostgreMerges {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             assert usingClause.targetTable != null;
+            this.context.singleDmlTable(usingClause.targetTable, usingClause.targetAlias);
+            this.context.onAddBlock(usingClause.sourceBlock);
+
             final MergeInsertComplexValues<T, I> insertClause;
             this.insertClause = insertClause = new MergeInsertComplexValues<>(this, usingClause.targetTable, usingClause.targetAlias);
             return insertClause;
@@ -733,6 +774,98 @@ abstract class PostgreMerges {
         }
 
     } // MergeSimpleValuesSubInsert
+
+
+    private static final class MergeInsertStatement extends CriteriaSupports.StatementMockSupport
+            implements PostgreMerge, _PostgreMerge {
+
+        private final boolean recursive;
+
+        private final List<_Cte> cteList;
+
+        private final SQLs.WordOnly targetOnly;
+
+        private final TableMeta<?> targetTable;
+
+        private final String targetAlias;
+
+        private final _TabularBlock sourceBlock;
+
+        private final List<_PostgreMerge._WhenPair> whenPairList;
+
+        private Boolean prepared = Boolean.TRUE;
+
+
+        private MergeInsertStatement(MergeUsingClause<?, ?> clause) {
+            super(clause.context);
+            this.recursive = clause.recursive;
+            this.cteList = clause.cteList;
+            this.targetOnly = clause.targetOnly;
+            this.targetTable = clause.targetTable;
+
+            this.targetAlias = clause.targetAlias;
+            this.sourceBlock = clause.sourceBlock;
+            this.whenPairList = _Collections.unmodifiableList(clause.pairList);
+
+            assert this.sourceBlock != null;
+            ContextStack.pop(this.context);
+        }
+
+        @Override
+        public boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public List<_Cte> cteList() {
+            return this.cteList;
+        }
+
+        @Nullable
+        @Override
+        public SQLWords targetModifier() {
+            return this.targetOnly;
+        }
+
+        @Override
+        public TableMeta<?> targetTable() {
+            return this.targetTable;
+        }
+
+        @Override
+        public String targetAlias() {
+            return this.targetAlias;
+        }
+
+        @Override
+        public _TabularBlock sourceBlock() {
+            return this.sourceBlock;
+        }
+
+        @Override
+        public List<_WhenPair> whenPairList() {
+            return this.whenPairList;
+        }
+
+        @Override
+        public void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public boolean isPrepared() {
+            final Boolean b = this.prepared;
+            return b != null && b;
+        }
+
+        @Override
+        public void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+        }
+
+
+    } // MergeInsertStatement
 
 
 }

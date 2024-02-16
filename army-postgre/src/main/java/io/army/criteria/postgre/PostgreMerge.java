@@ -118,11 +118,33 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
     }
 
 
+    interface _MatchedDynamicThenClause<T> {
+
+        _MergeDynamicWhenClause<T> then(Function<_MatchedMergeActionSpec<T>, _EndFlag> function);
+    }
+
+    interface _NotMatchedDynamicThenClause<T> {
+
+        _MergeDynamicWhenClause<T> then(Function<_NotMatchedMergeActionClause<T>, _EndFlag> function);
+    }
+
+
+    interface _MergeDynamicWhenClause<T> {
+
+        _MatchedDynamicThenClause<T> matched();
+
+        _NotMatchedDynamicThenClause<T> notMatched();
+
+    }
+
+
     interface _MergeWhenClause<T, I extends Item> extends Item {
 
         _MatchedThenClause<T, I> whenMatched();
 
         _NotMatchedThenClause<T, I> whenNotMatched();
+
+        _MergeWhenSpec<T, I> when(Consumer<_MergeDynamicWhenClause<T>> consumer);
     }
 
 

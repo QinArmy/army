@@ -16,14 +16,31 @@
 
 package io.army.criteria.impl.inner.postgre;
 
+import io.army.criteria.SQLWords;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._TabularBlock;
+import io.army.meta.TableMeta;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public interface _PostgreMerge extends _Statement {
+public interface _PostgreMerge extends _Statement, _Statement._WithClauseSpec {
+
+    @Nullable
+    SQLWords targetModifier();
+
+    TableMeta<?> targetTable();
+
+    String targetAlias();
+
+    _TabularBlock sourceBlock();
+
+
+    List<_WhenPair> whenPairList();
+
+
 
 
     interface _WhenPair extends _WherePredicateListSpec {
