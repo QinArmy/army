@@ -145,7 +145,7 @@ abstract class MySQLMultiUpdates<I extends Item>
 
     @Override
     public final _MultiJoinSpec<I> update(String cteName) {
-        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -190,7 +190,7 @@ abstract class MySQLMultiUpdates<I extends Item>
 
     @Override
     public final _MultiJoinSpec<I> space(String cteName) {
-        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), cteName);
     }
 
     @Override

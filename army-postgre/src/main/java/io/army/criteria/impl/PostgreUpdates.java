@@ -132,7 +132,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         this.context.singleDmlTable(this.targetTable, this.targetTableAlias);
 
         if (!_StringUtils.hasText(this.targetTableAlias)) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::tableAliasIsEmpty);
+            throw ContextStack.criteriaError(this.context, _Exceptions::tabularAliasIsEmpty);
         }
     }
 

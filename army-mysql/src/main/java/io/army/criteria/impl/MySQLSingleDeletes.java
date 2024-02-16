@@ -107,7 +107,7 @@ abstract class MySQLSingleDeletes<I extends Item>
         if (table == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (!_StringUtils.hasText(alias)) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::tableAliasIsEmpty);
+            throw ContextStack.criteriaError(this.context, _Exceptions::tabularAliasIsEmpty);
         } else if (this.deleteTable != null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::castCriteriaApi);
         }

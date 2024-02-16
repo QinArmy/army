@@ -1046,8 +1046,8 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("%s alias must have text", Selection.class.getName()));
     }
 
-    public static CriteriaException tableAliasIsEmpty() {
-        return new CriteriaException("table alias must non-empty.");
+    public static CriteriaException tabularAliasIsEmpty() {
+        return new CriteriaException("tabular alias must non-empty.");
     }
 
     public static IllegalArgumentException streamApiDontSupportTwoStmtMode() {

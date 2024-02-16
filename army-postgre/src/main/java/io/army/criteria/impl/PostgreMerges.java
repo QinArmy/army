@@ -137,7 +137,7 @@ abstract class PostgreMerges {
             if (targetTable == null) {
                 throw ContextStack.clearStackAndNullPointer();
             } else if (!_StringUtils.hasText(targetAlias)) {
-                throw ContextStack.clearStackAnd(_Exceptions::tableAliasIsEmpty);
+                throw ContextStack.clearStackAnd(_Exceptions::tabularAliasIsEmpty);
             }
             this.context = clause.context;
             this.recursive = clause.isRecursive();

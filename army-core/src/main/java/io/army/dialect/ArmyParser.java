@@ -1518,7 +1518,7 @@ abstract class ArmyParser implements DialectParser {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         _TabularBlock block;
         TabularItem tabularItem;
-        String alias;
+        String alias, cteName;
         _JoinType joinType;
         List<_Predicate> predicateList;
         final boolean tableOnlyModifier = this.tableOnlyModifier;
@@ -1532,6 +1532,11 @@ abstract class ArmyParser implements DialectParser {
             }
             tabularItem = block.tableItem();
             alias = block.alias();
+
+            if (!(tabularItem instanceof _NestedItems) && !_StringUtils.hasText(alias)) {
+                throw _Exceptions.tabularAliasIsEmpty();
+            }
+
             if (tabularItem instanceof TableMeta) {
                 if (tableOnlyModifier) {
                     sqlBuilder.append(_Constant.SPACE_ONLY);
@@ -1554,12 +1559,13 @@ abstract class ArmyParser implements DialectParser {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             } else if (tabularItem instanceof _Cte) {
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((_Cte) tabularItem).name(), sqlBuilder);
-                if (_StringUtils.hasText(alias)) {
+
+                cteName = ((_Cte) tabularItem).name();
+                this.identifier(cteName, sqlBuilder);
+
+                if (!cteName.equals(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                     this.identifier(alias, sqlBuilder);
-                } else if (!alias.isEmpty()) {
-                    throw _Exceptions.tableItemAliasNoText(tabularItem);
                 }
             } else {
                 throw _Exceptions.dontSupportTableItem(tabularItem, block.alias(), null);

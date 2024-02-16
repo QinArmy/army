@@ -149,7 +149,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final FC from(String cteName) {
-        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -159,7 +159,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final FC from(SQLs.DerivedModifier modifier, String cteName) {
-        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -243,7 +243,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         if (this instanceof UsingClauseListener) {
             ((UsingClauseListener) this).onUsing();
         }
-        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -259,7 +259,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         if (this instanceof UsingClauseListener) {
             ((UsingClauseListener) this).onUsing();
         }
-        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -295,7 +295,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC leftJoin(String cteName) {
-        return this.onJoinCte(_JoinType.LEFT_JOIN, null, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.LEFT_JOIN, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -343,7 +343,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC leftJoin(SQLs.DerivedModifier modifier, String cteName) {
-        return this.onJoinCte(_JoinType.LEFT_JOIN, modifier, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.LEFT_JOIN, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -371,7 +371,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC join(String cteName) {
-        return this.onJoinCte(_JoinType.JOIN, null, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.JOIN, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -419,7 +419,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC join(SQLs.DerivedModifier modifier, String cteName) {
-        return this.onJoinCte(_JoinType.JOIN, modifier, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.JOIN, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -447,7 +447,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC rightJoin(String cteName) {
-        return this.onJoinCte(_JoinType.RIGHT_JOIN, null, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.RIGHT_JOIN, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -495,7 +495,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC rightJoin(SQLs.DerivedModifier modifier, String cteName) {
-        return this.onJoinCte(_JoinType.RIGHT_JOIN, modifier, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.RIGHT_JOIN, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -523,7 +523,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC fullJoin(String cteName) {
-        return this.onJoinCte(_JoinType.FULL_JOIN, null, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.FULL_JOIN, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -571,7 +571,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC fullJoin(SQLs.DerivedModifier modifier, String cteName) {
-        return this.onJoinCte(_JoinType.FULL_JOIN, modifier, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.FULL_JOIN, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -599,7 +599,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC straightJoin(String cteName) {
-        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, null, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -609,7 +609,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final JC straightJoin(SQLs.DerivedModifier modifier, String cteName) {
-        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, modifier, this.context.refCte(cteName), "");
+        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -667,7 +667,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final FC crossJoin(String cteName) {
-        return this.onFromCte(_JoinType.CROSS_JOIN, null, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.CROSS_JOIN, null, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -715,7 +715,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final FC crossJoin(SQLs.DerivedModifier modifier, String cteName) {
-        return this.onFromCte(_JoinType.CROSS_JOIN, modifier, this.context.refCte(cteName), "");
+        return this.onFromCte(_JoinType.CROSS_JOIN, modifier, this.context.refCte(cteName), cteName);
     }
 
     @Override
@@ -723,13 +723,6 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         return this.onFromCte(_JoinType.CROSS_JOIN, modifier, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
-
-    final <T> T nonNull(final @Nullable T value) {
-        if (value == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return value;
-    }
 
     final String cteAlias(final String alias) {
         if (!_StringUtils.hasText(alias)) {
@@ -863,7 +856,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         @Override
         public final LC leftParen(String cteName) {
-            return this.onLeftCte(this.context.refCte(cteName), "");
+            return this.onLeftCte(this.context.refCte(cteName), cteName);
         }
 
         @Override
@@ -1203,7 +1196,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         @Override
         public final FC space(String cteName) {
             this.checkStart();
-            return this.onCte(this.context.refCte(cteName), "");
+            return this.onCte(this.context.refCte(cteName), cteName);
         }
 
         @Override

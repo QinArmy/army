@@ -682,7 +682,7 @@ final class MySQLDialectParser extends MySQLParser {
         _TabularBlock block;
         TabularItem tabularItem;
         TableMeta<?> table;
-        String alias;
+        String alias, cteName;
         _JoinType joinType;
         List<_Predicate> predicateList;
         SQLWords modifier;
@@ -697,6 +697,9 @@ final class MySQLDialectParser extends MySQLParser {
             }
             tabularItem = block.tableItem();
             alias = block.alias();
+            if (!(tabularItem instanceof _NestedItems) && !_StringUtils.hasText(alias)) {
+                throw _Exceptions.tabularAliasIsEmpty();
+            }
 
             if (tabularItem instanceof TableMeta) {
                 table = (TableMeta<?>) tabularItem;
@@ -740,12 +743,13 @@ final class MySQLDialectParser extends MySQLParser {
                 throw _Exceptions.dontSupportTableItem(tabularItem, alias, this.dialect);
             } else if (tabularItem instanceof _Cte) {
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((_Cte) tabularItem).name(), sqlBuilder);
-                if (_StringUtils.hasText(alias)) {
+
+                cteName = ((_Cte) tabularItem).name();
+                this.identifier(cteName, sqlBuilder);
+
+                if (!cteName.equals(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                     this.identifier(alias, sqlBuilder);
-                } else if (!"".equals(alias)) {
-                    throw _Exceptions.tableItemAliasNoText(tabularItem);
                 }
             } else {
                 throw _Exceptions.dontSupportTableItem(tabularItem, alias, this.dialect);

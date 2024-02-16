@@ -96,7 +96,6 @@ final class PostgreDialectParser extends PostgreParser {
 
     /**
      * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
-     * @see #appendParentForUpdateChild(_PostgreUpdate, _SingleUpdateContext, String, String)
      */
     @Override
     protected void postgreWithClause(final List<_Cte> cteList, final boolean recursive, final _SqlContext mainContext) {
@@ -682,7 +681,7 @@ final class PostgreDialectParser extends PostgreParser {
         _TabularBlock block;
         TabularItem tabularItem;
         TableMeta<?> table;
-        String alias;
+        String alias, cteName;
         _JoinType joinType;
         List<_Predicate> predicateList;
         SQLWords modifier;
@@ -697,6 +696,10 @@ final class PostgreDialectParser extends PostgreParser {
             }
             tabularItem = block.tableItem();
             alias = block.alias();
+
+            if (!(tabularItem instanceof _NestedItems) && !_StringUtils.hasText(alias)) {
+                throw _Exceptions.tabularAliasIsEmpty();
+            }
 
             if (tabularItem instanceof TableMeta) {
                 table = (TableMeta<?>) tabularItem;
@@ -743,14 +746,14 @@ final class PostgreDialectParser extends PostgreParser {
                 this.postgreFromItemsClause(((_NestedItems) tabularItem).tableBlockList(), context, true);
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             } else if (tabularItem instanceof _Cte) {
-                _PostgreConsultant.assertPostgreCte((_Cte) tabularItem);
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((_Cte) tabularItem).name(), sqlBuilder);
-                if (_StringUtils.hasText(alias)) {
+
+                cteName = ((_Cte) tabularItem).name();
+                this.identifier(cteName, sqlBuilder);
+
+                if (!cteName.equals(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                     this.identifier(alias, sqlBuilder);
-                } else if (!"".equals(alias)) {
-                    throw _Exceptions.tableItemAliasNoText(tabularItem);
                 }
             } else if (tabularItem instanceof UndoneFunction) {
                 final _DoneFuncBlock funcBlock = (_DoneFuncBlock) block;

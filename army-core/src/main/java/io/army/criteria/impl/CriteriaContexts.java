@@ -1855,16 +1855,9 @@ abstract class CriteriaContexts {
             blockSize = tableBlockList.size();
 
             final TabularItem tableItem = block.tableItem();
-            String alias = block.alias();
+            final String alias = block.alias();
 
-            if (tableItem instanceof _Cte) {
-                if ("".equals(alias)) {
-                    alias = ((_Cte) tableItem).name();//modify alias
-                } else if (!_StringUtils.hasText(alias)) {
-                    throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
-                }
-                assert !(tableItem instanceof RecursiveCte) || ((RecursiveCte) tableItem).sourceContext == this;
-            }
+            assert !(tableItem instanceof RecursiveCte) || ((RecursiveCte) tableItem).sourceContext == this;
 
             if (tableItem instanceof _NestedItems) {
                 this.addNestedItems((_NestedItems) tableItem);
@@ -1994,13 +1987,6 @@ abstract class CriteriaContexts {
             for (_TabularBlock block : nestedItems.tableBlockList()) {
                 tableItem = block.tableItem();
                 alias = block.alias();
-                if (tableItem instanceof _Cte) {
-                    if ("".equals(alias)) {
-                        alias = ((_Cte) tableItem).name();//modify alias
-                    } else if (!_StringUtils.hasText(alias)) {
-                        throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
-                    }
-                }
                 if (tableItem instanceof _NestedItems) {
                     if (_StringUtils.hasText(alias)) {
                         throw ContextStack.criteriaError(this, _Exceptions::nestedItemsAliasHasText, alias);
