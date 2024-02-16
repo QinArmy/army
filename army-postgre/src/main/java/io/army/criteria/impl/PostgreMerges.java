@@ -67,7 +67,6 @@ abstract class PostgreMerges {
         private PrimaryMergeIntoClause(@Nullable ArmyStmtSpec spec) {
             super(spec, CriteriaContexts.otherPrimaryContext(PostgreUtils.DIALECT)); //TODO add for multi-stmt
             ContextStack.push(this.context);
-
         }
 
         @Override

@@ -2336,32 +2336,36 @@ abstract class InsertSupports {
     }
 
     /**
-     * <p>
-     * Try find parent insert sub-statement for childStmt in cteList.
+     * <p>Try find parent insert sub-statement for childStmt in cteList.
      * This method is designed for child sub-insert.
+     *
+     * @param childStmt must be {@link SubStatement}
      */
     static ParentSubInsert parentSubInsertOfChildSubInsert(final ArmyInsert childStmt, final int rowCount,
-                                                           final List<_Cte> cteList) {
-        final ParentSubInsert parentSubInsert;
-        parentSubInsert = tryParentSubInsert0(childStmt, rowCount, cteList, false);
-        if (parentSubInsert != null) {
-            return parentSubInsert;
+                                                           final List<_Cte> cteListOfChild) {
+
+        if (cteListOfChild.size() > 0) {
+            final ParentSubInsert parentSubInsert;
+            parentSubInsert = tryParentSubInsert0(childStmt, rowCount, cteListOfChild, false);
+            if (parentSubInsert != null) {
+                return parentSubInsert;
+            }
         }
+
         final CriteriaContext outerContext;
         outerContext = childStmt.getContext().getOuterContext();
-        final List<_Cte> saveLevelCteList;
         if (outerContext == null) {
-            saveLevelCteList = Collections.emptyList();
-        } else {
-            saveLevelCteList = outerContext.accessCteList();
+            // no bug,never here
+            throw ContextStack.clearStackAndCriteriaError("bug,childStmt is not sub-insert");
         }
-        return parentSubInsert(childStmt, rowCount, saveLevelCteList);
+        return parentSubInsert(childStmt, rowCount, outerContext.accessCteList());
     }
 
 
     /**
-     * <p>
-     * Find parent insert sub-statement for childStmt in cteList.
+     * <p>Find parent insert sub-statement for childStmt in cteList.
+     *
+     * @param childStmt {@link PrimaryStatement} or {@link SubStatement}
      */
     static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final int rowCount, final List<_Cte> cteList) {
         final ParentSubInsert parentSubInsert;

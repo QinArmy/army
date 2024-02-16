@@ -284,6 +284,10 @@ abstract class CriteriaContexts {
         return new OtherPrimaryContext(dialect);
     }
 
+    static CriteriaContext primaryJoinableMerge(Dialect dialect) {
+
+    }
+
     static CriteriaContext dispatcherContext(final Dialect dialect, final @Nullable CriteriaContext outerContext,
                                              final @Nullable CriteriaContext leftContext) {
         final CriteriaContext dispatcherContext;
@@ -359,6 +363,22 @@ abstract class CriteriaContexts {
 
     }
 
+    @Nullable
+    private static _SelectionMap obtainSelectionMapFromBlock(final _TabularBlock block) {
+        final _SelectionMap selectionMap;
+        final TabularItem tabularItem;
+
+        if ((tabularItem = block.tableItem()) instanceof _Cte) {
+            selectionMap = (_Cte) tabularItem;
+        } else if (block instanceof _SelectionMap) {
+            selectionMap = (_SelectionMap) block;
+        } else if (tabularItem instanceof _SelectionMap) {
+            selectionMap = (_SelectionMap) tabularItem;
+        } else {
+            selectionMap = null;
+        }
+        return selectionMap;
+    }
 
     static UnknownDerivedFieldException invalidRef(CriteriaContext context, String derivedAlias, String fieldName) {
         String m = String.format("ref of %s.%s is invalid.", derivedAlias, fieldName);
@@ -1252,22 +1272,13 @@ abstract class CriteriaContexts {
             flushBufferDerivedBlock();
 
             final Map<String, _TabularBlock> blockMap = this.aliasToBlock;
-
-            final TabularItem item;
             final _TabularBlock block;
 
             final _SelectionMap selectionMap;
             if (blockMap == null || (block = blockMap.get(derivedAlias)) == null) {
                 selectionMap = null;
-            } else if ((item = block.tableItem()) instanceof _Cte) {
-                selectionMap = (_SelectionMap) item;
-            } else if (block instanceof _SelectionMap) {
-                selectionMap = (_SelectionMap) block;
-            } else if (item instanceof _SelectionMap) {
-                selectionMap = (_SelectionMap) item;
             } else {
-                String m = String.format("error,'%s' isn't derived table alias or cte alias", derivedAlias);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                selectionMap = obtainSelectionMapFromBlock(block);
             }
             return selectionMap;
         }
@@ -3849,7 +3860,7 @@ abstract class CriteriaContexts {
     } // SubValuesContext
 
 
-    private static final class OtherPrimaryContext extends StatementContext {
+    private static final class OtherPrimaryContext extends StatementContext implements PrimaryContext {
 
         private OtherPrimaryContext(Dialect dialect) {
             super(dialect, null);
@@ -3857,6 +3868,111 @@ abstract class CriteriaContexts {
 
 
     }//OtherPrimaryContext
+
+
+    /**
+     * currently ,just for postgre merge statement
+     */
+    private static final class PrimaryJoinableMergeContext extends StatementContext implements PrimaryContext {
+
+        private TableMeta<?> targetTable;
+
+        private String targetAlias;
+
+        private _TabularBlock sourceBlock;
+
+        /**
+         * @see #primaryJoinableMerge(Dialect)
+         */
+        private PrimaryJoinableMergeContext(Dialect dialect) {
+            super(dialect, null);
+        }
+
+        @Override
+        public void singleDmlTable(final @Nullable TableMeta<?> table, final @Nullable String tableAlias) {
+
+            if (table == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (this.targetTable == null) {
+                this.targetTable = table;
+            } else if (this.targetTable != table) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+
+
+            if (tableAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (this.targetAlias == null) {
+                this.targetAlias = tableAlias;
+            } else if (!tableAlias.equals(this.targetAlias)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+        }
+
+        @Override
+        public void onAddBlock(final _TabularBlock block) {
+            if (this.sourceBlock != null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            this.sourceBlock = block;
+        }
+
+        @Override
+        public TableMeta<?> getTable(final String tableAlias) {
+            final TableMeta<?> table;
+
+            final _TabularBlock block;
+            final TabularItem tabularItem;
+            if (tableAlias.equals(this.targetAlias)) {
+                table = this.targetTable;
+            } else if ((block = this.sourceBlock) == null) {
+                table = null;
+            } else if (!tableAlias.equals(block.alias())) {
+                table = null;
+            } else if ((tabularItem = block.tableItem()) instanceof TableMeta) {
+                table = (TableMeta<?>) tabularItem;
+            } else {
+                table = null;
+            }
+            return table;
+        }
+
+        @Override
+        public _SelectionMap getDerived(final String derivedAlias) {
+            final _TabularBlock block = this.sourceBlock;
+            final _SelectionMap selectionMap;
+            if (block == null || !derivedAlias.equals(block.alias())) {
+                selectionMap = null;
+            } else {
+                selectionMap = obtainSelectionMapFromBlock(block);
+            }
+            return selectionMap;
+        }
+
+        @Override
+        public <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
+            return super.field(tableAlias, field);
+        }
+
+        @Override
+        public DerivedField refField(String derivedAlias, String fieldName) {
+            return super.refField(derivedAlias, fieldName);
+        }
+
+        @Nullable
+        @Override
+        DerivedField refOuterOrMoreOuterField(String derivedAlias, String fieldName) {
+            return super.refOuterOrMoreOuterField(derivedAlias, fieldName);
+        }
+
+        @Nullable
+        @Override
+        <T> QualifiedField<T> outerOrMoreOuterField(String tableAlias, FieldMeta<T> field) {
+            return super.outerOrMoreOuterField(tableAlias, field);
+        }
+
+
+    } // PrimaryJoinableMergeContext
 
 
     private static abstract class DispatcherContext extends StatementContext {
