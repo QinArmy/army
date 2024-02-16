@@ -782,7 +782,7 @@ abstract class PostgreMerges {
     } // MergeSimpleValuesSubInsert
 
 
-    private static final class MergeInsertStatement extends CriteriaSupports.StatementMockSupport
+    static final class MergeInsertStatement extends CriteriaSupports.StatementMockSupport
             implements PostgreMerge, _PostgreMerge {
 
         private final boolean recursive;

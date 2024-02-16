@@ -59,15 +59,41 @@ final class TableContext {
 
 
     static TableContext forChild(final ChildTableMeta<?> table, final String tableAlias, final ArmyParser dialect) {
-        final Map<String, TabularItem> aliasToTable = new HashMap<>(4);
+        final Map<String, TabularItem> aliasToTable = _Collections.hashMap(4);
         aliasToTable.put(tableAlias, table);
         final String parentAlias = ArmyParser.parentAlias(tableAlias);
         aliasToTable.put(parentAlias, table.parentMeta());
 
-        final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>(4);
+        final Map<TableMeta<?>, String> tableToSafeAlias = _Collections.hashMap(4);
         tableToSafeAlias.put(table, dialect.identifier(tableAlias));
         tableToSafeAlias.put(table.parentMeta(), dialect.identifier(parentAlias));
 
+        return new TableContext(aliasToTable, tableToSafeAlias, null);
+    }
+
+
+    static TableContext forMerge(final _Merge stmt, final ArmyParser parser) {
+        final TableMeta<?> targetTable = stmt.targetTable();
+        final String targetAlias = stmt.targetAlias();
+
+        final _TabularBlock sourceBlock = stmt.sourceBlock();
+        final TabularItem sourceTabularItem = sourceBlock.tableItem();
+        final String sourceAlias = sourceBlock.alias();
+
+        final Map<String, TabularItem> aliasToTable = _Collections.hashMap(4);
+        aliasToTable.put(targetAlias, targetTable);
+
+        if (aliasToTable.putIfAbsent(sourceAlias, sourceTabularItem) != null) {
+            throw _Exceptions.tableAliasDuplication(sourceAlias);
+        }
+
+        final Map<TableMeta<?>, String> tableToSafeAlias = _Collections.hashMap(4);
+        tableToSafeAlias.put(targetTable, parser.identifier(targetAlias));
+
+        if (sourceTabularItem instanceof TableMeta
+                && tableToSafeAlias.putIfAbsent((TableMeta<?>) sourceTabularItem, parser.identifier(sourceAlias)) != null) {
+            tableToSafeAlias.remove(sourceTabularItem);
+        }
         return new TableContext(aliasToTable, tableToSafeAlias, null);
     }
 

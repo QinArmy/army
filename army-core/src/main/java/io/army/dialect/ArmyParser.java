@@ -1002,6 +1002,11 @@ abstract class ArmyParser implements DialectParser {
         return DeclareCursorContext.create(outerContext, stmt, this, sessionSpec);
     }
 
+    protected final _JoinableMergeContext createJoinableMergeContext(@Nullable _SqlContext outerContext, _Merge stmt,
+                                                                     SessionSpec sessionSpec) {
+        return JoinableMergeContext.create(outerContext, stmt, this, sessionSpec);
+    }
+
     protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext,
                                                            final Predicate<FieldMeta<?>> predicate,
                                                            final _OtherDmlContext parentContext) {
@@ -1009,8 +1014,8 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected final _InsertContext handleInsertStmtFromWithClause(_SqlContext withContext, _Insert insert) {
-        return handleInsertStmt(withContext, insert, ((StatementContext) withContext).sessionSpec);
+    protected final _InsertContext handleDialectSubInsertStmt(_SqlContext outerContext, _Insert insert) {
+        return handleInsertStmt(outerContext, insert, ((StatementContext) outerContext).sessionSpec);
     }
 
     protected final void handleRowSet(final RowSet rowSet, final _SqlContext original) {
@@ -2494,7 +2499,7 @@ abstract class ArmyParser implements DialectParser {
      *                  <li>{@link InsertStatement}</li>
      *               </ul>
      * @see #insert(InsertStatement, SessionSpec)
-     * @see #handleInsertStmtFromWithClause(_SqlContext, _Insert)
+     * @see #handleDialectSubInsertStmt(_SqlContext, _Insert)
      */
     private _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final InsertStatement insert,
                                         final SessionSpec sessionSpec) {
@@ -2523,7 +2528,7 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * @see #handleInsert(_SqlContext, InsertStatement, SessionSpec)
-     * @see #handleInsertStmtFromWithClause(_SqlContext, _Insert)
+     * @see #handleDialectSubInsertStmt(_SqlContext, _Insert)
      */
     private _InsertContext handleInsertStmt(final @Nullable _SqlContext outerContext, final _Insert insert,
                                             final SessionSpec sessionSpec) {

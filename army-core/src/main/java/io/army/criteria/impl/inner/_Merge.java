@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package io.army.dialect;
 
-public interface _JoinableMergeContext extends _MultiTableStmtContext,
-        _StmtContext,
-        _SetClauseContext,
-        _DmlContext._ConditionFieldsSpec {
+package io.army.criteria.impl.inner;
+
+import io.army.meta.TableMeta;
+
+public interface _Merge extends _Statement {
+
+
+    TableMeta<?> targetTable();
+
+    String targetAlias();
+
+    _TabularBlock sourceBlock();
 
 
 }

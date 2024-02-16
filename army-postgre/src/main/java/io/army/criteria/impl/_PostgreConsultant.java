@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.postgre.PostgreMerge;
 import io.army.dialect.Database;
 
 import javax.annotation.Nullable;
@@ -98,6 +99,11 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
         }
     }
 
+    public static void assertMerge(final PostgreMerge stmt) {
+        if (!(stmt instanceof PostgreMerges.MergeInsertStatement)) {
+            throw nonArmyStatement(stmt);
+        }
+    }
 
 
     public static void assertRowSet(final RowSet rowSet) {

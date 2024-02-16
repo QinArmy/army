@@ -20,6 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.SqlField;
 import io.army.criteria.TabularItem;
+import io.army.criteria.impl.inner._Merge;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.session.SessionSpec;
@@ -31,6 +32,13 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 final class JoinableMergeContext extends StatementContext implements _JoinableMergeContext {
+
+    static JoinableMergeContext create(@Nullable _SqlContext outerContext, _Merge stmt, ArmyParser parser,
+                                       SessionSpec sessionSpec) {
+        final TableContext tableContext;
+        tableContext = TableContext.forMerge(stmt, parser);
+        return new JoinableMergeContext((StatementContext) outerContext, tableContext, parser, sessionSpec);
+    }
 
 
     private final MultiTableContext multiTableContext;

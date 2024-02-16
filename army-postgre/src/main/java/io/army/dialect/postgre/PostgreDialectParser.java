@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre.*;
+import io.army.criteria.postgre.PostgreMerge;
 import io.army.dialect.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -149,7 +150,7 @@ final class PostgreDialectParser extends PostgreParser {
                 this.handleQuery((SubQuery) subStatement, mainContext);
             } else if (subStatement instanceof _Insert) {
                 _PostgreConsultant.assertSubInsert(subStatement);
-                this.handleInsertStmtFromWithClause(mainContext, (_Insert) subStatement);
+                this.handleDialectSubInsertStmt(mainContext, (_Insert) subStatement);
             } else if (subStatement instanceof _Update) {
                 _PostgreConsultant.assertSubUpdate(subStatement);
                 parseSingleUpdate((_SingleUpdate) subStatement, createJoinableUpdateContextForCte(mainContext, (_SingleUpdate) subStatement));
@@ -436,6 +437,10 @@ final class PostgreDialectParser extends PostgreParser {
             } else {
                 throw new CriteriaException("unknown targetCursor");
             }
+        } else if (statement instanceof PostgreMerge) {
+            _PostgreConsultant.assertMerge((PostgreMerge) statement);
+            context = createJoinableMergeContext(outerContext, (_Merge) statement, sessionSpec);
+            parseMerge((_PostgreMerge) statement, (_JoinableMergeContext) context);
         } else {
             throw _Exceptions.unexpectedStatement(statement);
         }
@@ -450,6 +455,157 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     /*-------------------below private methods -------------------*/
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>
+     */
+    private void parseMerge(final _PostgreMerge stmt, final _JoinableMergeContext context) {
+        final StringBuilder sqlBuilder;
+
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
+        sqlBuilder.append("MERGE INTO");
+        final SQLWords targetOnly = stmt.targetModifier();
+        if (targetOnly != null) {
+            assert targetOnly == SQLs.ONLY;
+            sqlBuilder.append(_Constant.SPACE_ONLY);
+        }
+
+        sqlBuilder.append(_Constant.SPACE);
+
+        safeObjectName(stmt.targetTable(), sqlBuilder);
+
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+
+        identifier(stmt.targetAlias(), sqlBuilder);
+
+        final _TabularBlock sourceBlock = stmt.sourceBlock();
+        final TabularItem sourceItem = sourceBlock.tableItem();
+
+        sqlBuilder.append(_Constant.SPACE_USING);
+        if (sourceItem instanceof TableMeta) {
+            final SQLWords sourceOnly;
+            if (sourceBlock instanceof _ModifierTabularBlock
+                    && (sourceOnly = ((_ModifierTabularBlock) sourceBlock).modifier()) != null) {
+                assert sourceOnly == SQLs.ONLY;
+                sqlBuilder.append(_Constant.SPACE_ONLY);
+            }
+
+            sqlBuilder.append(_Constant.SPACE);
+            safeObjectName((TableMeta<?>) sourceItem, sqlBuilder);
+        } else if (sourceItem instanceof SubQuery) {
+            handleSubQuery((SubQuery) sourceItem, context);
+        } else {
+            throw new CriteriaException("postgre merge source table support only TableMeta or SubQuery");
+        }
+
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+        identifier(sourceBlock.alias(), sqlBuilder);
+
+        final List<_Predicate> onClause = sourceBlock.onClauseList();
+        final int onListSize = onClause.size();
+        if (onListSize == 0) {
+            throw new CriteriaException("postgre merge source ON clause must non-empty");
+        }
+
+        sqlBuilder.append(_Constant.SPACE_ON);
+        for (int i = 0; i < onListSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_AND);
+            }
+            onClause.get(i).appendSql(sqlBuilder, context);
+        }
+
+        parseMergeWhenThenClause(stmt, sqlBuilder, context);
+    }
+
+
+    /**
+     * @see #parseMerge(_PostgreMerge, _JoinableMergeContext)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>
+     */
+    private void parseMergeWhenThenClause(final _PostgreMerge stmt, final StringBuilder sqlBuilder,
+                                          final _JoinableMergeContext context) {
+
+        final List<_PostgreMerge._WhenPair> pairList = stmt.whenPairList();
+        final int whenPairSize = pairList.size();
+
+        if (whenPairSize == 0) {
+            throw new CriteriaException("postgre merge statement at least one WHEN clase");
+        }
+
+        _PostgreMerge._WhenPair pair;
+        List<_Predicate> conditionList;
+        _Insert mergeSubInsert;
+        for (int pairIndex = 0, conditionSize; pairIndex < whenPairSize; pairIndex++) {
+            sqlBuilder.append(" WHEN");
+
+            pair = pairList.get(pairIndex);
+            if (pair instanceof _PostgreMerge._WhenNotMatchedPair) {
+                sqlBuilder.append(" NOT");
+            }
+            sqlBuilder.append(" MATCHED");
+
+            conditionList = pair.wherePredicateList();
+
+            conditionSize = conditionList.size();
+            for (int i = 0; i < conditionSize; i++) {
+                sqlBuilder.append(_Constant.SPACE_AND);
+                conditionList.get(i).appendSql(sqlBuilder, context);
+            }
+
+            sqlBuilder.append(" THEN");
+            if (pair.isDoNothing()) {
+                sqlBuilder.append(" DO NOTHING");
+            } else if (pair instanceof _PostgreMerge._WhenMatchedPair) {
+                if (((_PostgreMerge._WhenMatchedPair) pair).isDelete()) {
+                    sqlBuilder.append(" DELETE");
+                } else {
+                    parseMergeUpdateSetClause(((_PostgreMerge._WhenMatchedPair) pair).updateItemPairList(), sqlBuilder, context);
+                }
+            } else if (pair instanceof _PostgreMerge._WhenNotMatchedPair) {
+                mergeSubInsert = ((_PostgreMerge._WhenNotMatchedPair) pair).insertStmt();
+                if (!(mergeSubInsert instanceof SubStatement)) {
+                    // no bug,never here
+                    throw new CriteriaException("postgre merge merge insert must be sub statement");
+                }
+                handleDialectSubInsertStmt(context, mergeSubInsert);
+            } else {
+                // no bug,never here
+                throw new CriteriaException("unknown whenPair");
+            }
+
+
+        } // loop for
+
+
+    }
+
+    /**
+     * @see #parseMergeWhenThenClause(_PostgreMerge, StringBuilder, _JoinableMergeContext)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>
+     */
+    private void parseMergeUpdateSetClause(final List<_ItemPair> itemPairList, final StringBuilder sqlBuilder,
+                                           final _JoinableMergeContext context) {
+        final int itemPairSize = itemPairList.size();
+        if (itemPairSize == 0) {
+            throw _Exceptions.setClauseNotExists();
+        }
+
+        sqlBuilder.append(_Constant.SPACE)
+                .append(_Constant.UPDATE)
+                .append(_Constant.SPACE_SET);
+        for (int i = 0; i < itemPairSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            itemPairList.get(i).appendItemPair(sqlBuilder, context);
+        }
+
+
+    }
 
     /**
      * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
