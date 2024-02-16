@@ -146,4 +146,8 @@ public interface _Statement extends Statement {
     }
 
 
+    interface _SelectItemListSpec {
+
+        List<? extends _SelectItem> selectItemList();
+    }
 }

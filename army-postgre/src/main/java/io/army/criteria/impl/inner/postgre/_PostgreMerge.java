@@ -16,12 +16,17 @@
 
 package io.army.criteria.impl.inner.postgre;
 
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public interface _PostgreMerge extends _Statement {
 
 
-    interface _WhenPair {
+    interface _WhenPair extends _WherePredicateListSpec {
 
         boolean isDoNothing();
 
@@ -30,12 +35,16 @@ public interface _PostgreMerge extends _Statement {
 
     interface _WhenMatchedPair extends _WhenPair {
 
+        List<_ItemPair> updateItemPairList();
+
         boolean isDelete();
 
     }
 
     interface _WhenNotMatchedPair extends _WhenPair {
 
+        @Nullable
+        _Insert insertStmt();
 
     }
 

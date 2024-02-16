@@ -45,7 +45,7 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
 
     public static void assertSubInsert(final SubStatement insert) {
         if (insert instanceof _Insert._DomainInsert || insert instanceof _Insert._ValuesInsert) {
-            if (!(insert instanceof PostgreInserts.PostgreValueSyntaxInsertStatement)) {
+            if (!(insert instanceof PostgreInserts.PostgreValueSyntaxInsertStatement || insert instanceof PostgreMerges.MergeValuesSyntaxSubInsert)) {
                 throw nonArmyStatement(insert);
             }
         } else if (insert instanceof _Insert._QueryInsert) {

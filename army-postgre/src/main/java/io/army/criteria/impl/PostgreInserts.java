@@ -28,8 +28,10 @@ import io.army.criteria.postgre.PostgreInsert;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreStatement;
 import io.army.criteria.standard.SQLFunction;
-import io.army.dialect.*;
-import io.army.dialect.postgre.PostgreDialect;
+import io.army.dialect.DialectParser;
+import io.army.dialect._Constant;
+import io.army.dialect._DialectUtils;
+import io.army.dialect._SqlContext;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util._Collections;
@@ -517,7 +519,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//StaticSubInsertIntoClause
 
 
-    private enum OverridingMode implements SQLWords {
+    enum OverridingMode implements SQLWords {
 
         OVERRIDING_SYSTEM_VALUE(" OVERRIDING SYSTEM VALUE"),
         OVERRIDING_USER_VALUE(" OVERRIDING USER VALUE");
@@ -1033,7 +1035,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> ifOverridingSystemValue(BooleanSupplier supplier) {
-            if (supplier.getAsBoolean()) {
+            if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
                 this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
             } else {
                 this.overridingMode = null;
@@ -1043,7 +1045,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> ifOverridingUserValue(BooleanSupplier supplier) {
-            if (supplier.getAsBoolean()) {
+            if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
                 this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
             } else {
                 this.overridingMode = null;
@@ -1532,10 +1534,6 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
 
-        @Override
-        final Dialect statementDialect() {
-            return PostgreDialect.POSTGRE15;
-        }
 
 
     }//PrimaryValueSyntaxInsertStatement
@@ -2511,11 +2509,6 @@ abstract class PostgreInserts extends InsertSupports {
             return this.returningList;
         }
 
-
-        @Override
-        final Dialect statementDialect() {
-            return PostgreDialect.POSTGRE15;
-        }
 
 
     }//QueryInsertStatement

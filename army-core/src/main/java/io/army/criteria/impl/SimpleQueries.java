@@ -2118,10 +2118,6 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             super(left, unionType, right);
         }
 
-        @Override
-        public List<? extends _SelectItem> selectItemList() {
-            return ((_PrimaryRowSet) this.left).selectItemList();
-        }
 
 
         UnionBatchSelect wrapToBatchSelect(List<?> paramList) {
@@ -2140,10 +2136,6 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             this.paramList = paramList;
         }
 
-        @Override
-        public List<? extends _SelectItem> selectItemList() {
-            return ((_PrimaryRowSet) this.left).selectItemList();
-        }
 
         @Override
         public List<?> paramList() {

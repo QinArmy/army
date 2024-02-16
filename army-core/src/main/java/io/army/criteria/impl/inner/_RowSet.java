@@ -18,8 +18,6 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.RowSet;
 
-import java.util.List;
-
 /**
  * <p>
  * This interface is inner interface of {@link RowSet}.This interface is base interface of below:
@@ -32,15 +30,9 @@ import java.util.List;
  *
  * @since 0.6.0
  */
-public interface _RowSet extends _Statement, RowSet {
+public interface _RowSet extends _Statement, _Statement._SelectItemListSpec, RowSet {
 
     int selectionSize();
-
-
-    interface _SelectItemListSpec {
-
-        List<? extends _SelectItem> selectItemList();
-    }
 
 
 }

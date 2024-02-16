@@ -50,10 +50,9 @@ public class CursorTests extends SessionTestSupport {
         states = session.updateAsStates(stmt);
 
         try (SyncStmtCursor cursor = states.nonNullOf(SyncStmtCursor.SYNC_STMT_CURSOR)) {
-            ChinaRegion<?> region, firstRow;
-            int rowCount = 0;
-            while ((region = cursor.next(ChinaRegion_.CLASS)) != null) {
-                LOG.debug("region : {}", JSON.toJSONString(region));
+            ChinaRegion<?> firstRow;
+            long rowCount = 0;
+            while (cursor.next(ChinaRegion_.CLASS) != null) {
                 rowCount++;
                 if (rowCount > 200) {
                     break;
@@ -61,10 +60,13 @@ public class CursorTests extends SessionTestSupport {
             }
             firstRow = cursor.fetchOneObject(Direction.FIRST, ChinaRegion_::constructor, ResultStates.IGNORE_STATES);
             LOG.debug("{} firstRow : {}", session.name(), JSON.toJSONString(firstRow));
-            cursor.move(Direction.LAST);
+            cursor.move(Direction.ABSOLUTE, 0);
 
-            cursor.fetch(Direction.FORWARD_ALL, ChinaRegion_.CLASS, ResultStates.IGNORE_STATES)
-                    .forEach(System.out::println);
+            rowCount = cursor.fetch(Direction.FORWARD_ALL, ChinaRegion_.CLASS, ResultStates.IGNORE_STATES)
+                    .count();
+
+            Assert.assertEquals(rowCount, regionList.size());
+
         }
 
     }

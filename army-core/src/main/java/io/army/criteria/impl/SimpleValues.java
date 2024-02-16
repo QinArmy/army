@@ -17,7 +17,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._Selection;
+import io.army.criteria.impl.inner._SelectionMap;
+import io.army.criteria.impl.inner._ValuesQuery;
 import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -688,10 +691,6 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
             super(left, unionType, right);
         }
 
-        @Override
-        public List<? extends _SelectItem> selectItemList() {
-            return ((_PrimaryRowSet) this.left).selectItemList();
-        }
 
     }//UnionSelect
 

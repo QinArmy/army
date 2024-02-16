@@ -522,7 +522,7 @@ abstract class InsertSupports {
 
         @Override
         public final R parens(Consumer<InsertStatement._StaticColumnSpaceClause<T>> consumer) {
-            consumer.accept(this);
+            CriteriaUtils.invokeConsumer(this, consumer);
             return this.endColumnListClause(true);
         }
 
@@ -532,7 +532,9 @@ abstract class InsertSupports {
             if (space != SQLs.SPACE) {
                 throw CriteriaUtils.errorSymbol(space);
             }
-            consumer.accept(this::comma);
+            final Consumer<FieldMeta<T>> addConsumer = this::comma;
+            ;
+            CriteriaUtils.invokeConsumer(addConsumer, consumer);
             return this.endColumnListClause(false);
         }
 

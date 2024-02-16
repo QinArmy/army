@@ -28,6 +28,27 @@ public interface ResultItem {
     int resultNo();
 
 
+    static boolean isRowOrStatesItem(ResultItem item) {
+        return !(item instanceof ResultRecordMeta);
+    }
+
+    static boolean isRowItem(ResultItem item) {
+        return item instanceof ResultRecord;
+    }
+
+    static boolean isStatesItem(ResultItem item) {
+        return item instanceof ResultStates;
+    }
+
+    static boolean isUpdateStatesItem(ResultItem item) {
+        return item instanceof ResultStates && !((ResultStates) item).hasColumn();
+    }
+
+    static boolean isQueryStatesItem(ResultItem item) {
+        return item instanceof ResultStates && ((ResultStates) item).hasColumn();
+    }
+
+
     interface ResultAccessSpec {
         /**
          * Returns the number of row

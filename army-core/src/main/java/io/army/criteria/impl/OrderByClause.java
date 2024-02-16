@@ -17,10 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._DerivedTable;
-import io.army.criteria.impl.inner._RowSet;
-import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._UnionRowSet;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
@@ -216,6 +213,11 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
         @Override
         public final CriteriaContext getContext() {
             return ((CriteriaContextSpec) this.left).getContext();
+        }
+
+        @Override
+        public final List<? extends _SelectItem> selectItemList() {
+            return ((_RowSet) this.left).selectItemList();
         }
 
         @Override

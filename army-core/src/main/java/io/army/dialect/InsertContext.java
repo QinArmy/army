@@ -21,13 +21,17 @@ import io.army.annotation.UpdateMode;
 import io.army.bean.ObjectAccessException;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.SessionSpec;
-import io.army.stmt.*;
+import io.army.stmt.InsertStmtParams;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.StmtType;
+import io.army.stmt.Stmts;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
@@ -119,8 +123,6 @@ abstract class InsertContext extends StatementContext
      * @see #outputFieldTableAlias(boolean)
      */
     private boolean outputFieldTableAlias;
-
-    private boolean appendedUpdateTime;
 
 
     /**
@@ -590,7 +592,6 @@ abstract class InsertContext extends StatementContext
         this.parser.safeObjectName(field, sqlBuilder);
 
         if (updateTimePlaceholder != null) {
-            this.appendedUpdateTime = true;
             appendUpdateTimePlaceholder(field, updateTimePlaceholder);
         }
 
@@ -857,11 +858,11 @@ abstract class InsertContext extends StatementContext
     final void appendInsertValue(final LiteralMode mode, final FieldMeta<?> field, final @Nullable Object value) {
         switch (mode) {
             case DEFAULT:
-                this.appendParam(SingleParam.build(field, value));
+                this.appendParam(SQLs.param(field, value));
                 break;
             case PREFERENCE: {
-                if (!(field.mappingType() instanceof _ArmyNoInjectionMapping)) {//TODO field codec
-                    this.appendParam(SingleParam.build(field, value));
+                if (!(field.mappingType() instanceof _ArmyNoInjectionMapping)) {
+                    this.appendParam(SQLs.param(field, value));
                 } else if (value == null) {
                     this.sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {

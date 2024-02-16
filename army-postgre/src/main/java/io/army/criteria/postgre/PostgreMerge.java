@@ -19,7 +19,9 @@ package io.army.criteria.postgre;
 import io.army.criteria.*;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.SimpleTableMeta;
+import io.army.meta.TableMeta;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -78,7 +80,7 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
 
     }
 
-    interface _NotMatchedMergeActionClause<T> extends _DoNothingClause<_EndFlag> {
+    interface _MergeInsertClause<T> {
 
         _MergeInsertOverridingValueSpec<T> insert();
 
@@ -87,6 +89,22 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
         _MergeInsertOverridingValueSpec<T> insert(SQLs.SymbolSpace space, Consumer<Consumer<FieldMeta<T>>> consumer);
 
     }
+
+    interface _MergeInsertPreferLiteralSpec<T> extends InsertStatement._PreferLiteralClause<_MergeInsertClause<T>>,
+            _MergeInsertClause<T> {
+
+    }
+
+    interface _MergeInsertNullOptionSpec<T> extends InsertStatement._NullOptionClause<_MergeInsertPreferLiteralSpec<T>>,
+            _MergeInsertPreferLiteralSpec<T> {
+
+    }
+
+    interface _NotMatchedMergeActionClause<T> extends InsertStatement._MigrationOptionClause<_MergeInsertNullOptionSpec<T>>,
+            _MergeInsertNullOptionSpec<T>, _DoNothingClause<_EndFlag> {
+
+    }
+
 
 
     interface _MatchedThenClause<T, I extends Item> extends _WhereAndClause<_MatchedThenClause<T, I>> {
@@ -126,22 +144,22 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
     }
 
 
-    interface _ChildMergeIntoClause<P> extends Item {
-
-        <T> _MergeUsingClause<T, PostgreMerge> mergeInto(SQLs.WordOnly only, ComplexTableMeta<P, T> targetTable, SQLs.WordAs as, String targetAlias);
-
-        <T> _MergeUsingClause<T, PostgreMerge> mergeInto(ComplexTableMeta<P, T> targetTable, SQLs.WordAs as, String targetAlias);
-    }
-
-    interface _ChildWithSpec<P> extends _PostgreDynamicWithClause<_ChildMergeIntoClause<P>>,
-            PostgreQuery._PostgreStaticWithClause<_ChildMergeIntoClause<P>>,
-            _ChildMergeIntoClause<P> {
-
-    }
-
-    interface _MergeChildClause<P> extends InsertStatement._ChildPartClause<_ChildWithSpec<P>>, PostgreMerge {
-
-    }
+//    interface _ChildMergeIntoClause<P> extends Item {
+//
+//        <T> _MergeUsingClause<T, PostgreMerge> mergeInto(SQLs.WordOnly only, ComplexTableMeta<P, T> targetTable, SQLs.WordAs as, String targetAlias);
+//
+//        <T> _MergeUsingClause<T, PostgreMerge> mergeInto(ComplexTableMeta<P, T> targetTable, SQLs.WordAs as, String targetAlias);
+//    }
+//
+//    interface _ChildWithSpec<P> extends _PostgreDynamicWithClause<_ChildMergeIntoClause<P>>,
+//            PostgreQuery._PostgreStaticWithClause<_ChildMergeIntoClause<P>>,
+//            _ChildMergeIntoClause<P> {
+//
+//    }
+//
+//    interface _MergeChildClause<P> extends InsertStatement._ChildPartClause<_ChildWithSpec<P>>, PostgreMerge {
+//
+//    }
 
 
     interface _MergeIntoClause extends Item {
@@ -151,9 +169,9 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
         <T> _MergeUsingClause<T, PostgreMerge> mergeInto(SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
 
 
-        <T> _MergeUsingClause<T, _MergeChildClause<T>> mergeInto(SQLs.WordOnly only, ParentTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
-
-        <T> _MergeUsingClause<T, _MergeChildClause<T>> mergeInto(ParentTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
+//        <T> _MergeUsingClause<T, _MergeChildClause<T>> mergeInto(SQLs.WordOnly only, ParentTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
+//
+//        <T> _MergeUsingClause<T, _MergeChildClause<T>> mergeInto(ParentTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
 
     }
 

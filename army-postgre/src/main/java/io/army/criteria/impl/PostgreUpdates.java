@@ -590,12 +590,6 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     }
 
     @Override
-    final Dialect statementDialect() {
-        return PostgreUtils.DIALECT;
-    }
-
-
-    @Override
     final void onBeforeContextEnd() {
         //no-op
     }
