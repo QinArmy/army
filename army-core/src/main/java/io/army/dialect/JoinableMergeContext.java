@@ -85,6 +85,12 @@ final class JoinableMergeContext extends StatementContext implements _JoinableMe
         return this.multiTableContext.tabularItemOf(tableAlias);
     }
 
+    @Nullable
+    @Override
+    public String trySaTableAliasOf(TableMeta<?> table) {
+        return this.multiTableContext.trySaTableAliasOf(table);
+    }
+
     @Override
     public void appendSetLeftItem(SqlField dataField, @Nullable Expression updateTimePlaceholder) {
         this.multiTableContext.appendSetLeftItem(dataField, updateTimePlaceholder);

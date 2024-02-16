@@ -52,7 +52,12 @@ public class MergeTests extends SessionTestSupport {
                 .mergeInto(Captcha_.T, AS, "c")
                 .using(RegisterRecord_.T, AS, "r").on(Captcha_.requestNo::equal, RegisterRecord_.requestNo)
                 .whenNotMatched().then(s -> s.insert()
-                        .value(captcha)
+                        .values()
+                        .parens(r -> r.space(Captcha_.captcha, SQLs::param, captcha.getCaptcha())
+                                .comma(Captcha_.deadline, SQLs::param, captcha.getDeadline())
+                                .comma(Captcha_.requestNo, RegisterRecord_.requestNo)
+                                .comma(Captcha_.partnerId, SQLs.field("r", RegisterRecord_.partnerId))
+                        )
                 ).asCommand();
 
         final long rows;

@@ -45,6 +45,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
 
     static final String SPACE_PLACEHOLDER = " ?";
 
+
     protected final ArmyParser parser;
 
     protected final SessionSpec sessionSpec;

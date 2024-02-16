@@ -19,6 +19,8 @@ package io.army.dialect;
 import io.army.criteria.TabularItem;
 import io.army.meta.TableMeta;
 
+import javax.annotation.Nullable;
+
 /**
  * <p>
  * This interface representing multi-table context,this interface is base interface of below:
@@ -40,6 +42,10 @@ public interface _MultiTableContext extends SqlContextSpec {
     String saTableAliasOf(TableMeta<?> table);
 
     TabularItem tabularItemOf(String tableAlias);
+
+
+    @Nullable
+    String trySaTableAliasOf(TableMeta<?> table);
 
 
 }

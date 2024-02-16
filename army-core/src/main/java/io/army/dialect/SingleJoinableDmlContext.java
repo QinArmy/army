@@ -76,5 +76,12 @@ abstract class SingleJoinableDmlContext extends SingleTableDmlContext implements
         return this.multiTableContext.tabularItemOf(tableAlias);
     }
 
+    @Nullable
+    @Override
+    public final String trySaTableAliasOf(TableMeta<?> table) {
+        return this.multiTableContext.trySaTableAliasOf(table);
+    }
+
+
 
 }

@@ -48,15 +48,10 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
     }
 
 
-    interface _MergeInsertStaticValuesParensClause<T>
-            extends InsertStatement._ValuesParensClause<T, _MergeInsertStaticValuesCommaClause<T>> {
+    interface _MergeInsertStaticValuesParensClause<T> extends InsertStatement._ValuesParensClause<T, _EndFlag> {
 
     }
 
-    interface _MergeInsertStaticValuesCommaClause<T> extends _CommaClause<_MergeInsertStaticValuesParensClause<T>>,
-            _EndFlag {
-
-    }
 
     interface _ValuesDefaultSpec<T> extends InsertStatement._FullColumnDefaultClause<T, _ValuesDefaultSpec<T>>,
             InsertStatement._DomainValueClause<T, _EndFlag>,

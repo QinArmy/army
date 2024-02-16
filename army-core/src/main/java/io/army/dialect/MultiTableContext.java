@@ -161,6 +161,11 @@ final class MultiTableContext implements _MultiTableContext,
         return tableItem;
     }
 
+    @Nullable
+    @Override
+    public String trySaTableAliasOf(TableMeta<?> table) {
+        return this.tableToSafeAlias.get(table);
+    }
 
     @Override
     public void appendSetLeftItem(final SqlField dataField, final @Nullable Expression updateTimePlaceholder) {

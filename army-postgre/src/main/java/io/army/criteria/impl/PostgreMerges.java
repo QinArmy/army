@@ -446,18 +446,22 @@ abstract class PostgreMerges {
                     insertClause.staticValuesClauseEnd(staticValuesClause.endValuesClause());
                 }
                 final InsertSupports.InsertMode mode = insertClause.getInsertMode();
+                final Statement._DmlInsertClause<SubStatement> spec;
                 switch (mode) {
                     case DOMAIN:
-                        this.subInsertStmt = (_Insert) new MergeSimpleDomainSubInsert(insertClause)
-                                .asInsert();
+                        spec = new MergeSimpleDomainSubInsert(insertClause);
                         break;
-                    case VALUES:
-                        this.subInsertStmt = (_Insert) new MergeSimpleValuesSubInsert(insertClause)
-                                .asInsert();
-                        break;
+                    case VALUES: {
+                        if (insertClause.rowPairList().size() != 1) { // for dynamic VALUES
+                            throw ContextStack.clearStackAndCriteriaError("Postgre merger into statement sub insert must be one row");
+                        }
+                        spec = new MergeSimpleValuesSubInsert(insertClause);
+                    }
+                    break;
                     default:
                         throw ContextStack.clearStackAnd(_Exceptions::unexpectedEnum, mode);
-                }
+                } // switch
+                this.subInsertStmt = (_Insert) spec.asInsert();
                 insertClause.staticValuesClause = null;
             }
 
@@ -597,7 +601,8 @@ abstract class PostgreMerges {
             T,
             PostgreMerge._MergeInsertOverridingValueSpec<T>,
             PostgreMerge._ValuesDefaultSpec<T>,
-            Statement._EndFlag> implements PostgreMerge._MergeInsertOverridingValueSpec<T>, Statement._EndFlag {
+            Statement._EndFlag> implements PostgreMerge._MergeInsertOverridingValueSpec<T>,
+            _Insert._JoinableInsert {
 
 
         private PostgreInserts.OverridingMode overridingMode;
@@ -660,17 +665,12 @@ abstract class PostgreMerges {
 
     private static final class MergeInsertValuesParensClause<T, I extends Item> extends InsertSupports.ValuesParensClauseImpl<
             T,
-            PostgreMerge._MergeInsertStaticValuesCommaClause<T>>
-            implements PostgreMerge._MergeInsertStaticValuesCommaClause<T>,
-            PostgreMerge._MergeInsertStaticValuesParensClause<T> {
+            Statement._EndFlag>
+            implements PostgreMerge._MergeInsertStaticValuesParensClause<T>,
+            _Insert._JoinableInsert {
 
         private MergeInsertValuesParensClause(MergeInsertComplexValues<T, I> clause) {
             super(clause.context, clause.migration, clause::validateField);
-        }
-
-        @Override
-        public PostgreMerge._MergeInsertStaticValuesParensClause<T> comma() {
-            return this;
         }
 
 
@@ -678,7 +678,7 @@ abstract class PostgreMerges {
 
 
     static abstract class MergeValuesSyntaxSubInsert extends InsertSupports.ArmyValueSyntaxStatement<SubStatement, SubStatement>
-            implements PostgreInsert, _PostgreInsert, SubStatement {
+            implements PostgreInsert, _PostgreInsert, SubStatement, _Insert._JoinableInsert {
 
         private final PostgreInserts.OverridingMode overridingMode;
 

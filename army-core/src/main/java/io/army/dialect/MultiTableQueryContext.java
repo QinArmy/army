@@ -78,6 +78,13 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
         return this.multiTableContext.tabularItemOf(tableAlias);
     }
 
+    @Nullable
+    @Override
+    public final String trySaTableAliasOf(TableMeta<?> table) {
+        return this.multiTableContext.trySaTableAliasOf(table);
+    }
+
+
     @Override
     public final void appendField(String tableAlias, FieldMeta<?> field) {
         this.multiTableContext.appendField(tableAlias, field);

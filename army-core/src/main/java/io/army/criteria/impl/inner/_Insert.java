@@ -208,4 +208,10 @@ public interface _Insert extends _Statement {
     }
 
 
+    interface _JoinableInsert {
+
+    }
+
+
+
 }

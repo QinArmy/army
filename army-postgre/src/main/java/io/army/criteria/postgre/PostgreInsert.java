@@ -197,7 +197,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _ValuesDefaultSpec<T, I extends Item, Q extends Item>
             extends InsertStatement._FullColumnDefaultClause<T, _ValuesDefaultSpec<T, I, Q>>,
-            InsertStatement._DomainValueClause<T, _OnConflictSpec<T, I, Q>>,
+            InsertStatement._DomainValuesClause<T, _OnConflictSpec<T, I, Q>>,
             InsertStatement._DynamicValuesClause<T, _OnConflictSpec<T, I, Q>>,
             InsertStatement._StaticValuesClause<_PostgreValuesStaticParensClause<T, I, Q>> {
 

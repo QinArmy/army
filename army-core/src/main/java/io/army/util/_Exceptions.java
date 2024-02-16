@@ -153,6 +153,10 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
+    public static CriteriaException targetTableFiledAsInsertValue(TableField field) {
+        return new CriteriaException(String.format("%s couldn't be insert value", field));
+    }
+
     public static CriteriaException unsupportedFieldType(SqlField field) {
         return new CriteriaException(String.format("unsupported field type %s", field));
     }

@@ -54,6 +54,8 @@ abstract class InsertContext extends StatementContext
         InsertStmtParams,
         SelectItemListContext {
 
+    final _SqlContext outerContext;
+
     final InsertContext parentContext;
 
     final boolean twoStmtMode;
@@ -72,6 +74,8 @@ abstract class InsertContext extends StatementContext
      * nullable map
      */
     final Map<FieldMeta<?>, Boolean> fieldMap;
+
+    private final boolean joinableInsertStmt;
 
     private final String tableAlias;
 
@@ -134,6 +138,7 @@ abstract class InsertContext extends StatementContext
     InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt,
                   ArmyParser parser, SessionSpec sessionSpec) {
         super(outerContext, parser, sessionSpec);
+        this.outerContext = outerContext;
         this.parentContext = null;
         final _Insert targetStmt;
         if (domainStmt instanceof _Insert._ChildInsert) {
@@ -144,6 +149,9 @@ abstract class InsertContext extends StatementContext
             targetStmt = domainStmt;
             this.twoStmtQuery = this.twoStmtMode = false;
         }
+
+        this.joinableInsertStmt = targetStmt instanceof _Insert._JoinableInsert;
+
         this.insertTable = targetStmt.table();
         assert this.insertTable instanceof SingleTableMeta || parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE;
 
@@ -277,12 +285,13 @@ abstract class InsertContext extends StatementContext
     InsertContext(@Nullable StatementContext outerContext, final _Insert._ChildInsert stmt,
                   final InsertContext parentContext) {
         super(outerContext, parentContext.parser, parentContext.sessionSpec);
-
+        this.outerContext = outerContext;
         this.parentContext = parentContext;
         this.twoStmtMode = parentContext.twoStmtMode;
         this.twoStmtQuery = parentContext.twoStmtQuery;
         this.insertTable = stmt.table();
 
+        this.joinableInsertStmt = stmt instanceof _Insert._JoinableInsert;
 
         if (stmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) stmt;
@@ -453,28 +462,46 @@ abstract class InsertContext extends StatementContext
 
     @Override
     public final void appendField(final @Nullable String tableAlias, final FieldMeta<?> field) {
-        final String safeAlias;
-        if (!(this.valuesClauseEnd
-                && (this.hasConflictClause || this.returnSelectionList.size() > 0)
-                && field.tableMeta() == this.insertTable)) {
-            throw _Exceptions.unknownColumn(field);
-        } else if (tableAlias == null) {
+        if (tableAlias == null) {
             throw new NullPointerException();
+        }
+
+        final _SqlContext outerContext = this.outerContext;
+
+        final boolean thisTableField;
+
+        final String safeAlias;
+        if (tableAlias.equals(this.tableAlias)) {
+            thisTableField = true;
+            safeAlias = this.safeTableAlias;
         } else if (tableAlias.equals(this.rowAlias)) {
             if (this.inSetClause && this.fieldMap != null && !this.fieldMap.containsKey(field)) {
                 // here ,MySQL couldn't recognize field
                 String m = String.format("%s not present in column list clause,so %s couldn't recognize.", field, this.parser.database.name());
                 throw new CriteriaException(m);
             }
+            thisTableField = true;
             safeAlias = this.safeRowAlias;
-        } else if (tableAlias.equals(this.tableAlias)) {
-            safeAlias = this.safeTableAlias;
+        } else if (this.joinableInsertStmt) { // for postgre merge statement
+            thisTableField = false;
+            if (!(outerContext instanceof _JoinableMergeContext)) {
+                throw _Exceptions.unknownColumn(field);
+            }
+            safeAlias = ((_JoinableMergeContext) outerContext).safeTableAlias(field.tableMeta(), tableAlias);
         } else if (this.rowAlias == null && this.parser.supportRowAlias) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         } else if (this.rowAlias == null) {
             String m = String.format("%s don't support row alias.", this.parser.dialect);
             throw new CriteriaException(m);
         } else {
+            throw _Exceptions.unknownColumn(tableAlias, field);
+        }
+
+        if (thisTableField && !this.valuesClauseEnd) {
+            throw _Exceptions.targetTableFiledAsInsertValue(field);
+        } else if (thisTableField && !(this.hasConflictClause || this.returnSelectionList.size() > 0)) {
+            throw _Exceptions.unknownColumn(field);
+        } else if (thisTableField && field.tableMeta() != this.insertTable) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
 
@@ -489,21 +516,49 @@ abstract class InsertContext extends StatementContext
 
     @Override
     public final void appendField(final FieldMeta<?> field) {
-        if (!(this.valuesClauseEnd
-                && (this.hasConflictClause || this.returnSelectionList.size() > 0)
-                && field.tableMeta() == this.insertTable)) {
+        final TableMeta<?> fieldTable = field.tableMeta();
+        final _SqlContext outerContext = this.outerContext;
+
+        final boolean thisTableField;
+
+        final String safeRelativeTableAlias;
+        if (fieldTable == this.insertTable) {
+            thisTableField = true;
+            safeRelativeTableAlias = null;
+        } else if (this.joinableInsertStmt) {
+            thisTableField = false;
+            if (!(outerContext instanceof _JoinableMergeContext)) {
+                throw _Exceptions.unknownColumn(field);
+            } else if ((safeRelativeTableAlias = ((_JoinableMergeContext) outerContext).trySaTableAliasOf(fieldTable)) == null) { // postgre merger
+                throw _Exceptions.unknownColumn(field);
+            }
+        } else {
             throw _Exceptions.unknownColumn(field);
         }
+
+        if (thisTableField && !this.valuesClauseEnd) {
+            throw _Exceptions.targetTableFiledAsInsertValue(field);
+        } else if (thisTableField && !(this.hasConflictClause || this.returnSelectionList.size() > 0)) {
+            throw _Exceptions.unknownColumn(field);
+        }
+
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
 
-        String safeAlias;
-        if ((this.outputFieldTableAlias || this.rowAlias != null)
-                && ((safeAlias = this.safeTableAlias) != null || (safeAlias = this.safeTableName) != null)) {
-            sqlBuilder.append(safeAlias)
+        if (thisTableField) {
+            String safeAlias;
+            if ((this.outputFieldTableAlias || this.rowAlias != null)
+                    && ((safeAlias = this.safeTableAlias) != null || (safeAlias = this.safeTableName) != null)) {
+                sqlBuilder.append(safeAlias)
+                        .append(_Constant.PERIOD);
+            }
+        } else {
+            sqlBuilder.append(safeRelativeTableAlias)
                     .append(_Constant.PERIOD);
         }
         this.parser.safeObjectName(field, sqlBuilder);
+
+
     }
 
     @Override

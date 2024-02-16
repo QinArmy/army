@@ -1002,9 +1002,10 @@ abstract class InsertSupports {
     @SuppressWarnings("unchecked")
     static abstract class ComplexInsertValuesClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR>
             extends ColumnDefaultClause<T, CR, DR>
-            implements InsertStatement._DomainValueClause<T, VR>,
+            implements InsertStatement._DomainValuesClause<T, VR>,
             InsertStatement._DynamicValuesClause<T, VR>,
             ArmyInsert,
+            Statement._EndFlag,
             _Insert._ValuesInsert,
             _Insert._QueryInsert {
 
@@ -1577,6 +1578,7 @@ abstract class InsertSupports {
             implements InsertStatement._StaticValueSpaceClause<T>,
             InsertStatement._StaticColumnValueClause<T>,
             InsertStatement._ValuesParensClause<T, R>,
+            Statement._EndFlag,
             CriteriaContextSpec {
 
         final CriteriaContext context;
@@ -1684,10 +1686,11 @@ abstract class InsertSupports {
             return this.ifComma(field, funcRef, function, key);
         }
 
+
         @Override
         public final InsertStatement._StaticColumnValueClause<T> comma(final FieldMeta<T> field,
                                                                        final @Nullable Expression value) {
-            if (value instanceof SqlField) {
+            if (value instanceof SqlField && !(this instanceof _Insert._JoinableInsert)) {
                 throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);
