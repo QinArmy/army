@@ -124,6 +124,8 @@ abstract class InsertContext extends StatementContext
      */
     private boolean outputFieldTableAlias;
 
+    private boolean appendedUpdateTime;
+
 
     /**
      * <p>
@@ -542,7 +544,7 @@ abstract class InsertContext extends StatementContext
 
     @Override
     public final boolean isAppendedUpdateTime() {
-        return false;
+        return this.appendedUpdateTime;
     }
 
     @Override
@@ -592,6 +594,7 @@ abstract class InsertContext extends StatementContext
         this.parser.safeObjectName(field, sqlBuilder);
 
         if (updateTimePlaceholder != null) {
+            this.appendedUpdateTime = true;
             appendUpdateTimePlaceholder(field, updateTimePlaceholder);
         }
 

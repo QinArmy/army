@@ -338,7 +338,7 @@ public abstract class Postgres extends PostgreSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>
      */
-    static PostgreMerge._WithSpec singleMerge() {
+    public static PostgreMerge._WithSpec singleMerge() {
         return PostgreMerges.mergeStmt(null);
     }
 

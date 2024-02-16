@@ -48,7 +48,7 @@ public interface _DmlContext extends _StmtContext {
     }
 
 
-    interface ConditionFieldsSpec {
+    interface _ConditionFieldsSpec {
 
         void appendConditionFields();
     }
