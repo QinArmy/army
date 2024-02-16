@@ -561,7 +561,7 @@ abstract class PostgreMerges {
             this.context.onAddBlock(usingClause.sourceBlock);
 
             final MergeInsertComplexValues<T, I> insertClause;
-            this.insertClause = insertClause = new MergeInsertComplexValues<>(this, usingClause.targetTable, usingClause.targetAlias);
+            this.insertClause = insertClause = new MergeInsertComplexValues<>(this, usingClause.targetTable);
             return insertClause;
         }
 
@@ -597,18 +597,15 @@ abstract class PostgreMerges {
             T,
             PostgreMerge._MergeInsertOverridingValueSpec<T>,
             PostgreMerge._ValuesDefaultSpec<T>,
-            Statement._EndFlag> implements PostgreMerge._MergeInsertOverridingValueSpec<T> {
+            Statement._EndFlag> implements PostgreMerge._MergeInsertOverridingValueSpec<T>, Statement._EndFlag {
 
-        private final String targetAlias;
 
         private PostgreInserts.OverridingMode overridingMode;
 
         private MergeInsertValuesParensClause<T, I> staticValuesClause;
 
-        private MergeInsertComplexValues(NotMatchWhenWhenPair<T, I> whenClaus, TableMeta<T> targetTable,
-                                         String targetAlias) {
+        private MergeInsertComplexValues(NotMatchWhenWhenPair<T, I> whenClaus, TableMeta<T> targetTable) {
             super(whenClaus, targetTable, false); // here non-towStmtMode
-            this.targetAlias = targetAlias;
         }
 
         @Override
@@ -654,7 +651,8 @@ abstract class PostgreMerges {
         @Nullable
         @Override
         public String tableAlias() {
-            return this.targetAlias;
+            // merge sub insert don't support alias
+            return null;
         }
 
 

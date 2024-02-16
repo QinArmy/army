@@ -1032,7 +1032,7 @@ abstract class InsertContext extends StatementContext
         final boolean manageVisible;
 
         InsertRowWrapper(final InsertContext context, final _Insert statement) {
-            if (statement instanceof SubStatement) {
+            if (statement instanceof _Insert._ParentSubInsert) {
                 this.domainTable = ((_Insert._ParentSubInsert) statement).domainTable();
             } else {
                 this.domainTable = statement.table();

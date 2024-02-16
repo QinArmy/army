@@ -2344,7 +2344,15 @@ abstract class InsertSupports {
         if (parentSubInsert != null) {
             return parentSubInsert;
         }
-        return parentSubInsert(childStmt, rowCount, ((_Statement._WithClauseSpec) childStmt).cteList());
+        final CriteriaContext outerContext;
+        outerContext = childStmt.getContext().getOuterContext();
+        final List<_Cte> saveLevelCteList;
+        if (outerContext == null) {
+            saveLevelCteList = Collections.emptyList();
+        } else {
+            saveLevelCteList = outerContext.accessCteList();
+        }
+        return parentSubInsert(childStmt, rowCount, saveLevelCteList);
     }
 
 
@@ -2417,7 +2425,7 @@ abstract class InsertSupports {
             cte = cteList.get(i);
             currentCteName = cte.name();
 
-            if (needParentRowNumberQuery && !parentRowNumberQuery) {//here, parentCteName representing parent row number cte name
+            if (needParentRowNumberQuery && !parentRowNumberQuery) { // here, parentCteName representing parent row number cte name
                 if (parentCteName.equals(currentCteName)) {
                     parentInsertCteName = validateParentRowNumberCte(child, cte, nameList);
                     parentRowNumberQuery = true;
@@ -2464,7 +2472,8 @@ abstract class InsertSupports {
                 parentSubInsert.validateChild(child);
             }
             break;
-        }
+        } // loop for
+
         if (required && needParentRowNumberQuery && !parentRowNumberQuery) {
             m = String.format("Not found parent row number CTE for %s", child);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);

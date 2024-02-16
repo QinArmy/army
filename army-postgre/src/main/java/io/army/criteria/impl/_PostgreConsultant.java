@@ -105,6 +105,10 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
         }
     }
 
+    public static boolean isNotMergeSubInsert(final _Insert stmt) {
+        return !(stmt instanceof PostgreMerges.MergeValuesSyntaxSubInsert);
+    }
+
 
     public static void assertRowSet(final RowSet rowSet) {
         if (!(rowSet instanceof Query)) {

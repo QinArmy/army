@@ -22,8 +22,6 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre.*;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.dialect.*;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.ParentTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -670,84 +668,6 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     /**
-     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
-     * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">UPDATE Statement</a>
-     */
-    private void appendParentForUpdateChild(final _PostgreUpdate childStmt, final _SingleUpdateContext childContext,
-                                            final String childCteName, final @Nullable String parentCteName) {
-
-        final ChildTableMeta<?> child = (ChildTableMeta<?>) childStmt.table();
-        assert childContext.targetTable() == child;
-
-        final ParentTableMeta<?> parent = child.parentMeta();
-
-        assert _StringUtils.hasText(childCteName);
-
-        final StringBuilder sqlBuilder = childContext.sqlBuilder();
-
-        if (parentCteName != null) {
-            sqlBuilder.append(_Constant.SPACE);
-            identifier(parentCteName, sqlBuilder);
-            sqlBuilder.append(_Constant.SPACE_AS_SPACE)
-                    .append(_Constant.LEFT_PAREN);
-        }
-
-        // 2. UPDATE key word
-        sqlBuilder.append(_Constant.SPACE)
-                .append(_Constant.UPDATE)
-                .append(_Constant.SPACE_ONLY)
-                .append(_Constant.SPACE);
-        // 3. parent table name and alias
-        safeObjectName(parent, sqlBuilder);
-
-        final String safeParentTableAlias;
-        safeParentTableAlias = identifier(parentAlias(childStmt.tableAlias()));
-
-        // 4. SET clause
-        sqlBuilder.append(_Constant.SPACE_AS_SPACE)
-                .append(safeParentTableAlias);
-
-        appendUpdateTimeAndVersion(parent, safeParentTableAlias, childContext, true);
-
-        // 5. FROM clause
-        sqlBuilder.append(_Constant.SPACE_FROM_SPACE);
-        final String safeChildCteName;
-        safeChildCteName = identifier(childCteName);
-
-        // 6. WHERE clause
-        sqlBuilder.append(safeChildCteName)
-                .append(_Constant.SPACE_WHERE)
-                .append(_Constant.SPACE)
-                .append(safeParentTableAlias)
-                .append(_Constant.PERIOD);
-
-        safeObjectName(parent.id());
-
-        sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE)
-                .append(safeChildCteName)
-                .append(_Constant.PERIOD);
-        identifier(child.id().fieldName());
-
-        // append discriminator
-        discriminator(child, safeParentTableAlias, childContext);
-
-        // 7. RETURNING child RETURNING clause
-        if (childStmt instanceof PrimaryStatement
-                && childStmt instanceof _ReturningDml
-                && childStmt.returningList().size() > 0) {
-            sqlBuilder.append(_Constant.SPACE_RETURNING)
-                    .append(safeChildCteName)
-                    .append(".*");
-        }
-
-        if (parentCteName != null) {
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-        }
-
-    }
-
-
-    /**
      * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
      * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
@@ -925,18 +845,20 @@ final class PostgreDialectParser extends PostgreParser {
             sqlBuilder.append(_Constant.SPACE);
         }
         // 1. INSERT INTO key words
-        sqlBuilder.append(_Constant.INSERT)
-                .append(_Constant.SPACE_INTO_SPACE);
+        sqlBuilder.append(_Constant.INSERT);
 
-        // 2. table name
-        assert insertTable == stmt.table();
-        this.safeObjectName(insertTable, sqlBuilder);
+        if (_PostgreConsultant.isNotMergeSubInsert(stmt)) {
+            sqlBuilder.append(_Constant.SPACE_INTO_SPACE);
+            // 2. table name
+            assert insertTable == stmt.table();
+            this.safeObjectName(insertTable, sqlBuilder);
 
-        // 3. table alias
-        final String safeTableAlias;
-        if ((safeTableAlias = context.safeTableAlias()) != null) {
-            sqlBuilder.append(_Constant.SPACE_AS_SPACE)
-                    .append(safeTableAlias);
+            // 3. table alias
+            final String safeTableAlias;
+            if ((safeTableAlias = context.safeTableAlias()) != null) {
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                        .append(safeTableAlias);
+            }
         }
 
         // 4. append column list
