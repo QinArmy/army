@@ -32,6 +32,8 @@ public interface VarExpression extends DefiniteExpression {
 
     SimpleExpression increment();
 
+    SimpleExpression decrement();
+
     SimpleExpression assignment(Expression value);
 
     SimpleExpression plusEqual(Expression value);

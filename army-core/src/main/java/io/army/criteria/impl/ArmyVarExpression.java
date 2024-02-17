@@ -82,6 +82,11 @@ final class ArmyVarExpression extends OperationExpression.OperationDefiniteExpre
     }
 
     @Override
+    public SimpleExpression decrement() {
+        return new VarOperationExpression(this, AssignOperator.MINUS_EQUAL, SQLs.LITERAL_1);
+    }
+
+    @Override
     public SimpleExpression assignment(Expression value) {
         return new VarOperationExpression(this, null, value);
     }
