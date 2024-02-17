@@ -252,8 +252,8 @@ abstract class MySQLExpressions {
             break;
             case "activate_all_roles_on_login":
             case "authentication_windows_use_principal_name":
-            case "automatic_sp_privileges":
             case "auto_generate_certs":
+            case "automatic_sp_privileges":
             case "avoid_temporal_upgrade":
             case "caching_sha2_password_auto_generate_rsa_keys":
             case "check_proxy_users":
@@ -281,8 +281,8 @@ abstract class MySQLExpressions {
             case "old":
             case "partial_revokes":
             case "password_require_current":
-            case "persisted_globals_load":
             case "persist_sensitive_variables_in_plaintext":
+            case "persisted_globals_load":
             case "read_only":
             case "require_secure_transport":
             case "sha256_password_auto_generate_rsa_keys":

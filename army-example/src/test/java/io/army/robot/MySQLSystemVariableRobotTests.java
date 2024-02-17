@@ -2,7 +2,6 @@ package io.army.robot;
 
 import io.army.util._Collections;
 import io.army.util._StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -45,6 +44,9 @@ public class MySQLSystemVariableRobotTests {
      */
     @Test(enabled = false)
     public void systemVariableCaseStatement() throws Exception {
+
+        final long startNano = System.nanoTime();
+
         final Document document;
         document = Jsoup.connect("https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html").get();
 
@@ -138,8 +140,10 @@ public class MySQLSystemVariableRobotTests {
 
         } // loop for
 
-
+        // sort
         tripleList.sort(Triple::compareTo);
+
+        LOG.debug("MySQL system variable count : {}", tripleList.size());
 
         builder.setLength(0); // clear
 
@@ -179,7 +183,14 @@ public class MySQLSystemVariableRobotTests {
                 .append("}\n\n");
 
 
-        LOG.debug("{}", builder);
+        final long costNano, millis, micro, nano;
+        costNano = System.nanoTime() - startNano;
+
+        millis = costNano / 1000_000L;
+        micro = (costNano % 1000_000L) / 1000L;
+        nano = costNano % 1000L;
+
+        LOG.debug("{}\n cost {} millis {} micro {} nano", builder, millis, micro, nano);
 
 
     }
@@ -248,12 +259,14 @@ public class MySQLSystemVariableRobotTests {
 
 
         @Override
-        public int compareTo(@NotNull Triple o) {
+        public int compareTo(final Triple o) {
             final int result;
             if (this.scope != o.scope) {
                 result = this.scope - o.scope;
-            } else {
+            } else if (this.type != o.type) {
                 result = this.type - o.type;
+            } else {
+                result = this.caseCause.compareTo(o.caseCause);
             }
             return result;
         }
