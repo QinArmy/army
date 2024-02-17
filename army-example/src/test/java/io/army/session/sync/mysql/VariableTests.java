@@ -1,6 +1,7 @@
 package io.army.session.sync.mysql;
 
 
+import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
@@ -14,6 +15,7 @@ import org.testng.annotations.Test;
 import java.util.List;
 import java.util.Map;
 
+import static io.army.criteria.impl.MySQLs.atAtSession;
 import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
 
@@ -48,6 +50,19 @@ public class VariableTests extends SessionTestSupport {
         for (int i = 0; i < rowSize; i++) {
             Assert.assertEquals(rowList.get(i).get("rowNumber"), i + 1);
         }
+    }
+
+    @Test
+    public void readSystemVariable(final SyncLocalSession session) {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .select(atAtSession("autocommit").as("autoCommit"), atAtSession("sql_mode").as("sqlMode"))
+                .asQuery();
+
+        final Map<String, Object> row;
+        row = session.queryOneObject(stmt, RowMaps::hashMap);
+
+        LOG.debug("{} row :\n{}", session.name(), JSON.toJSONString(row));
     }
 
 
