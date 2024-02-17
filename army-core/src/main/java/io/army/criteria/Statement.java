@@ -44,7 +44,7 @@ import static io.army.dialect.Database.*;
  *     <li>{@link SubQuery}</li>
  *     <li>{@link Values}</li>
  * </ul>
- ** @since 0.6.0
+ * * @since 0.6.0
  */
 public interface Statement extends Item {
 
@@ -196,7 +196,7 @@ public interface Statement extends Item {
      */
     interface _BatchParamClause<R extends Item> extends Item {
 
-         R namedParamList(List<?> paramList);
+        R namedParamList(List<?> paramList);
     }
 
     interface _BatchUpdateParamSpec extends _BatchParamClause<BatchUpdate> {
@@ -228,11 +228,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing RIGHT BRACKET clause in join expression.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <RR> next clause java type
      * @since 0.6.0
      */
@@ -246,11 +247,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing ON clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <OR> next clause java type
      * @since 0.6.0
      */
@@ -274,11 +276,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing FROM clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <FT> next clause java type
      * @param <FS> next clause java type
      * @since 0.6.0
@@ -316,11 +319,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing dialect FROM clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <R> same with the FS of {@link _FromClause}
      * @see _FromClause
      * @since 0.6.0
@@ -355,11 +359,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing FROM clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <FT> next clause java type
      * @param <FS> next clause java type
      * @since 0.6.0
@@ -396,11 +401,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing dialect FROM clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <FC> same with the FS of {@link _FromClause}
      * @see _FromClause
      * @since 0.6.0
@@ -435,11 +441,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing JOIN clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <JT> next clause java type,it's sub interface of {@link _OnClause}
      * @param <JS> next clause java type,it's sub interface of {@link _OnClause}
      * @see _CrossJoinClause
@@ -534,11 +541,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing CROSS JOIN clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @since 0.6.0
      */
     interface _CrossJoinClause<FT, FS> {
@@ -694,11 +702,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing a left bracket clause after key word 'FROM' or key word 'JOIN'.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <LT> next clause java type
      * @param <LS> next clause java type
      * @since 0.6.0
@@ -816,11 +825,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing WHERE clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <WR> next clause java type
      * @param <WA> next clause java type
      * @since 0.6.0
@@ -921,11 +931,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing WHERE clause in SELECT statement.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <WR> next clause java type
      * @param <WA> next clause java type
      * @since 0.6.0
@@ -949,11 +960,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing AND clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @param <WA> next clause java type
      * @since 0.6.0
      */
@@ -1084,11 +1096,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing ORDER BY clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @since 0.6.0
      */
     @Deprecated
@@ -1162,11 +1175,12 @@ public interface Statement extends Item {
     /**
      * <p>
      * This interface representing row count limit clause.
-     *     * <p>
+     * * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
-     *     *
+     * *
+     *
      * @since 0.6.0
      */
     interface _RowCountLimitClause<R> extends Item {
@@ -1847,7 +1861,26 @@ public interface Statement extends Item {
 
 
     /**
-     * <p>This interface is public interface that developer can directly use.
+     * <p>This interface is public interface that developer can directly use,but just method reference,for example :
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void simple(final SyncLocalSession session) {
+     *
+     *        final PostgreMerge stmt;
+     *        stmt = Postgres.singleMerge()
+     *                .mergeInto(Captcha_.T, AS, "c")
+     *                .using(RegisterRecord_.T, AS, "r").on(Captcha_.requestNo::equal, RegisterRecord_.requestNo)
+     *                .whenNotMatched().then(Statement.DoNothingClause::doNothing)
+     *                .whenMatched().then(PostgreMerge.MatchedMergeActionSpec::delete)
+     *                .asCommand();
+     *
+     *        final long rows;
+     *        rows = session.update(stmt);
+     *        LOG.debug("{} row : {}", session.name(), rows);
+     *    }
+     *     </code>
+     * </pre>
      */
     interface DoNothingClause<R extends Item> {
 

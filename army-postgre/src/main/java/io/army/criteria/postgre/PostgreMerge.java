@@ -68,7 +68,26 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
 
 
     /**
-     * <p>This interface is public interface that developer can directly use.
+     * <p>This interface is public interface that developer can directly use,but just delete(), for example:
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void simple(final SyncLocalSession session) {
+     *
+     *        final PostgreMerge stmt;
+     *        stmt = Postgres.singleMerge()
+     *                .mergeInto(Captcha_.T, AS, "c")
+     *                .using(RegisterRecord_.T, AS, "r").on(Captcha_.requestNo::equal, RegisterRecord_.requestNo)
+     *                .whenNotMatched().then(Statement.DoNothingClause::doNothing)
+     *                .whenMatched().then(PostgreMerge.MatchedMergeActionSpec::delete)
+     *                .asCommand();
+     *
+     *        final long rows;
+     *        rows = session.update(stmt);
+     *        LOG.debug("{} row : {}", session.name(), rows);
+     *    }
+     *     </code>
+     * </pre>
      */
     interface MatchedMergeActionSpec<T> extends DoNothingClause<_EndFlag> {
 
