@@ -52,7 +52,7 @@ public class VariableTests extends SessionTestSupport {
         }
     }
 
-    @Test
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void readSystemVariable(final SyncLocalSession session) {
         final Select stmt;
         stmt = MySQLs.query()
@@ -61,6 +61,11 @@ public class VariableTests extends SessionTestSupport {
 
         final Map<String, Object> row;
         row = session.queryOneObject(stmt, RowMaps::hashMap);
+
+        Assert.assertNotNull(row);
+        Assert.assertEquals(row.size(), 2);
+        Assert.assertEquals(row.get("autoCommit"), true);
+        Assert.assertTrue(row.get("sqlMode") instanceof String);
 
         LOG.debug("{} row :\n{}", session.name(), JSON.toJSONString(row));
     }

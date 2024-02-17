@@ -118,6 +118,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      *                               <li>variable not exists</li>
      *                           </ul>
      * @see #at(String, TypeInfer)
+     * @see #at(String, SQLs.SymbolColonEqual, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      */
     public static VarExpression at(String varName) {
@@ -167,6 +168,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      *                               <li>value is literal and  no default {@link io.army.mapping.MappingType}</li>
      *                               <li>variable duplication register</li>
      *                           </ul>
+     * @see #at(String)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/assignment-operators.html#operator_assign-value">Assignment Operators</a>
      */
@@ -181,6 +183,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @throws CriteriaException throw when name have no text
      * @see #at(String)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      */
     public static VarExpression at(String name, TypeInfer type) {
         return UserVarExpression.create(name, type);
@@ -188,44 +191,79 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
 
 
     /**
-     * <p>Create SESSION variable expression that output {@code @@SESSION.system_var_name }
+     * <p>Create SESSION system variable expression that output {@code @@SESSION.system_var_name }
+     * <p> Example :
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void readSystemVariable(final SyncLocalSession session) {
+     *        final Select stmt;
+     *        stmt = MySQLs.query()
+     *                .select(atAtSession("autocommit").as("autoCommit"), atAtSession("sql_mode").as("sqlMode"))
+     *                .asQuery();
      *
-     * @throws CriteriaException throw when name have no text
+     *        final Map&lt;String, Object> row;
+     *        row = session.queryOneObject(stmt, RowMaps::hashMap);
+     *
+     *        Assert.assertNotNull(row);
+     *        Assert.assertEquals(row.size(),2);
+     *        Assert.assertEquals(row.get("autoCommit"),true);
+     *        Assert.assertTrue(row.get("sqlMode") instanceof  String);
+     *    }
+     *     </code>
+     *     output sql : SELECT @@SESSION.autocommit AS autoCommit , @@SESSION.sql_mode AS sqlMode
+     *
+     * </pre>
+     *
+     * @throws CriteriaException throw when
+     *                           <ul>
+     *                               <li>name have no text</li>
+     *                               <li>system variable scope isn't SESSION</li>
+     *                           </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html">Server System Variables</a>
      */
     public static SimpleExpression atAtSession(String name) {
         return MySQLExpressions.systemVariable(MySQLs.SESSION, name);
     }
 
     /**
-     * <p>Create GLOBAL variable expression that output {@code @@GLOBAL.system_var_name }
+     * <p>Create GLOBAL system variable expression that output {@code @@GLOBAL.system_var_name }
+     * <p> Example :
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void readSystemVariable(final SyncLocalSession session) {
+     *        final Select stmt;
+     *        stmt = MySQLs.query()
+     *                .select(atAtGlobal("autocommit").as("autoCommit"), atAtGlobal("sql_mode").as("sqlMode"))
+     *                .asQuery();
      *
-     * @throws CriteriaException throw when name have no text
+     *        final Map&lt;String, Object> row;
+     *        row = session.queryOneObject(stmt, RowMaps::hashMap);
+     *
+     *        Assert.assertNotNull(row);
+     *        Assert.assertEquals(row.size(),2);
+     *        Assert.assertEquals(row.get("autoCommit"),true);
+     *        Assert.assertTrue(row.get("sqlMode") instanceof  String);
+     *    }
+     *     </code>
+     *     output sql : SELECT @@GLOBAL.autocommit AS autoCommit , @@GLOBAL.sql_mode AS sqlMode
+     *
+     * </pre>
+     * @throws CriteriaException throw when
+     *                           <ul>
+     *                               <li>name have no text</li>
+     *                               <li>system variable scope isn't GLOBAL</li>
+     *                           </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html">Server System Variables</a>
      */
     public static SimpleExpression atAtGlobal(String name) {
         return MySQLExpressions.systemVariable(MySQLs.GLOBAL, name);
     }
 
-    /**
-     * <p>Create PERSIST variable expression that output {@code @@PERSIST.system_var_name }
-     *
-     * @throws CriteriaException throw when name have no text
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
-     */
-    public static SimpleExpression atAtPersist(String name) {
-        return MySQLExpressions.systemVariable(MySQLs.PERSIST, name);
-    }
 
-    /**
-     * <p>Create PERSIST_ONLY variable expression that output {@code @@PERSIST_ONLY.system_var_name }
-     *
-     * @throws CriteriaException throw when name have no text
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
-     */
-    public static SimpleExpression atAtPersistOnly(String name) {
-        return MySQLExpressions.systemVariable(MySQLs.PERSIST_ONLY, name);
-    }
 
 
 

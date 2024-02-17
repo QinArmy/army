@@ -589,9 +589,7 @@ abstract class MySQLExpressions {
             final MySQLWords.KeyWordVarScope scope = this.scope;
             switch (scope) {
                 case SESSION:
-                case GLOBAL:
-                case PERSIST:
-                case PERSIST_ONLY: {
+                case GLOBAL: {
                     sqlBuilder.append(scope.spaceRender())
                             .append(_Constant.PERIOD);
                 }
