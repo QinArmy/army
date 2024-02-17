@@ -40,7 +40,7 @@ public class MySQLSystemVariableRobotTests {
             .toString();
 
 
-    @Test
+    @Test(enabled = false)
     public void test() throws Exception {
         final Document document;
         document = Jsoup.connect("https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html").get();
