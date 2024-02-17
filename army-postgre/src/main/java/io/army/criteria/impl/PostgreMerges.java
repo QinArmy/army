@@ -65,7 +65,7 @@ abstract class PostgreMerges {
 
 
         private PrimaryMergeIntoClause(@Nullable ArmyStmtSpec spec) {
-            super(spec, CriteriaContexts.otherPrimaryContext(PostgreUtils.DIALECT)); //TODO add for multi-stmt
+            super(spec, CriteriaContexts.primaryJoinableMergeContext(PostgreUtils.DIALECT)); //TODO add for multi-stmt
             ContextStack.push(this.context);
         }
 
@@ -132,18 +132,17 @@ abstract class PostgreMerges {
 
         private int dynamicPairCount;
 
-        private MergeUsingClause(PrimaryMergeIntoClause clause, @Nullable SQLs.WordOnly targetOnly, @Nullable TableMeta<T> targetTable,
+        private MergeUsingClause(PrimaryMergeIntoClause clause, @Nullable SQLs.WordOnly targetOnly, TableMeta<T> targetTable,
                                  String targetAlias, Function<MergeUsingClause<?, ?>, I> function) {
-            if (targetTable == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (!_StringUtils.hasText(targetAlias)) {
+            if (!_StringUtils.hasText(targetAlias)) {
                 throw ContextStack.clearStackAnd(_Exceptions::tabularAliasIsEmpty);
             }
             this.context = clause.context;
+            this.context.singleDmlTable(targetTable, targetAlias);
             this.recursive = clause.isRecursive();
             this.cteList = clause.cteList();
-            this.targetOnly = targetOnly;
 
+            this.targetOnly = targetOnly;
             this.targetTable = targetTable;
             this.targetAlias = targetAlias;
             this.function = function;
@@ -159,6 +158,7 @@ abstract class PostgreMerges {
             }
             final TabularBlocks.JoinClauseBlock<PostgreMerge._MergeWhenClause<T, I>> block;
             block = TabularBlocks.joinTableBlock(_JoinType.JOIN, only, sourceTable, sourceAlias, this);
+            this.context.onAddBlock(block);
             this.sourceBlock = block;
             return block;
         }
@@ -170,6 +170,7 @@ abstract class PostgreMerges {
             }
             final TabularBlocks.JoinClauseBlock<PostgreMerge._MergeWhenClause<T, I>> block;
             block = TabularBlocks.joinTableBlock(_JoinType.JOIN, null, sourceTable, sourceAlias, this);
+            this.context.onAddBlock(block);
             this.sourceBlock = block;
             return block;
         }
@@ -184,6 +185,7 @@ abstract class PostgreMerges {
             return alias -> {
                 final TabularBlocks.JoinClauseDerivedBlock<PostgreMerge._MergeWhenClause<T, I>> block;
                 block = TabularBlocks.joinDerivedBlock(_JoinType.JOIN, null, sourceQuery, alias, this);
+                this.context.onAddBlock(block);
                 this.sourceBlock = block;
                 return block;
             };
@@ -292,9 +294,8 @@ abstract class PostgreMerges {
         private boolean doNothing;
 
         private MatchWhenWhenPair(MergeUsingClause<T, I> usingClause) {
-            super(CriteriaContexts.subJoinableSingleDmlContext(usingClause.context.dialect(), usingClause.context));
+            super(usingClause.context);
             this.usingClause = usingClause;
-            ContextStack.push(this.context);
         }
 
         @Override
@@ -309,21 +310,20 @@ abstract class PostgreMerges {
             CriteriaUtils.invokeFunction(function, this);
 
             final MergeUpdateSetClause<T> updateClause = this.updateClause;
-            List<_ItemPair> itemPairList = null;
-            if (!this.doNothing
-                    && !this.delete
-                    && (updateClause == null || (itemPairList = updateClause.endUpdateSetClause()).size() == 0)) {
+
+            final List<_ItemPair> itemPairList;
+            if (updateClause == null) {
+                if (!this.doNothing && !this.delete) {
+                    throw CriteriaUtils.dontAddAnyItem();
+                }
+                itemPairList = Collections.emptyList();
+            } else if ((itemPairList = updateClause.endUpdateSetClause()).size() == 0) {
                 throw CriteriaUtils.dontAddAnyItem();
-            }
-
-            ContextStack.pop(this.context);
-
-            if (itemPairList == null) {
-                this.updateItemPairList = Collections.emptyList();
             } else {
-                this.updateItemPairList = itemPairList;
+                ContextStack.pop(updateClause.context).endContext();
             }
 
+            this.updateItemPairList = itemPairList;
             this.usingClause = null;
             this.updateClause = null;
             return clause.onWhenEnd(this);
@@ -335,12 +335,13 @@ abstract class PostgreMerges {
             if (usingClause == null || this.updateClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            assert usingClause.targetTable != null;
-            this.context.singleDmlTable(usingClause.targetTable, usingClause.targetAlias);
-            this.context.onAddBlock(usingClause.sourceBlock);
+
+            final CriteriaContext subDmlContext;
+            subDmlContext = CriteriaContexts.subSingleDmlContext(this.context.dialect(), this.context);
+            ContextStack.push(subDmlContext);
 
             final MergeUpdateSetClause<T> updateClause;
-            this.updateClause = updateClause = new MergeUpdateSetClause<>(this.context, usingClause.targetTable, usingClause.targetAlias);
+            this.updateClause = updateClause = new MergeUpdateSetClause<>(subDmlContext, usingClause.targetTable, usingClause.targetAlias);
             return updateClause;
         }
 
@@ -415,7 +416,7 @@ abstract class PostgreMerges {
         private _Insert subInsertStmt;
 
         private NotMatchWhenWhenPair(MergeUsingClause<T, I> usingClause) {
-            super(CriteriaContexts.subJoinableInsertContext(usingClause.context.dialect(), usingClause.context));
+            super(CriteriaContexts.subInsertContext(usingClause.context.dialect(), null, usingClause.context));
             this.usingClause = usingClause;
             ContextStack.push(this.context);
         }
@@ -436,7 +437,7 @@ abstract class PostgreMerges {
 
             if (this.doNothing) {
                 this.insertClause = null;
-                ContextStack.pop(this.context);
+                ContextStack.pop(this.context).endContext();
             } else if ((insertClause = this.insertClause) == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             } else {
@@ -560,9 +561,6 @@ abstract class PostgreMerges {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             assert usingClause.targetTable != null;
-            this.context.singleDmlTable(usingClause.targetTable, usingClause.targetAlias);
-            this.context.onAddBlock(usingClause.sourceBlock);
-
             final MergeInsertComplexValues<T, I> insertClause;
             this.insertClause = insertClause = new MergeInsertComplexValues<>(this, usingClause.targetTable);
             return insertClause;

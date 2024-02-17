@@ -219,9 +219,11 @@ final class MultiTableContext implements _MultiTableContext,
                 //self-join
                 throw _Exceptions.selfJoinNonQualifiedField(field);
             }
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(safeTableAlias)
-                    .append(_Constant.PERIOD);
+            sqlBuilder.append(_Constant.SPACE);
+            if (!(this.stmtContext instanceof _JoinableMergeContext)) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(_Constant.PERIOD);
+            }
             parser.safeObjectName(field, sqlBuilder);
         } else if (dataField instanceof QualifiedField) {
             final QualifiedField<?> field = (QualifiedField<?>) dataField;

@@ -59,6 +59,9 @@ public class MergeTests extends SessionTestSupport {
                                 .comma(Captcha_.requestNo, RegisterRecord_.requestNo)
                                 .comma(Captcha_.partnerId, SQLs.field("r", RegisterRecord_.partnerId))
                         )
+                ).whenMatched().then(ts -> ts.update()
+                        .set(Captcha_.captcha, SQLs::param, captcha.getCaptcha())
+                        .set(Captcha_.deadline, SQLs.field("r", RegisterRecord_.deadline))
                 ).asCommand();
 
         final long rows;
@@ -113,13 +116,16 @@ public class MergeTests extends SessionTestSupport {
                                 .comma(Captcha_.requestNo, SQLs.refField("r", RegisterRecord_.REQUEST_NO))
                                 .comma(Captcha_.partnerId, SQLs.refField("r", RegisterRecord_.PARTNER_ID))
                         )
-                )
-                .asCommand();
+                ).whenMatched().then(ts -> ts.update()
+                        .set(Captcha_.captcha, SQLs::param, captcha.getCaptcha())
+                        .set(Captcha_.deadline, SQLs.refField("r", RegisterRecord_.DEADLINE))
+                ).asCommand();
 
         final long rows;
         rows = session.update(stmt);
         LOG.debug("{} row : {}", session.name(), rows);
 
     }
+
 
 }
