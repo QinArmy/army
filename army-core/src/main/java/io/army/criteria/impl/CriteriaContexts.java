@@ -796,15 +796,40 @@ abstract class CriteriaContexts {
             return cte;
         }
 
+
         @Override
-        public final VarExpression createVar(String name, TypeMeta paramMeta) throws CriteriaException {
-            //TODO
-            throw new UnsupportedOperationException();
+        public final void registerVar(final VarExpression var) throws CriteriaException {
+            Map<String, VarExpression> varMap = this.varMap;
+            if (varMap == null) {
+                this.varMap = varMap = _Collections.hashMap();
+            }
+
+            if (varMap.putIfAbsent(var.name(), var) != null) {
+                String m = String.format("variable[%s] duplication register", var.name());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+
         }
 
         @Override
-        public final VarExpression var(String name) throws CriteriaException {
-            throw new UnsupportedOperationException();
+        public final VarExpression refVar(final @Nullable String name) throws CriteriaException {
+            if (name == null) {
+                throw ContextStack.clearStackAndNullPointer("variable must be non-null");
+            }
+            final Map<String, VarExpression> varMap = this.varMap;
+
+            final VarExpression varExp;
+            if (varMap == null) {
+                varExp = null;
+            } else {
+                varExp = varMap.get(name);
+            }
+            if (varExp == null) {
+                String m = String.format("variable[%s] don't exists", name);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            return varExp;
+
         }
 
         @Override

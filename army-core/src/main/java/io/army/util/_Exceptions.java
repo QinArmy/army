@@ -210,6 +210,15 @@ public abstract class _Exceptions {
         return new CriteriaException("cursor name must have text.");
     }
 
+    public static CriteriaException varNameNoText() {
+        return new CriteriaException("Variables name must have text.");
+    }
+
+    public static CriteriaException dontSupportVariableExpression(Database database) {
+        String m = String.format("%s don't support variable expression", database);
+        return new CriteriaException(m);
+    }
+
 
     public static CriteriaException immutableField(SqlField field) {
         return new CriteriaException(String.format("%s is immutable.", field));

@@ -16,11 +16,9 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.DefiniteExpression;
-import io.army.criteria.IPredicate;
-import io.army.criteria.LogicalPredicate;
-import io.army.criteria.TableField;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
 import io.army.util._StringUtils;
@@ -45,7 +43,6 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      */
     MySQLSyntax() {
     }
-
 
 
     /**
@@ -77,6 +74,40 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
         ContextStack.assertNonNull(collationName);
         return MySQLExpressions.encodingTextLiteral(charsetName, field, literal, collationName);
     }
+
+
+    /**
+     * <p>Reference MySQL User-Defined Variables from statement context.
+     *
+     * @throws CriteriaException throw when
+     *                           <ul>
+     *                               <li>no statement context</li>
+     *                               <li>variable not exists</li>
+     *                           </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
+     */
+    public static VarExpression at(String varName) {
+        return ContextStack.root().refVar(varName);
+    }
+
+    /**
+     * <p>Assignment MySQL User-Defined Variables and register to statement context.
+     *
+     * @param value literal or {@link Expression}
+     * @throws CriteriaException throw when
+     *                           <ul>
+     *                               <li>no statement context</li>
+     *                               <li>value is literal and  no default {@link io.army.mapping.MappingType}</li>
+     *                               <li>variable duplication register</li>
+     *                           </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/assignment-operators.html#operator_assign-value">Assignment Operators</a>
+     */
+    public static SimpleExpression at(String varName, SQLs.SymbolColonEqual colonEqual, Object value) {
+        return ArmyVarExpression.assignmentVar(varName, colonEqual, value, ContextStack.root());
+    }
+
+
 
     /*################################## blow join-order hint ##################################*/
 

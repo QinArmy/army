@@ -48,6 +48,17 @@ abstract class SqlWords {
         }
     }
 
+    enum SymbolColonEqualEnum implements SQLs.SymbolColonEqual {
+
+        COLON_EQUAL;
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+    }
+
     enum KeyWordNotNull implements SQLs.NullOption, SQLs.ArmyKeyWord {
 
         NOT_NULL(" NOT NULL");

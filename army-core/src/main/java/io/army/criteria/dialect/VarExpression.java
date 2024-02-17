@@ -16,14 +16,48 @@
 
 package io.army.criteria.dialect;
 
+import io.army.criteria.DefiniteExpression;
+import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
 
-public interface VarExpression extends SimpleExpression {
+import java.util.function.BiFunction;
+
+public interface VarExpression extends DefiniteExpression {
 
     /**
      * @return session variable name
      */
     String name();
+
+
+    SimpleExpression increment();
+
+    SimpleExpression assignment(Expression value);
+
+    SimpleExpression plusEqual(Expression value);
+
+    SimpleExpression minusEqual(Expression value);
+
+    SimpleExpression timesEqual(Expression value);
+
+    SimpleExpression divideEqual(Expression value);
+
+    SimpleExpression modeEqual(Expression value);
+
+
+    /*-------------------below -------------------*/
+
+    <T> SimpleExpression assignment(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+
+    <T> SimpleExpression plusEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+
+    <T> SimpleExpression minusEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+
+    <T> SimpleExpression timesEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+
+    <T> SimpleExpression divideEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+
+    <T> SimpleExpression modeEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
 
 }

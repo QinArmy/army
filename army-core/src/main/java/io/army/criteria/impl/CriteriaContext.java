@@ -22,7 +22,6 @@ import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.TypeMeta;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -125,12 +124,12 @@ interface CriteriaContext {
     /**
      * @throws CriteriaException when var exists.
      */
-    VarExpression createVar(String name, TypeMeta paramMeta) throws CriteriaException;
+    void registerVar(VarExpression var) throws CriteriaException;
 
     /**
      * @throws CriteriaException when var not exists.
      */
-    VarExpression var(String name) throws CriteriaException;
+    VarExpression refVar(String name) throws CriteriaException;
 
     void bufferNestedDerived(_AliasDerivedBlock block);
 

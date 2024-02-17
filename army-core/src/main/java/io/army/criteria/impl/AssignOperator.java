@@ -32,29 +32,14 @@ enum AssignOperator {
 
     MODE_EQUAL(" %=");
 
-    private final String signText;
+    final String spaceSign;
 
-    AssignOperator(String signText) {
-        this.signText = signText;
+    AssignOperator(String spaceSign) {
+        this.spaceSign = spaceSign;
     }
 
 
-    final void appendOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
-        switch (context.database()) {
-            case MySQL:
-            case PostgreSQL:
-                this.simpleOperator(field, sqlBuilder, context);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(context.database());
-        }
-
-    }
-
-
-    private void simpleOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
-        sqlBuilder.append(_Constant.SPACE_EQUAL);
-        ((_SelfDescribed) field).appendSql(sqlBuilder, context);
+    final void appendAppropriateExpressionOperator(final StringBuilder sqlBuilder) {
         switch (this) {
             case PLUS_EQUAL:
                 sqlBuilder.append(DualExpOperator.PLUS.spaceOperator);
@@ -73,6 +58,21 @@ enum AssignOperator {
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(this);
+        }
+    }
+
+
+    final void appendOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
+        switch (context.database()) {
+            case MySQL:
+            case PostgreSQL: {
+                sqlBuilder.append(_Constant.SPACE_EQUAL);
+                ((_SelfDescribed) field).appendSql(sqlBuilder, context);
+                appendAppropriateExpressionOperator(sqlBuilder);
+            }
+            break;
+            default:
+                throw _Exceptions.unexpectedEnum(context.database());
         }
 
     }

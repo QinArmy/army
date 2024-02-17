@@ -143,6 +143,8 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final SymbolEqual EQUAL = SqlWords.SymbolEqualEnum.EQUAL;
 
+    public static final SymbolColonEqual COLON_EQUAL = SqlWords.SymbolColonEqualEnum.COLON_EQUAL;
+
     public static final WordBooleans TRUE = OperationPredicate.booleanWord(true);
 
     public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
@@ -578,6 +580,10 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public interface SymbolAsterisk {
+
+    }
+
+    public interface SymbolColonEqual {
 
     }
 
