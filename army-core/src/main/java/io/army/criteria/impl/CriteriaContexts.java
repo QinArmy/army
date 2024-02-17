@@ -2697,7 +2697,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void addSelectClauseEndListener(final Runnable listener) {
+        public final void addSelectClauseEndListener(final Runnable listener) {
             if (this.isSelectClauseEnd()) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
