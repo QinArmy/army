@@ -35,7 +35,7 @@ import java.util.function.BiFunction;
  *
  *        final Select stmt;
  *        stmt = MySQLs.query()
- *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber"))
+ *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber")) // NOTE : here is defer SELECT clause, so SELECT clause is executed after FROM clause
  *                        .comma("t", PERIOD, ChinaRegion_.T)
  *                )
  *                .from(ChinaRegion_.T, AS, "t")

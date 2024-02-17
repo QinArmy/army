@@ -88,7 +88,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      *
      *        final Select stmt;
      *        stmt = MySQLs.query()
-     *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber"))
+     *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber")) // NOTE : here is defer SELECT clause, so SELECT clause is executed after FROM clause
      *                        .comma("t", PERIOD, ChinaRegion_.T)
      *                )
      *                .from(ChinaRegion_.T, AS, "t")
@@ -137,7 +137,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      *
      *        final Select stmt;
      *        stmt = MySQLs.query()
-     *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber"))
+     *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber")) // NOTE : here is defer SELECT clause, so SELECT clause is executed after FROM clause
      *                        .comma("t", PERIOD, ChinaRegion_.T)
      *                )
      *                .from(ChinaRegion_.T, AS, "t")
@@ -179,7 +179,10 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
 
     /**
      * <p>Create user variable expression that output {@code @user_var_name }
+     * <p><strong>NOTE</strong>: this user variable expression never register to statement context.
      *
+     * @param name user variable name
+     * @param type user variable type
      * @throws CriteriaException throw when name have no text
      * @see #at(String)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
@@ -251,6 +254,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      *     output sql : SELECT @@GLOBAL.autocommit AS autoCommit , @@GLOBAL.sql_mode AS sqlMode
      *
      * </pre>
+     *
      * @throws CriteriaException throw when
      *                           <ul>
      *                               <li>name have no text</li>
