@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 import java.util.List;
 import java.util.Map;
 
+import static io.army.criteria.impl.MySQLs.atAtGlobal;
 import static io.army.criteria.impl.MySQLs.atAtSession;
 import static io.army.criteria.impl.SQLs.AS;
 import static io.army.criteria.impl.SQLs.PERIOD;
@@ -56,16 +57,20 @@ public class VariableTests extends SessionTestSupport {
     public void readSystemVariable(final SyncLocalSession session) {
         final Select stmt;
         stmt = MySQLs.query()
-                .select(atAtSession("autocommit").as("autoCommit"), atAtSession("sql_mode").as("sqlMode"))
+                .select(atAtSession("autocommit").as("sessionAutoCommit"), atAtSession("sql_mode").as("sessionSqlMode"))
+                .comma(atAtGlobal("autocommit").as("globalAutoCommit"), atAtGlobal("sql_mode").as("globalSqlMode"))
                 .asQuery();
 
         final Map<String, Object> row;
         row = session.queryOneObject(stmt, RowMaps::hashMap);
 
         Assert.assertNotNull(row);
-        Assert.assertEquals(row.size(), 2);
-        Assert.assertEquals(row.get("autoCommit"), true);
-        Assert.assertTrue(row.get("sqlMode") instanceof String);
+        Assert.assertEquals(row.size(), 4);
+        Assert.assertEquals(row.get("sessionAutoCommit"), true);
+        Assert.assertTrue(row.get("sessionSqlMode") instanceof String);
+
+        Assert.assertEquals(row.get("globalAutoCommit"), true);
+        Assert.assertTrue(row.get("globalSqlMode") instanceof String);
 
         LOG.debug("{} row :\n{}", session.name(), JSON.toJSONString(row));
     }

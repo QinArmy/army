@@ -589,10 +589,8 @@ abstract class MySQLExpressions {
             final MySQLWords.KeyWordVarScope scope = this.scope;
             switch (scope) {
                 case SESSION:
-                case GLOBAL: {
-                    sqlBuilder.append(scope.spaceRender())
-                            .append(_Constant.PERIOD);
-                }
+                case GLOBAL:
+                    sqlBuilder.append(scope.spaceRender());
                 break;
                 default:
                     throw _Exceptions.unexpectedEnum(scope);

@@ -1035,10 +1035,6 @@ final class MySQLDialectParser extends MySQLParser {
                 throw new CriteriaException(String.format("unknown VariableType[%s]", scope));
             }
 
-            if (scope != MySQLs.AT) {
-                sqlBuilder.append(_Constant.PERIOD);
-            }
-
             identifier(triple.second, sqlBuilder);
 
             sqlBuilder.append(_Constant.SPACE_EQUAL);

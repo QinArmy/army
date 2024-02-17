@@ -92,10 +92,10 @@ abstract class MySQLWords {
 
         AT(" @"),
 
-        GLOBAL(" @@GLOBAL"),
-        PERSIST(" @@PERSIST"),
-        PERSIST_ONLY(" @@PERSIST_ONLY"),
-        SESSION(" @@SESSION");
+        GLOBAL(" @@GLOBAL."),
+        PERSIST(" @@PERSIST."),
+        PERSIST_ONLY(" @@PERSIST_ONLY."),
+        SESSION(" @@SESSION.");
 
         private final String spaceWords;
 
