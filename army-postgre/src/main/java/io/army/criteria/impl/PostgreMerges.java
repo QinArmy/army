@@ -278,7 +278,7 @@ abstract class PostgreMerges {
             Object,
             Object,
             Object> implements PostgreMerge._MatchedThenClause<T, I>,
-            PostgreMerge._MatchedMergeActionSpec<T>,
+            PostgreMerge.MatchedMergeActionSpec<T>,
             PostgreMerge._MatchedDynamicThenClause<T>,
             _PostgreMerge._WhenMatchedPair,
             Statement._EndFlag {
@@ -299,7 +299,7 @@ abstract class PostgreMerges {
         }
 
         @Override
-        public MergeUsingClause<T, I> then(Function<PostgreMerge._MatchedMergeActionSpec<T>, Statement._EndFlag> function) {
+        public MergeUsingClause<T, I> then(Function<PostgreMerge.MatchedMergeActionSpec<T>, Statement._EndFlag> function) {
             // firstly, end and condition clause
             this.endWhereClauseIfNeed();
 

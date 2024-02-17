@@ -67,7 +67,10 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
     }
 
 
-    interface _MatchedMergeActionSpec<T> extends _DoNothingClause<_EndFlag> {
+    /**
+     * <p>This interface is public interface that developer can directly use.
+     */
+    interface MatchedMergeActionSpec<T> extends DoNothingClause<_EndFlag> {
 
         _MergeUpdateSetClause<T> update();
 
@@ -96,7 +99,7 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
     }
 
     interface _NotMatchedMergeActionClause<T> extends InsertStatement._MigrationOptionClause<_MergeInsertNullOptionSpec<T>>,
-            _MergeInsertNullOptionSpec<T>, _DoNothingClause<_EndFlag> {
+            _MergeInsertNullOptionSpec<T>, DoNothingClause<_EndFlag> {
 
     }
 
@@ -104,7 +107,7 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
 
     interface _MatchedThenClause<T, I extends Item> extends _WhereAndClause<_MatchedThenClause<T, I>> {
 
-        _MergeWhenSpec<T, I> then(Function<_MatchedMergeActionSpec<T>, _EndFlag> function);
+        _MergeWhenSpec<T, I> then(Function<MatchedMergeActionSpec<T>, _EndFlag> function);
     }
 
     interface _NotMatchedThenClause<T, I extends Item> extends _WhereAndClause<_NotMatchedThenClause<T, I>> {
@@ -115,7 +118,7 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
 
     interface _MatchedDynamicThenClause<T> {
 
-        _MergeDynamicWhenClause<T> then(Function<_MatchedMergeActionSpec<T>, _EndFlag> function);
+        _MergeDynamicWhenClause<T> then(Function<MatchedMergeActionSpec<T>, _EndFlag> function);
     }
 
     interface _NotMatchedDynamicThenClause<T> {

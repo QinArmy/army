@@ -1,6 +1,7 @@
 package io.army.session.sync.postgre;
 
 
+import io.army.criteria.Statement;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.postgre.PostgreMerge;
@@ -22,6 +23,23 @@ public class MergeTests extends SessionTestSupport {
 
     @Test
     public void simple(final SyncLocalSession session) {
+
+        final PostgreMerge stmt;
+        stmt = Postgres.singleMerge()
+                .mergeInto(Captcha_.T, AS, "c")
+                .using(RegisterRecord_.T, AS, "r").on(Captcha_.requestNo::equal, RegisterRecord_.requestNo)
+                .whenNotMatched().then(Statement.DoNothingClause::doNothing)
+                .whenMatched().then(PostgreMerge.MatchedMergeActionSpec::delete)
+                .asCommand();
+
+        final long rows;
+        rows = session.update(stmt);
+        LOG.debug("{} row : {}", session.name(), rows);
+    }
+
+
+    @Test
+    public void usingTable(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
 
         final Random random = ThreadLocalRandom.current();
@@ -72,7 +90,7 @@ public class MergeTests extends SessionTestSupport {
 
 
     @Test
-    public void subQuery(final SyncLocalSession session) {
+    public void usingSubQuery(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
 
         final Random random = ThreadLocalRandom.current();

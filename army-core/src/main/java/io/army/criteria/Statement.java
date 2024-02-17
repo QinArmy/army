@@ -1845,7 +1845,11 @@ public interface Statement extends Item {
         R space();
     }
 
-    interface _DoNothingClause<R extends Item> {
+
+    /**
+     * <p>This interface is public interface that developer can directly use.
+     */
+    interface DoNothingClause<R extends Item> {
 
         R doNothing();
 

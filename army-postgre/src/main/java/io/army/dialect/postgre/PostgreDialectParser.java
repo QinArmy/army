@@ -504,19 +504,8 @@ final class PostgreDialectParser extends PostgreParser {
         sqlBuilder.append(_Constant.SPACE_AS_SPACE);
         identifier(sourceBlock.alias(), sqlBuilder);
 
-        final List<_Predicate> onClause = sourceBlock.onClauseList();
-        final int onListSize = onClause.size();
-        if (onListSize == 0) {
-            throw new CriteriaException("postgre merge source ON clause must non-empty");
-        }
-
-        sqlBuilder.append(_Constant.SPACE_ON);
-        for (int i = 0; i < onListSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_AND);
-            }
-            onClause.get(i).appendSql(sqlBuilder, context);
-        }
+        // on clause
+        onClause(sourceBlock.onClauseList(), context);
 
         parseMergeWhenThenClause(stmt, sqlBuilder, context);
     }
