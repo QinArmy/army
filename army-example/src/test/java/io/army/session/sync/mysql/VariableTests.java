@@ -3,6 +3,7 @@ package io.army.session.sync.mysql;
 
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
@@ -31,7 +32,7 @@ public class VariableTests extends SessionTestSupport {
 
         final Select stmt;
         stmt = MySQLs.query()
-                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber"))
+                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber")) // NOTE : here is defer SELECT clause, so SELECT clause is executed after FROM clause
                         .comma("t", PERIOD, ChinaRegion_.T)
                 )
                 .from(ChinaRegion_.T, AS, "t")
@@ -39,7 +40,7 @@ public class VariableTests extends SessionTestSupport {
                         .select(MySQLs.at("my_row_number", SQLs.COLON_EQUAL, SQLs.LITERAL_0).as("n"))
                         .asQuery()
                 ).as("s")
-                .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
                 .orderBy(ChinaRegion_.id)
                 .asQuery();
 
@@ -73,6 +74,35 @@ public class VariableTests extends SessionTestSupport {
         Assert.assertTrue(row.get("globalSqlMode") instanceof String);
 
         LOG.debug("{} row :\n{}", session.name(), JSON.toJSONString(row));
+    }
+
+
+    /**
+     * <p>Test {@link MySQLs#setStmt()}.
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html">Server System Variables</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
+     * @since 0.6.6
+     */
+    @Test
+    public void simpleSetStmt(final SyncLocalSession session) {
+
+        final DmlCommand stmt;
+        stmt = MySQLs.setStmt()
+                .set(MySQLs.AT, "my_null", null, MySQLs.AT, "my_scalar", SQLs.scalarSubQuery()
+                        .select(SQLs.space("1").as("r"))
+                        .asQuery()
+                ).comma(MySQLs.SESSION, "autocommit", false)
+                .comma(MySQLs.SESSION, "sql_mode", SQLs.scalarSubQuery()
+                        .select(MySQLs.atAtSession("sql_mode").as("r"))
+                        .asQuery()
+                ).asCommand();
+
+        final long rows;
+        rows = session.update(stmt);
+        LOG.debug("{} rows : {}", session.name(), rows);
+
     }
 
 

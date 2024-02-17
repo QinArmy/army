@@ -43,7 +43,7 @@ import java.util.function.BiFunction;
  *                        .select(MySQLs.at("my_row_number", SQLs.COLON_EQUAL, SQLs.LITERAL_0).as("n"))
  *                        .asQuery()
  *                ).as("s")
- *                .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+ *                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
  *                .orderBy(ChinaRegion_.id)
  *                .asQuery();
  *
@@ -56,6 +56,24 @@ import java.util.function.BiFunction;
  *            Assert.assertEquals(rowList.get(i).get("rowNumber"), i + 1);
  *        }
  *    }
+ *
+ *     output sql:<br/>
+ *            SELECT (&#64;my_row_number := &#64;my_row_number + 1) AS rowNumber,
+ *                   t.id                                   AS id,
+ *                   t.create_time                          AS createTime,
+ *                   t.update_time                          AS updateTime,
+ *                   t.version                              AS version,
+ *                   t.`visible`                            AS `visible`,
+ *                   t.region_type                          AS regionType,
+ *                   t.region_gdp                           AS regionGdp,
+ *                   t.`name`                               AS `name`,
+ *                   t.parent_id                            AS parentId,
+ *                   t.population                           AS population
+ *            FROM china_region AS t
+ *                CROSS JOIN (SELECT (&#64;my_row_number := 0) AS n) AS s
+ *            WHERE t.id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ *              AND t.`visible` = TRUE
+ *            ORDER BY t.id
  *     </code>
  * </pre>
  *
