@@ -378,8 +378,6 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     final void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
 
-        final CriteriaContext context = this.context;
-
         final List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null || itemPairList.size() == 0) {
             throw ContextStack.criteriaError(this.context, _Exceptions::setClauseNotExists);
@@ -390,9 +388,8 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
         }
 
         this.onBeforeContextEnd();
-        this.tableBlockList = context.endContext();
+        this.tableBlockList = ContextStack.pop(this.context);
 
-        ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
     }
 

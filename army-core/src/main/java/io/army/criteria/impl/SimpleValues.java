@@ -574,7 +574,6 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
             this.rowList = _Collections.unmodifiableList(rowList);
             this.endOrderByClauseIfNeed();
             this.prepared = Boolean.TRUE;
-            this.context.endContext();
         }
         ContextStack.pop(this.context);
     }

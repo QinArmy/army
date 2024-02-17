@@ -210,8 +210,7 @@ abstract class CriteriaContexts {
     }
 
     /**
-     * <p>
-     * For Example ,Postgre update/delete criteria context
+     * <p>For Example ,Postgre update/delete criteria context
      */
     static CriteriaContext subJoinableSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
         return new SubJoinableSingleDmlContext(dialect, outerContext);
@@ -318,11 +317,11 @@ abstract class CriteriaContexts {
     private static void migrateContext(final StatementContext context, final StatementContext migrated) {
         context.withCteContext = migrated.withCteContext;
         context.varMap = migrated.varMap;
-        context.endListenerList = migrated.endListenerList;
+        context.endListener = migrated.endListener;
 
         migrated.withCteContext = null;
         migrated.varMap = null;
-        migrated.endListenerList = null;
+        migrated.endListener = null;
 
         if (migrated instanceof DispatcherContext) {
             ((DispatcherContext) migrated).migrated = true;
@@ -410,7 +409,7 @@ abstract class CriteriaContexts {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    private static CriteriaException invokeRefSelectionInSelectionClause(CriteriaContext context) {
+    private static CriteriaException invokeRefSelectionInSelectionClause() {
         String m = String.format("You couldn't invoke %s.refSelection() in SELECT clause.", SQLs.class.getName());
         return ContextStack.clearStackAndCriteriaError(m);
     }
@@ -464,7 +463,7 @@ abstract class CriteriaContexts {
     }
 
 
-    private static CriteriaException unknownCte(CriteriaContext currentContext, @Nullable String cteName) {
+    private static CriteriaException unknownCte(@Nullable String cteName) {
         String m = String.format("unknown cte[%s]", cteName);
         return ContextStack.clearStackAndCriteriaError(m);
     }
@@ -547,9 +546,11 @@ abstract class CriteriaContexts {
 
         private Map<String, VarExpression> varMap;
 
-        private List<Runnable> endListenerList;
+        private Runnable endListener;
 
         private WithCteContext withCteContext;
+
+        private boolean endBeforeCommand;
 
 
         private StatementContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
@@ -598,25 +599,18 @@ abstract class CriteriaContexts {
             return outerContext;
         }
 
-        @Override
-        public final void contextEndEvent() {
-            final List<Runnable> endListenerList = this.endListenerList;
-            if (endListenerList != null) {
-                for (Runnable listener : endListenerList) {
-                    listener.run();
-                }
-                endListenerList.clear();
-                this.endListenerList = null;
-            }
-        }
 
         @Override
         public final void addEndEventListener(final Runnable listener) {
-            List<Runnable> endListenerList = this.endListenerList;
-            if (endListenerList == null) {
-                this.endListenerList = endListenerList = _Collections.arrayList();
+            final Runnable currentListener = this.endListener;
+            if (currentListener == null) {
+                this.endListener = listener;
+            } else {
+                this.endListener = () -> {
+                    currentListener.run();
+                    listener.run();
+                };
             }
-            endListenerList.add(listener);
         }
 
 
@@ -789,7 +783,7 @@ abstract class CriteriaContexts {
             if (this.withCteContext != null) {
                 cte = this.doRefCte(this, cteName);
             } else if (this.outerContext == null) {
-                throw unknownCte(this, cteName);
+                throw unknownCte(cteName);
             } else {
                 cte = this.outerContext.refCteForSub(this, cteName);
             }
@@ -834,6 +828,23 @@ abstract class CriteriaContexts {
 
         @Override
         public final List<_TabularBlock> endContext() {
+            if (this.endBeforeCommand) {
+                return Collections.emptyList();
+            }
+
+            final Runnable listener = this.endListener;
+            if (listener != null) {
+                try {
+                    listener.run();
+                } catch (Exception e) {
+                    throw ContextStack.clearStackAndCause(e, "Context end listener invoking occur error");
+                } catch (Error e) {
+                    throw ContextStack.clearStackAndError(e);
+                } finally {
+                    this.endListener = null;
+                }
+            }
+
             final List<_TabularBlock> list;
             list = onEndContext();
 
@@ -842,7 +853,8 @@ abstract class CriteriaContexts {
                 varMap.clear();
                 this.varMap = null;
             }
-            this.withCteContext = null;
+
+            // couldn't clear other fields , specially  this.withCteContext , before context migration
             return list;
         }
 
@@ -972,9 +984,9 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public void endContextBeforeCommand() {
-            String m = "current context don't support endContextBeforeSelect()";
-            throw ContextStack.clearStackAndCriteriaError(m);
+        public final void endContextBeforeCommand() {
+            this.endBeforeCommand = true;
+            onEndContextBeforeCommand();
         }
 
         @Override
@@ -1077,10 +1089,12 @@ abstract class CriteriaContexts {
                     .toString();
         }
 
+        void onEndContextBeforeCommand() {
+            // for sub class
+        }
 
         /**
-         * <p>
-         * This method is invoked by sub context
+         * <p>This method is invoked by sub context
          */
         void validateFieldFromSubContext(QualifiedField<?> field) {
             throw unknownQualifiedField(field);
@@ -1169,7 +1183,7 @@ abstract class CriteriaContexts {
             if (this.withCteContext != null) {
                 cte = this.doRefCte(sourceContext, cteName);
             } else if (outerContext == null) {
-                throw unknownCte(this, cteName);
+                throw unknownCte(cteName);
             } else {
                 cte = outerContext.refCteForSub(this, cteName);
             }
@@ -1211,7 +1225,7 @@ abstract class CriteriaContexts {
             if (thisLevelCte != null) {
                 cte = thisLevelCte;
             } else if (this.outerContext == null) {
-                throw unknownCte(this, cteName);
+                throw unknownCte(cteName);
             } else {
                 cte = this.outerContext.refCteForSub(sourceContext, cteName);
             }
@@ -1452,7 +1466,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void endContextBeforeCommand() {
+        final void onEndContextBeforeCommand() {
             assert this instanceof SimpleQueryContext;
             if (this.aliasToBlock != null
                     || this.bufferDerivedBlock != null
@@ -1465,6 +1479,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
 
+            this.aliasToBlock = Collections.emptyMap();
             ((SimpleQueryContext) this).selectItemList = Collections.emptyList();
         }
 
@@ -1613,9 +1628,7 @@ abstract class CriteriaContexts {
         @Override
         final List<_TabularBlock> onEndContext() {
 
-            //1. assert not duplication
             if (this.isEndContext()) {
-                //no bug,never here
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
 
@@ -2731,7 +2744,7 @@ abstract class CriteriaContexts {
             } else if (!(selectItemList instanceof ArrayList)) {
                 final Map<Object, SelectionReference> selectionMap = this.refSelectionMap;
                 if (selectionMap != null && selectionMap.size() > 0) {
-                    throw invokeRefSelectionInSelectionClause(this);
+                    throw invokeRefSelectionInSelectionClause();
                 }
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -3056,6 +3069,7 @@ abstract class CriteriaContexts {
          * This method is triggered by {@link #onEndContext()}
          */
         private void endQueryContext() {
+
             // firstly
             this.callDeferSelectClauseIfNeed();
 
@@ -3202,15 +3216,6 @@ abstract class CriteriaContexts {
         private boolean isSelectClauseEnd() {
             final List<_SelectItem> selectItemList = this.selectItemList;
             return selectItemList != null && !(selectItemList instanceof ArrayList);
-        }
-
-        private boolean isStaticSelectClauseIng() {
-            final List<_SelectItem> selectItemList = this.selectItemList;
-            return this.deferSelectClause == null && (selectItemList == null || selectItemList instanceof ArrayList);
-        }
-
-        private boolean isStaticSelectAndNoItem() {
-            return this.deferSelectClause == null && this.selectItemList == null;
         }
 
 
@@ -3730,7 +3735,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void endContextBeforeCommand() {
+        final void onEndContextBeforeCommand() {
             if (this.selectionList != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -4175,7 +4180,7 @@ abstract class CriteriaContexts {
             } else if (selectionLabel == null) {
                 throw ContextStack.clearStackAndNullPointer();
             }
-            throw invokeRefSelectionInSelectionClause(this);
+            throw invokeRefSelectionInSelectionClause();
         }
 
         /**
@@ -4188,7 +4193,7 @@ abstract class CriteriaContexts {
             } else if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(selectionOrdinal);
             }
-            throw invokeRefSelectionInSelectionClause(this);
+            throw invokeRefSelectionInSelectionClause();
         }
 
         /*-------------------below package methods -------------------*/
@@ -4581,7 +4586,6 @@ abstract class CriteriaContexts {
         /**
          * @see StatementContext#onAddCte(_Cte)
          */
-        @Nullable
         private void onRecursiveCteEnd(final _Cte cte) {
             assert this.actualCte == null;
             assert cte.name().equals(this.name);

@@ -320,7 +320,7 @@ abstract class PostgreMerges {
             } else if ((itemPairList = updateClause.endUpdateSetClause()).size() == 0) {
                 throw CriteriaUtils.dontAddAnyItem();
             } else {
-                ContextStack.pop(updateClause.context).endContext();
+                ContextStack.pop(updateClause.context);
             }
 
             this.updateItemPairList = itemPairList;
@@ -437,7 +437,7 @@ abstract class PostgreMerges {
 
             if (this.doNothing) {
                 this.insertClause = null;
-                ContextStack.pop(this.context).endContext();
+                ContextStack.pop(this.context);
             } else if ((insertClause = this.insertClause) == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             } else {

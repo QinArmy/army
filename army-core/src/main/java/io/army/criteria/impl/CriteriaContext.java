@@ -93,8 +93,6 @@ interface CriteriaContext {
     @Nullable
     Selection selection(String selectionLabel);
 
-    void contextEndEvent();
-
     void addEndEventListener(Runnable listener);
 
     void addSelectClauseEndListener(Runnable listener);

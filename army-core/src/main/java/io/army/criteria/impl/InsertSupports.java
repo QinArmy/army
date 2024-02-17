@@ -2074,7 +2074,7 @@ abstract class InsertSupports {
             }
 
             //finally clear context
-            ContextStack.pop(this.context).endContext();
+            ContextStack.pop(this.context);
             this.prepared = Boolean.TRUE;
         }
 

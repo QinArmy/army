@@ -154,9 +154,7 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
         _Assert.nonPrepared(this.prepared);
         this.endWhereClauseIfNeed();
         this.onEndStatement();
-        final CriteriaContext context = this.context;
-        this.tableBlockList = context.endContext();
-        ContextStack.pop(context);
+        this.tableBlockList = ContextStack.pop(this.context);
         this.prepared = Boolean.TRUE;
     }
 

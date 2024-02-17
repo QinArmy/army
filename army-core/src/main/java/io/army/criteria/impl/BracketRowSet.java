@@ -236,8 +236,6 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
         }
         this.endOrderByClauseIfNeed();
         this.onEndQuery();
-
-        context.endContext();
         ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
     }

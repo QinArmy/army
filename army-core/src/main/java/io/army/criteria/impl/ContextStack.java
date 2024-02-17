@@ -20,12 +20,14 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -60,32 +62,30 @@ abstract class ContextStack {
     }
 
 
-    static CriteriaContext pop(final CriteriaContext context) {
+    static List<_TabularBlock> pop(final CriteriaContext context) {
         final Stack stack = HOLDER.get();
         if (stack == null) {
             throw noContextStack();
         }
-        final CriteriaContext currentContext;
-        currentContext = stack.getLast();
-        if (context != currentContext) {
+
+        // firstly , end context
+        final List<_TabularBlock> blockList;
+        blockList = context.endContext();
+
+        // secondly , pop context
+        if (context != stack.removeLast()) {
             HOLDER.remove();
             // no bug,never here
-            String m = String.format("%s and current %s not match,reject pop.", context, currentContext);
-            throw new IllegalArgumentException(m);
+            String m = String.format("%s is not current context,context stack error", context);
+            throw new CriteriaException(m);
         } else if (context.getOuterContext() == null) {
-            assert stack.size() == 1;
+            assert stack.size() == 0;
             HOLDER.remove();
-            stack.clear();
-        } else if (stack.removeLast() != currentContext) {
-            HOLDER.remove();
-            // Stack no bug,never here
-            throw new IllegalStateException("stack state error");
         }
-        context.contextEndEvent();
         if (LOG.isTraceEnabled()) {
             LOG.trace("pop {}", context);
         }
-        return context;
+        return blockList;
     }
 
     static void push(final CriteriaContext context) {

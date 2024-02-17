@@ -1225,12 +1225,12 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         final CriteriaContext context = this.context;
         if (beforeSelect) {
             context.endContextBeforeCommand();
+            ContextStack.pop(context);
             this.tableBlockList = Collections.emptyList();
         } else {
             this.onEndQuery();
-            this.tableBlockList = context.endContext();
+            this.tableBlockList = ContextStack.pop(context);
         }
-        ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
 
     }
@@ -1930,7 +1930,6 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         abstract Query._SelectDispatcher<W, SR, SD> createSelectClause();
 
         final void endDispatcher() {
-            this.context.endContext();
             ContextStack.pop(this.context);
         }
 
@@ -2117,7 +2116,6 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         UnionSelect(Select left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
-
 
 
         UnionBatchSelect wrapToBatchSelect(List<?> paramList) {
