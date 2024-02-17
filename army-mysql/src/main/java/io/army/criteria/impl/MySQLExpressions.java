@@ -455,7 +455,7 @@ abstract class MySQLExpressions {
             default:
                 type = StringType.INSTANCE;
         }
-        return new SystemVariableExpression((MySQLWords.KeyWordVarScope) varScope, name, type);
+        return new SystemVariableExpression(scope, name, type);
     }
 
 
