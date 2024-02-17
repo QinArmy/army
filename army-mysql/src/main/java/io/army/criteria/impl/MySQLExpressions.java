@@ -52,6 +52,7 @@ abstract class MySQLExpressions {
 
     /**
      * <p>Create system variable expression
+     * <p>See {@code io.army.robot.MySQLSystemVariableRobotTests#systemVariableCaseStatement()}
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html">Server System Variables</a>
@@ -591,7 +592,7 @@ abstract class MySQLExpressions {
                 case SESSION:
                 case GLOBAL:
                     sqlBuilder.append(scope.spaceRender());
-                break;
+                    break;
                 default:
                     throw _Exceptions.unexpectedEnum(scope);
 
