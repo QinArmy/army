@@ -78,6 +78,39 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
 
     /**
      * <p>Reference MySQL User-Defined Variables from statement context.
+     * <p>Example :
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void rowNumber(final SyncLocalSession session) {
+     *        final List&lt;ChinaRegion&lt;?>> regionList = createReginListWithCount(10);
+     *        session.batchSave(regionList);
+     *
+     *        final Select stmt;
+     *        stmt = MySQLs.query()
+     *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber"))
+     *                        .comma("t", PERIOD, ChinaRegion_.T)
+     *                )
+     *                .from(ChinaRegion_.T, AS, "t")
+     *                .crossJoin(SQLs.subQuery()
+     *                        .select(MySQLs.at("my_row_number", SQLs.COLON_EQUAL, SQLs.LITERAL_0).as("n"))
+     *                        .asQuery()
+     *                ).as("s")
+     *                .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+     *                .orderBy(ChinaRegion_.id)
+     *                .asQuery();
+     *
+     *        final List&lt;Map&lt;String, Object>> rowList;
+     *        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+     *        final int rowSize = rowList.size();
+     *        Assert.assertEquals(rowSize, regionList.size());
+     *
+     *        for (int i = 0; i < rowSize; i++) {
+     *            Assert.assertEquals(rowList.get(i).get("rowNumber"), i + 1);
+     *        }
+     *    }
+     *     </code>
+     * </pre>
      *
      * @throws CriteriaException throw when
      *                           <ul>
@@ -92,6 +125,39 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
 
     /**
      * <p>Assignment MySQL User-Defined Variables and register to statement context.
+     * <p>Example :
+     * <pre>
+     *     <code><br/>
+     *    &#64;Test
+     *    public void rowNumber(final SyncLocalSession session) {
+     *        final List&lt;ChinaRegion&lt;?>> regionList = createReginListWithCount(10);
+     *        session.batchSave(regionList);
+     *
+     *        final Select stmt;
+     *        stmt = MySQLs.query()
+     *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber"))
+     *                        .comma("t", PERIOD, ChinaRegion_.T)
+     *                )
+     *                .from(ChinaRegion_.T, AS, "t")
+     *                .crossJoin(SQLs.subQuery()
+     *                        .select(MySQLs.at("my_row_number", SQLs.COLON_EQUAL, SQLs.LITERAL_0).as("n"))
+     *                        .asQuery()
+     *                ).as("s")
+     *                .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+     *                .orderBy(ChinaRegion_.id)
+     *                .asQuery();
+     *
+     *        final List&lt;Map&lt;String, Object>> rowList;
+     *        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+     *        final int rowSize = rowList.size();
+     *        Assert.assertEquals(rowSize, regionList.size());
+     *
+     *        for (int i = 0; i < rowSize; i++) {
+     *            Assert.assertEquals(rowList.get(i).get("rowNumber"), i + 1);
+     *        }
+     *    }
+     *     </code>
+     * </pre>
      *
      * @param value literal or {@link Expression}
      * @throws CriteriaException throw when

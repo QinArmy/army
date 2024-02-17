@@ -42,14 +42,12 @@ public class VariableTests extends SessionTestSupport {
 
         final List<Map<String, Object>> rowList;
         rowList = session.queryObjectList(stmt, RowMaps::hashMap);
-
         final int rowSize = rowList.size();
         Assert.assertEquals(rowSize, regionList.size());
 
         for (int i = 0; i < rowSize; i++) {
             Assert.assertEquals(rowList.get(i).get("rowNumber"), i + 1);
         }
-
     }
 
 

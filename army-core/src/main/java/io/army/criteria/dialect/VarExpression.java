@@ -22,6 +22,46 @@ import io.army.criteria.SimpleExpression;
 
 import java.util.function.BiFunction;
 
+
+/**
+ * <p>This interface representing variable expression.
+ * <p>Example :
+ * <pre>
+ *     <code><br/>
+ *    &#64;Test
+ *    public void rowNumber(final SyncLocalSession session) {
+ *        final List&lt;ChinaRegion&lt;?>> regionList = createReginListWithCount(10);
+ *        session.batchSave(regionList);
+ *
+ *        final Select stmt;
+ *        stmt = MySQLs.query()
+ *                .select(s -> s.space(MySQLs.at("my_row_number").increment().as("rowNumber"))
+ *                        .comma("t", PERIOD, ChinaRegion_.T)
+ *                )
+ *                .from(ChinaRegion_.T, AS, "t")
+ *                .crossJoin(SQLs.subQuery()
+ *                        .select(MySQLs.at("my_row_number", SQLs.COLON_EQUAL, SQLs.LITERAL_0).as("n"))
+ *                        .asQuery()
+ *                ).as("s")
+ *                .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+ *                .orderBy(ChinaRegion_.id)
+ *                .asQuery();
+ *
+ *        final List&lt;Map&lt;String, Object>> rowList;
+ *        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+ *        final int rowSize = rowList.size();
+ *        Assert.assertEquals(rowSize, regionList.size());
+ *
+ *        for (int i = 0; i < rowSize; i++) {
+ *            Assert.assertEquals(rowList.get(i).get("rowNumber"), i + 1);
+ *        }
+ *    }
+ *     </code>
+ * </pre>
+ *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/assignment-operators.html#operator_assign-value">Assignment Operators</a>
+ */
 public interface VarExpression extends DefiniteExpression {
 
     /**

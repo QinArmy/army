@@ -834,7 +834,16 @@ abstract class CriteriaContexts {
 
         @Override
         public final List<_TabularBlock> endContext() {
-            return this.onEndContext();
+            final List<_TabularBlock> list;
+            list = onEndContext();
+
+            final Map<String, VarExpression> varMap = this.varMap;
+            if (varMap != null) {
+                varMap.clear();
+                this.varMap = null;
+            }
+            this.withCteContext = null;
+            return list;
         }
 
 
