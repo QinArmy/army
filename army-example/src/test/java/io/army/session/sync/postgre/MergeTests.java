@@ -2,6 +2,7 @@ package io.army.session.sync.postgre;
 
 
 import io.army.criteria.Statement;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.postgre.PostgreMerge;
@@ -24,7 +25,7 @@ public class MergeTests extends SessionTestSupport {
     @Test
     public void simple(final SyncLocalSession session) {
 
-        final PostgreMerge stmt;
+        final DmlCommand stmt;
         stmt = Postgres.singleMerge()
                 .mergeInto(Captcha_.T, AS, "c")
                 .using(RegisterRecord_.T, AS, "r").on(Captcha_.requestNo::equal, RegisterRecord_.requestNo)
@@ -49,7 +50,7 @@ public class MergeTests extends SessionTestSupport {
                 .setDeadline(LocalDateTime.now().plusMinutes(15))
                 .setPartnerId(0L);
 
-        final PostgreMerge stmt;
+        final DmlCommand stmt;
         stmt = Postgres.singleMerge()
                 .with("parent_cte").as(sw -> sw.insertInto(ChinaRegion_.T)
                         .values(regionList)
@@ -100,7 +101,7 @@ public class MergeTests extends SessionTestSupport {
                 .setDeadline(LocalDateTime.now().plusMinutes(15))
                 .setPartnerId(0L);
 
-        final PostgreMerge stmt;
+        final DmlCommand stmt;
         stmt = Postgres.singleMerge()
                 .with("parent_cte").as(sw -> sw.insertInto(ChinaRegion_.T)
                         .values(regionList)

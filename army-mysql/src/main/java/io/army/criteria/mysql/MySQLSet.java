@@ -17,10 +17,12 @@
 package io.army.criteria.mysql;
 
 
+import io.army.criteria.Item;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
 
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 /**
  * <p>This interface representing MySQL SET statement.
@@ -45,11 +47,24 @@ public interface MySQLSet extends MySQLStatement {
 
 
     interface _SetClause {
+        Item set(MySQLs.VarScope scope, String name, @Nullable Object value);
 
+
+        Item set(MySQLs.VarScope scope1, String name1, @Nullable Object value1, MySQLs.VarScope scope2, String name2, @Nullable Object value2);
+    }
+
+
+    interface _SetSpec extends _SetClause {
+
+        @Override
         _SetCommaClause set(MySQLs.VarScope scope, String name, @Nullable Object value);
 
-
+        @Override
         _SetCommaClause set(MySQLs.VarScope scope1, String name1, @Nullable Object value1, MySQLs.VarScope scope2, String name2, @Nullable Object value2);
+
+        _SetCommaClause sets(Consumer<_SetClause> consumer);
+
+        _SetCommaClause ifSets(Consumer<_SetClause> consumer);
 
 
     }

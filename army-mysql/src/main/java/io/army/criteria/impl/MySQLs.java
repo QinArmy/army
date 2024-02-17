@@ -355,7 +355,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      * @since 0.6.6
      */
-    public static MySQLSet._SetClause setStmt() {
+    public static MySQLSet._SetSpec setStmt() {
         return MySQLSets.setStmt();
     }
 

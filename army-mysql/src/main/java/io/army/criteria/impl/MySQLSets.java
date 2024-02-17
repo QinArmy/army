@@ -29,11 +29,12 @@ import io.army.util._StringUtils;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-final class MySQLSets extends CriteriaSupports.StatementMockSupport implements MySQLSet._SetClause,
+final class MySQLSets extends CriteriaSupports.StatementMockSupport implements MySQLSet._SetSpec,
         MySQLSet._SetCommaClause, _MySQLSet, DmlCommand, MySQLSet {
 
-    static MySQLSet._SetClause setStmt() {
+    static _SetSpec setStmt() {
         return new MySQLSets();
     }
 
@@ -59,6 +60,30 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
                 .addOne(scope2, name2, value2);
     }
 
+    @Override
+    public _SetCommaClause sets(Consumer<_SetClause> consumer) {
+        List<_Triple<MySQLs.VarScope, String, Object>> tripleList = this.tripleList;
+        final int originalSize;
+        if (tripleList == null) {
+            originalSize = 0;
+        } else {
+            originalSize = tripleList.size();
+        }
+
+        CriteriaUtils.invokeConsumer(this, consumer);
+
+        tripleList = this.tripleList;
+        if (tripleList.size() == originalSize) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+        return this;
+    }
+
+    @Override
+    public _SetCommaClause ifSets(Consumer<_SetClause> consumer) {
+        CriteriaUtils.invokeConsumer(this, consumer);
+        return this;
+    }
 
     @Override
     public MySQLSet._SetCommaClause comma(MySQLs.VarScope scope, String name, @Nullable Object value) {

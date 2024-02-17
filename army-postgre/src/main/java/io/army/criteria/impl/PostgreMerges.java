@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
 import io.army.criteria.impl.inner.postgre._PostgreMerge;
@@ -82,7 +83,7 @@ abstract class PostgreMerges {
         }
 
         @Override
-        public <T> PostgreMerge._MergeUsingClause<T, PostgreMerge> mergeInto(@Nullable SQLs.WordOnly only, SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias) {
+        public <T> PostgreMerge._MergeUsingClause<T, DmlCommand> mergeInto(@Nullable SQLs.WordOnly only, SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias) {
             if (only == null) {
                 throw ContextStack.clearStackAndNullPointer();
             }
@@ -90,7 +91,7 @@ abstract class PostgreMerges {
         }
 
         @Override
-        public <T> PostgreMerge._MergeUsingClause<T, PostgreMerge> mergeInto(SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias) {
+        public <T> PostgreMerge._MergeUsingClause<T, DmlCommand> mergeInto(SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias) {
             return new MergeUsingClause<>(this, null, targetTable, targetAlias, this::simpleEnd);
         }
 
@@ -99,7 +100,7 @@ abstract class PostgreMerges {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
-        private PostgreMerge simpleEnd(MergeUsingClause<?, ?> clause) {
+        private DmlCommand simpleEnd(MergeUsingClause<?, ?> clause) {
             return new MergeInsertStatement(clause);
         }
 
@@ -779,7 +780,7 @@ abstract class PostgreMerges {
 
 
     static final class MergeInsertStatement extends CriteriaSupports.StatementMockSupport
-            implements PostgreMerge, _PostgreMerge {
+            implements PostgreMerge, _PostgreMerge, DmlCommand {
 
         private final boolean recursive;
 

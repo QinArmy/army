@@ -16,7 +16,11 @@
 
 package io.army.criteria.postgre;
 
-import io.army.criteria.*;
+import io.army.criteria.InsertStatement;
+import io.army.criteria.Item;
+import io.army.criteria.SubQuery;
+import io.army.criteria.UpdateStatement;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
@@ -34,7 +38,7 @@ import java.util.function.Supplier;
  * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>
  * @since 0.6.0
  */
-public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
+public interface PostgreMerge extends PostgreStatement {
 
 
     interface _MergeUpdateSetClause<T> extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _MergeUpdateSetSpec<T>>,
@@ -203,9 +207,9 @@ public interface PostgreMerge extends PostgreStatement, SimpleDmlStatement {
 
     interface _MergeIntoClause extends Item {
 
-        <T> _MergeUsingClause<T, PostgreMerge> mergeInto(SQLs.WordOnly only, SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
+        <T> _MergeUsingClause<T, DmlCommand> mergeInto(SQLs.WordOnly only, SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
 
-        <T> _MergeUsingClause<T, PostgreMerge> mergeInto(SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
+        <T> _MergeUsingClause<T, DmlCommand> mergeInto(SimpleTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
 
 
 //        <T> _MergeUsingClause<T, _MergeChildClause<T>> mergeInto(SQLs.WordOnly only, ParentTableMeta<T> targetTable, SQLs.WordAs as, String targetAlias);
