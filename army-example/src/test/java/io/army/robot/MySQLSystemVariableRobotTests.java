@@ -40,8 +40,11 @@ public class MySQLSystemVariableRobotTests {
             .toString();
 
 
+    /**
+     * <p>Create MySQL System Variable case statement for {@code io.army.criteria.impl.MySQLExpressions#systemVariable(MySQLs.VarScope, String) }
+     */
     @Test(enabled = false)
-    public void test() throws Exception {
+    public void systemVariableCaseStatement() throws Exception {
         final Document document;
         document = Jsoup.connect("https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html").get();
 
