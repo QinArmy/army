@@ -140,6 +140,15 @@ public class MySQLSystemVariableRobotTests {
 
         } // loop for
 
+        builder.setLength(0); // clear
+        builder.append("case \"tx_isolation\":"); // for compatibility before MySQL 5.7.20
+        tripleList.add(new Triple(GLOBAL_SESSION_SCOPE, builder.toString(), STRING_TYPE));
+
+        builder.setLength(0); // clear
+        builder.append("case \"tx_read_only\":"); // for compatibility before MySQL 5.7.20
+        tripleList.add(new Triple(GLOBAL_SESSION_SCOPE, builder.toString(), BOOLEAN_TYPE));
+
+
         // sort
         tripleList.sort(Triple::compareTo);
 

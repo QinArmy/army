@@ -97,6 +97,7 @@ abstract class MySQLExpressions {
             case "sql_safe_updates":
             case "sql_warnings":
             case "transaction_read_only":
+            case "tx_read_only":
             case "unique_checks":
             case "updatable_views_with_limit":
             case "windowing_use_high_precision":
@@ -135,7 +136,8 @@ abstract class MySQLExpressions {
             case "session_track_transaction_info":
             case "sql_mode":
             case "time_zone":
-            case "transaction_isolation": {
+            case "transaction_isolation":
+            case "tx_isolation": {
                 if (scope != MySQLs.SESSION && scope != MySQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
