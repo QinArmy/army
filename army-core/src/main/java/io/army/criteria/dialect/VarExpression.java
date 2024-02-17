@@ -52,7 +52,7 @@ import java.util.function.BiFunction;
  *        final int rowSize = rowList.size();
  *        Assert.assertEquals(rowSize, regionList.size());
  *
- *        for (int i = 0; i < rowSize; i++) {
+ *        for (int i = 0; i &lt; rowSize; i++) {
  *            Assert.assertEquals(rowList.get(i).get("rowNumber"), i + 1);
  *        }
  *    }

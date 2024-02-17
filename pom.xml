@@ -8,7 +8,7 @@
     <groupId>io.qinarmy</groupId>
     <artifactId>army</artifactId>
     <packaging>pom</packaging>
-    <version>0.6.5-SNAPSHOT</version><!--Army maven version-->
+    <version>0.6.5</version><!--Army maven version-->
     <!-- SNAPSHOT  -->
     <modules>
         <module>army-core</module>
@@ -86,8 +86,8 @@
         <postgresql.version>42.6.0</postgresql.version>
 
 
-        <jdbd.version>0.12.7-SNAPSHOT</jdbd.version>
-        <jdbd.mysql.version>0.11.9-SNAPSHOT</jdbd.mysql.version>
+        <jdbd.version>0.12.6</jdbd.version>
+        <jdbd.mysql.version>0.11.8</jdbd.mysql.version>
     </properties>
 
     <dependencyManagement>
