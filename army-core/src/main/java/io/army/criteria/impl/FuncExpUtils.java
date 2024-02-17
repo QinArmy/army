@@ -158,8 +158,7 @@ abstract class FuncExpUtils {
 
     static void assertLiteralExp(final Object exp) {
         if (!(exp instanceof Expression || !(exp instanceof Item))) {
-            String m = String.format("argument must be %s or literal.", Expression.class.getName());
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw CriteriaUtils.mustExpressionOrLiteral("argument");
         }
     }
 

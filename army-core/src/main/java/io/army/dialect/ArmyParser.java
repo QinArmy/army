@@ -2131,6 +2131,25 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
+    protected final void parseExpressionOrLiteral(final @Nullable Object value, final StringBuilder sqlBuilder,
+                                                  final _SqlContext context) {
+        if (value == null) {
+            sqlBuilder.append(_Constant.SPACE_NULL);
+        } else if (value instanceof Expression) {
+            ((_Expression) value).appendSql(sqlBuilder, context);
+        } else {
+            final MappingType mappingType;
+            mappingType = _MappingFactory.getDefaultIfMatch(value.getClass());
+            if (mappingType == null) {
+                throw _Exceptions.notFoundMappingType(value);
+            }
+            sqlBuilder.append(_Constant.SPACE);
+            literal(mappingType, value, sqlBuilder);
+        }
+
+    }
+
+
     /*-------------------below package method -------------------*/
 
 

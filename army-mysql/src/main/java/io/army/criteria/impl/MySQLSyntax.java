@@ -117,6 +117,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      *                               <li>no statement context</li>
      *                               <li>variable not exists</li>
      *                           </ul>
+     * @see #at(String, TypeInfer)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      */
     public static VarExpression at(String varName) {
@@ -170,7 +171,60 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/assignment-operators.html#operator_assign-value">Assignment Operators</a>
      */
     public static SimpleExpression at(String varName, SQLs.SymbolColonEqual colonEqual, Object value) {
-        return ArmyVarExpression.assignmentVar(varName, colonEqual, value, ContextStack.root());
+        return UserVarExpression.assignmentVar(varName, colonEqual, value, ContextStack.root());
+    }
+
+
+    /**
+     * <p>Create user variable expression that output {@code @user_var_name }
+     *
+     * @throws CriteriaException throw when name have no text
+     * @see #at(String)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     */
+    public static VarExpression at(String name, TypeInfer type) {
+        return UserVarExpression.create(name, type);
+    }
+
+
+    /**
+     * <p>Create SESSION variable expression that output {@code @@SESSION.system_var_name }
+     *
+     * @throws CriteriaException throw when name have no text
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     */
+    public static SimpleExpression atAtSession(String name) {
+        return MySQLExpressions.systemVariable(MySQLs.SESSION, name);
+    }
+
+    /**
+     * <p>Create GLOBAL variable expression that output {@code @@GLOBAL.system_var_name }
+     *
+     * @throws CriteriaException throw when name have no text
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     */
+    public static SimpleExpression atAtGlobal(String name) {
+        return MySQLExpressions.systemVariable(MySQLs.GLOBAL, name);
+    }
+
+    /**
+     * <p>Create PERSIST variable expression that output {@code @@PERSIST.system_var_name }
+     *
+     * @throws CriteriaException throw when name have no text
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     */
+    public static SimpleExpression atAtPersist(String name) {
+        return MySQLExpressions.systemVariable(MySQLs.PERSIST, name);
+    }
+
+    /**
+     * <p>Create PERSIST_ONLY variable expression that output {@code @@PERSIST_ONLY.system_var_name }
+     *
+     * @throws CriteriaException throw when name have no text
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     */
+    public static SimpleExpression atAtPersistOnly(String name) {
+        return MySQLExpressions.systemVariable(MySQLs.PERSIST_ONLY, name);
     }
 
 

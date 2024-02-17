@@ -836,6 +836,11 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+    static CriteriaException mustExpressionOrLiteral(String msg) {
+        String m = String.format("%s must be Expression or literal", msg);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
     static CriteriaException duplicateDynamicMethod(CriteriaContext context) {
         return ContextStack.criteriaError(context, "duplicate invoking dynamic method");
     }

@@ -17,15 +17,13 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoCastIntegerType;
-import io.army.mapping.NoCastTextType;
-import io.army.mapping._MappingFactory;
+import io.army.mapping.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map;
@@ -283,6 +281,8 @@ abstract class SQLSyntax extends Functions {
      * <ul>
      *     <li>{@link String} map to {@link NoCastTextType} not {@link io.army.mapping.StringType}</li>
      *     <li>{@link Integer} map to {@link NoCastIntegerType} not {@link io.army.mapping.IntegerType}</li>
+     *     <li>{@link Long} map to {@link NoCastLongType} not {@link io.army.mapping.LongType}</li>
+     *     <li>{@link BigDecimal} map to {@link NoCastBigDecimalType} not {@link io.army.mapping.BigDecimalType}</li>
      * </ul>
      *
      * @param nonNullValue non-null value
@@ -294,6 +294,10 @@ abstract class SQLSyntax extends Functions {
             expression = ArmyLiteralExpression.single(NoCastTextType.INSTANCE, nonNullValue);
         } else if (nonNullValue instanceof Integer) {
             expression = ArmyLiteralExpression.single(NoCastIntegerType.INSTANCE, nonNullValue);
+        } else if (nonNullValue instanceof Long) {
+            expression = ArmyLiteralExpression.single(NoCastLongType.INSTANCE, nonNullValue);
+        } else if (nonNullValue instanceof BigDecimal) {
+            expression = ArmyLiteralExpression.single(NoCastBigDecimalType.INSTANCE, nonNullValue);
         } else {
             expression = ArmyLiteralExpression.from(nonNullValue);
         }

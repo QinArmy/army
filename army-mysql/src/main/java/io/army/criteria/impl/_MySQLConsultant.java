@@ -25,6 +25,7 @@ import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
+import io.army.criteria.mysql.MySQLSet;
 import io.army.dialect.Database;
 
 public abstract class _MySQLConsultant extends _SQLConsultant {
@@ -160,6 +161,12 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
             throw illegalNestedItems(nestedItems, Database.MySQL);
         }
 
+    }
+
+    public static void assertSetStmt(final MySQLSet stmt) {
+        if (!(stmt instanceof MySQLSets)) {
+            throw nonArmyStatement(stmt);
+        }
     }
 
 

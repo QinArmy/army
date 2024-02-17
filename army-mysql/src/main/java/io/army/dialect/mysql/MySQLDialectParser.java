@@ -23,6 +23,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
+import io.army.criteria.mysql.MySQLSet;
 import io.army.dialect.*;
 import io.army.env.EscapeMode;
 import io.army.meta.*;
@@ -479,12 +480,17 @@ final class MySQLDialectParser extends MySQLParser {
         final _StmtContext context;
         if (statement instanceof MySQLLoadData) {
             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
-            context = this.handleLoadData(outerContext, (_MySQLLoadData) statement, sessionSpec);
+            context = handleLoadData(outerContext, (_MySQLLoadData) statement, sessionSpec);
+        } else if (statement instanceof MySQLSet) {
+            _MySQLConsultant.assertSetStmt((MySQLSet) statement);
+            context = createOtherDmlContext(outerContext, p -> false, sessionSpec);
+            parseSetStmt(((_MySQLSet) statement).tripleList(), context);
         } else {
             throw _Exceptions.unknownStatement(statement, this.dialect);
         }
         return context;
     }
+
 
     @Override
     protected _StmtContext handleDialectDql(final @Nullable _SqlContext outerContext, final DqlStatement statement,
@@ -994,6 +1000,58 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     /**
+     * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
+     */
+    private void parseSetStmt(final List<_Triple<MySQLs.VarScope, String, Object>> list, final _SqlContext context) {
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
+        final int tripleSize = list.size();
+        if (tripleSize == 0) {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+        _Triple<MySQLs.VarScope, String, Object> triple;
+        MySQLs.VarScope scope;
+
+        sqlBuilder.append(_Constant.SPACE_SET);
+        for (int i = 0; i < tripleSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            triple = list.get(i);
+            scope = triple.first;
+
+            if (scope == MySQLs.AT
+                    || scope == MySQLs.SESSION
+                    || scope == MySQLs.GLOBAL
+                    || scope == MySQLs.PERSIST
+                    || scope == MySQLs.PERSIST_ONLY) {
+                sqlBuilder.append(scope.spaceRender());
+            } else {
+                throw new CriteriaException(String.format("unknown VariableType[%s]", scope));
+            }
+
+            if (scope != MySQLs.AT) {
+                sqlBuilder.append(_Constant.PERIOD);
+            }
+
+            identifier(triple.second, sqlBuilder);
+
+            sqlBuilder.append(_Constant.SPACE_EQUAL);
+
+            parseExpressionOrLiteral(triple.third, sqlBuilder, context);
+
+        } // loop for
+
+    }
+
+
+    /**
+     * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
      */
     private _OtherDmlContext handleLoadData(@Nullable final _SqlContext outerContext, final _MySQLLoadData loadData,

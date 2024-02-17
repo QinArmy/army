@@ -18,6 +18,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
+import io.army.criteria.TableField;
+import io.army.criteria.TypeInfer;
 import io.army.criteria.dialect.VarExpression;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
@@ -32,7 +34,25 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-final class ArmyVarExpression extends OperationExpression.OperationDefiniteExpression implements VarExpression {
+final class UserVarExpression extends OperationExpression.OperationDefiniteExpression implements VarExpression {
+
+    static VarExpression create(final String varName, final TypeInfer type) {
+        if (!_StringUtils.hasText(varName)) {
+            throw ContextStack.clearStackAnd(_Exceptions::varNameNoText);
+        }
+        TypeMeta typeMeta;
+        if (type instanceof MappingType) {
+            typeMeta = (MappingType) type;
+        } else if (type instanceof TableField) {
+            typeMeta = ((TableField) type).mappingType();
+        } else {
+            typeMeta = type.typeMeta();
+            if (!(typeMeta instanceof MappingType)) {
+                typeMeta = typeMeta.mappingType();
+            }
+        }
+        return new UserVarExpression(varName, (MappingType) typeMeta);
+    }
 
     static SimpleExpression assignmentVar(final String varName, final SQLs.SymbolColonEqual colonEqual,
                                           final @Nullable Object value, final CriteriaContext context) {
@@ -59,7 +79,7 @@ final class ArmyVarExpression extends OperationExpression.OperationDefiniteExpre
         }
 
         final VarExpression varExp;
-        varExp = new ArmyVarExpression(varName, (MappingType) type);
+        varExp = new UserVarExpression(varName, (MappingType) type);
         context.registerVar(varExp);
 
 
@@ -77,7 +97,7 @@ final class ArmyVarExpression extends OperationExpression.OperationDefiniteExpre
     private final MappingType type;
 
 
-    private ArmyVarExpression(String name, MappingType type) {   // couldn't be field ,because filed codec
+    private UserVarExpression(String name, MappingType type) {   // couldn't be field ,because filed codec
         this.name = name;
         this.type = type;
     }
@@ -182,8 +202,8 @@ final class ArmyVarExpression extends OperationExpression.OperationDefiniteExpre
         final boolean match;
         if (obj == this) {
             match = true;
-        } else if (obj instanceof ArmyVarExpression) {
-            final ArmyVarExpression o = (ArmyVarExpression) obj;
+        } else if (obj instanceof UserVarExpression) {
+            final UserVarExpression o = (UserVarExpression) obj;
             match = o.name.equals(this.name) && o.type == this.type;
         } else {
             match = false;
@@ -201,13 +221,13 @@ final class ArmyVarExpression extends OperationExpression.OperationDefiniteExpre
 
     private static final class VarOperationExpression extends OperationExpression.OperationSimpleExpression {
 
-        private final ArmyVarExpression varExp;
+        private final UserVarExpression varExp;
 
         private final AssignOperator operator;
 
         private final ArmyExpression right;
 
-        private VarOperationExpression(ArmyVarExpression varExp, @Nullable AssignOperator operator, @Nullable Expression right) {
+        private VarOperationExpression(UserVarExpression varExp, @Nullable AssignOperator operator, @Nullable Expression right) {
             if (right == null) {
                 throw ContextStack.clearStackAndNullPointer();
             }
@@ -235,7 +255,7 @@ final class ArmyVarExpression extends OperationExpression.OperationDefiniteExpre
 
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN); // outer left paren
 
-            final ArmyVarExpression varExp = this.varExp;
+            final UserVarExpression varExp = this.varExp;
 
             varExp.appendSql(sqlBuilder, context);
             sqlBuilder.append(" :=");
