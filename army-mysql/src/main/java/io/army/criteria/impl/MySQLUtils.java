@@ -169,22 +169,13 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-
-    static CriteriaException indexListIsEmpty() {
-        return new CriteriaException("index list must not empty.");
-    }
-
     static CriteriaException partitionListIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "you don't add any partition");
     }
 
-    static CriteriaException lockOfTableAliasListIsEmpty() {
-        return new CriteriaException("lock of table alias list must not empty");
-    }
-
-
-    static CriteriaException intoVarListNotEmpty() {
-        return new CriteriaException("variable name list must not empty in MySQL INTO clause.");
+    static CriteriaException userVariableFirstCharIsAt(String varName) {
+        String m = String.format("user variable[%s] first char couldn't be  '@' ", varName);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 

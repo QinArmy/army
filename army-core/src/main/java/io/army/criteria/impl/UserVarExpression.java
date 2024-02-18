@@ -32,7 +32,6 @@ import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 final class UserVarExpression extends OperationExpression.OperationDefiniteExpression implements VarExpression {
 
@@ -150,36 +149,6 @@ final class UserVarExpression extends OperationExpression.OperationDefiniteExpre
     @Override
     public SimpleExpression modeEqual(Expression value) {
         return new VarOperationExpression(this, AssignOperator.MODE_EQUAL, value);
-    }
-
-    @Override
-    public <T> SimpleExpression assignment(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
-        return new VarOperationExpression(this, null, funcRef.apply(this, value));
-    }
-
-    @Override
-    public <T> SimpleExpression plusEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
-        return new VarOperationExpression(this, AssignOperator.PLUS_EQUAL, funcRef.apply(this, value));
-    }
-
-    @Override
-    public <T> SimpleExpression minusEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
-        return new VarOperationExpression(this, AssignOperator.MINUS_EQUAL, funcRef.apply(this, value));
-    }
-
-    @Override
-    public <T> SimpleExpression timesEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
-        return new VarOperationExpression(this, AssignOperator.TIMES_EQUAL, funcRef.apply(this, value));
-    }
-
-    @Override
-    public <T> SimpleExpression divideEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
-        return new VarOperationExpression(this, AssignOperator.DIVIDE_EQUAL, funcRef.apply(this, value));
-    }
-
-    @Override
-    public <T> SimpleExpression modeEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
-        return new VarOperationExpression(this, AssignOperator.MODE_EQUAL, funcRef.apply(this, value));
     }
 
     @Override

@@ -132,6 +132,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      *
      * @throws CriteriaException throw when
      *                           <ul>
+     *                               <li>varName first char is '@'</li>
      *                               <li>no statement context</li>
      *                               <li>variable not exists</li>
      *                           </ul>
@@ -139,7 +140,11 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see #at(String, SQLs.SymbolColonEqual, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      */
-    public static VarExpression at(String varName) {
+    public static VarExpression at(final String varName) {
+        ContextStack.assertNonNull(varName);
+        if (varName.charAt(0) == '@') {
+            throw MySQLUtils.userVariableFirstCharIsAt(varName);
+        }
         return ContextStack.root().refVar(varName);
     }
 
@@ -200,6 +205,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @param value literal or {@link Expression}
      * @throws CriteriaException throw when
      *                           <ul>
+     *                               <li>varName first char is '@'</li>
      *                               <li>no statement context</li>
      *                               <li>value is literal and  no default {@link io.army.mapping.MappingType}</li>
      *                               <li>variable duplication register</li>
@@ -208,7 +214,11 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/assignment-operators.html#operator_assign-value">Assignment Operators</a>
      */
-    public static SimpleExpression at(String varName, SQLs.SymbolColonEqual colonEqual, Object value) {
+    public static SimpleExpression at(final String varName, SQLs.SymbolColonEqual colonEqual, Object value) {
+        ContextStack.assertNonNull(varName);
+        if (varName.charAt(0) == '@') {
+            throw MySQLUtils.userVariableFirstCharIsAt(varName);
+        }
         return UserVarExpression.assignmentVar(varName, colonEqual, value, ContextStack.root());
     }
 
@@ -217,15 +227,23 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * <p>Create user variable expression that output {@code @user_var_name }
      * <p><strong>NOTE</strong>: this user variable expression never register to statement context.
      *
-     * @param name user variable name
-     * @param type user variable type
-     * @throws CriteriaException throw when name have no text
+     * @param varName user variable name
+     * @param type    user variable type
+     * @throws CriteriaException throw when
+     *                           <ul>
+     *                               <li>varName first char is '@'</li>
+     *                               <li>varName have no text</li>
+     *                           </ul>
      * @see #at(String)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      */
-    public static VarExpression at(String name, TypeInfer type) {
-        return UserVarExpression.create(name, type);
+    public static VarExpression at(final String varName, TypeInfer type) {
+        ContextStack.assertNonNull(varName);
+        if (varName.charAt(0) == '@') {
+            throw MySQLUtils.userVariableFirstCharIsAt(varName);
+        }
+        return UserVarExpression.create(varName, type);
     }
 
 

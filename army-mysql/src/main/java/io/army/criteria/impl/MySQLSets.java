@@ -61,7 +61,7 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
     }
 
     @Override
-    public _SetCommaClause sets(Consumer<_SetClause> consumer) {
+    public _SetCommaClause sets(final Consumer<_SetClause> consumer) {
         List<_Triple<MySQLs.VarScope, String, Object>> tripleList = this.tripleList;
         final int originalSize;
         if (tripleList == null) {
@@ -73,7 +73,7 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
         CriteriaUtils.invokeConsumer(this, consumer);
 
         tripleList = this.tripleList;
-        if (tripleList.size() == originalSize) {
+        if (tripleList == null || tripleList.size() == originalSize) {
             throw CriteriaUtils.dontAddAnyItem();
         }
         return this;
@@ -152,6 +152,8 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
             throw CriteriaUtils.unknownWords(type);
         } else if (!_StringUtils.hasText(name)) {
             throw ContextStack.clearStackAnd(_Exceptions::varNameNoText);
+        } else if (type == MySQLs.AT && name.charAt(0) == '@') {
+            throw MySQLUtils.userVariableFirstCharIsAt(name);
         }
 
         if (value == null) {

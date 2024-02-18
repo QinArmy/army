@@ -16,11 +16,8 @@
 
 package io.army.criteria.dialect;
 
-import io.army.criteria.DefiniteExpression;
 import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
-
-import java.util.function.BiFunction;
 
 
 /**
@@ -80,7 +77,7 @@ import java.util.function.BiFunction;
  * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/assignment-operators.html#operator_assign-value">Assignment Operators</a>
  */
-public interface VarExpression extends DefiniteExpression {
+public interface VarExpression extends SimpleExpression {
 
     /**
      * @return session variable name
@@ -104,20 +101,6 @@ public interface VarExpression extends DefiniteExpression {
 
     SimpleExpression modeEqual(Expression value);
 
-
-    /*-------------------below -------------------*/
-
-    <T> SimpleExpression assignment(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
-
-    <T> SimpleExpression plusEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
-
-    <T> SimpleExpression minusEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
-
-    <T> SimpleExpression timesEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
-
-    <T> SimpleExpression divideEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
-
-    <T> SimpleExpression modeEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
 
 }
