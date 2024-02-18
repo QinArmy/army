@@ -33,10 +33,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * <p>
- * This class is the stack of context of {@link io.army.criteria.Statement}.
- * <p>
- * Below is chinese signature:<br/>
+ * <p>This class is the stack of context of {@link io.army.criteria.Statement}.
+ * <p>Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @since 0.6.0
@@ -68,9 +66,18 @@ abstract class ContextStack {
             throw noContextStack();
         }
 
-        // firstly , end context
+
         final List<_TabularBlock> blockList;
-        blockList = context.endContext();
+        // firstly , end context
+        try {
+            blockList = context.endContext();
+        } catch (CriteriaException | Error e) {
+            HOLDER.remove();
+            throw e;
+        } catch (Exception e) {
+            HOLDER.remove();
+            throw new CriteriaException("end statement context occur error", e);
+        }
 
         // secondly , pop context
         if (context != stack.removeLast()) {
@@ -124,10 +131,6 @@ abstract class ContextStack {
         return stack.getFirst();
     }
 
-    static boolean isEmpty() {
-        final Stack stack = HOLDER.get();
-        return stack == null || stack.size() == 0;
-    }
 
     static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
         clearStackOnError(criteriaContext);
