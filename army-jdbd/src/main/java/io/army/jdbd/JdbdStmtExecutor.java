@@ -405,13 +405,24 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @Override
     public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList,
-                                         Function<Option<?>, ?> optionFunc) {
+                                         final Function<Option<?>, ?> optionFunc) {
         Flux<R> flux;
         try {
             final SecondRowReader<R> rowReader;
             rowReader = new SecondRowReader<>(this, stmt, resultList);
 
-            flux = executeQuery(stmt, rowReader::readOneRow, option, optionFunc);
+            final Function<Option<?>, ?> func;
+            if (optionFunc == Option.EMPTY_FUNC) {
+                func = Option.singleFunc(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
+            } else {
+                func = o -> {
+                    if (o == Option.SECOND_DML_QUERY_STATES) {
+                        return Boolean.TRUE;
+                    }
+                    return optionFunc.apply(o);
+                };
+            }
+            flux = executeQuery(stmt, rowReader::readOneRow, option, func);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
         }
