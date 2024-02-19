@@ -366,8 +366,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
      *     */
     @SuppressWarnings("unchecked")
     private static abstract class MySQLNestedTableBlock<I extends Item, R extends Item> extends MySQLNestedBlock<I>
-            implements MySQLStatement._QueryIndexHintSpec<R>,
-            MySQLStatement._DynamicIndexHintClause0<MySQLStatement._IndexPurposeBySpec<Object>, R>,
+            implements MySQLStatement._IndexHintFoPurposeClause<R>,
             _MySQLTableBlock {
 
         private final List<String> partitionList;
@@ -380,48 +379,220 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             this.partitionList = Collections.emptyList();
         }
 
-        private MySQLNestedTableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer
-                , MySQLSupports.MySQLBlockParams params, Supplier<I> ender) {
+        private MySQLNestedTableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
+                                      MySQLSupports.MySQLBlockParams params, Supplier<I> ender) {
             super(context, blockConsumer, params, ender);
             this.partitionList = params.partitionList();
         }
 
+
         @Override
-        public final MySQLQuery._IndexPurposeBySpec<R> useIndex() {
-            return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
-                    this::indexHintEnd);
+        public final R useIndex(String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName));
         }
 
         @Override
-        public final MySQLQuery._IndexPurposeBySpec<R> ignoreIndex() {
-            return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
-                    this::indexHintEnd);
+        public final R useIndex(String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2));
         }
 
         @Override
-        public final MySQLQuery._IndexPurposeBySpec<R> forceIndex() {
-            return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
-                    this::indexHintEnd);
+        public final R useIndex(String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2, indexName3));
         }
 
         @Override
-        public final R ifUseIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
-            consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
-                    this::indexHintEndAndReturnObject));
+        public final R useIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer));
+        }
+
+        @Override
+        public final R useIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, space, consumer));
+        }
+
+        @Override
+        public final R ifUseIndex(Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
             return (R) this;
         }
 
         @Override
-        public final R ifIgnoreIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
-            consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
-                    this::indexHintEndAndReturnObject));
+        public final R ignoreIndex(String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName));
+        }
+
+        @Override
+        public final R ignoreIndex(String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2));
+        }
+
+        @Override
+        public final R ignoreIndex(String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final R ignoreIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer));
+        }
+
+        @Override
+        public final R ignoreIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, space, consumer));
+        }
+
+        @Override
+        public final R ifIgnoreIndex(Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
             return (R) this;
         }
 
         @Override
-        public final R ifForceIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
-            consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
-                    this::indexHintEndAndReturnObject));
+        public final R forceIndex(String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName));
+        }
+
+        @Override
+        public final R forceIndex(String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2));
+        }
+
+        @Override
+        public final R forceIndex(String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final R forceIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer));
+        }
+
+        @Override
+        public final R forceIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, space, consumer));
+        }
+
+        @Override
+        public final R ifForceIndex(Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (R) this;
+        }
+
+        @Override
+        public final R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName));
+        }
+
+        @Override
+        public final R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2));
+        }
+
+        @Override
+        public final R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer));
+        }
+
+        @Override
+        public final R useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, space, consumer));
+        }
+
+        @Override
+        public final R ifUseIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (R) this;
+        }
+
+        @Override
+        public final R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName));
+        }
+
+        @Override
+        public final R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2));
+        }
+
+        @Override
+        public final R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer));
+        }
+
+        @Override
+        public final R ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, space, consumer));
+        }
+
+        @Override
+        public final R ifIgnoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
+            return (R) this;
+        }
+
+        @Override
+        public final R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName));
+        }
+
+        @Override
+        public final R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2));
+        }
+
+        @Override
+        public final R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+        }
+
+        @Override
+        public final R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer));
+        }
+
+        @Override
+        public final R forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+            return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, space, consumer));
+        }
+
+        @Override
+        public final R ifForceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+            final _IndexHint indexHint;
+            indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer);
+            if (indexHint != null) {
+                addIndexHint(indexHint);
+            }
             return (R) this;
         }
 
@@ -441,7 +612,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
 
-        private R indexHintEnd(final _IndexHint indexHint) {
+        private R addIndexHint(final _IndexHint indexHint) {
 
             List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
@@ -453,7 +624,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
         private Object indexHintEndAndReturnObject(final _IndexHint indexHint) {
-            this.indexHintEnd(indexHint);
+            this.addIndexHint(indexHint);
             return Collections.EMPTY_LIST;
         }
 

@@ -151,7 +151,6 @@ public interface MySQLUpdate extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _IndexHintForOrderByClause0}</li>
      *          <li>method {@link _SingleSetClause}</li>
      *     </ul>
      *     * <p>
@@ -290,7 +289,6 @@ public interface MySQLUpdate extends MySQLStatement {
     /**
      * <p>This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _StaticIndexHintClause}</li>
      *          <li>method {@link Statement._AsClause}</li>
      *     </ul>
      *<p><strong>Note:</strong><br/>
@@ -357,7 +355,6 @@ public interface MySQLUpdate extends MySQLStatement {
     /**
      * <p>This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _IndexHintForJoinClause0}</li>
      *          <li>{@link _MultiJoinSpec}</li>
      *     </ul>
      * <p><strong>Note:</strong><br/>

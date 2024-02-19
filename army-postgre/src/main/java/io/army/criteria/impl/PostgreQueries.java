@@ -444,7 +444,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     public final _OrderBySpec<I> windows(Consumer<Window.Builder<PostgreWindow._PartitionBySpec>> consumer) {
-        consumer.accept(this::createDynamicWindow);
+        final Window.Builder<PostgreWindow._PartitionBySpec> builder = this::createDynamicWindow;
+        CriteriaUtils.invokeConsumer(builder, consumer);
         if (this.windowList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
         }
@@ -453,7 +454,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     public final _OrderBySpec<I> ifWindows(Consumer<Window.Builder<PostgreWindow._PartitionBySpec>> consumer) {
-        consumer.accept(this::createDynamicWindow);
+        final Window.Builder<PostgreWindow._PartitionBySpec> builder = this::createDynamicWindow;
+        CriteriaUtils.invokeConsumer(builder, consumer);
         return this;
     }
 
@@ -1466,7 +1468,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.queryFunction);
-            return function.apply(new StaticCteSubQuery<>(bracket.context, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new StaticCteSubQuery<>(bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -1685,7 +1687,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         public List<_LockBlock> lockBlockList() {
             return this.lockBlockList;
         }
-
 
 
     }//PostgreBatchSimpleQuery

@@ -168,53 +168,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _IndexForJoinSpec<R> extends _ParensStringClause<R> {
 
-        _ParensStringClause<R> forJoin();
-
-    }
-
-    interface _IndexForOrderBySpec<R> extends _ParensStringClause<R> {
-
-        _ParensStringClause<R> forOrderBy();
-
-    }
-
-
-    interface _StaticIndexHintClause<R> extends Item {
-
-        _ParensStringClause<R> useIndex();
-
-        _ParensStringClause<R> ignoreIndex();
-
-        _ParensStringClause<R> forceIndex();
-
-
-    }
-
-    interface _DynamicIndexHintClause0<T extends Item, R extends Item> extends Item {
-
-        R ifUseIndex(Consumer<T> consumer);
-
-        R ifIgnoreIndex(Consumer<T> consumer);
-
-        R ifForceIndex(Consumer<T> consumer);
-
-    }
-
-
-    interface _IndexHintForJoinClause0<R> extends _StaticIndexHintClause<R> {
-
-        @Override
-        _IndexForJoinSpec<R> useIndex();
-
-        @Override
-        _IndexForJoinSpec<R> ignoreIndex();
-
-        @Override
-        _IndexForJoinSpec<R> forceIndex();
-
-    }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">Index Hints</a>
@@ -258,6 +212,7 @@ public interface MySQLStatement extends DialectStatement {
         R ifForceIndex(Consumer<Consumer<String>> consumer);
 
     }
+
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">Index Hints</a>
@@ -448,39 +403,8 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _IndexHintForOrderByClause0<R> extends _StaticIndexHintClause<R> {
-
-        @Override
-        _IndexForOrderBySpec<R> useIndex();
-
-        @Override
-        _IndexForOrderBySpec<R> ignoreIndex();
-
-        @Override
-        _IndexForOrderBySpec<R> forceIndex();
-
-    }
 
 
-    interface _IndexPurposeBySpec<R> extends _IndexForJoinSpec<R>, _IndexForOrderBySpec<R> {
-
-        _ParensStringClause<R> forGroupBy();
-
-    }
-
-
-    interface _QueryIndexHintSpec<R extends Item> extends _IndexHintForJoinClause0<R>, _IndexHintForOrderByClause0<R> {
-
-        @Override
-        _IndexPurposeBySpec<R> useIndex();
-
-        @Override
-        _IndexPurposeBySpec<R> ignoreIndex();
-
-        @Override
-        _IndexPurposeBySpec<R> forceIndex();
-
-    }
 
 
     interface _MySQLNestedJoinClause<I extends Item>
@@ -522,8 +446,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintOnSpec<I>>,
-            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _NestedIndexHintOnSpec<I>>,
+    interface _NestedIndexHintOnSpec<I extends Item> extends _IndexHintFoPurposeClause<_NestedIndexHintOnSpec<I>>,
             _NestedOnSpec<I> {
 
     }
@@ -532,7 +455,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintCrossSpec<I>>,
+    interface _NestedIndexHintCrossSpec<I extends Item> extends _IndexHintFoPurposeClause<_NestedIndexHintCrossSpec<I>>,
             _NestedJoinSpec<I> {
 
     }
@@ -541,8 +464,8 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintJoinSpec<I>>
-            , _MySQLNestedJoinClause<I> {
+    interface _NestedIndexHintJoinSpec<I extends Item> extends _IndexHintFoPurposeClause<_NestedIndexHintJoinSpec<I>>,
+            _MySQLNestedJoinClause<I> {
 
     }
 
@@ -559,8 +482,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicIndexHintOnClause extends _QueryIndexHintSpec<_DynamicIndexHintOnClause>,
-            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _DynamicIndexHintOnClause>,
+    interface _DynamicIndexHintOnClause extends _IndexHintFoPurposeClause<_DynamicIndexHintOnClause>,
             _OnClause<_DynamicJoinSpec> {
 
     }
@@ -583,8 +505,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicIndexHintJoinClause extends _QueryIndexHintSpec<_DynamicIndexHintJoinClause>,
-            _DynamicIndexHintClause0<_IndexPurposeBySpec<Object>, _DynamicIndexHintJoinClause>,
+    interface _DynamicIndexHintJoinClause extends _IndexHintFoPurposeClause<_DynamicIndexHintJoinClause>,
             _DynamicJoinSpec {
 
     }
@@ -594,11 +515,6 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _MultiStmtSemicolonSpec extends _MultiStmtSpec {
-
-        void semicolon();
-
-    }
 
 
 }

@@ -25,7 +25,6 @@ import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.mysql.*;
-import io.army.dialect.Dialect;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
@@ -578,11 +577,6 @@ abstract class MySQLMultiUpdates<I extends Item>
     final void onClear() {
         this.hintList = null;
         this.modifierList = null;
-    }
-
-    @Override
-    final Dialect statementDialect() {
-        return MySQLUtils.DIALECT;
     }
 
     @Override

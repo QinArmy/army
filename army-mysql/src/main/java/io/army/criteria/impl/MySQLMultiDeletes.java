@@ -22,9 +22,9 @@ import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
+import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.mysql.*;
-import io.army.dialect.Dialect;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -38,12 +38,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * <p>
- * This class is the implementation of MySQL 8.0 multi-table delete syntax.
+ * <p>This class is the implementation of MySQL 8.0 multi-table delete syntax.
  *
  * @since 0.6.0
  */
-@SuppressWarnings("unchecked")
 abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
         I,
         MySQLCtes,
@@ -289,36 +287,214 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
         return this;
     }
 
+
     @Override
-    public final MySQLQuery._IndexForJoinSpec<MySQLDelete._MultiIndexHintJoinSpec<I>> useIndex() {
-        return this.getHintClause().useIndex();
+    public final _MultiIndexHintJoinSpec<I> useIndex(String indexName) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName));
     }
 
     @Override
-    public final MySQLQuery._IndexForJoinSpec<MySQLDelete._MultiIndexHintJoinSpec<I>> ignoreIndex() {
-        return this.getHintClause().ignoreIndex();
+    public final _MultiIndexHintJoinSpec<I> useIndex(String indexName1, String indexName2) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2));
     }
 
     @Override
-    public final MySQLQuery._IndexForJoinSpec<MySQLDelete._MultiIndexHintJoinSpec<I>> forceIndex() {
-        return this.getHintClause().forceIndex();
+    public final _MultiIndexHintJoinSpec<I> useIndex(String indexName1, String indexName2, String indexName3) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, indexName1, indexName2, indexName3));
     }
 
     @Override
-    public final MySQLDelete._MultiIndexHintJoinSpec<I> ifUseIndex(Consumer<_IndexForJoinSpec<Object>> consumer) {
-        this.getHintClause().ifUseIndex(consumer);
+    public final _MultiIndexHintJoinSpec<I> useIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> useIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, space, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ifUseIndex(Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, consumer);
+        if (indexHint != null) {
+            addIndexHint(indexHint);
+        }
         return this;
     }
 
     @Override
-    public final MySQLDelete._MultiIndexHintJoinSpec<I> ifIgnoreIndex(Consumer<_IndexForJoinSpec<Object>> consumer) {
-        this.getHintClause().ifIgnoreIndex(consumer);
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(String indexName) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(String indexName1, String indexName2) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(String indexName1, String indexName2, String indexName3) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, space, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ifIgnoreIndex(Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, consumer);
+        if (indexHint != null) {
+            addIndexHint(indexHint);
+        }
         return this;
     }
 
     @Override
-    public final MySQLDelete._MultiIndexHintJoinSpec<I> ifForceIndex(Consumer<_IndexForJoinSpec<Object>> consumer) {
-        this.getHintClause().ifForceIndex(consumer);
+    public final _MultiIndexHintJoinSpec<I> forceIndex(String indexName) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(String indexName1, String indexName2) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(String indexName1, String indexName2, String indexName3) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, space, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ifForceIndex(Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, consumer);
+        if (indexHint != null) {
+            addIndexHint(indexHint);
+        }
+        return this;
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> useIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, space, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ifUseIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.USE_INDEX, wordFor, purpose, consumer);
+        if (indexHint != null) {
+            addIndexHint(indexHint);
+        }
+        return this;
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ignoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, space, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ifIgnoreIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.IGNORE_INDEX, wordFor, purpose, consumer);
+        if (indexHint != null) {
+            addIndexHint(indexHint);
+        }
+        return this;
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, String indexName1, String indexName2, String indexName3) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, indexName1, indexName2, indexName3));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Clause._StaticStringSpaceClause> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> forceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, SQLs.SymbolSpace space, Consumer<Consumer<String>> consumer) {
+        return addIndexHint(MySQLSupports.indexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, space, consumer));
+    }
+
+    @Override
+    public final _MultiIndexHintJoinSpec<I> ifForceIndex(SQLs.WordFor wordFor, SQLs.IndexHintPurpose purpose, Consumer<Consumer<String>> consumer) {
+        final _IndexHint indexHint;
+        indexHint = MySQLSupports.ifIndexHint(MySQLSupports.IndexHintCommand.FORCE_INDEX, wordFor, purpose, consumer);
+        if (indexHint != null) {
+            addIndexHint(indexHint);
+        }
         return this;
     }
 
@@ -428,8 +604,8 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
 
     @Override
     final MySQLDelete._MultiIndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
-        final MySQLSupports.FromClauseForJoinTableBlock<MySQLDelete._MultiIndexHintJoinSpec<I>> block;
-        block = new MySQLSupports.FromClauseForJoinTableBlock<>(joinType, table, alias, this);
+        final MySQLSupports.MySQLFromClauseTableBlock block;
+        block = new MySQLSupports.MySQLFromClauseTableBlock(joinType, table, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -487,11 +663,6 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
         return block;
     }
 
-    @Override
-    final Dialect statementDialect() {
-        return MySQLUtils.DIALECT;
-    }
-
 
     private TabularBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
         final _TabularBlock block = this.fromCrossBlock;
@@ -517,18 +688,15 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     }
 
 
-    /**
-     * @see #useIndex()
-     * @see #ignoreIndex()
-     * @see #forceIndex()
-     */
-    private MySQLSupports.FromClauseForJoinTableBlock<MySQLDelete._MultiIndexHintJoinSpec<I>> getHintClause() {
+    private _MultiIndexHintJoinSpec<I> addIndexHint(final _IndexHint indexHint) {
         final _TabularBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.FromClauseForJoinTableBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.MySQLFromClauseTableBlock)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
-        return (MySQLSupports.FromClauseForJoinTableBlock<MySQLDelete._MultiIndexHintJoinSpec<I>>) block;
+        ((MySQLSupports.MySQLFromClauseTableBlock) block).addIndexHint(indexHint);
+        return this;
     }
+
 
 
     private static final class MySQLSimpleDelete extends MySQLMultiDeletes<Delete>
@@ -597,8 +765,8 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
         MySQLDelete._MultiIndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLMultiDeletes<I> stmt = this.stmt;
 
-            final MySQLSupports.FromClauseForJoinTableBlock<_MultiIndexHintJoinSpec<I>> block;
-            block = new MySQLSupports.FromClauseForJoinTableBlock<>(params, stmt);
+            final MySQLSupports.MySQLFromClauseTableBlock block;
+            block = new MySQLSupports.MySQLFromClauseTableBlock(params);
 
             stmt.blockConsumer.accept(block);
             stmt.fromCrossBlock = block;// update noOnBlock
@@ -609,11 +777,11 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
     }//SimplePartitionJoinClause
 
     private static final class SimpleJoinClauseTableBlock<I extends Item>
-            extends MySQLSupports.MySQLJoinClauseBlock0<
-            _IndexForJoinSpec<Object>,
+            extends MySQLSupports.MySQLJoinClauseBlock<
             _MultiIndexHintOnSpec<I>,
             _MultiJoinSpec<I>>
             implements MySQLDelete._MultiIndexHintOnSpec<I> {
+
 
         private SimpleJoinClauseTableBlock(_JoinType joinType, TableMeta<?> tableItem, String alias,
                                            MySQLDelete._MultiJoinSpec<I> stmt) {
@@ -625,7 +793,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
         }
 
 
-    }//SimpleJoinClauseTableBlock
+    } // SimpleJoinClauseTableBlock
 
     private static final class SimplePartitionOnClause<I extends Item>
             extends MySQLSupports.PartitionAsClause<_MultiIndexHintOnSpec<I>>
@@ -734,7 +902,7 @@ abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
         }
 
 
-    }//MySQLFromAliasClause
+    } // MySQLFromAliasClause
 
 
 
