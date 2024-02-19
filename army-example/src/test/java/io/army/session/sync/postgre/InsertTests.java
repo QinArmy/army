@@ -25,6 +25,7 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
+import io.army.session.Option;
 import io.army.session.record.ResultStates;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncStmtOption;
@@ -46,7 +47,6 @@ import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class InsertTests extends SessionTestSupport {
-
 
 
     // @Transactional
@@ -418,10 +418,12 @@ public class InsertTests extends SessionTestSupport {
         statesConsumer = states -> {
             flagHolder[0]++;
 
+            final Boolean secondDmlStates = states.valueOf(Option.SECOND_DML_QUERY_STATES);
+
             if (flagHolder[0] == 1) {
-                Assert.assertFalse(states.isStatesOfSecondDmlQuery());
+                Assert.assertTrue(secondDmlStates == null || !secondDmlStates);
             } else {
-                Assert.assertTrue(states.isStatesOfSecondDmlQuery());
+                Assert.assertEquals(secondDmlStates, Boolean.TRUE);
             }
 
             Assert.assertEquals(states.affectedRows(), provinceList.size());
@@ -768,10 +770,12 @@ public class InsertTests extends SessionTestSupport {
         final Consumer<ResultStates> statesConsumer;
         statesConsumer = states -> {
             flagsHolder[0]++;
+            final Boolean secondDmlStates = states.valueOf(Option.SECOND_DML_QUERY_STATES);
+
             if (flagsHolder[0] == 1) {
-                Assert.assertFalse(states.isStatesOfSecondDmlQuery());
+                Assert.assertTrue(secondDmlStates == null || !secondDmlStates);
             } else {
-                Assert.assertTrue(states.isStatesOfSecondDmlQuery());
+                Assert.assertEquals(secondDmlStates, Boolean.TRUE);
             }
 
             Assert.assertTrue(states.inTransaction());

@@ -55,18 +55,21 @@ import java.util.stream.Stream;
  */
 abstract class JdbcExecutorSupport extends ExecutorSupport {
 
-    protected static final String START_TRANSACTION_SPACE = "START TRANSACTION ";
+    static final String START_TRANSACTION_SPACE = "START TRANSACTION ";
 
-    protected static final String COMMIT = "COMMIT";
+    static final String COMMIT = "COMMIT";
 
-    protected static final String ROLLBACK = "ROLLBACK";
+    static final String ROLLBACK = "ROLLBACK";
 
-    protected static final String READ_ONLY = "READ ONLY";
+    static final String READ_ONLY = "READ ONLY";
 
-    protected static final String READ_WRITE = "READ WRITE";
+    static final String READ_WRITE = "READ WRITE";
 
-    protected static final String ISOLATION_LEVEL_SPACE = "ISOLATION LEVEL ";
+    static final String ISOLATION_LEVEL_SPACE = "ISOLATION LEVEL ";
 
+    static final Option<ServerMeta> SERVER_META = Option.from("SERVER META", ServerMeta.class);
+
+    static final Option<Warning> WARNING = Option.from("WARNING", Warning.class);
 
     JdbcExecutorSupport() {
     }
@@ -838,26 +841,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private static final Set<Option<?>> OPTION_SET = Collections.singleton(Option.READ_ONLY);
 
-        final ServerMeta serverMeta;
-
         private final int resultNo;
 
-        private final TransactionInfo info;
+        private final Function<Option<?>, ?> optionFunc;
 
-        private final Warning warning;
-
-
-        private final SyncStmtCursor stmtCursor;
-
-
-        private JdbcResultStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info,
-                                 @Nullable Warning warning,
-                                 @Nullable SyncStmtCursor stmtCursor) {
-            this.serverMeta = serverMeta;
+        private JdbcResultStates(int resultNo, Function<Option<?>, ?> optionFunc) {
+            assert optionFunc.apply(SERVER_META) instanceof ServerMeta;
             this.resultNo = resultNo;
-            this.info = info;
-            this.warning = warning;
-            this.stmtCursor = stmtCursor;
+            this.optionFunc = optionFunc;
         }
 
         @Override
@@ -868,9 +859,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Override
         public final boolean isSupportInsertId() {
             final boolean support;
-            switch (this.serverMeta.serverDatabase()) {
+            final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
+            assert meta != null;
+            switch (meta.serverDatabase()) {
                 case PostgreSQL:
-                    support = this.serverMeta.major() < 12;
+                    support = meta.major() < 12;
                     break;
                 case MySQL:
                 case H2:
@@ -882,8 +875,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         @Override
         public final boolean inTransaction() {
-            final TransactionInfo info = this.info;
-            return info != null && info.inTransaction();
+            final Object o;
+            o = this.optionFunc.apply(Option.IN_TRANSACTION);
+            return o instanceof Boolean && (Boolean) o;
         }
 
         @Override
@@ -895,7 +889,12 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Nullable
         @Override
         public final Warning warning() {
-            return this.warning;
+            final Object o;
+            o = this.optionFunc.apply(WARNING);
+            if (o instanceof Warning) {
+                return (Warning) o;
+            }
+            return null;
         }
 
         @SuppressWarnings("unchecked")
@@ -903,40 +902,28 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Override
         public final <T> T valueOf(final Option<T> option) {
             final Object value;
-            switch (this.serverMeta.serverDatabase()) {
-                case MySQL: {
-                    final TransactionInfo info = this.info;
-                    if (info != null && option == Option.READ_ONLY) {
-                        value = info.isReadOnly();
-                    } else {
-                        value = null;
-                    }
-                }
-                break;
-                case PostgreSQL: {
-                    if (SyncStmtCursor.SYNC_STMT_CURSOR.equals(option)) {
-                        value = this.stmtCursor;
-                    } else {
-                        value = null;
-                    }
-                }
-                break;
-                default:
-                    value = null;
+            if (option == Option.READ_ONLY
+                    || option == Option.FIRST_DML_STATES
+                    || option == Option.SECOND_DML_QUERY_STATES
+                    || SyncStmtCursor.SYNC_STMT_CURSOR.equals(option)) {
+                value = this.optionFunc.apply(option);
+            } else {
+                value = null;
             }
-
             return (T) value;
         }
 
         @Override
         public final Set<Option<?>> optionSet() {
+            final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
+            assert meta != null;
             final Set<Option<?>> optionSet;
-            switch (this.serverMeta.serverDatabase()) {
+            switch (meta.serverDatabase()) {
                 case MySQL:
                     optionSet = OPTION_SET;
                     break;
                 case PostgreSQL: {
-                    if (this.stmtCursor == null) {
+                    if (this.optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR) == null) {
                         optionSet = Collections.emptySet();
                     } else {
                         optionSet = OPTION_SET;
@@ -950,8 +937,10 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         final DataAccessException dontSupportLastInsertedId() {
+            final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
+            assert meta != null;
             String m = String.format("database[%s  %s] don't support lastInsertedId() method.",
-                    this.serverMeta.serverDatabase().name(), this.serverMeta.version());
+                    meta.serverDatabase().name(), meta.version());
             return new DataAccessException(m);
         }
 
@@ -961,9 +950,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     private static abstract class JdbcUpdateStates extends JdbcResultStates {
 
-        private JdbcUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info,
-                                 @Nullable Warning warning, @Nullable SyncStmtCursor stmtCursor) {
-            super(serverMeta, resultNo, info, warning, stmtCursor);
+        private JdbcUpdateStates(int resultNo, Function<Option<?>, ?> optionFunc) {
+            super(resultNo, optionFunc);
         }
 
         @Override
@@ -984,12 +972,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return 0L;
         }
 
-        @Override
-        public final boolean isStatesOfSecondDmlQuery() {
-            // non
-            return false;
-        }
-
 
     } // JdbcUpdateStates
 
@@ -1000,9 +982,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final long affectedRows;
 
-        private JdbcQueryStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
+        private JdbcQueryStates(int resultNo, Function<Option<?>, ?> optionFunc,
                                 long rowCount, long affectedRows) {
-            super(serverMeta, resultNo, info, warning, null);
+            super(resultNo, optionFunc);
             this.rowCount = rowCount;
             this.affectedRows = affectedRows;
         }
@@ -1040,14 +1022,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final boolean moreFetch;
 
-        private final boolean secondDmlQuery;
 
-
-        SingleQueryStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
-                          long rowCount, boolean moreFetch, long affectedRows, boolean secondDmlQuery) {
-            super(serverMeta, resultNo, info, warning, rowCount, affectedRows);
+        SingleQueryStates(int resultNo, Function<Option<?>, ?> optionFunc,
+                          long rowCount, boolean moreFetch, long affectedRows) {
+            super(resultNo, optionFunc, rowCount, affectedRows);
             this.moreFetch = moreFetch;
-            this.secondDmlQuery = secondDmlQuery;
         }
 
         @Override
@@ -1072,11 +1051,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
 
-        @Override
-        public boolean isStatesOfSecondDmlQuery() {
-            return this.secondDmlQuery;
-        }
-
     } // SingleQueryStates
 
 
@@ -1085,14 +1059,10 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final boolean moreResult;
 
-        private final boolean secondDmlQuery;
-
-        MultiResultQueryStates(ServerMeta serverMeta, int resultNo,
-                               @Nullable TransactionInfo info, @Nullable Warning warning,
-                               long rowCount, boolean moreResult, long affectedRows, boolean secondDmlQuery) {
-            super(serverMeta, resultNo, info, warning, rowCount, affectedRows);
+        MultiResultQueryStates(int resultNo, Function<Option<?>, ?> optionFunc,
+                               long rowCount, boolean moreResult, long affectedRows) {
+            super(resultNo, optionFunc, rowCount, affectedRows);
             this.moreResult = moreResult;
-            this.secondDmlQuery = secondDmlQuery;
         }
 
 
@@ -1117,11 +1087,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return false;
         }
 
-        @Override
-        public boolean isStatesOfSecondDmlQuery() {
-            return this.secondDmlQuery;
-        }
-
 
     } // MultiResultQueryStates
 
@@ -1132,14 +1097,10 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final int batchNo;
 
-        private final boolean secondDmlQuery;
-
-        BatchQueryStates(ServerMeta serverMeta, @Nullable TransactionInfo info, int batchSize, int batchNo,
-                         @Nullable Warning warning, long rowCount, long affectedRows, boolean secondDmlQuery) {
-            super(serverMeta, 1, info, warning, rowCount, affectedRows);
+        BatchQueryStates(Function<Option<?>, ?> optionFunc, int batchSize, int batchNo, long rowCount, long affectedRows) {
+            super(1, optionFunc, rowCount, affectedRows);
             this.batchSize = batchSize;
             this.batchNo = batchNo;
-            this.secondDmlQuery = secondDmlQuery;
         }
 
 
@@ -1160,13 +1121,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         @Override
         public boolean hasMoreFetch() {
-            // always false for batch-query
+            //currently, always false for batch-query
             return false;
-        }
-
-        @Override
-        public boolean isStatesOfSecondDmlQuery() {
-            return this.secondDmlQuery;
         }
 
 
@@ -1179,9 +1135,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final boolean moreResult;
 
-        SingleUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, long firstId, @Nullable Warning warning,
-                           long affectedRows, boolean moreResult, @Nullable SyncStmtCursor stmtCursor) {
-            super(serverMeta, resultNo, info, warning, stmtCursor);
+        SingleUpdateStates(int resultNo, Function<Option<?>, ?> optionFunc, long firstId,
+                           long affectedRows, boolean moreResult) {
+            super(resultNo, optionFunc);
             this.firstId = firstId;
             this.affectedRows = affectedRows;
             this.moreResult = moreResult;
@@ -1230,9 +1186,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final long affectedRows;
 
-        BatchUpdateStates(ServerMeta serverMeta, int resultNo, @Nullable TransactionInfo info, int batchSize, int batchNo,
-                          @Nullable Warning warning, long affectedRows) {
-            super(serverMeta, resultNo, info, warning, null);
+        BatchUpdateStates(int resultNo, Function<Option<?>, ?> optionFunc, int batchSize, int batchNo, long affectedRows) {
+            super(resultNo, optionFunc);
             this.batchSize = batchSize;
             this.batchNo = batchNo;
             this.affectedRows = affectedRows;

@@ -302,7 +302,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> query(DqlStatement statement, final Class<R> resultClass, SyncStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.executor.query(s, resultClass, o)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o) -> this.executor.query(s, resultClass, o, Option.EMPTY_FUNC)); // here ,use o not option
     }
 
     @Override
@@ -312,7 +312,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> queryObject(DqlStatement statement, final Supplier<R> constructor, SyncStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.executor.queryObject(s, constructor, o)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o) -> this.executor.queryObject(s, constructor, o, Option.EMPTY_FUNC)); // here ,use o not option
     }
 
     @Override
@@ -325,7 +325,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         if (statement instanceof _Statement._ChildStatement) {
             throw new SessionException("queryRecord api don't support two statement mode");
         }
-        return this.executeQuery(statement, option, (s, o) -> this.executor.queryRecord(s, function, o)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o) -> this.executor.queryRecord(s, function, o, Option.EMPTY_FUNC)); // here ,use o not option
     }
 
     @Override
@@ -638,7 +638,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 return Stream.empty();
             }
         } else {
-            rows = this.executor.insert(stmt.firstStmt(), option, Long.class);
+            rows = this.executor.insert(stmt.firstStmt(), option, Long.class, Option.EMPTY_FUNC);
             if (rows == 0) {
                 // exists conflict clause
                 return Stream.empty();
@@ -653,7 +653,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             final Stream<R> stream;
             if (firstStmtIsQuery) {
                 // TODO 验证 行数
-                stream = this.executor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList);
+                stream = this.executor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList, Option.EMPTY_FUNC);
             } else {
                 // TODO 验证 行数,fetch size
                 final long parentRows = rows;
@@ -736,7 +736,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         final R states;
 
         if (stmt instanceof SimpleStmt) {
-            states = this.executor.insert((SimpleStmt) stmt, option, resultClass);
+            states = this.executor.insert((SimpleStmt) stmt, option, resultClass, Option.EMPTY_FUNC);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
         } else if (inTransaction()) {
@@ -744,21 +744,30 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             final PairStmt pairStmt = (PairStmt) stmt;
 
             final R parentStates;
-            parentStates = this.executor.insert(pairStmt.firstStmt(), option, resultClass);
+            parentStates = this.executor.insert(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_FUNC);
 
             try {
-                states = this.executor.insert(pairStmt.secondStmt(), option, resultClass);
+                final Function<Option<?>, ?> optionFunc;
+                if (parentStates instanceof ResultStates) {
+                    optionFunc = Option.singleFunc(Option.FIRST_DML_STATES, (ResultStates) parentStates);
+                } else {
+                    optionFunc = Option.EMPTY_FUNC;
+                }
+                states = this.executor.insert(pairStmt.secondStmt(), option, resultClass, optionFunc);
             } catch (Throwable e) {
                 throw _Exceptions.childInsertError(this, domainTable, e);
             }
 
             final long childRows, parentRows;
-            if (resultClass == Long.class) {
+            if (parentStates instanceof Long) {
                 childRows = (Long) states;
                 parentRows = (Long) parentStates;
-            } else {
+            } else if (parentStates instanceof ResultStates) {
                 childRows = ((ResultStates) states).affectedRows();
                 parentRows = ((ResultStates) parentStates).affectedRows();
+            } else {
+                // no bug,never here
+                throw new IllegalStateException();
             }
             if (childRows != parentRows
                     && !(statement instanceof _Insert._SupportConflictClauseSpec

@@ -16,10 +16,7 @@
 
 package io.army.session.record;
 
-import io.army.session.DataAccessException;
-import io.army.session.OptionSpec;
-import io.army.session.StmtOption;
-import io.army.session.Warning;
+import io.army.session.*;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -163,11 +160,11 @@ public interface ResultStates extends ResultItem, OptionSpec {
      *        statesConsumer = states -> {
      *            flagHolder[0] ++;
      *
-     *            if(flagHolder[0] ==1){
-     *                Assert.assertFalse(states.isStatesOfSecondDmlQuery());
-     *            }else {
-     *                Assert.assertTrue(states.isStatesOfSecondDmlQuery()); // /assert true
-     *            }
+     *              if (flagHolder[0] == 1) {
+     *                  Assert.assertTrue(secondDmlStates == null || !secondDmlStates);
+     *              } else {
+     *                  Assert.assertEquals(secondDmlStates, Boolean.TRUE);
+     *              }
      *
      *            Assert.assertEquals(states.affectedRows(), provinceList.size());
      *            if (states.isSupportInsertId()) {
@@ -198,8 +195,13 @@ public interface ResultStates extends ResultItem, OptionSpec {
      * </pre>
      *
      * @return true : child dml query with tow statement mode,for example : postgre insert child with RETURNING clause.
+     * @see Option#FIRST_DML_STATES
+     * @see Option#SECOND_DML_QUERY_STATES
+     *
      */
-    boolean isStatesOfSecondDmlQuery();
+    @Nullable
+    @Override
+    <T> T valueOf(Option<T> option);
 
 
 }

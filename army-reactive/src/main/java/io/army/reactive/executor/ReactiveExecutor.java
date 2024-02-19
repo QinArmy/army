@@ -64,21 +64,21 @@ public interface ReactiveExecutor extends StmtExecutor, ReactiveCloseable {
 
     Mono<Void> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
-    Mono<ResultStates> insert(SimpleStmt stmt, ReactiveStmtOption option);
+    Mono<ResultStates> insert(SimpleStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
     Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
     Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Flux<R> query(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
+    <R> Flux<R> query(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
+    <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, ReactiveStmtOption option);
+    <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option);
+    <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList);
+    <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList, Function<Option<?>, ?> optionFunc);
 
 
 

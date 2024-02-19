@@ -213,7 +213,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Mono<ResultStates> insert(final SimpleStmt stmt, final ReactiveStmtOption option) {
+    public final Mono<ResultStates> insert(final SimpleStmt stmt, final ReactiveStmtOption option,
+                                           final Function<Option<?>, ?> optionFunc) {
 
         final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
@@ -253,7 +254,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 if (rowSize != rowIndexHolder[0]) {
                     return Mono.error(_Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, rowIndexHolder[0]));
                 }
-                return Mono.just(mapToArmyResultStates(jdbdStatesHolder.get()));
+                return Mono.just(mapToArmyUpdateStates(jdbdStatesHolder.get(), optionFunc));
             };
         } else {
             extractIdFunc = null;
@@ -275,10 +276,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                     .then(Mono.defer(monoSupplier));
         } else if (stmt instanceof GeneratedKeyStmt) {
             mono = Mono.from(statement.executeUpdate())
-                    .map(states -> handleInsertStates(states, (GeneratedKeyStmt) stmt));
+                    .map(states -> handleInsertStates(states, (GeneratedKeyStmt) stmt, optionFunc));
         } else {
             mono = Mono.from(statement.executeUpdate())
-                    .map(this::mapToArmyResultStates);
+                    .map(states -> mapToArmyUpdateStates(states, optionFunc));
         }
         return mono.onErrorMap(this::wrapExecuteIfNeed);
 
@@ -287,14 +288,14 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @Override
     public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveStmtOption option,
-                                           Function<Option<?>, ?> optionFunc) {
+                                           final Function<Option<?>, ?> optionFunc) {
         Mono<ResultStates> mono;
         try {
             final BindStatement statement;
             statement = bindStatement(stmt, option);
 
             mono = Mono.from(statement.executeUpdate())
-                    .map(this::mapToArmyResultStates)
+                    .map(states -> mapToArmyUpdateStates(states, optionFunc))
                     .onErrorMap(this::wrapExecuteIfNeed);
         } catch (Throwable e) {
             mono = Mono.error(wrapExecuteIfNeed(e));
@@ -303,14 +304,15 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
+    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveStmtOption option,
+                                                final Function<Option<?>, ?> optionFunc) {
         Flux<ResultStates> flux;
         try {
             final BindStatement statement;
             statement = bindStatement(stmt, option);
 
             flux = Flux.from(statement.executeBatchUpdate())
-                    .map(this::mapToArmyResultStates)
+                    .map(states -> mapToArmyUpdateStates(states, optionFunc))
                     .onErrorMap(this::wrapExecuteIfNeed);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
@@ -319,10 +321,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> query(final SingleSqlStmt stmt, final Class<R> resultClass, final ReactiveStmtOption option) {
+    public final <R> Flux<R> query(final SingleSqlStmt stmt, final Class<R> resultClass,
+                                   final ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
         Flux<R> flux;
         try {
-            flux = executeQuery(stmt, mapBeanFunc(stmt, resultClass), option);
+            flux = executeQuery(stmt, mapBeanFunc(stmt, resultClass), option, optionFunc);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
         }
@@ -330,7 +333,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, final Class<R> resultClass, ReactiveStmtOption option) {
+    public final <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, final Class<R> resultClass,
+                                                     ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
         Flux<Optional<R>> flux;
         try {
             final List<? extends Selection> selectionList;
@@ -348,7 +352,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             } else {
                 function = rowReader::readOneRow;
             }
-            flux = executeQuery(stmt, function, option);
+            flux = executeQuery(stmt, function, option, optionFunc);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
         }
@@ -356,10 +360,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, ReactiveStmtOption option) {
+    public final <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor,
+                                         ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
         Flux<R> flux;
         try {
-            flux = executeQuery(stmt, mapObjectFunc(stmt, constructor), option);
+            flux = executeQuery(stmt, mapObjectFunc(stmt, constructor), option, optionFunc);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
         }
@@ -367,7 +372,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
+    public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function,
+                                         ReactiveStmtOption option, final Function<Option<?>, ?> optionFunc) {
         Flux<R> flux;
         try {
             final Consumer<ResultStates> armyConsumer;
@@ -378,7 +384,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             } else {
                 jdbdConsumer = states -> {
                     final ResultStates armyStates;
-                    armyStates = new JdbdResultStates(states, this.factory, true);
+                    armyStates = new JdbdResultStates(states, this.factory, optionFunc);
                     try {
                         armyConsumer.accept(armyStates);
                     } catch (Exception e) {
@@ -398,13 +404,14 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList) {
+    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList,
+                                         Function<Option<?>, ?> optionFunc) {
         Flux<R> flux;
         try {
             final SecondRowReader<R> rowReader;
             rowReader = new SecondRowReader<>(this, stmt, resultList);
 
-            flux = executeQuery(stmt, rowReader::readOneRow, option);
+            flux = executeQuery(stmt, rowReader::readOneRow, option, optionFunc);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
         }
@@ -1167,27 +1174,32 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
 
-    private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
-        return new JdbdResultStates(jdbdStates, this.factory, false);
+    private ResultStates mapToArmyUpdateStates(final io.jdbd.result.ResultStates jdbdStates, Function<Option<?>, ?> optionFunc) {
+        return new JdbdResultStates(jdbdStates, this.factory, optionFunc);
+    }
+
+    private ResultStates mapToArmyQueryStates(final io.jdbd.result.ResultStates jdbdStates, Function<Option<?>, ?> optionFunc) {
+
+        return new JdbdResultStates(jdbdStates, this.factory, optionFunc);
     }
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
     private <R> Flux<R> executeQuery(final SingleSqlStmt stmt, final Function<CurrentRow, R> func,
-                                     final ReactiveStmtOption option) throws JdbdException, TimeoutException {
-        return Flux.from(bindStatement(stmt, option).executeQuery(func, createStatesConsumer(option)))
+                                     final ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) throws JdbdException, TimeoutException {
+        return Flux.from(bindStatement(stmt, option).executeQuery(func, createStatesConsumer(option, optionFunc)))
                 .onErrorMap(this::wrapExecuteIfNeed);
     }
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
     private <R> Function<CurrentRow, R> mapBeanFunc(final SingleSqlStmt stmt, final Class<R> resultClass) {
         final List<? extends Selection> selectionList;
@@ -1211,9 +1223,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
     private <R> Function<CurrentRow, R> mapObjectFunc(final SingleSqlStmt stmt, final Supplier<R> constructor) {
 
@@ -1230,9 +1242,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
     /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
     private <R> Function<CurrentRow, R> mapRecordFunc(final SingleSqlStmt stmt, final Function<CurrentRecord, R> recordFunc) {
         final RowReader<R> rowReader;
@@ -1249,11 +1261,12 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
-    private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveStmtOption option) {
+    private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveStmtOption option,
+                                                                       final Function<Option<?>, ?> optionFunc) {
         final Consumer<ResultStates> armyConsumer;
         armyConsumer = option.stateConsumer();
         if (armyConsumer == ResultStates.IGNORE_STATES) {
@@ -1261,7 +1274,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
         return states -> {
             final ResultStates armyStates;
-            armyStates = mapToArmyResultStates(states);
+            armyStates = mapToArmyQueryStates(states, optionFunc);
             try {
                 armyConsumer.accept(armyStates);
             } catch (Exception e) {
@@ -1305,10 +1318,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     /**
-     * @see #insert(SimpleStmt, ReactiveStmtOption)
+     * @see #insert(SimpleStmt, ReactiveStmtOption, Function)
      */
     private ResultStates handleInsertStates(final io.jdbd.result.ResultStates jdbdStates,
-                                            final GeneratedKeyStmt stmt) {
+                                            final GeneratedKeyStmt stmt, final Function<Option<?>, ?> optionFunc) {
         final int rowSize = stmt.rowSize();
 
         if (jdbdStates.affectedRows() != rowSize) {
@@ -1348,7 +1361,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             stmt.setGeneratedIdValue(i, idValue);
         }
 
-        return mapToArmyResultStates(jdbdStates);
+        return mapToArmyUpdateStates(jdbdStates, optionFunc);
     }
 
 
@@ -2051,30 +2064,35 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private final JdbdStmtExecutorFactory executorFactory;
 
-        private final boolean secondDmlQuery;
-
+        private final Function<Option<?>, ?> sessionOptionFunc;
         private Warning warning;
 
         private Set<Option<?>> optionSet;
 
 
         private JdbdResultStates(io.jdbd.result.ResultStates jdbdStates,
-                                 JdbdStmtExecutorFactory executorFactory, boolean secondDmlQuery) {
+                                 JdbdStmtExecutorFactory executorFactory, Function<Option<?>, ?> sessionOptionFunc) {
             this.jdbdStates = jdbdStates;
             this.executorFactory = executorFactory;
-            this.secondDmlQuery = secondDmlQuery;
+            this.sessionOptionFunc = sessionOptionFunc;
         }
+
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> T valueOf(Option<T> option) {
-            final io.jdbd.session.Option<?> jdbdOption;
-            jdbdOption = this.executorFactory.mapToJdbdOption(option);
+        public <T> T valueOf(final Option<T> option) {
+
             final Object value;
-            if (jdbdOption == null) {
-                value = null;
+            if (option == Option.FIRST_DML_STATES || option == Option.SECOND_DML_QUERY_STATES) {
+                value = this.sessionOptionFunc.apply(option);
             } else {
-                value = this.jdbdStates.valueOf(jdbdOption);
+                final io.jdbd.session.Option<?> jdbdOption;
+                jdbdOption = this.executorFactory.mapToJdbdOption(option);
+                if (jdbdOption == null) {
+                    value = null;
+                } else {
+                    value = this.jdbdStates.valueOf(jdbdOption);
+                }
             }
             return (T) value;
         }
@@ -2168,11 +2186,6 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         @Override
         public long rowCount() {
             return this.jdbdStates.rowCount();
-        }
-
-        @Override
-        public boolean isStatesOfSecondDmlQuery() {
-            return this.secondDmlQuery;
         }
 
 

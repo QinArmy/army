@@ -17,12 +17,14 @@
 package io.army.sync.executor;
 
 
-import io.army.meta.ChildTableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
-import io.army.stmt.*;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.SingleSqlStmt;
+import io.army.stmt.TwoStmtQueryStmt;
 import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtOption;
 
@@ -85,7 +87,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
     void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
 
-    <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass) throws DataAccessException;
+    <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
 
     <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
@@ -103,23 +105,15 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
     Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option) throws DataAccessException;
+    <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
-    <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option) throws DataAccessException;
+    <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
-    <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
+    <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
             throws DataAccessException;
 
-    <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList) throws DataAccessException;
-
-    <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, SyncStmtOption option,
-                                 ChildTableMeta<?> childTable) throws DataAccessException;
-
-    <R> Stream<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, SyncStmtOption option,
-                                       ChildTableMeta<?> childTable) throws DataAccessException;
-
-    <R> Stream<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option,
-                                       ChildTableMeta<?> childTable) throws DataAccessException;
+    <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList,
+                              Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
     @Override
     void close() throws DataAccessException;

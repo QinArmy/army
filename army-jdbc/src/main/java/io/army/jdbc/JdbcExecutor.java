@@ -26,7 +26,10 @@ import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnsignedBigintType;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
@@ -38,10 +41,7 @@ import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
-import io.army.sync.StreamCommander;
-import io.army.sync.StreamOption;
-import io.army.sync.SyncSession;
-import io.army.sync.SyncStmtOption;
+import io.army.sync.*;
 import io.army.sync.executor.SyncExecutor;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
@@ -214,8 +214,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <R> R insert(final SimpleStmt stmt, final SyncStmtOption option, final Class<R> resultClass)
-            throws DataAccessException {
+    public final <R> R insert(final SimpleStmt stmt, final SyncStmtOption option, final Class<R> resultClass,
+                              final Function<Option<?>, ?> optionFunc) throws DataAccessException {
 
         if (resultClass != Long.class && resultClass != ResultStates.class) {
             throw new IllegalArgumentException();
@@ -275,19 +275,30 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 firstId = firstIdHolder[0];
             }
 
-            final R r;
             if (resultClass == Long.class) {
-                r = (R) Long.valueOf(rows);
-            } else if (returningId) {
-                r = (R) new SingleQueryStates(this.factory.serverMeta, 1, obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows, false, rows, false);
+                return (R) Long.valueOf(rows);
+            }
+
+            final Map<Option<?>, Object> optionMap;
+            optionMap = createStatesOptionMap(statement.getWarnings());
+
+            final ResultStates firstStates;
+            if (optionFunc != Option.EMPTY_FUNC && (firstStates = (ResultStates) optionMap.get(Option.FIRST_DML_STATES)) != null) {
+                optionMap.put(Option.FIRST_DML_STATES, firstStates);
+            }
+
+            final R r;
+            if (returningId) {
+                r = (R) new SingleQueryStates(1, optionMap::get, rows, false, rows);
             } else {
-                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), firstId, mapToArmyWarning(statement.getWarnings()), rows, false, null);
+                r = (R) new SingleUpdateStates(1, optionMap::get, firstId, rows, false);
             }
             return r;
         } catch (Exception e) {
             throw wrapError(e);
         }
     }
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -320,7 +331,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } else if (stmt instanceof DeclareCursorStmt) {
                 r = (R) createNamedCursor((DeclareCursorStmt) stmt, statement, rows, optionFunc);
             } else {
-                r = (R) new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), 0L, mapToArmyWarning(statement.getWarnings()), rows, false, null);
+                final Map<Option<?>, Object> optionMap;
+                optionMap = createStatesOptionMap(statement.getWarnings());
+
+                final ResultStates firstStates;
+                if (optionFunc != Option.EMPTY_FUNC && (firstStates = (ResultStates) optionMap.get(Option.FIRST_DML_STATES)) != null) {
+                    optionMap.put(Option.FIRST_DML_STATES, firstStates);
+                }
+                r = (R) new SingleUpdateStates(1, optionMap::get, 0L, rows, false);
             }
             return r;
         } catch (Exception e) {
@@ -357,26 +375,30 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     @Override
-    public final <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option)
+    public final <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option,
+                                     Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
-        return executeQuery(stmt, option, beanReaderFunc(stmt, resultClass));
+        return executeQuery(stmt, option, beanReaderFunc(stmt, resultClass), optionFunc);
 
     }
 
     @Override
-    public final <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option)
+    public final <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option,
+                                           Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
-        return this.executeQuery(stmt, option, objectReaderFunc(stmt, constructor));
+        return this.executeQuery(stmt, option, objectReaderFunc(stmt, constructor), optionFunc);
     }
 
     @Override
-    public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
+    public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function,
+                                           SyncStmtOption option, Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
-        return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function));
+        return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function), optionFunc);
     }
 
     @Override
-    public final <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList)
+    public final <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList,
+                                           Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
 
         Statement statement = null;
@@ -389,7 +411,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             rowReader = new SecondRowReader<>(this, stmt.selectionList(), createSqlTypArray(resultSet.getMetaData()));
 
             final SimpleSecondSpliterator<R> spliterator;
-            spliterator = new SimpleSecondSpliterator<>(statement, resultSet, rowReader, stmt, option, firstList);
+            spliterator = new SimpleSecondSpliterator<>(statement, resultSet, rowReader, stmt, option, firstList, Option.EMPTY_FUNC); // currently, don't need session option function
 
             return assembleStream(spliterator, option);
         } catch (Exception e) {
@@ -400,64 +422,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             throw e;
         }
 
-    }
-
-    @Override
-    public final <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, final @Nullable Class<R> resultClass,
-                                              SyncStmtOption option, ChildTableMeta<?> childTable)
-            throws DataAccessException {
-        if (resultClass == null) {
-            throw new NullPointerException();
-        }
-        final BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc;
-        readerFunc = (queryStmt, meta) -> {
-            try {
-                return createBeanRowReader(meta, resultClass, queryStmt);
-            } catch (Exception e) {
-                throw handleException(e);
-            }
-        };
-        return executePairBatchQuery(stmt, option, childTable, readerFunc);
-    }
-
-    @Override
-    public final <R> Stream<R> pairBatchQueryObject(PairBatchStmt stmt, final @Nullable Supplier<R> constructor,
-                                                    SyncStmtOption option, ChildTableMeta<?> childTable)
-            throws DataAccessException {
-        if (constructor == null) {
-            throw new NullPointerException();
-        }
-        final BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc;
-        readerFunc = (queryStmt, meta) -> {
-            try {
-                return new ObjectReader<>(this, queryStmt.selectionList(), queryStmt instanceof TwoStmtModeQuerySpec,
-                        createSqlTypArray(meta), constructor
-                );
-            } catch (Exception e) {
-                throw handleException(e);
-            }
-        };
-        return executePairBatchQuery(stmt, option, childTable, readerFunc);
-    }
-
-    @Override
-    public final <R> Stream<R> pairBatchQueryRecord(PairBatchStmt stmt, final @Nullable Function<CurrentRecord, R> function,
-                                                    SyncStmtOption option,
-                                                    ChildTableMeta<?> childTable)
-            throws DataAccessException {
-
-        if (function == null) {
-            throw new NullPointerException();
-        }
-        final BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc;
-        readerFunc = (queryStmt, meta) -> {
-            try {
-                return new RecordRowReader<>(this, queryStmt.selectionList(), createSqlTypArray(meta), function, meta);
-            } catch (Exception e) {
-                throw handleException(e);
-            }
-        };
-        return executePairBatchQuery(stmt, option, childTable, readerFunc);
     }
 
     @Nullable
@@ -555,11 +519,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
         final JdbcSyncStmtCursor stmtCursor = new JdbcSyncStmtCursor(this, stmt, session);
 
-        final ResultStates states;
-        states = new SingleUpdateStates(this.factory.serverMeta, 1, obtainTransaction(), 0L,
-                mapToArmyWarning(statement.getWarnings()), rows, false, stmtCursor);
+        final Map<Option<?>, Object> optionMap;
+        optionMap = createStatesOptionMap(statement.getWarnings());
+        optionMap.put(SyncStmtCursor.SYNC_STMT_CURSOR, stmtCursor);
 
-        return states;
+        return new SingleUpdateStates(1, optionMap::get, 0L, rows, false);
     }
 
     final void handleInTransaction(final StringBuilder builder, final HandleMode mode) {
@@ -1067,10 +1031,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final int rows;
             rows = statement.executeUpdate(sql);
 
-            return new SingleUpdateStates(this.factory.serverMeta, 1,
-                    obtainTransaction(), 0L,
-                    mapToArmyWarning(statement.getWarnings()), rows,
-                    false, null);
+            return new SingleUpdateStates(1, createStatesOptionMap(statement.getWarnings())::get, 0L, rows, false);
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -1107,6 +1068,27 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
+     * @return a modified map
+     * @see #insert(SimpleStmt, SyncStmtOption, Class, Function)
+     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
+     */
+    private Map<Option<?>, Object> createStatesOptionMap(final @Nullable SQLWarning jdbcWarning) {
+        final Map<Option<?>, Object> map = _Collections.hashMap();
+        map.put(SERVER_META, this.factory.serverMeta);
+        if (jdbcWarning != null) {
+            map.put(WARNING, mapToArmyWarning(jdbcWarning));
+        }
+        final TransactionInfo info;
+        info = obtainTransaction();
+        if (info != null) {
+            map.put(Option.IN_TRANSACTION, info.inTransaction());
+            map.put(Option.READ_ONLY, info.isReadOnly());
+        }
+        return map;
+    }
+
+
+    /**
      * @see #executeCursorFetch(DeclareCursorStmt, Direction, Long, Class, Consumer)
      * @see #executeCursorFetchObject(DeclareCursorStmt, Direction, Long, Supplier, Consumer)
      * @see #executeCursorFetchRecord(DeclareCursorStmt, Direction, Long, Function, Consumer)
@@ -1132,7 +1114,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             rowReader = function.apply(resultSet.getMetaData());
 
             final CursorRowSpliterator<R> spliterator;
-            spliterator = new CursorRowSpliterator<>(this, statement, resultSet, statement.getWarnings(), rowReader, consumer);
+            spliterator = new CursorRowSpliterator<>(this, statement, resultSet, rowReader, consumer);
 
             return StreamSupport.stream(spliterator, false)
                     .onClose(spliterator::closeStream); // close event
@@ -1301,22 +1283,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final boolean useLargeUpdate = this.factory.useLargeUpdate;
 
-            final TransactionInfo info = obtainTransaction();
-            final SQLWarning jdbcWarning = statement.getWarnings();
-            final Warning warning;
-            if (jdbcWarning == null) {
-                warning = null;
-            } else {
-                warning = new ArmyWarning(jdbcWarning);
-            }
-
             final int stmtSize;
             stmtSize = groupList.size();
 
+            final Function<Option<?>, ?> statesOptionFunc;
+            statesOptionFunc = createStatesOptionMap(statement.getWarnings())::get;
+
             final List<ResultStates> resultList;
             resultList = _Collections.arrayList(stmtSize);
-
-            final ServerMeta serverMeta = this.factory.serverMeta;
 
             long updateCount;
             int resultNo = 0;
@@ -1334,7 +1308,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 resultNo++;
 
-                resultList.add(new SingleUpdateStates(serverMeta, resultNo, info, 0L, warning, updateCount, resultNo < stmtSize, null));
+                resultList.add(new SingleUpdateStates(resultNo, statesOptionFunc, 0L, updateCount, resultNo < stmtSize));
 
                 if (statement.getMoreResults()) {
                     statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
@@ -1383,21 +1357,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 arrayFunc = index -> affectedRowArray[index];
             }
 
+            final Function<Option<?>, ?> statesOptionFunc;
+            statesOptionFunc = createStatesOptionMap(statement.getWarnings())::get;
 
-            final TransactionInfo info = obtainTransaction();
-            final SQLWarning jdbcWarning = statement.getWarnings();
-            final Warning warning;
-            if (jdbcWarning == null) {
-                warning = null;
-            } else {
-                warning = new ArmyWarning(jdbcWarning);
-            }
-            final ServerMeta serverMeta = this.factory.serverMeta;
             final List<ResultStates> resultList = _Collections.arrayList(batchSize);
             long rows;
             for (int i = 0; i < batchSize; i++) {
                 rows = arrayFunc.applyAsLong(i);
-                resultList.add(new BatchUpdateStates(serverMeta, 1, info, batchSize, i + 1, warning, rows));
+                resultList.add(new BatchUpdateStates(1, statesOptionFunc, batchSize, i + 1, rows));
             }
             return resultList.stream();
         } catch (Exception e) {
@@ -1417,7 +1384,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #insert(SimpleStmt, SyncStmtOption, Class)
+     * @see #insert(SimpleStmt, SyncStmtOption, Class, Function)
      */
     private Statement bindInsertStatement(final SimpleStmt stmt, final SyncStmtOption option, final int generatedKeys)
             throws TimeoutException, SQLException {
@@ -1429,14 +1396,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             statement = this.conn.createStatement();
         } else {
             statement = this.conn.prepareStatement(stmt.sqlText(), generatedKeys);
-
         }
 
         try {
             if (statement instanceof PreparedStatement) {
                 bindParameter((PreparedStatement) statement, paramGroup);
             }
-
             bindStatementOption(statement, stmt, option);
             return statement;
         } catch (Throwable e) {
@@ -1447,7 +1412,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     /**
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
-     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
+     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
      */
     private Statement bindStatement(final SimpleStmt stmt, final SyncStmtOption option)
             throws TimeoutException, SQLException {
@@ -1515,7 +1480,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, SyncStmtOption)
+     * @see #query(SingleSqlStmt, Class, SyncStmtOption, Function)
      */
     private <R> Function<ResultSetMetaData, RowReader<R>> beanReaderFunc(final SingleSqlStmt stmt,
                                                                          final @Nullable Class<R> resultClass) {
@@ -1533,7 +1498,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     /**
-     * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption)
+     * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption, Function)
      */
     private <R> Function<ResultSetMetaData, RowReader<R>> objectReaderFunc(
             final SingleSqlStmt stmt, final @Nullable Supplier<R> constructor) {
@@ -1552,7 +1517,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     /**
-     * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption)
+     * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption, Function)
      */
     private <R> Function<ResultSetMetaData, RowReader<R>> recordReaderFunc(
             final List<? extends Selection> selectionList,
@@ -1571,9 +1536,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #insert(SimpleStmt, SyncStmtOption, Class)
+     * @see #insert(SimpleStmt, SyncStmtOption, Class, Function)
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
-     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
+     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
      * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function)
      * @see #executeBatchUpdate(BatchStmt, SyncStmtOption)
      */
@@ -1647,16 +1612,17 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, SyncStmtOption)
-     * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption)
-     * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption)
+     * @see #query(SingleSqlStmt, Class, SyncStmtOption, Function)
+     * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption, Function)
+     * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption, Function)
      */
     private <R> Stream<R> executeQuery(SingleSqlStmt stmt, SyncStmtOption option,
-                                       final Function<ResultSetMetaData, RowReader<R>> function) {
+                                       final Function<ResultSetMetaData, RowReader<R>> function,
+                                       Function<Option<?>, ?> optionFunc) {
         try {
             final Stream<R> stream;
             if (stmt instanceof SimpleStmt) {
-                stream = executeSimpleQuery((SimpleStmt) stmt, option, function);
+                stream = executeSimpleQuery((SimpleStmt) stmt, option, function, optionFunc);
             } else if (!(stmt instanceof BatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (option.isParseBatchAsMultiStmt()) {
@@ -1675,10 +1641,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     /**
      * invoker must handle all error.
      *
-     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function)
+     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function, Function)
      */
     private <R> Stream<R> executeSimpleQuery(SimpleStmt stmt, SyncStmtOption option,
-                                             final Function<ResultSetMetaData, RowReader<R>> function)
+                                             final Function<ResultSetMetaData, RowReader<R>> function,
+                                             final Function<Option<?>, ?> sessionFunc)
             throws SQLException {
 
         Statement statement = null;
@@ -1694,9 +1661,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final JdbcSimpleSpliterator<R> spliterator;
             if (stmt instanceof GeneratedKeyStmt) {
-                spliterator = new InsertRowSpliterator<>(statement, resultSet, rowReader, (GeneratedKeyStmt) stmt, option);
+                spliterator = new InsertRowSpliterator<>(statement, resultSet, rowReader, (GeneratedKeyStmt) stmt, option, sessionFunc);
             } else {
-                spliterator = new SimpleRowSpliterator<>(statement, resultSet, rowReader, stmt, option);
+                spliterator = new SimpleRowSpliterator<>(statement, resultSet, rowReader, stmt, option, sessionFunc);
             }
             return assembleStream(spliterator, option);
         } catch (Throwable e) {
@@ -1710,7 +1677,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     /**
      * invoker must handle all error.
      *
-     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function)
+     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function, Function)
      */
     private <R> Stream<R> executeBatchQuery(BatchStmt stmt, SyncStmtOption option,
                                             final Function<ResultSetMetaData, RowReader<R>> function)
@@ -1734,7 +1701,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             rowReader = function.apply(resultSet.getMetaData());
 
             final BatchRowSpliterator<R> spliterator;
-            spliterator = new BatchRowSpliterator<>(statement, rowReader, stmt, option, resultSet);
+            spliterator = new BatchRowSpliterator<>(statement, rowReader, stmt, option, resultSet, Option.EMPTY_FUNC);
 
             return assembleStream(spliterator, option);
         } catch (Throwable e) {
@@ -1746,7 +1713,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     /**
      * invoker must handle all error.
      *
-     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function)
+     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function, Function)
      */
     private <R> Stream<R> executeMultiStmtBatchQuery(final BatchStmt stmt, SyncStmtOption option,
                                                      final Function<ResultSetMetaData, RowReader<R>> function)
@@ -1781,7 +1748,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             rowReader = function.apply(resultSet.getMetaData());
 
             final MultiSmtBatchRowSpliterator<R> spliterator;
-            spliterator = new MultiSmtBatchRowSpliterator<>(statement, rowReader, stmt, option, resultSet);
+            spliterator = new MultiSmtBatchRowSpliterator<>(statement, rowReader, stmt, option, resultSet, Option.EMPTY_FUNC);
 
             return assembleStream(spliterator, option);
         } catch (Throwable e) {
@@ -1791,7 +1758,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     /**
-     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
+     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
      */
     private <R> Stream<R> assembleStream(final JdbcRowSpliterator<R> spliterator, final SyncStmtOption option) {
         final Consumer<StreamCommander> consumer;
@@ -1806,7 +1773,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     /**
      * @return row number
-     * @see #insert(SimpleStmt, SyncStmtOption, Class)
+     * @see #insert(SimpleStmt, SyncStmtOption, Class, Function)
      */
     private int readRowId(final ResultSet idResultSet, final @Nullable long[] firstIdHolder,
                           final GeneratedKeyStmt stmt) throws SQLException {
@@ -1867,52 +1834,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #pairBatchQuery(PairBatchStmt, Class, SyncStmtOption, ChildTableMeta)
-     * @see #pairBatchQueryObject(PairBatchStmt, Supplier, SyncStmtOption, ChildTableMeta)
-     * @see #pairBatchQueryRecord(PairBatchStmt, Function, SyncStmtOption, ChildTableMeta)
-     */
-    private <R> Stream<R> executePairBatchQuery(Stmt.PairStmtSpec stmt, SyncStmtOption option,
-                                                ChildTableMeta<?> childTable,
-                                                BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
-        try {
-            final Stream<R> stream;
-            if (stmt.stmtType() == StmtType.INSERT) {
-                stream = executeBatchInsertQuery((PairBatchStmt) stmt, option, childTable, readerFunc);
-            } else {
-                stream = executeBatchUpdateQuery((PairBatchStmt) stmt, option, childTable, readerFunc);
-            }
-            return stream;
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
-
-
-    /**
-     * @see #executePairBatchQuery(Stmt.PairStmtSpec, SyncStmtOption, ChildTableMeta, BiFunction)
-     */
-    @SuppressWarnings("unused")
-    private <R> Stream<R> executeBatchInsertQuery(PairBatchStmt stmt, SyncStmtOption option,
-                                                  ChildTableMeta<?> childTable,
-                                                  BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
-        // TODO add for firebird
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @see #executePairBatchQuery(Stmt.PairStmtSpec, SyncStmtOption, ChildTableMeta, BiFunction)
-     */
-    @SuppressWarnings("unused")
-    private <R> Stream<R> executeBatchUpdateQuery(PairBatchStmt stmt, SyncStmtOption option,
-                                                  ChildTableMeta<?> childTable,
-                                                  BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
-        // TODO add for firebird
-        throw new UnsupportedOperationException();
-    }
-
-
-    /**
-     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function)
+     * @see #executeQuery(SingleSqlStmt, SyncStmtOption, Function, Function)
      */
     private <T> RowReader<T> createBeanRowReader(final ResultSetMetaData metaData, final Class<T> resultClass,
                                                  final SingleSqlStmt stmt) throws SQLException {
@@ -1957,7 +1879,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     /**
      * <p>Invoke {@link PreparedStatement#executeQuery()} or {@link Statement#executeQuery(String)} for {@link ResultSet} auto close.
      *
-     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
+     * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
      */
     private static ResultSet jdbcExecuteQuery(final Statement statement, final String sql) throws SQLException {
         final ResultSet resultSet;
@@ -2369,7 +2291,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private ObjectAccessor accessor;
 
         /**
-         * @see JdbcExecutor#secondQuery(TwoStmtQueryStmt, SyncStmtOption, List)
+         * @see JdbcExecutor#secondQuery(TwoStmtQueryStmt, SyncStmtOption, List, Function)
          */
         private SecondRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
                                 DataType[] dataTypeArray) {
@@ -2437,8 +2359,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private final JdbcExecutor executor;
 
-        final TransactionInfo info;
-
         final Statement statement;
 
         final int fetchSize;
@@ -2446,19 +2366,22 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private final StmtType stmtType;
 
+        private final Function<Option<?>, ?> sessionFunc;
+
         private boolean closed;
 
         boolean canceled;
 
-        private JdbcRowSpliterator(JdbcExecutor executor, Statement statement, StmtType stmtType, SyncStmtOption option) {
+        private JdbcRowSpliterator(JdbcExecutor executor, Statement statement, StmtType stmtType,
+                                   SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
             this.executor = executor;
-            this.info = executor.obtainTransaction();
             this.statement = statement;
             this.option = option;
-
             this.stmtType = stmtType;
+
             this.fetchSize = option.fetchSize();
             assert this.fetchSize > -1;
+            this.sessionFunc = sessionFunc;
         }
 
         @Override
@@ -2558,15 +2481,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 } else {
                     affectedRows = rowCount;
                 }
-                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
-
                 final ResultStates states;
-                states = new SingleQueryStates(this.executor.factory.serverMeta,
-                        1,
-                        this.info,
-                        mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, false, affectedRows, secondDmlQuery
-                );
+                states = new SingleQueryStates(1, createQueryStatesOptionFunc(), rowCount, false, affectedRows);
                 consumer.accept(states);
             } catch (Exception e) {
                 throw handleException(e);
@@ -2575,6 +2491,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw e;
             }
         }
+
 
         final void emitMultiResultStates(final int resultNo, final long rowCount, final boolean moreResult) {
             final Consumer<ResultStates> consumer;
@@ -2586,19 +2503,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             try {
                 final long affectedRows;
                 if (this.stmtType == StmtType.QUERY) {
-                    affectedRows = 0;
+                    affectedRows = 0L;
                 } else {
                     affectedRows = rowCount;
                 }
 
-                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
-
                 final ResultStates states;
-                states = new MultiResultQueryStates(this.executor.factory.serverMeta,
-                        resultNo, this.info,
-                        mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, moreResult, affectedRows, secondDmlQuery
-                );
+                states = new MultiResultQueryStates(resultNo, createQueryStatesOptionFunc(), rowCount, moreResult, affectedRows);
                 consumer.accept(states);
             } catch (Exception e) {
                 throw handleException(e);
@@ -2618,19 +2529,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             try {
                 final long affectedRows;
                 if (this.stmtType == StmtType.QUERY) {
-                    affectedRows = 0;
+                    affectedRows = 0L;
                 } else {
                     affectedRows = rowCount;
                 }
 
-                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
-
                 final ResultStates states;
-                states = new BatchQueryStates(this.executor.factory.serverMeta, this.info,
-                        batchSize, batchNo,
-                        mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, affectedRows, secondDmlQuery
-                );
+                states = new BatchQueryStates(createQueryStatesOptionFunc(), batchSize, batchNo, rowCount, affectedRows);
                 consumer.accept(states);
             } catch (Exception e) {
                 throw handleException(e);
@@ -2650,23 +2555,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             try {
                 final long affectedRows;
                 if (this.stmtType == StmtType.QUERY) {
-                    affectedRows = 0;
+                    affectedRows = 0L;
                 } else {
                     affectedRows = fetchRows;
                 }
 
-                final boolean secondDmlQuery = this instanceof SimpleSecondSpliterator;
-
                 final ResultStates states;
-                states = new SingleQueryStates(this.executor.factory.serverMeta,
-                        1,
-                        this.info,
-                        mapToArmyWarning(this.statement.getWarnings()),
-                        fetchRows,
-                        moreFetch,
-                        affectedRows,
-                        secondDmlQuery);   // currently, update don't support fetch size
-
+                states = new SingleQueryStates(1, createQueryStatesOptionFunc(), fetchRows, moreFetch, affectedRows);   // currently, update don't support fetch size
                 consumer.accept(states);
             } catch (Exception e) {
                 throw handleException(e);
@@ -2740,7 +2635,27 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-    }//JdbcRowSpliterator
+        /**
+         * @return a modifier map
+         */
+        private Function<Option<?>, ?> createQueryStatesOptionFunc() throws SQLException {
+            final Map<Option<?>, Object> map;
+            map = this.executor.createStatesOptionMap(this.statement.getWarnings());
+            if (this instanceof SimpleSecondSpliterator) {
+                map.put(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
+            }
+
+            final Function<Option<?>, ?> sessionFunc = this.sessionFunc;
+            final ResultStates firstDmlStates;
+            if (sessionFunc != Option.EMPTY_FUNC
+                    && (firstDmlStates = (ResultStates) sessionFunc.apply(Option.FIRST_DML_STATES)) != null) {
+                map.put(Option.FIRST_DML_STATES, firstDmlStates);
+            }
+            return map::get;
+        }
+
+
+    } // JdbcRowSpliterator
 
 
     private static abstract class JdbcSimpleSpliterator<R> extends JdbcRowSpliterator<R> {
@@ -2757,8 +2672,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
         private JdbcSimpleSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
-                                      SimpleStmt stmt, SyncStmtOption option) {
-            super(rowReader.executor, statement, stmt.stmtType(), option);
+                                      SimpleStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
+            super(rowReader.executor, statement, stmt.stmtType(), option, sessionFunc);
             this.statement = statement;
             this.stmt = stmt;
             this.resultSet = resultSet;
@@ -2806,11 +2721,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private int currentFetchRows = 0;
 
         /**
-         * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
+         * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
          */
         private SimpleRowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader, SimpleStmt stmt,
-                                     SyncStmtOption option) {
-            super(statement, resultSet, rowReader, stmt, option);
+                                     SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
+            super(statement, resultSet, rowReader, stmt, option, sessionFunc);
         }
 
         @Override
@@ -2900,11 +2815,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private int currentFetchRows = 0;
 
         /**
-         * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
+         * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
          */
         private InsertRowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
-                                     GeneratedKeyStmt stmt, SyncStmtOption option) {
-            super(statement, resultSet, rowReader, stmt, option);
+                                     GeneratedKeyStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
+            super(statement, resultSet, rowReader, stmt, option, sessionFunc);
 
 
         }
@@ -3015,8 +2930,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
         private SimpleSecondSpliterator(Statement statement, ResultSet resultSet, SecondRowReader<R> rowReader,
-                                        TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList) {
-            super(statement, resultSet, rowReader, stmt, option);
+                                        TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList, Function<Option<?>, ?> sessionFunc) {
+            super(statement, resultSet, rowReader, stmt, option, sessionFunc);
             final R row;
             row = firstList.get(0);
             if (row instanceof Map) {
@@ -3125,8 +3040,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private final ResultSet resultSet;
 
-        private final SQLWarning sqlWarning;
-
         private final RowReader<R> rowReader;
 
         private final Consumer<ResultStates> consumer;
@@ -3136,11 +3049,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private boolean closed;
 
         private CursorRowSpliterator(JdbcExecutor executor, Statement statement, ResultSet resultSet,
-                                     @Nullable SQLWarning sqlWarning, RowReader<R> rowReader, Consumer<ResultStates> consumer) {
+                                     RowReader<R> rowReader, Consumer<ResultStates> consumer) {
             this.executor = executor;
             this.statement = statement;
             this.resultSet = resultSet;
-            this.sqlWarning = sqlWarning;
             this.rowReader = rowReader;
             this.consumer = consumer;
         }
@@ -3278,14 +3190,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
         @SuppressWarnings("unchecked")
-        private void emitResultStates(final Consumer<? super R> action) {
+        private void emitResultStates(final Consumer<? super R> action) throws SQLException {
+
+            final Function<Option<?>, ?> optionFunc;
+            optionFunc = this.executor.createStatesOptionMap(this.statement.getWarnings())::get;
+
             final ResultStates states;
-            states = new SingleQueryStates(this.executor.factory.serverMeta,
-                    1,
-                    this.executor.obtainTransaction(),
-                    mapToArmyWarning(this.sqlWarning),
-                    this.totalRowCount, false, 0, false
-            );
+            states = new SingleQueryStates(1, optionFunc, this.totalRowCount, false, 0);
 
             if (this.rowReader instanceof ResultItemRowReader) {
                 action.accept((R) states);
@@ -3325,8 +3236,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private long currentResultTotalRows = 0L;
 
         private JdbcBatchSpliterator(Statement statement, RowReader<R> rowReader,
-                                     BatchStmt stmt, SyncStmtOption option, ResultSet resultSet) {
-            super(rowReader.executor, statement, stmt.stmtType(), option);
+                                     BatchStmt stmt, SyncStmtOption option, ResultSet resultSet,
+                                     Function<Option<?>, ?> sessionFunc) {
+            super(rowReader.executor, statement, stmt.stmtType(), option, sessionFunc);
 
             this.statement = statement;
             this.rowReader = rowReader;
@@ -3360,6 +3272,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
+        @SuppressWarnings("unchecked")
         @Override
         final boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
             final boolean hasOptimistic = this.stmt.hasOptimistic();
@@ -3405,7 +3318,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 this.resultNo++;
                 this.currentResultTotalRows = 0L;
                 if (resultSet != null && rowReader instanceof RecordRowReader) {
-                    rowReader = new RecordRowReader<>((RecordRowReader<R>) rowReader, resultSet.getMetaData());
+                    if (rowReader instanceof ResultItemRowReader) {
+                        rowReader = (RowReader<R>) new ResultItemRowReader((ResultItemRowReader) rowReader, resultSet.getMetaData());
+                    } else {
+                        rowReader = new RecordRowReader<>((RecordRowReader<R>) rowReader, resultSet.getMetaData());
+                    }
                     this.rowReader = rowReader;
                     assert rowReader.resultNo() == this.resultNo;
                 }
@@ -3434,8 +3351,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
          * @see JdbcExecutor#executeBatchQuery(BatchStmt, SyncStmtOption, Function)
          */
         private BatchRowSpliterator(PreparedStatement statement, RowReader<R> rowReader,
-                                    BatchStmt stmt, SyncStmtOption option, ResultSet resultSet) {
-            super(statement, rowReader, stmt, option, resultSet);
+                                    BatchStmt stmt, SyncStmtOption option, ResultSet resultSet,
+                                    Function<Option<?>, ?> sessionFunc) {
+            super(statement, rowReader, stmt, option, resultSet, sessionFunc);
 
         }
 
@@ -3487,8 +3405,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
          * @see JdbcExecutor#executeMultiStmtBatchQuery(BatchStmt, SyncStmtOption, Function)
          */
         private MultiSmtBatchRowSpliterator(Statement statement, RowReader<R> rowReader, BatchStmt stmt,
-                                            SyncStmtOption option, ResultSet resultSet) {
-            super(statement, rowReader, stmt, option, resultSet);
+                                            SyncStmtOption option, ResultSet resultSet, Function<Option<?>, ?> sessionFunc) {
+            super(statement, rowReader, stmt, option, resultSet, sessionFunc);
         }
 
 
@@ -3761,13 +3679,20 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
 
             try {
+                final Map<Option<?>, Object> optionMap;
+                optionMap = this.executor.createStatesOptionMap(this.statement.getWarnings());
+
+                final TransactionInfo info = this.info;
+                if (info == null) {
+                    optionMap.put(Option.IN_TRANSACTION, Boolean.FALSE);
+                    optionMap.remove(Option.READ_ONLY);
+                } else {
+                    optionMap.put(Option.IN_TRANSACTION, info.inTransaction());
+                    optionMap.put(Option.READ_ONLY, info.isReadOnly());
+                }
+
                 final ResultStates states;
-                states = new SingleQueryStates(this.executor.factory.serverMeta,
-                        1,
-                        this.info,
-                        mapToArmyWarning(this.statement.getWarnings()),
-                        rowCount, false, 0L, false
-                );
+                states = new SingleQueryStates(1, optionMap::get, rowCount, false, 0L);
                 consumer.accept(states);
             } catch (Exception e) {
                 close();

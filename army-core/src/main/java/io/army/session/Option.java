@@ -271,6 +271,12 @@ public final class Option<T> {
 
     public static final Option<Session> ARMY_SESSION = Option.from("ARMY SESSION", Session.class);
 
+    public static final Option<Boolean> SECOND_DML_QUERY_STATES = Option.from("SECOND DML QUERY STATES", Boolean.class);
+
+    public static final Option<ResultStates> FIRST_DML_STATES = Option.from("FIRST DML STATES", ResultStates.class);
+
+    /*-------------------below instance field -------------------*/
+
 
     private final String name;
 

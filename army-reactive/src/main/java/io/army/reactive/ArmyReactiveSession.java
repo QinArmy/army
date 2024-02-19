@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -174,7 +173,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<R> query(DqlStatement statement, final Class<R> resultClass, final ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.query(s, resultClass, o)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o, func) -> this.stmtExecutor.query(s, resultClass, o, func)); // here ,use o not option
     }
 
 
@@ -185,7 +184,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryOptional(s, resultClass, o)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o, func) -> this.stmtExecutor.queryOptional(s, resultClass, o, func)); // here ,use o not option
     }
 
     @Override
@@ -195,7 +194,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<R> queryObject(DqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryObject(s, constructor, o)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o, func) -> this.stmtExecutor.queryObject(s, constructor, o, func)); // here ,use o not option
     }
 
     @Override
@@ -205,7 +204,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <R> Flux<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryRecord(s, function, o)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o, func) -> this.stmtExecutor.queryRecord(s, function, o, func)); // here ,use o not option
     }
 
     @Override
@@ -440,18 +439,6 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     /*-------------------below private methods -------------------*/
 
-    private ReactiveStmtOption defaultOption() {
-        final TransactionInfo info;
-        info = obtainTransactionInfo();
-
-        final ReactiveStmtOption option;
-        if (info == null) {
-            option = ArmyReactiveStmtOptions.DEFAULT;
-        } else {
-            option = ArmyReactiveStmtOptions.overrideTimeoutIfNeed(ArmyReactiveStmtOptions.DEFAULT, info);
-        }
-        return option;
-    }
 
     private ReactiveStmtOption replaceIfNeed(final ReactiveStmtOption option) {
         final TransactionInfo info;
@@ -472,7 +459,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
      * @see #queryRecord(DqlStatement, Function, ReactiveStmtOption)
      */
     private <R> Flux<R> executeQuery(final DqlStatement statement, final ReactiveStmtOption unsafeOption,
-                                     final BiFunction<SingleSqlStmt, ReactiveStmtOption, Flux<R>> exeFunc) {
+                                     final ExecutorFunction<R> exeFunc) {
 
         Flux<R> flux;
         try {
@@ -484,7 +471,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
             final Stmt stmt;
             stmt = parseDqlStatement(statement, option);
             if (stmt instanceof SingleSqlStmt) {
-                flux = exeFunc.apply((SingleSqlStmt) stmt, option)
+                flux = exeFunc.execute((SingleSqlStmt) stmt, option, Option.EMPTY_FUNC)
                         .onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairStmt)) {
                 // no bug,never here
@@ -512,11 +499,11 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(ReactiveStmtOption)}.
-     * @see #executeQuery(DqlStatement, ReactiveStmtOption, BiFunction)
+     * @see #executeQuery(DqlStatement, ReactiveStmtOption, ExecutorFunction)
      */
     private <R> Flux<R> executePairInsertQuery(final InsertStatement statement, final PairStmt stmt,
                                                final ReactiveStmtOption option,
-                                               final BiFunction<SingleSqlStmt, ReactiveStmtOption, Flux<R>> exeFunc) {
+                                               final ExecutorFunction<R> exeFunc) {
 
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
@@ -528,7 +515,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
         final Flux<R> flux;
         if (firstStmtIsQuery) {
-            flux = exeFunc.apply(stmt.firstStmt(), option)
+            flux = exeFunc.execute(stmt.firstStmt(), option, Option.EMPTY_FUNC)
                     .collect(Collectors.toCollection(_Collections::arrayList))
                     .flatMapMany(resultList -> {
                         final int rowCount = resultList.size();
@@ -536,20 +523,20 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
                             // exists conflict clause
                             return Flux.empty();
                         }
-                        return Flux.create(sink -> this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList)
+                        return Flux.create(sink -> this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList, Option.EMPTY_FUNC)
                                 .onErrorMap(errorFunc)
                                 .subscribe(new ValidateItemCountSubscriber<>(sink, rowCount))
                         );
                     });
         } else {
-            flux = this.stmtExecutor.insert(stmt.firstStmt(), option)
+            flux = this.stmtExecutor.insert(stmt.firstStmt(), option, Option.EMPTY_FUNC)
                     .flatMapMany(states -> {
                         final long rowCount = states.affectedRows();
                         if (rowCount == 0L) {
                             // exists conflict clause
                             return Flux.empty();
                         }
-                        return Flux.create(sink -> exeFunc.apply(stmt.secondStmt(), option)
+                        return Flux.create(sink -> exeFunc.execute(stmt.secondStmt(), option, Option.singleFunc(Option.FIRST_DML_STATES, states))
                                 .onErrorMap(errorFunc)
                                 .subscribe(new ValidateItemCountSubscriber<>(sink, rowCount))
                         );
@@ -569,7 +556,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
             final Stmt stmt;
             stmt = parseInsertStatement(statement);
             if (stmt instanceof SimpleStmt) {
-                mono = this.stmtExecutor.insert((SimpleStmt) stmt, option)
+                mono = this.stmtExecutor.insert((SimpleStmt) stmt, option, Option.EMPTY_FUNC)
                         .onErrorMap(this::handleExecutionError);
             } else if (!(stmt instanceof PairStmt)) {
                 mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
@@ -577,8 +564,8 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
                 final PairStmt pairStmt = (PairStmt) stmt;
                 final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_Insert) statement).table();
 
-                mono = this.stmtExecutor.insert(pairStmt.firstStmt(), option)
-                        .flatMap(parentStates -> this.stmtExecutor.insert(pairStmt.secondStmt(), option)
+                mono = this.stmtExecutor.insert(pairStmt.firstStmt(), option, Option.EMPTY_FUNC)
+                        .flatMap(parentStates -> this.stmtExecutor.insert(pairStmt.secondStmt(), option, Option.singleFunc(Option.FIRST_DML_STATES, parentStates))
                                 .doOnSuccess(childStates -> {
                                     if (childStates.affectedRows() != parentStates.affectedRows()) {
                                         throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());
@@ -635,7 +622,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
                 if (optimisticLockValidator != null) {
                     mono = mono.doOnNext(optimisticLockValidator);
                 }
-                mono = mono.flatMap(childStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.EMPTY_FUNC)
+                mono = mono.flatMap(childStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option, Option.singleFunc(Option.FIRST_DML_STATES, childStates))
                         .doOnSuccess(parentStates -> {
                             if (parentStates.affectedRows() != childStates.affectedRows()) {
                                 throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());
@@ -852,7 +839,15 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
         }
 
 
-    }//ValidateBatchStatesSubscriber
+    } // ValidateBatchStatesSubscriber
+
+
+    @FunctionalInterface
+    private interface ExecutorFunction<R> {
+
+        Flux<R> execute(SingleSqlStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
+
+    }
 
 
 }
