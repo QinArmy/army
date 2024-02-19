@@ -716,6 +716,12 @@ abstract class PostgreMerges {
         }
 
         @Override
+        public List<? extends _Selection> flatSelectItem() {
+            // no RETURNING clause
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public final boolean isRecursive() {
             return false;
         }

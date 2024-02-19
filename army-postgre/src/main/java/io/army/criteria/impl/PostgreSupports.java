@@ -23,7 +23,6 @@ import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.*;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.mapping.BooleanType;
 import io.army.mapping.LongType;
@@ -38,6 +37,7 @@ import io.army.util._StringUtils;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.*;
 
 
@@ -748,18 +748,17 @@ abstract class PostgreSupports extends CriteriaSupports {
 
             if (subStatement instanceof DerivedTable) {
                 if (this.columnAliasList.size() == 0) {
-                    this.selectionMap = (_SelectionMap) subStatement;
+                    this.selectionMap = createDerivedSelectionMap(((_DerivedTable) subStatement).refAllSelection());
                 } else {
-                    this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
-                            ((_DerivedTable) subStatement).refAllSelection(), this.name);
+                    this.selectionMap = createAliasSelectionMap(((_DerivedTable) subStatement).refAllSelection());
                 }
             } else if (!(subStatement instanceof _ReturningDml)) {
+                assert searchClause == null && cycleClause == null;
                 this.selectionMap = null;
             } else if (this.columnAliasList.size() == 0) {
-                this.selectionMap = CriteriaUtils.createDerivedSelectionMap(((_ReturningDml) subStatement).returningList());
+                this.selectionMap = CriteriaUtils.createDerivedSelectionMap(((_ReturningDml) subStatement).flatSelectItem());
             } else {
-                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
-                        _DialectUtils.flatSelectItem(((_ReturningDml) subStatement).returningList()), this.name);
+                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList, ((_ReturningDml) subStatement).flatSelectItem(), this.name);
             }
 
         }
@@ -814,7 +813,124 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
 
-    }//PostgreCte
+        private _SelectionMap createAliasSelectionMap(final List<? extends Selection> refSelectionList) {
+
+            final List<String> columnAliasList = this.columnAliasList;
+
+            final List<Selection> addSelectionList;
+            addSelectionList = createSercherCycleSelectionList();
+
+            final int selectionSize, addSelectionSize, totalSelectionSize;
+            selectionSize = refSelectionList.size();
+
+            addSelectionSize = addSelectionList.size();
+
+            totalSelectionSize = selectionSize + addSelectionSize;
+
+            if (columnAliasList.size() != selectionSize) {
+                throw CriteriaUtils.derivedColumnAliasSizeNotMatch(this.name, selectionSize, columnAliasList.size());
+            }
+            if (totalSelectionSize == 1) {
+                final Selection selection;
+                selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
+                return CriteriaUtils.createSingletonSelectionMap(selection);
+            }
+            final List<Selection> selectionList = _Collections.arrayList(totalSelectionSize);
+            final Map<String, Selection> selectionMap = _Collections.hashMapForSize(totalSelectionSize);
+            Selection selection;
+            String columnAlias;
+            for (int i = 0; i < selectionSize; i++) {
+                columnAlias = columnAliasList.get(i);
+                if (columnAlias == null) {
+                    throw ContextStack.clearStackAndNullPointer();
+                }
+                selection = ArmySelections.renameSelection(refSelectionList.get(i), columnAlias);
+                if (selectionMap.putIfAbsent(columnAlias, selection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(columnAlias);
+                }
+                selectionList.add(selection);
+            }
+
+            for (int i = 0; i < addSelectionSize; i++) {
+                selection = addSelectionList.get(i);
+                if (selectionMap.putIfAbsent(selection.label(), selection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(selection.label());
+                }
+                selectionList.add(selection);
+            }
+
+            assert selectionList.size() == selectionMap.size();
+            return CriteriaUtils.createSelectionMap(selectionList, selectionMap);
+
+
+        }
+
+
+        private _SelectionMap createDerivedSelectionMap(final List<? extends Selection> selectItemList) {
+
+            final List<Selection> addSelectionList;
+            addSelectionList = createSercherCycleSelectionList();
+
+            final int selectionSize, addSelectionSize, totalSelectionSize;
+            selectionSize = selectItemList.size();
+            addSelectionSize = addSelectionList.size();
+
+            totalSelectionSize = selectionSize + addSelectionSize;
+
+
+            if (totalSelectionSize == 1) {
+                return CriteriaUtils.createSingletonSelectionMap(selectItemList.get(0));
+            }
+
+            final List<Selection> selectionList = _Collections.arrayList(totalSelectionSize);
+            final Map<String, Selection> selectionMap = _Collections.hashMapForSize(totalSelectionSize);
+
+            Selection selection;
+
+            for (int i = 0; i < selectionSize; i++) {
+                selection = selectItemList.get(i);
+                selectionMap.put(selection.label(), selection); // override, if duplication
+            }
+
+            for (int i = 0; i < addSelectionSize; i++) {
+                selection = addSelectionList.get(i);
+                if (selectionMap.putIfAbsent(selection.label(), selection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(selection.label());
+                }
+                selectionList.add(selection);
+            }
+
+            return CriteriaUtils.createSelectionMap(selectionList, selectionMap);
+        }
+
+
+        private List<Selection> createSercherCycleSelectionList() {
+            final _SearchClause searchClause = this.searchClause;
+            final _CycleClause cycleClause = this.cycleClause;
+
+            final List<Selection> list, temp;
+            if (searchClause == null && cycleClause == null) {
+                list = Collections.emptyList();
+            } else if (searchClause != null && cycleClause != null) {
+                temp = _Collections.arrayList(3);
+                temp.add(searchClause.searchSeqSelection());
+                temp.add(cycleClause.cycleMarkSelection());
+                temp.add(cycleClause.cyclePathSelection());
+
+                list = _Collections.unmodifiableList(temp);
+            } else if (searchClause != null) {
+                list = Collections.singletonList(searchClause.searchSeqSelection());
+            } else {
+                temp = _Collections.arrayList(2);
+                temp.add(cycleClause.cycleMarkSelection());
+                temp.add(cycleClause.cyclePathSelection());
+                list = _Collections.unmodifiableList(temp);
+            }
+            return list;
+        }
+
+
+    } // PostgreCte
 
 
     private static final class DynamicCteInsertParensSpec extends CteParensClause<PostgreInsert._InsertDynamicCteAsClause>

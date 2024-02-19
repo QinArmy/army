@@ -49,6 +49,21 @@ abstract class CriteriaUtils {
     static final List<String> EMPTY_STRING_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 
 
+    static _SelectionMap createSingletonSelectionMap(final Selection selection) {
+        return new SelectionMap(
+                Collections.singletonList(selection),
+                Collections.singletonMap(selection.label(), selection)
+        );
+    }
+
+    static _SelectionMap createSelectionMap(List<Selection> selectionList, Map<String, Selection> selectionMap) {
+        return new SelectionMap(
+                _Collections.unmodifiableList(selectionList),
+                Collections.unmodifiableMap(selectionMap)
+        );
+    }
+
+
     static void appendSelfDescribedList(final List<? extends _SelfDescribed> list, final StringBuilder sqlBuilder,
                                         final _SqlContext context) {
         final int fieldSize = list.size();
@@ -653,38 +668,6 @@ abstract class CriteriaUtils {
                 _Collections.unmodifiableList(selectionList),
                 _Collections.unmodifiableMap(selectionMap)
         );
-    }
-
-    static List<ArmySQLExpression> asExpElementList(final String name,
-                                                    final List<? extends SQLExpression> columnList) {
-        final int columnSize;
-        columnSize = columnList.size();
-        final List<ArmySQLExpression> list;
-
-        switch (columnSize) {
-            case 0:
-                list = _Collections.emptyList();
-                break;
-            case 1: {
-                final SQLExpression exp;
-                exp = columnList.get(0);
-                if (!(exp instanceof ArmySQLExpression)) {
-                    throw CriteriaUtils.funcArgError(name, exp);
-                }
-                list = _Collections.singletonList((ArmySQLExpression) exp);
-            }
-            break;
-            default: {
-                list = _Collections.arrayList(columnSize);
-                for (SQLExpression exp : columnList) {
-                    if (!(exp instanceof ArmySQLExpression)) {
-                        throw CriteriaUtils.funcArgError(name, exp);
-                    }
-                    list.add((ArmySQLExpression) exp);
-                }
-            }
-        }
-        return list;
     }
 
 

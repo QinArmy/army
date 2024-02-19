@@ -51,6 +51,12 @@ public interface _Statement extends Statement {
          * @throws UnsupportedOperationException throw when this isn't instance of {@link _ReturningDml}
          */
         List<? extends _SelectItem> returningList();
+
+        /**
+         * @throws UnsupportedOperationException throw when this isn't instance of {@link _ReturningDml}
+         */
+        List<? extends _Selection> flatSelectItem();
+
     }
 
     interface _RowCountSpec {

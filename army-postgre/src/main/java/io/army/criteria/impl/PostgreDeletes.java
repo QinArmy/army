@@ -23,8 +23,7 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreDelete;
 import io.army.criteria.postgre.*;
-import io.army.dialect.Dialect;
-import io.army.dialect.postgre.PostgreDialect;
+import io.army.dialect._DialectUtils;
 import io.army.mapping.MappingType;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -531,6 +530,12 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }
 
     @Override
+    public final List<? extends _Selection> flatSelectItem() {
+        //no bug,never here
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public final Q asReturningDelete() {
         final List<_SelectItem> returningList = this.returningList;
         if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
@@ -577,12 +582,6 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     @Override
     final PostgreCtes createCteBuilder(boolean recursive) {
         return PostgreSupports.postgreCteBuilder(recursive, this.context);
-    }
-
-
-    @Override
-    final Dialect statementDialect() {
-        return PostgreDialect.POSTGRE15;
     }
 
 
@@ -894,7 +893,6 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
         }
 
 
-
     }//SubSimpleDelete
 
 
@@ -919,6 +917,8 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
         private final List<? extends _SelectItem> returningList;
 
+        private final List<? extends _Selection> selectionList;
+
         private Boolean prepared = Boolean.TRUE;
 
         private PostgreReturningDeleteWrapper(PostgreDeletes<?, ?> stmt) {
@@ -934,6 +934,8 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
             this.wherePredicateList = stmt.wherePredicateList();
 
             this.returningList = _Collections.safeUnmodifiableList(stmt.returningList);
+
+            this.selectionList = _DialectUtils.flatSelectItem(this.returningList);
         }
 
         @Override
@@ -953,10 +955,6 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
             this.prepared = null;
         }
 
-        @Override
-        final Dialect statementDialect() {
-            return PostgreDialect.POSTGRE15;
-        }
 
         @Override
         public final SQLs.WordOnly modifier() {
@@ -1006,8 +1004,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
             return this.returningList;
         }
 
+        @Override
+        public final List<? extends _Selection> flatSelectItem() {
+            return this.selectionList;
+        }
 
-    }//PostgreDeleteWrapper
+
+    } // PostgreDeleteWrapper
 
 
     private static final class PrimaryReturningDeleteWrapper extends PostgreReturningDeleteWrapper

@@ -24,6 +24,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreUpdate;
 import io.army.criteria.postgre.*;
 import io.army.dialect.Dialect;
+import io.army.dialect._DialectUtils;
 import io.army.mapping.MappingType;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
@@ -545,6 +546,12 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     }
 
     @Override
+    public final List<? extends _Selection> flatSelectItem() {
+        // no bug,never here
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public final Q asReturningUpdate() {
         final List<_SelectItem> returningList = this.returningList;
         if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
@@ -1024,6 +1031,8 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
         private final List<? extends _SelectItem> returningList;
 
+        private final List<? extends _Selection> selectionList;
+
         private Boolean prepared = Boolean.TRUE;
 
         private PostgreUpdateWrapper(PostgreUpdates<?, ?, ?> stmt) {
@@ -1041,6 +1050,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
             this.wherePredicateList = stmt.wherePredicateList();
             this.returningList = _Collections.safeUnmodifiableList(stmt.returningList);
+            this.selectionList = _DialectUtils.flatSelectItem(this.returningList);
         }
 
         @Override
@@ -1093,6 +1103,11 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         @Override
         public final List<? extends _SelectItem> returningList() {
             return this.returningList;
+        }
+
+        @Override
+        public final List<? extends _Selection> flatSelectItem() {
+            return this.selectionList;
         }
 
         @Override

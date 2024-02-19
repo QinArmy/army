@@ -1468,6 +1468,8 @@ abstract class PostgreInserts extends InsertSupports {
 
         final List<? extends _SelectItem> returningList;
 
+        final List<? extends _Selection> selectionList;
+
 
         private PostgreValueSyntaxInsertStatement(final PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
@@ -1477,8 +1479,10 @@ abstract class PostgreInserts extends InsertSupports {
             this.conflictAction = clause.conflictAction;
             if (this instanceof _ReturningDml) {
                 this.returningList = clause.effectiveReturningList();
+                this.selectionList = _DialectUtils.flatSelectItem(this.returningList);
             } else {
                 this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
+                this.selectionList = Collections.emptyList();
             }
         }
 
@@ -1498,6 +1502,14 @@ abstract class PostgreInserts extends InsertSupports {
                 throw new UnsupportedOperationException();
             }
             return this.returningList;
+        }
+
+        @Override
+        public final List<? extends _Selection> flatSelectItem() {
+            if (!(this instanceof _ReturningDml)) {
+                throw new UnsupportedOperationException();
+            }
+            return this.selectionList;
         }
 
         @Override
@@ -2443,6 +2455,9 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final List<? extends _SelectItem> returningList;
 
+        private final List<? extends _Selection> selectionList;
+        ;
+
         private PostgreQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.recursive = clause.recursive;
@@ -2453,8 +2468,10 @@ abstract class PostgreInserts extends InsertSupports {
             this.conflictAction = clause.conflictAction;
             if (this instanceof _ReturningDml) {
                 this.returningList = clause.effectiveReturningList();
+                this.selectionList = _DialectUtils.flatSelectItem(this.returningList);
             } else {
-                this.returningList = Collections.emptyList();
+                this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
+                this.selectionList = Collections.emptyList();
             }
         }
 
@@ -2509,6 +2526,13 @@ abstract class PostgreInserts extends InsertSupports {
             return this.returningList;
         }
 
+        @Override
+        public final List<? extends _Selection> flatSelectItem() {
+            if (!(this instanceof _ReturningDml)) {
+                throw new UnsupportedOperationException();
+            }
+            return this.selectionList;
+        }
 
 
     }//QueryInsertStatement

@@ -137,7 +137,7 @@ public abstract class _DialectUtils {
         for (int i = 0; i < itemSize; i++) {
             selectItem = selectItemList.get(i);
             if (selectItem instanceof Selection) {
-                selectionList.add((Selection) selectItem);
+                selectionList.add((_Selection) selectItem);
             } else if (selectItem instanceof _SelectionGroup) {
                 selectionList.addAll(((_SelectionGroup) selectItem).selectionList());
             } else {
