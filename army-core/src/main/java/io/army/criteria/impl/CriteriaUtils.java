@@ -159,42 +159,6 @@ abstract class CriteriaUtils {
         }
     }
 
-    static <T> T invokeSupplier(final @Nullable Supplier<T> supplier) {
-        if (supplier == null) {
-            throw ContextStack.clearStackAndNullPointer("Supplier is null");
-        }
-        try {
-
-            final T result;
-            result = supplier.get();
-            if (result == null) {
-                throw ContextStack.clearStackAndNullPointer("Supplier must return non-null.");
-            }
-            return result;
-        } catch (CriteriaException e) {
-            throw ContextStack.clearStackAndCause(e, e.getMessage());
-        } catch (Exception e) {
-            throw ContextStack.clearStackAnd(CriteriaException::new, e);
-        } catch (Error e) {
-            throw ContextStack.clearStackAndError(e);
-        }
-    }
-
-    static boolean invokeBooleanSupplier(final @Nullable BooleanSupplier supplier) {
-        if (supplier == null) {
-            throw ContextStack.clearStackAndNullPointer("Supplier is null");
-        }
-        try {
-            return supplier.getAsBoolean();
-        } catch (CriteriaException e) {
-            throw ContextStack.clearStackAndCause(e, e.getMessage());
-        } catch (Exception e) {
-            throw ContextStack.clearStackAnd(CriteriaException::new, e);
-        } catch (Error e) {
-            throw ContextStack.clearStackAndError(e);
-        }
-    }
-
     @Nullable
     static <T> T invokeIfSupplier(final @Nullable Supplier<T> supplier) {
         if (supplier == null) {
@@ -211,26 +175,6 @@ abstract class CriteriaUtils {
         }
     }
 
-
-    static <T, R> R invokeFunction(final @Nullable Function<T, R> function, final T data) {
-        try {
-            if (function == null) {
-                throw new NullPointerException("java.util.function.Function is null,couldn't be invoked");
-            }
-            final R result;
-            result = function.apply(data);
-            if (result == null) {
-                throw new NullPointerException("function must return non-null");
-            }
-            return result;
-        } catch (CriteriaException e) {
-            throw ContextStack.clearStackAndCause(e, e.getMessage());
-        } catch (Exception e) {
-            throw ContextStack.clearStackAnd(CriteriaException::new, e);
-        } catch (Error e) {
-            throw ContextStack.clearStackAndError(e);
-        }
-    }
 
     static List<_Expression> expressionList(final @Nullable CriteriaContext ctx, final boolean required,
                                             final Consumer<Consumer<Expression>> consumer) {

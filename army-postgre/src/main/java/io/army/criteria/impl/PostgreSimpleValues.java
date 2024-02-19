@@ -171,7 +171,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
 
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
-            return CriteriaUtils.invokeFunction(function, new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd, null));
+            return ClauseUtils.invokeFunction(function, new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
         @Override
@@ -207,7 +207,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, new SimpleSubValues<>(null, bracket.context, bracket::parensEnd, null));
+            return ClauseUtils.invokeFunction(function, new SimpleSubValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
         @Override

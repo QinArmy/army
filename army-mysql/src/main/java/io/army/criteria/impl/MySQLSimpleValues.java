@@ -142,7 +142,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
-            return CriteriaUtils.invokeFunction(function, new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd, null));
+            return ClauseUtils.invokeFunction(function, new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
         @Override
@@ -178,7 +178,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
-            return CriteriaUtils.invokeFunction(function, new SimpleSubValues<>(null, bracket.context, bracket::parensEnd, null));
+            return ClauseUtils.invokeFunction(function, new SimpleSubValues<>(null, bracket.context, bracket::parensEnd, null));
         }
 
 
@@ -341,7 +341,7 @@ abstract class MySQLSimpleValues<I extends Item>
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, new ValuesDispatcher<>(bracket, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new ValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override
@@ -386,7 +386,7 @@ abstract class MySQLSimpleValues<I extends Item>
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, new SubValuesDispatcher<>(bracket, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new SubValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override

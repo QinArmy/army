@@ -514,7 +514,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, bracket.context,
+            return ClauseUtils.invokeFunction(function, new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, bracket.context,
                     bracket::parensEnd, null)
             );
         }
@@ -570,7 +570,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
-            return CriteriaUtils.invokeFunction(function, StandardQueries.subQuery(this.context.dialect(StandardDialect.class),
+            return ClauseUtils.invokeFunction(function, StandardQueries.subQuery(this.context.dialect(StandardDialect.class),
                     bracket.context, bracket::parensEnd)
             );
         }
@@ -817,7 +817,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         @Override
         public _CteComma<I> as(Function<SelectSpec<_CteComma<I>>, _CteComma<I>> function) {
             final CriteriaContext context = this.comma.context;
-            return CriteriaUtils.invokeFunction(function, StandardQueries.subQuery(context.dialect(StandardDialect.class), context,
+            return ClauseUtils.invokeFunction(function, StandardQueries.subQuery(context.dialect(StandardDialect.class), context,
                     this::subQueryEnd)
             );
         }

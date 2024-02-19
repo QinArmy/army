@@ -25,7 +25,10 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 
 import javax.annotation.Nullable;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 /**
@@ -275,69 +278,88 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _CyclePathColumnClause<I extends Item> {
+    interface _CyclePathColumnClause {
 
-        I using(String cyclePathColumnName);
+        void using(String cyclePathColumnName);
 
-        I using(Supplier<String> supplier);
+        void using(Supplier<String> supplier);
+    }
+
+    interface _CycleToMarkValueSpec extends _CyclePathColumnClause {
+
+        /**
+         * @param wordDefault see {@link SQLs#DEFAULT}
+         */
+        _CyclePathColumnClause to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault);
+
+        _CyclePathColumnClause to(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+        _CyclePathColumnClause ifTo(Consumer<BiConsumer<Expression, Expression>> consumer);
 
     }
 
-    interface _CycleToMarkValueSpec<I extends Item> extends _CyclePathColumnClause<I> {
+    interface _SetCycleMarkColumnClause {
 
-        _CyclePathColumnClause<I> to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault);
+        _CycleToMarkValueSpec set(String cycleMarkColumnName);
 
-        _CyclePathColumnClause<I> to(Consumer<BiConsumer<Expression, Expression>> consumer);
-
-        _CyclePathColumnClause<I> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer);
+        _CycleToMarkValueSpec set(Supplier<String> supplier);
 
     }
 
-    interface _SetCycleMarkColumnClause<I extends Item> {
+    interface _CteCycleColumnNameSpace {
 
-        _CycleToMarkValueSpec<I> set(String cycleMarkColumnName);
+        _SetCycleMarkColumnClause space(String firstColumnName, String... rest);
 
-        _CycleToMarkValueSpec<I> set(Supplier<String> supplier);
 
-    }
+        _SetCycleMarkColumnClause space(Consumer<Consumer<String>> consumer);
 
-    interface _CteCycleClause<I extends Item> extends Item {
-
-        _SetCycleMarkColumnClause<I> cycle(String firstColumnName, String... rest);
-
-        _SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer);
-
-        _SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer);
-
+        _SetCycleMarkColumnClause ifSpace(Consumer<Consumer<String>> consumer);
 
     }
 
+    interface _CteCycleClause<I extends Item> {
 
-    interface _SetSearchSeqColumnClause<I extends Item> {
+        I cycle(Consumer<_CteCycleColumnNameSpace> consumer);
 
-        I set(String searchSeqColumnName);
-
-        I set(Supplier<String> supplier);
-
-    }
-
-    interface _SearchFirstByClause<I extends Item> {
-
-        _SetSearchSeqColumnClause<I> firstBy(String firstColumnName, String... rest);
-
-        _SetSearchSeqColumnClause<I> firstBy(Consumer<Consumer<String>> consumer);
+        I ifCycle(Consumer<_CteCycleColumnNameSpace> consumer);
 
     }
 
     interface _CteSearchClause<I extends Item> {
 
-        _SearchFirstByClause<I> searchBreadth();
+        I search(Consumer<_SearchBreadthDepthClause> consumer);
 
-        _SearchFirstByClause<I> searchDepth();
+        I ifSearch(Consumer<_SearchBreadthDepthClause> consumer);
+    }
 
-        _SearchFirstByClause<I> ifSearchBreadth(BooleanSupplier predicate);
+    interface _SetSearchSeqColumnClause {
 
-        _SearchFirstByClause<I> ifSearchDepth(BooleanSupplier predicate);
+        void set(String searchSeqColumnName);
+
+        void set(Supplier<String> supplier);
+
+    }
+
+
+    interface _SearchBreadthDepthClause {
+
+        _SetSearchSeqColumnClause breadthFirstBy(String firstColumnName, String... rest);
+
+        _SetSearchSeqColumnClause breadthFirstBy(Consumer<Consumer<String>> consumer);
+
+        _SetSearchSeqColumnClause depthFirstBy(String firstColumnName, String... rest);
+
+        _SetSearchSeqColumnClause depthFirstBy(Consumer<Consumer<String>> consumer);
+
+    }
+
+    interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_CteComma<I>>, _CteComma<I> {
+
+    }
+
+
+    interface _StaticCteSearchSpec<I extends Item> extends _CteSearchClause<_StaticCteCycleSpec<I>>, _StaticCteCycleSpec<I> {
+
 
     }
 
@@ -367,15 +389,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_CteComma<I>>, _CteComma<I> {
-
-    }
-
-    interface _StaticCteSearchSpec<I extends Item> extends _CteSearchClause<_StaticCteCycleSpec<I>>,
-            _StaticCteCycleSpec<I> {
-
-    }
-
 
     interface _StaticCteSelectSpec<I extends Item> extends PostgreQuery._PostgreSelectClause<I>,
             _DynamicParensRowSetClause<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
@@ -386,7 +399,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
-     *
      *
      * @since 0.6.0
      */
@@ -419,14 +431,16 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _DynamicCteCycleSpec extends _CteCycleClause<_CommaClause<PostgreCtes>>,
-            _CommaClause<PostgreCtes> {
+    interface _DynamicCteCycleSpec extends _CteCycleClause<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes> {
 
     }
+
 
     interface _DynamicCteSearchSpec extends _CteSearchClause<_DynamicCteCycleSpec>, _DynamicCteCycleSpec {
 
+
     }
+
 
     interface _QueryDynamicCteAsClause
             extends _PostgreDynamicCteAsClause<WithSpec<_DynamicCteSearchSpec>, _DynamicCteSearchSpec> {

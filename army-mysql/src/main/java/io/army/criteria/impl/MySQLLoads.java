@@ -392,7 +392,7 @@ abstract class MySQLLoads {
 
         @Override
         public MySQLLoadData._ColumnOrVarListSpec<I, T> ignore(Supplier<Long> supplier, SQLs.LinesWord word) {
-            return this.ignore(CriteriaUtils.invokeSupplier(supplier), word);
+            return this.ignore(ClauseUtils.invokeSupplier(supplier), word);
         }
 
         @Override
@@ -400,7 +400,7 @@ abstract class MySQLLoads {
             if (word != SQLs.LINES && word != SQLs.ROWS) {
                 throw CriteriaUtils.unknownWords(word);
             }
-            this.ignoreLine = CriteriaUtils.invokeSupplier(supplier);
+            this.ignoreLine = ClauseUtils.invokeSupplier(supplier);
             this.ignoreLineWord = (SQLWords) word;
             return this;
         }
@@ -445,7 +445,7 @@ abstract class MySQLLoads {
 
         @Override
         public PartitionClause<I, T> terminatedBy(Supplier<String> supplier) {
-            return this.terminatedBy(CriteriaUtils.invokeSupplier(supplier));
+            return this.terminatedBy(ClauseUtils.invokeSupplier(supplier));
         }
 
         @Override

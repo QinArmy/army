@@ -20,12 +20,9 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
-import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
-import io.army.dialect.postgre.PostgreDialect;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -986,7 +983,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
 
-            return function.apply(PostgreQueries.subQuery(bracket.context, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, PostgreQueries.subQuery(bracket.context, bracket::parensEnd));
         }
 
 
@@ -1044,11 +1041,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
         @Override
-        final Dialect statementDialect() {
-            return PostgreDialect.POSTGRE15;
-        }
-
-        @Override
         final void onEndQuery() {
             //no-op
         }
@@ -1092,11 +1084,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         private BatchBracketSelect(BracketSelect<?> select, List<?> paramList) {
             super(select, paramList);
-        }
-
-        @Override
-        Dialect statementDialect() {
-            return PostgreUtils.DIALECT;
         }
 
 
@@ -1340,7 +1327,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
                 throw CriteriaUtils.errorModifier(this.comma.context, modifier);
             }
             this.modifier = modifier;
-            return function.apply(new StaticCteComplexCommand<>(this.comma.context, this::subStmtEnd, this::queryEnd));
+            return ClauseUtils.invokeFunction(function, new StaticCteComplexCommand<>(this.comma.context, this::subStmtEnd, this::queryEnd));
         }
 
 
@@ -1367,116 +1354,97 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         private _StaticCteSearchSpec<I> queryEnd(final SubQuery query) {
             final _StaticCteSearchSpec<I> spec;
             if (this.comma.recursive && PostgreUtils.isUnionQuery(query)) {
-                spec = new StaticCteSearchSpec<>(this, query);
+                spec = new CteSearchCycleSpec<>(this, query);
             } else {
                 this.subStmtEnd(query);
-                spec = PostgreSupports.noOperationStaticCteSearchSpec(this.comma::comma, this.comma::space);
+                spec = new NonRecursiveCteSearchCycleSpec<>(this.comma);
             }
             return spec;
         }
 
-        private _CteComma<I> searchClauseEnd(final StaticCteSearchSpec<I> clause) {
-            final _PostgreCte._SearchClause searchClause;
-            searchClause = clause.hasSearchClause() ? clause : null;
-
+        private _CteComma<I> searchAndCycleClauseEnd(final CteSearchCycleSpec<I> clause) {
             final _Cte cte;
-            cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, clause.query,
-                    searchClause, clause.cycleSpec);
+            cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, clause.subQuery,
+                    clause.getSearchClause(), clause.getCycleClause());
             this.comma.context.onAddCte(cte);
             return this.comma;
         }
 
 
-    }//CteMultiCommandFunction
+    } // CteMultiCommandFunction
 
 
-    private static final class StaticCycleSpec<I extends Item>
-            extends PostgreSupports.PostgreCteCycleClause<_CteComma<I>>
-            implements PostgreQuery._StaticCteCycleSpec<I> {
+    private static final class CteSearchCycleSpec<I extends Item> extends PostgreSupports.PostgreCteSearchCycleSpec<
+            PostgreQuery._StaticCteCycleSpec<I>,
+            PostgreQuery._CteComma<I>>
+            implements PostgreQuery._StaticCteSearchSpec<I> {
 
-        private final StaticCteSearchSpec<I> searchSpec;
+        private final StaticCteAsClause<I> asClause;
 
-        private StaticCycleSpec(StaticCteSearchSpec<I> searchSpec) {
-            super(searchSpec.context);
-            this.searchSpec = searchSpec;
+
+        private CteSearchCycleSpec(StaticCteAsClause<I> asClause, SubQuery subQuery) {
+            super(subQuery);
+            this.asClause = asClause;
         }
 
+
         @Override
-        public _StaticCteParensSpec<I> comma(String name) {
-            return this.searchSpec.comma(name);
+        public PostgreQuery._StaticCteParensSpec<I> comma(final String name) {
+            return this.asClause.searchAndCycleClauseEnd(this)
+                    .comma(name);
         }
 
         @Override
         public I space() {
-            return this.searchSpec.space();
+            return this.asClause.searchAndCycleClauseEnd(this)
+                    .space();
         }
 
-    }//StaticCycleSpec
+
+    } // CteSearchCycleSpec
 
 
-    private static final class StaticCteSearchSpec<I extends Item> extends PostgreSupports.PostgreCteSearchSpec<
-            _StaticCteCycleSpec<I>>
+    private static final class NonRecursiveCteSearchCycleSpec<I extends Item>
             implements PostgreQuery._StaticCteSearchSpec<I> {
 
-        private final StaticCteAsClause<I> clause;
+        private final PostgreQuery._CteComma<I> comma;
 
-        private final SubQuery query;
-
-        private StaticCycleSpec<I> cycleSpec;
-
-        private StaticCteSearchSpec(StaticCteAsClause<I> clause, SubQuery query) {
-            super(clause.comma.context);
-            this.clause = clause;
-            this.query = query;
+        private NonRecursiveCteSearchCycleSpec(PostgreQuery._CteComma<I> comma) {
+            this.comma = comma;
         }
 
         @Override
-        public _SetCycleMarkColumnClause<_CteComma<I>> cycle(String firstColumnName, String... rest) {
-            if (this.cycleSpec != null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            final StaticCycleSpec<I> cycleSpec;
-            cycleSpec = new StaticCycleSpec<>(this);
-            this.cycleSpec = cycleSpec;
-            return cycleSpec.cycle(firstColumnName, rest);
+        public PostgreQuery._CteComma<I> cycle(Consumer<PostgreQuery._CteCycleColumnNameSpace> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
         }
 
         @Override
-        public _SetCycleMarkColumnClause<_CteComma<I>> cycle(Consumer<Consumer<String>> consumer) {
-            if (this.cycleSpec != null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            final StaticCycleSpec<I> cycleSpec;
-            cycleSpec = new StaticCycleSpec<>(this);
-            this.cycleSpec = cycleSpec;
-            return cycleSpec.cycle(consumer);
+        public PostgreQuery._CteComma<I> ifCycle(Consumer<PostgreQuery._CteCycleColumnNameSpace> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
         }
 
         @Override
-        public _SetCycleMarkColumnClause<_CteComma<I>> ifCycle(Consumer<Consumer<String>> consumer) {
-            if (this.cycleSpec != null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            final StaticCycleSpec<I> cycleSpec;
-            cycleSpec = new StaticCycleSpec<>(this);
-            cycleSpec.ifCycle(consumer);
+        public PostgreQuery._StaticCteCycleSpec<I> search(Consumer<PostgreQuery._SearchBreadthDepthClause> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
+        }
 
-            this.cycleSpec = cycleSpec.hasCycleClause() ? cycleSpec : null;
-            return cycleSpec;
+        @Override
+        public PostgreQuery._StaticCteCycleSpec<I> ifSearch(Consumer<PostgreQuery._SearchBreadthDepthClause> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
         }
 
         @Override
         public PostgreQuery._StaticCteParensSpec<I> comma(String name) {
-            return this.clause.searchClauseEnd(this).comma(name);
+            return this.comma.comma(name);
         }
 
         @Override
         public I space() {
-            return this.clause.searchClauseEnd(this).space();
+            return this.comma.space();
         }
 
 
-    }//StaticCteSearchSpec
+    } // NonRecursiveCteSearchCycleSpec
 
 
     private static class StaticCteSubQuery<I extends Item>
@@ -1718,10 +1686,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             return this.lockBlockList;
         }
 
-        @Override
-        Dialect statementDialect() {
-            return PostgreUtils.DIALECT;
-        }
 
 
     }//PostgreBatchSimpleQuery

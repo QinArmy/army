@@ -9,7 +9,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class ClauseUtils {
 
@@ -137,6 +140,62 @@ abstract class ClauseUtils {
 
         setter.accept(expList);
         return expList;
+    }
+
+    static <T> T invokeSupplier(final @Nullable Supplier<T> supplier) {
+        if (supplier == null) {
+            throw ContextStack.clearStackAndNullPointer("Supplier is null");
+        }
+        try {
+
+            final T result;
+            result = supplier.get();
+            if (result == null) {
+                throw ContextStack.clearStackAndNullPointer("Supplier must return non-null.");
+            }
+            return result;
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
+    static boolean invokeBooleanSupplier(final @Nullable BooleanSupplier supplier) {
+        if (supplier == null) {
+            throw ContextStack.clearStackAndNullPointer("Supplier is null");
+        }
+        try {
+            return supplier.getAsBoolean();
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
+    static <T, R> R invokeFunction(final @Nullable Function<T, R> function, final T data) {
+        try {
+            if (function == null) {
+                throw new NullPointerException("java.util.function.Function is null,couldn't be invoked");
+            }
+            final R result;
+            result = function.apply(data);
+            if (result == null) {
+                throw new NullPointerException("function must return non-null");
+            }
+            return result;
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
     }
 
 

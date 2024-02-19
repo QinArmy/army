@@ -1035,7 +1035,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> ifOverridingSystemValue(BooleanSupplier supplier) {
-            if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+            if (ClauseUtils.invokeBooleanSupplier(supplier)) {
                 this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
             } else {
                 this.overridingMode = null;
@@ -1045,7 +1045,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> ifOverridingUserValue(BooleanSupplier supplier) {
-            if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+            if (ClauseUtils.invokeBooleanSupplier(supplier)) {
                 this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
             } else {
                 this.overridingMode = null;

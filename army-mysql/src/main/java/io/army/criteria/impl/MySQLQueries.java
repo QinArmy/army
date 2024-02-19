@@ -883,7 +883,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, new SimpleSelect<>(null, bracket.context, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new SimpleSelect<>(null, bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -922,7 +922,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, MySQLQueries.subQuery(bracket.context, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, MySQLQueries.subQuery(bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -1263,7 +1263,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, new SelectDispatcher<>(bracket, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new SelectDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override
@@ -1311,7 +1311,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
 
-            return CriteriaUtils.invokeFunction(function, new SubQueryDispatcher<>(bracket, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new SubQueryDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override

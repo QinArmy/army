@@ -96,7 +96,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
     @Override
     public PostgreCursor._ScrollSpec ifInsensitive(BooleanSupplier supplier) {
-        if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+        if (ClauseUtils.invokeBooleanSupplier(supplier)) {
             this.sensitive = Boolean.FALSE;
         } else {
             this.sensitive = null;
@@ -106,7 +106,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
     @Override
     public PostgreCursor._ScrollSpec ifAsensitive(BooleanSupplier supplier) {
-        if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+        if (ClauseUtils.invokeBooleanSupplier(supplier)) {
             this.sensitive = Boolean.TRUE;
         } else {
             this.sensitive = null;
@@ -129,7 +129,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
     @Override
     public PostgreCursor._CursorClause ifScroll(BooleanSupplier supplier) {
-        if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+        if (ClauseUtils.invokeBooleanSupplier(supplier)) {
             this.scroll = Boolean.TRUE;
         } else {
             this.scroll = null;
@@ -139,7 +139,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
     @Override
     public PostgreCursor._CursorClause ifNoScroll(BooleanSupplier supplier) {
-        if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+        if (ClauseUtils.invokeBooleanSupplier(supplier)) {
             this.scroll = Boolean.FALSE;
         } else {
             this.scroll = null;
@@ -167,7 +167,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
     @Override
     public PostgreCursor._ForQueryClause ifWithHold(BooleanSupplier supplier) {
-        if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+        if (ClauseUtils.invokeBooleanSupplier(supplier)) {
             this.hold = Boolean.TRUE;
         } else {
             this.hold = null;
@@ -177,7 +177,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
     @Override
     public PostgreCursor._ForQueryClause ifWithoutHold(BooleanSupplier supplier) {
-        if (CriteriaUtils.invokeBooleanSupplier(supplier)) {
+        if (ClauseUtils.invokeBooleanSupplier(supplier)) {
             this.hold = Boolean.FALSE;
         } else {
             this.hold = null;

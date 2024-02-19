@@ -194,7 +194,7 @@ abstract class PostgreMerges {
 
         @Override
         public Statement._AsClause<Statement._OnClause<PostgreMerge._MergeWhenClause<T, I>>> using(Supplier<SubQuery> supplier) {
-            return this.using(CriteriaUtils.invokeSupplier(supplier));
+            return this.using(ClauseUtils.invokeSupplier(supplier));
         }
 
         @Override
@@ -308,7 +308,7 @@ abstract class PostgreMerges {
             if (clause == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            CriteriaUtils.invokeFunction(function, this);
+            ClauseUtils.invokeFunction(function, this);
 
             final MergeUpdateSetClause<T> updateClause = this.updateClause;
 
@@ -432,7 +432,7 @@ abstract class PostgreMerges {
             if (usingClause == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            CriteriaUtils.invokeFunction(function, this);
+            ClauseUtils.invokeFunction(function, this);
 
             final MergeInsertComplexValues<T, I> insertClause;
 
@@ -632,7 +632,7 @@ abstract class PostgreMerges {
 
         @Override
         public PostgreMerge._ValuesDefaultSpec<T> ifOverridingSystemValue(BooleanSupplier predicate) {
-            if (CriteriaUtils.invokeBooleanSupplier(predicate)) {
+            if (ClauseUtils.invokeBooleanSupplier(predicate)) {
                 this.overridingMode = PostgreInserts.OverridingMode.OVERRIDING_SYSTEM_VALUE;
             } else {
                 this.overridingMode = null;
@@ -642,7 +642,7 @@ abstract class PostgreMerges {
 
         @Override
         public PostgreMerge._ValuesDefaultSpec<T> ifOverridingUserValue(BooleanSupplier predicate) {
-            if (CriteriaUtils.invokeBooleanSupplier(predicate)) {
+            if (ClauseUtils.invokeBooleanSupplier(predicate)) {
                 this.overridingMode = PostgreInserts.OverridingMode.OVERRIDING_USER_VALUE;
             } else {
                 this.overridingMode = null;

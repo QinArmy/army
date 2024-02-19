@@ -26,6 +26,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.mapping.BooleanType;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.meta.TableMeta;
@@ -62,11 +63,6 @@ abstract class PostgreSupports extends CriteriaSupports {
         return new PostgreWindowImpl(context, existingWindowName);
     }
 
-
-    static <I extends Item> PostgreQuery._StaticCteSearchSpec<I> noOperationStaticCteSearchSpec(
-            Function<String, PostgreQuery._StaticCteParensSpec<I>> cteFunction, Supplier<I> endSupplier) {
-        return new NoOperationStaticCteSearchSpec<>(cteFunction, endSupplier);
-    }
 
     static SimpleDmlStatement closeCursor(String name) {
         if (!_StringUtils.hasText(name)) {
@@ -260,37 +256,462 @@ abstract class PostgreSupports extends CriteriaSupports {
             return this.seed;
         }
 
-    }//PostgreNoOnTableBlock
+    } // PostgreNoOnTableBlock
 
 
-    private enum CteSearchOption implements SQLWords {
+    static final class CteSearchClause implements PostgreQuery._SearchBreadthDepthClause,
+            PostgreQuery._SetSearchSeqColumnClause,
+            _PostgreCte._SearchClause {
 
-        BREADTH(" BREADTH"),
-        DEPTH(" DEPTH");
+        private final boolean required;
 
-        private final String spaceWord;
+        private Boolean breadth;
 
-        CteSearchOption(String spaceWord) {
-            this.spaceWord = spaceWord;
+        private List<String> columnList;
+
+        private String searchSeqColumnName;
+
+        private Selection searchSeqSelction;
+
+        CteSearchClause(boolean required) {
+            this.required = required;
         }
 
         @Override
-        public final String spaceRender() {
-            return this.spaceWord;
+        public PostgreQuery._SetSearchSeqColumnClause breadthFirstBy(String firstColumnName, String... rest) {
+            this.columnList = ArrayUtils.unmodifiableListOf(firstColumnName, rest);
+            this.breadth = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._SetSearchSeqColumnClause breadthFirstBy(Consumer<Consumer<String>> consumer) {
+            this.columnList = ClauseUtils.invokingDynamicConsumer(true, true, consumer);
+            this.breadth = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._SetSearchSeqColumnClause depthFirstBy(String firstColumnName, String... rest) {
+            this.columnList = ArrayUtils.unmodifiableListOf(firstColumnName, rest);
+            this.breadth = Boolean.FALSE;
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._SetSearchSeqColumnClause depthFirstBy(Consumer<Consumer<String>> consumer) {
+            this.columnList = ClauseUtils.invokingDynamicConsumer(true, true, consumer);
+            this.breadth = Boolean.FALSE;
+            return this;
+        }
+
+        @Override
+        public void set(final @Nullable String searchSeqColumnName) {
+            if (searchSeqColumnName == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.searchSeqColumnName = searchSeqColumnName;
+        }
+
+        @Override
+        public void set(Supplier<String> supplier) {
+            set(ClauseUtils.invokeSupplier(supplier));
         }
 
 
         @Override
-        public final String toString() {
-            return _StringUtils.builder()
-                    .append(CteSearchOption.class.getSimpleName())
-                    .append(_Constant.PERIOD)
-                    .append(this.name())
-                    .toString();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final Boolean breadth = this.breadth;
+            if (breadth == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            sqlBuilder.append(" SEARCH ");
+            if (breadth) {
+                sqlBuilder.append("BREADTH");
+            } else {
+                sqlBuilder.append("DEPTH");
+            }
+            sqlBuilder.append(" FIRST BY ");
+
+            final List<String> columnList = this.columnList;
+            final int columnSize = columnList.size();
+
+            final DialectParser parser = context.parser();
+            for (int i = 0; i < columnSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                }
+                parser.identifier(columnList.get(i), sqlBuilder);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
+            parser.identifier(this.searchSeqColumnName, sqlBuilder);
+        }
+
+        @Override
+        public Selection searchSeqSelection() {
+            final Selection s = this.searchSeqSelction;
+            if (s == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            return s;
         }
 
 
-    }//CteSearchOption
+        /**
+         * @return true exists clause
+         */
+        boolean endClause() {
+            final boolean optionIsNull = this.breadth == null;
+
+            final String m = "You don't finish SEARCH clause";
+            if (this.required) {
+                if (optionIsNull || this.columnList == null || this.searchSeqColumnName == null) {
+                    throw ContextStack.clearStackAndCriteriaError(m);
+                }
+            } else if (optionIsNull ^ (this.columnList == null) || optionIsNull ^ (this.searchSeqColumnName == null)) {
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+
+            if (!optionIsNull) {
+                this.searchSeqSelction = ArmySelections.forName(this.searchSeqColumnName, LongType.INSTANCE); // TODO right ?
+            }
+            return !optionIsNull;
+
+        }
+
+
+    } // CteSearchClause
+
+
+    static final class CteCycleClause implements PostgreQuery._CteCycleColumnNameSpace,
+            PostgreQuery._SetCycleMarkColumnClause,
+            PostgreQuery._CycleToMarkValueSpec,
+            PostgreQuery._CyclePathColumnClause,
+            _PostgreCte._CycleClause {
+
+        private final boolean required;
+
+        private List<String> columnList;
+
+        private String cycleMarkColumnName;
+
+        private ArmyExpression cycleMarkValue;
+
+        private ArmyExpression cycleMarkDefault;
+
+        private String cyclePathColumnName;
+
+
+        private Selection cycleMarkSelecion;
+
+        private Selection cyclePathSelection;
+
+        CteCycleClause(boolean required) {
+            this.required = required;
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause space(String firstColumnName, String... rest) {
+            this.columnList = ArrayUtils.unmodifiableListOf(firstColumnName, rest);
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause space(Consumer<Consumer<String>> consumer) {
+            this.columnList = ClauseUtils.invokingDynamicConsumer(true, true, consumer);
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause ifSpace(Consumer<Consumer<String>> consumer) {
+            this.columnList = ClauseUtils.invokingDynamicConsumer(false, true, consumer);
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._CycleToMarkValueSpec set(final @Nullable String cycleMarkColumnName) {
+            if (cycleMarkColumnName == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.cycleMarkColumnName = cycleMarkColumnName;
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._CycleToMarkValueSpec set(Supplier<String> supplier) {
+            return set(ClauseUtils.invokeSupplier(supplier));
+        }
+
+        @Override
+        public PostgreQuery._CyclePathColumnClause to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault) {
+
+            acceptMarkValueAndDefault(cycleMarkValue, cycleMarkDefault);
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._CyclePathColumnClause to(Consumer<BiConsumer<Expression, Expression>> consumer) {
+            final BiConsumer<Expression, Expression> func = this::acceptMarkValueAndDefault;
+            CriteriaUtils.invokeConsumer(func, consumer);
+            if (this.cycleMarkValue == null) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._CyclePathColumnClause ifTo(Consumer<BiConsumer<Expression, Expression>> consumer) {
+            final BiConsumer<Expression, Expression> func = this::acceptMarkValueAndDefault;
+            CriteriaUtils.invokeConsumer(func, consumer);
+            return this;
+        }
+
+        @Override
+        public void using(final @Nullable String cyclePathColumnName) {
+            if (cyclePathColumnName == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.cyclePathColumnName = cyclePathColumnName;
+        }
+
+        @Override
+        public void using(Supplier<String> supplier) {
+            using(ClauseUtils.invokeSupplier(supplier));
+        }
+
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<String> columnList = this.columnList;
+            final int columnSize;
+            if (columnList == null || (columnSize = columnList.size()) == 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+
+            final DialectParser parser = context.parser();
+
+            sqlBuilder.append(" CYCLE ");
+            for (int i = 0; i < columnSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                }
+                parser.identifier(columnList.get(i), sqlBuilder);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
+            parser.identifier(this.cycleMarkColumnName, sqlBuilder);
+
+            final ArmyExpression cycleMarkValue = this.cycleMarkValue, cycleMarkDefault = this.cycleMarkDefault;
+            if (cycleMarkValue != null) {
+                sqlBuilder.append(" TO");
+                cycleMarkValue.appendSql(sqlBuilder, context);
+                sqlBuilder.append(_Constant.SPACE_DEFAULT);
+                assert cycleMarkDefault != null;
+                cycleMarkDefault.appendSql(sqlBuilder, context);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_USING)
+                    .append(_Constant.SPACE);
+            parser.identifier(this.cyclePathColumnName, sqlBuilder);
+
+        }
+
+        @Override
+        public Selection cycleMarkSelection() {
+            final Selection s = this.cycleMarkSelecion;
+            if (s == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            return s;
+        }
+
+        @Override
+        public Selection cyclePathSelection() {
+            final Selection s = this.cyclePathSelection;
+            if (s == null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            return s;
+        }
+
+        private void acceptMarkValueAndDefault(@Nullable Expression cycleMarkValue, @Nullable Expression cycleMarkDefault) {
+            if (cycleMarkValue == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (cycleMarkDefault == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.cycleMarkValue = (ArmyExpression) cycleMarkValue;
+            this.cycleMarkDefault = (ArmyExpression) cycleMarkDefault;
+        }
+
+        /**
+         * @return true exists clause
+         */
+        boolean endClause() {
+            final boolean columnListIsNull = this.columnList == null;
+            final String m = "You don't finish CYCLE clause";
+            if (this.required) {
+                if (columnListIsNull || this.cycleMarkColumnName == null || this.cyclePathColumnName == null) {
+                    throw ContextStack.clearStackAndNullPointer(m);
+                }
+            } else if (columnListIsNull ^ (this.cycleMarkColumnName == null)
+                    || columnListIsNull ^ (this.cyclePathColumnName == null)) {
+                throw ContextStack.clearStackAndNullPointer(m);
+            }
+
+            if (!columnListIsNull) {
+                final Expression cycleMarkValue = this.cycleMarkValue;
+                if (cycleMarkValue == null) {
+                    this.cycleMarkSelecion = ArmySelections.forName(this.cycleMarkColumnName, BooleanType.INSTANCE);
+                } else {
+                    this.cycleMarkSelecion = ArmySelections.forName(this.cycleMarkColumnName, cycleMarkValue.typeMeta().mappingType()); //TODO optimizing me
+                }
+                this.cyclePathSelection = ArmySelections.forName(this.cyclePathColumnName, StringType.INSTANCE); // TODO right ?
+
+            }
+            return !columnListIsNull;
+        }
+
+
+    } // CteCycleClause
+
+
+    @SuppressWarnings("unchecked")
+    static abstract class PostgreCteSearchCycleSpec<T extends Item, U extends Item>
+            implements PostgreQuery._CteSearchClause<T>, PostgreQuery._CteCycleClause<U> {
+
+        final SubQuery subQuery;
+
+        private PostgreSupports.CteSearchClause searchClause;
+
+        private PostgreSupports.CteCycleClause cycleClause;
+
+        PostgreCteSearchCycleSpec(SubQuery subQuery) {
+            this.subQuery = subQuery;
+        }
+
+        @Override
+        public final T search(Consumer<PostgreQuery._SearchBreadthDepthClause> consumer) {
+            if (this.searchClause != null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            final PostgreSupports.CteSearchClause searchClause = new PostgreSupports.CteSearchClause(true);
+            CriteriaUtils.invokeConsumer(searchClause, consumer);
+            searchClause.endClause();
+            this.searchClause = searchClause;
+            return (T) this;
+        }
+
+        @Override
+        public final T ifSearch(Consumer<PostgreQuery._SearchBreadthDepthClause> consumer) {
+            if (this.searchClause != null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            final PostgreSupports.CteSearchClause searchClause = new PostgreSupports.CteSearchClause(false);
+            CriteriaUtils.invokeConsumer(searchClause, consumer);
+            if (searchClause.endClause()) {
+                this.searchClause = searchClause;
+            }
+            return (T) this;
+        }
+
+        @Override
+        public final U cycle(Consumer<PostgreQuery._CteCycleColumnNameSpace> consumer) {
+            if (this.cycleClause != null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            final PostgreSupports.CteCycleClause searchClause = new PostgreSupports.CteCycleClause(true);
+            CriteriaUtils.invokeConsumer(searchClause, consumer);
+            searchClause.endClause();
+            this.cycleClause = searchClause;
+            return (U) this;
+        }
+
+        @Override
+        public final U ifCycle(Consumer<PostgreQuery._CteCycleColumnNameSpace> consumer) {
+            if (this.cycleClause != null) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            final PostgreSupports.CteCycleClause searchClause = new PostgreSupports.CteCycleClause(false);
+            CriteriaUtils.invokeConsumer(searchClause, consumer);
+            if (searchClause.endClause()) {
+                this.cycleClause = searchClause;
+            }
+            return (U) this;
+        }
+
+
+        @Nullable
+        final _PostgreCte._SearchClause getSearchClause() {
+            return this.searchClause;
+        }
+
+        @Nullable
+        final _PostgreCte._CycleClause getCycleClause() {
+            return this.cycleClause;
+        }
+
+
+    } // PostgreCteSearchCycleSpec
+
+
+    private static final class DynamicCteSearchSpec extends PostgreCteSearchCycleSpec<
+            PostgreQuery._DynamicCteCycleSpec,
+            Statement._CommaClause<PostgreCtes>>
+            implements PostgreQuery._DynamicCteSearchSpec {
+
+        private final DynamicQueryParensClause asClause;
+
+        private DynamicCteSearchSpec(DynamicQueryParensClause asClause, SubQuery subQuery) {
+            super(subQuery);
+            this.asClause = asClause;
+        }
+
+        @Override
+        public PostgreCtes comma() {
+            return asClause.searchClauseEnd(this);
+        }
+
+
+    } // DynamicCteSearchSpec
+
+
+    private static final class NonRecursiveDynamicCteSearchSpec implements PostgreQuery._DynamicCteSearchSpec {
+
+        private final PostgreCtes cteBuilder;
+
+        private NonRecursiveDynamicCteSearchSpec(PostgreCtes cteBuilder) {
+            this.cteBuilder = cteBuilder;
+        }
+
+        @Override
+        public PostgreQuery._DynamicCteCycleSpec search(Consumer<PostgreQuery._SearchBreadthDepthClause> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
+        }
+
+        @Override
+        public PostgreQuery._DynamicCteCycleSpec ifSearch(Consumer<PostgreQuery._SearchBreadthDepthClause> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
+        }
+
+        @Override
+        public Statement._CommaClause<PostgreCtes> cycle(Consumer<PostgreQuery._CteCycleColumnNameSpace> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
+        }
+
+        @Override
+        public Statement._CommaClause<PostgreCtes> ifCycle(Consumer<PostgreQuery._CteCycleColumnNameSpace> consumer) {
+            throw PostgreUtils.nonRecursiveWithClause();
+        }
+
+
+        @Override
+        public PostgreCtes comma() {
+            return this.cteBuilder;
+        }
+
+
+    } // NonRecursiveDynamicCteSearchSpec
 
 
     static final class PostgreCte implements _PostgreCte {
@@ -394,627 +815,6 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
     }//PostgreCte
-
-
-    private static abstract class NoActionCteSearchSpec<SR extends Item, CR extends Item>
-            implements PostgreQuery._CteSearchClause<SR>,
-            PostgreQuery._SearchFirstByClause<SR>,
-            PostgreQuery._CteCycleClause<CR>,
-            PostgreQuery._CycleToMarkValueSpec<CR>,
-            PostgreQuery._CyclePathColumnClause<CR> {
-
-        @Override
-        public final CR using(String cyclePathColumnName) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final CR using(Supplier<String> supplier) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<CR> to(Expression cycleMarkValue, SQLs.WordDefault wordDefault,
-                                                                Expression cycleMarkDefault) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<CR> to(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<CR> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<CR> cycle(String firstColumnName, String... rest) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<CR> cycle(Consumer<Consumer<String>> consumer) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<CR> ifCycle(Consumer<Consumer<String>> consumer) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(String firstColumnName, String... rest) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(Consumer<Consumer<String>> consumer) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> searchBreadth() {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> searchDepth() {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> ifSearchBreadth(BooleanSupplier predicate) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> ifSearchDepth(BooleanSupplier predicate) {
-            throw NoOperationStaticCteSearchSpec.errorOperation();
-        }
-
-    }//NoActionCteSearchSpec
-
-
-    private static final class NoOperationStaticCteSearchSpec<I extends Item> extends NoActionCteSearchSpec<
-            PostgreQuery._StaticCteCycleSpec<I>,
-            PostgreQuery._CteComma<I>>
-            implements PostgreQuery._StaticCteSearchSpec<I>,
-            PostgreQuery._SetSearchSeqColumnClause<PostgreQuery._StaticCteCycleSpec<I>>,
-            PostgreQuery._SetCycleMarkColumnClause<PostgreQuery._CteComma<I>> {
-
-        private final Function<String, PostgreQuery._StaticCteParensSpec<I>> cteFunction;
-
-        private final Supplier<I> endSupplier;
-
-
-        private NoOperationStaticCteSearchSpec(Function<String, PostgreQuery._StaticCteParensSpec<I>> cteFunction,
-                                               Supplier<I> endSupplier) {
-            this.cteFunction = cteFunction;
-            this.endSupplier = endSupplier;
-        }
-
-
-        @Override
-        public PostgreQuery._StaticCteParensSpec<I> comma(String name) {
-            return this.cteFunction.apply(name);
-        }
-
-        @Override
-        public I space() {
-            return this.endSupplier.get();
-        }
-
-        @Override
-        public NoOperationStaticCteSearchSpec<I> set(String searchSeqColumnName) {
-            throw errorOperation();
-        }
-
-        @Override
-        public NoOperationStaticCteSearchSpec<I> set(Supplier<String> supplier) {
-            throw errorOperation();
-        }
-
-        private static CriteriaException errorOperation() {
-            return ContextStack.clearStackAndCriteriaError(errorMessage());
-        }
-
-        private static String errorMessage() {
-            return "Not recursive union query couldn't use SEARCH or CYCLE clause.";
-        }
-
-    } //NoOperationStaticCteSearchSpec
-
-
-    @SuppressWarnings("unchecked")
-    static abstract class PostgreCteCycleClause<I extends Item>
-            implements PostgreQuery._CteCycleClause<I>,
-            PostgreQuery._SetCycleMarkColumnClause<I>,
-            PostgreQuery._CycleToMarkValueSpec<I>,
-            PostgreQuery._CyclePathColumnClause<I>,
-            _PostgreCte._CycleClause {
-
-        private final CriteriaContext context;
-
-        private List<String> cycleColumnList;
-
-        private String cycleMarkColumnName;
-
-        private ArmyExpression cycleMarkValue;
-
-        private ArmyExpression cycleMarkDefault;
-
-        private String cyclePathColumnName;
-
-        PostgreCteCycleClause(CriteriaContext context) {
-            this.context = context;
-        }
-
-        @Override
-        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            final List<String> cycleColumnList = this.cycleColumnList;
-            if (cycleColumnList == null) {
-                return;
-            }
-            final int columnSize = cycleColumnList.size();
-            assert columnSize > 0;
-
-            sqlBuilder.append(" CYCLE ");
-
-            final DialectParser parser;
-            parser = context.parser();
-
-            for (int i = 0; i < columnSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-                }
-                parser.identifier(cycleColumnList.get(i), sqlBuilder);
-            }
-
-            final String cycleMarkColumnName = this.cycleMarkColumnName;
-            if (cycleMarkColumnName == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
-            parser.identifier(cycleMarkColumnName, sqlBuilder);
-
-            final ArmyExpression cycleMarkValue = this.cycleMarkValue, cycleMarkDefault = this.cycleMarkDefault;
-            if (cycleMarkValue != null) {
-                assert cycleMarkDefault != null;
-                sqlBuilder.append(" TO");
-                cycleMarkValue.appendSql(sqlBuilder, context);
-                sqlBuilder.append(_Constant.SPACE_DEFAULT);
-                cycleMarkDefault.appendSql(sqlBuilder, context);
-            }
-
-            final String cyclePathColumnName = this.cyclePathColumnName;
-            if (cyclePathColumnName == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            sqlBuilder.append(_Constant.SPACE_USING);
-            parser.identifier(cyclePathColumnName, sqlBuilder);
-
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<I> cycle(String firstColumnName, String... rest) {
-            this.cycleColumnList = ArrayUtils.unmodifiableListOf(firstColumnName, rest);
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer) {
-            this.cycleColumnList = CriteriaUtils.stringList(this.context, true, consumer);
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer) {
-            final List<String> list;
-            list = CriteriaUtils.stringList(this.context, false, consumer);
-            this.cycleColumnList = list.size() > 0 ? list : null;
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._CycleToMarkValueSpec<I> set(final @Nullable String cycleMarkColumnName) {
-            if (this.cycleColumnList == null) {
-                this.cycleMarkColumnName = null;
-            } else if (cycleMarkColumnName == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else {
-                this.cycleMarkColumnName = cycleMarkColumnName;
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._CycleToMarkValueSpec<I> set(Supplier<String> supplier) {
-
-            if (this.cycleColumnList == null) {
-                this.cycleMarkColumnName = null;
-            } else {
-                final String columnName;
-                columnName = supplier.get();
-                if (columnName == null) {
-                    throw ContextStack.nullPointer(this.context);
-                }
-                this.cycleMarkColumnName = columnName;
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<I> to(final @Nullable Expression cycleMarkValue,
-                                                               SQLs.WordDefault wordDefault,
-                                                               final @Nullable Expression cycleMarkDefault) {
-            if (this.cycleColumnList == null) {
-                this.cycleMarkValue = null;
-                this.cycleMarkDefault = null;
-            } else {
-                this.cycleTo(cycleMarkValue, cycleMarkDefault);
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<I> to(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            if (this.cycleColumnList == null) {
-                this.cycleMarkValue = null;
-                this.cycleMarkDefault = null;
-            } else {
-                consumer.accept(this::cycleTo);
-                if (this.cycleMarkValue == null || this.cycleMarkDefault == null) {
-                    throw ContextStack.criteriaError(this.context, "You don't add TO clause");
-                }
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<I> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            if (this.cycleColumnList == null) {
-                this.cycleMarkValue = null;
-                this.cycleMarkDefault = null;
-            } else {
-                consumer.accept(this::cycleTo);
-            }
-            return this;
-        }
-
-
-        @Override
-        public final I using(final @Nullable String cyclePathColumnName) {
-            if (this.cycleColumnList == null) {
-                this.cyclePathColumnName = null;
-            } else if (cyclePathColumnName == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else {
-                this.cyclePathColumnName = cyclePathColumnName;
-            }
-            return (I) this;
-        }
-
-        @Override
-        public final I using(Supplier<String> supplier) {
-            if (this.cycleColumnList == null) {
-                this.cyclePathColumnName = null;
-            } else {
-                this.using(supplier.get());
-            }
-            return (I) this;
-        }
-
-        @Override
-        public final Selection cycleMarkSelection() {
-            final String s = this.cycleMarkColumnName;
-            assert s != null;
-            return ArmySelections.forName(s, BooleanType.INSTANCE);// TODO optimizing
-        }
-
-        @Override
-        public final Selection cyclePathSelection() {
-            final String s = this.cyclePathColumnName;
-            assert s != null;
-            return ArmySelections.forName(s, StringType.INSTANCE);// TODO optimizing
-        }
-
-        final boolean hasCycleClause() {
-            return this.cycleColumnList != null;
-        }
-
-        private void cycleTo(final @Nullable Expression cycleMarkValue,
-                             final @Nullable Expression cycleMarkDefault) {
-            if (cycleMarkValue == null || cycleMarkDefault == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else {
-                this.cycleMarkValue = (ArmyExpression) cycleMarkValue;
-                this.cycleMarkDefault = (ArmyExpression) cycleMarkDefault;
-            }
-        }
-
-    }// PostgreCteCycleClause
-
-
-    @SuppressWarnings("unchecked")
-    static abstract class PostgreCteSearchSpec<SR extends Item>
-            implements PostgreQuery._CteSearchClause<SR>,
-            PostgreQuery._SearchFirstByClause<SR>,
-            PostgreQuery._SetSearchSeqColumnClause<SR>,
-            _PostgreCte._SearchClause {
-
-        final CriteriaContext context;
-
-        private CteSearchOption searchOption;
-
-        private List<String> firstByColumnList;
-
-        private String searchSeqColumnName;
-
-        PostgreCteSearchSpec(CriteriaContext context) {
-            this.context = context;
-        }
-
-        @Override
-        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            final CteSearchOption searchOption = this.searchOption;
-            if (searchOption == null) {
-                return;
-            }
-
-            final DialectParser parser;
-            parser = context.parser();
-
-            sqlBuilder.append(searchOption.spaceWord);
-            final List<String> firstByColumnList = this.firstByColumnList;
-            if (firstByColumnList == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            final int columnSize = firstByColumnList.size();
-            assert columnSize > 0;
-            sqlBuilder.append(" FIRST BY ");
-            for (int i = 0; i < columnSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-                }
-                parser.identifier(firstByColumnList.get(i), sqlBuilder);
-            }
-            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
-            final String searchSeqColumnName = this.searchSeqColumnName;
-            if (searchSeqColumnName == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            parser.identifier(searchSeqColumnName, sqlBuilder);
-
-        }
-
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> searchBreadth() {
-            this.searchOption = CteSearchOption.BREADTH;
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> searchDepth() {
-            this.searchOption = CteSearchOption.DEPTH;
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> ifSearchBreadth(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.searchOption = CteSearchOption.BREADTH;
-            } else {
-                this.searchOption = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._SearchFirstByClause<SR> ifSearchDepth(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.searchOption = CteSearchOption.DEPTH;
-            } else {
-                this.searchOption = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(String firstColumnName, String... rest) {
-            if (this.searchOption == null) {
-                this.firstByColumnList = null;
-            } else {
-                this.firstByColumnList = ArrayUtils.unmodifiableListOf(firstColumnName, rest);
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(Consumer<Consumer<String>> consumer) {
-            if (this.searchOption == null) {
-                this.firstByColumnList = null;
-            } else {
-                this.firstByColumnList = CriteriaUtils.stringList(this.context, true, consumer);
-            }
-            return this;
-        }
-
-        @Override
-        public final SR set(final @Nullable String searchSeqColumnName) {
-            if (this.searchOption == null) {
-                this.searchSeqColumnName = null;
-            } else if (searchSeqColumnName == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else {
-                this.searchSeqColumnName = searchSeqColumnName;
-            }
-            return (SR) this;
-        }
-
-        @Override
-        public final SR set(Supplier<String> supplier) {
-            final String columnName;
-            if (this.searchOption == null) {
-                this.searchSeqColumnName = null;
-            } else if ((columnName = supplier.get()) == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else {
-                this.searchSeqColumnName = columnName;
-            }
-            return (SR) this;
-        }
-
-
-        @Override
-        public final Selection searchSeqSelection() {
-            final String s = this.searchSeqColumnName;
-            assert s != null;
-            return ArmySelections.forName(s, StringType.INSTANCE);//TODO optimizing
-        }
-
-        final boolean hasSearchClause() {
-            return this.searchOption != null;
-        }
-
-
-    }//PostgreCteSearchSpec
-
-
-    private static final class NonOperationDynamicCteSearchSpec implements PostgreQuery._DynamicCteSearchSpec {
-
-        private final PostgreCteBuilder builder;
-
-        private NonOperationDynamicCteSearchSpec(PostgreCteBuilder builder) {
-            this.builder = builder;
-        }
-
-        @Override
-        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(String firstColumnName, String... rest) {
-            throw errorOperation();
-        }
-
-        @Override
-        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(Consumer<Consumer<String>> consumer) {
-            throw errorOperation();
-        }
-
-        @Override
-        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> ifCycle(Consumer<Consumer<String>> consumer) {
-            throw errorOperation();
-        }
-
-        @Override
-        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> searchBreadth() {
-            throw errorOperation();
-        }
-
-        @Override
-        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> searchDepth() {
-            throw errorOperation();
-        }
-
-        @Override
-        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> ifSearchBreadth(BooleanSupplier predicate) {
-            throw errorOperation();
-        }
-
-        @Override
-        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> ifSearchDepth(BooleanSupplier predicate) {
-            throw errorOperation();
-        }
-
-        @Override
-        public PostgreCtes comma() {
-            return this.builder;
-        }
-
-        private CriteriaException errorOperation() {
-            return ContextStack.criteriaError(this.builder.context, NoOperationStaticCteSearchSpec.errorMessage());
-        }
-
-    }//NonOperationDynamicCteSearchSpec
-
-
-    private static final class DynamicCteSearchSpec
-            extends PostgreCteSearchSpec<PostgreQuery._DynamicCteCycleSpec>
-            implements PostgreQuery._DynamicCteSearchSpec {
-
-        private final PostgreCteBuilder builder;
-
-        private final SubQuery query;
-
-        private final Function<DynamicCteSearchSpec, PostgreCtes> function;
-
-        private DynamicCteCycleSpec cycleSpec;
-
-        /**
-         * @see DynamicQueryParensClause#subQueryEnd(SubQuery)
-         */
-        private DynamicCteSearchSpec(PostgreCteBuilder builder, SubQuery query,
-                                     Function<DynamicCteSearchSpec, PostgreCtes> function) {
-            super(builder.context);
-            this.builder = builder;
-            this.query = query;
-            this.function = function;
-
-            builder.lastQueryCteEnder = this; // store callback
-        }
-
-
-        @Override
-        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(String firstColumnName, String... rest) {
-            return this.createCycleSpec().cycle(firstColumnName, rest);
-        }
-
-        @Override
-        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(Consumer<Consumer<String>> consumer) {
-            return this.createCycleSpec().cycle(consumer);
-        }
-
-        @Override
-        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> ifCycle(Consumer<Consumer<String>> consumer) {
-            return this.createCycleSpec().ifCycle(consumer);
-        }
-
-        @Override
-        public PostgreCtes comma() {
-            this.builder.lastQueryCteEnder = null;// must clear
-            return this.function.apply(this);
-        }
-
-        private DynamicCteCycleSpec createCycleSpec() {
-            if (this.cycleSpec != null) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            final DynamicCteCycleSpec spec;
-            spec = new DynamicCteCycleSpec(this.builder.context, this::comma);
-            this.cycleSpec = spec;
-            return spec;
-        }
-
-
-    }//DynamicCteSearchSpec
-
-    private static final class DynamicCteCycleSpec
-            extends PostgreSupports.PostgreCteCycleClause<DialectStatement._CommaClause<PostgreCtes>>
-            implements PostgreQuery._DynamicCteCycleSpec {
-
-        private final Supplier<PostgreCtes> ender;
-
-        private DynamicCteCycleSpec(CriteriaContext context, Supplier<PostgreCtes> ender) {
-            super(context);
-            this.ender = ender;
-        }
-
-        @Override
-        public PostgreCtes comma() {
-            return this.ender.get();
-        }
-
-    }//DynamicCteCycleSpec
 
 
     private static final class DynamicCteInsertParensSpec extends CteParensClause<PostgreInsert._InsertDynamicCteAsClause>
@@ -1146,49 +946,54 @@ abstract class PostgreSupports extends CriteriaSupports {
             this.builder = builder;
         }
 
+
         @Override
         public PostgreQuery._DynamicCteSearchSpec as(Function<PostgreQuery.WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
-            return this.as(null, function);
+            return as(null, function);
         }
 
         @Override
-        public PostgreQuery._DynamicCteSearchSpec as(@Nullable Postgres.WordMaterialized materialized, Function<PostgreQuery.WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
-            this.modifier = materialized;
-            return function.apply(PostgreQueries.subQuery(this.builder.context, this::subQueryEnd));
+        public PostgreQuery._DynamicCteSearchSpec as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreQuery.WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
+            this.modifier = modifier;
+            return ClauseUtils.invokeFunction(function, PostgreQueries.subQuery(this.builder.context, this::subQueryEnd));
         }
+
 
         private PostgreQuery._DynamicCteSearchSpec subQueryEnd(final SubQuery query) {
             final PostgreQuery._DynamicCteSearchSpec spec;
             if (this.builder.recursive && PostgreUtils.isUnionQuery(query)) {
-                spec = new DynamicCteSearchSpec(this.builder, query, this::searchClauseEnd);
+                this.builder.endLastCte(); // clear old
+                this.builder.lastQueryCteEnder = spec = new DynamicCteSearchSpec(this, query);
             } else {
-                spec = this.cteEndWithoutSearch(query);
+                final PostgreCte cte;
+                cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, query);
+                this.context.onAddCte(cte);
+                spec = new NonRecursiveDynamicCteSearchSpec(this.builder);
             }
             return spec;
         }
 
 
-        private PostgreQuery._DynamicCteSearchSpec cteEndWithoutSearch(final SubQuery query) {
-            final PostgreCte cte;
-            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, query);
-            this.context.onAddCte(cte);
-            return new NonOperationDynamicCteSearchSpec(this.builder);
-        }
+        /**
+         * @see DynamicCteSearchSpec#comma()
+         */
+        PostgreCtes searchClauseEnd(final DynamicCteSearchSpec spec) {
+            final Statement._CommaClause<?> commaClause = this.builder.lastQueryCteEnder;
+            if (commaClause != spec) {
+                return this.builder;
+            }
 
-
-        PostgreCtes searchClauseEnd(DynamicCteSearchSpec spec) {
-            final _PostgreCte._SearchClause searchClause;
-            searchClause = spec.hasSearchClause() ? spec : null;
-
+            this.builder.lastQueryCteEnder = null; // must clear
+            final PostgreCteSearchCycleSpec<?, ?> clause = spec;
             final _Cte cte;
-            cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, spec.query,
-                    searchClause, spec.cycleSpec);
+            cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, clause.subQuery,
+                    clause.searchClause, clause.cycleClause);
             this.builder.context.onAddCte(cte);
             return this.builder;
         }
 
 
-    }//DynamicQueryParensClause
+    } // DynamicQueryParensClause
 
 
     private static final class PostgreCteBuilder implements PostgreCtes, CteBuilder,
@@ -1200,7 +1005,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         /**
          * @see DynamicCteSearchSpec#comma()
-         * @see DynamicCteSearchSpec#DynamicCteSearchSpec(PostgreCteBuilder, SubQuery, Function)
+         * @see DynamicCteSearchSpec#DynamicCteSearchSpec(DynamicQueryParensClause, SubQuery)
          * @see DynamicQueryParensClause#subQueryEnd(SubQuery)
          */
         private DialectStatement._CommaClause<?> lastQueryCteEnder;
@@ -1215,14 +1020,12 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public PostgreInsert._DynamicCteParensSpec subSingleInsert(String name) {
             this.endLastCte();
-
             return new DynamicCteInsertParensSpec(name, this);
         }
 
         @Override
         public PostgreUpdate._DynamicCteParensSpec subSingleUpdate(String name) {
             this.endLastCte();
-
             return new DynamicUpdateParensClause(name, this);
         }
 
@@ -1230,14 +1033,12 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public PostgreDelete._DynamicCteParensSpec subSingleDelete(String name) {
             this.endLastCte();
-
             return new DynamicDeleteParensClause(name, this);
         }
 
         @Override
         public PostgreQuery._DynamicCteParensSpec subQuery(String name) {
             this.endLastCte();
-
             return new DynamicQueryParensClause(name, this);
         }
 

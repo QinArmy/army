@@ -197,11 +197,12 @@ public abstract class SQLs extends SQLSyntax {
 
     /*-------------------below literal -------------------*/
 
+
     public static final LiteralExpression LITERAL_0 = SQLs.literal(IntegerType.INSTANCE, 0);
 
     public static final LiteralExpression LITERAL_1 = SQLs.literal(IntegerType.INSTANCE, 1);
 
-    public static final LiteralExpression LITERAL_DECIMAL_0 = SQLs.literal(BigDecimalType.INSTANCE, BigDecimal.ZERO);
+    public static final LiteralExpression LITERAL_DECIMAL_0;
 
     /**
      * @see #PARAM_EMPTY_STRING
@@ -221,7 +222,7 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final ParamExpression PARAM_1 = SQLs.param(IntegerType.INSTANCE, 1);
 
-    public static final ParamExpression PARAM_DECIMAL_0 = SQLs.param(BigDecimalType.INSTANCE, BigDecimal.ZERO);
+    public static final ParamExpression PARAM_DECIMAL_0;
 
     public static final Expression UPDATE_TIME_PARAM_PLACEHOLDER = NonOperationExpression.updateTimeParamPlaceHolder();
 
@@ -244,6 +245,13 @@ public abstract class SQLs extends SQLSyntax {
      * @see #BATCH_NO_LITERAL
      */
     public static final ParamExpression BATCH_NO_PARAM = SQLs.namedParam(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
+
+
+    static {
+        final BigDecimal zero = new BigDecimal("0.00");
+        LITERAL_DECIMAL_0 = SQLs.literal(BigDecimalType.INSTANCE, zero);
+        PARAM_DECIMAL_0 = SQLs.param(BigDecimalType.INSTANCE, zero);
+    }
 
 
     /**

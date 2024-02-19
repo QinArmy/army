@@ -498,6 +498,10 @@ abstract class PostgreUtils extends CriteriaUtils {
         return derivedField;
     }
 
+    static CriteriaException nonRecursiveWithClause() {
+        return ContextStack.clearStackAndCriteriaError("Non-recursive WITH clause don't support SEARCH or CYCLE clause");
+    }
+
 
 
     /*-------------------below inner class -------------------*/
