@@ -271,7 +271,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private String searchSeqColumnName;
 
-        private Selection searchSeqSelction;
+        private Selection searchSeqSelection;
 
         CteSearchClause(boolean required) {
             this.required = required;
@@ -350,7 +350,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public Selection searchSeqSelection() {
-            final Selection s = this.searchSeqSelction;
+            final Selection s = this.searchSeqSelection;
             if (s == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -374,7 +374,13 @@ abstract class PostgreSupports extends CriteriaSupports {
             }
 
             if (!optionIsNull) {
-                this.searchSeqSelction = ArmySelections.forName(this.searchSeqColumnName, LongType.INSTANCE); // TODO right ?
+                final MappingType type;
+                if (!this.breadth) {
+                    type = LongType.INSTANCE;
+                } else {
+                    type = StringType.INSTANCE;
+                }
+                this.searchSeqSelection = ArmySelections.forName(this.searchSeqColumnName, type); // TODO right ?
             }
             return !optionIsNull;
 
@@ -582,9 +588,9 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         final SubQuery subQuery;
 
-        private PostgreSupports.CteSearchClause searchClause;
+        private CteSearchClause searchClause;
 
-        private PostgreSupports.CteCycleClause cycleClause;
+        private CteCycleClause cycleClause;
 
         PostgreCteSearchCycleSpec(SubQuery subQuery) {
             this.subQuery = subQuery;
@@ -595,7 +601,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.searchClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final PostgreSupports.CteSearchClause searchClause = new PostgreSupports.CteSearchClause(true);
+            final CteSearchClause searchClause = new CteSearchClause(true);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             searchClause.endClause();
             this.searchClause = searchClause;
@@ -607,7 +613,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.searchClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final PostgreSupports.CteSearchClause searchClause = new PostgreSupports.CteSearchClause(false);
+            final CteSearchClause searchClause = new CteSearchClause(false);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             if (searchClause.endClause()) {
                 this.searchClause = searchClause;
@@ -620,7 +626,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.cycleClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final PostgreSupports.CteCycleClause searchClause = new PostgreSupports.CteCycleClause(true);
+            final CteCycleClause searchClause = new CteCycleClause(true);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             searchClause.endClause();
             this.cycleClause = searchClause;
@@ -632,7 +638,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.cycleClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final PostgreSupports.CteCycleClause searchClause = new PostgreSupports.CteCycleClause(false);
+            final CteCycleClause searchClause = new CteCycleClause(false);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             if (searchClause.endClause()) {
                 this.cycleClause = searchClause;
@@ -1109,7 +1115,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             this.builder.lastQueryCteEnder = null; // must clear
             final PostgreCteSearchCycleSpec<?, ?> clause = spec;
             final _Cte cte;
-            cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, clause.subQuery,
+            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, clause.subQuery,
                     clause.searchClause, clause.cycleClause);
             this.builder.context.onAddCte(cte);
             return this.builder;
@@ -1171,12 +1177,20 @@ abstract class PostgreSupports extends CriteriaSupports {
             return this.recursive;
         }
 
+
+        /**
+         * @see DynamicQueryParensClause#searchClauseEnd(DynamicCteSearchSpec)
+         */
         @Override
         public void endLastCte() {
             final DialectStatement._CommaClause<?> ender = this.lastQueryCteEnder;
-            this.lastQueryCteEnder = null;
-            if (ender != null) {
+            if (ender == null) {
+                return;
+            }
+            try {
                 ender.comma();
+            } finally {
+                this.lastQueryCteEnder = null;
             }
         }
 

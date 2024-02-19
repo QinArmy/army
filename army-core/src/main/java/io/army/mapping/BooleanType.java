@@ -29,8 +29,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * <p>
- * This class is mapping class of {@link Boolean}.
+ * <p>This class is mapping class of {@link Boolean}.
  * This mapping type can convert below java type:
  * <ul>
  *     <li>{@link Byte},non-zero is true</li>
@@ -43,6 +42,7 @@ import java.math.BigInteger;
  * </ul>
  *  to {@link Boolean},if overflow,throw {@link io.army.ArmyException}
  ** @since 0.6.0
+ * @see <a href="https://www.postgresql.org/docs/current/catalog-pg-type.html">Postgre pg_type table ,oid : 16</a>
  */
 public final class BooleanType extends _ArmyNoInjectionMapping {
 

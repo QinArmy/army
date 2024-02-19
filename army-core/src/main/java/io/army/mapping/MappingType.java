@@ -1054,6 +1054,13 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     }
 
+    /**
+     * <p>This interface representing row(record) type
+     */
+    public interface SqlRecordType {
+
+    }
+
 
 
 
