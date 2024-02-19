@@ -287,6 +287,11 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException userVariableFirstCharIsAt(String varName) {
+        String m = String.format("user variable[%s] first char couldn't be  '@' ", varName);
+        return new CriteriaException(m);
+    }
+
 
     public static CriteriaException insertExpDontSupportField(FieldMeta<?> field) {
         String m = String.format("%s isn't supported by insert statement common expression.", field);

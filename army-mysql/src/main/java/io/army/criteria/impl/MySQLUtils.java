@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -174,8 +175,7 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
     static CriteriaException userVariableFirstCharIsAt(String varName) {
-        String m = String.format("user variable[%s] first char couldn't be  '@' ", varName);
-        return ContextStack.clearStackAndCriteriaError(m);
+        return ContextStack.clearStackAnd(_Exceptions::userVariableFirstCharIsAt, varName);
     }
 
 

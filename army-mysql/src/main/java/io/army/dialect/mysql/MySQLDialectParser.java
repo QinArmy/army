@@ -1016,7 +1016,7 @@ final class MySQLDialectParser extends MySQLParser {
 
         _Triple<MySQLs.VarScope, String, Object> triple;
         MySQLs.VarScope scope;
-
+        String varName;
         sqlBuilder.append(_Constant.SPACE_SET);
         for (int i = 0; i < tripleSize; i++) {
             if (i > 0) {
@@ -1033,6 +1033,11 @@ final class MySQLDialectParser extends MySQLParser {
                 sqlBuilder.append(scope.spaceRender());
             } else {
                 throw new CriteriaException(String.format("unknown VariableType[%s]", scope));
+            }
+
+            varName = triple.second;
+            if (scope == MySQLs.AT && varName.charAt(0) == '@') {
+                throw _Exceptions.userVariableFirstCharIsAt(varName);
             }
 
             identifier(triple.second, sqlBuilder);

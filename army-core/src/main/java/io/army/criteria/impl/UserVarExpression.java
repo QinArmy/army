@@ -157,7 +157,14 @@ final class UserVarExpression extends OperationExpression.OperationDefiniteExpre
             throw _Exceptions.dontSupportVariableExpression(context.database());
         }
         sqlBuilder.append(" @");
-        context.identifier(this.name, sqlBuilder);
+
+        final String name = this.name;
+        if (name.charAt(0) == '@') {
+            throw _Exceptions.userVariableFirstCharIsAt(name);
+        }
+
+        context.identifier(name, sqlBuilder);
+
     }
 
 
