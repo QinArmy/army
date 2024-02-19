@@ -78,7 +78,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final SyncSessionFactory sessionFactory() {
-        return (SyncSessionFactory) this.factory;
+        return this.factory;
     }
 
     @Override
@@ -302,7 +302,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> query(DqlStatement statement, final Class<R> resultClass, SyncStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.executor.query(s, resultClass, o, Option.EMPTY_FUNC)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o, func) -> this.executor.query(s, resultClass, o, func)); // here ,use o not option
     }
 
     @Override
@@ -312,7 +312,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> queryObject(DqlStatement statement, final Supplier<R> constructor, SyncStmtOption option) {
-        return this.executeQuery(statement, option, (s, o) -> this.executor.queryObject(s, constructor, o, Option.EMPTY_FUNC)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o, func) -> this.executor.queryObject(s, constructor, o, func)); // here ,use o not option
     }
 
     @Override
@@ -325,7 +325,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         if (statement instanceof _Statement._ChildStatement) {
             throw new SessionException("queryRecord api don't support two statement mode");
         }
-        return this.executeQuery(statement, option, (s, o) -> this.executor.queryRecord(s, function, o, Option.EMPTY_FUNC)); // here ,use o not option
+        return this.executeQuery(statement, option, (s, o, func) -> this.executor.queryRecord(s, function, o, func)); // here ,use o not option
     }
 
     @Override
@@ -573,7 +573,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
 
     private <R> Stream<R> executeQuery(final DqlStatement statement, final SyncStmtOption optionOfUser,
-                                       final BiFunction<SingleSqlStmt, SyncStmtOption, Stream<R>> exeFunc) {
+                                       final ExecutorFunction<R> exeFunc) {
         try {
             assertSession(statement);
 
@@ -589,9 +589,9 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
             final Stream<R> stream;
             if (stmt instanceof SimpleStmt) {
-                stream = exeFunc.apply((SimpleStmt) stmt, option);
+                stream = exeFunc.execute((SimpleStmt) stmt, option, Option.EMPTY_FUNC);
             } else if (stmt instanceof BatchStmt) { // batch SELECT or postgre batch dml with RETURNING clause
-                stream = exeFunc.apply((BatchStmt) stmt, option);
+                stream = exeFunc.execute((BatchStmt) stmt, option, Option.EMPTY_FUNC);
             } else if (!(stmt instanceof PairStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (!inTransaction()) {
@@ -620,26 +620,26 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
-     * @see #executeQuery(DqlStatement, SyncStmtOption, BiFunction)
+     * @see #executeQuery(DqlStatement, SyncStmtOption, ExecutorFunction)
      */
     private <R> Stream<R> executePairInsertQuery(InsertStatement statement,
                                                  final SyncStmtOption option, PairStmt stmt,
-                                                 BiFunction<SingleSqlStmt, SyncStmtOption, Stream<R>> exeFunc) {
+                                                 ExecutorFunction<R> exeFunc) {
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
 
-        long rows = 0;
+        ResultStates states = null;
         List<R> resultList = null;
         if (firstStmtIsQuery) {
-            resultList = exeFunc.apply(stmt.firstStmt(), option)
+            resultList = exeFunc.execute(stmt.firstStmt(), option, Option.EMPTY_FUNC)
                     .collect(Collectors.toCollection(_Collections::arrayList));
             if (resultList.size() == 0) {
                 // exists conflict clause
                 return Stream.empty();
             }
         } else {
-            rows = this.executor.insert(stmt.firstStmt(), option, Long.class, Option.EMPTY_FUNC);
-            if (rows == 0) {
+            states = this.executor.insert(stmt.firstStmt(), option, ResultStates.class, Option.EMPTY_FUNC);
+            if (states.affectedRows() == 0L) {
                 // exists conflict clause
                 return Stream.empty();
             }
@@ -656,14 +656,14 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 stream = this.executor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList, Option.EMPTY_FUNC);
             } else {
                 // TODO 验证 行数,fetch size
-                final long parentRows = rows;
+                final ResultStates parentStates = states;
                 final Consumer<ResultStates> statesConsumer;
-                statesConsumer = states -> {
-                    if (states.rowCount() != parentRows) {
-                        throw _Exceptions.parentChildRowsNotMatch(this, childTable, parentRows, states.rowCount());
+                statesConsumer = childStates -> {
+                    if (childStates.rowCount() != parentStates.affectedRows()) {
+                        throw _Exceptions.parentChildRowsNotMatch(this, childTable, parentStates.affectedRows(), childStates.rowCount());
                     }
                 };
-                stream = exeFunc.apply(stmt.secondStmt(), ArmySyncStmtOptions.replaceStateConsumer(option, statesConsumer));
+                stream = exeFunc.execute(stmt.secondStmt(), ArmySyncStmtOptions.replaceStateConsumer(option, statesConsumer), Option.singleFunc(Option.FIRST_DML_STATES, parentStates));
             }
             return stream;
         } catch (Throwable e) {
@@ -952,7 +952,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     }
 
     /**
-     * @see #executeQuery(DqlStatement, SyncStmtOption, BiFunction)
+     * @see #executeQuery(DqlStatement, SyncStmtOption, ExecutorFunction)
      */
     private SyncStmtOption replaceForQueryExecutionLogger(final SyncStmtOption optionOfUser, final Stmt stmt) {
         final SqlLogMode sqlLogMode;
@@ -1062,6 +1062,14 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             }
 
         };
+
+    }
+
+
+    @FunctionalInterface
+    private interface ExecutorFunction<R> {
+
+        Stream<R> execute(SingleSqlStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
     }
 
