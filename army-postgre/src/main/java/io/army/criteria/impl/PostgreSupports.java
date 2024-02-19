@@ -746,14 +746,21 @@ abstract class PostgreSupports extends CriteriaSupports {
             this.searchClause = searchClause;
             this.cycleClause = cycleClause;
 
-            if (subStatement instanceof DerivedTable) {
+            assert subStatement instanceof SubQuery || (searchClause == null && cycleClause == null);
+
+            if (subStatement instanceof SubQuery) {
                 if (this.columnAliasList.size() == 0) {
                     this.selectionMap = createDerivedSelectionMap(((_DerivedTable) subStatement).refAllSelection());
                 } else {
                     this.selectionMap = createAliasSelectionMap(((_DerivedTable) subStatement).refAllSelection());
                 }
+            } else if (subStatement instanceof DerivedTable) {
+                if (this.columnAliasList.size() == 0) {
+                    this.selectionMap = (_SelectionMap) subStatement;
+                } else {
+                    this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList, ((_DerivedTable) subStatement).refAllSelection(), this.name);
+                }
             } else if (!(subStatement instanceof _ReturningDml)) {
-                assert searchClause == null && cycleClause == null;
                 this.selectionMap = null;
             } else if (this.columnAliasList.size() == 0) {
                 this.selectionMap = CriteriaUtils.createDerivedSelectionMap(((_ReturningDml) subStatement).flatSelectItem());

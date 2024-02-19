@@ -93,7 +93,7 @@ abstract class InsertContext extends StatementContext
 
     final List<? extends _SelectItem> returningList;
 
-    final List<Selection> returnSelectionList;
+    final List<? extends Selection> returnSelectionList;
 
     /**
      * {@link #insertTable} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
@@ -240,7 +240,7 @@ abstract class InsertContext extends StatementContext
 
         if (targetStmt instanceof _ReturningDml) {
             this.returningList = ((_ReturningDml) targetStmt).returningList();
-            this.returnSelectionList = _DialectUtils.flatSelectItem(this.returningList);
+            this.returnSelectionList = ((_ReturningDml) targetStmt).flatSelectItem();
             this.returnId = needReturnId ? idField : null;
             if (needReturnId || this.twoStmtQuery) {
                 this.idSelectionIndex = returnIdSelection(parser, idField, this.returnSelectionList);

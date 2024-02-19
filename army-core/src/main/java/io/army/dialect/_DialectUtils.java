@@ -129,17 +129,24 @@ public abstract class _DialectUtils {
     /**
      * @return a unmodified list
      */
-    public static List<Selection> flatSelectItem(final List<? extends SelectItem> selectItemList) {
+    public static List<_Selection> flatSelectItem(final List<? extends SelectItem> selectItemList) {
         final int itemSize;
         itemSize = selectItemList.size();
-        final List<Selection> selectionList = _Collections.arrayList(itemSize);
+        final List<_Selection> selectionList = _Collections.arrayList(itemSize);
+
+        List<? extends Selection> selectionListOfGroup;
+
         SelectItem selectItem;
-        for (int i = 0; i < itemSize; i++) {
+        for (int i = 0, groupSize; i < itemSize; i++) {
             selectItem = selectItemList.get(i);
             if (selectItem instanceof Selection) {
                 selectionList.add((_Selection) selectItem);
             } else if (selectItem instanceof _SelectionGroup) {
-                selectionList.addAll(((_SelectionGroup) selectItem).selectionList());
+                selectionListOfGroup = ((_SelectionGroup) selectItem).selectionList();
+                groupSize = selectionListOfGroup.size();
+                for (int j = 0; j < groupSize; j++) {
+                    selectionList.add((_Selection) selectionListOfGroup.get(j));
+                }
             } else {
                 throw _Exceptions.unknownSelectItem(selectItem);
             }

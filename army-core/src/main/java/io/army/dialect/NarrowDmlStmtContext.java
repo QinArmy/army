@@ -100,7 +100,7 @@ abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements
     }
 
     @Override
-    public final List<Selection> selectionList() {
+    public final List<? extends Selection> selectionList() {
         final List<? extends _SelectItem> list = this.returningList;
         if (list == null) {
             throw new UnsupportedOperationException();
