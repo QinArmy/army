@@ -79,7 +79,6 @@ final class PostgreComparer extends ArmySchemaComparer {
                 }
                 break;
             case INTEGER:
-            case NO_CAST_INTEGER:
                 switch (typeName) {
                     case "int":
                     case "int4":
@@ -198,7 +197,6 @@ final class PostgreComparer extends ArmySchemaComparer {
                 }
                 break;
             case TEXT:
-            case NO_CAST_TEXT:
                 switch (typeName) {
                     case "text":
                     case "txid_snapshot":  // TODO txid_snapshot is text?

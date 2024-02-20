@@ -2,8 +2,10 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
+import io.army.dialect.LiteralParser;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;
@@ -177,25 +179,41 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
         }
 
         final ServerMeta meta = env.serverMeta();
+        final LiteralParser literalParser = env.literalParser();
 
         MappingType columnType;
         DataType dataType;
         Object column;
-        appender.accept("(");
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append(_Constant.LEFT_PAREN);
+        boolean escapse = false;
         for (int i = 0; i < columnSize; i++) {
             if (i > 0) {
-                appender.accept(",");
+                builder.append(_Constant.COMMA);
             }
             column = record.get(i);
             if (column == null) {
-                appender.accept(_Constant.NULL);
+                builder.append(_Constant.NULL);
                 continue;
             }
             columnType = columnTypeList.get(i);
             dataType = columnType.map(meta);
             columnType.beforeBind(dataType, env, column);
+
+            if (column == DOCUMENT_NULL_VALUE) {
+                builder.append(_Constant.NULL);
+                continue;
+            }
+            escapse |= literalParser.parse(columnType, column, EscapeMode.ARRAY_ELEMENT, builder);
         }
-        appender.accept(")");
+        builder.append(_Constant.RIGHT_PAREN);
+
+        if (escapse) {
+            PostgreArrays.encodeElement(builder.toString(), appender);
+        } else {
+            appender.accept(builder.toString());
+        }
 
     }
 

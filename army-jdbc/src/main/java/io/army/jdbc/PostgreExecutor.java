@@ -287,7 +287,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case SMALLINT:
                 value = resultSet.getObject(indexBasedOne, Short.class);
                 break;
-            case NO_CAST_INTEGER:
             case INTEGER:
                 value = resultSet.getObject(indexBasedOne, Integer.class);
                 break;
@@ -343,7 +342,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case CHAR:
             case VARCHAR:
             case TEXT:
-            case NO_CAST_TEXT:  // postgre client protocol body must less than 2^32 byte
 
             case JSON:
             case JSONB:

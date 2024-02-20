@@ -17,13 +17,14 @@
 package io.army.dialect;
 
 
+import io.army.codec.JsonCodec;
+import io.army.codec.XmlCodec;
 import io.army.criteria.Visible;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
 import io.army.generator.FieldGenerator;
-import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.session.Option;
@@ -32,6 +33,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -67,18 +69,15 @@ public abstract class _MockDialects implements DialectEnv {
 
     }
 
-
-    private final MappingEnv mappingEnv;
     private final ServerMeta serverMeta;
 
 
-    private _MockDialects(MappingEnv mappingEnv) {
-        this.mappingEnv = mappingEnv;
-        this.serverMeta = mappingEnv.serverMeta();
+    private _MockDialects(ServerMeta serverMeta) {
+        this.serverMeta = serverMeta;
     }
 
     @Override
-    public String factoryName() {
+    public final String factoryName() {
         return "mock factory";
     }
 
@@ -88,9 +87,33 @@ public abstract class _MockDialects implements DialectEnv {
     }
 
     @Override
-    public final MappingEnv mappingEnv() {
-        return this.mappingEnv;
+    public final boolean isReactive() {
+        return false;
     }
+
+    @Override
+    public final ServerMeta serverMeta() {
+        return this.serverMeta;
+    }
+
+    @Nullable
+    @Override
+    public final ZoneOffset zoneOffset() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public final JsonCodec jsonCodec() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public final XmlCodec xmlCodec() {
+        return null;
+    }
+
 
 
     private enum MockSession implements SessionSpec {
@@ -135,8 +158,8 @@ public abstract class _MockDialects implements DialectEnv {
 
         private final ArmyEnvironment env;
 
-        private MockDialectEnv(MappingEnv mappingEnv) {
-            super(mappingEnv);
+        private MockDialectEnv(ServerMeta serverMeta) {
+            super(serverMeta);
             this.env = StandardEnvironment.from(Collections.emptyMap());
         }
 
@@ -162,11 +185,7 @@ public abstract class _MockDialects implements DialectEnv {
             default:
                 throw _Exceptions.unexpectedEnum(dialect.database());
         }
-        final MappingEnv mappingEnv;
-        mappingEnv = MappingEnv.builder()
-                .serverMeta(meta)
-                .build();
-        return DialectParserFactory.createDialect(new MockDialectEnv(mappingEnv));
+        return DialectParserFactory.createDialect(new MockDialectEnv(meta));
     }
 
 

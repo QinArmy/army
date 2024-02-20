@@ -735,8 +735,8 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    public final void literal(final TypeMeta typeMeta, @Nullable Object value, final boolean cast, final StringBuilder sqlBuilder) {
-
+    public final boolean literal(final TypeMeta typeMeta, @Nullable Object value, EscapeMode mode, final StringBuilder sqlBuilder) {
+        return false;
     }
 
     /**
@@ -3376,7 +3376,7 @@ abstract class ArmyParser implements DialectParser {
                 .reactive(env.isReactive())
                 .serverMeta(env.serverMeta())
                 .zoneOffset(env.zoneOffset())
-                .literalBinder(this::literal) // avoid to cast
+                .literalParser(this::literal) // avoid to cast
                 .jsonCodec(env.jsonCodec())
                 .xmlCodec(env.xmlCodec())
                 .build();

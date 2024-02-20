@@ -79,12 +79,13 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     protected DdlMode ddlMode;
 
-    protected DialectParser dialectParser;
 
     private Map<Option<?>, Object> dataSourceOptionMap;
 
 
     /*################################## blow non-setter fields ##################################*/
+
+    DialectParser dialectParser;
 
     Map<Class<?>, TableMeta<?>> tableMap;
 
@@ -227,6 +228,12 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     protected final DialectParser createDialectParser(String factoryName, boolean reactive, ServerMeta serverMeta,
                                                       ArmyEnvironment env) {
+        final Dialect dialect = env.getOrDefault(ArmyKey.DIALECT);
+        if (serverMeta.usedDialect() != dialect) {
+            String m = String.format("used Dialect[%s] and Environment Dialect[%s not match",
+                    serverMeta.usedDialect().name(), dialect.name());
+            throw new IllegalArgumentException(m);
+        }
         final DialectEnv dialectEnv;
         //8. create DialectEnv
         dialectEnv = DialectEnv.builder()

@@ -18,7 +18,7 @@ package io.army.mapping;
 
 import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
-import io.army.dialect.LiteralBinder;
+import io.army.dialect.LiteralParser;
 import io.army.meta.ServerMeta;
 import io.army.util._StringUtils;
 
@@ -38,7 +38,7 @@ final class ArmyMappingEnv implements MappingEnv {
 
     private final ZoneOffset zoneOffset;
 
-    private final LiteralBinder literalBinder;
+    private final LiteralParser literalBinder;
 
     private final JsonCodec jsonCodec;
 
@@ -81,7 +81,7 @@ final class ArmyMappingEnv implements MappingEnv {
     }
 
     @Override
-    public LiteralBinder literalBinder() {
+    public LiteralParser literalParser() {
         return this.literalBinder;
     }
 
@@ -131,7 +131,7 @@ final class ArmyMappingEnv implements MappingEnv {
 
         private ZoneOffset zoneOffset;
 
-        private LiteralBinder literalBinder;
+        private LiteralParser literalBinder;
 
         private JsonCodec jsonCodec;
 
@@ -156,7 +156,7 @@ final class ArmyMappingEnv implements MappingEnv {
         }
 
         @Override
-        public Builder literalBinder(LiteralBinder literalBinder) {
+        public Builder literalParser(LiteralParser literalBinder) {
             this.literalBinder = literalBinder;
             return this;
         }

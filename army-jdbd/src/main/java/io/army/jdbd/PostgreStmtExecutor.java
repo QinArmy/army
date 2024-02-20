@@ -113,7 +113,6 @@ abstract class PostgreStmtExecutor extends JdbdStmtExecutor {
             }
             statement.bind(indexBasedZero, io.jdbd.meta.DataType.buildIn(dataType.typeName()), value);
         } else switch ((PostgreType) dataType) {
-            case NO_CAST_INTEGER:
             case INTEGER: {
                 if (!(value instanceof Integer)) {
                     throw beforeBindMethodError(type, dataType, value);
@@ -157,7 +156,6 @@ abstract class PostgreStmtExecutor extends JdbdStmtExecutor {
             }
             break;
             case TEXT: // postgre client protocol body must less than 2^32 byte
-            case NO_CAST_TEXT:
                 statement.bind(indexBasedZero, JdbdType.MEDIUMTEXT, toJdbdLongTextValue(type, dataType, value));
                 break;
             case JSON:
@@ -230,7 +228,6 @@ abstract class PostgreStmtExecutor extends JdbdStmtExecutor {
             case SMALLINT:
                 value = row.get(indexBasedZero, Short.class);
                 break;
-            case NO_CAST_INTEGER:
             case INTEGER:
                 value = row.get(indexBasedZero, Integer.class);
                 break;
@@ -276,7 +273,6 @@ abstract class PostgreStmtExecutor extends JdbdStmtExecutor {
             case CHAR:
             case VARCHAR:
             case TEXT:
-            case NO_CAST_TEXT:  // postgre client protocol body must less than 2^32 byte
 
             case JSON:
             case JSONB:

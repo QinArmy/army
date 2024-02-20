@@ -23,11 +23,16 @@ import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
+import io.army.session.FactoryBuilderSpec;
 
 import javax.annotation.Nullable;
 import java.time.ZoneOffset;
 import java.util.Map;
 
+
+/**
+ * <p>The instance of this interface is created by the implementation of {@link FactoryBuilderSpec}.
+ */
 public interface DialectEnv {
 
     String factoryName();
