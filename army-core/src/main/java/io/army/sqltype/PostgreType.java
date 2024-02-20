@@ -21,6 +21,7 @@ import io.army.criteria.impl._SQLConsultant;
 import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.type.SqlRecord;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
@@ -126,6 +127,9 @@ public enum PostgreType implements SqlType {
     TSMULTIRANGE("TSMULTIRANGE", ArmyType.DIALECT_TYPE, String.class),
     TSTZMULTIRANGE("TSTZMULTIRANGE", ArmyType.DIALECT_TYPE, String.class),
 
+
+    RECORD("RECORD", ArmyType.DIALECT_TYPE, SqlRecord.class),
+
     REF_CURSOR("REF_CURSOR", ArmyType.REF_CURSOR, String.class),
 
     ACLITEM("ACLITEM", ArmyType.DIALECT_TYPE, String.class),
@@ -202,6 +206,8 @@ public enum PostgreType implements SqlType {
 
     NUMRANGE_ARRAY(NUMRANGE),
     NUMMULTIRANGE_ARRAY(NUMMULTIRANGE),
+
+    RECORD_ARRAY(RECORD),
 
     UNKNOWN("UNKNOWN", ArmyType.UNKNOWN, Object.class);
 

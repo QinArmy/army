@@ -1,4 +1,4 @@
-package io.army.mapping.array;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
@@ -11,39 +11,37 @@ import io.army.sqltype.DataType;
 
 import java.util.List;
 
-public class RecordArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+
+/**
+ * <p>This class mapping List to database record (for example : postgre record ,oid : 2249)
+ * @see io.army.type.SqlRecord
+ * @see io.army.mapping.array.SqlRecordArrayType
+ * @see <a href="https://www.postgresql.org/docs/current/catalog-pg-type.html">Postgre pg_type table ,oid : 2249</a>
+ */
+public final class SqlRecordType extends _ArmyBuildInMapping implements MappingType.SqlRecordRowType {
 
 
-    private final List<MappingType> columnTypeList;
+    public static SqlRecordType fromRow(List<MappingType> columnTypeList) {
+        throw new IllegalArgumentException();
+    }
 
 
-    private RecordArrayType(List<MappingType> columnTypeList) {
-        this.columnTypeList = columnTypeList;
+    private SqlRecordType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return null;
+        return Object.class;
     }
 
     @Override
-    public Class<?> underlyingJavaType() {
-        return null;
-    }
-
-    @Override
-    public MappingType elementType() {
+    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         return null;
     }
 
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {
         return super.arrayTypeOfThis();
-    }
-
-    @Override
-    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return null;
     }
 
     @Override

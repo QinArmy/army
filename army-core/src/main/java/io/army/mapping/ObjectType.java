@@ -1,24 +1,23 @@
-package io.army.mapping.optional;
+package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
+import java.util.Objects;
 
-/**
- * <p>This class mapping List to database record (for example : postgre record ,oid : 2249)
- *
- * @see <a href="https://www.postgresql.org/docs/current/catalog-pg-type.html">Postgre pg_type table ,oid : 2249</a>
- */
-public final class RecordType extends _ArmyBuildInMapping implements MappingType.SqlRecordType {
+public final class ObjectType extends _ArmyBuildInMapping {
 
+    public static ObjectType from(final Class<?> javaType) {
+        Objects.requireNonNull(javaType);
+        return INSTANCE;
+    }
 
-    private RecordType() {
+    public static final ObjectType INSTANCE = new ObjectType();
+
+    private ObjectType() {
     }
 
     @Override
@@ -27,13 +26,8 @@ public final class RecordType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return null;
-    }
-
-    @Override
-    public MappingType arrayTypeOfThis() throws CriteriaException {
-        return super.arrayTypeOfThis();
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
+        return TextType.mapToDataType(this, meta);
     }
 
     @Override
