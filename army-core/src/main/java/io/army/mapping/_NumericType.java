@@ -31,7 +31,7 @@ package io.army.mapping;
  *         <li>{@link _UnsignedNumericType}</li>
  *     </ul>
 */
-abstract class _NumericType extends _ArmyNoInjectionMapping {
+public abstract class _NumericType extends _ArmyNoInjectionMapping {
 
 
 
@@ -46,7 +46,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *     </ul>
      *
      */
-    static abstract class _IntegerType extends _NumericType implements SqlIntegerType {
+    public static abstract class _IntegerType extends _NumericType implements SqlIntegerType {
 
     }
 
@@ -58,7 +58,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *     </ul>
      *
      */
-    static abstract class _FloatNumericType extends _NumericType implements SqlFloatType {
+    public static abstract class _FloatNumericType extends _NumericType implements SqlFloatType {
 
     }
 
@@ -71,7 +71,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *     </ul>
      *
      */
-    static abstract class _UnsignedNumericType extends _NumericType implements SqlUnsignedNumberType {
+    public static abstract class _UnsignedNumericType extends _NumericType implements SqlUnsignedNumberType {
 
     }
 
@@ -87,7 +87,7 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
      *     <li>{@link UnsignedBigIntegerType}</li>
      * </ul>
      */
-    static abstract class _UnsignedIntegerType extends _UnsignedNumericType implements SqlIntegerType {
+    public static abstract class _UnsignedIntegerType extends _UnsignedNumericType implements SqlIntegerType {
 
     }
 

@@ -17,12 +17,10 @@
 package io.army.reactive;
 
 import io.army.advice.FactoryAdvice;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectEnv;
+import io.army.dialect.DialectParser;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.ReactiveKey;
-import io.army.mapping.MappingEnv;
 import io.army.meta.TableMeta;
 import io.army.reactive.executor.ReactiveExecutorFactory;
 import io.army.reactive.executor.ReactiveExecutorFactoryProvider;
@@ -80,38 +78,24 @@ final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactor
             return Mono.error(e);
         }
 
-        final Dialect useDialect = env.getRequired(ArmyKey.DIALECT);
 
         final FactoryAdvice factoryAdvice;
         factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
 
-        return executorProvider.createServerMeta(useDialect, this.nameToDatabaseFunc)  // 2.  create serverMeta
+        return executorProvider.createServerMeta(this.nameToDatabaseFunc)  // 2.  create serverMeta
                 .flatMap(serverMeta -> {
-                    assert serverMeta.usedDialect() == useDialect;
 
-                    // 3. create MappingEnv
-                    final MappingEnv mappingEnv;
-                    mappingEnv = MappingEnv.builder()
-                            .serverMeta(serverMeta)
-                            .zoneOffset(env.get(ArmyKey.ZONE_OFFSET))
-                            .jsonCodec(this.jsonCodec)
-                            .xmlCodec(this.xmlCodec)
-                            .build();
+                    // 3. create DialectParser
+                    final DialectParser dialectParser;
+                    dialectParser = createDialectParser(name, true, serverMeta, env);
 
-                    return executorProvider.createFactory(createExecutorEnv(name, serverMeta, env, mappingEnv)) // 4.  create executor factory
+                    return executorProvider.createFactory(createExecutorEnv(name, env, dialectParser)) // 4.  create executor factory
                             .flatMap(executorFactory -> {
 
                                 // 5. invoke beforeInstance
                                 if (factoryAdvice != null) {
                                     factoryAdvice.beforeInstance(serverMeta, env);
                                 }
-                                // 6. create DialectEnv
-                                this.dialectEnv = DialectEnv.builder()
-                                        .factoryName(name)
-                                        .environment(env)
-                                        .fieldGeneratorMap(createFieldGeneratorMap())
-                                        .mappingEnv(mappingEnv)
-                                        .build();
 
                                 this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
                                 this.stmtExecutorFactory = executorFactory;

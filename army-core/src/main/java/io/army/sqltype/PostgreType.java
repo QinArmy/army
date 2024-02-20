@@ -46,14 +46,10 @@ public enum PostgreType implements SqlType {
 
     SMALLINT("SMALLINT", ArmyType.SMALLINT, Short.class),
     INTEGER("INTEGER", ArmyType.INTEGER, Integer.class),
-    NO_CAST_INTEGER(INTEGER.typeName, INTEGER.armyType, INTEGER.javaType),
 
     BIGINT("BIGINT", ArmyType.BIGINT, Long.class),
 
-    NO_CAST_BIGINT(BIGINT.typeName, BIGINT.armyType, BIGINT.javaType),
     DECIMAL("DECIMAL", ArmyType.DECIMAL, BigDecimal.class),
-
-    NO_CAST_DECIMAL(DECIMAL.typeName, DECIMAL.armyType, DECIMAL.javaType),
 
     REAL("REAL", ArmyType.FLOAT, Float.class),
     FLOAT8("FLOAT8", ArmyType.DOUBLE, Double.class),
@@ -83,10 +79,6 @@ public enum PostgreType implements SqlType {
     TEXT("TEXT", ArmyType.MEDIUMTEXT, String.class),
     PG_LSN("PG_LSN", ArmyType.DIALECT_TYPE, String.class),
     PG_SNAPSHOT("PG_SNAPSHOT", ArmyType.DIALECT_TYPE, String.class),
-
-
-    NO_CAST_TEXT(TEXT.typeName, TEXT.armyType, TEXT.javaType),
-
     TSVECTOR("TSVECTOR", ArmyType.DIALECT_TYPE, String.class),
     TSQUERY("TSQUERY", ArmyType.DIALECT_TYPE, String.class),
 

@@ -276,7 +276,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                         delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, rowIndex, postIdList::get);
                         this.appendParam(delayIdParam);
                     } else if ((expression = defaultValueMap.get(field)) == null) {
-                        throw _Exceptions.oneStmtModePostChildNoIdExpression(this.parser.database, (ChildTableMeta<?>) insertTable);
+                        throw _Exceptions.oneStmtModePostChildNoIdExpression(this.parser.dialectDatabase, (ChildTableMeta<?>) insertTable);
                     } else {
                         expression.appendSql(sqlBuilder, this);
                     }

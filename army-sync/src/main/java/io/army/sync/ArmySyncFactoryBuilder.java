@@ -17,13 +17,10 @@
 package io.army.sync;
 
 import io.army.advice.FactoryAdvice;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectEnv;
+import io.army.dialect.DialectParser;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
-import io.army.executor.ExecutorEnv;
-import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.schema.SchemaInfo;
@@ -75,51 +72,31 @@ final class ArmySyncFactoryBuilder
 
         try {
 
-            //2. create ExecutorProvider
+            // 1. create ExecutorProvider
             final SyncStmtExecutorFactoryProvider executorProvider;
             executorProvider = createExecutorProvider(name, env, dataSource, SyncStmtExecutorFactoryProvider.class,
                     SyncKey.EXECUTOR_PROVIDER, SyncKey.EXECUTOR_PROVIDER_MD5);
 
-            final Dialect useDialect = env.getRequired(ArmyKey.DIALECT);
-
-            //3. create ServerMeta
+            // 2. create ServerMeta
             final ServerMeta serverMeta;
-            serverMeta = executorProvider.createServerMeta(useDialect, this.nameToDatabaseFunc);
-            assert serverMeta.usedDialect() == useDialect;
+            serverMeta = executorProvider.createServerMeta(this.nameToDatabaseFunc);
 
-            //4. create MappingEnv
-            final MappingEnv mappingEnv;
-            mappingEnv = MappingEnv.builder()
-                    .serverMeta(serverMeta)
-                    .zoneOffset(env.get(ArmyKey.ZONE_OFFSET))
-                    .jsonCodec(this.jsonCodec)
-                    .xmlCodec(this.xmlCodec)
-                    .build();
+            // 3. create DialectParser
+            final DialectParser dialectParser;
+            dialectParser = createDialectParser(name, false, serverMeta, env);
 
-            //5. create ExecutorEnv
-            final ExecutorEnv executorEnv;
-            executorEnv = createExecutorEnv(name, serverMeta, env, mappingEnv);
-
-            //6. create LocalExecutorFactory
+            // 4. create SyncExecutorFactory
             final SyncExecutorFactory executorFactory;
-            executorFactory = executorProvider.createFactory(executorEnv);
+            executorFactory = executorProvider.createFactory(createExecutorEnv(name, env, dialectParser));
 
             final FactoryAdvice factoryAdvice;
             factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
-            //7. invoke beforeInstance
+            // 5. invoke beforeInstance
             if (factoryAdvice != null) {
                 factoryAdvice.beforeInstance(serverMeta, env);
             }
 
-            //8. create DialectEnv
-            this.dialectEnv = DialectEnv.builder()
-                    .factoryName(name)
-                    .environment(env)
-                    .fieldGeneratorMap(createFieldGeneratorMap())
-                    .mappingEnv(mappingEnv)
-                    .build();
-
-            //9. create SessionFactoryImpl instance
+            // 6. create SessionFactoryImpl instance
             this.stmtExecutorFactory = executorFactory;
             this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
             final ArmySyncSessionFactory sessionFactory;
@@ -130,15 +107,15 @@ final class ArmySyncFactoryBuilder
             assert name.equals(sessionFactory.name());
             assert sessionFactory.executorFactory == this.stmtExecutorFactory;
 
-            //9. invoke beforeInitialize
+            //7. invoke beforeInitialize
             if (factoryAdvice != null) {
                 factoryAdvice.beforeInitialize(sessionFactory);
             }
 
-            //10. invoke initializingFactory
+            // 8. invoke initializingFactory
             initializingFactory(sessionFactory);
 
-            //7. invoke afterInitialize
+            // 9. invoke afterInitialize
             if (factoryAdvice != null) {
                 factoryAdvice.afterInitialize(sessionFactory);
             }

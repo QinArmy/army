@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package io.army.mapping;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.IntegerType;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping._NumericType;
 import io.army.mapping.array.IntegerArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
 
-public final class NoCastIntegerType extends _NumericType._IntegerType {
+public final class NoCastIntegerType extends _NumericType._IntegerType implements NoCastType {
 
     public static NoCastIntegerType from(final Class<?> fieldType) {
         if (fieldType != Integer.class) {
@@ -57,18 +59,7 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                type = PostgreType.NO_CAST_INTEGER;
-                break;
-            case MySQL:
-            case Oracle:
-            case H2:
-            default:
-                type = IntegerType.mapToDataType(this, meta);
-        }
-        return type;
+        return IntegerType.mapToDataType(this, meta);
     }
 
     @Override

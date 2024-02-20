@@ -16,12 +16,16 @@
 
 package io.army.dialect;
 
+import io.army.codec.JsonCodec;
+import io.army.codec.XmlCodec;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
-import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
+import io.army.meta.ServerMeta;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 final class DialectEnvImpl implements DialectEnv {
@@ -37,13 +41,34 @@ final class DialectEnvImpl implements DialectEnv {
 
     private final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
 
-    private final MappingEnv mappingEnv;
+    private final boolean reactive;
+
+    private final ServerMeta serverMeta;
+
+    private final ZoneOffset zoneOffset;
+
+    private final JsonCodec jsonCodec;
+
+    private final XmlCodec xmlCodec;
 
     private DialectEnvImpl(EnvBuilder builder) {
         this.factoryName = builder.factoryName;
         this.environment = builder.env;
         this.fieldGeneratorMap = _Collections.unmodifiableMap(builder.generatorMap);
-        this.mappingEnv = builder.mappingEnv;
+        this.reactive = builder.reactive;
+
+        this.serverMeta = builder.serverMeta;
+        this.zoneOffset = builder.zoneOffset;
+        this.jsonCodec = builder.jsonCodec;
+        this.xmlCodec = builder.xmlCodec;
+
+        if (this.serverMeta == null
+                || this.zoneOffset == null
+                || this.jsonCodec == null
+                || this.xmlCodec == null) {
+            throw new IllegalArgumentException();
+        }
+
     }
 
 
@@ -63,14 +88,36 @@ final class DialectEnvImpl implements DialectEnv {
     }
 
     @Override
-    public MappingEnv mappingEnv() {
-        return this.mappingEnv;
+    public boolean isReactive() {
+        return this.reactive;
+    }
+
+    @Override
+    public ServerMeta serverMeta() {
+        return this.serverMeta;
+    }
+
+    @Nullable
+    @Override
+    public ZoneOffset zoneOffset() {
+        return this.zoneOffset;
+    }
+
+    @Nullable
+    @Override
+    public JsonCodec jsonCodec() {
+        return this.jsonCodec;
+    }
+
+    @Nullable
+    @Override
+    public XmlCodec xmlCodec() {
+        return this.xmlCodec;
     }
 
     @Override
     public String toString() {
-        return String.format("%s factory:%s,mappingEnv:%s", DialectEnvImpl.class.getSimpleName()
-                , this.factoryName, this.mappingEnv);
+        return String.format("%s factory:%s", DialectEnvImpl.class.getSimpleName(), this.factoryName);
     }
 
 
@@ -82,7 +129,15 @@ final class DialectEnvImpl implements DialectEnv {
 
         private Map<FieldMeta<?>, FieldGenerator> generatorMap;
 
-        private MappingEnv mappingEnv;
+        private boolean reactive;
+
+        private ServerMeta serverMeta;
+
+        private ZoneOffset zoneOffset;
+
+        private JsonCodec jsonCodec;
+
+        private XmlCodec xmlCodec;
 
         @Override
         public Builder factoryName(String name) {
@@ -103,17 +158,37 @@ final class DialectEnvImpl implements DialectEnv {
         }
 
         @Override
-        public Builder mappingEnv(MappingEnv mappingEnv) {
-            this.mappingEnv = mappingEnv;
+        public Builder reactive(boolean yes) {
+            this.reactive = yes;
+            return this;
+        }
+
+        @Override
+        public Builder serverMeta(ServerMeta meta) {
+            this.serverMeta = meta;
+            return this;
+        }
+
+        @Override
+        public Builder zoneOffset(@Nullable ZoneOffset zoneOffset) {
+            this.zoneOffset = zoneOffset;
+            return this;
+        }
+
+        @Override
+        public Builder jsonCodec(@Nullable JsonCodec codec) {
+            this.jsonCodec = codec;
+            return this;
+        }
+
+        @Override
+        public Builder xmlCodec(@Nullable XmlCodec codec) {
+            this.xmlCodec = codec;
             return this;
         }
 
         @Override
         public DialectEnv build() {
-            assert this.factoryName != null
-                    && this.env != null
-                    && this.generatorMap != null
-                    && this.mappingEnv != null;
             return new DialectEnvImpl(this);
         }
 

@@ -17,7 +17,7 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.mapping.NoCastTextType;
+import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.*;
 import io.army.schema._FieldResult;
 import io.army.sqltype.DataType;
@@ -133,7 +133,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         appendTableOption(table, builder);
         sqlList.add(builder.toString());
 
-        switch (this.parser.database) {
+        switch (this.parser.dialectDatabase) {
             case PostgreSQL: {
                 appendIndexAfterTableDef(table, sqlList);
                 appendOuterComment(table, sqlList);
@@ -144,7 +144,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             case H2:
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(this.parser.database);
+                throw _Exceptions.unexpectedEnum(this.parser.dialectDatabase);
         }
 
     }
@@ -177,7 +177,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
         sqlList.add(builder.toString());
 
-        switch (this.parser.database) {
+        switch (this.parser.dialectDatabase) {
             case PostgreSQL: {
                 for (int i = 0; i < fieldSize; i++) {
                     builder.setLength(0); // clear
@@ -205,7 +205,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
 
-        switch (this.parser.database) {
+        switch (this.parser.dialectDatabase) {
             case PostgreSQL:
                 builder.append("IF EXISTS ");
                 break;
@@ -237,7 +237,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             }
             doModifyColumn(result, builder);
 
-            switch (this.parser.database) {
+            switch (this.parser.dialectDatabase) {
                 case PostgreSQL: {
                     if (result.containComment()) {
                         if (commentFieldList == null) {
@@ -326,7 +326,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             return;
         }
         final boolean ifExists, onTableName;
-        switch (this.parser.database) {
+        switch (this.parser.dialectDatabase) {
             case PostgreSQL:
                 ifExists = true;
                 onTableName = false;
@@ -338,7 +338,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             case Oracle:
             case H2:
             default:
-                throw _Exceptions.unexpectedEnum(this.parser.database);
+                throw _Exceptions.unexpectedEnum(this.parser.dialectDatabase);
         }
 
         final StringBuilder builder = new StringBuilder(30);
@@ -406,7 +406,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         if (field.generatorType() == GeneratorType.POST) {
             appendPostGenerator(field, builder);
         }
-        switch (this.parser.database) {
+        switch (this.parser.dialectDatabase) {
             case MySQL:
                 appendOuterComment(field, builder);
                 break;
@@ -415,7 +415,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             case PostgreSQL:
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(this.parser.database);
+                throw _Exceptions.unexpectedEnum(this.parser.dialectDatabase);
 
         }
 
@@ -461,7 +461,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             builder.append(COMMA_INDEX);
         }
 
-        switch (this.parser.database) {
+        switch (this.parser.dialectDatabase) {
             case MySQL: {
                 if (!index.isPrimaryKey()) {
                     builder.append(_Constant.SPACE);
@@ -477,7 +477,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             default:// no-op
         }
 
-        switch (this.parser.database) {
+        switch (this.parser.dialectDatabase) {
             case MySQL:
                 appendIndexType(index, builder);
                 break;
@@ -717,7 +717,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         final ArmyParser parser = this.parser;
         for (IndexMeta<T> index : table.indexList()) {
 
-            switch (parser.database) {
+            switch (parser.dialectDatabase) {
                 case PostgreSQL: {
                     if (!index.isPrimaryKey()) {
                         continue;
@@ -740,7 +740,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         final StringBuilder builder = new StringBuilder(30);
         for (IndexMeta<T> index : table.indexList()) {
 
-            switch (parser.database) {
+            switch (parser.dialectDatabase) {
                 case PostgreSQL: {
                     if (index.isPrimaryKey()) {
                         continue;

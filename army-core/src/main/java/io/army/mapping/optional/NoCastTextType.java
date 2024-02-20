@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package io.army.mapping;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.PostgreType;
 
-public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
+public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType, NoCastType {
 
 
     public static NoCastTextType from(final Class<?> javaType) {
@@ -60,18 +60,7 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final DataType dataType;
-        switch (meta.serverDatabase()) {
-            case PostgreSQL:
-                dataType = PostgreType.NO_CAST_TEXT;
-                break;
-            case MySQL:
-            case Oracle:
-            case H2:
-            default:
-                dataType = TextType.mapToDataType(this, meta);
-        }
-        return dataType;
+        return TextType.mapToDataType(this, meta);
     }
 
     @Override

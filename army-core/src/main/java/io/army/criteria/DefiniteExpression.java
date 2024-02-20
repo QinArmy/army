@@ -21,7 +21,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoCastTextType;
+import io.army.mapping.optional.NoCastTextType;
 
 import javax.annotation.Nullable;
 import java.util.Collection;

@@ -16,6 +16,7 @@
 
 package io.army.mapping;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -27,18 +28,21 @@ public interface UnaryGenericsMapping<E> extends MappingType.GenericsMappingType
 
     interface CollectionMapping<E> extends UnaryGenericsMapping<E> {
 
+        @Nullable
         Supplier<Collection<E>> collectionConstructor();
     }
 
 
     interface ListMapping<E> extends UnaryGenericsMapping<E> {
 
+        @Nullable
         Supplier<List<E>> listConstructor();
 
     }
 
     interface SetMapping<E> extends UnaryGenericsMapping<E> {
 
+        @Nullable
         Supplier<Set<E>> setConstructor();
 
 

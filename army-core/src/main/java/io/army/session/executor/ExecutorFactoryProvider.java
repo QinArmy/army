@@ -17,7 +17,6 @@
 package io.army.session.executor;
 
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
 
 import javax.annotation.Nullable;
@@ -39,7 +38,7 @@ import java.util.function.Function;
  * </ul>
  * The sub interface must override following methods :
  * <ul>
- *     <li>{@link #createServerMeta(Dialect, Function)}</li>
+ *     <li>{@link #createServerMeta(Function)}</li>
  *     <li>{@link #createFactory(ExecutorEnv)}</li>
  * </ul>
  *
@@ -51,11 +50,11 @@ public interface ExecutorFactoryProvider {
      * Sub interface must override this method return value type.
      * <p>This method always is invoked before {@link #createFactory(ExecutorEnv)}
      */
-    Object createServerMeta(Dialect useDialect, @Nullable Function<String, Database> func);
+    Object createServerMeta(@Nullable Function<String, Database> func);
 
     /**
      * Sub interface must override this method return value type.
-     * <p>This method always is invoked after {@link #createServerMeta(Dialect, Function)}
+     * <p>This method always is invoked after {@link #createServerMeta(Function)}
      */
     Object createFactory(ExecutorEnv env);
 

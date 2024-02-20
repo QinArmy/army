@@ -18,6 +18,7 @@ package io.army.mapping;
 
 import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
+import io.army.dialect.LiteralBinder;
 import io.army.meta.ServerMeta;
 import io.army.util._StringUtils;
 
@@ -37,6 +38,8 @@ final class ArmyMappingEnv implements MappingEnv {
 
     private final ZoneOffset zoneOffset;
 
+    private final LiteralBinder literalBinder;
+
     private final JsonCodec jsonCodec;
 
     private final XmlCodec xmlCodec;
@@ -46,10 +49,13 @@ final class ArmyMappingEnv implements MappingEnv {
         this.reactive = builder.reactive;
         this.serverMeta = builder.serverMeta;
         this.zoneOffset = builder.zoneOffset;
+        this.literalBinder = builder.literalBinder;
         this.jsonCodec = builder.jsonCodec;
         this.xmlCodec = builder.xmlCodec;
         if (this.serverMeta == null) {
             throw new IllegalArgumentException("serverMeta must non-null");
+        } else if (this.literalBinder == null) {
+            throw new IllegalArgumentException("literalBinder must non-null");
         }
     }
 
@@ -72,6 +78,11 @@ final class ArmyMappingEnv implements MappingEnv {
             zoneId = clock.getZone().getRules().getOffset(clock.instant());
         }
         return zoneId;
+    }
+
+    @Override
+    public LiteralBinder literalBinder() {
+        return this.literalBinder;
     }
 
     @Override
@@ -120,6 +131,8 @@ final class ArmyMappingEnv implements MappingEnv {
 
         private ZoneOffset zoneOffset;
 
+        private LiteralBinder literalBinder;
+
         private JsonCodec jsonCodec;
 
         private XmlCodec xmlCodec;
@@ -139,6 +152,12 @@ final class ArmyMappingEnv implements MappingEnv {
         @Override
         public Builder zoneOffset(@Nullable ZoneOffset zoneOffset) {
             this.zoneOffset = zoneOffset;
+            return this;
+        }
+
+        @Override
+        public Builder literalBinder(LiteralBinder literalBinder) {
+            this.literalBinder = literalBinder;
             return this;
         }
 

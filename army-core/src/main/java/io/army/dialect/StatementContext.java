@@ -102,7 +102,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
 
     @Override
     public final Database database() {
-        return this.parser.database;
+        return this.parser.dialectDatabase;
     }
 
     @Override

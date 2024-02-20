@@ -1,13 +1,15 @@
-package io.army.mapping;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.Database;
+import io.army.mapping.LongType;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping._NumericType;
 import io.army.mapping.array.LongArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
-import io.army.sqltype.PostgreType;
 
-public final class NoCastLongType extends _NumericType._IntegerType {
+public final class NoCastLongType extends _NumericType._IntegerType implements NoCastType {
 
     public static NoCastLongType from(final Class<?> fieldType) {
         if (fieldType != Long.class) {
@@ -41,9 +43,6 @@ public final class NoCastLongType extends _NumericType._IntegerType {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        if (meta.serverDatabase() == Database.PostgreSQL) {
-            return PostgreType.NO_CAST_BIGINT;
-        }
         return LongType.mapToDataType(this, meta);
     }
 

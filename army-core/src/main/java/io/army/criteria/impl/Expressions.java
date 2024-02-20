@@ -26,6 +26,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.JsonPathType;
+import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;

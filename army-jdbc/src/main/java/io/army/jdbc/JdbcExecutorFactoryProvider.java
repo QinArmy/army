@@ -20,6 +20,7 @@ import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
@@ -50,7 +51,7 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
         if (!(dataSource instanceof DataSource || dataSource instanceof XADataSource)) {
             throw unsupportedDataSource(dataSource);
         }
-        return new JdbcExecutorFactoryProvider((CommonDataSource) dataSource, factoryName);
+        return new JdbcExecutorFactoryProvider((CommonDataSource) dataSource, factoryName, env);
     }
 
 
@@ -58,18 +59,21 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
 
     final String sessionFactoryName;
 
+    private final Dialect usedDialect;
+
     int methodFlag = 0;
 
     ServerMeta meta;
 
-    private JdbcExecutorFactoryProvider(CommonDataSource dataSource, String factoryName) {
+    private JdbcExecutorFactoryProvider(CommonDataSource dataSource, String factoryName, ArmyEnvironment env) {
         this.dataSource = dataSource;
         this.sessionFactoryName = factoryName;
+        this.usedDialect = env.getOrDefault(ArmyKey.DIALECT);
     }
 
 
     @Override
-    public ServerMeta createServerMeta(final Dialect usedDialect, @Nullable Function<String, Database> func)
+    public ServerMeta createServerMeta(@Nullable Function<String, Database> func)
             throws DataAccessException {
         final CommonDataSource dataSource = this.dataSource;
 

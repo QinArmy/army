@@ -17,11 +17,15 @@
 package io.army.dialect;
 
 
+import io.army.codec.JsonCodec;
+import io.army.codec.XmlCodec;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
-import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
+import io.army.meta.ServerMeta;
 
+import javax.annotation.Nullable;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 public interface DialectEnv {
@@ -32,7 +36,28 @@ public interface DialectEnv {
 
     Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap();
 
-    MappingEnv mappingEnv();
+
+    boolean isReactive();
+
+    /**
+     * @return always same instance
+     */
+    ServerMeta serverMeta();
+
+    @Nullable
+    ZoneOffset zoneOffset();
+
+    /**
+     * @throws IllegalStateException throw when don't support  {@link JsonCodec}.
+     */
+    @Nullable
+    JsonCodec jsonCodec();
+
+    /**
+     * @throws IllegalStateException throw when don't support  {@link XmlCodec}.
+     */
+    @Nullable
+    XmlCodec xmlCodec();
 
 
     static Builder builder() {
@@ -47,8 +72,15 @@ public interface DialectEnv {
 
         Builder fieldGeneratorMap(Map<FieldMeta<?>, FieldGenerator> generatorMap);
 
+        Builder reactive(boolean yes);
 
-        Builder mappingEnv(MappingEnv mappingEnv);
+        Builder serverMeta(ServerMeta meta);
+
+        Builder zoneOffset(@Nullable ZoneOffset zoneOffset);
+
+        Builder jsonCodec(@Nullable JsonCodec codec);
+
+        Builder xmlCodec(@Nullable XmlCodec codec);
 
         DialectEnv build();
     }

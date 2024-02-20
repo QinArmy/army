@@ -73,8 +73,9 @@ abstract class ArmyParser implements DialectParser {
 
     protected final Dialect dialect;
 
-    protected final Database database;
-    public final DialectEnv dialectEnv;
+    protected final Database dialectDatabase;
+
+    protected final Database serverDatabase;
 
     protected final MappingEnv mappingEnv;
 
@@ -156,12 +157,12 @@ abstract class ArmyParser implements DialectParser {
 
     ArmyParser(final DialectEnv dialectEnv, final Dialect dialect) {
         this.dialect = dialect; // first
-        this.database = this.dialect.database();
-        this.dialectEnv = dialectEnv;
-        this.mappingEnv = dialectEnv.mappingEnv();
+        this.serverMeta = dialectEnv.serverMeta();
+        this.dialectDatabase = this.dialect.database();
+        this.serverDatabase = this.serverMeta.serverDatabase();
 
-        this.serverMeta = this.mappingEnv.serverMeta();
-        this.mockEnv = this.dialectEnv instanceof _MockDialects;
+        this.mappingEnv = createMappingEnv(dialectEnv);
+        this.mockEnv = dialectEnv instanceof _MockDialects;
 
         assert this.serverMeta.serverDatabase().isCompatible(dialect);
         this.keyWordMap = _DialectUtils.createKeyWordMap(this.createKeyWordSet());
@@ -209,7 +210,7 @@ abstract class ArmyParser implements DialectParser {
 
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
         this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
-        this.supportLastInsertedId = this.database != Database.PostgreSQL || this.dialect.compareWith(PostgreDialect.POSTGRE12) < 0;
+        this.supportLastInsertedId = this.dialectDatabase != Database.PostgreSQL || this.dialect.compareWith(PostgreDialect.POSTGRE12) < 0;
         this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
 
         this.unrecognizedTypeAllowed = env.getOrDefault(ArmyKey.UNRECOGNIZED_TYPE_ALLOWED);
@@ -417,6 +418,11 @@ abstract class ArmyParser implements DialectParser {
     @Override
     public final ServerMeta serverMeta() {
         return this.serverMeta;
+    }
+
+    @Override
+    public final MappingEnv mappingEnv() {
+        return this.mappingEnv;
     }
 
     @Override
@@ -729,6 +735,10 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
+    public final void literal(final TypeMeta typeMeta, @Nullable Object value, final boolean cast, final StringBuilder sqlBuilder) {
+
+    }
+
     /**
      * <p>Append  literal
      */
@@ -759,7 +769,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     protected void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder) {
-        String m = String.format("%s don't support array", this.database.name());
+        String m = String.format("%s don't support array", this.dialectDatabase.name());
         throw new MetaException(m);
     }
 
@@ -936,7 +946,7 @@ abstract class ArmyParser implements DialectParser {
                 throw _Exceptions.notUserDefinedType(type, dataType);
             }
         } else if (!this.unrecognizedTypeAllowed) {
-            throw _Exceptions.unrecognizedType(this.database, dataType);
+            throw _Exceptions.unrecognizedType(this.dialectDatabase, dataType);
         }
 
         final String typeName;
@@ -3355,6 +3365,21 @@ abstract class ArmyParser implements DialectParser {
      */
     private Stmt createDialectStmt(_StmtContext context) {
         return context.build();
+    }
+
+
+    /**
+     * @see #ArmyParser(DialectEnv, Dialect)
+     */
+    private MappingEnv createMappingEnv(final DialectEnv env) {
+        return MappingEnv.builder()
+                .reactive(env.isReactive())
+                .serverMeta(env.serverMeta())
+                .zoneOffset(env.zoneOffset())
+                .literalBinder(this::literal) // avoid to cast
+                .jsonCodec(env.jsonCodec())
+                .xmlCodec(env.xmlCodec())
+                .build();
     }
 
     /*-------------------below protected static methods -------------------*/

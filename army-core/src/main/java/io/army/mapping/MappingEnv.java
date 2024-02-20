@@ -18,11 +18,16 @@ package io.army.mapping;
 
 import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
+import io.army.dialect.LiteralBinder;
 import io.army.meta.ServerMeta;
 
 import javax.annotation.Nullable;
 import java.time.ZoneOffset;
 
+
+/**
+ * <p>The instance of this interface is created by the implementation of {@link io.army.dialect.DialectParser}.
+ */
 public interface MappingEnv {
 
     boolean isReactive();
@@ -33,6 +38,8 @@ public interface MappingEnv {
     ServerMeta serverMeta();
 
     ZoneOffset zoneOffset();
+
+    LiteralBinder literalBinder();
 
     /**
      * @throws IllegalStateException throw when don't support  {@link JsonCodec}.
@@ -55,6 +62,8 @@ public interface MappingEnv {
         Builder serverMeta(ServerMeta meta);
 
         Builder zoneOffset(@Nullable ZoneOffset zoneOffset);
+
+        Builder literalBinder(LiteralBinder literalBinder);
 
         Builder jsonCodec(@Nullable JsonCodec codec);
 

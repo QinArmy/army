@@ -558,6 +558,9 @@ public abstract class ExecutorSupport {
             case "money":
                 type = PostgreType.MONEY;
                 break;
+            case "record":
+                type = PostgreType.RECORD;
+                break;
             case "aclitem":
                 type = PostgreType.ACLITEM;
                 break;
@@ -749,6 +752,9 @@ public abstract class ExecutorSupport {
 
             case "money[]":
                 type = PostgreType.MONEY_ARRAY;
+                break;
+            case "record[]":
+                type = PostgreType.RECORD_ARRAY;
                 break;
             case "pg_lsn[]":
                 type = PostgreType.PG_LSN_ARRAY;
@@ -1388,9 +1394,6 @@ public abstract class ExecutorSupport {
 
 
     } // ArmyStmtCursor
-
-
-
 
 
 }

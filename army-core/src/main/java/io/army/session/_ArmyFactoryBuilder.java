@@ -22,9 +22,7 @@ import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect._Constant;
+import io.army.dialect.*;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
@@ -81,7 +79,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     protected DdlMode ddlMode;
 
-    protected DialectEnv dialectEnv;
+    protected DialectParser dialectParser;
 
     private Map<Option<?>, Object> dataSourceOptionMap;
 
@@ -227,15 +225,36 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     protected abstract Logger getLogger();
 
 
+    protected final DialectParser createDialectParser(String factoryName, boolean reactive, ServerMeta serverMeta,
+                                                      ArmyEnvironment env) {
+        final DialectEnv dialectEnv;
+        //8. create DialectEnv
+        dialectEnv = DialectEnv.builder()
+                .factoryName(factoryName)
+                .environment(env)
+                .fieldGeneratorMap(createFieldGeneratorMap())
+                .reactive(reactive)
+                .serverMeta(serverMeta)
+                .zoneOffset(env.get(ArmyKey.ZONE_OFFSET))
+                .jsonCodec(this.jsonCodec)
+                .xmlCodec(this.xmlCodec)
+                .build();
+
+        final DialectParser dialectParser;
+        this.dialectParser = dialectParser = DialectParserFactory.createDialect(dialectEnv);
+        return dialectParser;
+    }
+
+
     protected final Function<Option<?>, ?> dataSourceFunc() {
         return _FunctionUtils.mapFunc(this.dataSourceOptionMap);
     }
 
-    protected final ExecutorEnv createExecutorEnv(String factoryName, ServerMeta serverMeta, ArmyEnvironment env,
-                                                  MappingEnv mappingEnv) {
+    protected final ExecutorEnv createExecutorEnv(String factoryName, ArmyEnvironment env, DialectParser dialectParser) {
         final Map<FieldMeta<?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
-        return new ArmyExecutorEnvironment(factoryName, serverMeta, codecMap, env, mappingEnv);
+        return new ArmyExecutorEnvironment(factoryName, dialectParser.serverMeta(), codecMap, env,
+                dialectParser.mappingEnv());
     }
 
     protected final Map<FieldMeta<?>, FieldGenerator> createFieldGeneratorMap() {

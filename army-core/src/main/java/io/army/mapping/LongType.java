@@ -97,7 +97,7 @@ public final class LongType extends _NumericType._IntegerType {
         return toLong(this, dataType, source, Long.MIN_VALUE, Long.MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
-    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+    public static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
         final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
@@ -113,7 +113,7 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
 
-    static long toLong(final MappingType type, final DataType dataType, final Object nonNull,
+    public static long toLong(final MappingType type, final DataType dataType, final Object nonNull,
                        final long min, final long max, final ErrorHandler errorHandler) {
         final long value;
         if (nonNull instanceof Long) {

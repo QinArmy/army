@@ -17,7 +17,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.mapping.*;
+import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
+import io.army.mapping.optional.NoCastBigDecimalType;
+import io.army.mapping.optional.NoCastIntegerType;
+import io.army.mapping.optional.NoCastLongType;
+import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;

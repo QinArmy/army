@@ -19,9 +19,7 @@ package io.army.session;
 import io.army.ArmyException;
 import io.army.criteria.Visible;
 import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;
-import io.army.dialect.DialectParserFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
@@ -106,10 +104,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         this.tableMap = Objects.requireNonNull(support.tableMap);
 
         this.readonly = env.getOrDefault(ArmyKey.READ_ONLY);
-        final DialectEnv dialectEnv = support.dialectEnv;
-        assert dialectEnv != null;
-        this.dialectParser = DialectParserFactory.createDialect(dialectEnv);
-        this.mappingEnv = dialectEnv.mappingEnv();
+        this.dialectParser = support.dialectParser;
+        assert this.dialectParser != null;
+        this.mappingEnv = this.dialectParser.mappingEnv();
         this.serverDatabase = this.mappingEnv.serverMeta().serverDatabase();
 
         this.queryInsertMode = env.getOrDefault(ArmyKey.QUERY_INSERT_MODE);

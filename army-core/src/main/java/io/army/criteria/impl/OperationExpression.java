@@ -24,8 +24,12 @@ import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
 import io.army.function.TeNamedOperator;
-import io.army.mapping.*;
+import io.army.mapping.BooleanType;
+import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
 import io.army.mapping.optional.JsonPathType;
+import io.army.mapping.optional.NoCastIntegerType;
+import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 

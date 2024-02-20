@@ -22,7 +22,7 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
-import io.army.mapping.NoCastTextType;
+import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 

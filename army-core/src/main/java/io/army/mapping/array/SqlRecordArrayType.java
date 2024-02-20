@@ -3,6 +3,7 @@ package io.army.mapping.array;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;
@@ -16,9 +17,12 @@ import io.army.type.SqlRecord;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -53,8 +57,8 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
     }
 
 
-    public static SqlRecordArrayType fromList(final Supplier<List<SqlRecord>> constructor, final List<MappingType> columnTypeList) {
-        Objects.requireNonNull(constructor);
+    public static SqlRecordArrayType fromList(final @Nullable Supplier<List<SqlRecord>> constructor,
+                                              final List<MappingType> columnTypeList) {
         if (columnTypeList.size() == 0) {
             throw new IllegalArgumentException("column type list must be non-empty");
         }
@@ -136,17 +140,74 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
 
     @Override
     public final Object convert(MappingEnv env, Object source) throws CriteriaException {
-        return null;
+        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, PostgreArrays::decodeElement,
+                PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return null;
+    public final String beforeBind(DataType dataType, final MappingEnv env, Object source) throws CriteriaException {
+
+        final BiConsumer<Object, Consumer<String>> consumer;
+        consumer = (o, c) -> appendToText(env, o, c);
+
+        return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this,
+                PARAM_ERROR_HANDLER
+        );
     }
 
     @Override
     public final Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return null;
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false,
+                this::decodeElement, ACCESS_ERROR_HANDLER
+        );
+    }
+
+    private void appendToText(final MappingEnv env, final Object element, final Consumer<String> appender) {
+        if (!(element instanceof SqlRecord)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+
+        final SqlRecord record = (SqlRecord) element;
+
+        final List<MappingType> columnTypeList = this.columnTypeList;
+        final int columnSize = columnTypeList.size();
+        if (record.size() != columnSize) {
+            throw recordColumnCountNotMatch(record, columnSize, this);
+        }
+
+        final ServerMeta meta = env.serverMeta();
+
+        MappingType columnType;
+        DataType dataType;
+        Object column;
+        appender.accept("(");
+        for (int i = 0; i < columnSize; i++) {
+            if (i > 0) {
+                appender.accept(",");
+            }
+            column = record.get(i);
+            if (column == null) {
+                appender.accept(_Constant.NULL);
+                continue;
+            }
+            columnType = columnTypeList.get(i);
+            dataType = columnType.map(meta);
+            columnType.beforeBind(dataType, env, column);
+        }
+        appender.accept(")");
+
+    }
+
+    private String decodeElement(final String text, int offset, int end) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    private static IllegalArgumentException recordColumnCountNotMatch(SqlRecord record, int columnSize, MappingType type) {
+        String m = String.format("%s column count[%s] and column count[%s] of %s not match",
+                record.getClass().getName(), record.size(), columnSize, type.getClass().getName());
+        return new IllegalArgumentException(m);
     }
 
 
@@ -155,7 +216,7 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
 
         private final Supplier<List<SqlRecord>> constructor;
 
-        private ListType(List<MappingType> columnTypeList, Supplier<List<SqlRecord>> constructor) {
+        private ListType(List<MappingType> columnTypeList, @Nullable Supplier<List<SqlRecord>> constructor) {
             super(List.class, columnTypeList);
             this.constructor = constructor;
         }

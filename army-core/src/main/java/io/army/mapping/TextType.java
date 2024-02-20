@@ -92,7 +92,7 @@ public final class TextType extends ArmyTextType {
         return mapToDataType(this, meta);
     }
 
-    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+    public static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
         final SqlType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:

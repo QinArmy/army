@@ -20,6 +20,7 @@ import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.ReactiveExecutorFactory;
@@ -56,25 +57,28 @@ public final class JdbdExecutorFactoryProvider implements ReactiveExecutorFactor
         } else if (!_StringUtils.hasText(factoryName)) {
             throw new IllegalArgumentException();
         }
-        return new JdbdExecutorFactoryProvider((DatabaseSessionFactory) datasource, factoryName);
+        return new JdbdExecutorFactoryProvider((DatabaseSessionFactory) datasource, factoryName, env);
     }
 
 
     final DatabaseSessionFactory sessionFactory;
 
+    private final Dialect usedDialect;
+
     final String factoryName;
 
 
-    private JdbdExecutorFactoryProvider(DatabaseSessionFactory sessionFactory, String factoryName) {
+    private JdbdExecutorFactoryProvider(DatabaseSessionFactory sessionFactory, String factoryName, ArmyEnvironment env) {
         this.sessionFactory = sessionFactory;
         this.factoryName = factoryName;
+        this.usedDialect = env.getOrDefault(ArmyKey.DIALECT);
     }
 
     @Override
-    public Mono<ServerMeta> createServerMeta(final Dialect usedDialect, final @Nullable Function<String, Database> func) {
+    public Mono<ServerMeta> createServerMeta(final @Nullable Function<String, Database> func) {
         return Mono.from(this.sessionFactory.localSession())
                 .flatMap(session -> Mono.from(session.databaseMetaData().currentSchema(Option.EMPTY_OPTION_FUNC))
-                        .map(schemaMeta -> mapServerMeta(schemaMeta, usedDialect, func))
+                        .map(schemaMeta -> mapServerMeta(schemaMeta, this.usedDialect, func))
                         .onErrorResume(error -> Mono.from(session.close()))
                         .concatWith(Mono.defer(() -> Mono.from(session.close())))
                         .last()

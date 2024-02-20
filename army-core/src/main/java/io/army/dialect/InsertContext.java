@@ -477,7 +477,7 @@ abstract class InsertContext extends StatementContext
         } else if (tableAlias.equals(this.rowAlias)) {
             if (this.inSetClause && this.fieldMap != null && !this.fieldMap.containsKey(field)) {
                 // here ,MySQL couldn't recognize field
-                String m = String.format("%s not present in column list clause,so %s couldn't recognize.", field, this.parser.database.name());
+                String m = String.format("%s not present in column list clause,so %s couldn't recognize.", field, this.parser.dialectDatabase.name());
                 throw new CriteriaException(m);
             }
             thisTableField = true;

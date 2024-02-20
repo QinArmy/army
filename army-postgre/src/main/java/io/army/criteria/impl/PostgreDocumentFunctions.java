@@ -22,6 +22,7 @@ import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.array.XmlArrayType;
 import io.army.mapping.optional.JsonPathType;
+import io.army.mapping.optional.NoCastTextType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
 import io.army.meta.TableMeta;

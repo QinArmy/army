@@ -19,7 +19,7 @@ package io.army.dialect.postgre;
 import io.army.annotation.GeneratorType;
 import io.army.dialect._Constant;
 import io.army.dialect._DdlParser;
-import io.army.mapping.NoCastTextType;
+import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;

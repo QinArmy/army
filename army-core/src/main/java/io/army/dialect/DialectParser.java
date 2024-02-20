@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
+import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.schema.SchemaResult;
@@ -87,6 +88,8 @@ public interface DialectParser {
     boolean isKeyWords(String words);
 
     ServerMeta serverMeta();
+
+    MappingEnv mappingEnv();
 
     StringBuilder identifier(String identifier, StringBuilder builder);
 

@@ -17,7 +17,6 @@
 package io.army.sync.executor;
 
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
@@ -33,11 +32,10 @@ import java.util.function.Function;
 public interface SyncStmtExecutorFactoryProvider extends ExecutorFactoryProvider {
 
     @Override
-    ServerMeta createServerMeta(Dialect usedDialect, @Nullable Function<String, Database> func) throws DataAccessException;
-
+    ServerMeta createServerMeta(@Nullable Function<String, Database> func) throws DataAccessException;
 
     /**
-     * @throws IllegalStateException    throw when invoke this method before {@link #createServerMeta(Dialect, Function)}
+     * @throws IllegalStateException    throw when invoke this method before {@link #createServerMeta(Function)}
      * @throws IllegalArgumentException throw when {@link  MappingEnv#serverMeta()} not match.
      */
     @Override

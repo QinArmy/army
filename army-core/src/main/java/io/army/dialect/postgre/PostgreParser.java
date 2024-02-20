@@ -28,6 +28,7 @@ import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping.optional.NoCastType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.executor.ExecutorSupport;
@@ -128,24 +129,21 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final void bindLiteralNull(final MappingType type, final DataType dataType, final StringBuilder sqlBuilder) {
         if (!(dataType instanceof SqlType)) {
-            sqlBuilder.append(_Constant.NULL)
-                    .append("::")
-                    .append(dataType.typeName());
+            sqlBuilder.append(_Constant.NULL);
+            if (!(type instanceof NoCastType)) {
+                sqlBuilder.append("::");
+                identifier(dataType.typeName(), sqlBuilder);
+            }
         } else switch ((PostgreType) dataType) {
             case UNKNOWN:
             case REF_CURSOR:
                 throw ExecutorSupport.mapMethodError(type, dataType);
-            case NO_CAST_INTEGER:
-            case NO_CAST_TEXT:
-            case NO_CAST_BIGINT:
-            case NO_CAST_DECIMAL:
-                sqlBuilder.append(_Constant.NULL);
-                break;
             default: {
-                sqlBuilder.append(_Constant.NULL)
-                        .append("::")
-                        .append(dataType.typeName());
-
+                sqlBuilder.append(_Constant.NULL);
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("::")
+                            .append(dataType.typeName());
+                }
             }
 
         }//switch
@@ -156,15 +154,25 @@ abstract class PostgreParser extends _ArmyDialectParser {
     protected final void bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                      final StringBuilder sqlBuilder) {
 
+        final MappingType type;
+        if (typeMeta instanceof MappingType) {
+            type = (MappingType) typeMeta;
+        } else {
+            type = typeMeta.mappingType();
+        }
+
         if (!(dataType instanceof PostgreType)) {
             if (!(value instanceof String)) {
                 throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
             }
             sqlBuilder.append(_Constant.QUOTE)
                     .append(value)
-                    .append(_Constant.QUOTE)
-                    .append("::");
-            unrecognizedTypeName(typeMeta.mappingType(), dataType, true, sqlBuilder);
+                    .append(_Constant.QUOTE);
+
+            if (!(type instanceof NoCastType)) {
+                sqlBuilder.append("::");
+                unrecognizedTypeName(typeMeta.mappingType(), dataType, true, sqlBuilder);
+            }
         } else if (dataType.isArray()) {
             if (!(value instanceof String)) {
                 throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
@@ -173,9 +181,12 @@ abstract class PostgreParser extends _ArmyDialectParser {
             assert elementType != null;
             sqlBuilder.append(_Constant.QUOTE)
                     .append(value)
-                    .append(_Constant.QUOTE)
-                    .append("::");
-            arrayTypeName(elementType.typeName(), ArrayUtils.dimensionOfType(typeMeta.mappingType()), sqlBuilder);
+                    .append(_Constant.QUOTE);
+
+            if (!(type instanceof NoCastType)) {
+                sqlBuilder.append("::");
+                arrayTypeName(elementType.typeName(), ArrayUtils.dimensionOfType(typeMeta.mappingType()), sqlBuilder);
+            }
         } else switch ((PostgreType) dataType) {
             case BOOLEAN:
                 _Literals.bindBoolean(typeMeta, dataType, value, sqlBuilder);
@@ -184,85 +195,84 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Integer)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                sqlBuilder.append(value)
-                        .append("::INTEGER");
-            }
-            break;
-            case NO_CAST_INTEGER: {
-                if (!(value instanceof Integer)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
                 sqlBuilder.append(value);
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("::INTEGER");
+                }
             }
             break;
             case BIGINT: {
                 if (!(value instanceof Long)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                sqlBuilder.append(value)
-                        .append("::BIGINT");
-            }
-            break;
-            case NO_CAST_BIGINT: {
-                if (!(value instanceof Long)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
                 sqlBuilder.append(value);
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("::BIGINT");
+                }
             }
             break;
             case DECIMAL: {
                 if (!(value instanceof BigDecimal)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                sqlBuilder.append(((BigDecimal) value).toPlainString())
-                        .append("::DECIMAL");
-            }
-            break;
-            case NO_CAST_DECIMAL: {
-                if (!(value instanceof BigDecimal)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
                 sqlBuilder.append(((BigDecimal) value).toPlainString());
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("::DECIMAL");
+                }
             }
             break;
             case FLOAT8: {
                 if (!(value instanceof Double)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                sqlBuilder.append(value)
-                        .append("::FLOAT8");
+                sqlBuilder.append(value);
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("::FLOAT8");
+                }
             }
             break;
             case REAL: {
                 if (!(value instanceof Float)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                sqlBuilder.append(value)
-                        .append("::REAL");
+                sqlBuilder.append(value);
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("::REAL");
+                }
             }
             break;
             case TIME: {
-                sqlBuilder.append("TIME ");
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("TIME ");
+                }
                 _Literals.bindLocalTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case DATE: {
-                sqlBuilder.append("DATE ");
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("DATE ");
+                }
                 _Literals.bindLocalDate(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIMETZ: {
-                sqlBuilder.append("TIMETZ ");
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("TIMETZ ");
+                }
                 _Literals.bindOffsetTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIMESTAMP: {
-                sqlBuilder.append("TIMESTAMP ");
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("TIMESTAMP ");
+                }
                 _Literals.bindLocalDateTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIMESTAMPTZ: {
-                sqlBuilder.append("TIMESTAMPTZ ");
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("TIMESTAMPTZ ");
+                }
                 _Literals.bindOffsetDateTime(typeMeta, dataType, value, sqlBuilder);
             }
             break;
@@ -270,8 +280,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Short)) {
                     throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(value)
-                        .append("::SMALLINT");
+                sqlBuilder.append(value);
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append("::SMALLINT");
+                }
             }
             break;
             case CHAR:
@@ -320,21 +332,24 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case ACLITEM:
             case PG_LSN:
             case PG_SNAPSHOT: {
-                sqlBuilder.append(dataType.typeName())
-                        .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append(dataType.typeName())
+                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                }
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
             }
             break;
-            case NO_CAST_TEXT:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, dataType, value, sqlBuilder);
-                break;
             case BYTEA: {
                 if (!(value instanceof byte[])) {
                     throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(dataType.typeName())
-                        .append(_Constant.SPACE)
-                        .append(_Constant.QUOTE)
+
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append(dataType.typeName())
+                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                }
+
+                sqlBuilder.append(_Constant.QUOTE)
                         .append(_Constant.BACK_SLASH)
                         .append('x')
                         .append(_Literals.hexEscapes((byte[]) value))
@@ -343,8 +358,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             case VARBIT:
             case BIT: {
-                sqlBuilder.append(dataType.typeName())
-                        .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                if (!(type instanceof NoCastType)) {
+                    sqlBuilder.append(dataType.typeName())
+                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                }
                 PostgreLiterals.postgreBitString(typeMeta, dataType, value, sqlBuilder);
             }
             break;

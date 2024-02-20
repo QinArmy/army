@@ -131,7 +131,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final void bindLiteralNull(final MappingType type, final DataType dataType, final StringBuilder sqlBuilder) {
         if (!(dataType instanceof MySQLType)) {
             if (!this.unrecognizedTypeAllowed) {
-                throw _Exceptions.unrecognizedType(this.database, dataType);
+                throw _Exceptions.unrecognizedType(this.dialectDatabase, dataType);
             }
         } else switch ((MySQLType) dataType) {
             case UNKNOWN:
@@ -149,7 +149,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                                      final StringBuilder sqlBuilder) {
 
         if (!(dataType instanceof MySQLType)) {
-            throw _Exceptions.unrecognizedTypeLiteral(this.database, dataType);
+            throw _Exceptions.unrecognizedTypeLiteral(this.dialectDatabase, dataType);
         }
 
         switch ((MySQLType) dataType) {

@@ -21,8 +21,8 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoCastBigDecimalType;
-import io.army.mapping.NoCastLongType;
+import io.army.mapping.optional.NoCastBigDecimalType;
+import io.army.mapping.optional.NoCastLongType;
 import io.army.meta.TypeMeta;
 
 import javax.annotation.Nullable;
