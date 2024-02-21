@@ -62,10 +62,7 @@ final class DialectEnvImpl implements DialectEnv {
         this.jsonCodec = builder.jsonCodec;
         this.xmlCodec = builder.xmlCodec;
 
-        if (this.serverMeta == null
-                || this.zoneOffset == null
-                || this.jsonCodec == null
-                || this.xmlCodec == null) {
+        if (this.serverMeta == null) {
             throw new IllegalArgumentException();
         }
 
