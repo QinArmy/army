@@ -31,7 +31,6 @@ import io.army.util.ArrayUtils;
 import io.army.util._TimeUtils;
 
 import java.time.OffsetTime;
-import java.util.function.Consumer;
 
 public class OffsetTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
@@ -152,17 +151,15 @@ public class OffsetTimeArrayType extends _ArmyNoInjectionMapping implements Mapp
         return OffsetTime.parse(timeStr, _TimeUtils.OFFSET_TIME_FORMATTER_6);
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof OffsetTime)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        final String doubleQuote;
-        doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
 
-        appender.accept(doubleQuote);
-        appender.accept(((OffsetTime) element).format(_TimeUtils.OFFSET_TIME_FORMATTER_6));
-        appender.accept(doubleQuote);
+        appender.append(_Constant.DOUBLE_QUOTE);
+        appender.append(((OffsetTime) element).format(_TimeUtils.OFFSET_TIME_FORMATTER_6));
+        appender.append(_Constant.DOUBLE_QUOTE);
 
     }
 

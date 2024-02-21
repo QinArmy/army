@@ -18,6 +18,7 @@ package io.army.criteria.dialect;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
+import io.army.mapping.MappingType;
 
 
 /**
@@ -80,6 +81,14 @@ import io.army.criteria.SimpleExpression;
 public interface VarExpression extends SimpleExpression {
 
     /**
+     * <p>The data type of variable expression is mutable.
+     *
+     * @return current data type of variable expression
+     */
+    @Override
+    MappingType typeMeta();
+
+    /**
      * @return session variable name
      */
     String name();
@@ -100,7 +109,6 @@ public interface VarExpression extends SimpleExpression {
     SimpleExpression divideEqual(Expression value);
 
     SimpleExpression modeEqual(Expression value);
-
 
 
 }

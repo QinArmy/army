@@ -28,8 +28,6 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
-
 public class FloatArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
@@ -155,12 +153,12 @@ public class FloatArrayType extends _ArmyNoInjectionMapping implements MappingTy
         return Float.parseFloat(text.substring(offset, end));
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Float)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
 

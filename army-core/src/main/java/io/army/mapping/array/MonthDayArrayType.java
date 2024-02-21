@@ -30,7 +30,6 @@ import io.army.util.ArrayUtils;
 
 import java.time.LocalDate;
 import java.time.MonthDay;
-import java.util.function.Consumer;
 
 public class MonthDayArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
@@ -147,18 +146,16 @@ public class MonthDayArrayType extends _ArmyNoInjectionMapping implements Mappin
         return value;
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof MonthDay)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        final String doubleQuote;
-        doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
 
-        appender.accept(doubleQuote);
-        appender.accept("1970-");
-        appender.accept(element.toString());
-        appender.accept(doubleQuote);
+        appender.append(_Constant.DOUBLE_QUOTE);
+        appender.append("1970-");
+        appender.append(element);
+        appender.append(_Constant.DOUBLE_QUOTE);
 
     }
 

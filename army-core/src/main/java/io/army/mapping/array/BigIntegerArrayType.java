@@ -25,7 +25,6 @@ import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 
 import java.math.BigInteger;
-import java.util.function.Consumer;
 
 public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
@@ -133,12 +132,12 @@ public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements Mapp
         return new BigInteger(text.substring(offset, end));
     }
 
-    public static void appendToText(final Object element, final Consumer<String> appender) {
+    public static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof BigInteger)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
 }

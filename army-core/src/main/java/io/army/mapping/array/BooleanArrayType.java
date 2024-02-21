@@ -29,8 +29,6 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
-
 public class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static BooleanArrayType from(final Class<?> javaType) {
@@ -186,12 +184,12 @@ public class BooleanArrayType extends _ArmyNoInjectionMapping implements Mapping
         return value;
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Boolean)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
 

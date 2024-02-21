@@ -31,7 +31,6 @@ import io.army.util.ArrayUtils;
 import io.army.util._TimeUtils;
 
 import java.time.LocalDateTime;
-import java.util.function.Consumer;
 
 public class LocalDateTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
@@ -151,17 +150,15 @@ public class LocalDateTimeArrayType extends _ArmyNoInjectionMapping implements M
         return LocalDateTime.parse(timeStr, _TimeUtils.DATETIME_FORMATTER_6);
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof LocalDateTime)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        final String doubleQuote;
-        doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
 
-        appender.accept(doubleQuote);
-        appender.accept(((LocalDateTime) element).format(_TimeUtils.DATETIME_FORMATTER_6));
-        appender.accept(doubleQuote);
+        appender.append(_Constant.DOUBLE_QUOTE);
+        appender.append(((LocalDateTime) element).format(_TimeUtils.DATETIME_FORMATTER_6));
+        appender.append(_Constant.DOUBLE_QUOTE);
 
     }
 

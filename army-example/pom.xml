@@ -90,6 +90,12 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.firebirdsql.jdbc</groupId>
+            <artifactId>jaybird</artifactId>
+            <version>5.0.3.java8</version>
+        </dependency>
+
         <!-- JDBC driver end -->
 
         <!-- JDBD driver start -->

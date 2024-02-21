@@ -33,7 +33,6 @@ import io.army.util._Exceptions;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -307,10 +306,10 @@ public class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType implements
      * @param boundSerializer serializer of bound
      * @param <T>             java type of subtype of range
      */
-    public static <T> String arrayBeforeBind(final Object nonNull, final BiConsumer<T, Consumer<String>> boundSerializer,
+    public static <T> String arrayBeforeBind(final Object nonNull, final BiConsumer<T, StringBuilder> boundSerializer,
                                              final DataType dataType, final MappingType type,
                                              final ErrorHandler handler) {
-        final BiConsumer<Object, Consumer<String>> rangeSerializer;
+        final BiConsumer<Object, StringBuilder> rangeSerializer;
         rangeSerializer = (range, appender) -> PostgreRangeType.rangeToText(range, boundSerializer, type, appender);
         return PostgreArrays.arrayBeforeBind(nonNull, rangeSerializer, dataType, type, handler);
     }

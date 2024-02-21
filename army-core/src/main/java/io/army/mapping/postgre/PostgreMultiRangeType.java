@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -383,7 +382,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
 
-    public static <T> String rangeBeforeBind(final Object nonNull, final BiConsumer<T, Consumer<String>> boundSerializer,
+    public static <T> String rangeBeforeBind(final Object nonNull, final BiConsumer<T, StringBuilder> boundSerializer,
                                              final DataType dataType, final MappingType type, final ErrorHandler handler)
             throws CriteriaException {
 
@@ -393,7 +392,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
             if (!type.javaType().isInstance(nonNull)) {
                 throw handler.apply(type, dataType, nonNull, null);
             }
-            final BiConsumer<Object, Consumer<String>> rangeSerializer;
+            final BiConsumer<Object, StringBuilder> rangeSerializer;
             rangeSerializer = (range, appender) -> rangeToText(range, boundSerializer, type, appender);
 
             final StringBuilder builder = new StringBuilder();

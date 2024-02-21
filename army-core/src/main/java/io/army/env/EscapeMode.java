@@ -10,5 +10,8 @@ public enum EscapeMode {
     BACK_SLASH,
 
     @Support(PostgreSQL)
-    ARRAY_ELEMENT
+    ARRAY_ELEMENT,
+    @Support(PostgreSQL)
+    ARRAY_ELEMENT_PART
+
 }

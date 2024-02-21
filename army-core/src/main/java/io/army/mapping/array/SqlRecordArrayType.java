@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -149,7 +148,7 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
     @Override
     public final String beforeBind(DataType dataType, final MappingEnv env, Object source) throws CriteriaException {
 
-        final BiConsumer<Object, Consumer<String>> consumer;
+        final BiConsumer<Object, StringBuilder> consumer;
         consumer = (o, c) -> appendToText(env, o, c);
 
         return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this,
@@ -164,7 +163,7 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
         );
     }
 
-    private void appendToText(final MappingEnv env, final Object element, final Consumer<String> appender) {
+    private void appendToText(final MappingEnv env, final Object element, final StringBuilder builder) {
         if (!(element instanceof SqlRecord)) {
             // no bug,never here
             throw new IllegalArgumentException();
@@ -185,7 +184,8 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
         DataType dataType;
         Object column;
 
-        final StringBuilder builder = new StringBuilder();
+        final int startIndex = builder.length();
+
         builder.append(_Constant.LEFT_PAREN);
         boolean escapse = false;
         for (int i = 0; i < columnSize; i++) {
@@ -205,14 +205,13 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
                 builder.append(_Constant.NULL);
                 continue;
             }
-            escapse |= literalParser.parse(columnType, column, EscapeMode.ARRAY_ELEMENT, builder);
+            escapse |= literalParser.parse(columnType, column, EscapeMode.ARRAY_ELEMENT_PART, builder);
         }
         builder.append(_Constant.RIGHT_PAREN);
 
         if (escapse) {
-            PostgreArrays.encodeElement(builder.toString(), appender);
-        } else {
-            appender.accept(builder.toString());
+            builder.insert(startIndex, _Constant.DOUBLE_QUOTE);
+            builder.append(_Constant.DOUBLE_QUOTE);
         }
 
     }

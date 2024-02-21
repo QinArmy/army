@@ -33,7 +33,6 @@ import io.army.util._Collections;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Consumer;
 
 /**
  * <p>This class is mapping class of {@link CodeEnum}.
@@ -154,12 +153,12 @@ public class CodeEnumArrayType extends _ArmyNoInjectionMapping implements Mappin
         return value;
     }
 
-    private void appendToText(final Object element, final Consumer<String> appender) {
+    private void appendToText(final Object element, final StringBuilder appender) {
         if (!this.enumClass.isInstance(element)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(Integer.toString(((CodeEnum) element).code()));
+        appender.append(((CodeEnum) element).code());
     }
 
 

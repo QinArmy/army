@@ -28,8 +28,6 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
-
 public class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
     public static DoubleArrayType from(final Class<?> javaType) {
@@ -155,12 +153,12 @@ public class DoubleArrayType extends _ArmyNoInjectionMapping implements MappingT
         return Double.parseDouble(text.substring(offset, end));
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Double)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
 

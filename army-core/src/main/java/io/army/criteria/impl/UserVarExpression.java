@@ -102,7 +102,7 @@ final class UserVarExpression extends OperationExpression.OperationDefiniteExpre
     }
 
     @Override
-    public TypeMeta typeMeta() {
+    public MappingType typeMeta() {
         return this.type;
     }
 

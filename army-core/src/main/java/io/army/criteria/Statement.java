@@ -18,7 +18,6 @@ package io.army.criteria;
 
 import io.army.criteria.dialect.BatchReturningDelete;
 import io.army.criteria.dialect.BatchReturningUpdate;
-import io.army.criteria.dialect.SubDelete;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.function.*;
@@ -1686,7 +1685,6 @@ public interface Statement extends Item {
      * This is base interface of below:
      * <ul>
      *     <li>{@link DeleteStatement}</li>
-     *     <li>{@link SubDelete}</li>
      * </ul>
      *
      * @since 0.6.0

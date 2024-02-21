@@ -32,7 +32,6 @@ import io.army.util._StringUtils;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.function.Consumer;
 
 public class MonthArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
@@ -169,12 +168,12 @@ public class MonthArrayType extends _ArmyNoInjectionMapping implements MappingTy
         return value;
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Month)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(((Month) element).name());
+        appender.append(((Month) element).name());
 
     }
 

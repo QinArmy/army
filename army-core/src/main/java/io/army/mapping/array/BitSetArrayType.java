@@ -31,7 +31,6 @@ import io.army.util.ArrayUtils;
 import io.army.util._StringUtils;
 
 import java.util.BitSet;
-import java.util.function.Consumer;
 
 /**
  * @see BitSetType
@@ -144,12 +143,12 @@ public class BitSetArrayType extends _ArmyNoInjectionMapping implements MappingT
     }
 
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof BitSet)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(_StringUtils.bitSetToBitString((BitSet) element, true));
+        appender.append(_StringUtils.bitSetToBitString((BitSet) element, true));
     }
 
 

@@ -29,8 +29,6 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
-
 public class IntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
@@ -166,12 +164,12 @@ public class IntegerArrayType extends _ArmyNoInjectionMapping implements Mapping
         return Integer.parseInt(text.substring(offset, end));
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Integer)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
 

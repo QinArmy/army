@@ -27,8 +27,6 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
-
 public class ByteArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
@@ -138,12 +136,12 @@ public class ByteArrayType extends _ArmyNoInjectionMapping implements MappingTyp
         return Byte.parseByte(text.substring(offset, end));
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Byte)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
 

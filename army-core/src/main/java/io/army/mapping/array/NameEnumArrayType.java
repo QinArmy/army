@@ -35,7 +35,6 @@ import io.army.util._Collections;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Consumer;
 
 
 /**
@@ -144,12 +143,12 @@ public class NameEnumArrayType extends _ArmyBuildInMapping implements MappingTyp
         return NameEnumType.valueOf(this.enumClass, text.substring(offset, end));
     }
 
-    private void appendToText(final Object element, final Consumer<String> appender) {
+    private void appendToText(final Object element, final StringBuilder appender) {
         if (!this.enumClass.isInstance(element)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(((Enum<?>) element).name());
+        appender.append(((Enum<?>) element).name());
     }
 
     static DataType mapToDataType(final MappingType type, final ServerMeta meta, final @Nullable String enumName) {

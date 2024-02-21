@@ -30,7 +30,6 @@ import io.army.util.ArrayUtils;
 import io.army.util._TimeUtils;
 
 import java.time.ZonedDateTime;
-import java.util.function.Consumer;
 
 public class ZonedDateTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
@@ -139,17 +138,15 @@ public class ZonedDateTimeArrayType extends _ArmyNoInjectionMapping implements M
         return ZonedDateTime.parse(timeStr, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof ZonedDateTime)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        final String doubleQuote;
-        doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
 
-        appender.accept(doubleQuote);
-        appender.accept(((ZonedDateTime) element).format(_TimeUtils.OFFSET_DATETIME_FORMATTER_6));
-        appender.accept(doubleQuote);
+        appender.append(_Constant.DOUBLE_QUOTE);
+        appender.append(((ZonedDateTime) element).format(_TimeUtils.OFFSET_DATETIME_FORMATTER_6));
+        appender.append(_Constant.DOUBLE_QUOTE);
 
     }
 

@@ -44,7 +44,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -122,7 +121,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
 
-    protected final void serialize(final Object bound, final Consumer<String> appender) {
+    protected final void serialize(final Object bound, final StringBuilder builder) {
         switch (this.dataType) {
             case INT4RANGE:
             case INT4MULTIRANGE:
@@ -131,7 +130,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 if (!(bound instanceof Integer)) {
                     throw boundTypeError(bound);
                 }
-                appender.accept(bound.toString());
+                builder.append(bound);
             }
             break;
             case INT8RANGE:
@@ -141,7 +140,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 if (!(bound instanceof Long)) {
                     throw boundTypeError(bound);
                 }
-                appender.accept(bound.toString());
+                builder.append(bound);
             }
             break;
             case NUMRANGE:
@@ -151,7 +150,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 if (!(bound instanceof BigDecimal)) {
                     throw boundTypeError(bound);
                 }
-                appender.accept(((BigDecimal) bound).toPlainString());
+                builder.append(((BigDecimal) bound).toPlainString());
             }
             break;
             case DATERANGE:
@@ -161,7 +160,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 if (!(bound instanceof LocalDate)) {
                     throw boundTypeError(bound);
                 }
-                appender.accept(bound.toString());
+                builder.append(bound);
             }
             break;
             case TSRANGE:
@@ -171,9 +170,9 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 if (!(bound instanceof LocalDateTime)) {
                     throw boundTypeError(bound);
                 }
-                appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
-                appender.accept(((LocalDateTime) bound).format(_TimeUtils.DATETIME_FORMATTER_6));
-                appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
+                builder.append(_Constant.DOUBLE_QUOTE);
+                builder.append(((LocalDateTime) bound).format(_TimeUtils.DATETIME_FORMATTER_6));
+                builder.append(_Constant.DOUBLE_QUOTE);
             }
             break;
             case TSTZRANGE:
@@ -183,9 +182,9 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 if (!(bound instanceof OffsetDateTime)) {
                     throw boundTypeError(bound);
                 }
-                appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
-                appender.accept(((OffsetDateTime) bound).format(_TimeUtils.OFFSET_DATETIME_FORMATTER_6));
-                appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
+                builder.append(_Constant.DOUBLE_QUOTE);
+                builder.append(((OffsetDateTime) bound).format(_TimeUtils.OFFSET_DATETIME_FORMATTER_6));
+                builder.append(_Constant.DOUBLE_QUOTE);
             }
             break;
             default:
@@ -368,34 +367,34 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
     @SuppressWarnings("unchecked")
-    protected static <T> void rangeToText(final Object nonNull, final BiConsumer<T, Consumer<String>> consumer,
-                                          final MappingType type, final Consumer<String> appendConsumer) {
+    protected static <T> void rangeToText(final Object nonNull, final BiConsumer<T, StringBuilder> consumer,
+                                          final MappingType type, final StringBuilder builder) {
         if (nonNull instanceof ArmyPostgreRange) {
             final ArmyPostgreRange<T> range = (ArmyPostgreRange<T>) nonNull;
             if (range.isEmpty()) {
-                appendConsumer.accept(PostgreRangeType.EMPTY);
+                builder.append(PostgreRangeType.EMPTY);
             } else {
                 if (range.isIncludeLowerBound()) {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_SQUARE_BRACKET));
+                    builder.append(_Constant.LEFT_SQUARE_BRACKET);
                 } else {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_PAREN));
+                    builder.append(_Constant.LEFT_PAREN);
                 }
                 final T lowerBound, upperBound;
                 lowerBound = range.getLowerBound();
                 upperBound = range.getUpperBound();
 
                 if (lowerBound != null) {
-                    consumer.accept(lowerBound, appendConsumer);
+                    consumer.accept(lowerBound, builder);
                 }
-                appendConsumer.accept(String.valueOf(_Constant.COMMA));
+                builder.append(_Constant.COMMA);
                 if (upperBound != null) {
-                    consumer.accept(upperBound, appendConsumer);
+                    consumer.accept(upperBound, builder);
                 }
 
                 if (range.isIncludeUpperBound()) {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_SQUARE_BRACKET));
+                    builder.append(_Constant.RIGHT_SQUARE_BRACKET);
                 } else {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_PAREN));
+                    builder.append(_Constant.RIGHT_PAREN);
                 }
             }
         } else {
@@ -415,29 +414,29 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
                 throw new IllegalArgumentException(m);
             }
             if (mockFunction.isEmpty.apply(nonNull)) {
-                appendConsumer.accept(PostgreRangeType.EMPTY);
+                builder.append(PostgreRangeType.EMPTY);
             } else {
                 if (mockFunction.isIncludeLowerBound.apply(nonNull)) {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_SQUARE_BRACKET));
+                    builder.append(_Constant.LEFT_SQUARE_BRACKET);
                 } else {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_PAREN));
+                    builder.append(_Constant.LEFT_PAREN);
                 }
                 final T lowerBound, upperBound;
                 lowerBound = mockFunction.getLowerBound.apply(nonNull);
                 upperBound = mockFunction.getUpperBound.apply(nonNull);
 
                 if (lowerBound != null) {
-                    consumer.accept(lowerBound, appendConsumer);
+                    consumer.accept(lowerBound, builder);
                 }
-                appendConsumer.accept(String.valueOf(_Constant.COMMA));
+                builder.append(_Constant.COMMA);
                 if (upperBound != null) {
-                    consumer.accept(upperBound, appendConsumer);
+                    consumer.accept(upperBound, builder);
                 }
 
                 if (mockFunction.isIncludeUpperBound.apply(nonNull)) {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_SQUARE_BRACKET));
+                    builder.append(_Constant.RIGHT_SQUARE_BRACKET);
                 } else {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_PAREN));
+                    builder.append(_Constant.RIGHT_PAREN);
                 }
             }
 

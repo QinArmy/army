@@ -29,8 +29,6 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
-
 public class LongArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
@@ -167,12 +165,12 @@ public class LongArrayType extends _ArmyNoInjectionMapping implements MappingTyp
         return Long.parseLong(text.substring(offset, end));
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Long)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
 

@@ -29,7 +29,6 @@ import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class PostgreArrays extends ArrayMappings {
@@ -52,7 +51,7 @@ public abstract class PostgreArrays extends ArrayMappings {
     /**
      * decode array element
      *
-     * @see #encodeElement(String, Consumer)
+     * @see #encodeElement(String, StringBuilder)
      * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
     public static String decodeElement(final String text, int offset, int end) {
@@ -112,12 +111,9 @@ public abstract class PostgreArrays extends ArrayMappings {
      * @see #decodeElement(String, int, int)
      * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
-    public static void encodeElement(final String element, final Consumer<String> appender) {
-        final String doubleQuote, backSlash;
-        doubleQuote = String.valueOf(_Constant.DOUBLE_QUOTE);
-        backSlash = String.valueOf(_Constant.BACK_SLASH);
+    public static void encodeElement(final String element, final StringBuilder builder) {
 
-        appender.accept(doubleQuote); // left doubleQuote
+        builder.append(_Constant.DOUBLE_QUOTE); // left doubleQuote
 
         final int length = element.length();
         int lastWritten = 0;
@@ -127,22 +123,22 @@ public abstract class PostgreArrays extends ArrayMappings {
 
             if (ch == _Constant.BACK_SLASH || ch == _Constant.DOUBLE_QUOTE) {
                 if (i > lastWritten) {
-                    appender.accept(element.substring(lastWritten, i));
+                    builder.append(element, lastWritten, i);
                 }
-                appender.accept(backSlash);
-                lastWritten = i; //not i + 1 as current char wasn't written
+                builder.append(_Constant.BACK_SLASH);
+                lastWritten = i; // not i + 1 as current char wasn't written
             }
         }
 
         if (lastWritten < length) {
-            appender.accept(element.substring(lastWritten, length));
+            builder.append(element, lastWritten, length);
         }
 
-        appender.accept(doubleQuote); // right doubleQuote
+        builder.append(_Constant.DOUBLE_QUOTE);// right doubleQuote
     }
 
 
-    public static String arrayBeforeBind(final Object source, final BiConsumer<Object, Consumer<String>> consumer,
+    public static String arrayBeforeBind(final Object source, final BiConsumer<Object, StringBuilder> consumer,
                                          final DataType dataType, final MappingType type,
                                          final ErrorHandler handler) {
 
@@ -192,7 +188,7 @@ public abstract class PostgreArrays extends ArrayMappings {
         }
 
         try {
-            final BiConsumer<Object, Consumer<String>> actualConsumer;
+            final BiConsumer<Object, StringBuilder> actualConsumer;
             if (sourceComponentType == String.class) {
                 actualConsumer = TextArrayType::appendToText;
             } else {
@@ -247,7 +243,7 @@ public abstract class PostgreArrays extends ArrayMappings {
         return value;
     }
 
-    public static StringBuilder toArrayText(final Object array, final BiConsumer<Object, Consumer<String>> consumer,
+    public static StringBuilder toArrayText(final Object array, final BiConsumer<Object, StringBuilder> consumer,
                                             final StringBuilder builder)
             throws IllegalArgumentException {
         if (array instanceof List) {
@@ -613,10 +609,8 @@ public abstract class PostgreArrays extends ArrayMappings {
     /**
      * @see #toArrayText(Object, BiConsumer, StringBuilder)
      */
-    private static void arrayToArrayText(final Object array, final BiConsumer<Object, Consumer<String>> consumer,
+    private static void arrayToArrayText(final Object array, final BiConsumer<Object, StringBuilder> consumer,
                                          final StringBuilder builder) {
-        final Consumer<String> appendConsumer;
-        appendConsumer = builder::append;
 
         final int arrayLength;
         arrayLength = Array.getLength(array);
@@ -637,7 +631,7 @@ public abstract class PostgreArrays extends ArrayMappings {
             } else if (element == null) {
                 builder.append("null");
             } else {
-                consumer.accept(element, appendConsumer);
+                consumer.accept(element, builder);
             }
 
         }
@@ -647,10 +641,8 @@ public abstract class PostgreArrays extends ArrayMappings {
     /**
      * @see #toArrayText(Object, BiConsumer, StringBuilder)
      */
-    private static void listToArrayText(final List<?> list, final BiConsumer<Object, Consumer<String>> consumer,
+    private static void listToArrayText(final List<?> list, final BiConsumer<Object, StringBuilder> consumer,
                                         final StringBuilder builder) {
-        final Consumer<String> appendConsumer;
-        appendConsumer = builder::append;
 
         final int size;
         size = list.size();
@@ -664,7 +656,7 @@ public abstract class PostgreArrays extends ArrayMappings {
             if (element == null) {
                 builder.append(_Constant.NULL);
             } else {
-                consumer.accept(element, appendConsumer);
+                consumer.accept(element, builder);
             }
         }
         builder.append(_Constant.RIGHT_BRACE);

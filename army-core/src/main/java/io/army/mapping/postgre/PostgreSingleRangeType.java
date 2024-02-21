@@ -33,7 +33,6 @@ import io.army.util._Exceptions;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -367,7 +366,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
         return value;
     }
 
-    public static <T> String rangeBeforeBind(final BiConsumer<T, Consumer<String>> boundSerializer, final Object nonNull,
+    public static <T> String rangeBeforeBind(final BiConsumer<T, StringBuilder> boundSerializer, final Object nonNull,
                                              final DataType dataType, final MappingType type, final ErrorHandler handler)
             throws CriteriaException {
 
@@ -378,7 +377,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
                 throw handler.apply(type, dataType, nonNull, null);
             }
             final StringBuilder builder = new StringBuilder();
-            rangeToText(nonNull, boundSerializer, type, builder::append);
+            rangeToText(nonNull, boundSerializer, type, builder);
             value = builder.toString();
         } else if (EMPTY.equalsIgnoreCase((text = (String) nonNull).trim())) {
             value = EMPTY;

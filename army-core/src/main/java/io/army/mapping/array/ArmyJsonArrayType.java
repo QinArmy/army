@@ -27,7 +27,6 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 
 /**
@@ -76,7 +75,7 @@ abstract class ArmyJsonArrayType extends _ArmyBuildInMapping implements MappingT
         final JsonCodec codec;
         codec = env.jsonCodec();
 
-        final BiConsumer<Object, Consumer<String>> consumer;
+        final BiConsumer<Object, StringBuilder> consumer;
         consumer = (element, appender) -> {
             if (!this.underlyingJavaType.isInstance(element)) {
                 throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);

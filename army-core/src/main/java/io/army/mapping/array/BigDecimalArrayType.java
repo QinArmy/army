@@ -30,7 +30,6 @@ import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.math.BigDecimal;
-import java.util.function.Consumer;
 
 /**
  * <p>This class representing the mapping that map the array of {@link BigDecimal} to database decimal array,for example {@link PostgreType#DECIMAL_ARRAY}.
@@ -155,12 +154,12 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
         return new BigDecimal(text.substring(offset, end));
     }
 
-    public static void appendToText(final Object element, final Consumer<String> appender) {
+    public static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof BigDecimal)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
-        appender.accept(((BigDecimal) element).toPlainString());
+        appender.append(((BigDecimal) element).toPlainString());
     }
 
 

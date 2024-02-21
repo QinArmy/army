@@ -27,8 +27,6 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 
-import java.util.function.Consumer;
-
 public class MediumIntArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
@@ -150,7 +148,7 @@ public class MediumIntArrayType extends _ArmyNoInjectionMapping implements Mappi
         return value;
     }
 
-    private static void appendToText(final Object element, final Consumer<String> appender) {
+    private static void appendToText(final Object element, final StringBuilder appender) {
         if (!(element instanceof Integer)) {
             // no bug,never here
             throw new IllegalArgumentException();
@@ -159,7 +157,7 @@ public class MediumIntArrayType extends _ArmyNoInjectionMapping implements Mappi
         if (value < MediumIntType.MIN_VALUE || value > MediumIntType.MAX_VALUE) {
             throw outRange(value);
         }
-        appender.accept(element.toString());
+        appender.append(element);
     }
 
     private static IllegalArgumentException outRange(int value) {
