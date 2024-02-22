@@ -119,10 +119,6 @@ abstract class MySQLSimpleValues<I extends Item>
         return "column_" + columnIndex;
     }
 
-    @Override
-    final Dialect statementDialect() {
-        return MySQLUtils.DIALECT;
-    }
 
     private static final class SimplePrimaryValues<I extends Item> extends MySQLSimpleValues<I>
             implements ArmyValues {
@@ -291,16 +287,10 @@ abstract class MySQLSimpleValues<I extends Item>
 
         final Function<RowSet, I> function;
 
-        private MySQLValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(MySQLUtils.DIALECT, leftContext.getOuterContext(), leftContext);
+        private MySQLValuesDispatcher(CriteriaContext dispatcherContext, Function<RowSet, I> function) {
+            super(dispatcherContext);
             this.function = function;
         }
-
-        private MySQLValuesDispatcher(MySQLBracketValues<?> bracket, Function<RowSet, I> function) {
-            super(MySQLUtils.DIALECT, bracket.context, null);
-            this.function = function;
-        }
-
 
         @Override
         public final MySQLQuery._StaticCteParensSpec<_SelectComplexCommandSpec<I>> with(String name) {
@@ -326,11 +316,11 @@ abstract class MySQLSimpleValues<I extends Item>
     private static final class ValuesDispatcher<I extends Item> extends MySQLValuesDispatcher<I> {
 
         private ValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext, function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, leftContext), function);
         }
 
         private ValuesDispatcher(BracketValues<?> bracket, Function<RowSet, I> function) {
-            super(bracket, function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, bracket.context), function);
         }
 
 
@@ -372,11 +362,11 @@ abstract class MySQLSimpleValues<I extends Item>
     private static final class SubValuesDispatcher<I extends Item> extends MySQLValuesDispatcher<I> {
 
         private SubValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext, function);
+            super(CriteriaContexts.subDispatcherContext(leftContext.getNonNullOuterContext(), leftContext), function);
         }
 
         private SubValuesDispatcher(BracketSubValues<?> bracket, Function<RowSet, I> function) {
-            super(bracket, function);
+            super(CriteriaContexts.subDispatcherContext(bracket.context.getNonNullOuterContext(), bracket.context), function);
         }
 
         @Override

@@ -287,15 +287,14 @@ abstract class CriteriaContexts {
         return new PrimaryJoinableMergeContext(dialect);
     }
 
-    static CriteriaContext dispatcherContext(final Dialect dialect, final @Nullable CriteriaContext outerContext,
-                                             final @Nullable CriteriaContext leftContext) {
-        final CriteriaContext dispatcherContext;
-        if (outerContext == null) {
-            dispatcherContext = new PrimaryDispatcherContext(dialect, leftContext);
-        } else {
-            dispatcherContext = new SubDispatcherContext(dialect, outerContext, leftContext);
-        }
-        return dispatcherContext;
+    static CriteriaContext primaryDispatcherContext(final Dialect dialect, final @Nullable CriteriaContext leftContext) {
+        return new PrimaryDispatcherContext(dialect, leftContext);
+    }
+
+    static CriteriaContext subDispatcherContext(final CriteriaContext outerContext,
+                                                final @Nullable CriteriaContext leftContext) {
+        assert leftContext == null || leftContext.getOuterContext() == outerContext;
+        return new SubDispatcherContext(outerContext, leftContext);
     }
 
     static UnknownQualifiedFieldException unknownQualifiedField(String tableAlias, FieldMeta<?> field) {
@@ -1133,7 +1132,7 @@ abstract class CriteriaContexts {
             int index;
             final int size = aliasList.size();
             index = -1;
-            for (int i = 0; i < size; i++) {
+            for (int i = size - 1; i > -1; i--) {
                 if (!fieldName.equals(aliasList.get(i))) {
                     continue;
                 }
@@ -4094,7 +4093,7 @@ abstract class CriteriaContexts {
         private boolean migrated;
 
         /**
-         * @see #dispatcherContext(Dialect, CriteriaContext, CriteriaContext)
+         * @see #subDispatcherContext(CriteriaContext, CriteriaContext)
          */
         private DispatcherContext(Dialect dialect, @Nullable CriteriaContext outerContext,
                                   @Nullable CriteriaContext leftContext) {
@@ -4270,20 +4269,23 @@ abstract class CriteriaContexts {
     private static final class SubDispatcherContext extends DispatcherContext
             implements SubContext {
 
-        private SubDispatcherContext(Dialect dialect, @Nullable CriteriaContext outerContext,
+        /**
+         * @see #subDispatcherContext(CriteriaContext, CriteriaContext)
+         */
+        private SubDispatcherContext(CriteriaContext outerContext,
                                      @Nullable CriteriaContext leftContext) {
-            super(dialect, outerContext, leftContext);
+            super(outerContext.dialect(), outerContext, leftContext);
         }
 
 
-    }//SubDispatcherContext
+    } // SubDispatcherContext
 
 
     private static final class PrimaryDispatcherContext extends DispatcherContext
             implements PrimaryContext {
 
         /**
-         * @see #dispatcherContext(Dialect, CriteriaContext, CriteriaContext)
+         * @see #primaryDispatcherContext(Dialect, CriteriaContext)
          */
         private PrimaryDispatcherContext(Dialect dialect, @Nullable CriteriaContext leftContext) {
             super(dialect, null, leftContext);
@@ -4339,16 +4341,11 @@ abstract class CriteriaContexts {
         public final void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
             final DialectParser parser = context.parser();
 
-            final String safeFieldName;
-            safeFieldName = parser.identifier(this.selection.label());
-
             sqlBuilder.append(_Constant.SPACE);
 
             parser.identifier(this.tableName, sqlBuilder)
-                    .append(_Constant.PERIOD)
-                    .append(safeFieldName)
-                    .append(_Constant.SPACE_AS_SPACE)
-                    .append(safeFieldName);
+                    .append(_Constant.PERIOD);
+            parser.identifier(this.selection.label(), sqlBuilder);
         }
 
         @Override
@@ -4507,6 +4504,8 @@ abstract class CriteriaContexts {
 
         private _Cte actualCte;
 
+        private Map<String, Selection> selectionMap;
+
         /**
          * @see StatementContext#refCte(String)
          * @see StatementContext#doRefCte(CriteriaContext, String)
@@ -4540,11 +4539,16 @@ abstract class CriteriaContexts {
         @Override
         public Selection refSelection(final String name) {
             final _Cte actual = this.actualCte;
-            final Selection selection;
+            final Selection selection, tempSelection;
             final int index;
             final List<? extends Selection> selectionList;
+
+            Map<String, Selection> selectionMap;
+
             if (actual != null) {
                 selection = actual.refSelection(name);
+            } else if ((selectionMap = this.selectionMap) != null && (tempSelection = selectionMap.get(name)) != null) {
+                selection = tempSelection;
             } else if ((index = this.topContextOfCte.indexOfCteField(this.name, name)) == Integer.MIN_VALUE) {
                 selection = this.nonRecursivePart.refSelection(name);
             } else if (index < 0) {
@@ -4553,10 +4557,15 @@ abstract class CriteriaContexts {
                 String m = String.format("cte[%s] column alias count and query selection count not match.", this.name);
                 throw ContextStack.criteriaError(this.sourceContext, m);
             } else {
-                selection = selectionList.get(index);
+                if (selectionMap == null) {
+                    this.selectionMap = selectionMap = _Collections.hashMap();
+                }
+                selection = ArmySelections.renameSelection(selectionList.get(index), name);
+                selectionMap.put(name, selection);
             }
             return selection;
         }
+
 
         @Override
         public List<? extends Selection> refAllSelection() {

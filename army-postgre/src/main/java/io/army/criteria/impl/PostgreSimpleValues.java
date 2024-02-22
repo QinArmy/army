@@ -319,13 +319,8 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
 
         final Function<RowSet, I> function;
 
-        private PostgreValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext.getOuterContext(), leftContext);
-            this.function = function;
-        }
-
-        private PostgreValuesDispatcher(PostgreBracketValues<?> bracket, Function<RowSet, I> function) {
-            super(bracket.context, null);
+        private PostgreValuesDispatcher(CriteriaContext dispatcherContext, Function<RowSet, I> function) {
+            super(dispatcherContext);
             this.function = function;
         }
 
@@ -353,11 +348,11 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
     private static final class ValuesDispatcher<I extends Item> extends PostgreValuesDispatcher<I> {
 
         private ValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext, function);
+            super(CriteriaContexts.primaryDispatcherContext(PostgreUtils.DIALECT, leftContext), function);
         }
 
         private ValuesDispatcher(BracketValues<?> bracket, Function<RowSet, I> function) {
-            super(bracket, function);
+            super(CriteriaContexts.primaryDispatcherContext(PostgreUtils.DIALECT, bracket.context), function);
         }
 
         @Override
@@ -401,11 +396,11 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
 
 
         private SubValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext, function);
+            super(CriteriaContexts.subDispatcherContext(leftContext.getNonNullOuterContext(), leftContext), function);
         }
 
         private SubValuesDispatcher(BracketSubValues<?> bracket, Function<RowSet, I> function) {
-            super(bracket, function);
+            super(CriteriaContexts.subDispatcherContext(bracket.context.getNonNullOuterContext(), bracket.context), function);
         }
 
         @Override

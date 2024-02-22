@@ -1377,15 +1377,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
         final Function<RowSet, I> function;
 
-        private MySQLQueryDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(MySQLUtils.DIALECT, leftContext.getOuterContext(), leftContext);
+        private MySQLQueryDispatcher(CriteriaContext dispatcherContext, Function<RowSet, I> function) {
+            super(dispatcherContext);
             this.function = function;
         }
 
-        private MySQLQueryDispatcher(MySQLBracketQuery<?> bracket, Function<RowSet, I> function) {
-            super(MySQLUtils.DIALECT, bracket.context, null);
-            this.function = function;
-        }
 
 
         @Override
@@ -1413,11 +1409,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     private static final class SelectDispatcher<I extends Item> extends MySQLQueryDispatcher<I> {
 
         private SelectDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext, function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, leftContext), function);
         }
 
         private SelectDispatcher(BracketSelect<?> bracket, Function<RowSet, I> function) {
-            super(bracket, function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, bracket.context), function);
         }
 
         @Override
@@ -1460,11 +1456,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     private static final class SubQueryDispatcher<I extends Item> extends MySQLQueryDispatcher<I> {
 
         private SubQueryDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext, function);
+            super(CriteriaContexts.subDispatcherContext(leftContext.getNonNullOuterContext(), leftContext), function);
         }
 
         private SubQueryDispatcher(BracketSubQuery<?> bracket, Function<RowSet, I> function) {
-            super(bracket, function);
+            super(CriteriaContexts.subDispatcherContext(bracket.context.getNonNullOuterContext(), bracket.context), function);
         }
 
 

@@ -40,7 +40,6 @@ import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.type.BlobPath;
 import io.army.type.ImmutableSpec;
@@ -1544,7 +1543,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                           @Nullable Class<?> resultClass) {
             this.executor = executor;
             this.selectionList = selectionList;
-            this.dataTypeArray = new SqlType[selectionList.size()];
+            this.dataTypeArray = new DataType[selectionList.size()];
             this.compatibleTypeArray = new MappingType[this.dataTypeArray.length];
 
             this.resultClass = resultClass;

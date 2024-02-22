@@ -20,7 +20,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
 import io.army.function.DialectBooleanOperator;
 import io.army.function.ExpressionOperator;
 import io.army.function.TeFunction;
@@ -1800,8 +1799,8 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
         final CriteriaContext context;
 
-        SelectClauseDispatcher(Dialect dialect, @Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            this.context = CriteriaContexts.dispatcherContext(dialect, outerContext, leftContext);
+        SelectClauseDispatcher(CriteriaContext dispatcherContext) {
+            this.context = dispatcherContext;
             ContextStack.push(this.context);
         }
 
@@ -1947,9 +1946,8 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         private List<_Cte> cteList;
 
 
-        WithBuilderSelectClauseDispatcher(Dialect dialect, @Nullable CriteriaContext outerContext,
-                                          @Nullable CriteriaContext leftContext) {
-            super(dialect, outerContext, leftContext);
+        WithBuilderSelectClauseDispatcher(CriteriaContext dispatcherContext) {
+            super(dispatcherContext);
         }
 
 
@@ -2025,9 +2023,8 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             implements Query._DynamicDistinctOnExpClause<SR>,
             Query._DynamicDistinctOnAndSelectsClause<SD> {
 
-        WithDistinctOnSelectClauseDispatcher(Dialect dialect, @Nullable CriteriaContext outerContext,
-                                             @Nullable CriteriaContext leftContext) {
-            super(dialect, outerContext, leftContext);
+        WithDistinctOnSelectClauseDispatcher(CriteriaContext dispatcherContext) {
+            super(dispatcherContext);
         }
 
         @Override
@@ -2107,6 +2104,15 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             super(left, unionType, right);
         }
 
+        @Override
+        public boolean isRecursive() {
+            return ((_Statement._WithClauseSpec) this.left).isRecursive();
+        }
+
+        @Override
+        public List<_Cte> cteList() {
+            return ((_Statement._WithClauseSpec) this.left).cteList();
+        }
 
     }//UnionSubQuery
 

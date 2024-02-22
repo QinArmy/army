@@ -117,7 +117,8 @@ final class PostgreDialectParser extends PostgreParser {
         _PostgreCte cte;
         SubStatement subStatement;
         List<String> columnAliasList;
-
+        _PostgreCte._SearchClause searchClause;
+        _PostgreCte._CycleClause cycleClause;
         for (int i = 0, columnSize; i < cteSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
@@ -160,6 +161,17 @@ final class PostgreDialectParser extends PostgreParser {
                 throw _Exceptions.unexpectedStatement(subStatement);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+            if (recursive && subStatement instanceof SubQuery) {
+                searchClause = cte.searchClause();
+                if (searchClause != null) {
+                    searchClause.appendSql(sqlBuilder, mainContext);
+                }
+                cycleClause = cte.cycleClause();
+                if (cycleClause != null) {
+                    cycleClause.appendSql(sqlBuilder, mainContext);
+                }
+            }
 
 
         }

@@ -24,9 +24,7 @@ import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardCtes;
 import io.army.criteria.standard.StandardJoins;
 import io.army.criteria.standard.StandardQuery;
-import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -403,11 +401,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
 
-    @Override
-    final Dialect statementDialect() {
-        return MySQLDialect.MySQL57;
-    }
-
     /**
      * @see #from(Function)
      * @see #crossJoin(Function)
@@ -638,11 +631,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
 
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL57;
-        }
-
     } // StandardBracketQuery
 
 
@@ -681,11 +669,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         private StandardBatchBracketSelect(BracketSelect<?> select, List<?> paramList) {
             super(select, paramList);
-        }
-
-        @Override
-        Dialect statementDialect() {
-            return MySQLDialect.MySQL57;
         }
 
 
@@ -921,11 +904,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             this.windowList = query.windowList();
         }
 
-
-        @Override
-        Dialect statementDialect() {
-            return MySQLDialect.MySQL57;
-        }
 
         @Override
         public List<_Window> windowList() {

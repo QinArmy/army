@@ -754,6 +754,7 @@ public abstract class ExecutorSupport {
                 type = PostgreType.MONEY_ARRAY;
                 break;
             case "record[]":
+            case "_record":
                 type = PostgreType.RECORD_ARRAY;
                 break;
             case "pg_lsn[]":

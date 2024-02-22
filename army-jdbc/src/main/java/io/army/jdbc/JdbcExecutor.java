@@ -39,7 +39,6 @@ import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.*;
 import io.army.sync.executor.SyncExecutor;
@@ -1375,9 +1374,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     private DataType[] createSqlTypArray(final ResultSetMetaData metaData) throws SQLException {
-        final DataType[] dataTypeArray = new SqlType[metaData.getColumnCount()];
+        final DataType[] dataTypeArray = new DataType[metaData.getColumnCount()];
         for (int i = 0; i < dataTypeArray.length; i++) {
-            dataTypeArray[i] = this.getDataType(metaData, i + 1);
+            dataTypeArray[i] = getDataType(metaData, i + 1);
         }
         return dataTypeArray;
     }

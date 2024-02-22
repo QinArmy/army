@@ -280,7 +280,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
             throws SQLException {
         final Object value;
 
-        switch ((PostgreType) dataType) {
+        if (!(dataType instanceof SqlType)) {
+            value = resultSet.getObject(indexBasedOne);
+        } else switch ((PostgreType) dataType) {
             case BOOLEAN:
                 value = resultSet.getObject(indexBasedOne, Boolean.class);
                 break;
@@ -341,6 +343,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 break;
             case CHAR:
             case VARCHAR:
+            case BPCHAR:
             case TEXT:
 
             case JSON:
@@ -387,6 +390,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case ACLITEM:
 
             case MONEY:
+            case RECORD:
 
             case BOOLEAN_ARRAY:
             case INTEGER_ARRAY:
@@ -449,6 +453,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case TSTZMULTIRANGE_ARRAY:
 
             case MONEY_ARRAY:
+            case RECORD_ARRAY:
             case ACLITEM_ARRAY:
             case PG_LSN_ARRAY:
             case PG_SNAPSHOT_ARRAY:

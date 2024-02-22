@@ -814,10 +814,12 @@ abstract class PostgreSupports extends CriteriaSupports {
             assert subStatement instanceof SubQuery || (searchClause == null && cycleClause == null);
 
             if (subStatement instanceof SubQuery) {
-                if (this.columnAliasList.size() == 0) {
-                    this.selectionMap = createDerivedSelectionMap(((_DerivedTable) subStatement).refAllSelection());
-                } else {
+                if (searchClause != null || cycleClause != null) {
                     this.selectionMap = createAliasSelectionMap(((_DerivedTable) subStatement).refAllSelection());
+                } else if (this.columnAliasList.size() > 0) {
+                    this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList, ((_DerivedTable) subStatement).refAllSelection(), this.name);
+                } else {
+                    this.selectionMap = (_SelectionMap) subStatement;
                 }
             } else if (subStatement instanceof DerivedTable) {
                 if (this.columnAliasList.size() == 0) {
@@ -892,15 +894,15 @@ abstract class PostgreSupports extends CriteriaSupports {
             final List<Selection> addSelectionList;
             addSelectionList = createSercherCycleSelectionList();
 
-            final int selectionSize, addSelectionSize, totalSelectionSize;
+            final int columnAliasSize, selectionSize, addSelectionSize, totalSelectionSize;
+            columnAliasSize = columnAliasList.size();
             selectionSize = refSelectionList.size();
 
             addSelectionSize = addSelectionList.size();
-
             totalSelectionSize = selectionSize + addSelectionSize;
 
-            if (columnAliasList.size() != selectionSize) {
-                throw CriteriaUtils.derivedColumnAliasSizeNotMatch(this.name, selectionSize, columnAliasList.size());
+            if (columnAliasSize > 0 && columnAliasSize != selectionSize) {
+                throw CriteriaUtils.derivedColumnAliasSizeNotMatch(this.name, selectionSize, columnAliasSize);
             }
             if (totalSelectionSize == 1) {
                 final Selection selection;
@@ -912,11 +914,16 @@ abstract class PostgreSupports extends CriteriaSupports {
             Selection selection;
             String columnAlias;
             for (int i = 0; i < selectionSize; i++) {
-                columnAlias = columnAliasList.get(i);
-                if (columnAlias == null) {
-                    throw ContextStack.clearStackAndNullPointer();
+                selection = refSelectionList.get(i);
+                if (columnAliasSize == 0) {
+                    columnAlias = selection.label();
+                } else {
+                    columnAlias = columnAliasList.get(i);
+                    if (columnAlias == null) {
+                        throw ContextStack.clearStackAndNullPointer();
+                    }
+                    selection = ArmySelections.renameSelection(selection, columnAlias);
                 }
-                selection = ArmySelections.renameSelection(refSelectionList.get(i), columnAlias);
                 if (selectionMap.putIfAbsent(columnAlias, selection) != null) {
                     throw CriteriaUtils.duplicateColumnAlias(columnAlias);
                 }
@@ -935,44 +942,6 @@ abstract class PostgreSupports extends CriteriaSupports {
             return CriteriaUtils.createSelectionMap(selectionList, selectionMap);
 
 
-        }
-
-
-        private _SelectionMap createDerivedSelectionMap(final List<? extends Selection> selectItemList) {
-
-            final List<Selection> addSelectionList;
-            addSelectionList = createSercherCycleSelectionList();
-
-            final int selectionSize, addSelectionSize, totalSelectionSize;
-            selectionSize = selectItemList.size();
-            addSelectionSize = addSelectionList.size();
-
-            totalSelectionSize = selectionSize + addSelectionSize;
-
-
-            if (totalSelectionSize == 1) {
-                return CriteriaUtils.createSingletonSelectionMap(selectItemList.get(0));
-            }
-
-            final List<Selection> selectionList = _Collections.arrayList(totalSelectionSize);
-            final Map<String, Selection> selectionMap = _Collections.hashMapForSize(totalSelectionSize);
-
-            Selection selection;
-
-            for (int i = 0; i < selectionSize; i++) {
-                selection = selectItemList.get(i);
-                selectionMap.put(selection.label(), selection); // override, if duplication
-            }
-
-            for (int i = 0; i < addSelectionSize; i++) {
-                selection = addSelectionList.get(i);
-                if (selectionMap.putIfAbsent(selection.label(), selection) != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(selection.label());
-                }
-                selectionList.add(selection);
-            }
-
-            return CriteriaUtils.createSelectionMap(selectionList, selectionMap);
         }
 
 
