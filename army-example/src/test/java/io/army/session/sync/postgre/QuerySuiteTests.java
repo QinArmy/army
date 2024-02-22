@@ -22,10 +22,16 @@ import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sync.SyncLocalSession;
+import io.army.type.SqlRecord;
+import io.army.util.RowMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.AS;
@@ -53,5 +59,75 @@ public class QuerySuiteTests extends SessionTestSupport {
                 .forEach(c -> LOG.debug("{}", c.getName()));
 
     }
+
+    @Test
+    public void singleColumnSearchClause(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(10);
+        session.batchSave(regionList);
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .withRecursive("cte").as(sw -> sw.select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                        .union()
+                        .select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .join("cte").on(ChinaRegion_.id::equal, SQLs.refField("cte", ChinaRegion_.PARENT_ID))
+                        .asQuery()
+                ).search(s -> s.depthFirstBy(ChinaRegion_.ID).set("orderCol"))
+                .space()
+                .select(s -> s.space("t", PERIOD, ChinaRegion_.T))
+                .from(ChinaRegion_.T, AS, "t")
+                .asQuery();
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+
+        SqlRecord[] orderCol;
+        for (Map<String, Object> row : rowList) {
+            orderCol = (SqlRecord[]) row.get("orderCol");
+            for (SqlRecord record : orderCol) {
+                Assert.assertEquals(record.size(), 1);
+                Assert.assertTrue(record.get(0) instanceof Long);
+            }
+        }
+
+    }
+
+
+    @Test
+    public void simpleColumnSearchClause(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(10);
+        session.batchSave(regionList);
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .withRecursive("cte").as(sw -> sw.select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                        .orderBy(ChinaRegion_.id)
+                        .asQuery()
+                ).search(s -> s.depthFirstBy(ChinaRegion_.ID, ChinaRegion_.CREATE_TIME).set("orderCol"))
+                .space()
+                .select(s -> s.space("t", PERIOD, ChinaRegion_.T))
+                .from(ChinaRegion_.T, AS, "t")
+                .asQuery();
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+
+        SqlRecord[] orderCol;
+        for (Map<String, Object> row : rowList) {
+            orderCol = (SqlRecord[]) row.get("orderCol");
+            for (SqlRecord record : orderCol) {
+                Assert.assertEquals(record.size(), 2);
+                Assert.assertTrue(record.get(0) instanceof Long);
+                Assert.assertTrue(record.get(1) instanceof LocalDateTime);
+            }
+        }
+
+    }
+
 
 }

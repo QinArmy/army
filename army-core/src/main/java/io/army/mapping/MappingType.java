@@ -312,6 +312,8 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
             case LONGBLOB: {
                 if (targetType == byte[].class) {
                     type = VarBinaryType.from(targetType);
+                } else if (targetType == String.class) {
+                    type = StringType.INSTANCE;
                 } else { // TODO
                     throw noMatchCompatibleMapping(this, targetType);
                 }

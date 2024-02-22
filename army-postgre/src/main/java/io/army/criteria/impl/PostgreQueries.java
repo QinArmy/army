@@ -1271,7 +1271,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         @Override
         public _StaticCteParensSpec<I> comma(final @Nullable String name) {
             if (name == null) {
-                throw ContextStack.nullPointer(this.context);
+                throw ContextStack.clearStackAndNullPointer();
             }
             this.context.onStartCte(name);
             return new StaticCteAsClause<>(name, this);
