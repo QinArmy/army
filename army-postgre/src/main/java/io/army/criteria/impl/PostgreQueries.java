@@ -1356,6 +1356,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         private _StaticCteSearchSpec<I> queryEnd(final SubQuery query) {
             final _StaticCteSearchSpec<I> spec;
             if (this.comma.recursive && PostgreUtils.isUnionQuery(query)) {
+                final List<String> columnAliasList = this.columnAliasList;
+                if (columnAliasList != null
+                        && columnAliasList.size() != ((_SelectionMap) query).refAllSelection().size()) {
+                    throw CriteriaUtils.derivedColumnAliasSizeNotMatch(this.name,
+                            ((_SelectionMap) query).refAllSelection().size(), columnAliasList.size());
+                }
                 spec = new CteSearchCycleSpec<>(this, query);
             } else {
                 this.subStmtEnd(query);
@@ -1385,7 +1391,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
         private CteSearchCycleSpec(StaticCteAsClause<I> asClause, SubQuery subQuery) {
-            super(subQuery);
+            super(asClause.columnAliasList, subQuery);
             this.asClause = asClause;
         }
 

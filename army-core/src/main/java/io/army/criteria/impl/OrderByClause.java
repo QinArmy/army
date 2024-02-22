@@ -285,7 +285,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
             while (!(left instanceof CriteriaSupports.StatementMockSupport)) {
                 left = ((UnionRowSet) left).left;
             }
-            return ((CriteriaSupports.StatementMockSupport) left).statementDialect();
+            return ((CriteriaSupports.StatementMockSupport) left).context.dialect();
         }
 
         private Stmt parseStatement(final DialectParser parser, final Visible visible) {
@@ -343,11 +343,6 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
             super(context);
         }
 
-
-        @Override
-        final Dialect statementDialect() {
-            throw ContextStack.clearStackAndCastCriteriaApi();
-        }
 
 
     } //OrderByClauseClause

@@ -234,16 +234,16 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
         final ServerMeta meta = env.serverMeta();
         final List<MappingType> columnTypeList = this.columnTypeList;
         final int columnSize = columnTypeList.size();
-        final int lastIndex = end - 1;
 
         final SqlRecord record = ArraySqlRecord.create(columnSize);
         final boolean unlimited = this == UNLIMITED;
+        final int lastIndex = end - 1;
 
         DataType dataType;
         MappingType columnType;
         Object columnValue;
         String elementText;
-        boolean inDoubleQuote = false;
+        boolean inDoubleQuote = false, recordEnd = false;
         int leftParenCount = 0;
         char ch;
         for (int i = offset, startIndex = -1, columnIndex = 0, endIndex; i < end; i++) {
@@ -251,12 +251,17 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
             if (inDoubleQuote) {
                 if (ch == _Constant.BACK_SLASH) {
                     i++;
-                } else if (ch == _Constant.QUOTE && (i < lastIndex) && text.charAt(i + 1) == _Constant.QUOTE) {
+                }
+            } else if (outerQuote && ch == _Constant.BACK_SLASH) {
+                if (i < lastIndex && text.charAt(i + 1) != _Constant.DOUBLE_QUOTE) {
                     i++;
                 }
             } else if (ch == _Constant.DOUBLE_QUOTE) {
                 inDoubleQuote = true;
             } else if (ch == _Constant.LEFT_PAREN) {
+                if (recordEnd) {
+                    throw _Exceptions.arrayElementError();
+                }
                 leftParenCount++;
             } else if (leftParenCount == 0) {
                 throw _Exceptions.arrayElementError();
@@ -268,7 +273,7 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
                 if (ch == _Constant.RIGHT_PAREN) {
                     leftParenCount--;
                 }
-            } else if (ch == _Constant.COMMA || ch == _Constant.RIGHT_PAREN) {
+            } else if (leftParenCount == 1 && (ch == _Constant.COMMA || ch == _Constant.RIGHT_PAREN)) {
                 endIndex = i;
                 for (; endIndex > startIndex; endIndex--) {
                     if (!Character.isWhitespace(ch)) {
@@ -281,11 +286,7 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
                     throw columnSizeNotMatch(columnIndex + 1, columnSize);
                 }
 
-                if (outerQuote) {
-                    elementText = PostgreArrays.decodeElement(text, startIndex, endIndex + 1);
-                } else {
-                    elementText = text.substring(startIndex, endIndex + 1);
-                }
+                elementText = text.substring(startIndex, endIndex + 1);
 
                 if (_Constant.NULL.equalsIgnoreCase(elementText)) {
                     columnValue = null;
@@ -303,13 +304,18 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
                     }
                 }
 
+                if (ch == _Constant.RIGHT_PAREN) {
+                    recordEnd = true;
+                }
                 record.add(columnValue);
 
             } // else if
 
         } // outer loop for
 
-
+        if (leftParenCount != 1 || inDoubleQuote) {
+            throw _Exceptions.arrayElementError();
+        }
         return record;
     }
 

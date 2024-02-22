@@ -25,10 +25,11 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.BooleanType;
-import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
+import io.army.mapping.array.SqlRecordArrayType;
 import io.army.meta.TableMeta;
+import io.army.type.SqlRecord;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -265,6 +266,10 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final boolean required;
 
+        private final List<String> columnALiasList;
+
+        private final SubQuery subQuery;
+
         private Boolean breadth;
 
         private List<String> columnList;
@@ -273,8 +278,10 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private Selection searchSeqSelection;
 
-        CteSearchClause(boolean required) {
+        CteSearchClause(boolean required, @Nullable List<String> columnALiasList, SubQuery subQuery) {
             this.required = required;
+            this.columnALiasList = columnALiasList;
+            this.subQuery = subQuery;
         }
 
         @Override
@@ -363,26 +370,71 @@ abstract class PostgreSupports extends CriteriaSupports {
          */
         boolean endClause() {
             final boolean optionIsNull = this.breadth == null;
+            final List<String> columnList = this.columnList;
+            final String searchSeqColumnName = this.searchSeqColumnName;
 
             final String m = "You don't finish SEARCH clause";
             if (this.required) {
-                if (optionIsNull || this.columnList == null || this.searchSeqColumnName == null) {
+                if (optionIsNull || columnList == null || searchSeqColumnName == null) {
                     throw ContextStack.clearStackAndCriteriaError(m);
                 }
-            } else if (optionIsNull ^ (this.columnList == null) || optionIsNull ^ (this.searchSeqColumnName == null)) {
+            } else if (optionIsNull ^ (columnList == null) || optionIsNull ^ (searchSeqColumnName == null)) {
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
 
-            if (!optionIsNull) {
-                final MappingType type;
-                if (!this.breadth) {
-                    type = LongType.INSTANCE;
-                } else {
-                    type = StringType.INSTANCE;
-                }
-                this.searchSeqSelection = ArmySelections.forName(this.searchSeqColumnName, type); // TODO right ?
+            if (optionIsNull) {
+                return false;
             }
-            return !optionIsNull;
+
+            final List<? extends Selection> selectionLis = ((_SelectionMap) this.subQuery).refAllSelection();
+            final List<String> columnAliasList = this.columnALiasList;
+            final int columnAliasSize;
+            if (columnAliasList == null) {
+                columnAliasSize = 0;
+            } else {
+                columnAliasSize = columnAliasList.size();
+            }
+
+            final int columnSize = columnList.size();
+            final List<MappingType> columnTypeList = _Collections.arrayList(columnSize);
+
+            MappingType type;
+            String columnName;
+            Selection selection;
+
+            for (int i = 0; i < columnSize; i++) {
+                columnName = columnList.get(i);
+                if (columnName == null) {
+                    throw ContextStack.clearStackAndNullPointer();
+                }
+
+                if (columnAliasSize == 0) {
+                    selection = ((_SelectionMap) this.subQuery).refSelection(columnName);
+                    if (selection == null) {
+                        throw CriteriaUtils.unknownSelection(columnName);
+                    }
+                    columnTypeList.add(selection.typeMeta().mappingType());
+                    continue;
+                }
+
+                type = null;
+                for (int aliasIndex = columnAliasSize - 1; aliasIndex > -1; aliasIndex--) {
+                    if (!columnName.equals(columnAliasList.get(aliasIndex))) {
+                        continue;
+                    }
+                    type = selectionLis.get(aliasIndex).typeMeta().mappingType();
+                    break;
+                } // inner loop for
+                if (type == null) {
+                    throw CriteriaUtils.unknownSelection(columnName);
+                }
+                columnTypeList.add(type);
+            } // outer loop for
+
+            this.searchSeqSelection = ArmySelections.forName(searchSeqColumnName,
+                    SqlRecordArrayType.fromRow(SqlRecord[].class, columnTypeList)
+            );
+            return true;
 
         }
 
@@ -398,6 +450,10 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final boolean required;
 
+        private final List<String> columnALiasList;
+
+        private final SubQuery subQuery;
+
         private List<String> columnList;
 
         private String cycleMarkColumnName;
@@ -408,13 +464,14 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private String cyclePathColumnName;
 
-
-        private Selection cycleMarkSelecion;
+        private Selection cycleMarkSelection;
 
         private Selection cyclePathSelection;
 
-        CteCycleClause(boolean required) {
+        CteCycleClause(boolean required, @Nullable List<String> columnALiasList, SubQuery subQuery) {
             this.required = required;
+            this.columnALiasList = columnALiasList;
+            this.subQuery = subQuery;
         }
 
         @Override
@@ -451,7 +508,6 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public PostgreQuery._CyclePathColumnClause to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault) {
-
             acceptMarkValueAndDefault(cycleMarkValue, cycleMarkDefault);
             return this;
         }
@@ -524,7 +580,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public Selection cycleMarkSelection() {
-            final Selection s = this.cycleMarkSelecion;
+            final Selection s = this.cycleMarkSelection;
             if (s == null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -568,9 +624,9 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (!columnListIsNull) {
                 final Expression cycleMarkValue = this.cycleMarkValue;
                 if (cycleMarkValue == null) {
-                    this.cycleMarkSelecion = ArmySelections.forName(this.cycleMarkColumnName, BooleanType.INSTANCE);
+                    this.cycleMarkSelection = ArmySelections.forName(this.cycleMarkColumnName, BooleanType.INSTANCE);
                 } else {
-                    this.cycleMarkSelecion = ArmySelections.forName(this.cycleMarkColumnName, cycleMarkValue.typeMeta().mappingType()); //TODO optimizing me
+                    this.cycleMarkSelection = ArmySelections.forName(this.cycleMarkColumnName, cycleMarkValue.typeMeta().mappingType()); //TODO optimizing me
                 }
                 this.cyclePathSelection = ArmySelections.forName(this.cyclePathColumnName, StringType.INSTANCE); // TODO right ?
 
@@ -586,13 +642,16 @@ abstract class PostgreSupports extends CriteriaSupports {
     static abstract class PostgreCteSearchCycleSpec<T extends Item, U extends Item>
             implements PostgreQuery._CteSearchClause<T>, PostgreQuery._CteCycleClause<U> {
 
+        private final List<String> columnALiasList;
+
         final SubQuery subQuery;
 
         private CteSearchClause searchClause;
 
         private CteCycleClause cycleClause;
 
-        PostgreCteSearchCycleSpec(SubQuery subQuery) {
+        PostgreCteSearchCycleSpec(@Nullable List<String> columnALiasList, SubQuery subQuery) {
+            this.columnALiasList = columnALiasList;
             this.subQuery = subQuery;
         }
 
@@ -601,7 +660,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.searchClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final CteSearchClause searchClause = new CteSearchClause(true);
+            final CteSearchClause searchClause = new CteSearchClause(true, this.columnALiasList, this.subQuery);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             searchClause.endClause();
             this.searchClause = searchClause;
@@ -613,7 +672,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.searchClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final CteSearchClause searchClause = new CteSearchClause(false);
+            final CteSearchClause searchClause = new CteSearchClause(false, this.columnALiasList, this.subQuery);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             if (searchClause.endClause()) {
                 this.searchClause = searchClause;
@@ -626,7 +685,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.cycleClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final CteCycleClause searchClause = new CteCycleClause(true);
+            final CteCycleClause searchClause = new CteCycleClause(true, this.columnALiasList, this.subQuery);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             searchClause.endClause();
             this.cycleClause = searchClause;
@@ -638,7 +697,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.cycleClause != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            final CteCycleClause searchClause = new CteCycleClause(false);
+            final CteCycleClause searchClause = new CteCycleClause(false, this.columnALiasList, this.subQuery);
             CriteriaUtils.invokeConsumer(searchClause, consumer);
             if (searchClause.endClause()) {
                 this.cycleClause = searchClause;
@@ -669,7 +728,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         private final DynamicQueryParensClause asClause;
 
         private DynamicCteSearchSpec(DynamicQueryParensClause asClause, SubQuery subQuery) {
-            super(subQuery);
+            super(asClause.columnAliasList, subQuery);
             this.asClause = asClause;
         }
 
@@ -1092,6 +1151,12 @@ abstract class PostgreSupports extends CriteriaSupports {
             final PostgreQuery._DynamicCteSearchSpec spec;
             if (this.builder.recursive && PostgreUtils.isUnionQuery(query)) {
                 this.builder.endLastCte(); // clear old
+                final List<String> columnAliasList = this.columnAliasList;
+                if (columnAliasList != null
+                        && columnAliasList.size() != ((_SelectionMap) query).refAllSelection().size()) {
+                    throw CriteriaUtils.derivedColumnAliasSizeNotMatch(this.name,
+                            ((_SelectionMap) query).refAllSelection().size(), columnAliasList.size());
+                }
                 this.builder.lastQueryCteEnder = spec = new DynamicCteSearchSpec(this, query);
             } else {
                 final PostgreCte cte;
