@@ -32,12 +32,13 @@ public final class ObjectType extends _ArmyBuildInMapping {
 
     @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        throw errorUseCase();
+        // TODO convert
+        return source;
     }
 
     @Override
     public String beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        throw errorUseCase();
+        return StringType.toString(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override

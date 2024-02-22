@@ -1,20 +1,35 @@
+/*
+ * Copyright 2023-2043 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.dialect.LiteralParser;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.env.EscapeMode;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping.TextType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping.ObjectType;
 import io.army.mapping.array.SqlRecordArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
+import io.army.type.ArraySqlRecord;
 import io.army.type.SqlRecord;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -31,7 +46,7 @@ import java.util.Objects;
  * @see io.army.mapping.array.SqlRecordArrayType
  * @see <a href="https://www.postgresql.org/docs/current/catalog-pg-type.html">Postgre pg_type table ,oid : 2249</a>
  */
-public final class SqlRecordType extends _ArmyBuildInMapping implements MappingType.SqlRecordColumnType {
+public final class SqlRecordType extends _SqlRecordSupport implements MappingType.SqlRecordColumnType {
 
     public static SqlRecordType fromColumn(final MappingType columnType) {
         Objects.requireNonNull(columnType);
@@ -54,13 +69,11 @@ public final class SqlRecordType extends _ArmyBuildInMapping implements MappingT
 
     public static final SqlRecordType UNLIMITED = new SqlRecordType(Collections.emptyList());
 
-    private final List<MappingType> columnTypeList;
-
     /**
      * private constructor
      */
     private SqlRecordType(List<MappingType> columnTypeList) {
-        this.columnTypeList = columnTypeList;
+        super(columnTypeList);
     }
 
     @Override
@@ -93,119 +106,133 @@ public final class SqlRecordType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public SqlRecord convert(MappingEnv env, Object source) throws CriteriaException {
-        if (this == UNLIMITED) {
-            if (!(source instanceof String) || isNotRecordText((String) source)) {
-                throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
-            }
-        }
-        return null;
+    public SqlRecord convert(MappingEnv env, final Object source) throws CriteriaException {
+        return toSqlRecord(map(env.serverMeta()), env, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public String beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
         final String value;
-        if (this == UNLIMITED) {
-            if (!(source instanceof String) || isNotRecordText((String) source)) {
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
+        if (source instanceof SqlRecord) {
+            value = postgreRecordText(dataType, env, (SqlRecord) source, new StringBuilder())
+                    .toString();
+        } else if (source instanceof String && isRecordText((String) source)) {
+            if (this == UNLIMITED) {
+                value = (String) source;
+            } else if (readColumnSize(dataType, (String) source) == this.columnTypeList.size()) {
+                value = (String) source;
+            } else {
+                final IllegalArgumentException e = new IllegalArgumentException("column size not match");
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, e);
             }
-            value = (String) source;
-        } else if (source instanceof SqlRecord) {
-            final StringBuilder builder = new StringBuilder();
-            appendRecordText(dataType, env, (SqlRecord) source, builder, this, this.columnTypeList, EscapeMode.DEFAULT);
-            value = builder.toString();
         } else {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
+
+            final MappingType type;
+            if (this == UNLIMITED) {
+                type = ObjectType.INSTANCE;
+            } else if (this.columnTypeList.size() == 1) {
+                type = this.columnTypeList.get(0);
+            } else {
+                final IllegalArgumentException e = new IllegalArgumentException("column size not match");
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, e);
+            }
+            final StringBuilder builder = new StringBuilder();
+            builder.append(_Constant.LEFT_PAREN);
+            env.literalParser().parse(type, source, EscapeMode.DEFAULT, builder);
+            builder.append(_Constant.RIGHT_PAREN);
+
+            value = builder.toString();
         }
         return value;
     }
 
     @Override
     public SqlRecord afterGet(DataType dataType, MappingEnv env, final Object source) throws DataAccessException {
-        return null;
+        return toSqlRecord(dataType, env, source, ACCESS_ERROR_HANDLER);
     }
 
 
-    public static void appendRecordText(final DataType dataType, final MappingEnv env, final SqlRecord record,
-                                        final StringBuilder builder, final MappingType type, final List<MappingType> columnTypeList,
-                                        final EscapeMode mode) {
-
-        final int columnSize = record.size(), typeSize = columnTypeList.size();
-        if (typeSize > 0 && typeSize != columnSize) {
-            final IllegalArgumentException error;
-            error = _Exceptions.recordColumnCountNotMatch(record, columnSize, type);
-            if (type instanceof SqlRecordType) {
-                throw PARAM_ERROR_HANDLER.apply(type, dataType, record, error);
-            } else {
-                throw error;
+    private SqlRecord toSqlRecord(final DataType dataType, final MappingEnv env, final Object source,
+                                  final ErrorHandler errorHandler) {
+        final SqlRecord value;
+        if (source instanceof SqlRecord) {
+            if (this != UNLIMITED && ((SqlRecord) source).size() != this.columnTypeList.size()) {
+                final IllegalArgumentException error;
+                error = _Exceptions.recordColumnCountNotMatch((SqlRecord) source, this.columnTypeList.size(), this);
+                throw errorHandler.apply(this, dataType, source, error);
             }
+            value = (SqlRecord) source;
+        } else if (source instanceof String && isRecordText((String) source)) {
+            try {
+                value = parseSqlRecord(env, (String) source, 0, ((String) source).length());
+            } catch (Exception e) {
+                throw errorHandler.apply(this, dataType, source, e);
+            }
+        } else if (this == UNLIMITED) {
+            value = ArraySqlRecord.create(1);
+            value.add(ObjectType.INSTANCE.afterGet(dataType, env, source));
+        } else if (this.columnTypeList.size() == 1) {
+            value = ArraySqlRecord.create(1);
+            value.add(this.columnTypeList.get(0).afterGet(dataType, env, source));
+        } else {
+            throw errorHandler.apply(this, dataType, source, null);
         }
+        return value;
+    }
 
-        final ServerMeta meta = env.serverMeta();
-        final LiteralParser literalParser = env.literalParser();
 
-        final int startIndex = builder.length();
-        final boolean unlimited = typeSize == 0;
-
-        MappingType columnType;
-        DataType columnDataType;
-
-        builder.append(_Constant.LEFT_PAREN);
-        boolean escapse = false;
-        int index = 0;
-        for (Object column : record) {
-            if (index > 0) {
-                builder.append(_Constant.COMMA);
+    private int readColumnSize(final DataType dataType, final String source) {
+        final int length = source.length();
+        boolean inDoubleQuote = false, recordEnd = false;
+        int leftParenCount = 0;
+        char ch;
+        int commaCount = 0;
+        for (int i = 0; i < length; i++) {
+            ch = source.charAt(i);
+            if (inDoubleQuote) {
+                if (ch == _Constant.BACK_SLASH) {
+                    i++;
+                } else if (ch == _Constant.DOUBLE_QUOTE) {
+                    inDoubleQuote = false;
+                }
+            } else if (ch == _Constant.DOUBLE_QUOTE) {
+                inDoubleQuote = true;
+            } else if (ch == _Constant.LEFT_PAREN) {
+                if (recordEnd) {
+                    throw _Exceptions.parenNotMatch();
+                }
+                leftParenCount++;
+            } else if (leftParenCount == 0) {
+                throw _Exceptions.parenNotMatch();
+            } else if (ch == _Constant.COMMA) {
+                commaCount++;
+            } else if (ch == _Constant.RIGHT_PAREN) {
+                if (leftParenCount > 1) {
+                    leftParenCount--;
+                } else {
+                    recordEnd = true;
+                }
             }
-            if (column == null) {
-                builder.append(_Constant.NULL);
-                index++;
-                continue;
-            }
-
-            if (unlimited) {
-                columnType = TextType.INSTANCE;
-            } else {
-                columnType = columnTypeList.get(index);
-            }
-            columnDataType = columnType.map(meta);
-            columnType.beforeBind(columnDataType, env, column);
-
-            if (column == DOCUMENT_NULL_VALUE) {
-                builder.append(_Constant.NULL);
-            } else {
-                escapse |= literalParser.parse(columnType, column, mode, builder);
-            }
-
-            index++;
 
         } // loop for
 
-        builder.append(_Constant.RIGHT_PAREN);
-
-        if (escapse) {
-            switch (mode) {
-                case ARRAY_ELEMENT:
-                case ARRAY_ELEMENT_PART:
-                    builder.insert(startIndex, _Constant.DOUBLE_QUOTE);
-                    builder.append(_Constant.DOUBLE_QUOTE);
-                    break;
-                default:
-            }
-
+        if (!recordEnd) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, _Exceptions.parenNotMatch());
+        } else if (inDoubleQuote) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, _Exceptions.doubleQuoteNotMatch());
         }
-
+        return commaCount + 1;
     }
 
 
-    private static boolean isNotRecordText(final String source) {
+    private static boolean isRecordText(final String source) {
         final int length = source.length();
         final boolean match;
         if (length < 3) {
-            match = true;
+            match = false;
         } else {
-            match = source.charAt(0) != _Constant.LEFT_PAREN
-                    || source.charAt(length - 1) != _Constant.RIGHT_PAREN;
+            match = source.charAt(0) == _Constant.LEFT_PAREN
+                    && source.charAt(length - 1) == _Constant.RIGHT_PAREN;
         }
         return match;
     }

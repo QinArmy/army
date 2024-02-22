@@ -348,7 +348,6 @@ public abstract class _Exceptions {
     }
 
 
-
     public static CriteriaException nonNullNamedParam(NamedParam param) {
         String m = String.format("%s[%s] must be non-null.", NamedParam.class.getName(), param.name());
         return new CriteriaException(m);
@@ -1395,6 +1394,14 @@ public abstract class _Exceptions {
         String m = String.format("%s column count[%s] and column count[%s] of %s not match",
                 record.getClass().getName(), record.size(), columnSize, type.getClass().getName());
         return new IllegalArgumentException(m);
+    }
+
+    public static IllegalArgumentException parenNotMatch() {
+        return new IllegalArgumentException("left paren and right paren not match");
+    }
+
+    public static IllegalArgumentException doubleQuoteNotMatch() {
+        return new IllegalArgumentException("double quote count not match");
     }
 
 
