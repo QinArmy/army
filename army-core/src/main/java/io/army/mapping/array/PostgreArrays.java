@@ -495,11 +495,11 @@ public abstract class PostgreArrays extends ArrayMappings {
         if (arrayLength == 0) {
             return array;
         }
-
+        String fragment;
 
         Object elementValue;
         boolean leftBrace = true, inBrace = false, inQuote = false, inElementBrace = false, arrayEnd = false;
-        char ch, startChar = _Constant.NUL_CHAR, preChar = _Constant.NUL_CHAR;
+        char ch, startChar = _Constant.NUL_CHAR;
         for (int i = offset, startIndex = -1, arrayIndex = 0, tailIndex, nextIndex; i < end; i++) {
             ch = text.charAt(i);
             if (leftBrace) {
@@ -518,11 +518,6 @@ public abstract class PostgreArrays extends ArrayMappings {
                         i++;
                     } else {
                         inQuote = false;
-                        if (oneDimension) {
-                            assert startIndex > 0;
-                            Array.set(array, arrayIndex++, function.apply(text, startIndex, i));
-                            startIndex = -1;
-                        }
                     }
 
                 }
@@ -553,7 +548,7 @@ public abstract class PostgreArrays extends ArrayMappings {
                 inQuote = true;
                 if (oneDimension) {
                     assert startIndex < 0;
-                    startIndex = i + 1;
+                    startIndex = i;
                 }
             } else if (ch == delimiter || ch == _Constant.RIGHT_BRACE) {
                 if (startIndex > 0) {
@@ -566,15 +561,19 @@ public abstract class PostgreArrays extends ArrayMappings {
                             throw new IllegalArgumentException("element must be non-null");
                         }
                         Array.set(array, arrayIndex++, null);
-                    } else if (Character.isWhitespace(preChar)) {
-                        for (tailIndex = i - 2; tailIndex > startIndex; tailIndex--) {
+                    } else {
+                        for (tailIndex = i - 1; tailIndex > startIndex; tailIndex--) {
                             if (!Character.isWhitespace(text.charAt(tailIndex))) {
+                                tailIndex++;
                                 break;
                             }
                         }
-                        Array.set(array, arrayIndex++, function.apply(text, startIndex, tailIndex + 1));
-                    } else {
-                        Array.set(array, arrayIndex++, function.apply(text, startIndex, i));
+                        if (text.charAt(startIndex) == _Constant.DOUBLE_QUOTE) {
+                            fragment = decodeElement(text, startIndex, tailIndex);
+                            Array.set(array, arrayIndex++, function.apply(fragment, 0, fragment.length()));
+                        } else {
+                            Array.set(array, arrayIndex++, function.apply(text, startIndex, tailIndex));
+                        }
                     }
                     startIndex = -1;
                 }
@@ -593,7 +592,6 @@ public abstract class PostgreArrays extends ArrayMappings {
                 }
             }
 
-            preChar = ch;
 
         }//for
 

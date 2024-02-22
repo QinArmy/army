@@ -1396,8 +1396,9 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(m);
     }
 
-    public static IllegalArgumentException parenNotMatch() {
-        return new IllegalArgumentException("left paren and right paren not match");
+    public static IllegalArgumentException parenNotMatch(String fragment) {
+        String m = String.format("fragment[%s] left paren and right paren not match", fragment);
+        return new IllegalArgumentException(m);
     }
 
     public static IllegalArgumentException doubleQuoteNotMatch() {

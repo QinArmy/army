@@ -199,11 +199,11 @@ public final class SqlRecordType extends _SqlRecordSupport implements MappingTyp
                 inDoubleQuote = true;
             } else if (ch == _Constant.LEFT_PAREN) {
                 if (recordEnd) {
-                    throw _Exceptions.parenNotMatch();
+                    throw _Exceptions.parenNotMatch(source.substring(i, 3));
                 }
                 leftParenCount++;
             } else if (leftParenCount == 0) {
-                throw _Exceptions.parenNotMatch();
+                throw _Exceptions.parenNotMatch(source.substring(i, 3));
             } else if (ch == _Constant.COMMA) {
                 commaCount++;
             } else if (ch == _Constant.RIGHT_PAREN) {
@@ -217,7 +217,7 @@ public final class SqlRecordType extends _SqlRecordSupport implements MappingTyp
         } // loop for
 
         if (!recordEnd) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, _Exceptions.parenNotMatch());
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, _Exceptions.parenNotMatch(source.substring(0, 3)));
         } else if (inDoubleQuote) {
             throw PARAM_ERROR_HANDLER.apply(this, dataType, source, _Exceptions.doubleQuoteNotMatch());
         }

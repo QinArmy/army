@@ -20,6 +20,7 @@ import io.army.dialect.LiteralParser;
 import io.army.dialect._Constant;
 import io.army.env.EscapeMode;
 import io.army.mapping.*;
+import io.army.mapping.array.PostgreArrays;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.type.ArraySqlRecord;
@@ -71,16 +72,19 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
                 }
             } else if (ch == _Constant.DOUBLE_QUOTE) {
                 inDoubleQuote = true;
+                if (startIndex < 0) {
+                    startIndex = i;
+                }
             } else if (ch == _Constant.LEFT_PAREN) {
                 if (recordEnd) {
-                    throw _Exceptions.parenNotMatch();
+                    throw _Exceptions.parenNotMatch(source.substring(offset, end));
                 }
                 if (leftParenCount == 1 && startIndex < 0) {
                     startIndex = i;
                 }
                 leftParenCount++;
             } else if (leftParenCount == 0) {
-                throw _Exceptions.parenNotMatch();
+                throw _Exceptions.parenNotMatch(source.substring(offset, end));
             } else if (startIndex < 0) {
                 if (!Character.isWhitespace(ch)) {
                     startIndex = i;
@@ -101,7 +105,11 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
                     throw columnSizeNotMatch(columnIndex + 1, columnTypeSize);
                 }
 
-                elementText = source.substring(startIndex, endIndex);
+                if (source.charAt(startIndex) == _Constant.DOUBLE_QUOTE) {
+                    elementText = PostgreArrays.decodeElement(source, startIndex, endIndex);
+                } else {
+                    elementText = source.substring(startIndex, endIndex);
+                }
 
                 if (_Constant.NULL.equalsIgnoreCase(elementText)) {
                     columnValue = null;
@@ -130,7 +138,7 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
         } // outer loop for
 
         if (!recordEnd) {
-            throw _Exceptions.parenNotMatch();
+            throw _Exceptions.parenNotMatch(source.substring(offset, end));
         } else if (inDoubleQuote) {
             throw _Exceptions.doubleQuoteNotMatch();
         }

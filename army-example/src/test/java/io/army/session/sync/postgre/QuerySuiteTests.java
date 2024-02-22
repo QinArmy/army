@@ -152,11 +152,11 @@ public class QuerySuiteTests extends SessionTestSupport {
 
         SqlRecord[] orderCol;
         for (Map<String, Object> row : rowList) {
-            Assert.assertEquals(row.size(), 6);
+            Assert.assertEquals(row.size(), 5);
             Assert.assertTrue(row.get("myId") instanceof Long);
             orderCol = (SqlRecord[]) row.get("orderCol");
             for (SqlRecord record : orderCol) {
-                Assert.assertEquals(record.size(), 1);
+                Assert.assertEquals(record.size(), 2);
                 Assert.assertTrue(record.get(0) instanceof Long);
             }
         }
