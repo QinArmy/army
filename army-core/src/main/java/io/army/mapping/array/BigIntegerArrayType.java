@@ -18,7 +18,10 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.mapping.*;
+import io.army.mapping.BigIntegerType;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -72,14 +75,6 @@ public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements Mapp
     @Override
     public final DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         return BigDecimalArrayType.mapToSqlType(this, meta);
-    }
-
-    @Override
-    public final <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        if (targetType != String.class) {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return StringType.INSTANCE;
     }
 
 

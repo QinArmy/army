@@ -19,7 +19,9 @@ package io.army.mapping.mysql;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
-import io.army.mapping.*;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MultiGenericsMappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -68,11 +70,6 @@ public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implemen
             throw noMappingError(meta);
         }
         return MySQLType.SET;
-    }
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
     }
 
     @Override

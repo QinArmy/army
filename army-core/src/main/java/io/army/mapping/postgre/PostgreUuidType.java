@@ -20,8 +20,6 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -58,10 +56,6 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
         return PostgreType.UUID;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public UUID convert(MappingEnv env, Object source) throws CriteriaException {

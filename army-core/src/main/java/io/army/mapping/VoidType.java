@@ -48,11 +48,6 @@ public final class VoidType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Object convert(MappingEnv env, Object source) throws CriteriaException {
         throw new UnsupportedOperationException();
     }

@@ -21,7 +21,6 @@ import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping.postgre.array.PostgreAclItemArrayType;
 import io.army.meta.ServerMeta;
@@ -67,11 +66,6 @@ public final class PostgreAclItemType extends _ArmyBuildInMapping {
     @Override
     public MappingType arrayTypeOfThis() throws CriteriaException {
         return PostgreAclItemArrayType.LINEAR;
-    }
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        throw noMatchCompatibleMapping(this, targetType);
     }
 
     @Override

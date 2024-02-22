@@ -20,7 +20,6 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -57,11 +56,6 @@ public final class PostgreCircleType extends PostgreGeometricType {
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
         //TODO
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        return null;
     }
 
     @Override

@@ -81,13 +81,6 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
         return BinaryArrayType.LINEAR;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        if (targetType != String.class) {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return StringType.INSTANCE;
-    }
 
     @Override
     public byte[] convert(MappingEnv env, Object source) throws CriteriaException {

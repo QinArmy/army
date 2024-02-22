@@ -17,6 +17,7 @@
 package io.army.mapping;
 
 
+import io.army.sqltype.DataType;
 
 public abstract class _ArmyBuildInMapping extends MappingType {
 
@@ -32,6 +33,10 @@ public abstract class _ArmyBuildInMapping extends MappingType {
 
     }
 
+    @Override
+    public <Z> MappingType compatibleFor(DataType dataType, Class<Z> targetType) throws NoMatchMappingException {
+        return super.compatibleFor(dataType, targetType);
+    }
 
 
 }

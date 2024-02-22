@@ -75,19 +75,6 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
     @Override
-    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
-        final MappingType instance;
-        if (targetType == String.class) {
-            instance = StringType.INSTANCE;
-        } else if (targetType == ZonedDateTime.class) {
-            instance = ZonedDateTimeType.INSTANCE;
-        } else {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return instance;
-    }
-
-    @Override
     public OffsetDateTime convert(MappingEnv env, Object source) throws CriteriaException {
         return toOffsetDateTime(this, map(env.serverMeta()), source, PARAM_ERROR_HANDLER);
     }

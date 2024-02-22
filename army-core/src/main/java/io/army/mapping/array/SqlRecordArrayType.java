@@ -105,7 +105,9 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
 
     private final List<MappingType> columnTypeList;
 
-
+    /**
+     * private constructor
+     */
     private SqlRecordArrayType(Class<?> javaType, List<MappingType> columnTypeList) {
         this.javaType = javaType;
         this.columnTypeList = columnTypeList;
