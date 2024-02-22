@@ -155,7 +155,7 @@ public class PostgreArraysUnitTests {
 
         text = "{\"I love \\\"army\\\"\"}";
         array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
-        Assert.assertEquals(array, new String[]{"I love \\\"army\\\""});
+        Assert.assertEquals(array, new String[]{"I love \"army\""});
 
         text = "{{\"\"}}";
         javaType = String[][].class;
@@ -168,7 +168,7 @@ public class PostgreArraysUnitTests {
 
         text = "{{\"I love \\\"army\\\"\"} , {\"My Name is zoro.\"} }";
         array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
-        Assert.assertEquals(array, new String[][]{{"I love \\\"army\\\""}, {"My Name is zoro."}});
+        Assert.assertEquals(array, new String[][]{{"I love \"army\""}, {"My Name is zoro."}});
     }
 
 

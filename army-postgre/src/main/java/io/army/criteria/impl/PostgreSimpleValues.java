@@ -348,11 +348,11 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
     private static final class ValuesDispatcher<I extends Item> extends PostgreValuesDispatcher<I> {
 
         private ValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(PostgreUtils.DIALECT, leftContext), function);
+            super(CriteriaContexts.primaryDispatcherContext(PostgreUtils.DIALECT, leftContext.getOuterContext(), leftContext), function);
         }
 
         private ValuesDispatcher(BracketValues<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(PostgreUtils.DIALECT, bracket.context), function);
+            super(CriteriaContexts.primaryDispatcherContext(PostgreUtils.DIALECT, bracket.context, null), function);
         }
 
         @Override
@@ -362,7 +362,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
 
-            return function.apply(new ValuesDispatcher<>(bracket, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new ValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
 
@@ -400,7 +400,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
         }
 
         private SubValuesDispatcher(BracketSubValues<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.subDispatcherContext(bracket.context.getNonNullOuterContext(), bracket.context), function);
+            super(CriteriaContexts.subDispatcherContext(bracket.context, null), function);
         }
 
         @Override
@@ -410,7 +410,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            return function.apply(new SubValuesDispatcher<>(bracket, bracket::parensEnd));
+            return ClauseUtils.invokeFunction(function, new SubValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
 

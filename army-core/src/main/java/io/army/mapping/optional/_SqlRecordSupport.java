@@ -101,6 +101,9 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
                     }
 
                 } // inner loop for
+                if (endIndex == startIndex) {
+                    endIndex = startIndex + 1;
+                }
                 if (!unlimited && columnIndex >= columnTypeSize) {
                     throw columnSizeNotMatch(columnIndex + 1, columnTypeSize);
                 }

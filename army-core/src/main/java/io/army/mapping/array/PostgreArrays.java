@@ -568,6 +568,9 @@ public abstract class PostgreArrays extends ArrayMappings {
                                 break;
                             }
                         }
+                        if (tailIndex == startIndex) {
+                            tailIndex = startIndex + 1;
+                        }
                         if (text.charAt(startIndex) == _Constant.DOUBLE_QUOTE) {
                             fragment = decodeElement(text, startIndex, tailIndex);
                             Array.set(array, arrayIndex++, function.apply(fragment, 0, fragment.length()));

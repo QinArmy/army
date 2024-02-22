@@ -1154,11 +1154,11 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     private static final class SelectDispatcher<I extends Item> extends PostgreQueryDispatcher<I> {
 
         private SelectDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(leftContext.dialect(), leftContext), function);
+            super(CriteriaContexts.primaryDispatcherContext(leftContext.dialect(), leftContext.getOuterContext(), leftContext), function);
         }
 
         private SelectDispatcher(BracketSelect<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(bracket.context.dialect(), bracket.context), function);
+            super(CriteriaContexts.primaryDispatcherContext(bracket.context.dialect(), bracket.context, null), function);
         }
 
 
@@ -1211,7 +1211,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         private SubQueryDispatcher(BracketSubQuery<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.subDispatcherContext(bracket.context.getNonNullOuterContext(), bracket.context), function);
+            super(CriteriaContexts.subDispatcherContext(bracket.context, null), function);
         }
 
         @Override

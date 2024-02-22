@@ -1409,11 +1409,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     private static final class SelectDispatcher<I extends Item> extends MySQLQueryDispatcher<I> {
 
         private SelectDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, leftContext), function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, leftContext.getOuterContext(), leftContext), function);
         }
 
         private SelectDispatcher(BracketSelect<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, bracket.context), function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, bracket.context, null), function);
         }
 
         @Override
@@ -1460,7 +1460,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         private SubQueryDispatcher(BracketSubQuery<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.subDispatcherContext(bracket.context.getNonNullOuterContext(), bracket.context), function);
+            super(CriteriaContexts.subDispatcherContext(bracket.context, null), function);
         }
 
 

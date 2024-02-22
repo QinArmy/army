@@ -287,13 +287,14 @@ abstract class CriteriaContexts {
         return new PrimaryJoinableMergeContext(dialect);
     }
 
-    static CriteriaContext primaryDispatcherContext(final Dialect dialect, final @Nullable CriteriaContext leftContext) {
-        return new PrimaryDispatcherContext(dialect, leftContext);
+    static CriteriaContext primaryDispatcherContext(final Dialect dialect, @Nullable final CriteriaContext outerContext,
+                                                    final @Nullable CriteriaContext leftContext) {
+        assert outerContext != null || leftContext != null;
+        return new PrimaryDispatcherContext(dialect, outerContext, leftContext);
     }
 
     static CriteriaContext subDispatcherContext(final CriteriaContext outerContext,
                                                 final @Nullable CriteriaContext leftContext) {
-        assert leftContext == null || leftContext.getOuterContext() == outerContext;
         return new SubDispatcherContext(outerContext, leftContext);
     }
 
@@ -4285,10 +4286,11 @@ abstract class CriteriaContexts {
             implements PrimaryContext {
 
         /**
-         * @see #primaryDispatcherContext(Dialect, CriteriaContext)
+         * @see #primaryDispatcherContext(Dialect, CriteriaContext, CriteriaContext)
          */
-        private PrimaryDispatcherContext(Dialect dialect, @Nullable CriteriaContext leftContext) {
-            super(dialect, null, leftContext);
+        private PrimaryDispatcherContext(Dialect dialect, @Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
+
         }
 
 

@@ -19,7 +19,6 @@ package io.army.mapping.array;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -176,7 +175,7 @@ public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType
     @Override
     public final Object afterGet(DataType dataType, final MappingEnv env, Object source) throws DataAccessException {
         final TextFunction<?> function;
-        function = (text, offset, end) -> decodeElement(env, text, offset, end);
+        function = (text, offset, end) -> parseSqlRecord(env, text, offset, end);
         return PostgreArrays.arrayAfterGet(this, dataType, source, false, function, ACCESS_ERROR_HANDLER);
     }
 
@@ -190,18 +189,6 @@ public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType
         postgreRecordText(dataType, env, (SqlRecord) element, builder);
 
     }
-
-    private SqlRecord decodeElement(final MappingEnv env, String text, final int offset, final int end) {
-        final SqlRecord record;
-        if (text.charAt(offset) == _Constant.DOUBLE_QUOTE) {
-            text = PostgreArrays.decodeElement(text, offset, end);
-            record = parseSqlRecord(env, text, 0, text.length());
-        } else {
-            record = parseSqlRecord(env, text, offset, end);
-        }
-        return record;
-    }
-
 
     private static CriteriaException errorUseCase() {
         String m = String.format("%s.UNLIMITED only can use read column from database", SqlRecordArrayType.class.getName());

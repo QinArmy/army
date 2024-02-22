@@ -316,11 +316,11 @@ abstract class MySQLSimpleValues<I extends Item>
     private static final class ValuesDispatcher<I extends Item> extends MySQLValuesDispatcher<I> {
 
         private ValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, leftContext), function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, leftContext.getOuterContext(), leftContext), function);
         }
 
         private ValuesDispatcher(BracketValues<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, bracket.context), function);
+            super(CriteriaContexts.primaryDispatcherContext(MySQLUtils.DIALECT, bracket.context, null), function);
         }
 
 
@@ -366,7 +366,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         private SubValuesDispatcher(BracketSubValues<?> bracket, Function<RowSet, I> function) {
-            super(CriteriaContexts.subDispatcherContext(bracket.context.getNonNullOuterContext(), bracket.context), function);
+            super(CriteriaContexts.subDispatcherContext(bracket.context, null), function);
         }
 
         @Override
