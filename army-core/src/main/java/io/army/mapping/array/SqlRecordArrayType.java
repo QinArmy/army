@@ -2,7 +2,6 @@ package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.dialect.LiteralParser;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.env.EscapeMode;
@@ -151,12 +150,12 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
     }
 
     @Override
-    public final String beforeBind(DataType dataType, final MappingEnv env, Object source) throws CriteriaException {
+    public final String beforeBind(final DataType dataType, final MappingEnv env, Object source) throws CriteriaException {
         if (this == UNLIMITED) {
             throw errorUseCase();
         }
         final BiConsumer<Object, StringBuilder> consumer;
-        consumer = (o, c) -> appendToText(env, o, c);
+        consumer = (o, c) -> appendToText(dataType, env, o, c);
 
         return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this, PARAM_ERROR_HANDLER);
     }
@@ -169,57 +168,14 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
     }
 
 
-    private void appendToText(final MappingEnv env, final Object element, final StringBuilder builder) {
+    private void appendToText(final DataType dataType, final MappingEnv env, final Object element, final StringBuilder builder) {
         if (!(element instanceof SqlRecord)) {
             // no bug,never here
             throw new IllegalArgumentException();
         }
 
-        final SqlRecord record = (SqlRecord) element;
-
-        final List<MappingType> columnTypeList = this.columnTypeList;
-        final int columnSize = record.size(), typeSize = columnTypeList.size();
-        if (typeSize > 0 && typeSize != columnSize) {
-            throw recordColumnCountNotMatch(record, columnSize, this);
-        }
-
-        final ServerMeta meta = env.serverMeta();
-        final LiteralParser literalParser = env.literalParser();
-
-        MappingType columnType;
-        DataType dataType;
-        Object column;
-
-        final int startIndex = builder.length();
-
-        builder.append(_Constant.LEFT_PAREN);
-        boolean escapse = false;
-        for (int i = 0; i < columnSize; i++) {
-            if (i > 0) {
-                builder.append(_Constant.COMMA);
-            }
-            column = record.get(i);
-            if (column == null) {
-                builder.append(_Constant.NULL);
-                continue;
-            }
-
-            columnType = columnTypeList.get(i);
-            dataType = columnType.map(meta);
-            columnType.beforeBind(dataType, env, column);
-
-            if (column == DOCUMENT_NULL_VALUE) {
-                builder.append(_Constant.NULL);
-                continue;
-            }
-            escapse |= literalParser.parse(columnType, column, EscapeMode.ARRAY_ELEMENT_PART, builder);
-        }
-        builder.append(_Constant.RIGHT_PAREN);
-
-        if (escapse) {
-            builder.insert(startIndex, _Constant.DOUBLE_QUOTE);
-            builder.append(_Constant.DOUBLE_QUOTE);
-        }
+        SqlRecordType.appendRecordText(dataType, env, (SqlRecord) element, builder, this, this.columnTypeList,
+                EscapeMode.ARRAY_ELEMENT_PART);
 
     }
 
@@ -321,12 +277,6 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
         return record;
     }
 
-
-    private static IllegalArgumentException recordColumnCountNotMatch(SqlRecord record, int columnSize, MappingType type) {
-        String m = String.format("%s column count[%s] and column count[%s] of %s not match",
-                record.getClass().getName(), record.size(), columnSize, type.getClass().getName());
-        return new IllegalArgumentException(m);
-    }
 
     private static IllegalArgumentException columnSizeNotMatch(int recordColumnSize, int columnSize) {
         String m = String.format("record column size[%s] and column size[%s] of %s not match.", recordColumnSize,

@@ -42,6 +42,7 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
+import io.army.type.SqlRecord;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -1388,6 +1389,12 @@ public abstract class _Exceptions {
         String m = String.format("error,you use %s one statement mode values syntax insert %s,but no child id default scalar expression",
                 database, child);
         return new IllegalOneStmtModeException(m);
+    }
+
+    public static IllegalArgumentException recordColumnCountNotMatch(SqlRecord record, int columnSize, MappingType type) {
+        String m = String.format("%s column count[%s] and column count[%s] of %s not match",
+                record.getClass().getName(), record.size(), columnSize, type.getClass().getName());
+        return new IllegalArgumentException(m);
     }
 
 
