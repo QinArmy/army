@@ -6,18 +6,18 @@ import io.army.dialect.LiteralParser;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.env.EscapeMode;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.UnaryGenericsMapping;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.function.TextFunction;
+import io.army.mapping.*;
 import io.army.mapping.optional.SqlRecordType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
+import io.army.type.ArraySqlRecord;
 import io.army.type.SqlRecord;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -141,27 +141,31 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
 
     @Override
     public final Object convert(MappingEnv env, Object source) throws CriteriaException {
+        if (this == UNLIMITED) {
+            throw errorUseCase();
+        }
         return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, PostgreArrays::decodeElement,
                 PARAM_ERROR_HANDLER);
     }
 
     @Override
     public final String beforeBind(DataType dataType, final MappingEnv env, Object source) throws CriteriaException {
-
+        if (this == UNLIMITED) {
+            throw errorUseCase();
+        }
         final BiConsumer<Object, StringBuilder> consumer;
         consumer = (o, c) -> appendToText(env, o, c);
 
-        return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this,
-                PARAM_ERROR_HANDLER
-        );
+        return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        return PostgreArrays.arrayAfterGet(this, dataType, source, false,
-                this::decodeElement, ACCESS_ERROR_HANDLER
-        );
+    public final Object afterGet(DataType dataType, final MappingEnv env, Object source) throws DataAccessException {
+        final TextFunction<?> function;
+        function = (text, offset, end) -> decodeElement(env, text, offset, end);
+        return PostgreArrays.arrayAfterGet(this, dataType, source, false, function, ACCESS_ERROR_HANDLER);
     }
+
 
     private void appendToText(final MappingEnv env, final Object element, final StringBuilder builder) {
         if (!(element instanceof SqlRecord)) {
@@ -172,8 +176,8 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
         final SqlRecord record = (SqlRecord) element;
 
         final List<MappingType> columnTypeList = this.columnTypeList;
-        final int columnSize = columnTypeList.size();
-        if (record.size() != columnSize) {
+        final int columnSize = record.size(), typeSize = columnTypeList.size();
+        if (typeSize > 0 && typeSize != columnSize) {
             throw recordColumnCountNotMatch(record, columnSize, this);
         }
 
@@ -197,6 +201,7 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
                 builder.append(_Constant.NULL);
                 continue;
             }
+
             columnType = columnTypeList.get(i);
             dataType = columnType.map(meta);
             columnType.beforeBind(dataType, env, column);
@@ -216,8 +221,96 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
 
     }
 
-    private String decodeElement(final String text, int offset, int end) {
-        throw new UnsupportedOperationException();
+    private SqlRecord decodeElement(final MappingEnv env, final String text, int offset, int end) {
+        final boolean outerQuote = text.charAt(offset) == _Constant.DOUBLE_QUOTE;
+        if (outerQuote) {
+            if (text.charAt(end - 1) != _Constant.DOUBLE_QUOTE) {
+                throw _Exceptions.arrayElementError();
+            }
+            offset++;
+            end--;
+        }
+
+        final ServerMeta meta = env.serverMeta();
+        final List<MappingType> columnTypeList = this.columnTypeList;
+        final int columnSize = columnTypeList.size();
+        final int lastIndex = end - 1;
+
+        final SqlRecord record = ArraySqlRecord.create(columnSize);
+        final boolean unlimited = this == UNLIMITED;
+
+        DataType dataType;
+        MappingType columnType;
+        Object columnValue;
+        String elementText;
+        boolean inDoubleQuote = false;
+        int leftParenCount = 0;
+        char ch;
+        for (int i = offset, startIndex = -1, columnIndex = 0, endIndex; i < end; i++) {
+            ch = text.charAt(i);
+            if (inDoubleQuote) {
+                if (ch == _Constant.BACK_SLASH) {
+                    i++;
+                } else if (ch == _Constant.QUOTE && (i < lastIndex) && text.charAt(i + 1) == _Constant.QUOTE) {
+                    i++;
+                }
+            } else if (ch == _Constant.DOUBLE_QUOTE) {
+                inDoubleQuote = true;
+            } else if (ch == _Constant.LEFT_PAREN) {
+                leftParenCount++;
+            } else if (leftParenCount == 0) {
+                throw _Exceptions.arrayElementError();
+            } else if (startIndex < 0) {
+                if (!Character.isWhitespace(ch)) {
+                    startIndex = i;
+                }
+            } else if (leftParenCount > 1) {
+                if (ch == _Constant.RIGHT_PAREN) {
+                    leftParenCount--;
+                }
+            } else if (ch == _Constant.COMMA || ch == _Constant.RIGHT_PAREN) {
+                endIndex = i;
+                for (; endIndex > startIndex; endIndex--) {
+                    if (!Character.isWhitespace(ch)) {
+                        break;
+                    }
+
+                } // inner loop for
+
+                if (columnIndex >= columnSize) {
+                    throw columnSizeNotMatch(columnIndex + 1, columnSize);
+                }
+
+                if (outerQuote) {
+                    elementText = PostgreArrays.decodeElement(text, startIndex, endIndex + 1);
+                } else {
+                    elementText = text.substring(startIndex, endIndex + 1);
+                }
+
+                if (_Constant.NULL.equalsIgnoreCase(elementText)) {
+                    columnValue = null;
+                } else {
+                    if (unlimited) {
+                        columnType = ObjectType.INSTANCE;
+                    } else {
+                        columnType = columnTypeList.get(columnIndex++);
+                    }
+
+                    dataType = columnType.map(meta);
+                    columnValue = columnType.afterGet(dataType, env, elementText);
+                    if (columnValue == DOCUMENT_NULL_VALUE) {
+                        columnValue = null;
+                    }
+                }
+
+                record.add(columnValue);
+
+            } // else if
+
+        } // outer loop for
+
+
+        return record;
     }
 
 
@@ -225,6 +318,18 @@ public class SqlRecordArrayType extends _ArmyBuildInMapping implements MappingTy
         String m = String.format("%s column count[%s] and column count[%s] of %s not match",
                 record.getClass().getName(), record.size(), columnSize, type.getClass().getName());
         return new IllegalArgumentException(m);
+    }
+
+    private static IllegalArgumentException columnSizeNotMatch(int recordColumnSize, int columnSize) {
+        String m = String.format("record column size[%s] and column size[%s] of %s not match.", recordColumnSize,
+                columnSize, SqlRecordArrayType.class.getName());
+        return new IllegalArgumentException(m);
+    }
+
+
+    private static CriteriaException errorUseCase() {
+        String m = String.format("%s.UNLIMITED only can use read column from database", SqlRecordArrayType.class.getName());
+        return new CriteriaException(m);
     }
 
 

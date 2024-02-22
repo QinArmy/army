@@ -346,15 +346,6 @@ public abstract class _Exceptions {
         return new ErrorChildInsertException(m);
     }
 
-    public static CriteriaException updateChildFieldWithSingleUpdate(ChildTableMeta<?> table) {
-        String m = String.format("%s is %s,you can only update parent table field in single update syntax."
-                , table, ChildTableMeta.class.getName());
-        return new CriteriaException(m);
-    }
-
-    public static ArmyException generatorFieldIsNull(FieldMeta<?> field) {
-        return new ArmyException(String.format("%s has generator but value is null.", field));
-    }
 
 
     public static CriteriaException nonNullNamedParam(NamedParam param) {
@@ -366,28 +357,6 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 
-    public static CriteriaException noFieldsForQueryInsert(TableMeta<?> table) {
-
-        return new CriteriaException(String.format("No fields for query insert for %s", table));
-    }
-
-    public static CriteriaException rowSetSelectionAndFieldSizeNotMatch(int rowSetSelectionSize, int fieldSize
-            , TableMeta<?> table) {
-        String m = String.format("query selection size[%s] and field size[%s] not match for %s"
-                , rowSetSelectionSize, fieldSize, table);
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException childAndParentRowsNotMatch(ChildTableMeta<?> table, int parent, int child) {
-        String m = String.format("%s rows number[%s] and parent row number[%s] not match"
-                , table, child, parent);
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException cteRefWithClauseOuterField(String cteName) {
-        String m = String.format("Cte[%s] couldn't reference WITH clause outer field.", cteName);
-        throw new CriteriaException(m);
-    }
 
     public static CriteriaException duplicateKeyAndPostIdInsert(ChildTableMeta<?> table) {
         String m;
@@ -396,16 +365,8 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
-
-    public static CriteriaException multiStmtDontSupportPostParent(ChildTableMeta<?> childTable) {
-        String m = String.format("multi-statement don't support %s with post parent", childTable);
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException visibleFieldAndConflictClauseNotMatch(Dialect dialect, TableMeta<?> table) {
-        String m = String.format("%s don't support conflict clause for non-%s mode,because %s exists %s field."
-                , dialect, Visible.BOTH, table, _MetaBridge.VISIBLE);
-        return new CriteriaException(m);
+    public static IllegalArgumentException arrayElementError() {
+        return new IllegalArgumentException("array element error");
     }
 
     public static CriteriaException illegalExpression(Expression expression) {
