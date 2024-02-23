@@ -2122,7 +2122,7 @@ abstract class ArmyParser implements DialectParser {
             } else if (context.isUpdateTimeOutputParam()) {
                 context.appendParam(SQLs.param(updateTime, updateTimeValue));
             } else {
-                context.appendLiteral(updateTime, updateTimeValue);
+                context.appendLiteral(updateTime, updateTimeValue, EscapeMode.DEFAULT);
             }
         }
 

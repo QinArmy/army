@@ -16,10 +16,8 @@
 
 package io.army.dialect.postgre;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.SQLWords;
-import io.army.criteria.Statement;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
+import io.army.criteria.impl._LiteralExpression;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
@@ -961,11 +959,20 @@ abstract class PostgreParser extends _ArmyDialectParser {
         sqlBuilder = context.sqlBuilder();
         if (rowCount != null) {
             sqlBuilder.append(_Constant.SPACE_LIMIT);
-            rowCount.appendSql(sqlBuilder, context);
+            if (rowCount instanceof LiteralExpression) {
+                ((_LiteralExpression) rowCount).appendSqlWithoutType(sqlBuilder, context);
+            } else {
+                rowCount.appendSql(sqlBuilder, context);
+            }
+
         }
         if (offset != null) {
             sqlBuilder.append(_Constant.SPACE_OFFSET);
-            offset.appendSql(sqlBuilder, context);
+            if (rowCount instanceof LiteralExpression) {
+                ((_LiteralExpression) offset).appendSqlWithoutType(sqlBuilder, context);
+            } else {
+                offset.appendSql(sqlBuilder, context);
+            }
         }
 
     }

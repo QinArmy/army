@@ -431,9 +431,9 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private String cycleMarkColumnName;
 
-        private ArmyExpression cycleMarkValue;
+        private _LiteralExpression cycleMarkValue;
 
-        private ArmyExpression cycleMarkDefault;
+        private _LiteralExpression cycleMarkDefault;
 
         private String cyclePathColumnName;
 
@@ -536,13 +536,13 @@ abstract class PostgreSupports extends CriteriaSupports {
             sqlBuilder.append(_Constant.SPACE_SET_SPACE);
             parser.identifier(this.cycleMarkColumnName, sqlBuilder);
 
-            final ArmyExpression cycleMarkValue = this.cycleMarkValue, cycleMarkDefault = this.cycleMarkDefault;
+            final _LiteralExpression cycleMarkValue = this.cycleMarkValue, cycleMarkDefault = this.cycleMarkDefault;
             if (cycleMarkValue != null) {
                 sqlBuilder.append(" TO");
-                cycleMarkValue.appendSql(sqlBuilder, context);
+                cycleMarkValue.appendSqlWithoutType(sqlBuilder, context);
                 sqlBuilder.append(_Constant.SPACE_DEFAULT);
                 assert cycleMarkDefault != null;
-                cycleMarkDefault.appendSql(sqlBuilder, context);
+                cycleMarkDefault.appendSqlWithoutType(sqlBuilder, context);
             }
 
             sqlBuilder.append(_Constant.SPACE_USING)
@@ -570,13 +570,13 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         private void acceptMarkValueAndDefault(@Nullable LiteralExpression cycleMarkValue, @Nullable LiteralExpression cycleMarkDefault) {
-            if (cycleMarkValue == null) {
+            if (!(cycleMarkValue instanceof ArmyExpression)) {
                 throw ContextStack.clearStackAndNullPointer();
-            } else if (cycleMarkDefault == null) {
+            } else if (!(cycleMarkDefault instanceof ArmyExpression)) {
                 throw ContextStack.clearStackAndNullPointer();
             }
-            this.cycleMarkValue = (ArmyExpression) cycleMarkValue;
-            this.cycleMarkDefault = (ArmyExpression) cycleMarkDefault;
+            this.cycleMarkValue = (_LiteralExpression) cycleMarkValue;
+            this.cycleMarkDefault = (_LiteralExpression) cycleMarkDefault;
         }
 
         /**

@@ -358,7 +358,7 @@ public class QuerySuiteTests extends SessionTestSupport {
                         .join("cte").on(ChinaRegion_.id::equal, SQLs.refField("cte", "myParentId"))
                         .asQuery()
                 ).search(s -> s.depthFirstBy("myId", "myCreateTime").set("orderCol"))
-                .cycle(s -> s.space("myId", "myCreateTime").set("isCycle").to(SQLs.space(1), DEFAULT, SQLs.space(0)).using("path"))
+                .cycle(s -> s.space("myId", "myCreateTime").set("isCycle").to(LITERAL_1, DEFAULT, LITERAL_0).using("path"))
                 .space()
                 .select(s -> s.space("cte", PERIOD, ASTERISK))
                 .from("cte")

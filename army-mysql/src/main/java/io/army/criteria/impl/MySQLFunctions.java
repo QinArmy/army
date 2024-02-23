@@ -25,6 +25,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.env.EscapeMode;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.ChildTableMeta;
@@ -554,7 +555,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             final String stringValue = this.stringValue;
             if (stringValue != null) {
                 sqlBuilder.append(" SEPARATOR ");
-                context.appendLiteral(StringType.INSTANCE, stringValue);
+                context.appendLiteral(StringType.INSTANCE, stringValue, EscapeMode.DEFAULT);
             }
         }
 
@@ -640,7 +641,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             }
 
             if (this.literal) {
-                context.appendLiteral(StringType.INSTANCE, ((SimpleStmt) stmt).sqlText());
+                context.appendLiteral(StringType.INSTANCE, ((SimpleStmt) stmt).sqlText(), EscapeMode.DEFAULT);
             } else {
                 context.appendParam(SingleParam.build(StringType.INSTANCE, ((SimpleStmt) stmt).sqlText()));
             }
@@ -801,7 +802,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
                     if (action instanceof Expression) {
                         ((ArmyExpression) action).appendSql(sqlBuilder, context);
                     } else {
-                        context.appendLiteral(JsonType.TEXT, action);
+                        context.appendLiteral(JsonType.TEXT, action, EscapeMode.DEFAULT);
                     }
                 }
 
@@ -1258,7 +1259,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
             final Object pathExp = this.pathExp;
             if (pathExp instanceof String) {
-                context.appendLiteral(JsonPathType.INSTANCE, pathExp);
+                context.appendLiteral(JsonPathType.INSTANCE, pathExp, EscapeMode.DEFAULT);
             } else if (pathExp instanceof Expression) {
                 ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
             } else {
@@ -1325,7 +1326,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             }
             final Object pathExp = this.pathExp;
             if (pathExp instanceof String) {
-                context.appendLiteral(StringType.INSTANCE, pathExp);
+                context.appendLiteral(StringType.INSTANCE, pathExp, EscapeMode.DEFAULT);
             } else if (pathExp instanceof Expression) {
                 ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
             } else {
@@ -1615,14 +1616,14 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
             if (jsonDoc instanceof Expression) {
                 ((ArmyExpression) jsonDoc).appendSql(sqlBuilder, context);
             } else {
-                context.appendLiteral(JsonType.TEXT, jsonDoc);
+                context.appendLiteral(JsonType.TEXT, jsonDoc, EscapeMode.DEFAULT);
             }
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
             final Object pathExp = this.pathExp;
             if (pathExp instanceof String) {
-                context.appendLiteral(JsonPathType.INSTANCE, pathExp);
+                context.appendLiteral(JsonPathType.INSTANCE, pathExp, EscapeMode.DEFAULT);
             } else if (pathExp instanceof Expression) {
                 ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
             } else {

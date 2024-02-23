@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.env.EscapeMode;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
@@ -514,7 +515,7 @@ abstract class MySQLExpressions {
             sqlBuilder.append(" _");
             context.identifier(this.charsetName, sqlBuilder);
 
-            context.appendLiteral(this.type, this.literal);
+            context.appendLiteral(this.type, this.literal, EscapeMode.DEFAULT);
 
             final String collationName = this.collationName;
             if (collationName != null) {

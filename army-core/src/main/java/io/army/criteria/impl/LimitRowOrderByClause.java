@@ -20,9 +20,9 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect._SqlContext;
+import io.army.mapping.BigDecimalType;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
-import io.army.mapping.optional.NoCastBigDecimalType;
-import io.army.mapping.optional.NoCastLongType;
 import io.army.meta.TypeMeta;
 
 import javax.annotation.Nullable;
@@ -73,18 +73,18 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         if (rowCount < 0) {
             throw CriteriaUtils.limitParamError(this.context, rowCount);
         }
-        return this.limit(operator.apply(NoCastLongType.INSTANCE, rowCount));
+        return this.limit(operator.apply(LongType.INSTANCE, rowCount));
     }
 
     @Override
     public final LR limit(BiFunction<MappingType, String, Expression> operator, String paramName) {
-        return this.limit(operator.apply(NoCastLongType.INSTANCE, paramName));
+        return this.limit(operator.apply(LongType.INSTANCE, paramName));
     }
 
     @Override
     public final <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator,
                                              Supplier<N> supplier) {
-        return this.limit(operator.apply(NoCastLongType.INSTANCE, CriteriaUtils.asLimitParam(this.context, supplier.get())));
+        return this.limit(operator.apply(LongType.INSTANCE, CriteriaUtils.asLimitParam(this.context, supplier.get())));
     }
 
     @Override
@@ -92,7 +92,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
                           String keyName) {
         final long number;
         number = CriteriaUtils.asLimitParam(this.context, function.apply(keyName));
-        return this.limit(operator.apply(NoCastLongType.INSTANCE, number));
+        return this.limit(operator.apply(LongType.INSTANCE, number));
     }
 
     @Override
@@ -101,7 +101,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         final long number;
         number = CriteriaUtils.asIfLimitParam(this.context, supplier.get());
         if (number >= 0) {
-            this.limit(operator.apply(NoCastLongType.INSTANCE, number));
+            this.limit(operator.apply(LongType.INSTANCE, number));
         }
         return (LR) this;
     }
@@ -111,7 +111,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         final long number;
         number = CriteriaUtils.asIfLimitParam(this.context, function.apply(keyName));
         if (number >= 0) {
-            this.limit(operator.apply(NoCastLongType.INSTANCE, number));
+            this.limit(operator.apply(LongType.INSTANCE, number));
         }
         return (LR) this;
     }
@@ -129,7 +129,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     @Override
     public final LR ifLimit(BiFunction<MappingType, String, Expression> operator, @Nullable String paramName) {
         if (paramName != null) {
-            this.limit(operator.apply(NoCastLongType.INSTANCE, paramName));
+            this.limit(operator.apply(LongType.INSTANCE, paramName));
         }
         return (LR) this;
     }
@@ -148,22 +148,22 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
 
     @Override
     public final LR limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount) {
-        return this.limit(operator.apply(NoCastLongType.INSTANCE, offset), operator.apply(NoCastLongType.INSTANCE, rowCount));
+        return this.limit(operator.apply(LongType.INSTANCE, offset), operator.apply(LongType.INSTANCE, rowCount));
     }
 
     @Override
     public final <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
         final Expression offsetExp, rowCountExp;
-        offsetExp = operator.apply(NoCastLongType.INSTANCE, offsetSupplier.get());
-        rowCountExp = operator.apply(NoCastLongType.INSTANCE, rowCountSupplier.get());
+        offsetExp = operator.apply(LongType.INSTANCE, offsetSupplier.get());
+        rowCountExp = operator.apply(LongType.INSTANCE, rowCountSupplier.get());
         return this.limit(offsetExp, rowCountExp);
     }
 
     @Override
     public final LR limit(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey) {
         final Expression offsetExp, rowCountExp;
-        offsetExp = operator.apply(NoCastLongType.INSTANCE, function.apply(offsetKey));
-        rowCountExp = operator.apply(NoCastLongType.INSTANCE, function.apply(rowCountKey));
+        offsetExp = operator.apply(LongType.INSTANCE, function.apply(offsetKey));
+        rowCountExp = operator.apply(LongType.INSTANCE, function.apply(rowCountKey));
         return this.limit(offsetExp, rowCountExp);
     }
 
@@ -182,8 +182,8 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         if ((offsetNumber = offsetSupplier.get()) != null
                 && (rowCountNumber = rowCountSupplier.get()) != null) {
             final Expression offsetExp, rowCountExp;
-            offsetExp = operator.apply(NoCastLongType.INSTANCE, offsetNumber);
-            rowCountExp = operator.apply(NoCastLongType.INSTANCE, rowCountNumber);
+            offsetExp = operator.apply(LongType.INSTANCE, offsetNumber);
+            rowCountExp = operator.apply(LongType.INSTANCE, rowCountNumber);
             this.limit(offsetExp, rowCountExp);
         }
         return (LR) this;
@@ -195,8 +195,8 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         if ((offsetNumber = function.apply(offsetKey)) != null
                 && (rowCountNumber = function.apply(rowCountKey)) != null) {
             final Expression offsetExp, rowCountExp;
-            offsetExp = operator.apply(NoCastLongType.INSTANCE, offsetNumber);
-            rowCountExp = operator.apply(NoCastLongType.INSTANCE, rowCountNumber);
+            offsetExp = operator.apply(LongType.INSTANCE, offsetNumber);
+            rowCountExp = operator.apply(LongType.INSTANCE, rowCountNumber);
             this.limit(offsetExp, rowCountExp);
         }
         return (LR) this;
@@ -237,24 +237,24 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
 
     @Override
     public final LO offset(BiFunction<MappingType, Number, Expression> operator, long start, SQLs.FetchRow row) {
-        return this.offset(operator.apply(NoCastLongType.INSTANCE, start), row);
+        return this.offset(operator.apply(LongType.INSTANCE, start), row);
     }
 
 
     @Override
     public final <N extends Number> LO offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier, SQLs.FetchRow row) {
-        return this.offset(operator.apply(NoCastLongType.INSTANCE, supplier.get()), row);
+        return this.offset(operator.apply(LongType.INSTANCE, supplier.get()), row);
     }
 
     @Override
     public final LO offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName, SQLs.FetchRow row) {
-        return this.offset(operator.apply(NoCastLongType.INSTANCE, function.apply(keyName)), row);
+        return this.offset(operator.apply(LongType.INSTANCE, function.apply(keyName)), row);
     }
 
     @Override
     public final LO ifOffset(BiFunction<MappingType, Number, Expression> operator, final @Nullable Number start, SQLs.FetchRow row) {
         if (start != null) {
-            this.offset(operator.apply(NoCastLongType.INSTANCE, start), row);
+            this.offset(operator.apply(LongType.INSTANCE, start), row);
         }
         return (LO) this;
     }
@@ -265,7 +265,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         final N start;
         start = supplier.get();
         if (start != null) {
-            this.offset(operator.apply(NoCastLongType.INSTANCE, start), row);
+            this.offset(operator.apply(LongType.INSTANCE, start), row);
         }
         return (LO) this;
     }
@@ -276,7 +276,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         final Object start;
         start = function.apply(keyName);
         if (start != null) {
-            this.offset(operator.apply(NoCastLongType.INSTANCE, start), row);
+            this.offset(operator.apply(LongType.INSTANCE, start), row);
         }
         return (LO) this;
     }
@@ -306,26 +306,26 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
     @Override
     public final LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
             , long count, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
-        return this.fetch(firstOrNext, operator.apply(NoCastLongType.INSTANCE, count), row, onlyWithTies);
+        return this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, count), row, onlyWithTies);
     }
 
     @Override
     public final <N extends Number> LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number
             , Expression> operator, Supplier<N> supplier, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
-        return this.fetch(firstOrNext, operator.apply(NoCastLongType.INSTANCE, supplier.get()), row, onlyWithTies);
+        return this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, supplier.get()), row, onlyWithTies);
     }
 
     @Override
     public final LF fetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
             , Function<String, ?> function, String keyName, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
-        return this.fetch(firstOrNext, operator.apply(NoCastLongType.INSTANCE, function.apply(keyName)), row, onlyWithTies);
+        return this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, function.apply(keyName)), row, onlyWithTies);
     }
 
     @Override
     public final LF ifFetch(SQLs.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
             , final @Nullable Number count, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         if (count != null) {
-            this.fetch(firstOrNext, operator.apply(NoCastLongType.INSTANCE, count), row, onlyWithTies);
+            this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, count), row, onlyWithTies);
         }
         return (LF) this;
     }
@@ -336,7 +336,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         final N count;
         count = supplier.get();
         if (count != null) {
-            this.fetch(firstOrNext, operator.apply(NoCastLongType.INSTANCE, count), row, onlyWithTies);
+            this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, count), row, onlyWithTies);
         }
         return (LF) this;
     }
@@ -347,7 +347,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         final Object count;
         count = function.apply(keyName);
         if (count != null) {
-            this.fetch(firstOrNext, operator.apply(NoCastLongType.INSTANCE, count), row, onlyWithTies);
+            this.fetch(firstOrNext, operator.apply(LongType.INSTANCE, count), row, onlyWithTies);
         }
         return (LF) this;
     }
@@ -383,7 +383,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
             , Number percent, SQLs.WordPercent wordPercent, SQLs.FetchRow row
             , SQLs.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
-        percentExp = operator.apply(NoCastBigDecimalType.INSTANCE, percent);
+        percentExp = operator.apply(BigDecimalType.INSTANCE, percent);
         return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
     }
 
@@ -392,7 +392,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
             , BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
             , SQLs.WordPercent wordPercent, SQLs.FetchRow row, SQLs.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
-        percentExp = operator.apply(NoCastBigDecimalType.INSTANCE, supplier.get());
+        percentExp = operator.apply(BigDecimalType.INSTANCE, supplier.get());
         return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
     }
 
@@ -401,7 +401,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
             , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent, SQLs.FetchRow row
             , SQLs.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
-        percentExp = operator.apply(NoCastBigDecimalType.INSTANCE, function.apply(keyName));
+        percentExp = operator.apply(BigDecimalType.INSTANCE, function.apply(keyName));
         return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
     }
 
@@ -411,7 +411,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
             , SQLs.FetchOnlyWithTies onlyWithTies) {
         if (percent != null) {
             final Expression percentExp;
-            percentExp = operator.apply(NoCastBigDecimalType.INSTANCE, percent);
+            percentExp = operator.apply(BigDecimalType.INSTANCE, percent);
             return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
         }
         return (LF) this;
@@ -425,7 +425,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         percent = supplier.get();
         if (percent != null) {
             final Expression percentExp;
-            percentExp = operator.apply(NoCastBigDecimalType.INSTANCE, percent);
+            percentExp = operator.apply(BigDecimalType.INSTANCE, percent);
             return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
         }
         return (LF) this;
@@ -439,7 +439,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         percent = function.apply(keyName);
         if (percent != null) {
             final Expression percentExp;
-            percentExp = operator.apply(NoCastBigDecimalType.INSTANCE, percent);
+            percentExp = operator.apply(BigDecimalType.INSTANCE, percent);
             return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
         }
         return (LF) this;

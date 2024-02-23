@@ -23,10 +23,10 @@ import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.env.EscapeMode;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.JsonPathType;
-import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -2172,12 +2172,12 @@ abstract class Expressions {
                         throw dontSupportJsonObjectAttrError(context.dialect());
                     }
                     sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
-                    context.appendLiteral(NoCastTextType.INSTANCE, "$." + this.key);
+                    context.appendLiteral(TextType.INSTANCE, "$." + this.key, EscapeMode.DEFAULT_NO_TYPE);
                 }
                 break;
                 case PostgreSQL: {
                     sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
-                    context.appendLiteral(NoCastTextType.INSTANCE, this.key);
+                    context.appendLiteral(TextType.INSTANCE, this.key, EscapeMode.DEFAULT_NO_TYPE);
                 }
                 break;
                 case Oracle:
@@ -2300,7 +2300,7 @@ abstract class Expressions {
                     this.appendJson(sqlBuilder, context);
                     sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
                     if (this.jsonPath instanceof String) {
-                        context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath);
+                        context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath, EscapeMode.DEFAULT);
                     } else {
                         ((ArmyExpression) this.jsonPath).appendSql(sqlBuilder, context);
                     }
@@ -2320,7 +2320,7 @@ abstract class Expressions {
                     this.json.appendSql(sqlBuilder, context);
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                     if (this.jsonPath instanceof String) {
-                        context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath);
+                        context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath, EscapeMode.DEFAULT);
                     } else {
                         ((ArmyExpression) this.jsonPath).appendSql(sqlBuilder, context);
                     }
@@ -2449,7 +2449,7 @@ abstract class Expressions {
                 } else if (element instanceof Expression) {
                     ((ArmyExpression) element).appendSql(sqlBuilder, context);
                 } else if (element instanceof String) {
-                    context.appendLiteral(NoCastTextType.INSTANCE, element);
+                    context.appendLiteral(TextType.INSTANCE, element, EscapeMode.DEFAULT_NO_TYPE);
                 } else if (element instanceof Integer) {
                     sqlBuilder.append(_Constant.SPACE)
                             .append(element);
@@ -2458,7 +2458,7 @@ abstract class Expressions {
                             element.getClass().getName());
                     throw new CriteriaException(m);
                 } else {
-                    context.appendLiteral(elementType, element);
+                    context.appendLiteral(elementType, element, EscapeMode.DEFAULT);
                 }
             }
 

@@ -21,11 +21,11 @@ import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect.*;
+import io.army.env.EscapeMode;
+import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
-import io.army.mapping.optional.NoCastIntegerType;
-import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -1879,13 +1879,14 @@ abstract class FunctionUtils {
                     sqlBuilder.append(_Constant.NULL);
                 } else if (!(arg instanceof RowElement)) {
                     if (arg instanceof String) {
-                        type = NoCastIntegerType.INSTANCE;
+                        context.appendLiteral(StringType.INSTANCE, arg, EscapeMode.DEFAULT_NO_TYPE);
                     } else if (arg instanceof Integer) {
-                        type = NoCastIntegerType.INSTANCE;
+                        context.appendLiteral(IntegerType.INSTANCE, arg, EscapeMode.DEFAULT_NO_TYPE);
                     } else if ((type = _MappingFactory.getDefaultIfMatch(arg.getClass())) == null) {
                         throw _Exceptions.notFoundMappingType(arg);
+                    } else {
+                        context.appendLiteral(type, arg, EscapeMode.DEFAULT);
                     }
-                    context.appendLiteral(type, arg);
                 } else if (arg instanceof ArmySQLExpression) {
                     ((ArmySQLExpression) arg).appendSql(sqlBuilder, context);
                 } else if (arg instanceof _SelectionGroup._TableFieldGroup || arg instanceof SubQuery) {
@@ -1962,13 +1963,14 @@ abstract class FunctionUtils {
                     sqlBuilder.append(_Constant.NULL);
                 } else if (!(arg instanceof RowElement)) {
                     if (arg instanceof String) {
-                        type = NoCastTextType.INSTANCE;
+                        context.appendLiteral(StringType.INSTANCE, arg, EscapeMode.DEFAULT_NO_TYPE);
                     } else if (arg instanceof Integer) {
-                        type = NoCastIntegerType.INSTANCE;
+                        context.appendLiteral(IntegerType.INSTANCE, arg, EscapeMode.DEFAULT_NO_TYPE);
                     } else if ((type = _MappingFactory.getDefaultIfMatch(arg.getClass())) == null) {
                         throw _Exceptions.notFoundMappingType(arg);
+                    } else {
+                        context.appendLiteral(type, arg, EscapeMode.DEFAULT);
                     }
-                    context.appendLiteral(type, arg);
                 } else if (arg instanceof ArmySQLExpression) {
                     ((ArmySQLExpression) arg).appendSql(sqlBuilder, context);
                 } else if (arg instanceof SelectionGroups.ObjectElementGroup) {
@@ -2041,7 +2043,7 @@ abstract class FunctionUtils {
                 if (key == null) {
                     throw new CriteriaException("json object key must non-null");
                 }
-                context.appendLiteral(StringType.INSTANCE, key);
+                context.appendLiteral(StringType.INSTANCE, key, EscapeMode.DEFAULT);
                 sqlBuilder.append(_Constant.COMMA);
 
                 value = entry.getValue();
@@ -2124,7 +2126,7 @@ abstract class FunctionUtils {
                         sqlBuilder.append(_Constant.COMMA);
                     }
                     if (arg instanceof String) {
-                        context.appendLiteral(StringType.INSTANCE, arg);
+                        context.appendLiteral(StringType.INSTANCE, arg, EscapeMode.DEFAULT);
                     } else {
                         ((ArmyExpression) arg).appendSql(sqlBuilder, context);
                     }

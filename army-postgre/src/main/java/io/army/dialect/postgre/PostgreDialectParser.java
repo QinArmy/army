@@ -1163,14 +1163,22 @@ final class PostgreDialectParser extends PostgreParser {
         // LIMIT clause
         if (fetchFirstNext == null && rowCountExp != null) {
             sqlBuilder.append(_Constant.SPACE_LIMIT);
-            rowCountExp.appendSql(sqlBuilder, context);
+            if (rowCountExp instanceof LiteralExpression) {
+                ((_LiteralExpression) rowCountExp).appendSqlWithoutType(sqlBuilder, context);
+            } else {
+                rowCountExp.appendSql(sqlBuilder, context);
+            }
         }
 
 
         // OFFSET clause
         if (offsetExp != null) {
             sqlBuilder.append(_Constant.SPACE_OFFSET);
-            offsetExp.appendSql(sqlBuilder, context);
+            if (offsetExp instanceof LiteralExpression) {
+                ((_LiteralExpression) offsetExp).appendSqlWithoutType(sqlBuilder, context);
+            } else {
+                offsetExp.appendSql(sqlBuilder, context);
+            }
             final SQLWords offsetRow;
             if ((offsetRow = stmt.offsetRowModifier()) != null) {
                 if (offsetRow != SQLs.ROW && offsetRow != SQLs.ROWS) {
@@ -1201,7 +1209,12 @@ final class PostgreDialectParser extends PostgreParser {
             sqlBuilder.append(_Constant.SPACE_FETCH)
                     .append(fetchFirstNext.spaceRender());
 
-            rowCountExp.appendSql(sqlBuilder, context);
+
+            if (rowCountExp instanceof LiteralExpression) {
+                ((_LiteralExpression) rowCountExp).appendSqlWithoutType(sqlBuilder, context);
+            } else {
+                rowCountExp.appendSql(sqlBuilder, context);
+            }
 
             sqlBuilder.append(fetchRowRows.spaceRender())
                     .append(fetchOnlyWithTies.spaceRender());

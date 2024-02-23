@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
@@ -42,12 +43,12 @@ import java.util.Objects;
  * @since 0.6.0
  */
 abstract class ArmyLiteralExpression extends OperationExpression.OperationDefiniteExpression
-        implements LiteralExpression {
+        implements _LiteralExpression {
 
     /**
      * @see SQLs#literalValue(Object)
      */
-    static ArmyLiteralExpression from(final @Nullable Object value) {
+    static ArmyLiteralExpression from(final @Nullable Object value, final EscapeMode mode) {
         if (value == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -56,7 +57,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         if (type == null) {
             throw CriteriaUtils.clearStackAndNonDefaultType(value);
         }
-        return new AnonymousLiteral(type, value);
+        return new AnonymousLiteral(type, value, mode);
     }
 
 
@@ -64,14 +65,14 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      * @throws CriteriaException throw when infer return codec {@link TableField}.
      * @see SQLs#literal(TypeInfer, Object)
      */
-    static ArmyLiteralExpression single(final @Nullable TypeInfer infer, final @Nullable Object value) {
+    static ArmyLiteralExpression single(final @Nullable TypeInfer infer, final @Nullable Object value, final EscapeMode mode) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ArmyParamExpression.typeInferReturnCodecField("encodingLiteral");
         }
-        return new AnonymousLiteral(type, value);
+        return new AnonymousLiteral(type, value, mode);
     }
 
     /**
@@ -81,7 +82,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#namedLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name) {
+    static ArmyLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final EscapeMode mode) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -90,7 +91,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ArmyParamExpression.typeInferReturnCodecField("encodingNamedLiteral");
         }
-        return new NamedNonNullLiteral(name, type);
+        return new NamedNonNullLiteral(name, type, mode);
     }
 
     /**
@@ -100,7 +101,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#namedNullableLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression namedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
+    static ArmyLiteralExpression namedNullable(final @Nullable TypeInfer infer, final @Nullable String name, final EscapeMode mode) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -109,7 +110,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ArmyParamExpression.typeInferReturnCodecField("encodingNamedNullableLiteral");
         }
-        return new NamedLiteral(name, type);
+        return new NamedLiteral(name, type, mode);
     }
 
 
@@ -117,13 +118,13 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      * @throws CriteriaException throw when infer isn't codec {@link TableField}.
      * @see SQLs#encodingLiteral(TypeInfer, Object)
      */
-    static ArmyLiteralExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value) {
+    static ArmyLiteralExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value, final EscapeMode mode) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ArmyParamExpression.typeInferIsNotCodecField("literal");
         }
-        return new AnonymousLiteral((TableField) infer, value);
+        return new AnonymousLiteral((TableField) infer, value, mode);
     }
 
     /**
@@ -133,7 +134,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#encodingNamedLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name) {
+    static ArmyLiteralExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name, final EscapeMode mode) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -141,7 +142,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ArmyParamExpression.typeInferIsNotCodecField("namedLiteral");
         }
-        return new NamedNonNullLiteral(name, (TableField) infer);
+        return new NamedNonNullLiteral(name, (TableField) infer, mode);
     }
 
     /**
@@ -151,7 +152,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#encodingNamedNullableLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
+    static ArmyLiteralExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name, EscapeMode mode) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -159,17 +160,34 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ArmyParamExpression.typeInferIsNotCodecField("namedNullableLiteral");
         }
-        return new NamedLiteral(name, (TableField) infer);
+        return new NamedLiteral(name, (TableField) infer, mode);
     }
 
     static CriteriaException nameHaveNoText() {
         return ContextStack.clearStackAndCriteriaError("name must have text for single-literal.");
     }
 
+    final TypeMeta type;
+
+    final EscapeMode mode;
+
     /**
      * private constructor
      */
-    private ArmyLiteralExpression() {
+    private ArmyLiteralExpression(TypeMeta type, EscapeMode mode) {
+        if (type instanceof QualifiedField) {
+            this.type = ((QualifiedField<?>) type).fieldMeta();
+        } else {
+            assert type instanceof FieldMeta || type instanceof MappingType;
+            this.type = type;
+        }
+        this.mode = mode;
+
+    }
+
+    @Override
+    public final TypeMeta typeMeta() {
+        return this.type;
     }
 
     private static class AnonymousLiteral extends ArmyLiteralExpression
@@ -177,19 +195,13 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
 
         private final Object value;
 
-        private final TypeMeta type;
 
         /**
-         * @see #single(TypeInfer, Object)
-         * @see #encodingSingle(TypeInfer, Object)
+         * @see #single(TypeInfer, Object, EscapeMode)
+         * @see #encodingSingle(TypeInfer, Object, EscapeMode)
          */
-        private AnonymousLiteral(TypeMeta type, @Nullable Object value) {
-            if (type instanceof QualifiedField) {
-                this.type = ((QualifiedField<?>) type).fieldMeta();
-            } else {
-                assert type instanceof FieldMeta || type instanceof MappingType;
-                this.type = type;
-            }
+        private AnonymousLiteral(TypeMeta type, @Nullable Object value, EscapeMode mode) {
+            super(type, mode);
             this.value = value;
         }
 
@@ -198,15 +210,14 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
             return this.value;
         }
 
-
         @Override
-        public final TypeMeta typeMeta() {
-            return this.type;
+        public void appendSqlWithoutType(StringBuilder sqlBuilder, _SqlContext context) {
+            context.appendLiteral(this.type, this.value, this.mode.switchNoTypeMode());
         }
 
         @Override
         public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            context.appendLiteral(this.type, this.value);
+            context.appendLiteral(this.type, this.value, this.mode);
         }
 
         @Override
@@ -251,16 +262,9 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         private final String name;
 
 
-        private final TypeMeta type;
-
-        private NamedLiteral(String name, TypeMeta type) {
+        private NamedLiteral(String name, TypeMeta type, EscapeMode mode) {
+            super(type, mode);
             this.name = name;
-            if (type instanceof QualifiedField) {
-                this.type = ((QualifiedField<?>) type).fieldMeta();
-            } else {
-                assert type instanceof FieldMeta || type instanceof MappingType;
-                this.type = type;
-            }
         }
 
 
@@ -269,14 +273,15 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
             return this.name;
         }
 
+
         @Override
-        public final TypeMeta typeMeta() {
-            return this.type;
+        public void appendSqlWithoutType(StringBuilder sqlBuilder, _SqlContext context) {
+            context.appendLiteral(this, this.mode.switchNoTypeMode());
         }
 
         @Override
         public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            context.appendLiteral(this);
+            context.appendLiteral(this, this.mode);
         }
 
 
@@ -313,8 +318,8 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
     private static final class NamedNonNullLiteral extends NamedLiteral
             implements SqlValueParam.NonNullValue {
 
-        private NamedNonNullLiteral(String name, TypeMeta type) {
-            super(name, type);
+        private NamedNonNullLiteral(String name, TypeMeta type, EscapeMode mode) {
+            super(name, type, mode);
         }
 
 

@@ -21,10 +21,11 @@ import io.army.criteria.*;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.env.EscapeMode;
+import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
-import io.army.mapping.optional.NoCastIntegerType;
-import io.army.mapping.optional.NoCastTextType;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -207,13 +208,14 @@ abstract class RowExpressions {
                     outputColumnCount++;
                 } else if (!(element instanceof RowElement)) {
                     if (element instanceof Integer) {
-                        type = NoCastIntegerType.INSTANCE;
+                        context.appendLiteral(IntegerType.INSTANCE, element, EscapeMode.DEFAULT_NO_TYPE);
                     } else if (element instanceof String) {
-                        type = NoCastTextType.INSTANCE;
+                        context.appendLiteral(StringType.INSTANCE, element, EscapeMode.DEFAULT_NO_TYPE);
                     } else if ((type = _MappingFactory.getDefaultIfMatch(element.getClass())) == null) {
                         throw _Exceptions.notFoundMappingType(element);
+                    } else {
+                        context.appendLiteral(type, element, EscapeMode.DEFAULT);
                     }
-                    context.appendLiteral(type, element);
 
                     outputColumnCount++;
                 } else if (element instanceof SubQuery) {
