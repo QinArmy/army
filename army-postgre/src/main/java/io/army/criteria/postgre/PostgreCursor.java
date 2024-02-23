@@ -1,8 +1,8 @@
 package io.army.criteria.postgre;
 
 
-import io.army.criteria.DeclareCursor;
 import io.army.criteria.SubQuery;
+import io.army.criteria.dialect.DmlCommand;
 
 import java.util.function.BooleanSupplier;
 
@@ -17,9 +17,9 @@ public interface PostgreCursor extends PostgreStatement {
 
     interface _ForQueryClause {
 
-        PostgreQuery.WithSpec<_AsCommandClause<DeclareCursor>> forSpace();
+        PostgreQuery.WithSpec<_AsCommandClause<DmlCommand>> forSpace();
 
-        _AsCommandClause<DeclareCursor> forSpace(SubQuery query);
+        _AsCommandClause<DmlCommand> forSpace(SubQuery query);
 
     }
 

@@ -812,7 +812,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         final R result;
         if (stmt instanceof SimpleStmt) {
             final Function<Option<?>, ?> optionFunc;
-            if (statement instanceof DeclareCursor) {
+            if (stmt instanceof DeclareCursorStmt) {
                 optionFunc = declareCursorOptionFunc();
             } else {
                 optionFunc = Option.EMPTY_FUNC;

@@ -2,8 +2,8 @@ package io.army.session.sync.postgre;
 
 
 import com.alibaba.fastjson2.JSON;
-import io.army.criteria.DeclareCursor;
 import io.army.criteria.SimpleDmlStatement;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
@@ -34,7 +34,7 @@ public class CursorTests extends SessionTestSupport {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(300);
         session.batchSave(regionList);
 
-        final DeclareCursor stmt;
+        final DmlCommand stmt;
         stmt = Postgres.declareStmt()
                 .declare("my_china_region_cursor").cursor()
                 .forSpace()
@@ -77,7 +77,7 @@ public class CursorTests extends SessionTestSupport {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(10);
         session.batchSave(regionList);
 
-        final DeclareCursor stmt;
+        final DmlCommand stmt;
         stmt = Postgres.declareStmt()
                 .declare("my_china_region_result_item_cursor").cursor()
                 .forSpace()

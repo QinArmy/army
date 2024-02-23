@@ -16,9 +16,9 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.DeclareCursor;
 import io.army.criteria.Statement;
 import io.army.criteria.SubQuery;
+import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.inner.postgre._PostgreDeclareCursor;
 import io.army.criteria.postgre.PostgreCursor;
 import io.army.criteria.postgre.PostgreQuery;
@@ -29,13 +29,13 @@ import io.army.util._StringUtils;
 import javax.annotation.Nullable;
 import java.util.function.BooleanSupplier;
 
-final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport implements DeclareCursor,
+final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport implements PostgreCursor,
         PostgreCursor._PostgreDeclareClause,
         PostgreCursor._BinarySpec,
         PostgreCursor._CursorClause,
         PostgreCursor._HoldSpec,
-        PostgreCursor,
-        Statement._AsCommandClause<DeclareCursor>,
+        DmlCommand,
+        Statement._AsCommandClause<DmlCommand>,
         _PostgreDeclareCursor {
 
 
@@ -187,12 +187,12 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
 
 
     @Override
-    public PostgreQuery.WithSpec<_AsCommandClause<DeclareCursor>> forSpace() {
+    public PostgreQuery.WithSpec<_AsCommandClause<DmlCommand>> forSpace() {
         return PostgreQueries.subQuery(this.context, this::forSpace);
     }
 
     @Override
-    public _AsCommandClause<DeclareCursor> forSpace(final @Nullable SubQuery query) {
+    public _AsCommandClause<DmlCommand> forSpace(final @Nullable SubQuery query) {
         if (query == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (this.query != null) {
@@ -203,7 +203,7 @@ final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport 
     }
 
     @Override
-    public DeclareCursor asCommand() {
+    public DmlCommand asCommand() {
         _Assert.nonPrepared(this.prepared);
         if (this.cursorName == null || this.query == null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
