@@ -1025,22 +1025,24 @@ final class MySQLDialectParser extends MySQLParser {
             triple = list.get(i);
             scope = triple.first;
 
-            if (scope == MySQLs.AT
-                    || scope == MySQLs.SESSION
+            varName = triple.second;
+
+            if (scope == MySQLs.SESSION
                     || scope == MySQLs.GLOBAL
                     || scope == MySQLs.PERSIST
                     || scope == MySQLs.PERSIST_ONLY) {
+                sqlBuilder.append(scope.spaceRender())
+                        .append(_Constant.PERIOD);
+            } else if (scope == MySQLs.AT) {
+                if (varName.charAt(0) == '@') {
+                    throw _Exceptions.userVariableFirstCharIsAt(varName);
+                }
                 sqlBuilder.append(scope.spaceRender());
             } else {
                 throw new CriteriaException(String.format("unknown VariableType[%s]", scope));
             }
 
-            varName = triple.second;
-            if (scope == MySQLs.AT && varName.charAt(0) == '@') {
-                throw _Exceptions.userVariableFirstCharIsAt(varName);
-            }
-
-            identifier(triple.second, sqlBuilder);
+            identifier(varName, sqlBuilder);
 
             sqlBuilder.append(_Constant.SPACE_EQUAL);
 

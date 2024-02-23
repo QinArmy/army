@@ -141,10 +141,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      */
     public static VarExpression at(final String varName) {
-        ContextStack.assertNonNull(varName);
-        if (varName.charAt(0) == '@') {
-            throw MySQLUtils.userVariableFirstCharIsAt(varName);
-        }
+        MySQLUtils.assertUserVar(varName);
         return ContextStack.root().refVar(varName);
     }
 
@@ -215,10 +212,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/assignment-operators.html#operator_assign-value">Assignment Operators</a>
      */
     public static SimpleExpression at(final String varName, SQLs.SymbolColonEqual colonEqual, Object value) {
-        ContextStack.assertNonNull(varName);
-        if (varName.charAt(0) == '@') {
-            throw MySQLUtils.userVariableFirstCharIsAt(varName);
-        }
+        MySQLUtils.assertUserVar(varName);
         return UserVarExpression.assignmentVar(varName, colonEqual, value, ContextStack.root());
     }
 
@@ -239,10 +233,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/user-variables.html">User-Defined Variables</a>
      */
     public static VarExpression at(final String varName, TypeInfer type) {
-        ContextStack.assertNonNull(varName);
-        if (varName.charAt(0) == '@') {
-            throw MySQLUtils.userVariableFirstCharIsAt(varName);
-        }
+        MySQLUtils.assertUserVar(varName);
         return UserVarExpression.create(varName, type);
     }
 

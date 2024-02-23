@@ -593,7 +593,8 @@ abstract class MySQLExpressions {
             switch (scope) {
                 case SESSION:
                 case GLOBAL:
-                    sqlBuilder.append(scope.spaceRender());
+                    sqlBuilder.append(scope.spaceRender())
+                            .append(_Constant.PERIOD);
                     break;
                 default:
                     throw _Exceptions.unexpectedEnum(scope);

@@ -41,15 +41,14 @@ abstract class PostgreLiterals extends _Literals {
     static boolean postgreBackslashEscapes(final EscapeMode mode, final CharSequence literal, final int offset, final int end,
                                            final StringBuilder sqlBuilder) {
 
-        final int startIndex, literalLength;
+        final int startIndex;
         startIndex = sqlBuilder.length();
-        literalLength = literal.length();
 
         sqlBuilder.append(_Constant.QUOTE);
 
         int lastWritten = 0;
         char followChar = _Constant.NUL_CHAR;
-        for (int i = 0; i < literalLength; i++) {
+        for (int i = offset; i < end; i++) {
             switch (literal.charAt(i)) {
                 case _Constant.QUOTE: {
                     if (i > lastWritten) {
@@ -94,8 +93,8 @@ abstract class PostgreLiterals extends _Literals {
 
         } // for loop
 
-        if (lastWritten < literalLength) {
-            sqlBuilder.append(literal, lastWritten, literalLength);
+        if (lastWritten < end) {
+            sqlBuilder.append(literal, lastWritten, end);
         }
         if (followChar != _Constant.NUL_CHAR) {
             sqlBuilder.insert(startIndex, 'E');

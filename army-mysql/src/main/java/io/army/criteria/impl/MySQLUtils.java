@@ -169,6 +169,16 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
+    static void assertUserVar(final @Nullable String name) {
+        if (name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (name.length() == 0) {
+            throw ContextStack.clearStackAnd(_Exceptions::varNameNoText);
+        } else if (name.charAt(0) == '@') {
+            throw userVariableFirstCharIsAt(name);
+        }
+    }
+
 
     static CriteriaException partitionListIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "you don't add any partition");
