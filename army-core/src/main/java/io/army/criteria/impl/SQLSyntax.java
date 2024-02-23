@@ -27,12 +27,14 @@ import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
+import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -76,6 +78,10 @@ abstract class SQLSyntax extends Functions {
     @Nullable
     public static MappingType getMappingTypeOf(final Class<?> javaType) {
         return _MappingFactory.getDefaultIfMatch(javaType);
+    }
+
+    public static SQLIdentifier identifier(String identifier) {
+        return new SQLIdentifierImpl(identifier);
     }
 
 
@@ -768,6 +774,49 @@ abstract class SQLSyntax extends Functions {
 
 
     /*-------------------below private method-------------------*/
+
+
+    static final class SQLIdentifierImpl implements SQLIdentifier {
+
+        private final String identifier;
+
+        private SQLIdentifierImpl(String identifier) {
+            if (!_StringUtils.hasText(identifier)) {
+                throw ContextStack.clearStackAndCriteriaError("identifier must have text");
+            }
+            this.identifier = identifier;
+        }
+
+        @Override
+        public String render() {
+            return this.identifier;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.identifier);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof SQLIdentifierImpl) {
+                match = ((SQLIdentifierImpl) obj).identifier.equals(this.identifier);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return this.identifier;
+        }
+
+
+    }//SQLIdentifierImpl
 
 
 }

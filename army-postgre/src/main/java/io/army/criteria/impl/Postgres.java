@@ -348,6 +348,17 @@ public abstract class Postgres extends PostgreSyntax {
         return PostgreMerges.mergeStmt(null);
     }
 
+    /**
+     * <p>Set statement
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set.html">SET — change a run-time parameter</a>
+     * @see <a href="https://www.postgresql.org/docs/16/multibyte.html#CHARSET-TABLE">PostgreSQL Character Sets</a>
+     * @see <a href="https://www.postgresql.org/docs/16/runtime-config-client.html">PostgreSQL Client Connection Defaults</a>
+     */
+    public static PostgreCommand._SetClause setStmt() {
+        return PostgreSets.setStmt();
+    }
+
 
     public interface _XmlNamedElementClause {
 

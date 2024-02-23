@@ -38,7 +38,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -99,6 +98,8 @@ public abstract class SQLs extends SQLSyntax {
 
 
     public static final WordAs AS = SqlWords.KeyWordAs.AS;
+
+    public static final WordTo TO = SqlWords.KeyWordTo.TO;
 
     public static final WordAnd AND = SqlWords.KeyWordAnd.AND;
 
@@ -202,16 +203,6 @@ public abstract class SQLs extends SQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
      */
     public static final VarScope GLOBAL = SqlWords.KeyWordVarScope.GLOBAL;
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
-     */
-    public static final VarScope PERSIST = SqlWords.KeyWordVarScope.PERSIST;
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
-     */
-    public static final VarScope PERSIST_ONLY = SqlWords.KeyWordVarScope.PERSIST_ONLY;
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
@@ -566,12 +557,7 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    static SQLIdentifier _identifier(@Nullable String identifier) {
-        if (identifier == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return new SQLIdentifierImpl(identifier);
-    }
+
 
 
     static String keyWordsToString(Enum<?> wordEnum) {
@@ -598,6 +584,7 @@ public abstract class SQLs extends SQLSyntax {
     public interface WordOn {
 
     }
+
 
     public interface SymbolSpace {
 
@@ -631,6 +618,10 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public interface WordAs extends SQLWords {
+
+    }
+
+    public interface WordTo extends SQLWords {
 
     }
 
@@ -1115,44 +1106,6 @@ public abstract class SQLs extends SQLSyntax {
     }//CteImpl
 
 
-    static final class SQLIdentifierImpl implements SQLIdentifier {
-
-        private final String identifier;
-
-        private SQLIdentifierImpl(String identifier) {
-            this.identifier = identifier;
-        }
-
-        @Override
-        public String render() {
-            return this.identifier;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.identifier);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof SQLIdentifierImpl) {
-                match = ((SQLIdentifierImpl) obj).identifier.equals(this.identifier);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        public String toString() {
-            return this.identifier;
-        }
-
-
-    }//SQLIdentifierImpl
 
 
     /**

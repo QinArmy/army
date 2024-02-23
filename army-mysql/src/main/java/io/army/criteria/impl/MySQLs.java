@@ -29,6 +29,15 @@ import io.army.session.StmtOption;
 public abstract class MySQLs extends MySQLSyntax {
 
     /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final SQLs.VarScope PERSIST = SqlWords.KeyWordVarScope.PERSIST;
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final SQLs.VarScope PERSIST_ONLY = SqlWords.KeyWordVarScope.PERSIST_ONLY;
+
+    /**
      * private constructor
      */
     private MySQLs() {

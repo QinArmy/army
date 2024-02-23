@@ -36,6 +36,13 @@ public abstract class _SQLConsultant {
     }
 
 
+    public static void assertExpression(final Expression expression) {
+        if (!(expression instanceof ArmyExpression)) {
+            throw new CriteriaException("Illegal Expression");
+        }
+    }
+
+
     public static void assertStandardQuery(final Query query) {
         final boolean match;
         if (query instanceof BatchSelect) {

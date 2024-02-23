@@ -118,7 +118,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
         if (charName != null) {
             argList.add(SQLs.USING);
-            argList.add(SQLs._identifier(charName));
+            argList.add(SQLs.identifier(charName));
         }
         return LiteralFunctions.compositeFunc("CHAR", argList, StringType.INSTANCE);
     }

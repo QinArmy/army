@@ -723,6 +723,22 @@ abstract class SqlWords {
 
     } // KeyWordAs
 
+    enum KeyWordTo implements SQLs.WordTo, SQLs.ArmyKeyWord {
+
+        TO;
+
+        @Override
+        public final String spaceRender() {
+            return " TO";
+        }
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+    } // KeyWordTo
+
     enum KeyWordAnd implements SQLs.WordAnd, SQLs.ArmyKeyWord {
 
         AND(" AND");

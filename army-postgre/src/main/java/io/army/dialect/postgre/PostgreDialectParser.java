@@ -23,6 +23,9 @@ import io.army.criteria.impl.inner.postgre.*;
 import io.army.criteria.postgre.PostgreCursor;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.dialect.*;
+import io.army.env.EscapeMode;
+import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -461,6 +464,10 @@ final class PostgreDialectParser extends PostgreParser {
             _PostgreConsultant.assertMerge((PostgreMerge) statement);
             context = createJoinableMergeContext(outerContext, (_Merge) statement, sessionSpec);
             parseMerge((_PostgreMerge) statement, (_JoinableMergeContext) context);
+        } else if (statement instanceof _PostgreDmlCommand._SetCommand) {
+            _PostgreConsultant.assertSetStmt((_PostgreDmlCommand._SetCommand) statement);
+            context = createOtherDmlContext(outerContext, f -> false, sessionSpec);
+            parseSetStmt(((_PostgreDmlCommand._SetCommand) statement).paramValuePair(), context);
         } else {
             throw _Exceptions.unexpectedStatement(statement);
         }
@@ -475,6 +482,66 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     /*-------------------below private methods -------------------*/
+
+    /**
+     * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set.html">SET — change a run-time parameter</a>
+     */
+    private void parseSetStmt(final _PostgreDmlCommand._ParamValue pair, final _SqlContext context) {
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
+        sqlBuilder.append("SET");
+
+        final SQLs.VarScope scope = pair.scope();
+        if (scope != SQLs.SESSION && scope != SQLs.LOCAL) {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+        sqlBuilder.append(_Constant.SPACE)
+                .append(scope.name())
+                .append(_Constant.SPACE);
+
+        identifier(pair.name(), sqlBuilder);
+
+        final Object word = pair.word();
+        if (word == SQLs.EQUAL) {
+            sqlBuilder.append(_Constant.SPACE_EQUAL);
+        } else if (word == SQLs.TO) {
+            sqlBuilder.append(" TO");
+        } else {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+        final List<Object> valueList = pair.valueList();
+        final int valueSize = valueList.size();
+
+        MappingType type;
+        Object value;
+        for (int i = 0; i < valueSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            value = valueList.get(i);
+            if (value == null) {
+                sqlBuilder.append(_Constant.SPACE_NULL);
+            } else if (value instanceof Expression) {
+                _SQLConsultant.assertExpression((Expression) value);
+                ((_Expression) value).appendSql(sqlBuilder, context);
+            } else if (value instanceof SQLIdentifier) {
+                sqlBuilder.append(_Constant.SPACE);
+                identifier(((SQLIdentifier) value).render(), sqlBuilder);
+            } else if ((type = _MappingFactory.getDefaultIfMatch(value.getClass())) == null) {
+                throw _Exceptions.notFoundMappingType(value);
+            } else {
+                context.appendLiteral(type, value, EscapeMode.DEFAULT_NO_TYPE);
+            }
+
+        }
+
+    }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>

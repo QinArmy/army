@@ -1029,8 +1029,8 @@ final class MySQLDialectParser extends MySQLParser {
 
             if (scope == SQLs.SESSION
                     || scope == SQLs.GLOBAL
-                    || scope == SQLs.PERSIST
-                    || scope == SQLs.PERSIST_ONLY) {
+                    || scope == MySQLs.PERSIST
+                    || scope == MySQLs.PERSIST_ONLY) {
                 sqlBuilder.append(" @@")
                         .append(scope.name())
                         .append(_Constant.PERIOD);
