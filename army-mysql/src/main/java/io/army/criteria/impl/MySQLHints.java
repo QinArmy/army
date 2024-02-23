@@ -288,12 +288,12 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     continue;
                 }
                 tableName = tableNameList.get(i);
-                index = tableName.indexOf(_Constant.AT_CHAR);
+                index = tableName.indexOf(_Constant.AT);
                 if (index < 0) {
                     parser.identifier(tableName, sqlBuilder);
                 } else if (index < tableName.length() - 1) {
                     parser.identifier(tableName.substring(0, index), sqlBuilder)
-                            .append(_Constant.AT_CHAR);
+                            .append(_Constant.AT);
                     parser.identifier(tableName.substring(index + 1), sqlBuilder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);
@@ -376,14 +376,14 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
                 }
                 tableName = tableNameList.get(i);
-                index = tableName.indexOf(_Constant.AT_CHAR);
+                index = tableName.indexOf(_Constant.AT);
                 if (queryBlockName != null) {
                     if (index > -1) {
                         throw MySQLHints.hintTableNameError(tableName);
                     }
                 } else if (index > 0 && index < tableName.length() - 1) {
                     parser.identifier(tableName.substring(0, index), sqlBuilder)
-                            .append(_Constant.AT_CHAR);
+                            .append(_Constant.AT);
                     parser.identifier(tableName.substring(index + 1), sqlBuilder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);

@@ -38,7 +38,7 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
         return new MySQLSets();
     }
 
-    private List<_Triple<MySQLs.VarScope, String, Object>> tripleList = _Collections.arrayList();
+    private List<_Triple<SQLs.VarScope, String, Object>> tripleList = _Collections.arrayList();
 
     private Boolean prepared;
 
@@ -50,19 +50,19 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
 
 
     @Override
-    public MySQLSet._SetCommaClause set(MySQLs.VarScope scope, String name, @Nullable Object value) {
+    public MySQLSet._SetCommaClause set(SQLs.VarScope scope, String name, @Nullable Object value) {
         return addOne(scope, name, value);
     }
 
     @Override
-    public MySQLSet._SetCommaClause set(MySQLs.VarScope scope1, String name1, @Nullable Object value1, MySQLs.VarScope scope2, String name2, @Nullable Object value2) {
+    public MySQLSet._SetCommaClause set(SQLs.VarScope scope1, String name1, @Nullable Object value1, SQLs.VarScope scope2, String name2, @Nullable Object value2) {
         return addOne(scope1, name1, value1)
                 .addOne(scope2, name2, value2);
     }
 
     @Override
     public _SetCommaClause sets(final Consumer<_SetClause> consumer) {
-        List<_Triple<MySQLs.VarScope, String, Object>> tripleList = this.tripleList;
+        List<_Triple<SQLs.VarScope, String, Object>> tripleList = this.tripleList;
         final int originalSize;
         if (tripleList == null) {
             originalSize = 0;
@@ -86,12 +86,12 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
     }
 
     @Override
-    public MySQLSet._SetCommaClause comma(MySQLs.VarScope scope, String name, @Nullable Object value) {
+    public MySQLSet._SetCommaClause comma(SQLs.VarScope scope, String name, @Nullable Object value) {
         return addOne(scope, name, value);
     }
 
     @Override
-    public MySQLSet._SetCommaClause comma(MySQLs.VarScope scope1, String name1, @Nullable Object value1, MySQLs.VarScope scope2, String name2, @Nullable Object value2) {
+    public MySQLSet._SetCommaClause comma(SQLs.VarScope scope1, String name1, @Nullable Object value1, SQLs.VarScope scope2, String name2, @Nullable Object value2) {
         return addOne(scope1, name1, value1)
                 .addOne(scope2, name2, value2);
     }
@@ -101,7 +101,7 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
     public DmlCommand asCommand() {
         _Assert.nonPrepared(this.prepared);
 
-        final List<_Triple<MySQLs.VarScope, String, Object>> list = this.tripleList;
+        final List<_Triple<SQLs.VarScope, String, Object>> list = this.tripleList;
 
         if (!(list instanceof ArrayList) || list.size() == 0) {
             throw ContextStack.clearStackAndCastCriteriaApi();
@@ -133,26 +133,26 @@ final class MySQLSets extends CriteriaSupports.StatementMockSupport implements M
     }
 
     @Override
-    public List<_Triple<MySQLs.VarScope, String, Object>> tripleList() {
-        final List<_Triple<MySQLs.VarScope, String, Object>> list = this.tripleList;
+    public List<_Triple<SQLs.VarScope, String, Object>> tripleList() {
+        final List<_Triple<SQLs.VarScope, String, Object>> list = this.tripleList;
         if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return list;
     }
 
-    private MySQLSets addOne(final MySQLs.VarScope type, final String name, @Nullable Object value) {
-        final List<_Triple<MySQLs.VarScope, String, Object>> list = this.tripleList;
+    private MySQLSets addOne(final SQLs.VarScope type, final String name, @Nullable Object value) {
+        final List<_Triple<SQLs.VarScope, String, Object>> list = this.tripleList;
 
         if (!(list instanceof ArrayList)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
-        if (!(type instanceof MySQLWords.KeyWordVarScope)) {
+        if (!(type instanceof SqlWords.KeyWordVarScope)) {
             throw CriteriaUtils.unknownWords(type);
         } else if (!_StringUtils.hasText(name)) {
             throw ContextStack.clearStackAnd(_Exceptions::varNameNoText);
-        } else if (type == MySQLs.AT && name.charAt(0) == '@') {
+        } else if (type == SQLs.AT && name.charAt(0) == '@') {
             throw MySQLUtils.userVariableFirstCharIsAt(name);
         }
 

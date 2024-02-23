@@ -88,33 +88,4 @@ abstract class MySQLWords {
     }//WordDistinct
 
 
-    enum KeyWordVarScope implements MySQLs.VarScope, Functions.ArmyKeyWord {
-
-        AT(" @"),
-
-        GLOBAL(" @@GLOBAL"),
-        PERSIST(" @@PERSIST"),
-        PERSIST_ONLY(" @@PERSIST_ONLY"),
-        SESSION(" @@SESSION");
-
-        private final String spaceWords;
-
-        KeyWordVarScope(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return MySQLSyntax.keyWordsToString(this);
-        }
-
-
-    } // KeyWordVariableType
-
-
 }

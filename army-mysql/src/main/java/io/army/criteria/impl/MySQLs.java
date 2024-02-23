@@ -51,31 +51,6 @@ public abstract class MySQLs extends MySQLSyntax {
     public static final Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
     public static final Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
 
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
-     */
-    public static final VarScope AT = MySQLWords.KeyWordVarScope.AT;
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
-     */
-    public static final VarScope GLOBAL = MySQLWords.KeyWordVarScope.GLOBAL;
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
-     */
-    public static final VarScope PERSIST = MySQLWords.KeyWordVarScope.PERSIST;
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
-     */
-    public static final VarScope PERSIST_ONLY = MySQLWords.KeyWordVarScope.PERSIST_ONLY;
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
-     */
-    public static final VarScope SESSION = MySQLWords.KeyWordVarScope.SESSION;
-
 
     /**
      * <p>The {@link MappingType} of function return type: {@link  LocalDateType}
@@ -365,10 +340,6 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
-
-    }
-
-    public interface VarScope extends SQLWords {
 
     }
 

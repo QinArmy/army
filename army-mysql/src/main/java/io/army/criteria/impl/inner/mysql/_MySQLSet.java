@@ -16,7 +16,7 @@
 
 package io.army.criteria.impl.inner.mysql;
 
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._Triple;
 import io.army.criteria.impl.inner._Statement;
 
@@ -25,6 +25,6 @@ import java.util.List;
 public interface _MySQLSet extends _Statement {
 
 
-    List<_Triple<MySQLs.VarScope, String, Object>> tripleList();
+    List<_Triple<SQLs.VarScope, String, Object>> tripleList();
 
 }

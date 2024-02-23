@@ -221,7 +221,7 @@ public interface _Constant {
 
     char DOUBLE_QUOTE = '"';
 
-    char AT_CHAR = '@';
+    char AT = '@';
 
     char ASTERISK = '*';
 

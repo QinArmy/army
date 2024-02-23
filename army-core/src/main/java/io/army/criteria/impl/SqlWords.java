@@ -1021,4 +1021,22 @@ abstract class SqlWords {
 
 
     } // KeyWordsAtTimeZone
+
+    enum KeyWordVarScope implements SQLs.VarScope {
+
+        AT,
+
+        GLOBAL,
+        PERSIST,
+        PERSIST_ONLY,
+        SESSION,
+        LOCAL;
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+
+    } // KeyWordVariableType
 }

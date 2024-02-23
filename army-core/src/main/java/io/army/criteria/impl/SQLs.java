@@ -51,7 +51,6 @@ import static io.army.dialect.Database.PostgreSQL;
  */
 public abstract class SQLs extends SQLSyntax {
 
-
     /**
      * private constructor
      */
@@ -182,7 +181,6 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordError ERROR = SqlWords.KeyWordError.ERROR;
 
-
     public static final NullOption NOT_NULL = SqlWords.KeyWordNotNull.NOT_NULL;
 
     public static final WordsCharacterSet CHARACTER_SET = SqlWords.KeyWordsCharacterSet.CHARACTER_SET;
@@ -194,6 +192,39 @@ public abstract class SQLs extends SQLSyntax {
     public static final SQLWords COMMA = SqlWords.FuncWord.COMMA;
 
     public static final WordsAtTimeZone AT_TIME_ZONE = SqlWords.KeyWordsAtTimeZone.AT_TIME_ZONE;
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final VarScope AT = SqlWords.KeyWordVarScope.AT;
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final VarScope GLOBAL = SqlWords.KeyWordVarScope.GLOBAL;
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final VarScope PERSIST = SqlWords.KeyWordVarScope.PERSIST;
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final VarScope PERSIST_ONLY = SqlWords.KeyWordVarScope.PERSIST_ONLY;
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set.html">Postgre SET Syntax for Variable Assignment</a>
+     */
+    public static final VarScope SESSION = SqlWords.KeyWordVarScope.SESSION;
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set.html">Postgre SET Syntax for Variable Assignment</a>
+     */
+    public static final VarScope LOCAL = SqlWords.KeyWordVarScope.LOCAL;
+
 
     /*-------------------below literal -------------------*/
 
@@ -367,20 +398,20 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public static StandardQuery.SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SQLs::identity);
+        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SUB_QUERY_IDENTITY);
     }
 
     public static StandardQuery.WithSpec<SubQuery> subQuery20() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SQLs::identity);
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SUB_QUERY_IDENTITY);
     }
 
 
     public static StandardQuery.SelectSpec<Expression> scalarSubQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), Expressions::scalarExpression);
+        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SCALAR_SUB_QUERY);
     }
 
     public static StandardQuery.WithSpec<Expression> scalarSubQuery20() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SCALAR_SUB_QUERY);
     }
 
 
@@ -821,6 +852,11 @@ public abstract class SQLs extends SQLSyntax {
 
     public interface WordsAtTimeZone extends SQLWords {
 
+    }
+
+    public interface VarScope {
+
+        String name();
     }
 
 

@@ -58,14 +58,14 @@ abstract class MySQLExpressions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html">Server System Variables</a>
      */
-    static SimpleExpression systemVariable(final MySQLs.VarScope varScope, final String name) {
-        if (!(varScope instanceof MySQLWords.KeyWordVarScope)) {
+    static SimpleExpression systemVariable(final SQLs.VarScope varScope, final String name) {
+        if (!(varScope instanceof SqlWords.KeyWordVarScope)) {
             throw CriteriaUtils.unknownWords(varScope);
         } else if (!_StringUtils.hasText(name)) {
             throw ContextStack.clearStackAnd(_Exceptions::varNameNoText);
         }
 
-        final MySQLWords.KeyWordVarScope scope = (MySQLWords.KeyWordVarScope) varScope;
+        final SqlWords.KeyWordVarScope scope = (SqlWords.KeyWordVarScope) varScope;
         final MappingType type;
 
         switch (name.toLowerCase(Locale.ROOT)) {
@@ -103,7 +103,7 @@ abstract class MySQLExpressions {
             case "updatable_views_with_limit":
             case "windowing_use_high_precision":
             case "xa_detach_on_prepare": {
-                if (scope != MySQLs.SESSION && scope != MySQLs.GLOBAL) {
+                if (scope != SQLs.SESSION && scope != SQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = BooleanType.INSTANCE;
@@ -139,7 +139,7 @@ abstract class MySQLExpressions {
             case "time_zone":
             case "transaction_isolation":
             case "tx_isolation": {
-                if (scope != MySQLs.SESSION && scope != MySQLs.GLOBAL) {
+                if (scope != SQLs.SESSION && scope != SQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = StringType.INSTANCE;
@@ -202,14 +202,14 @@ abstract class MySQLExpressions {
             case "transaction_alloc_block_size":
             case "transaction_prealloc_size":
             case "wait_timeout": {
-                if (scope != MySQLs.SESSION && scope != MySQLs.GLOBAL) {
+                if (scope != SQLs.SESSION && scope != SQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = IntegerType.INSTANCE;
             }
             break;
             case "long_query_time": {
-                if (scope != MySQLs.SESSION && scope != MySQLs.GLOBAL) {
+                if (scope != SQLs.SESSION && scope != SQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = BigDecimalType.INSTANCE;
@@ -219,7 +219,7 @@ abstract class MySQLExpressions {
             case "pseudo_slave_mode":
             case "require_row_format":
             case "show_create_table_skip_secondary_engine": {
-                if (scope != MySQLs.SESSION) {
+                if (scope != SQLs.SESSION) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = BooleanType.INSTANCE;
@@ -231,7 +231,7 @@ abstract class MySQLExpressions {
             case "rbr_exec_mode":
             case "resultset_metadata":
             case "use_secondary_engine": {
-                if (scope != MySQLs.SESSION) {
+                if (scope != SQLs.SESSION) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = StringType.INSTANCE;
@@ -239,7 +239,7 @@ abstract class MySQLExpressions {
             break;
             case "pseudo_thread_id":
             case "rand_seed1": {
-                if (scope != MySQLs.SESSION) {
+                if (scope != SQLs.SESSION) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = IntegerType.INSTANCE;
@@ -247,7 +247,7 @@ abstract class MySQLExpressions {
             break;
             case "secondary_engine_cost_threshold":
             case "timestamp": {
-                if (scope != MySQLs.SESSION) {
+                if (scope != SQLs.SESSION) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = BigDecimalType.INSTANCE;
@@ -303,7 +303,7 @@ abstract class MySQLExpressions {
             case "temptable_use_mmap":
             case "thread_pool_dedicated_listeners":
             case "tls_certificates_enforced_validation": {
-                if (scope != MySQLs.GLOBAL) {
+                if (scope != SQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = BooleanType.INSTANCE;
@@ -381,7 +381,7 @@ abstract class MySQLExpressions {
             case "version_compile_machine":
             case "version_compile_os":
             case "version_compile_zlib": {
-                if (scope != MySQLs.GLOBAL) {
+                if (scope != SQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = StringType.INSTANCE;
@@ -449,7 +449,7 @@ abstract class MySQLExpressions {
             case "thread_pool_stall_limit":
             case "thread_pool_transaction_delay":
             case "thread_stack": {
-                if (scope != MySQLs.GLOBAL) {
+                if (scope != SQLs.GLOBAL) {
                     throw systemVariableScopeError(scope, name);
                 }
                 type = IntegerType.INSTANCE;
@@ -465,9 +465,9 @@ abstract class MySQLExpressions {
     /*-------------------below private static methods -------------------*/
 
     /**
-     * @see #systemVariable(MySQLs.VarScope, String)
+     * @see #systemVariable(SQLs.VarScope, String)
      */
-    private static CriteriaException systemVariableScopeError(MySQLWords.KeyWordVarScope scope, String name) {
+    private static CriteriaException systemVariableScopeError(SqlWords.KeyWordVarScope scope, String name) {
         String m = String.format("system variable[%s] isn't %s scope", name, scope.name());
         return ContextStack.clearStackAndCriteriaError(m);
     }
@@ -550,16 +550,16 @@ abstract class MySQLExpressions {
 
     private static final class SystemVariableExpression extends OperationExpression.OperationSimpleExpression {
 
-        private final MySQLWords.KeyWordVarScope scope;
+        private final SqlWords.KeyWordVarScope scope;
 
         private final String name;
 
         private final MappingType type;
 
         /**
-         * @see #systemVariable(MySQLs.VarScope, String)
+         * @see #systemVariable(SQLs.VarScope, String)
          */
-        private SystemVariableExpression(MySQLWords.KeyWordVarScope scope, String name, MappingType type) {
+        private SystemVariableExpression(SqlWords.KeyWordVarScope scope, String name, MappingType type) {
             this.scope = scope;
             this.name = name;
             this.type = type;
@@ -590,11 +590,12 @@ abstract class MySQLExpressions {
 
 
         private void appendVarCope(final StringBuilder sqlBuilder) {
-            final MySQLWords.KeyWordVarScope scope = this.scope;
+            final SqlWords.KeyWordVarScope scope = this.scope;
             switch (scope) {
                 case SESSION:
                 case GLOBAL:
-                    sqlBuilder.append(scope.spaceRender())
+                    sqlBuilder.append(" @@")
+                            .append(scope.name())
                             .append(_Constant.PERIOD);
                     break;
                 default:

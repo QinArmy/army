@@ -992,7 +992,7 @@ final class MySQLDialectParser extends MySQLParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            sqlBuilder.append(_Constant.AT_CHAR);
+            sqlBuilder.append(_Constant.AT);
             this.identifier(intoList.get(i), sqlBuilder);
         }
 
@@ -1003,7 +1003,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">SET Syntax for Variable Assignment</a>
      */
-    private void parseSetStmt(final List<_Triple<MySQLs.VarScope, String, Object>> list, final _SqlContext context) {
+    private void parseSetStmt(final List<_Triple<SQLs.VarScope, String, Object>> list, final _SqlContext context) {
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
@@ -1014,8 +1014,8 @@ final class MySQLDialectParser extends MySQLParser {
             throw _Exceptions.castCriteriaApi();
         }
 
-        _Triple<MySQLs.VarScope, String, Object> triple;
-        MySQLs.VarScope scope;
+        _Triple<SQLs.VarScope, String, Object> triple;
+        SQLs.VarScope scope;
         String varName;
         sqlBuilder.append(_Constant.SPACE_SET);
         for (int i = 0; i < tripleSize; i++) {
@@ -1027,17 +1027,19 @@ final class MySQLDialectParser extends MySQLParser {
 
             varName = triple.second;
 
-            if (scope == MySQLs.SESSION
-                    || scope == MySQLs.GLOBAL
-                    || scope == MySQLs.PERSIST
-                    || scope == MySQLs.PERSIST_ONLY) {
-                sqlBuilder.append(scope.spaceRender())
+            if (scope == SQLs.SESSION
+                    || scope == SQLs.GLOBAL
+                    || scope == SQLs.PERSIST
+                    || scope == SQLs.PERSIST_ONLY) {
+                sqlBuilder.append(" @@")
+                        .append(scope.name())
                         .append(_Constant.PERIOD);
-            } else if (scope == MySQLs.AT) {
-                if (varName.charAt(0) == '@') {
+            } else if (scope == SQLs.AT) {
+                if (varName.charAt(0) == _Constant.AT) {
                     throw _Exceptions.userVariableFirstCharIsAt(varName);
                 }
-                sqlBuilder.append(scope.spaceRender());
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(_Constant.AT);
             } else {
                 throw new CriteriaException(String.format("unknown VariableType[%s]", scope));
             }

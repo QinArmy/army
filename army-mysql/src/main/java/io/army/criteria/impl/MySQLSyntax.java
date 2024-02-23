@@ -272,7 +272,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html">Server System Variables</a>
      */
     public static SimpleExpression atAtSession(String name) {
-        return MySQLExpressions.systemVariable(MySQLs.SESSION, name);
+        return MySQLExpressions.systemVariable(SQLs.SESSION, name);
     }
 
     /**
@@ -309,7 +309,7 @@ abstract class MySQLSyntax extends MySQLOtherFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/server-system-variables.html">Server System Variables</a>
      */
     public static SimpleExpression atAtGlobal(String name) {
-        return MySQLExpressions.systemVariable(MySQLs.GLOBAL, name);
+        return MySQLExpressions.systemVariable(SQLs.GLOBAL, name);
     }
 
 
