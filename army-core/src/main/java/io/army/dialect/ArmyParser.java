@@ -45,6 +45,7 @@ import io.army.schema._TableResult;
 import io.army.session.SessionSpec;
 import io.army.sqltype.DataType;
 import io.army.stmt.MultiStmt;
+import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util.*;
@@ -754,13 +755,15 @@ abstract class ArmyParser implements DialectParser {
         if (value == null) {
             switch (mode) {
                 case DEFAULT:
+                    bindLiteralNull(type, dataType, this.literalEscapeMode, sqlBuilder);
+                    break;
                 case DEFAULT_NO_TYPE:
-                    bindLiteralNull(type, dataType, mode, sqlBuilder);
+                    bindLiteralNull(type, dataType, this.literalEscapeMode.switchNoTypeMode(), sqlBuilder);
                     break;
                 default:
-                    bindLiteralNull(type, dataType, this.literalEscapeMode, sqlBuilder);
-            }
+                    bindLiteralNull(type, dataType, mode, sqlBuilder);
 
+            }
             return false;
         }
 
@@ -773,10 +776,15 @@ abstract class ArmyParser implements DialectParser {
         //TODO validate non-field codec
 
         final boolean escape;
-        if (mode == EscapeMode.DEFAULT) {
-            escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, sqlBuilder);
-        } else {
-            escape = bindLiteral(typeMeta, dataType, value, mode, sqlBuilder);
+        switch (mode) {
+            case DEFAULT:
+                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, sqlBuilder);
+                break;
+            case DEFAULT_NO_TYPE:
+                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode.switchNoTypeMode(), sqlBuilder);
+                break;
+            default:
+                escape = bindLiteral(typeMeta, dataType, value, mode, sqlBuilder);
         }
         return escape;
     }
@@ -2120,7 +2128,7 @@ abstract class ArmyParser implements DialectParser {
                 final InsertContext insertContext = (InsertContext) context;
                 insertContext.appendInsertValue(insertContext.literalMode, updateTime, updateTimeValue);
             } else if (context.isUpdateTimeOutputParam()) {
-                context.appendParam(SQLs.param(updateTime, updateTimeValue));
+                context.appendParam(SingleParam.build(updateTime, updateTimeValue));
             } else {
                 context.appendLiteral(updateTime, updateTimeValue, EscapeMode.DEFAULT);
             }
