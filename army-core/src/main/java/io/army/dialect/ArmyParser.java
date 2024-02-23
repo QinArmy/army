@@ -737,6 +737,8 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * <p>Append  literal
+     *
+     * @return true : append boundary char (quote/double quote) or occur escape.
      */
     public final boolean literal(final TypeMeta typeMeta, @Nullable Object value, final EscapeMode mode,
                                  final StringBuilder sqlBuilder) {
@@ -771,13 +773,10 @@ abstract class ArmyParser implements DialectParser {
         //TODO validate non-field codec
 
         final boolean escape;
-        switch (mode) {
-            case DEFAULT:
-            case DEFAULT_NO_TYPE:
-                escape = bindLiteral(typeMeta, dataType, value, mode, sqlBuilder);
-                break;
-            default:
-                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, sqlBuilder);
+        if (mode == EscapeMode.DEFAULT) {
+            escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, sqlBuilder);
+        } else {
+            escape = bindLiteral(typeMeta, dataType, value, mode, sqlBuilder);
         }
         return escape;
     }
@@ -791,6 +790,9 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract void bindLiteralNull(MappingType type, DataType dataType, EscapeMode mode, StringBuilder sqlBuilder);
 
+    /**
+     * @return true : append boundary char (quote/double quote) or occur escape.
+     */
     protected abstract boolean bindLiteral(TypeMeta typeMeta, DataType dataType, Object value, EscapeMode mode, StringBuilder sqlBuilder);
 
     protected abstract DdlParser createDdlDialect();
