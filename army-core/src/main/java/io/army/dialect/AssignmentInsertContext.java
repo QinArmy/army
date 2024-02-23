@@ -22,6 +22,7 @@ import io.army.criteria.SqlValueParam;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.env.EscapeMode;
 import io.army.meta.*;
 import io.army.session.SessionSpec;
 import io.army.stmt.InsertStmtParams;
@@ -268,7 +269,7 @@ final class AssignmentInsertContext extends InsertContext
         if (this.literalMode == LiteralMode.DEFAULT) {
             appendParam(SingleParam.build(discriminator.mappingType(), codeEnum));
         } else {
-            this.parser.literal(discriminator.mappingType(), codeEnum, this.sqlBuilder.append(_Constant.SPACE));
+            this.parser.literal(discriminator.mappingType(), codeEnum, EscapeMode.DEFAULT, this.sqlBuilder.append(_Constant.SPACE));
         }
 
     }

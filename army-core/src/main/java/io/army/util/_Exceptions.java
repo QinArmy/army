@@ -33,6 +33,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -1142,8 +1143,9 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException operatorError(Object operator, Dialect dialect) {
-        String m = String.format("%s is not supported by %s.", operator, dialect);
+
+    public static CriteriaException dontSupportEscapeMode(EscapeMode mode, Dialect dialect) {
+        String m = String.format("%s is not supported by %s.", mode, dialect);
         return new CriteriaException(m);
     }
 

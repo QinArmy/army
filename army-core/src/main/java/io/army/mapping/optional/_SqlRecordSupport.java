@@ -77,14 +77,14 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
                 }
             } else if (ch == _Constant.LEFT_PAREN) {
                 if (recordEnd) {
-                    throw _Exceptions.parenNotMatch(source.substring(offset, end));
+                    throw _Exceptions.parenNotMatch(source.substring(offset, offset + 5));
                 }
                 if (leftParenCount == 1 && startIndex < 0) {
                     startIndex = i;
                 }
                 leftParenCount++;
             } else if (leftParenCount == 0) {
-                throw _Exceptions.parenNotMatch(source.substring(offset, end));
+                throw _Exceptions.parenNotMatch(source.substring(offset, offset + 5));
             } else if (startIndex < 0) {
                 if (!Character.isWhitespace(ch)) {
                     startIndex = i;
@@ -141,7 +141,7 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
         } // outer loop for
 
         if (!recordEnd) {
-            throw _Exceptions.parenNotMatch(source.substring(offset, end));
+            throw _Exceptions.parenNotMatch(source.substring(offset, offset + 5));
         } else if (inDoubleQuote) {
             throw _Exceptions.doubleQuoteNotMatch();
         }

@@ -18,6 +18,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
+import io.army.env.EscapeMode;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -202,7 +203,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
         if (!this.paramAccepter.hasLiteral) {
             this.paramAccepter.setHasLiteral();
         }
-        this.parser.literal(typeMeta, value, this.sqlBuilder.append(_Constant.SPACE));
+        this.parser.literal(typeMeta, value, EscapeMode.DEFAULT, this.sqlBuilder.append(_Constant.SPACE));
 
     }
 
@@ -240,7 +241,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.typeMeta(), value, sqlBuilder);
+            this.parser.literal(namedLiteral.typeMeta(), value, EscapeMode.DEFAULT, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -258,7 +259,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
                 } else {
                     sqlBuilder.append(_Constant.SPACE);
                 }
-                parser.literal(typeMeta, v, sqlBuilder);
+                parser.literal(typeMeta, v, EscapeMode.DEFAULT, sqlBuilder);
                 i++;
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

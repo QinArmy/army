@@ -18,6 +18,7 @@ package io.army.dialect.postgre;
 
 import io.army.dialect._Constant;
 import io.army.dialect._Literals;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 import io.army.session.executor.ExecutorSupport;
@@ -34,12 +35,11 @@ abstract class PostgreLiterals extends _Literals {
     }
 
 
-    static void postgreBackslashEscapes(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                                        final StringBuilder sqlBuilder) {
-        if (!(value instanceof String)) {//TODO think long string
-            throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
-        }
-        final String literal = (String) value;
+    /**
+     * @return true : occur escape
+     */
+    static boolean postgreBackslashEscapes(final EscapeMode mode, final CharSequence literal, final int offset, final int end,
+                                           final StringBuilder sqlBuilder) {
 
         final int startIndex, literalLength;
         startIndex = sqlBuilder.length();
@@ -102,6 +102,7 @@ abstract class PostgreLiterals extends _Literals {
         }
         sqlBuilder.append(_Constant.QUOTE);
 
+        return followChar != _Constant.NUL_CHAR;
     }
 
 

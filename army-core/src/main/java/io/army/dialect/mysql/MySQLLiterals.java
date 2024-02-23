@@ -20,7 +20,6 @@ import io.army.dialect._Constant;
 import io.army.dialect._Literals;
 import io.army.env.EscapeMode;
 import io.army.util.HexUtils;
-import io.army.util._Exceptions;
 
 import java.nio.charset.StandardCharsets;
 
@@ -28,34 +27,36 @@ abstract class MySQLLiterals extends _Literals {
 
 
     /**
+     * @return true : occur escape
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-literals.html#character-escape-sequences">String Literals</a>
      */
-    static void mysqlEscapes(final EscapeMode escapeMode, final String literal, final boolean appendCharset,
-                             final StringBuilder sqlBuilder) {
+    static boolean mysqlEscapes(final EscapeMode mode, final String literal, final StringBuilder sqlBuilder) {
         //firstly,store start index
         final int startIndex, valueLength;
         startIndex = sqlBuilder.length();
         valueLength = literal.length();
 
         final boolean backSlashEscape;
-        switch (escapeMode) {
+        switch (mode) {
             case DEFAULT:
+            case DEFAULT_NO_TYPE:
                 backSlashEscape = false;
                 break;
             case BACK_SLASH:
+            case BACK_SLASH_NO_TYPE:
                 backSlashEscape = true;
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(escapeMode);
+                // no bug ,never here
+                throw new IllegalArgumentException();
         }
 
         // left quote
         sqlBuilder.append(_Constant.QUOTE);
 
-        boolean existBackSlash = false;
         int lastWritten = 0;
 
-        char charAfterBachSlash;
+        char charAfterBachSlash = _Constant.NUL_CHAR;
 
         for (int i = 0; i < valueLength; i++) {
             switch (literal.charAt(i)) {
@@ -96,7 +97,6 @@ abstract class MySQLLiterals extends _Literals {
             if (!backSlashEscape) {
                 //army couldn't safely escapes
                 // ,because army don't known the current value of @@SESSION.sql_mode for (NO_BACKSLASH_ESCAPES).
-                existBackSlash = true;
                 break;
             }
 
@@ -110,13 +110,9 @@ abstract class MySQLLiterals extends _Literals {
 
         }
 
-        if (!backSlashEscape && existBackSlash) {
+        if (!backSlashEscape && charAfterBachSlash != _Constant.NUL_CHAR) {
             sqlBuilder.setLength(startIndex);
-            if (appendCharset) {
-                sqlBuilder.append("_utf8mb4 0x");
-            } else {
-                sqlBuilder.append("0x");
-            }
+            sqlBuilder.append("_utf8mb4 0x");
             sqlBuilder.append(HexUtils.hexEscapesText(true, literal.getBytes(StandardCharsets.UTF_8)));
         } else {
             if (lastWritten < valueLength) {
@@ -125,6 +121,7 @@ abstract class MySQLLiterals extends _Literals {
             sqlBuilder.append(_Constant.QUOTE);
         }
 
+        return charAfterBachSlash != _Constant.NUL_CHAR;
     }
 
 

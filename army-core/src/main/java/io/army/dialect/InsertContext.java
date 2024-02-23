@@ -21,17 +21,14 @@ import io.army.annotation.UpdateMode;
 import io.army.bean.ObjectAccessException;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.SessionSpec;
-import io.army.stmt.InsertStmtParams;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.StmtType;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
@@ -916,15 +913,15 @@ abstract class InsertContext extends StatementContext
     final void appendInsertValue(final LiteralMode mode, final FieldMeta<?> field, final @Nullable Object value) {
         switch (mode) {
             case DEFAULT:
-                this.appendParam(SQLs.param(field, value));
+                this.appendParam(SingleParam.build(field, value));
                 break;
             case PREFERENCE: {
                 if (!(field.mappingType() instanceof _ArmyNoInjectionMapping)) {
-                    this.appendParam(SQLs.param(field, value));
+                    this.appendParam(SingleParam.build(field, value));
                 } else if (value == null) {
                     this.sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {
-                    this.parser.literal(field, value, this.sqlBuilder.append(_Constant.SPACE));
+                    this.parser.literal(field, value, EscapeMode.DEFAULT, this.sqlBuilder.append(_Constant.SPACE));
                 }
             }
             break;
@@ -932,7 +929,7 @@ abstract class InsertContext extends StatementContext
                 if (value == null) {
                     this.sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {
-                    this.parser.literal(field, value, this.sqlBuilder.append(_Constant.SPACE));
+                    this.parser.literal(field, value, EscapeMode.DEFAULT, this.sqlBuilder.append(_Constant.SPACE));
                 }
             }
             break;

@@ -1164,7 +1164,7 @@ final class MySQLDialectParser extends MySQLParser {
         }
         sqlBuilder.append(" INFILE ");
 
-        MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, path.toAbsolutePath().toString(), true, sqlBuilder);
+        MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, path.toAbsolutePath().toString(), sqlBuilder);
     }
 
     /**
@@ -1183,7 +1183,7 @@ final class MySQLDialectParser extends MySQLParser {
         final String terminatedString;
         if ((terminatedString = loadData.columnTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, terminatedString, true, sqlBuilder);
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, terminatedString, sqlBuilder);
         }
         //3. ENCLOSED BY
         final String enclosedChar;
@@ -1192,13 +1192,13 @@ final class MySQLDialectParser extends MySQLParser {
                 sqlBuilder.append(" OPTIONALLY");
             }
             sqlBuilder.append(" ENCLOSED BY ");
-            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, enclosedChar, true, sqlBuilder);
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, enclosedChar, sqlBuilder);
         }
         //4. ESCAPED BY
         final String escapedChar;
         if ((escapedChar = loadData.columnEscapedBy()) != null) {
             sqlBuilder.append(" ESCAPED BY ");
-            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, escapedChar, true, sqlBuilder);
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, escapedChar, sqlBuilder);
         }
 
         if (terminatedString == null && enclosedChar == null && escapedChar == null) {
@@ -1218,12 +1218,12 @@ final class MySQLDialectParser extends MySQLParser {
         //2. STARTING BY clause
         if ((startingString = loadData.linesStartingBy()) != null) {
             sqlBuilder.append(" STARTING BY ");
-            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, startingString, true, sqlBuilder);
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, startingString, sqlBuilder);
         }
         //3. TERMINATED BY clause
         if ((terminatedString = loadData.linesTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, terminatedString, true, sqlBuilder);
+            MySQLLiterals.mysqlEscapes(EscapeMode.BACK_SLASH, terminatedString, sqlBuilder);
         }
 
         if (startingString == null && terminatedString == null) {
