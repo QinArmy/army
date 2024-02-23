@@ -16,9 +16,9 @@
 
 package io.army.criteria.postgre;
 
-import io.army.criteria.Expression;
 import io.army.criteria.GroupByItem;
 import io.army.criteria.Item;
+import io.army.criteria.LiteralExpression;
 import io.army.criteria.Query;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
@@ -290,11 +290,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
         /**
          * @param wordDefault see {@link SQLs#DEFAULT}
          */
-        _CyclePathColumnClause to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault);
+        _CyclePathColumnClause to(LiteralExpression cycleMarkValue, SQLs.WordDefault wordDefault, LiteralExpression cycleMarkDefault);
 
-        _CyclePathColumnClause to(Consumer<BiConsumer<Expression, Expression>> consumer);
+        _CyclePathColumnClause to(Consumer<BiConsumer<LiteralExpression, LiteralExpression>> consumer);
 
-        _CyclePathColumnClause ifTo(Consumer<BiConsumer<Expression, Expression>> consumer);
+        _CyclePathColumnClause ifTo(Consumer<BiConsumer<LiteralExpression, LiteralExpression>> consumer);
 
     }
 
@@ -317,6 +317,10 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-CYCLE">Cycle Detection</a>
+     */
     interface _CteCycleClause<I extends Item> {
 
         I cycle(Consumer<_CteCycleColumnNameSpace> consumer);
@@ -325,6 +329,10 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-SEARCH">Search Order</a>
+     */
     interface _CteSearchClause<I extends Item> {
 
         I search(Consumer<_SearchBreadthDepthClause> consumer);

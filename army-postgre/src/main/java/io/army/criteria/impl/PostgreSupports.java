@@ -26,7 +26,6 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
 import io.army.mapping.array.SqlRecordArrayType;
 import io.army.meta.TableMeta;
 import io.army.type.SqlRecord;
@@ -367,6 +366,8 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         /**
          * @return true exists clause
+         * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
+         * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-SEARCH">Search Order</a>
          */
         boolean endClause() {
             final boolean optionIsNull = this.breadth == null;
@@ -382,59 +383,17 @@ abstract class PostgreSupports extends CriteriaSupports {
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
 
-            if (optionIsNull) {
-                return false;
+            if (!optionIsNull) {
+                final List<MappingType> columnTypeList = _Collections.arrayList(columnList.size());
+                final Consumer<Selection> consumer;
+                consumer = s -> columnTypeList.add(s.typeMeta().mappingType());
+                CriteriaUtils.refSelectionList(columnList, this.columnALiasList, (_SelectionMap) this.subQuery, consumer);
+
+                this.searchSeqSelection = ArmySelections.forName(searchSeqColumnName,
+                        SqlRecordArrayType.fromRow(SqlRecord[].class, columnTypeList)
+                );
             }
-
-            final List<? extends Selection> selectionLis = ((_SelectionMap) this.subQuery).refAllSelection();
-            final List<String> columnAliasList = this.columnALiasList;
-            final int columnAliasSize;
-            if (columnAliasList == null) {
-                columnAliasSize = 0;
-            } else {
-                columnAliasSize = columnAliasList.size();
-            }
-
-            final int columnSize = columnList.size();
-            final List<MappingType> columnTypeList = _Collections.arrayList(columnSize);
-
-            MappingType type;
-            String columnName;
-            Selection selection;
-
-            for (int i = 0; i < columnSize; i++) {
-                columnName = columnList.get(i);
-                if (columnName == null) {
-                    throw ContextStack.clearStackAndNullPointer();
-                }
-
-                if (columnAliasSize == 0) {
-                    selection = ((_SelectionMap) this.subQuery).refSelection(columnName);
-                    if (selection == null) {
-                        throw CriteriaUtils.unknownSelection(columnName);
-                    }
-                    columnTypeList.add(selection.typeMeta().mappingType());
-                    continue;
-                }
-
-                type = null;
-                for (int aliasIndex = columnAliasSize - 1; aliasIndex > -1; aliasIndex--) {
-                    if (!columnName.equals(columnAliasList.get(aliasIndex))) {
-                        continue;
-                    }
-                    type = selectionLis.get(aliasIndex).typeMeta().mappingType();
-                    break;
-                } // inner loop for
-                if (type == null) {
-                    throw CriteriaUtils.unknownSelection(columnName);
-                }
-                columnTypeList.add(type);
-            } // outer loop for
-
-            this.searchSeqSelection = ArmySelections.forName(searchSeqColumnName,
-                    SqlRecordArrayType.fromRow(SqlRecord[].class, columnTypeList)
-            );
-            return true;
+            return !optionIsNull;
 
         }
 
@@ -507,14 +466,14 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreQuery._CyclePathColumnClause to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault) {
+        public PostgreQuery._CyclePathColumnClause to(LiteralExpression cycleMarkValue, SQLs.WordDefault wordDefault, LiteralExpression cycleMarkDefault) {
             acceptMarkValueAndDefault(cycleMarkValue, cycleMarkDefault);
             return this;
         }
 
         @Override
-        public PostgreQuery._CyclePathColumnClause to(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            final BiConsumer<Expression, Expression> func = this::acceptMarkValueAndDefault;
+        public PostgreQuery._CyclePathColumnClause to(Consumer<BiConsumer<LiteralExpression, LiteralExpression>> consumer) {
+            final BiConsumer<LiteralExpression, LiteralExpression> func = this::acceptMarkValueAndDefault;
             CriteriaUtils.invokeConsumer(func, consumer);
             if (this.cycleMarkValue == null) {
                 throw CriteriaUtils.dontAddAnyItem();
@@ -523,8 +482,8 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreQuery._CyclePathColumnClause ifTo(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            final BiConsumer<Expression, Expression> func = this::acceptMarkValueAndDefault;
+        public PostgreQuery._CyclePathColumnClause ifTo(Consumer<BiConsumer<LiteralExpression, LiteralExpression>> consumer) {
+            final BiConsumer<LiteralExpression, LiteralExpression> func = this::acceptMarkValueAndDefault;
             CriteriaUtils.invokeConsumer(func, consumer);
             return this;
         }
@@ -596,7 +555,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             return s;
         }
 
-        private void acceptMarkValueAndDefault(@Nullable Expression cycleMarkValue, @Nullable Expression cycleMarkDefault) {
+        private void acceptMarkValueAndDefault(@Nullable LiteralExpression cycleMarkValue, @Nullable LiteralExpression cycleMarkDefault) {
             if (cycleMarkValue == null) {
                 throw ContextStack.clearStackAndNullPointer();
             } else if (cycleMarkDefault == null) {
@@ -608,9 +567,12 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         /**
          * @return true exists clause
+         * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
+         * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-CYCLE">Cycle Detection</a>
          */
         boolean endClause() {
-            final boolean columnListIsNull = this.columnList == null;
+            final List<String> columnList = this.columnList;
+            final boolean columnListIsNull = columnList == null;
             final String m = "You don't finish CYCLE clause";
             if (this.required) {
                 if (columnListIsNull || this.cycleMarkColumnName == null || this.cyclePathColumnName == null) {
@@ -621,17 +583,25 @@ abstract class PostgreSupports extends CriteriaSupports {
                 throw ContextStack.clearStackAndNullPointer(m);
             }
 
-            if (!columnListIsNull) {
-                final Expression cycleMarkValue = this.cycleMarkValue;
-                if (cycleMarkValue == null) {
-                    this.cycleMarkSelection = ArmySelections.forName(this.cycleMarkColumnName, BooleanType.INSTANCE);
-                } else {
-                    this.cycleMarkSelection = ArmySelections.forName(this.cycleMarkColumnName, cycleMarkValue.typeMeta().mappingType()); //TODO optimizing me
-                }
-                this.cyclePathSelection = ArmySelections.forName(this.cyclePathColumnName, StringType.INSTANCE); // TODO right ?
-
+            if (columnListIsNull) {
+                return false;
             }
-            return !columnListIsNull;
+
+
+            final Expression cycleMarkValue = this.cycleMarkValue;
+            if (cycleMarkValue == null) {
+                this.cycleMarkSelection = ArmySelections.forName(this.cycleMarkColumnName, BooleanType.INSTANCE);
+            } else {
+                this.cycleMarkSelection = ArmySelections.forName(this.cycleMarkColumnName, cycleMarkValue.typeMeta().mappingType());
+            }
+
+            final List<MappingType> columnTypeList = _Collections.arrayList(columnList.size());
+            final Consumer<Selection> consumer;
+            consumer = s -> columnTypeList.add(s.typeMeta().mappingType());
+            CriteriaUtils.refSelectionList(columnList, this.columnALiasList, (_SelectionMap) this.subQuery, consumer);
+
+            this.cyclePathSelection = ArmySelections.forName(this.cyclePathColumnName, SqlRecordArrayType.fromRow(SqlRecord[].class, columnTypeList));
+            return true;
         }
 
 

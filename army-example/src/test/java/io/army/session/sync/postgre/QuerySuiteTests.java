@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -158,10 +159,188 @@ public class QuerySuiteTests extends SessionTestSupport {
             for (SqlRecord record : orderCol) {
                 Assert.assertEquals(record.size(), 2);
                 Assert.assertTrue(record.get(0) instanceof Long);
+                Assert.assertTrue(record.get(1) instanceof LocalDateTime);
             }
         }
 
     }
 
+
+    @Test
+    public void singleColumnCycleClause(final SyncLocalSession session) {
+        final int listSize = 10;
+        final List<ChinaRegion<?>> regionList, tempList;
+        tempList = createReginListWithCount(listSize);
+        session.batchSave(tempList);
+
+        regionList = createReginListWithCount(listSize);
+        for (int i = 0; i < listSize; i++) {
+            regionList.get(i).setParentId(tempList.get(i).getId());
+        }
+        session.batchSave(regionList);
+
+        final Long lastId;
+        lastId = regionList.get(regionList.size() - 1).getId();
+        assert lastId != null;
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .withRecursive("cte").as(sw -> sw.select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+                        .union()
+                        .select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .join("cte").on(ChinaRegion_.id::equal, SQLs.refField("cte", ChinaRegion_.PARENT_ID))
+                        .asQuery()
+                ).cycle(s -> s.space(ChinaRegion_.ID, ChinaRegion_.CREATE_TIME).set("isCycle").using("path"))
+                .space()
+                .select(s -> s.space("cte", PERIOD, ASTERISK))
+                .from("cte")
+                .asQuery();
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+        Assert.assertTrue(rowList.size() > 0);
+
+        LOG.debug("{} rowList size[{}]", session.name(), rowList.size());
+
+        SqlRecord[] orderCol;
+        for (Map<String, Object> row : rowList) {
+            Assert.assertEquals(row.size(), 6);
+            Assert.assertTrue(row.get("isCycle") instanceof Boolean);
+            orderCol = (SqlRecord[]) row.get("path");
+            for (SqlRecord record : orderCol) {
+                Assert.assertEquals(record.size(), 2);
+                Assert.assertTrue(record.get(0) instanceof Long);
+                Assert.assertTrue(record.get(1) instanceof LocalDateTime);
+            }
+        }
+
+    }
+
+
+    @Test
+    public void simpleColumnCycleClause(final SyncLocalSession session) {
+        final int listSize = 10;
+        final List<ChinaRegion<?>> regionList, tempList;
+        tempList = createReginListWithCount(listSize);
+        session.batchSave(tempList);
+
+        regionList = createReginListWithCount(listSize);
+        for (int i = 0; i < listSize; i++) {
+            regionList.get(i).setParentId(tempList.get(i).getId());
+        }
+        session.batchSave(regionList);
+
+        final Long lastId;
+        lastId = regionList.get(regionList.size() - 1).getId();
+        assert lastId != null;
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .withRecursive("cte").parens("myId", "myParentId", "myName", "myCreateTime")
+                .as(sw -> sw.select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+                        .union()
+                        .select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .join("cte").on(ChinaRegion_.id::equal, SQLs.refField("cte", "myParentId"))
+                        .asQuery()
+                ).cycle(s -> s.space("myId", "myCreateTime").set("isCycle").to(SQLs.space(1), DEFAULT, SQLs.space(0)).using("path"))
+                .space()
+                .select(s -> s.space("cte", PERIOD, ASTERISK))
+                .from("cte")
+                .asQuery();
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+        Assert.assertTrue(rowList.size() > 0);
+
+        LOG.debug("{} rowList size[{}]", session.name(), rowList.size());
+
+        SqlRecord[] orderCol;
+        for (Map<String, Object> row : rowList) {
+            Assert.assertEquals(row.size(), 6);
+            Assert.assertTrue(row.get("myId") instanceof Long);
+            Assert.assertTrue(row.get("isCycle") instanceof Integer);
+
+            orderCol = (SqlRecord[]) row.get("path");
+            for (SqlRecord record : orderCol) {
+                Assert.assertEquals(record.size(), 2);
+                Assert.assertTrue(record.get(0) instanceof Long);
+                Assert.assertTrue(record.get(1) instanceof LocalDateTime);
+            }
+        }
+
+    }
+
+
+    @Test
+    public void simpleColumnSearchCycleClause(final SyncLocalSession session) {
+        final int listSize = 10;
+        final List<ChinaRegion<?>> regionList, tempList;
+        tempList = createReginListWithCount(listSize);
+        session.batchSave(tempList);
+
+        regionList = createReginListWithCount(listSize);
+        for (int i = 0; i < listSize; i++) {
+            regionList.get(i).setParentId(tempList.get(i).getId());
+        }
+        session.batchSave(regionList);
+
+        final Long lastId;
+        lastId = regionList.get(regionList.size() - 1).getId();
+        assert lastId != null;
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .withRecursive("cte").parens("myId", "myParentId", "myName", "myCreateTime")
+                .as(sw -> sw.select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+                        .union()
+                        .select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .join("cte").on(ChinaRegion_.id::equal, SQLs.refField("cte", "myParentId"))
+                        .asQuery()
+                ).search(s -> s.depthFirstBy("myId", "myCreateTime").set("orderCol"))
+                .cycle(s -> s.space("myId", "myCreateTime").set("isCycle").to(SQLs.space(1), DEFAULT, SQLs.space(0)).using("path"))
+                .space()
+                .select(s -> s.space("cte", PERIOD, ASTERISK))
+                .from("cte")
+                .asQuery();
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+        Assert.assertTrue(rowList.size() > 0);
+
+        LOG.debug("{} rowList size[{}]", session.name(), rowList.size());
+
+        SqlRecord[] orderCol;
+        for (Map<String, Object> row : rowList) {
+            Assert.assertEquals(row.size(), 7);
+            Assert.assertTrue(row.get("myId") instanceof Long);
+            Assert.assertTrue(row.get("isCycle") instanceof Integer);
+
+            orderCol = (SqlRecord[]) row.get("orderCol");
+            for (SqlRecord record : orderCol) {
+                Assert.assertEquals(record.size(), 2);
+                Assert.assertTrue(record.get(0) instanceof Long);
+                Assert.assertTrue(record.get(1) instanceof LocalDateTime);
+            }
+
+            orderCol = (SqlRecord[]) row.get("path");
+            for (SqlRecord record : orderCol) {
+                Assert.assertEquals(record.size(), 2);
+                Assert.assertTrue(record.get(0) instanceof Long);
+                Assert.assertTrue(record.get(1) instanceof LocalDateTime);
+            }
+
+
+        }
+
+    }
 
 }

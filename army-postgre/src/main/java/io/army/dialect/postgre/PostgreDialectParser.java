@@ -119,6 +119,7 @@ final class PostgreDialectParser extends PostgreParser {
         List<String> columnAliasList;
         _PostgreCte._SearchClause searchClause;
         _PostgreCte._CycleClause cycleClause;
+        SQLWords materialized;
         for (int i = 0, columnSize; i < cteSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
@@ -140,8 +141,15 @@ final class PostgreDialectParser extends PostgreParser {
                 }
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
-            sqlBuilder.append(_Constant.SPACE_AS)
-                    .append(_Constant.SPACE_LEFT_PAREN);
+            sqlBuilder.append(_Constant.SPACE_AS);
+
+            materialized = cte.modifier();
+            if (materialized != null) {
+                assert materialized == Postgres.MATERIALIZED || materialized == Postgres.NOT_MATERIALIZED;
+                sqlBuilder.append(materialized.spaceRender());
+            }
+
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             subStatement = cte.subStatement();
             subStatement.prepared();
             if (subStatement instanceof SubQuery) {
@@ -171,6 +179,8 @@ final class PostgreDialectParser extends PostgreParser {
                 if (cycleClause != null) {
                     cycleClause.appendSql(sqlBuilder, mainContext);
                 }
+            } else if (cte.searchClause() != null || cte.cycleClause() != null) {
+                throw _Exceptions.castCriteriaApi();
             }
 
 

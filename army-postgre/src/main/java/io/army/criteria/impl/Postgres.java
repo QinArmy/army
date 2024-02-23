@@ -174,16 +174,18 @@ public abstract class Postgres extends PostgreSyntax {
     public static final Expression USER = LiteralFunctions.noParensFunc("user", TextType.INSTANCE);
 
     /**
-     * <p>
-     * create single-table INSERT statement that is primary statement.
+     * <p>create single-table INSERT statement that is primary statement.
      */
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return PostgreInserts.singleInsert();
     }
 
     /**
-     * <p>
-     * create simple(non-batch) SELECT statement that is primary statement.
+     * <p>create simple(non-batch) SELECT statement that is primary statement.
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-SEARCH">Search Order</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-CYCLE">Cycle Detection</a>
      */
     public static PostgreQuery.WithSpec<Select> query() {
         return PostgreQueries.simpleQuery();
@@ -199,16 +201,20 @@ public abstract class Postgres extends PostgreSyntax {
 
 
     /**
-     * <p>
-     * create SUB-SELECT statement that is sub query statement.
+     * <p>create SUB-SELECT statement that is sub query statement.
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-SEARCH">Search Order</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-CYCLE">Cycle Detection</a>
      */
     public static PostgreQuery.WithSpec<SubQuery> subQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), SQLs::identity);
     }
 
     /**
-     * <p>
-     * create SUB-SELECT statement that is sub query statement and would be converted to {@link Expression}.
+     * <p>create SUB-SELECT statement that is sub query statement and would be converted to {@link Expression}.
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
      */
     public static PostgreQuery.WithSpec<Expression> scalarSubQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);

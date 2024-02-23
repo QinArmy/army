@@ -190,6 +190,59 @@ abstract class CriteriaUtils {
         }
     }
 
+    static void refSelectionList(final List<String> columnNameList,
+                                 final @Nullable List<String> columnAliasList,
+                                 final _SelectionMap selectionMap, Consumer<Selection> consumer) {
+        final int columnAliasSize;
+        if (columnAliasList == null) {
+            columnAliasSize = 0;
+        } else {
+            columnAliasSize = columnAliasList.size();
+        }
+
+        final List<? extends Selection> selectionList = selectionMap.refAllSelection();
+        if (columnAliasSize > 0 && columnAliasSize != selectionList.size()) {
+            // no bug ,never here
+            throw CriteriaUtils.derivedColumnAliasSizeNotMatch("",
+                    selectionList.size(), columnAliasSize);
+        }
+
+        final int columnNameSize = columnNameList.size();
+
+        String columnName;
+        Selection selection;
+        for (int i = 0; i < columnNameSize; i++) {
+            columnName = columnNameList.get(i);
+            if (columnName == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+
+            if (columnAliasSize == 0) {
+                selection = selectionMap.refSelection(columnName);
+                if (selection == null) {
+                    throw CriteriaUtils.unknownSelection(columnName);
+                }
+                consumer.accept(selection);
+                continue;
+            }
+            selection = null;
+            for (int aliasIndex = columnAliasSize - 1; aliasIndex > -1; aliasIndex--) {
+                if (!columnName.equals(columnAliasList.get(aliasIndex))) {
+                    continue;
+                }
+                selection = selectionList.get(aliasIndex);
+                break;
+            } // inner loop for
+
+            if (selection == null) {
+                throw CriteriaUtils.unknownSelection(columnName);
+            }
+
+            consumer.accept(selection);
+
+        }
+
+    }
 
     static List<_Expression> expressionList(final @Nullable CriteriaContext ctx, final boolean required,
                                             final Consumer<Consumer<Expression>> consumer) {
