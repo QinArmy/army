@@ -60,7 +60,59 @@ public class QuerySuiteTests extends SessionTestSupport {
     }
 
     @Test
-    public void singleColumnSearchClause(final SyncLocalSession session) {
+    public void singleColumnSearchBreadthFirstClause(final SyncLocalSession session) {
+        final int listSize = 10;
+        final List<ChinaRegion<?>> regionList, tempList;
+        tempList = createReginListWithCount(listSize);
+        session.batchSave(tempList);
+
+        regionList = createReginListWithCount(listSize);
+        for (int i = 0; i < listSize; i++) {
+            regionList.get(i).setParentId(tempList.get(i).getId());
+        }
+        session.batchSave(regionList);
+
+        final Long lastId;
+        lastId = regionList.get(regionList.size() - 1).getId();
+        assert lastId != null;
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .withRecursive("cte").as(sw -> sw.select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+                        .union()
+                        .select(ChinaRegion_.id, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.createTime)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .join("cte").on(ChinaRegion_.id::equal, SQLs.refField("cte", ChinaRegion_.PARENT_ID))
+                        .asQuery()
+                ).search(s -> s.breadthFirstBy(ChinaRegion_.ID, ChinaRegion_.CREATE_TIME).set("orderCol"))
+                .space()
+                .select(s -> s.space("cte", PERIOD, ASTERISK))
+                .from("cte")
+                .asQuery();
+
+        final List<Map<String, Object>> rowList;
+        rowList = session.queryObjectList(stmt, RowMaps::hashMap);
+        Assert.assertTrue(rowList.size() > 0);
+
+        LOG.debug("{} rowList size[{}]", session.name(), rowList.size());
+
+        SqlRecord record;
+        for (Map<String, Object> row : rowList) {
+            Assert.assertEquals(row.size(), 5);
+            record = (SqlRecord) row.get("orderCol");
+            Assert.assertEquals(record.size(), 3);
+
+            Assert.assertTrue(record.get(0) instanceof Long);
+            Assert.assertTrue(record.get(1) instanceof Long);
+            Assert.assertTrue(record.get(2) instanceof LocalDateTime);
+        }
+
+    }
+
+    @Test
+    public void singleColumnSearchDepthFirstClause(final SyncLocalSession session) {
         final int listSize = 10;
         final List<ChinaRegion<?>> regionList, tempList;
         tempList = createReginListWithCount(listSize);
@@ -112,7 +164,7 @@ public class QuerySuiteTests extends SessionTestSupport {
 
 
     @Test
-    public void simpleColumnSearchClause(final SyncLocalSession session) {
+    public void simpleColumnSearchDepthFirstClause(final SyncLocalSession session) {
         final int listSize = 10;
         final List<ChinaRegion<?>> regionList, tempList;
         tempList = createReginListWithCount(listSize);

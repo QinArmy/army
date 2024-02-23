@@ -25,8 +25,10 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.BooleanType;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.array.SqlRecordArrayType;
+import io.army.mapping.optional.SqlRecordType;
 import io.army.meta.TableMeta;
 import io.army.type.SqlRecord;
 import io.army.util.ArrayUtils;
@@ -370,7 +372,8 @@ abstract class PostgreSupports extends CriteriaSupports {
          * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-SEARCH">Search Order</a>
          */
         boolean endClause() {
-            final boolean optionIsNull = this.breadth == null;
+            final Boolean breadth = this.breadth;
+            final boolean optionIsNull = breadth == null;
             final List<String> columnList = this.columnList;
             final String searchSeqColumnName = this.searchSeqColumnName;
 
@@ -384,14 +387,25 @@ abstract class PostgreSupports extends CriteriaSupports {
             }
 
             if (!optionIsNull) {
-                final List<MappingType> columnTypeList = _Collections.arrayList(columnList.size());
+                final List<MappingType> columnTypeList;
+                if (breadth) {
+                    columnTypeList = _Collections.arrayList(1 + columnList.size());
+                    columnTypeList.add(LongType.INSTANCE);
+                } else {
+                    columnTypeList = _Collections.arrayList(columnList.size());
+                }
+
                 final Consumer<Selection> consumer;
                 consumer = s -> columnTypeList.add(s.typeMeta().mappingType());
                 CriteriaUtils.refSelectionList(columnList, this.columnALiasList, (_SelectionMap) this.subQuery, consumer);
 
-                this.searchSeqSelection = ArmySelections.forName(searchSeqColumnName,
-                        SqlRecordArrayType.fromRow(SqlRecord[].class, columnTypeList)
-                );
+                final MappingType type;
+                if (breadth) {
+                    type = SqlRecordType.fromRow(columnTypeList);
+                } else {
+                    type = SqlRecordArrayType.fromRow(SqlRecord[].class, columnTypeList);
+                }
+                this.searchSeqSelection = ArmySelections.forName(searchSeqColumnName, type);
             }
             return !optionIsNull;
 

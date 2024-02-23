@@ -333,6 +333,22 @@ public interface PostgreQuery extends Query, PostgreStatement {
      * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
      * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-SEARCH">Search Order</a>
      */
+    interface _SearchBreadthDepthClause {
+
+        _SetSearchSeqColumnClause breadthFirstBy(String firstColumnName, String... rest);
+
+        _SetSearchSeqColumnClause breadthFirstBy(Consumer<Consumer<String>> consumer);
+
+        _SetSearchSeqColumnClause depthFirstBy(String firstColumnName, String... rest);
+
+        _SetSearchSeqColumnClause depthFirstBy(Consumer<Consumer<String>> consumer);
+
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-SEARCH">Search Order</a>
+     */
     interface _CteSearchClause<I extends Item> {
 
         I search(Consumer<_SearchBreadthDepthClause> consumer);
@@ -349,17 +365,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _SearchBreadthDepthClause {
 
-        _SetSearchSeqColumnClause breadthFirstBy(String firstColumnName, String... rest);
-
-        _SetSearchSeqColumnClause breadthFirstBy(Consumer<Consumer<String>> consumer);
-
-        _SetSearchSeqColumnClause depthFirstBy(String firstColumnName, String... rest);
-
-        _SetSearchSeqColumnClause depthFirstBy(Consumer<Consumer<String>> consumer);
-
-    }
 
     interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_CteComma<I>>, _CteComma<I> {
 
