@@ -21,7 +21,7 @@ import io.army.mapping.array.JsonbArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util._Collections;
 
 import java.util.concurrent.ConcurrentMap;
@@ -64,7 +64,7 @@ public final class JsonbType extends ArmyJsonType implements MappingType.SqlJson
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType dataType;
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
                 dataType = PostgreType.JSONB;

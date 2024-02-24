@@ -23,6 +23,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
+import io.army.sqltype.SQLiteType;
 import io.army.util._TimeUtils;
 
 import java.time.Duration;
@@ -56,6 +57,9 @@ public final class DurationType extends _ArmyNoInjectionMapping implements Mappi
                 break;
             case PostgreSQL:
                 dataType = PostgreType.INTERVAL;
+                break;
+            case SQLite:
+                dataType = SQLiteType.DURATION;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

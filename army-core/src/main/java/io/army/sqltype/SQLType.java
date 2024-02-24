@@ -23,7 +23,7 @@ import io.army.mapping.MappingType;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public interface SqlType extends DataType {
+public interface SQLType extends DataType {
 
     Database database();
 
@@ -47,7 +47,7 @@ public interface SqlType extends DataType {
      * @return element type of array(1-n dimension)
      */
     @Nullable
-    SqlType elementType();
+    SQLType elementType();
 
 
     default MappingType mapType(Supplier<? extends ArmyException> errorHandler) {

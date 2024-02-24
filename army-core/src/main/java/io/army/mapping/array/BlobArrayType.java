@@ -26,7 +26,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
 /**
@@ -130,7 +130,7 @@ public class BlobArrayType extends _ArmyBuildInMapping implements MappingType.Sq
     /*-------------------below static methods -------------------*/
 
     static DataType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
                 dataType = PostgreType.BYTEA_ARRAY;

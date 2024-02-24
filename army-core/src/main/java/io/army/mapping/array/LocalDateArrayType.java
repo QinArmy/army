@@ -27,7 +27,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
 import java.time.LocalDate;
@@ -128,8 +128,8 @@ public class LocalDateArrayType extends _ArmyNoInjectionMapping implements Mappi
 
     /*-------------------below static methods -------------------*/
 
-    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
+    static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
                 dataType = PostgreType.DATE_ARRAY;

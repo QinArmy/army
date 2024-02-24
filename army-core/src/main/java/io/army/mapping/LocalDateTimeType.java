@@ -22,6 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
+import io.army.sqltype.SQLiteType;
 import io.army.util._TimeUtils;
 
 import java.time.LocalDate;
@@ -73,19 +74,22 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final DataType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.DATETIME;
+                dataType = MySQLType.DATETIME;
                 break;
             case PostgreSQL:
-                type = PostgreType.TIMESTAMP;
+                dataType = PostgreType.TIMESTAMP;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TIMESTAMP;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return type;
+        return dataType;
     }
 
 

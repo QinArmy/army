@@ -33,7 +33,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -62,7 +62,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
         if (!(dataType instanceof PostgreType)) { // user defined type or unrecognized type
             unrecognizedTypeName(type, dataType, true, sqlBuilder);
         } else if (dataType.isArray()) {
-            final SqlType elementType;
+            final SQLType elementType;
             elementType = ((PostgreType) dataType).elementType();
             assert elementType != null;
             arrayTypeName(elementType.typeName(), ArrayUtils.dimensionOfType(type), sqlBuilder);
@@ -128,7 +128,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final void bindLiteralNull(final MappingType type, final DataType dataType, final EscapeMode mode,
                                          final StringBuilder sqlBuilder) {
-        if (!(dataType instanceof SqlType)) {
+        if (!(dataType instanceof SQLType)) {
             sqlBuilder.append(_Constant.NULL);
             if (!(type instanceof NoCastType)) {
                 sqlBuilder.append("::");
@@ -178,7 +178,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             if (!(value instanceof String)) {
                 throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
             }
-            final SqlType elementType = ((PostgreType) dataType).elementType();
+            final SQLType elementType = ((PostgreType) dataType).elementType();
             assert elementType != null;
             sqlBuilder.append(_Constant.QUOTE)
                     .append(value)

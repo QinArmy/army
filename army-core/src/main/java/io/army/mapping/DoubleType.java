@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 
 import java.math.BigDecimal;
 
@@ -72,18 +72,21 @@ public final class DoubleType extends _NumericType._FloatNumericType {
 
     @Override
     public DataType map(ServerMeta meta) {
-        final SqlType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.DOUBLE;
+                dataType = MySQLType.DOUBLE;
                 break;
             case PostgreSQL:
-                type = PostgreType.FLOAT8;
+                dataType = PostgreType.FLOAT8;
+                break;
+            case SQLite:
+                dataType = SQLiteType.DOUBLE;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return type;
+        return dataType;
     }
 
     @Override

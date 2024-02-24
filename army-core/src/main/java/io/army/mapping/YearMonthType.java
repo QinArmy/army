@@ -66,7 +66,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return LocalDateType.mapToSqlType(this, meta);
+        return LocalDateType.mapToDataType(this, meta);
     }
 
     @Override

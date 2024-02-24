@@ -19,7 +19,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util.ClassUtils;
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * <p>
- * This class representing the mapping from {@link TextEnum} to {@link SqlType}.
+ * This class representing the mapping from {@link TextEnum} to {@link SQLType}.
 *
  * @see TextEnum
  * @see NameEnumType

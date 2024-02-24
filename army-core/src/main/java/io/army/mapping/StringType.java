@@ -117,23 +117,26 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
 
 
     static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.VARCHAR;
+                dataType = MySQLType.VARCHAR;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.VARCHAR;
+                dataType = PostgreType.VARCHAR;
+                break;
+            case SQLite:
+                dataType = SQLiteType.VARCHAR;
                 break;
             case Oracle:
-                sqlType = OracleDataType.VARCHAR2;
+                dataType = OracleDataType.VARCHAR2;
                 break;
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
 
         }
-        return sqlType;
+        return dataType;
     }
 
     public static String toString(final MappingType type, final DataType dataType, final Object source,

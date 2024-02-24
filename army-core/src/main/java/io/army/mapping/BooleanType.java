@@ -20,10 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.array.BooleanArrayType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -82,18 +79,21 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType sqlType;
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.BOOLEAN;
+                dataType = MySQLType.BOOLEAN;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.BOOLEAN;
+                dataType = PostgreType.BOOLEAN;
+                break;
+            case SQLite:
+                dataType = SQLiteType.BOOLEAN;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return sqlType;
+        return dataType;
     }
 
 

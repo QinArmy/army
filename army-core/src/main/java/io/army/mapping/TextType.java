@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 
@@ -93,13 +93,16 @@ public final class TextType extends ArmyTextType {
     }
 
     public static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
                 dataType = MySQLType.TEXT;
                 break;
             case PostgreSQL:
                 dataType = PostgreType.TEXT;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TEXT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);

@@ -32,7 +32,7 @@ import java.util.BitSet;
 /**
  * @see <a href="https://www.postgresql.org/docs/current/datatype.html">Postgre Data Types</a>
  */
-public enum PostgreType implements SqlType {
+public enum PostgreType implements SQLType {
 
 
     /**
@@ -257,7 +257,7 @@ public enum PostgreType implements SqlType {
 
     @Nullable
     @Override
-    public final SqlType elementType() {
+    public final SQLType elementType() {
         return this.elementType;
     }
 

@@ -19,10 +19,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.array.ByteArrayType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 
 /**
  * <p>
@@ -77,13 +74,16 @@ public final class ByteType extends _NumericType._IntegerType {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final SQLType type;
         switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.TINYINT;
                 break;
             case PostgreSQL:
                 type = PostgreType.SMALLINT;
+                break;
+            case SQLite:
+                type = SQLiteType.TINYINT;
                 break;
             case Oracle:
             case H2:
@@ -104,7 +104,7 @@ public final class ByteType extends _NumericType._IntegerType {
         final int intValue;
         intValue = IntegerType.toInt(this, dataType, source, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER);
         final Number value;
-        switch (((SqlType) dataType).database()) {
+        switch (((SQLType) dataType).database()) {
             case MySQL:
                 value = (byte) intValue;
                 break;

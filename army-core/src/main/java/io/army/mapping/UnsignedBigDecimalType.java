@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.math.BigDecimal;
 
@@ -91,8 +91,8 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
 
-     static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-         final SqlType sqlType;
+    static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SQLType sqlType;
          switch (meta.serverDatabase()) {
              case MySQL:
                  sqlType = MySQLType.DECIMAL_UNSIGNED;

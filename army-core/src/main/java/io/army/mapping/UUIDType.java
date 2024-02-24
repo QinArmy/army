@@ -23,7 +23,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.util.UUID;
 
@@ -53,7 +53,7 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType dataType;
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
                 dataType = PostgreType.UUID;
@@ -78,7 +78,7 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
         final Object value;
-        switch (((SqlType) dataType).database()) {
+        switch (((SQLType) dataType).database()) {
             case PostgreSQL:
                 value = toUUID(dataType, source, PARAM_ERROR_HANDLER);
                 break;

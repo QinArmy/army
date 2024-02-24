@@ -17,9 +17,11 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.dialect.Database;
 import io.army.mapping.array.MonthDayArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
+import io.army.sqltype.SQLiteType;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -80,8 +82,14 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
-    public DataType map(ServerMeta meta) {
-        return LocalDateType.mapToSqlType(this, meta);
+    public DataType map(final ServerMeta meta) {
+        final DataType dataType;
+        if (meta.serverDatabase() == Database.SQLite) {
+            dataType = SQLiteType.MONTH_DAY;
+        } else {
+            dataType = LocalDateType.mapToDataType(this, meta);
+        }
+        return dataType;
     }
 
 

@@ -90,22 +90,25 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
 
-    static SqlType mapToDataType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.DATETIME;
+                dataType = MySQLType.DATETIME;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.TIMESTAMPTZ;
+                dataType = PostgreType.TIMESTAMPTZ;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TIMESTAMP_WITH_TIMEZONE;
                 break;
             case Oracle:
-                sqlType = OracleDataType.TIMESTAMPTZ;
+                dataType = OracleDataType.TIMESTAMPTZ;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
         }
-        return sqlType;
+        return dataType;
     }
 
 

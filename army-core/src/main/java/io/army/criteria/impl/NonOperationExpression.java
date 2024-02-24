@@ -31,7 +31,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.stmt.SingleParam;
 
 import javax.annotation.Nullable;
@@ -561,7 +561,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
         @Override
         public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-            final SqlType type;
+            final SQLType type;
             switch (meta.serverDatabase()) {
                 case MySQL:
                     type = MySQLType.NULL;

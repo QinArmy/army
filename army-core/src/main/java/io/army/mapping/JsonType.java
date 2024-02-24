@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 import io.army.util._Collections;
 
 import java.util.concurrent.ConcurrentMap;
@@ -62,22 +62,24 @@ public final class JsonType extends ArmyJsonType implements MappingType.SqlJsonT
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType sqlDataType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlDataType = MySQLType.JSON;
+                dataType = MySQLType.JSON;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreType.JSON;
+                dataType = PostgreType.JSON;
+                break;
+            case SQLite:
+                dataType = SQLiteType.JSON;
                 break;
             case Oracle:
-
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return sqlDataType;
+        return dataType;
     }
 
 

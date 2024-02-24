@@ -21,7 +21,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.TextType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
 public class TextArrayType extends ArmyTextArrayType implements MappingType.SqlArrayType {
@@ -81,8 +81,8 @@ public class TextArrayType extends ArmyTextArrayType implements MappingType.SqlA
 
     /*-------------------below static methods -------------------*/
 
-    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
+    static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
                 dataType = PostgreType.TEXT_ARRAY;

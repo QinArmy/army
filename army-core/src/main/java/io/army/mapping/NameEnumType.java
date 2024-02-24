@@ -19,10 +19,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.array.NameEnumArrayType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.H2DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.*;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util.ClassUtils;
@@ -175,6 +172,9 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
                 }
             }
             break;
+            case SQLite:
+                dataType = SQLiteType.VARCHAR;
+                break;
             case H2:
                 dataType = H2DataType.ENUM;
                 break;

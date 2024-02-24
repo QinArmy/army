@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 
 import java.time.*;
 
@@ -39,7 +39,7 @@ import java.time.*;
  *     <li>{@link String} </li>
  * </ul>
  *  to sql date,if overflow,throw {@link io.army.ArmyException}
- ** @since 0.6.0
+ * * @since 0.6.0
  */
 public final class LocalDateType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 
@@ -71,7 +71,7 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return mapToSqlType(this, meta);
+        return mapToDataType(this, meta);
     }
 
     @Override
@@ -90,20 +90,23 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
     }
 
 
-    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.DATE;
+                dataType = MySQLType.DATE;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.DATE;
+                dataType = PostgreType.DATE;
+                break;
+            case SQLite:
+                dataType = SQLiteType.DATE;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
 
         }
-        return sqlType;
+        return dataType;
     }
 
     static LocalDate toLocalDateTime(final MappingType type, final DataType dataType, final Object nonNull,

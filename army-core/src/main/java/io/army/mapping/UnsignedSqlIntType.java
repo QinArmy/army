@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 
 /**
@@ -93,7 +93,7 @@ public final class UnsignedSqlIntType extends _NumericType._UnsignedIntegerType 
 
 
     static DataType mapToDataType(MappingType type, ServerMeta meta) {
-        final SqlType dataType;
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
                 dataType = MySQLType.INT_UNSIGNED;

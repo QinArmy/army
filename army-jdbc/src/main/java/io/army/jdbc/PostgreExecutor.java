@@ -23,7 +23,7 @@ import io.army.session.*;
 import io.army.session.record.DataRecord;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncExecutor;
 import io.army.sync.executor.SyncLocalStmtExecutor;
@@ -170,7 +170,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
         final PGobject pgObject;
 
-        if (!(dataType instanceof SqlType)) {
+        if (!(dataType instanceof SQLType)) {
             pgObject = new PGobject();
 
             pgObject.setType(dataType.typeName().toLowerCase(Locale.ROOT));
@@ -280,7 +280,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             throws SQLException {
         final Object value;
 
-        if (!(dataType instanceof SqlType)) {
+        if (!(dataType instanceof SQLType)) {
             value = resultSet.getObject(indexBasedOne);
         } else switch ((PostgreType) dataType) {
             case BOOLEAN:

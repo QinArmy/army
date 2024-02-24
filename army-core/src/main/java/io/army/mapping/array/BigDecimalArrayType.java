@@ -26,7 +26,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
 import java.math.BigDecimal;
@@ -134,8 +134,8 @@ public class BigDecimalArrayType extends _ArmyNoInjectionMapping implements Mapp
 
     /*-------------------below static methods -------------------*/
 
-    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType dataType;
+    public static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
                 dataType = PostgreType.DECIMAL_ARRAY;

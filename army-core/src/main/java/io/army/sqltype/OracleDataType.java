@@ -22,7 +22,7 @@ import io.army.dialect.Database;
 
 import javax.annotation.Nullable;
 
-public enum OracleDataType implements SqlType {
+public enum OracleDataType implements SQLType {
 
     NUMBER,
     CHAR,
@@ -55,7 +55,7 @@ public enum OracleDataType implements SqlType {
 
     @Nullable
     @Override
-    public SqlType elementType() {
+    public SQLType elementType() {
         return null;
     }
 

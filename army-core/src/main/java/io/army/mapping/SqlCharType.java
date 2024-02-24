@@ -61,23 +61,26 @@ public final class SqlCharType extends _ArmyBuildInMapping implements MappingTyp
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.CHAR;
+                dataType = MySQLType.CHAR;
                 break;
             case PostgreSQL:
-                type = PostgreType.CHAR;
+                dataType = PostgreType.CHAR;
+                break;
+            case SQLite:
+                dataType = SQLiteType.VARCHAR;
                 break;
             case Oracle:
-                type = OracleDataType.CHAR;
+                dataType = OracleDataType.CHAR;
                 break;
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return type;
+        return dataType;
     }
 
 

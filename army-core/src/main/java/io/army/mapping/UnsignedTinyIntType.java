@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 /**
  * <p>
@@ -59,7 +59,7 @@ public final class UnsignedTinyIntType extends _NumericType._UnsignedIntegerType
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final SQLType type;
         switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.TINYINT_UNSIGNED;

@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util._Collections;
 
 import java.util.concurrent.ConcurrentMap;
@@ -59,7 +59,7 @@ public final class XmlType extends _ArmyBuildInMapping {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType sqlDataType;
+        final SQLType sqlDataType;
         switch (meta.serverDatabase()) {
             case MySQL:
                 sqlDataType = MySQLType.TEXT;

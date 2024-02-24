@@ -24,7 +24,7 @@ import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.meta.MetaException;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
@@ -119,7 +119,7 @@ abstract class TypeDefs implements TypeDef {
             final DataType type = this.dataType;
             final String typeName = type.typeName();
             final int spaceIndex;
-            if (!(type instanceof SqlType)) {
+            if (!(type instanceof SQLType)) {
                 if (context.parser().isKeyWords(typeName.toUpperCase(Locale.ROOT))) {
                     throw new CriteriaException(String.format("typeName of %s is key word", type));
                 } else if (_DialectUtils.isSimpleIdentifier(typeName)) {
@@ -128,7 +128,7 @@ abstract class TypeDefs implements TypeDef {
                     context.identifier(typeName, sqlBuilder);
                 }
                 spaceIndex = -1;
-            } else if (((SqlType) type).armyType().isUnsigned()) {
+            } else if (((SQLType) type).armyType().isUnsigned()) {
                 spaceIndex = typeName.indexOf(" UNSIGNED");
                 if (spaceIndex < 1) {
                     throw new MetaException(String.format("%s typeName error", type));
@@ -169,10 +169,10 @@ abstract class TypeDefs implements TypeDef {
             final DataType type = this.dataType;
             final String typeName = type.typeName();
             final int spaceIndex;
-            if (!(type instanceof SqlType)) {
+            if (!(type instanceof SQLType)) {
                 builder.append(typeName);
                 spaceIndex = -1;
-            } else if (((SqlType) type).armyType().isUnsigned()) {
+            } else if (((SQLType) type).armyType().isUnsigned()) {
                 spaceIndex = typeName.indexOf(" UNSIGNED");
                 if (spaceIndex < 1) {
                     throw new MetaException(String.format("%s typeName error", type));
@@ -228,7 +228,7 @@ abstract class TypeDefs implements TypeDef {
             final DataType type = this.dataType;
             final String typeName = type.typeName();
             final int spaceIndex;
-            if (!(type instanceof SqlType)) {
+            if (!(type instanceof SQLType)) {
                 if (context.parser().isKeyWords(typeName.toUpperCase(Locale.ROOT))) {
                     throw new CriteriaException(String.format("typeName of %s is key word", type));
                 } else if (_DialectUtils.isSimpleIdentifier(typeName)) {
@@ -237,7 +237,7 @@ abstract class TypeDefs implements TypeDef {
                     context.identifier(typeName, sqlBuilder);
                 }
                 spaceIndex = -1;
-            } else if (((SqlType) type).armyType().isUnsigned()) {
+            } else if (((SQLType) type).armyType().isUnsigned()) {
                 spaceIndex = typeName.indexOf(" UNSIGNED");
                 if (spaceIndex < 1) {
                     throw new MetaException(String.format("%s typeName error", type));
@@ -268,10 +268,10 @@ abstract class TypeDefs implements TypeDef {
             final DataType type = this.dataType;
             final String typeName = type.typeName();
             final int spaceIndex;
-            if (!(type instanceof SqlType)) {
+            if (!(type instanceof SQLType)) {
                 builder.append(typeName);
                 spaceIndex = -1;
-            } else if (((SqlType) type).armyType().isUnsigned()) {
+            } else if (((SQLType) type).armyType().isUnsigned()) {
                 spaceIndex = typeName.indexOf(" UNSIGNED");
                 if (spaceIndex < 1) {
                     throw new MetaException(String.format("%s typeName error", type));

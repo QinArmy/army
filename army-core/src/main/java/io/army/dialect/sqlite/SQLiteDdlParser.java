@@ -27,6 +27,10 @@ import java.util.List;
 
 final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
 
+    static SQLiteDdlParser create(SQLiteParser parser) {
+        return new SQLiteDdlParser(parser);
+    }
+
     private SQLiteDdlParser(SQLiteParser parser) {
         super(parser);
     }

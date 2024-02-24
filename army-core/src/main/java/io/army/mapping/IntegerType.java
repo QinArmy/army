@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -149,20 +149,23 @@ public final class IntegerType extends _NumericType._IntegerType {
 
     }
 
-    public static SqlType mapToDataType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    public static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.INT;
+                dataType = MySQLType.INT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.INTEGER;
+                dataType = PostgreType.INTEGER;
+                break;
+            case SQLite:
+                dataType = SQLiteType.INTEGER;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
 
         }
-        return sqlType;
+        return dataType;
     }
 
 

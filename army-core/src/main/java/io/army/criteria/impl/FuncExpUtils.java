@@ -22,7 +22,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.env.EscapeMode;
 import io.army.mapping.*;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -332,12 +332,12 @@ abstract class FuncExpUtils {
                 sqlBuilder.append(_Constant.SPACE);
                 context.identifier(((SQLIdentifier) value).render(), sqlBuilder);
             } else if (value instanceof TypeDef) {
-                if (value instanceof SqlType) {
+                if (value instanceof SQLType) {
                     if (!value.getClass().getPackage().getName().equals("io.army.sqltype")) {
                         throw new CriteriaException(String.format("SQL function[%s] illegal SqlType %s", name, value));
                     }
                     sqlBuilder.append(_Constant.SPACE)
-                            .append(((SqlType) value).typeName());
+                            .append(((SQLType) value).typeName());
                 } else if (value instanceof TypeDefs) {
                     ((_SelfDescribed) value).appendSql(sqlBuilder, context);
                 } else {
@@ -376,9 +376,9 @@ abstract class FuncExpUtils {
                 builder.append(_Constant.SPACE)
                         .append(((SQLIdentifier) value).render());
             } else if (value instanceof TypeDef) {
-                if (value instanceof SqlType) {
+                if (value instanceof SQLType) {
                     builder.append(_Constant.SPACE)
-                            .append(((SqlType) value).typeName());
+                            .append(((SQLType) value).typeName());
                 } else {
                     builder.append(value);
                 }

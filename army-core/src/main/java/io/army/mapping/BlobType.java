@@ -65,13 +65,16 @@ public final class BlobType extends _ArmyBuildInMapping implements MappingType.S
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType dataType;
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
                 dataType = MySQLType.BLOB;
                 break;
             case PostgreSQL:
                 dataType = PostgreType.BYTEA;
+                break;
+            case SQLite:
+                dataType = SQLiteType.BLOB;
                 break;
             case Oracle:
                 dataType = OracleDataType.BLOB;

@@ -21,10 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.array.CharacterArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 
 import java.math.BigDecimal;
 import java.util.BitSet;
@@ -64,13 +61,16 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType type;
+        final SQLType type;
         switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.CHAR;
                 break;
             case PostgreSQL:
                 type = PostgreType.CHAR;
+                break;
+            case SQLite:
+                type = SQLiteType.VARCHAR;
                 break;
             case H2:
             case Oracle:

@@ -57,7 +57,7 @@ public final class VarBinaryType extends _ArmyBuildInMapping implements MappingT
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final SQLType type;
         switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.VARBINARY;

@@ -38,7 +38,7 @@ import java.util.function.Supplier;
  *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/data-types.html">MySQL Data Types</a>
  */
-public enum MySQLType implements SqlType {
+public enum MySQLType implements SQLType {
 
     NULL("NULL", ArmyType.NULL, Object.class),
     BOOLEAN("BOOLEAN", ArmyType.BOOLEAN, Boolean.class),
@@ -48,7 +48,7 @@ public enum MySQLType implements SqlType {
     SMALLINT("SMALLINT", ArmyType.SMALLINT, Short.class),
     SMALLINT_UNSIGNED("SMALLINT UNSIGNED", ArmyType.SMALLINT_UNSIGNED, Integer.class),
 
-    MEDIUMINT("MEDIUMINT", ArmyType.BOOLEAN, Integer.class),
+    MEDIUMINT("MEDIUMINT", ArmyType.MEDIUMINT, Integer.class),
     MEDIUMINT_UNSIGNED("MEDIUMINT UNSIGNED", ArmyType.MEDIUMINT_UNSIGNED, Integer.class),
     INT("INT", ArmyType.INTEGER, Integer.class),
 
@@ -160,7 +160,7 @@ public enum MySQLType implements SqlType {
 
     @Nullable
     @Override
-    public final SqlType elementType() {
+    public final SQLType elementType() {
         // MySQL don't support array
         return null;
     }

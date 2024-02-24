@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 
 /**
  * @see TinyBlobType
@@ -63,13 +63,16 @@ public final class LongBlobType extends _ArmyBuildInMapping implements MappingTy
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType dataType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
                 dataType = MySQLType.LONGBLOB;
                 break;
             case PostgreSQL:
                 dataType = PostgreType.BYTEA;
+                break;
+            case SQLite:
+                dataType = SQLiteType.BLOB;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

@@ -19,10 +19,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.array.BitSetArrayType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 import io.army.util._StringUtils;
 
 import java.math.BigInteger;
@@ -44,7 +41,7 @@ import java.util.BitSet;
  *     <li>{@code long[]}, non-empty</li>
  * </ul>
  *  to {@link BitSet}
- ** @since 0.6.0
+ * * @since 0.6.0
  */
 public final class BitSetType extends _ArmyNoInjectionMapping implements MappingType.SqlBitType {
 
@@ -77,13 +74,16 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final SQLType type;
         switch (meta.serverDatabase()) {
             case MySQL:
                 type = MySQLType.BIT;
                 break;
             case PostgreSQL:
                 type = PostgreType.VARBIT;
+                break;
+            case SQLite:
+                type = SQLiteType.BIT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
@@ -101,7 +101,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
     @Override
     public Object beforeBind(final DataType dataType, final MappingEnv env, final Object source) {
         final Object value;
-        switch ((((SqlType) dataType).database())) {
+        switch ((((SQLType) dataType).database())) {
             case MySQL:
                 value = bitwiseToLong(this, dataType, source, PARAM_ERROR_HANDLER);
                 break;

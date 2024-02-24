@@ -26,7 +26,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 import io.army.util._StringUtils;
 
@@ -110,7 +110,7 @@ public class BitSetArrayType extends _ArmyNoInjectionMapping implements MappingT
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType dataType;
+        final SQLType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
                 dataType = PostgreType.VARBIT_ARRAY;

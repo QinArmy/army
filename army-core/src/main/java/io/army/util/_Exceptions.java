@@ -40,7 +40,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.session.*;
 import io.army.session.record.CurrentRecord;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
 import io.army.type.SqlRecord;
@@ -514,7 +514,7 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
-    public static CriteriaException literalDontSupport(SqlType sqlType) {
+    public static CriteriaException literalDontSupport(SQLType sqlType) {
         return new CriteriaException(String.format("literal don't support %s", sqlType));
     }
 
@@ -1072,7 +1072,7 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownArrayDimension(SqlType sqlType, MappingType type) {
+    public static CriteriaException unknownArrayDimension(SQLType sqlType, MappingType type) {
         String m = String.format("unknown array type %s dimension of %s", sqlType, type);
         return new CriteriaException(m);
     }
@@ -1097,7 +1097,7 @@ public abstract class _Exceptions {
         return new MetaException(m);
     }
 
-    public static MetaException mapMethodError(MappingType type, Class<? extends SqlType> sqlType) {
+    public static MetaException mapMethodError(MappingType type, Class<? extends SQLType> sqlType) {
         String m = String.format("%s map(%s) don't return %s", type, ServerMeta.class.getName(), sqlType.getName());
         return new MetaException(m);
     }
@@ -1120,7 +1120,7 @@ public abstract class _Exceptions {
         return new MetaException(m);
     }
 
-    public static MetaException nonArrayType(MappingType type, SqlType sqlType) {
+    public static MetaException nonArrayType(MappingType type, SQLType sqlType) {
         String m = String.format("%s return %s but don't implements %s .", type, sqlType,
                 MappingType.SqlArrayType.class.getName());
         return new MetaException(m);

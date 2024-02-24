@@ -942,8 +942,8 @@ public abstract class ExecutorSupport {
             final DataType dataType;
             dataType = this.dataTypeArray[checkIndex(indexBasedZero)];
             final ArmyType armyType;
-            if (dataType instanceof SqlType) {
-                armyType = ((SqlType) dataType).armyType();
+            if (dataType instanceof SQLType) {
+                armyType = ((SQLType) dataType).armyType();
             } else {
                 armyType = ArmyType.UNKNOWN;
             }

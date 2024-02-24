@@ -21,7 +21,7 @@ import io.army.criteria.TypeDef;
 /**
  * <p>This is base interface of following:
  * <ul>
- *     <li>{@link SqlType}</li>
+ *     <li>{@link SQLType}</li>
  *     <li>{@link CustomType}</li>
  * </ul>
  *
@@ -63,7 +63,7 @@ public interface DataType extends TypeDef {
     /**
      * <p>This method is equivalent to {@code   DataType.from(typeName,false)} :
      * <p><strong>NOTE</strong>: only when {@link ArmyType} couldn't express appropriate type,you use this method.<br/>
-     * It means you should prefer {@link SqlType}.
+     * It means you should prefer {@link SQLType}.
      *
      * @param typeName non-null
      * @return {@link DataType} instance
@@ -76,7 +76,7 @@ public interface DataType extends TypeDef {
     /**
      * <p>Get one {@link DataType} instance
      * <p><strong>NOTE</strong>: only when {@link ArmyType} couldn't express appropriate type,you use this method.<br/>
-     * It means you should prefer {@link SqlType}.
+     * It means you should prefer {@link SQLType}.
      *
      * @param typeName        database data type name,if typeName endWith '[]',then {@link DataType#isArray()} always return true.
      * @param caseSensitivity if false ,then {@link DataType#typeName()} always return upper case.

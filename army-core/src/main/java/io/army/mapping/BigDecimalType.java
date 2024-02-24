@@ -71,7 +71,7 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return mapToSqlType(this, meta);
+        return mapToDataType(this, meta);
     }
 
     @Override
@@ -125,26 +125,29 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
         return value;
     }
 
-    public static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    public static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.DECIMAL;
+                dataType = MySQLType.DECIMAL;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.DECIMAL;
+                dataType = PostgreType.DECIMAL;
+                break;
+            case SQLite:
+                dataType = SQLiteType.DECIMAL;
                 break;
             case H2:
-                sqlType = H2DataType.DECIMAL;
+                dataType = H2DataType.DECIMAL;
                 break;
             case Oracle:
-                sqlType = OracleDataType.NUMBER;
+                dataType = OracleDataType.NUMBER;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
 
         }
-        return sqlType;
+        return dataType;
     }
 
 

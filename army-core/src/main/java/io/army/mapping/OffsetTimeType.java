@@ -71,22 +71,25 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.TIME;
+                dataType = MySQLType.TIME;
                 break;
             case PostgreSQL:
-                type = PostgreType.TIMETZ;
+                dataType = PostgreType.TIMETZ;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TIME_WITH_TIMEZONE;
                 break;
             case Oracle:
-                type = OracleDataType.TIMESTAMPTZ;
+                dataType = OracleDataType.TIMESTAMPTZ;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return type;
+        return dataType;
     }
 
     @Override

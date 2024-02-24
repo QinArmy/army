@@ -30,7 +30,7 @@ import io.army.session.ParamException;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util.ArrayUtils;
@@ -103,17 +103,17 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      *                        <li>{@code  java.sql.ResultSetMetaData#getTableName(int)}</li>
      *                        <li>{@code io.jdbd.result.ResultRowMeta#getDataType(int)}</li>
      *                   </ul>
-     *                   if dataType is {@link SqlType} instance,then dataType representing appropriate database build-in data type.
+     *                   if dataType is {@link SQLType} instance,then dataType representing appropriate database build-in data type.
      * @param targetType the target type for application developer
      * @throws NoMatchMappingException throw when not found compatible {@link MappingType}
      */
     public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType)
             throws NoMatchMappingException {
-        if (!(dataType instanceof SqlType)) {
+        if (!(dataType instanceof SQLType)) {
             throw noMatchCompatibleMapping(this, targetType);
         }
 
-        final ArmyType armyType = ((SqlType) dataType).armyType();
+        final ArmyType armyType = ((SQLType) dataType).armyType();
         final MappingType type;
         switch (armyType) {
             case BOOLEAN:
@@ -386,7 +386,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                     type = LocalTimeType.INSTANCE;
                 } else if (targetType == OffsetTime.class) {
 
-                    switch (((SqlType) dataType).database()) {
+                    switch (((SQLType) dataType).database()) {
                         case MySQL:
                             type = OffsetTimeType.INSTANCE;
                             break;
@@ -445,7 +445,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                     type = LocalDateTimeType.INSTANCE;
                 } else if (targetType == String.class) {
                     type = StringType.INSTANCE;
-                } else switch (((SqlType) dataType).database()) {
+                } else switch (((SQLType) dataType).database()) {
                     case MySQL: {
                         if (targetType == OffsetDateTime.class) {
                             type = OffsetDateTimeType.INSTANCE;
@@ -524,7 +524,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     /**
      * @param dataType from {@link #map(ServerMeta)}
      * @param source   never null
-     * @return non-null, the instance of the type that {@link SqlType} allow.
+     * @return non-null, the instance of the type that {@link SQLType} allow.
      */
     public abstract Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException;
 

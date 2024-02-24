@@ -23,7 +23,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 
@@ -86,18 +86,21 @@ public final class MediumTextType extends ArmyTextType {
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.MEDIUMTEXT;
+                dataType = MySQLType.MEDIUMTEXT;
                 break;
             case PostgreSQL:
-                type = PostgreType.TEXT;
+                dataType = PostgreType.TEXT;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TEXT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return type;
+        return dataType;
     }
 
 

@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 
 /**
  * <p>This class map {@code byte[]} to sql binary type.
@@ -61,19 +61,22 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.BINARY;
+                dataType = MySQLType.BINARY;
                 break;
             case PostgreSQL:
-                type = PostgreType.BYTEA;
+                dataType = PostgreType.BYTEA;
+                break;
+            case SQLite:
+                dataType = SQLiteType.VARBINARY;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return type;
+        return dataType;
     }
 
     @Override

@@ -25,7 +25,7 @@ import io.army.mapping.MappingType;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public enum H2DataType implements SqlType {
+public enum H2DataType implements SQLType {
 
 
     BOOLEAN,
@@ -58,13 +58,13 @@ public enum H2DataType implements SqlType {
 
     @Nullable
     @Override
-    public SqlType elementType() {
+    public SQLType elementType() {
         return null;
     }
 
     @Override
     public MappingType mapType(Supplier<? extends ArmyException> errorHandler) {
-        return SqlType.super.mapType(errorHandler);
+        return SQLType.super.mapType(errorHandler);
     }
 
 

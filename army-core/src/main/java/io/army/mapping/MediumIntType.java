@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 
 /**
  * <p>
@@ -75,21 +75,23 @@ public final class MediumIntType extends _NumericType {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SqlType sqlType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.MEDIUMINT;
+                dataType = MySQLType.MEDIUMINT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.INTEGER;
+                dataType = PostgreType.INTEGER;
                 break;
-
+            case SQLite:
+                dataType = SQLiteType.MEDIUMINT;
+                break;
             case Oracle:
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return sqlType;
+        return dataType;
     }
 
     @Override

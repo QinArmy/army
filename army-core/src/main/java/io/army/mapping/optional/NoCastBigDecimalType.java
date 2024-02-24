@@ -55,7 +55,7 @@ public final class NoCastBigDecimalType extends _NumericType implements MappingT
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return BigDecimalType.mapToSqlType(this, meta);
+        return BigDecimalType.mapToDataType(this, meta);
     }
 
     @Override

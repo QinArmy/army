@@ -23,7 +23,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 import io.army.type.TextPath;
 import io.army.util.ClassUtils;
 
@@ -77,13 +77,16 @@ public final class LongText extends _ArmyBuildInMapping implements MappingType.S
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType dataType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
                 dataType = MySQLType.LONGTEXT;
                 break;
             case PostgreSQL:
                 dataType = PostgreType.TEXT;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TEXT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

@@ -22,7 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLiteType;
 
 public final class TinyTextType extends ArmyTextType {
 
@@ -55,18 +55,21 @@ public final class TinyTextType extends ArmyTextType {
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        final SqlType sqlType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlType = MySQLType.TINYTEXT;
+                dataType = MySQLType.TINYTEXT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.TEXT;
+                dataType = PostgreType.TEXT;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TEXT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return sqlType;
+        return dataType;
     }
 
 

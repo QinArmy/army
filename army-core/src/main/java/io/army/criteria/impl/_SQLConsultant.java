@@ -23,7 +23,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.dialect.Database;
 import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ClassUtils;
 
 import javax.annotation.Nullable;
@@ -131,11 +131,11 @@ public abstract class _SQLConsultant {
     }
 
 
-    public static CriteriaException dontSupportPrecision(SqlType type) {
+    public static CriteriaException dontSupportPrecision(SQLType type) {
         return ContextStack.clearStackAndCriteriaError(String.format("%s don't support precision", type));
     }
 
-    public static CriteriaException dontSupportPrecisionAndScale(SqlType type) {
+    public static CriteriaException dontSupportPrecisionAndScale(SQLType type) {
         return ContextStack.clearStackAndCriteriaError(String.format("%s don't support precision and scale", type));
     }
 
