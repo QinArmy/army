@@ -16,7 +16,6 @@
 
 package io.army.session;
 
-import com.alibaba.druid.pool.DruidDataSource;
 import io.army.dialect.Database;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.postgre.PostgreDialect;
@@ -34,7 +33,6 @@ import io.jdbd.session.DatabaseSessionFactory;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 
 public abstract class FactoryUtils {
 
@@ -43,26 +41,11 @@ public abstract class FactoryUtils {
 
 
     public static SyncSessionFactory createArmyBankSyncFactory(final Database database) {
-        final Properties properties = new Properties();
-        properties.put("user", "army_w");
-        properties.put("password", "army123");
 
-        if (MyPaths.isMyLocal()) {
-            properties.put("sslMode", "DISABLED");
-            if (database == Database.MySQL) {
-                properties.put("allowMultiQueries", "true");
-                properties.put("allowLoadLocalInfile", "true");
-            }
-
-        }
-
-        final DruidDataSource dataSource;
-        dataSource = new DruidDataSource();
-        DataSourceUtils.druidDataSourceProps(dataSource, mapDatabaseToUrl(database), properties);
         return SyncFactoryBuilder.builder()
                 .name(mapDatabaseToFactoryName(database))
                 .packagesToScan(Collections.singletonList("io.army.example.bank.domain"))
-                .datasource(dataSource)
+                .datasource(DataSourceUtils.createDataSource(database))
                 .environment(createEnvironment(database))
                 .jsonCodec(FastJsonCodec.getInstance())
                 .fieldGeneratorFactory(new SimpleFieldGeneratorFactory())
@@ -154,21 +137,6 @@ public abstract class FactoryUtils {
         return name;
     }
 
-
-    private static String mapDatabaseToUrl(final Database database) {
-        final String url;
-        switch (database) {
-            case MySQL:
-                url = "jdbc:mysql://localhost:3306/army_bank";
-                break;
-            case PostgreSQL:
-                url = "jdbc:postgresql://localhost:5432/army_bank";
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(database);
-        }
-        return url;
-    }
 
     private static String mapDatabaseToJdbdUrl(final Database database) {
         final String url;

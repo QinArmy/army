@@ -464,10 +464,10 @@ final class PostgreDialectParser extends PostgreParser {
             _PostgreConsultant.assertMerge((PostgreMerge) statement);
             context = createJoinableMergeContext(outerContext, (_Merge) statement, sessionSpec);
             parseMerge((_PostgreMerge) statement, (_JoinableMergeContext) context);
-        } else if (statement instanceof _PostgreDmlCommand._SetCommand) {
-            _PostgreConsultant.assertSetStmt((_PostgreDmlCommand._SetCommand) statement);
+        } else if (statement instanceof _PostgreCommand._SetCommand) {
+            _PostgreConsultant.assertSetStmt((_PostgreCommand._SetCommand) statement);
             context = createOtherDmlContext(outerContext, f -> false, sessionSpec);
-            parseSetStmt(((_PostgreDmlCommand._SetCommand) statement).paramValuePair(), context);
+            parseSetStmt(((_PostgreCommand._SetCommand) statement).paramValuePair(), context);
         } else {
             throw _Exceptions.unexpectedStatement(statement);
         }
@@ -477,7 +477,29 @@ final class PostgreDialectParser extends PostgreParser {
     @Override
     protected _StmtContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement,
                                             SessionSpec sessionSpec) {
-        return super.handleDialectDql(outerContext, statement, sessionSpec);
+        final _StmtContext context;
+        if (statement instanceof _PostgreCommand._ShowCommand) {
+            _PostgreConsultant.assertShowStmt((_PostgreCommand._ShowCommand) statement);
+            context = createOtherDqlContext(outerContext, ((_PostgreCommand._ShowCommand) statement).selectionList(), f -> false, sessionSpec);
+
+            final StringBuilder sqlBuilder;
+            if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+
+            sqlBuilder.append("SHOW");
+            final Object parameter = ((_PostgreCommand._ShowCommand) statement).parameter();
+            if (parameter instanceof String) {
+                sqlBuilder.append(_Constant.SPACE);
+                identifier((String) parameter, sqlBuilder);
+            } else {
+                assert parameter == SQLs.ALL;
+                sqlBuilder.append(SQLs.ALL.spaceRender());
+            }
+        } else {
+            throw _Exceptions.unexpectedStatement(statement);
+        }
+        return context;
     }
 
 
@@ -487,7 +509,7 @@ final class PostgreDialectParser extends PostgreParser {
      * @see #handleDialectDml(_SqlContext, DmlStatement, SessionSpec)
      * @see <a href="https://www.postgresql.org/docs/current/sql-set.html">SET — change a run-time parameter</a>
      */
-    private void parseSetStmt(final _PostgreDmlCommand._ParamValue pair, final _SqlContext context) {
+    private void parseSetStmt(final _PostgreCommand._ParamValue pair, final _SqlContext context) {
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
@@ -542,6 +564,7 @@ final class PostgreDialectParser extends PostgreParser {
         }
 
     }
+
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-merge.html">MERGE — conditionally insert, update, or delete rows of a table</a>

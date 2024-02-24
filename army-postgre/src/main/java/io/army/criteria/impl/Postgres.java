@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.DqlCommand;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.postgre.*;
@@ -357,6 +358,20 @@ public abstract class Postgres extends PostgreSyntax {
      */
     public static PostgreCommand._SetClause setStmt() {
         return PostgreSets.setStmt();
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-show.html">SHOW — show the value of a run-time parameter</a>
+     */
+    public static DqlCommand show(String name) {
+        return PostgreCommands.show(name);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-show.html">SHOW — show the value of a run-time parameter</a>
+     */
+    public static DqlCommand showAll() {
+        return PostgreCommands.showAll();
     }
 
 

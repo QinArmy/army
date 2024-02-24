@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.impl.inner.postgre._PostgreDmlCommand;
+import io.army.criteria.impl.inner.postgre._PostgreCommand;
 import io.army.criteria.postgre.PostgreCursor;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.dialect.Database;
@@ -107,8 +107,14 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertSetStmt(final _PostgreDmlCommand._SetCommand stmt) {
+    public static void assertSetStmt(final _PostgreCommand._SetCommand stmt) {
         if (!(stmt instanceof PostgreSets)) {
+            throw nonArmyStatement(stmt);
+        }
+    }
+
+    public static void assertShowStmt(final _PostgreCommand._ShowCommand stmt) {
+        if (!(stmt instanceof PostgreCommands.ShowCommand)) {
             throw nonArmyStatement(stmt);
         }
     }

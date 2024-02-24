@@ -318,12 +318,12 @@ abstract class ArmyParser implements DialectParser {
 
     @Override
     public final Stmt dialectDml(final DmlStatement statement, final SessionSpec sessionSpec) {
-        return this.createDialectStmt(this.handleDialectDml(null, statement, sessionSpec));
+        return createDialectStmt(handleDialectDml(null, statement, sessionSpec));
     }
 
     @Override
     public final Stmt dialectDql(final DqlStatement statement, final SessionSpec sessionSpec) {
-        throw new UnsupportedOperationException();
+        return createDialectStmt(handleDialectDql(null, statement, sessionSpec));
     }
 
 
@@ -942,7 +942,6 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, SessionSpec, _DeleteContext)
      */
-    @Nullable
     protected void parseDomainChildDelete(_SingleDelete delete, _DeleteContext context) {
         throw new UnsupportedOperationException();
     }
@@ -1031,6 +1030,14 @@ abstract class ArmyParser implements DialectParser {
                                                            final SessionSpec sessionSpec) {
         return OtherDmlContext.create(outerContext, predicate, this, sessionSpec);
     }
+
+    protected final _OtherDqlContext createOtherDqlContext(@Nullable _SqlContext outerContext,
+                                                           List<? extends Selection> selectionList,
+                                                           Predicate<FieldMeta<?>> predicate,
+                                                           SessionSpec sessionSpec) {
+        return OtherDqlContext.create(outerContext, selectionList, predicate, this, sessionSpec);
+    }
+
 
     protected final _CursorStmtContext createDeclareCursorContext(@Nullable _SqlContext outerContext, _DeclareCursor stmt,
                                                                   SessionSpec sessionSpec) {

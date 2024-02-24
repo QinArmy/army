@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.DmlCommand;
-import io.army.criteria.impl.inner.postgre._PostgreDmlCommand;
+import io.army.criteria.impl.inner.postgre._PostgreCommand;
 import io.army.criteria.postgre.PostgreCommand;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 final class PostgreSets extends CriteriaSupports.StatementMockSupport
         implements PostgreCommand,
         PostgreCommand._SetClause,
-        _PostgreDmlCommand._SetCommand,
+        _PostgreCommand._SetCommand,
         DmlCommand,
         Statement._AsCommandClause<DmlCommand> {
 

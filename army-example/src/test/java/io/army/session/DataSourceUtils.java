@@ -18,6 +18,8 @@ package io.army.session;
 
 
 import com.alibaba.druid.pool.DruidDataSource;
+import io.army.dialect.Database;
+import io.army.util._Exceptions;
 
 import java.util.Properties;
 
@@ -29,8 +31,26 @@ public abstract class DataSourceUtils {
     }
 
 
-    public static DruidDataSource druidDataSourceProps(DruidDataSource ds, String url, Properties properties) {
+    public static DruidDataSource createDataSource(final Database database) {
 
+        final Properties properties = new Properties();
+        properties.put("user", "army_w");
+        properties.put("password", "army123");
+
+        if (MyPaths.isMyLocal()) {
+            properties.put("sslMode", "DISABLED");
+            if (database == Database.MySQL) {
+                properties.put("allowMultiQueries", "true");
+                properties.put("allowLoadLocalInfile", "true");
+            }
+
+        }
+
+        final String url;
+        url = mapDatabaseToUrl(database);
+
+        final DruidDataSource ds;
+        ds = new DruidDataSource();
 
         ds.setUrl(url);
         ds.setDriverClassName(mapDriverName(url));
@@ -51,6 +71,7 @@ public abstract class DataSourceUtils {
         return ds;
     }
 
+
     private static String mapDriverName(final String url) {
         final String driverName;
         if (url.startsWith("jdbc:mysql:")) {
@@ -61,6 +82,22 @@ public abstract class DataSourceUtils {
             throw new IllegalArgumentException();
         }
         return driverName;
+    }
+
+
+    static String mapDatabaseToUrl(final Database database) {
+        final String url;
+        switch (database) {
+            case MySQL:
+                url = "jdbc:mysql://localhost:3306/army_bank";
+                break;
+            case PostgreSQL:
+                url = "jdbc:postgresql://localhost:5432/army_bank";
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(database);
+        }
+        return url;
     }
 
 

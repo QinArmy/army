@@ -14,33 +14,11 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl.inner.postgre;
+package io.army.criteria.dialect;
 
-import io.army.criteria.impl.SQLs;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.SimpleDqlStatement;
 
-import java.util.List;
-
-public interface _PostgreDmlCommand extends _Statement {
-
-
-    interface _SetCommand extends _PostgreDmlCommand {
-
-        _ParamValue paramValuePair();
-
-    }
-
-    interface _ParamValue {
-
-        SQLs.VarScope scope();
-
-        String name();
-
-        Object word();
-
-        List<Object> valueList();
-
-    }
+public interface DqlCommand extends SimpleDqlStatement {
 
 
 }
