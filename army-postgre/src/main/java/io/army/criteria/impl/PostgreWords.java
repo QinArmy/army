@@ -280,31 +280,6 @@ abstract class PostgreWords {
         }
     }//KeyWordDistinct
 
-    enum KeyWordMaterialized implements Postgres.WordMaterialized {
-
-        MATERIALIZED(" MATERIALIZED"),
-        NOT_MATERIALIZED(" NOT MATERIALIZED");
-
-        private final String spaceWord;
-
-        KeyWordMaterialized(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return PostgreSyntax.keyWordToString(this);
-        }
-
-
-    }//KeyWordMaterialized
-
     enum FromNormalizedWord implements SQLs.BooleanTestWord, SQLs.ArmyKeyWord {
         FROM_NORMALIZED(" FROM NORMALIZED"),
         NORMALIZED(" NORMALIZED");

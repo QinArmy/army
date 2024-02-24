@@ -17,7 +17,7 @@
 package io.army.criteria.impl.inner.postgre;
 
 import io.army.criteria.Selection;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelfDescribed;
 
@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 public interface _PostgreCte extends _Cte {
 
     @Nullable
-    Postgres.WordMaterialized modifier();
+    SQLs.WordMaterialized modifier();
 
     @Nullable
     _SearchClause searchClause();

@@ -382,7 +382,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
         <R extends _CteComma<I>> R as(Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
 
-        <R extends _CteComma<I>> R as(@Nullable Postgres.WordMaterialized modifier,
+        <R extends _CteComma<I>> R as(@Nullable SQLs.WordMaterialized modifier,
                                       Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
 
     }

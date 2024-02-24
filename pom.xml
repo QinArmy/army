@@ -23,6 +23,7 @@
         <module>army-annotation</module>
         <module>army-example</module>
         <module>army-postgre</module>
+        <module>army-sqlite</module>
     </modules>
 
     <name>army</name>

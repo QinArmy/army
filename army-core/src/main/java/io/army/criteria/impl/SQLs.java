@@ -87,6 +87,11 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final BooleanTestWord UNKNOWN = SqlWords.KeyWordUnknown.UNKNOWN;
 
+
+    public static final WordMaterialized MATERIALIZED = SqlWords.KeyWordMaterialized.MATERIALIZED;
+
+    public static final WordMaterialized NOT_MATERIALIZED = SqlWords.KeyWordMaterialized.NOT_MATERIALIZED;
+
     /**
      * package field
      */
@@ -848,6 +853,10 @@ public abstract class SQLs extends SQLSyntax {
     public interface VarScope {
 
         String name();
+    }
+
+    public interface WordMaterialized extends SQLWords {
+
     }
 
 

@@ -1290,7 +1290,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         private List<String> columnAliasList;
 
-        private Postgres.WordMaterialized modifier;
+        private SQLs.WordMaterialized modifier;
 
 
         private StaticCteAsClause(String name, StaticCteComma<I> comma) {
@@ -1319,9 +1319,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public <R extends _CteComma<I>> R as(@Nullable Postgres.WordMaterialized modifier,
+        public <R extends _CteComma<I>> R as(@Nullable SQLs.WordMaterialized modifier,
                                              Function<_StaticCteComplexCommandSpec<I>, R> function) {
-            if (modifier != null && modifier != Postgres.MATERIALIZED && modifier != Postgres.NOT_MATERIALIZED) {
+            if (modifier != null && modifier != SQLs.MATERIALIZED && modifier != SQLs.NOT_MATERIALIZED) {
                 throw CriteriaUtils.errorModifier(this.comma.context, modifier);
             }
             this.modifier = modifier;

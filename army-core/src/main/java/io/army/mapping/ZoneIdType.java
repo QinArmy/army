@@ -23,11 +23,10 @@ import io.army.sqltype.DataType;
 import java.time.*;
 
 /**
- * <p>
- * This class is mapping class of {@link ZoneId}.
- * * @since 0.6.0
+ * <p>This class is mapping class of {@link ZoneId}.
+ * @since 0.6.0
  */
-public final class ZoneIdType extends _ArmyNoInjectionMapping {
+public final class ZoneIdType extends _ArmyNoInjectionMapping implements MappingType.SqlStringType {
 
     public static ZoneIdType from(final Class<?> javaType) {
         if (!ZoneId.class.isAssignableFrom(javaType)) {
@@ -47,6 +46,11 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     @Override
     public Class<?> javaType() {
         return ZoneId.class;
+    }
+
+    @Override
+    public LengthType lengthType() {
+        return LengthType.DEFAULT;
     }
 
     @Override

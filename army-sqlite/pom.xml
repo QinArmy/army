@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.qinarmy</groupId>
+        <artifactId>army</artifactId>
+        <version>0.6.7-SNAPSHOT</version>
+    </parent>
+
+    <groupId>io.jdbs</groupId>
+    <artifactId>army-sqlite</artifactId>
+
+    <description>Army sqlite module,provide sqlite dialect api and dialect parser.</description>
+
+    <url>https://github.com/QinArmy/army</url>
+
+    <organization>
+        <name>QinArmy</name>
+        <url>https://qinarmy.io</url>
+    </organization>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>io.qinarmy</groupId>
+            <artifactId>army-core</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

@@ -149,7 +149,7 @@ final class PostgreDialectParser extends PostgreParser {
 
             materialized = cte.modifier();
             if (materialized != null) {
-                assert materialized == Postgres.MATERIALIZED || materialized == Postgres.NOT_MATERIALIZED;
+                assert materialized == SQLs.MATERIALIZED || materialized == SQLs.NOT_MATERIALIZED;
                 sqlBuilder.append(materialized.spaceRender());
             }
 

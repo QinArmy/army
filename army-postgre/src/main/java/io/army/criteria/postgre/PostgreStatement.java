@@ -19,7 +19,7 @@ package io.army.criteria.postgre;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.impl.SQLs;
 import io.army.mapping.MappingType;
 
 import javax.annotation.Nullable;
@@ -296,7 +296,7 @@ public interface PostgreStatement extends DialectStatement {
 
     interface _PostgreDynamicCteAsClause<T extends Item, R extends Item> extends _DynamicCteAsClause<T, R> {
 
-        R as(@Nullable Postgres.WordMaterialized modifier, Function<T, R> function);
+        R as(@Nullable SQLs.WordMaterialized modifier, Function<T, R> function);
 
     }
 

@@ -45,6 +45,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.file.Path;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
@@ -274,6 +275,12 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                     } else {
                         type = NameEnumType.from(targetType);
                     }
+                } else if (targetType == Path.class) {
+                    type = PathType.INSTANCE;
+                } else if (targetType == ZoneOffset.class) {
+                    type = ZoneOffsetType.INSTANCE;
+                } else if (targetType == ZoneId.class) {
+                    type = ZoneIdType.INSTANCE;
                 } else {
                     throw noMatchCompatibleMapping(this, targetType);
                 }
@@ -295,12 +302,22 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                 }
             }
             break;
-            case JSON:
-                type = JsonType.from(targetType);
-                break;
-            case JSONB:
-                type = JsonbType.from(targetType);
-                break;
+            case JSON: {
+                if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else {
+                    type = JsonType.from(targetType);
+                }
+            }
+            break;
+            case JSONB: {
+                if (targetType == String.class) {
+                    type = StringType.INSTANCE;
+                } else {
+                    type = JsonbType.from(targetType);
+                }
+            }
+            break;
             case XML:
                 type = XmlType.from(targetType);
                 break;

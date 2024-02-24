@@ -1055,4 +1055,29 @@ abstract class SqlWords {
 
 
     } // KeyWordVariableType
+
+    enum KeyWordMaterialized implements SQLs.WordMaterialized {
+
+        MATERIALIZED(" MATERIALIZED"),
+        NOT_MATERIALIZED(" NOT MATERIALIZED");
+
+        private final String spaceWord;
+
+        KeyWordMaterialized(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return SQLs.keyWordsToString(this);
+        }
+
+
+    } // KeyWordMaterialized
 }

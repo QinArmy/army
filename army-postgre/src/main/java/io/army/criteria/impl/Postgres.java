@@ -44,8 +44,6 @@ public abstract class Postgres extends PostgreSyntax {
 
     public static final Modifier ALL = PostgreWords.SelectModifier.ALL;
     public static final WordDistinct DISTINCT = PostgreWords.KeyWordDistinct.DISTINCT;
-    public static final WordMaterialized MATERIALIZED = PostgreWords.KeyWordMaterialized.MATERIALIZED;
-    public static final WordMaterialized NOT_MATERIALIZED = PostgreWords.KeyWordMaterialized.NOT_MATERIALIZED;
     public static final SQLs.BooleanTestWord FROM_NORMALIZED = PostgreWords.FromNormalizedWord.FROM_NORMALIZED;
     public static final SQLs.BooleanTestWord NORMALIZED = PostgreWords.FromNormalizedWord.NORMALIZED;
 
@@ -524,10 +522,6 @@ public abstract class Postgres extends PostgreSyntax {
     }
 
     public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
-
-    }
-
-    public interface WordMaterialized extends SQLWords {
 
     }
 

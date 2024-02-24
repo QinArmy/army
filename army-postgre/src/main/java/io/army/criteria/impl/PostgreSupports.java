@@ -769,7 +769,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final List<String> columnAliasList;
 
-        private final Postgres.WordMaterialized modifier;
+        private final SQLs.WordMaterialized modifier;
 
         final SubStatement subStatement;
 
@@ -780,12 +780,12 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
         PostgreCte(String name, @Nullable List<String> columnAliasList,
-                   @Nullable Postgres.WordMaterialized modifier, SubStatement subStatement) {
+                   @Nullable SQLs.WordMaterialized modifier, SubStatement subStatement) {
             this(name, columnAliasList, modifier, subStatement, null, null);
         }
 
         PostgreCte(String name, final @Nullable List<String> columnAliasList,
-                   @Nullable Postgres.WordMaterialized modifier, SubStatement subStatement,
+                   @Nullable SQLs.WordMaterialized modifier, SubStatement subStatement,
                    final @Nullable _SearchClause searchClause, final @Nullable _CycleClause cycleClause) {
             this.name = name;
             this.columnAliasList = _Collections.safeUnmodifiableList(columnAliasList);
@@ -856,7 +856,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public Postgres.WordMaterialized modifier() {
+        public SQLs.WordMaterialized modifier() {
             return this.modifier;
         }
 
@@ -963,7 +963,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final PostgreCteBuilder builder;
 
-        private Postgres.WordMaterialized modifier;
+        private SQLs.WordMaterialized modifier;
 
         /**
          * @see PostgreCteBuilder#subSingleInsert(String)
@@ -979,7 +979,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable SQLs.WordMaterialized modifier,
                                                              Function<PostgreInsert._DynamicSubOptionSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreInserts.dynamicSubInsert(this.context, this::subInsertEnd));
@@ -1001,7 +1001,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final PostgreCteBuilder builder;
 
-        private Postgres.WordMaterialized modifier;
+        private SQLs.WordMaterialized modifier;
 
         /**
          * @see PostgreCteBuilder#subSingleUpdate(String)
@@ -1017,7 +1017,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable SQLs.WordMaterialized modifier,
                                                              Function<PostgreUpdate._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreUpdates.subSimpleUpdate(this.context, this::subUpdateEnd));
@@ -1039,7 +1039,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final PostgreCteBuilder builder;
 
-        private Postgres.WordMaterialized modifier;
+        private SQLs.WordMaterialized modifier;
 
         /**
          * @see PostgreCteBuilder#subSingleDelete(String)
@@ -1055,7 +1055,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable SQLs.WordMaterialized modifier,
                                                              Function<PostgreDelete._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreDeletes.subSimpleDelete(this.context, this::subDeleteEnd));
@@ -1077,7 +1077,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final PostgreCteBuilder builder;
 
-        private Postgres.WordMaterialized modifier;
+        private SQLs.WordMaterialized modifier;
 
         /**
          * @see PostgreCteBuilder#subQuery(String)
@@ -1094,7 +1094,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreQuery._DynamicCteSearchSpec as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreQuery.WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
+        public PostgreQuery._DynamicCteSearchSpec as(@Nullable SQLs.WordMaterialized modifier, Function<PostgreQuery.WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
             this.modifier = modifier;
             return ClauseUtils.invokeFunction(function, PostgreQueries.subQuery(this.builder.context, this::subQueryEnd));
         }
