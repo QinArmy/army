@@ -27,6 +27,7 @@ import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Locale;
 
 /**
  * <p>This class is mapping class of {@link Boolean}.
@@ -41,7 +42,8 @@ import java.math.BigInteger;
  *     <li>{@link String} , true or false ,case insensitive</li>
  * </ul>
  *  to {@link Boolean},if overflow,throw {@link io.army.ArmyException}
- ** @since 0.6.0
+ * * @since 0.6.0
+ *
  * @see <a href="https://www.postgresql.org/docs/current/catalog-pg-type.html">Postgre pg_type table ,oid : 16</a>
  */
 public final class BooleanType extends _ArmyNoInjectionMapping {
@@ -111,33 +113,46 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
 
-    public static boolean toBoolean(final MappingType type, final DataType dataType, final Object nonNull,
+    public static boolean toBoolean(final MappingType type, final DataType dataType, final Object source,
                                     final ErrorHandler errorHandler) {
         final boolean value;
-        if (nonNull instanceof Boolean) {
-            value = (Boolean) nonNull;
-        } else if (nonNull instanceof Integer) {
-            value = ((Integer) nonNull) != 0;
-        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
-            value = ((Number) nonNull).intValue() != 0;
-        } else if (nonNull instanceof Long) {
-            value = ((Long) nonNull) != 0L;
-        } else if (nonNull instanceof String) {
-            if (TRUE.equalsIgnoreCase((String) nonNull)) {
-                value = true;
-            } else if (FALSE.equalsIgnoreCase((String) nonNull)) {
-                value = false;
-            } else {
-                throw errorHandler.apply(type, dataType, nonNull, null);
+        if (source instanceof Boolean) {
+            value = (Boolean) source;
+        } else if (source instanceof Integer) {
+            value = ((Integer) source) != 0;
+        } else if (source instanceof Short || source instanceof Byte) {
+            value = ((Number) source).intValue() != 0;
+        } else if (source instanceof Long) {
+            value = ((Long) source) != 0L;
+        } else if (source instanceof String) {
+            switch (((String) source).toLowerCase(Locale.ROOT)) {
+                case "true":
+                case "on":
+                case "yes":
+                case "1":
+                case "y":
+                case "t":
+                    value = true;
+                    break;
+                case "false":
+                case "off":
+                case "no":
+                case "n":
+                case "f":
+                case "0":
+                    value = false;
+                    break;
+                default:
+                    throw errorHandler.apply(type, dataType, source, null);
             }
-        } else if (nonNull instanceof BigDecimal) {
-            value = BigDecimal.ZERO.compareTo((BigDecimal) nonNull) != 0;
-        } else if (nonNull instanceof BigInteger) {
-            value = BigInteger.ZERO.compareTo((BigInteger) nonNull) != 0;
-        } else if (nonNull instanceof Double || nonNull instanceof Float) {
-            value = Double.compare(((Number) nonNull).doubleValue(), 0.0D) != 0;
+        } else if (source instanceof BigDecimal) {
+            value = BigDecimal.ZERO.compareTo((BigDecimal) source) != 0;
+        } else if (source instanceof BigInteger) {
+            value = BigInteger.ZERO.compareTo((BigInteger) source) != 0;
+        } else if (source instanceof Double || source instanceof Float) {
+            value = Double.compare(((Number) source).doubleValue(), 0.0D) != 0;
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }
