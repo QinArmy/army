@@ -332,8 +332,8 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
     }
 
     @Override
-    DataType getDataType(ResultSetMetaData meta, int indexBasedOne) throws SQLException {
-        return null;
+    DataType getDataType(final ResultSetMetaData meta, final int indexBasedOne) throws SQLException {
+        return getSQLiteType(meta.getColumnTypeName(indexBasedOne));
     }
 
     @Nullable

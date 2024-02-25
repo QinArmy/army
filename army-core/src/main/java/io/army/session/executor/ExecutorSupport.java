@@ -772,61 +772,12 @@ public abstract class ExecutorSupport {
         return type;
     }
 
-    protected static void localStartOptionMap(final Map<Option<?>, Object> map, final TransactionOption option) {
-        map.put(Option.START_MILLIS, System.currentTimeMillis());
-        map.put(Option.DEFAULT_ISOLATION, option.isolation() == null);
 
-        final Integer timeoutMillis;
-        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-        if (timeoutMillis != null) {
-            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
+    protected final DataType getSQLiteType(final String typeName) {
+        switch (typeName.toUpperCase(Locale.ROOT)) {
+
         }
-        final String label;
-        label = option.valueOf(Option.LABEL);
-        if (label != null) {
-            map.put(Option.LABEL, label);
-        }
-    }
-
-
-    protected static void xaStartOptionMap(final Map<Option<?>, Object> map, final Xid xid,
-                                           final TransactionOption option, final int flags) {
-
-        map.put(Option.XID, xid);
-        map.put(Option.XA_FLAGS, flags);
-        map.put(Option.XA_STATES, XaStates.ACTIVE);
-        map.put(Option.START_MILLIS, System.currentTimeMillis());
-
-        map.put(Option.DEFAULT_ISOLATION, option.isolation() == null);
-
-        final Integer timeoutMillis;
-        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
-        if (timeoutMillis != null) {
-            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-        }
-
-        final String label;
-        label = option.valueOf(Option.LABEL);
-        if (label != null) {
-            map.put(Option.LABEL, label);
-        }
-
-    }
-
-    protected static void xaEndOptionMap(final Map<Option<?>, Object> map, final TransactionInfo info, final int flags) {
-
-        map.put(Option.XID, info.nonNullOf(Option.XID));
-        map.put(Option.XA_FLAGS, flags);
-        map.put(Option.XA_STATES, XaStates.IDLE);
-        map.put(Option.START_MILLIS, info.nonNullOf(Option.START_MILLIS));
-
-        map.put(Option.DEFAULT_ISOLATION, info.nonNullOf(Option.DEFAULT_ISOLATION));
-
-        final Integer timeoutMillis;
-        timeoutMillis = info.valueOf(Option.TIMEOUT_MILLIS);
-        if (timeoutMillis != null) {
-            map.put(Option.TIMEOUT_MILLIS, timeoutMillis);
-        }
+        return null;
     }
 
     /*-------------------below Exception  -------------------*/
