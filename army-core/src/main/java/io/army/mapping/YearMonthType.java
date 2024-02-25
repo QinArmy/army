@@ -19,11 +19,11 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
+import io.army.sqltype.*;
 import io.army.util._TimeUtils;
 
 import java.time.*;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 
 /**
@@ -66,7 +66,21 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return LocalDateType.mapToDataType(this, meta);
+        final DataType dataType;
+        switch (meta.serverDatabase()) {
+            case MySQL:
+                dataType = MySQLType.DATE;
+                break;
+            case PostgreSQL:
+                dataType = PostgreType.DATE;
+                break;
+            case SQLite:
+                dataType = SQLiteType.YEAR_MONTH;
+                break;
+            default:
+                throw MAP_ERROR_HANDLER.apply(this, meta);
+        }
+        return dataType;
     }
 
     @Override
@@ -75,19 +89,29 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public LocalDate beforeBind(DataType dataType, final MappingEnv env, final Object source) {
-        final LocalDate value;
-        if (source instanceof YearMonth) {
-            final YearMonth v = (YearMonth) source;
-            value = LocalDate.of(v.getYear(), v.getMonth(), 1);
-        } else if (source instanceof LocalDate) {
-            value = (LocalDate) source;
-        } else if (source instanceof LocalDateTime) {
-            value = ((LocalDateTime) source).toLocalDate();
-        } else {
-            final YearMonth v;
-            v = toYearMonth(this, dataType, source, PARAM_ERROR_HANDLER);
-            value = LocalDate.of(v.getYear(), v.getMonth(), 1);
+    public Temporal beforeBind(DataType dataType, final MappingEnv env, final Object source) {
+        final Temporal value;
+        switch (((SQLType) dataType).database()) {
+            case MySQL:
+            case PostgreSQL: {
+                if (source instanceof LocalDate) {
+                    value = (LocalDate) source;
+                } else if (source instanceof LocalDateTime
+                        || source instanceof OffsetDateTime
+                        || source instanceof ZonedDateTime) {
+                    value = LocalDate.from((TemporalAccessor) source);
+                } else {
+                    final YearMonth v;
+                    v = toYearMonth(this, dataType, source, PARAM_ERROR_HANDLER);
+                    value = LocalDate.of(v.getYear(), v.getMonth(), 1);
+                }
+            }
+            break;
+            case SQLite:
+                value = toYearMonth(this, dataType, source, PARAM_ERROR_HANDLER);
+                break;
+            default:
+                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
     }

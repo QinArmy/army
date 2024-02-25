@@ -20,10 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.*;
 
 import java.util.UUID;
 
@@ -62,6 +59,8 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
                 dataType = MySQLType.CHAR;
                 break;
             case SQLite:
+                dataType = SQLiteType.VARCHAR;
+                break;
             case H2:
             case Oracle:
             default:
@@ -82,7 +81,8 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
             case PostgreSQL:
                 value = toUUID(dataType, source, PARAM_ERROR_HANDLER);
                 break;
-            case MySQL: {
+            case MySQL:
+            case SQLite: {
                 if (source instanceof UUID) {
                     value = source.toString();
                 } else if (source instanceof String) {
@@ -97,7 +97,6 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
                 }
             }
             break;
-            case SQLite:
             default:
                 throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }

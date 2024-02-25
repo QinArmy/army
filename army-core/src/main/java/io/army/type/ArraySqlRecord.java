@@ -21,7 +21,7 @@ import java.util.Collection;
 
 public final class ArraySqlRecord extends ArrayList<Object> implements SqlRecord {
 
-    public static ArraySqlRecord create(int initialCapacity) {
+    public static ArraySqlRecord forSize(int initialCapacity) {
         return new ArraySqlRecord(initialCapacity);
     }
 
@@ -29,7 +29,7 @@ public final class ArraySqlRecord extends ArrayList<Object> implements SqlRecord
         return new ArraySqlRecord();
     }
 
-    public static ArraySqlRecord create(Collection<?> c) {
+    public static ArraySqlRecord from(Collection<?> c) {
         return new ArraySqlRecord(c);
     }
 

@@ -18,10 +18,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.*;
 
 /**
  * <p>
@@ -59,37 +56,50 @@ public final class UnsignedTinyIntType extends _NumericType._UnsignedIntegerType
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SQLType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.TINYINT_UNSIGNED;
+                dataType = MySQLType.TINYINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                type = PostgreType.SMALLINT;
+                dataType = PostgreType.SMALLINT;
                 break;
             case Oracle:
+            case SQLite:
+                dataType = SQLiteType.INTEGER;
+                break;
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return type;
+        return dataType;
     }
-
 
 
     @Override
     public Short convert(MappingEnv env, Object source) throws CriteriaException {
-        return (short) IntegerType.toInt(this, map(env.serverMeta()), source, 0, 0xFF, PARAM_ERROR_HANDLER);
+        return (short) UnsignedIntegerType.toUnsignedInt(this, map(env.serverMeta()), source, 0xFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Short beforeBind(DataType dataType, MappingEnv env, Object source) {
-        return (short) IntegerType.toInt(this, dataType, source, 0, 0xFF, PARAM_ERROR_HANDLER);
+    public Number beforeBind(final DataType dataType, MappingEnv env, final Object source) {
+        final int v;
+        v = UnsignedIntegerType.toUnsignedInt(this, dataType, source, 0xFF, PARAM_ERROR_HANDLER);
+        final Number value;
+        switch (((SQLType) dataType).database()) {
+            case MySQL:
+            case PostgreSQL:
+                value = (short) v;
+                break;
+            default:
+                value = v;
+        }
+        return value;
     }
 
     @Override
     public Short afterGet(DataType dataType, MappingEnv env, Object source) {
-        return (short) IntegerType.toInt(this, dataType, source, 0, 0xFF, ACCESS_ERROR_HANDLER);
+        return (short) UnsignedIntegerType.toUnsignedInt(this, dataType, source, 0xFF, ACCESS_ERROR_HANDLER);
     }
 
 

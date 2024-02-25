@@ -52,7 +52,7 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
         final List<MappingType> columnTypeList = this.columnTypeList;
         final int columnTypeSize = columnTypeList.size();
 
-        final SqlRecord record = ArraySqlRecord.create(columnTypeSize);
+        final SqlRecord record = ArraySqlRecord.forSize(columnTypeSize);
         final boolean unlimited = columnTypeSize == 0;
 
         DataType columnDataType;

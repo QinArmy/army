@@ -59,7 +59,7 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return UnsignedBigDecimalType.mapToSqlType(this, meta);
+        return UnsignedBigDecimalType.mapToDataType(this, meta);
     }
 
 

@@ -22,6 +22,9 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * @see UnsignedIntegerType
  */
@@ -49,23 +52,73 @@ public final class UnsignedLongType extends _ArmyNoInjectionMapping
 
     @Override
     public DataType map(ServerMeta meta) throws UnsupportedDialectException {
-        return UnsignedSqlIntType.mapToDataType(this, meta);
+        return UnsignedBigintType.mapToDataType(this, meta);
     }
 
     @Override
-    public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        throw new UnsupportedOperationException();
+    public Long convert(MappingEnv env, Object source) throws CriteriaException {
+        return toUnsignedLong(this, map(env.serverMeta()), source, -1L, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        //TODO
-        throw new UnsupportedOperationException();
+    public BigInteger beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return BigInteger.valueOf(toUnsignedLong(this, dataType, source, -1L, PARAM_ERROR_HANDLER));
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        throw new UnsupportedOperationException();
+    public Long afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        return toUnsignedLong(this, dataType, source, -1L, ACCESS_ERROR_HANDLER);
+    }
+
+
+    public static long toUnsignedLong(MappingType type, DataType dataType, final Object source, final long max,
+                                      ErrorHandler errorHandler) {
+        final long value;
+        if (source instanceof Long) {
+            value = (Long) source;
+        } else if (source instanceof Integer
+                || source instanceof Short
+                || source instanceof Byte) {
+            value = ((Number) source).longValue();
+            if (value < 0L) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+        } else if (source instanceof String) {
+            try {
+                value = Long.parseUnsignedLong((String) source);
+            } catch (NumberFormatException e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof BigDecimal) {
+            try {
+                value = Long.parseUnsignedLong(((BigDecimal) source).stripTrailingZeros().toPlainString());
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof BigInteger) {
+            try {
+                value = Long.parseUnsignedLong(source.toString());
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof Double || source instanceof Float) {
+            try {
+                value = Long.parseUnsignedLong(new BigDecimal(source.toString()).stripTrailingZeros().toPlainString());
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof Boolean) {
+            value = ((Boolean) source) ? 1L : 0L;
+        } else {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+
+        if (max != -1L) {
+            if ((max > -1L && value > max) || (max < 0 && value < max)) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+        }
+        return value;
     }
 
 }

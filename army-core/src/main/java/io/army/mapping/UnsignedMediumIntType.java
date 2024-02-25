@@ -21,12 +21,11 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SQLiteType;
 
 
 /**
- * <p>
- * This class is mapping class of {@link Integer}.
+ * <p>This class is mapping class of {@link Integer} to mediumint_unsigned( or integer).
  * This mapping type can convert below java type:
  * <ul>
  *     <li>{@link Byte}</li>
@@ -39,7 +38,8 @@ import io.army.sqltype.SQLType;
  *     <li>{@link String} </li>
  * </ul>
  *  to  (unsigned) int,if overflow,throw {@link io.army.ArmyException}
- ** @since 0.6.0
+ *
+ * @since 0.6.0
  */
 public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerType {
 
@@ -72,35 +72,38 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SQLType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.MEDIUMINT_UNSIGNED;
+                dataType = MySQLType.MEDIUMINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                type = PostgreType.INTEGER;
+                dataType = PostgreType.INTEGER;
+                break;
+            case SQLite:
+                dataType = SQLiteType.INTEGER;
                 break;
             case Oracle:
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return type;
+        return dataType;
     }
 
     @Override
     public Integer convert(MappingEnv env, Object source) throws CriteriaException {
-        return IntegerType.toInt(this, map(env.serverMeta()), source, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
+        return UnsignedIntegerType.toUnsignedInt(this, map(env.serverMeta()), source, MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Integer beforeBind(DataType dataType, MappingEnv env, Object source) {
-        return IntegerType.toInt(this, dataType, source, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
+        return UnsignedIntegerType.toUnsignedInt(this, dataType, source, MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Integer afterGet(DataType dataType, MappingEnv env, Object source) {
-        return IntegerType.toInt(this, dataType, source, 0, MAX_VALUE, ACCESS_ERROR_HANDLER);
+        return UnsignedIntegerType.toUnsignedInt(this, dataType, source, MAX_VALUE, ACCESS_ERROR_HANDLER);
     }
 
 

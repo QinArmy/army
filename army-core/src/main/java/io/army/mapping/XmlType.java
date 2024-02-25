@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SQLiteType;
 import io.army.util._Collections;
 
 import java.util.concurrent.ConcurrentMap;
@@ -59,41 +59,46 @@ public final class XmlType extends _ArmyBuildInMapping {
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SQLType sqlDataType;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                sqlDataType = MySQLType.TEXT;
+                dataType = MySQLType.TEXT;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreType.XML;
+                dataType = PostgreType.XML;
+                break;
+            case SQLite:
+                dataType = SQLiteType.TEXT;
                 break;
             case Oracle:
-
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
-
         }
-        return sqlDataType;
+        return dataType;
     }
 
     @Override
-    public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        //TODO
-        throw new UnsupportedOperationException();
+    public String convert(MappingEnv env, Object source) throws CriteriaException {
+        if (!(source instanceof String)) {
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, null);
+        }
+        return (String) source;
     }
 
     @Override
     public String beforeBind(DataType dataType, MappingEnv env, Object source) {
-        //TODO
-        if (source instanceof String) {
-            return (String) source;
+        if (!(source instanceof String)) {
+            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        throw new UnsupportedOperationException();
+        return (String) source;
     }
 
     @Override
     public String afterGet(DataType dataType, MappingEnv env, Object source) {
+        if (!(source instanceof String)) {
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
+        }
         return (String) source;
     }
 

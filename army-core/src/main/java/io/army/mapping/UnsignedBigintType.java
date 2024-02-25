@@ -18,17 +18,13 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.*;
 
 import java.math.BigInteger;
 
 /**
- * <p>
- * This class representing the mapping from {@link BigInteger} to (unsigned) bigint.
- * * @see BigInteger
+ * <p>This class representing the mapping from {@link BigInteger} to (unsigned) bigint.
+ * @see BigInteger
  */
 public final class UnsignedBigintType extends _NumericType._UnsignedIntegerType {
 
@@ -61,20 +57,7 @@ public final class UnsignedBigintType extends _NumericType._UnsignedIntegerType 
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SQLType type;
-        switch (meta.serverDatabase()) {
-            case MySQL:
-                type = MySQLType.BIGINT_UNSIGNED;
-                break;
-            case PostgreSQL:
-                type = PostgreType.DECIMAL;
-                break;
-            case Oracle:
-            case H2:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return type;
+        return mapToDataType(this, meta);
     }
 
     @Override
@@ -101,6 +84,27 @@ public final class UnsignedBigintType extends _NumericType._UnsignedIntegerType 
     @Override
     public BigInteger afterGet(DataType dataType, MappingEnv env, final Object source) {
         return UnsignedBigIntegerType.toUnsignedBigInteger(this, dataType, source, ACCESS_ERROR_HANDLER);
+    }
+
+
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
+        switch (meta.serverDatabase()) {
+            case MySQL:
+                dataType = MySQLType.BIGINT_UNSIGNED;
+                break;
+            case PostgreSQL:
+                dataType = PostgreType.DECIMAL;
+                break;
+            case SQLite:
+                dataType = SQLiteType.DECIMAL;
+                break;
+            case Oracle:
+            case H2:
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return dataType;
     }
 
 

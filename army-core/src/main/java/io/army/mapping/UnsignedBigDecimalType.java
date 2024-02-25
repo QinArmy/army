@@ -21,14 +21,13 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SQLiteType;
 
 import java.math.BigDecimal;
 
 /**
- * <p>
- * This class representing the mapping from {@link BigDecimal} to unsigned decimal.
- * * @see BigDecimal
+ * <p>This class representing the mapping from {@link BigDecimal} to unsigned decimal.
+ * @see BigDecimal
  */
 public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericType
         implements MappingType.SqlDecimalType {
@@ -57,7 +56,7 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
 
     @Override
     public DataType map(final ServerMeta meta) {
-        return mapToSqlType(this, meta);
+        return mapToDataType(this, meta);
     }
 
     @Override
@@ -91,21 +90,24 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
 
-    static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SQLType sqlType;
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
          switch (meta.serverDatabase()) {
              case MySQL:
-                 sqlType = MySQLType.DECIMAL_UNSIGNED;
+                 dataType = MySQLType.DECIMAL_UNSIGNED;
                  break;
              case PostgreSQL:
-                 sqlType = PostgreType.DECIMAL;
+                 dataType = PostgreType.DECIMAL;
+                 break;
+             case SQLite:
+                 dataType = SQLiteType.DECIMAL;
                  break;
              case Oracle:
              case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);
         }
-        return sqlType;
+        return dataType;
     }
 
 

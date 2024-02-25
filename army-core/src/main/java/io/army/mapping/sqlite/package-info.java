@@ -14,27 +14,5 @@
  * limitations under the License.
  */
 
-package io.army.type;
-
-import java.util.Collection;
-import java.util.LinkedList;
-
-public final class LinkedSqlRecord extends LinkedList<Object> implements SqlRecord {
-
-    public static LinkedSqlRecord create() {
-        return new LinkedSqlRecord();
-    }
-
-    public static LinkedSqlRecord from(Collection<?> c) {
-        return new LinkedSqlRecord(c);
-    }
-
-    private LinkedSqlRecord() {
-    }
-
-    private LinkedSqlRecord(Collection<?> c) {
-        super(c);
-    }
-
-
-}
+@io.army.lang.NonNullApi
+package io.army.mapping.sqlite;

@@ -22,6 +22,9 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * @see UnsignedSqlIntType
  * @see UnsignedLongType
@@ -54,19 +57,74 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object convert(MappingEnv env, Object source) throws CriteriaException {
-        throw new UnsupportedOperationException();
+    public Integer convert(MappingEnv env, Object source) throws CriteriaException {
+        return toUnsignedInt(this, map(env.serverMeta()), source, -1, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        //TODO
-        throw new UnsupportedOperationException();
+    public Long beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return toUnsignedInt(this, map(env.serverMeta()), source, -1, PARAM_ERROR_HANDLER) & 0xFFFF_FFFFL;
     }
 
     @Override
-    public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
-        throw new UnsupportedOperationException();
+    public Integer afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
+        return toUnsignedInt(this, map(env.serverMeta()), source, -1, ACCESS_ERROR_HANDLER);
+    }
+
+
+    /**
+     * @param max unsigned int
+     */
+    public static int toUnsignedInt(final MappingType type, DataType dataType, final Object nonNull, final int max,
+                                    final ErrorHandler errorHandler) {
+        final int value;
+        if (nonNull instanceof Integer) {
+            value = (Integer) nonNull;
+        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
+            value = ((Number) nonNull).intValue();
+            if (value < 0) {
+                throw errorHandler.apply(type, dataType, nonNull, null);
+            }
+        } else if (nonNull instanceof Long) {
+            final long v = (Long) nonNull;
+            if (v > (max & 0xFFFF_FFFFL)) {
+                throw errorHandler.apply(type, dataType, nonNull, null);
+            }
+            value = (int) v;
+        } else if (nonNull instanceof String) {
+            try {
+                value = Integer.parseUnsignedInt((String) nonNull);
+            } catch (NumberFormatException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
+            }
+        } else if (nonNull instanceof BigDecimal) {
+            try {
+                value = Integer.parseUnsignedInt(((BigDecimal) nonNull).stripTrailingZeros().toPlainString());
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
+            }
+        } else if (nonNull instanceof BigInteger) {
+            try {
+                value = Integer.parseUnsignedInt(nonNull.toString());
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
+            }
+        } else if (nonNull instanceof Double || nonNull instanceof Float) {
+            try {
+                value = Integer.parseUnsignedInt(new BigDecimal(nonNull.toString()).stripTrailingZeros().toPlainString());
+            } catch (ArithmeticException e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
+            }
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? 1 : 0;
+        } else {
+            throw errorHandler.apply(type, dataType, nonNull, null);
+        }
+        if (value > (max & 0xFFFF_FFFFL)) {
+            throw errorHandler.apply(type, dataType, nonNull, null);
+        }
+        return value;
+
     }
 
 

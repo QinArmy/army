@@ -57,25 +57,28 @@ public final class VarBinaryType extends _ArmyBuildInMapping implements MappingT
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SQLType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.VARBINARY;
+                dataType = MySQLType.VARBINARY;
                 break;
             case PostgreSQL:
-                type = PostgreType.BYTEA;
+                dataType = PostgreType.BYTEA;
+                break;
+            case SQLite:
+                dataType = SQLiteType.BLOB;
                 break;
             case Oracle:
-                type = OracleDataType.BLOB;
+                dataType = OracleDataType.BLOB;
                 break;
             case H2:
-                type = H2DataType.VARBINARY;
+                dataType = H2DataType.VARBINARY;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return type;
+        return dataType;
     }
 
     @Override

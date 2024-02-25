@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SQLiteType;
 
 /**
  * <p>
@@ -71,36 +71,39 @@ public final class UnsignedSmallIntType extends _NumericType._UnsignedIntegerTyp
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SQLType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.SMALLINT_UNSIGNED;
+                dataType = MySQLType.SMALLINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                type = PostgreType.INTEGER;
+                dataType = PostgreType.INTEGER;
+                break;
+            case SQLite:
+                dataType = SQLiteType.INTEGER;
                 break;
             case Oracle:
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return type;
+        return dataType;
     }
 
 
     @Override
     public Integer convert(MappingEnv env, Object source) throws CriteriaException {
-        return IntegerType.toInt(this, map(env.serverMeta()), source, 0, 0xFFFF, PARAM_ERROR_HANDLER);
+        return UnsignedIntegerType.toUnsignedInt(this, map(env.serverMeta()), source, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Integer beforeBind(DataType dataType, MappingEnv env, final Object source) {
-        return IntegerType.toInt(this, dataType, source, 0, 0xFFFF, PARAM_ERROR_HANDLER);
+        return UnsignedIntegerType.toUnsignedInt(this, dataType, source, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Integer afterGet(DataType dataType, MappingEnv env, Object source) {
-        return IntegerType.toInt(this, dataType, source, 0, 0xFFFF, ACCESS_ERROR_HANDLER);
+        return UnsignedIntegerType.toUnsignedInt(this, dataType, source, 0xFFFF, ACCESS_ERROR_HANDLER);
     }
 
 

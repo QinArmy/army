@@ -117,47 +117,47 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
 
-    public static long toLong(final MappingType type, final DataType dataType, final Object nonNull,
+    public static long toLong(final MappingType type, final DataType dataType, final Object source,
                        final long min, final long max, final ErrorHandler errorHandler) {
         final long value;
-        if (nonNull instanceof Long) {
-            value = (Long) nonNull;
-        } else if (nonNull instanceof Integer
-                || nonNull instanceof Short
-                || nonNull instanceof Byte) {
-            value = ((Number) nonNull).longValue();
-        } else if (nonNull instanceof String) {
+        if (source instanceof Long) {
+            value = (Long) source;
+        } else if (source instanceof Integer
+                || source instanceof Short
+                || source instanceof Byte) {
+            value = ((Number) source).longValue();
+        } else if (source instanceof String) {
             try {
-                value = Long.parseLong((String) nonNull);
+                value = Long.parseLong((String) source);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof BigDecimal) {
+        } else if (source instanceof BigDecimal) {
             try {
-                value = ((BigDecimal) nonNull).longValueExact();
+                value = ((BigDecimal) source).longValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof BigInteger) {
+        } else if (source instanceof BigInteger) {
             try {
-                value = ((BigInteger) nonNull).longValueExact();
+                value = ((BigInteger) source).longValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof Double || nonNull instanceof Float) {
+        } else if (source instanceof Double || source instanceof Float) {
             try {
-                value = new BigDecimal(nonNull.toString()).longValueExact();
+                value = new BigDecimal(source.toString()).longValueExact();
             } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, dataType, nonNull, e);
+                throw errorHandler.apply(type, dataType, source, e);
             }
-        } else if (nonNull instanceof Boolean) {
-            value = ((Boolean) nonNull) ? 1L : 0L;
+        } else if (source instanceof Boolean) {
+            value = ((Boolean) source) ? 1L : 0L;
         } else {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
 
         if (value < min || value > max) {
-            throw errorHandler.apply(type, dataType, nonNull, null);
+            throw errorHandler.apply(type, dataType, source, null);
         }
         return value;
     }

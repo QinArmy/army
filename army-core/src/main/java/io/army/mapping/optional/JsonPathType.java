@@ -26,7 +26,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SQLiteType;
 
 public final class JsonPathType extends _ArmyBuildInMapping implements MappingType.SqlJsonPathType {
 
@@ -52,20 +52,23 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
 
     @Override
     public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
-        final SQLType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case PostgreSQL:
-                type = PostgreType.JSONPATH;
+                dataType = PostgreType.JSONPATH;
                 break;
             case MySQL:
-                type = MySQLType.VARCHAR;
+                dataType = MySQLType.VARCHAR;
+                break;
+            case SQLite:
+                dataType = SQLiteType.VARCHAR;
                 break;
             case Oracle:
             case H2:
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return type;
+        return dataType;
     }
 
 

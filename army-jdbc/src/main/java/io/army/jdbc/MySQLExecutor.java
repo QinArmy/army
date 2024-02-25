@@ -162,7 +162,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     @Override
     final void bind(final PreparedStatement stmt, final int indexBasedOne,
-                    final MappingType type, final DataType dataType, final Object nonNull) throws SQLException {
+                    final MappingType type, final DataType dataType, final Object value) throws SQLException {
 
         if (!(dataType instanceof MySQLType)) {
             throw mapMethodError(type, dataType);
@@ -172,37 +172,40 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case MEDIUMINT:
             case MEDIUMINT_UNSIGNED:
             case INT: {
-                if (!(nonNull instanceof Integer)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Integer)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setInt(indexBasedOne, (Integer) nonNull);
+                stmt.setInt(indexBasedOne, (Integer) value);
             }
             break;
             case INT_UNSIGNED:
             case BIGINT:
             case BIT: {
-                if (!(nonNull instanceof Long)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Long)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setLong(indexBasedOne, (Long) nonNull);
+                stmt.setLong(indexBasedOne, (Long) value);
             }
             break;
             case TIME: {
-                if (!(nonNull instanceof LocalTime || nonNull instanceof Duration || nonNull instanceof OffsetTime)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof LocalTime || value instanceof Duration || value instanceof OffsetTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case YEAR: {
-                if (!(nonNull instanceof Short)) {
-                    throw ExecutorSupport.beforeBindMethodError(type, dataType, nonNull);
+                if (value instanceof Short) {
+                    stmt.setShort(indexBasedOne, (Short) value);
+                } else if (value instanceof Year) {
+                    stmt.setShort(indexBasedOne, (short) ((Year) value).getValue());
+                } else {
+                    throw ExecutorSupport.beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setShort(indexBasedOne, (Short) nonNull);
             }
             break;
             default:
-                bindArmyType(stmt, indexBasedOne, type, dataType, ((MySQLType) dataType).armyType(), nonNull);
+                bindArmyType(stmt, indexBasedOne, type, dataType, ((MySQLType) dataType).armyType(), value);
         }
 
 

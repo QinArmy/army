@@ -21,7 +21,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SQLiteType;
 
 
 /**
@@ -78,28 +78,31 @@ public final class UnsignedSqlIntType extends _NumericType._UnsignedIntegerType 
 
     @Override
     public Long convert(MappingEnv env, Object source) throws CriteriaException {
-        return LongType.toLong(this, map(env.serverMeta()), source, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+        return UnsignedLongType.toUnsignedLong(this, map(env.serverMeta()), source, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Long beforeBind(DataType dataType, MappingEnv env, Object source) {
-        return LongType.toLong(this, dataType, source, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+        return UnsignedLongType.toUnsignedLong(this, dataType, source, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Long afterGet(DataType dataType, MappingEnv env, Object source) {
-        return LongType.toLong(this, dataType, source, 0L, 0xFFFF_FFFFL, ACCESS_ERROR_HANDLER);
+        return UnsignedLongType.toUnsignedLong(this, dataType, source, 0xFFFF_FFFFL, ACCESS_ERROR_HANDLER);
     }
 
 
-    static DataType mapToDataType(MappingType type, ServerMeta meta) {
-        final SQLType dataType;
+    static DataType mapToDataType(final MappingType type, final ServerMeta meta) {
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
                 dataType = MySQLType.INT_UNSIGNED;
                 break;
             case PostgreSQL:
                 dataType = PostgreType.BIGINT;
+                break;
+            case SQLite:
+                dataType = SQLiteType.BIGINT;
                 break;
             case Oracle:
             case H2:

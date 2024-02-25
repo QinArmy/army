@@ -169,10 +169,10 @@ public final class SqlRecordType extends _SqlRecordSupport implements MappingTyp
                 throw errorHandler.apply(this, dataType, source, e);
             }
         } else if (this == UNLIMITED) {
-            value = ArraySqlRecord.create(1);
+            value = ArraySqlRecord.forSize(1);
             value.add(ObjectType.INSTANCE.afterGet(dataType, env, source));
         } else if (this.columnTypeList.size() == 1) {
-            value = ArraySqlRecord.create(1);
+            value = ArraySqlRecord.forSize(1);
             value.add(this.columnTypeList.get(0).afterGet(dataType, env, source));
         } else {
             throw errorHandler.apply(this, dataType, source, null);

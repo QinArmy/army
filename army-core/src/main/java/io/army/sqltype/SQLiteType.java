@@ -70,6 +70,7 @@ public enum SQLiteType implements SQLType {
     BIT("BIT", ArmyType.BIT, Long.class),
     JSON("JSON", ArmyType.JSON, String.class),
 
+    DYNAMIC("", ArmyType.DIALECT_TYPE, Object.class),
 
     UNKNOWN("UNKNOWN", ArmyType.UNKNOWN, Object.class);
 

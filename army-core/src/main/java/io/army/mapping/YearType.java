@@ -18,10 +18,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.*;
 
 import java.time.*;
 
@@ -67,19 +64,22 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
 
     @Override
     public DataType map(final ServerMeta meta) {
-        final SQLType type;
+        final DataType dataType;
         switch (meta.serverDatabase()) {
             case MySQL:
-                type = MySQLType.YEAR;
+                dataType = MySQLType.YEAR;
                 break;
             case PostgreSQL:
-                type = PostgreType.DATE;
+                dataType = PostgreType.DATE;
+                break;
+            case SQLite:
+                dataType = SQLiteType.YEAR;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return type;
+        return dataType;
     }
 
     @Override
@@ -91,7 +91,8 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     public Object beforeBind(final DataType dataType, final MappingEnv env, final Object source) {
         final Object value;
         switch (((SQLType) dataType).database()) {
-            case MySQL: {
+            case MySQL:
+            case SQLite: {
                 if (source instanceof Short) {
                     value = source;
                 } else if (source instanceof Integer) {
@@ -128,17 +129,17 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
         return toYear(this, dataType, source, ACCESS_ERROR_HANDLER);
     }
 
-     static Year toYear(final MappingType type, DataType dataType, final Object nonNull,
-                        final ErrorHandler errorHandler) {
-         final Year value;
-         if (nonNull instanceof Year) {
-             value = (Year) nonNull;
-         } else if (nonNull instanceof Integer || nonNull instanceof Short) {
-             value = Year.of(((Number) nonNull).intValue());
-         } else if (nonNull instanceof LocalDate) {
-             value = Year.from((LocalDate) nonNull);
-         } else if (nonNull instanceof LocalDateTime) {
-             value = Year.from((LocalDateTime) nonNull);
+    static Year toYear(final MappingType type, DataType dataType, final Object nonNull,
+                       final ErrorHandler errorHandler) {
+        final Year value;
+        if (nonNull instanceof Year) {
+            value = (Year) nonNull;
+        } else if (nonNull instanceof Integer || nonNull instanceof Short) {
+            value = Year.of(((Number) nonNull).intValue());
+        } else if (nonNull instanceof LocalDate) {
+            value = Year.from((LocalDate) nonNull);
+        } else if (nonNull instanceof LocalDateTime) {
+            value = Year.from((LocalDateTime) nonNull);
         } else if (nonNull instanceof YearMonth) {
             value = Year.from((YearMonth) nonNull);
         } else if (nonNull instanceof String) {
