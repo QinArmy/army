@@ -31,13 +31,15 @@ import static io.army.criteria.impl.SQLs.AS;
 public class SingleDeleteTests extends SessionTestSupport {
 
 
-    @Test
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void deleteParent(final SyncLocalSession session) {
 
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
 
         final LocalDateTime now = LocalDateTime.now();
+
+        final long startNanoSecond = System.nanoTime();
 
         final Delete stmt;
         stmt = MySQLs.singleDelete()
@@ -48,6 +50,8 @@ public class SingleDeleteTests extends SessionTestSupport {
                 .limit(SQLs::param, regionList.size())
                 .asDelete();
 
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
         final long rows;
         rows = session.update(stmt);
         Assert.assertEquals(rows, regionList.size());
@@ -55,12 +59,14 @@ public class SingleDeleteTests extends SessionTestSupport {
     }
 
 
-    @Test
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void batchDeleteParent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
 
         final LocalDateTime now = LocalDateTime.now();
+
+        final long startNanoSecond = System.nanoTime();
 
         final BatchDelete stmt;
         stmt = MySQLs.batchSingleDelete()
@@ -72,6 +78,8 @@ public class SingleDeleteTests extends SessionTestSupport {
                 .asDelete()
                 .namedParamList(extractRegionIdMapList(regionList));
 
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
         assertBatchSingleRows(rowList, regionList.size(), 1);
@@ -79,13 +87,15 @@ public class SingleDeleteTests extends SessionTestSupport {
     }
 
 
-    @Test
+    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void delete20Parent(final SyncLocalSession session) {
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
 
         session.batchSave(regionList);
 
         final LocalDateTime now = LocalDateTime.now();
+
+        final long startNanoSecond = System.nanoTime();
 
         final Delete stmt;
         stmt = MySQLs.singleDelete()
@@ -106,6 +116,8 @@ public class SingleDeleteTests extends SessionTestSupport {
                 .limit(SQLs::param, regionList.size())
                 .asDelete();
 
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
         final long rows;
         rows = session.update(stmt);
         Assert.assertEquals(rows, regionList.size());
@@ -120,6 +132,8 @@ public class SingleDeleteTests extends SessionTestSupport {
         session.batchSave(regionList);
 
         final LocalDateTime now = LocalDateTime.now();
+
+        final long startNanoSecond = System.nanoTime();
 
         final BatchDelete stmt;
         stmt = MySQLs.batchSingleDelete()
@@ -142,6 +156,8 @@ public class SingleDeleteTests extends SessionTestSupport {
                 .asDelete()
                 .namedParamList(extractRegionIdMapList(regionList));
 
+        statementCostTimeLog(session, LOG, startNanoSecond);
+
         final List<Long> rowList;
         rowList = session.batchUpdate(stmt);
         assertBatchSingleRows(rowList, regionList.size(), 1);
@@ -157,6 +173,8 @@ public class SingleDeleteTests extends SessionTestSupport {
 
         final LocalDateTime now = LocalDateTime.now();
 
+        final long startNanoSecond = System.nanoTime();
+
         final Supplier<List<Hint>> hintSupplier = () -> Collections.singletonList(MySQLs.setVar("foreign_key_checks=OFF"));
 
         final Delete stmt;
@@ -168,6 +186,8 @@ public class SingleDeleteTests extends SessionTestSupport {
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())
                 .asDelete();
+
+        statementCostTimeLog(session, LOG, startNanoSecond);
 
         final long rows;
         rows = session.update(stmt);
