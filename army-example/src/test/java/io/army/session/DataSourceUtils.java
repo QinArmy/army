@@ -78,6 +78,8 @@ public abstract class DataSourceUtils {
             driverName = com.mysql.cj.jdbc.Driver.class.getName();
         } else if (url.startsWith("jdbc:postgresql:")) {
             driverName = org.postgresql.Driver.class.getName();
+        } else if (url.startsWith("jdbc:sqlite:")) {
+            driverName = org.sqlite.JDBC.class.getName();
         } else {
             throw new IllegalArgumentException();
         }
@@ -93,6 +95,9 @@ public abstract class DataSourceUtils {
                 break;
             case PostgreSQL:
                 url = "jdbc:postgresql://localhost:5432/army_bank";
+                break;
+            case SQLite:
+                url = "jdbc:sqlite:army_bank";
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(database);

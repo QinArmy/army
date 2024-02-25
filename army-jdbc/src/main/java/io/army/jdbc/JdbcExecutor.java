@@ -485,7 +485,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     abstract Logger getLogger();
 
     abstract void bind(PreparedStatement stmt, int indexBasedOne, MappingType type,
-                       DataType dataType, Object nonNull)
+                       DataType dataType, Object value)
             throws SQLException;
 
     abstract DataType getDataType(ResultSetMetaData meta, int indexBasedOne) throws SQLException;

@@ -165,7 +165,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
 
     final void bind(final PreparedStatement stmt, final int indexBasedOne, final MappingType type,
-                    final DataType dataType, final Object nonNull)
+                    final DataType dataType, final Object value)
             throws SQLException {
 
         final PGobject pgObject;
@@ -174,26 +174,26 @@ abstract class PostgreExecutor extends JdbcExecutor {
             pgObject = new PGobject();
 
             pgObject.setType(dataType.typeName().toLowerCase(Locale.ROOT));
-            pgObject.setValue((String) nonNull);
+            pgObject.setValue((String) value);
 
             stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
         } else if (!(dataType instanceof PostgreType)) {
             throw mapMethodError(type, dataType);
         } else switch ((PostgreType) dataType) {
             case UUID: {
-                if (!(nonNull instanceof UUID)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof UUID)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case MONEY: {
-                if (nonNull instanceof String) {
-                    stmt.setString(indexBasedOne, (String) nonNull);
-                } else if (nonNull instanceof BigDecimal) {
-                    stmt.setBigDecimal(indexBasedOne, (BigDecimal) nonNull);
+                if (value instanceof String) {
+                    stmt.setString(indexBasedOne, (String) value);
+                } else if (value instanceof BigDecimal) {
+                    stmt.setBigDecimal(indexBasedOne, (BigDecimal) value);
                 } else {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                    throw beforeBindMethodError(type, dataType, value);
                 }
             }
             break;
@@ -203,12 +203,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
                 pgObject.setType(dataType.typeName().toLowerCase(Locale.ROOT));
 
-                if (nonNull instanceof BitSet) {
-                    pgObject.setValue(_StringUtils.bitSetToBitString((BitSet) nonNull, true));
-                } else if (nonNull instanceof String) {
-                    pgObject.setValue((String) nonNull);
+                if (value instanceof BitSet) {
+                    pgObject.setValue(_StringUtils.bitSetToBitString((BitSet) value, true));
+                } else if (value instanceof String) {
+                    pgObject.setValue((String) value);
                 } else {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                    throw beforeBindMethodError(type, dataType, value);
                 }
 
                 stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
@@ -252,18 +252,18 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case PG_SNAPSHOT:
 
             case JSONPATH: {
-                if (!(nonNull instanceof String)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof String)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
                 pgObject = new PGobject();
                 pgObject.setType(dataType.typeName().toLowerCase(Locale.ROOT));
-                pgObject.setValue((String) nonNull);
+                pgObject.setValue((String) value);
 
                 stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
             }
             break;
             default:
-                bindArmyType(stmt, indexBasedOne, type, dataType, ((PostgreType) dataType).armyType(), nonNull);
+                bindArmyType(stmt, indexBasedOne, type, dataType, ((PostgreType) dataType).armyType(), value);
 
         }
 

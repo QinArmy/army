@@ -1130,17 +1130,9 @@ public abstract class _Exceptions {
         return new MetaException(m);
     }
 
-    public static MetaException nonArrayType(MappingType type, SQLType sqlType) {
-        String m = String.format("%s return %s but don't implements %s .", type, sqlType,
-                MappingType.SqlArrayType.class.getName());
-        return new MetaException(m);
+    public static DataAccessException unknownIsolation(Isolation isolation) {
+        return new DataAccessException(String.format("unknown isolation %s", isolation));
     }
-
-    public static MetaException javaTypeMethodNotArray(MappingType type) {
-        String m = String.format("%s javaType() don't return array type or List", type);
-        return new MetaException(m);
-    }
-
 
     public static IllegalArgumentException notArrayMappingType(MappingType type) {
         String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());

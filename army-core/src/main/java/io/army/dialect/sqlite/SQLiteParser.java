@@ -45,8 +45,12 @@ import java.util.Set;
 
 abstract class SQLiteParser extends _ArmyDialectParser {
 
+    static SQLiteParser standard(DialectEnv dialectEnv, SQLiteDialect dialect) {
+        return new Standard(dialectEnv, dialect);
+    }
 
-    SQLiteParser(DialectEnv dialectEnv, Dialect dialect) {
+
+    SQLiteParser(DialectEnv dialectEnv, SQLiteDialect dialect) {
         super(dialectEnv, dialect);
         switch (this.literalEscapeMode) {
             case DEFAULT:
@@ -211,17 +215,50 @@ abstract class SQLiteParser extends _ArmyDialectParser {
     }
 
     /**
-     * @return never {@link IdentifierMode#ESCAPES}
      * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     * @see <a href="https://www.sqlite.org/lang_keywords.html">SQLite Keywords</a>
      */
     @Override
     protected final IdentifierMode identifierMode(final String identifier) {
-        return scanStandardSimpleIdentifier(identifier);
+        final int length = identifier.length();
+        if (length == 0) {
+            return IdentifierMode.ERROR;
+
+        }
+
+        IdentifierMode mode = null;
+        char ch;
+        for (int i = 0; i < length; i++) {
+            ch = identifier.charAt(i);
+            if (ch == _Constant.DOUBLE_QUOTE) {
+                mode = IdentifierMode.ESCAPES;
+                break;
+            } else if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
+                continue;
+            } else if (ch >= '0' && ch <= '9') {
+                if (i == 0) {
+                    mode = IdentifierMode.QUOTING;
+                }
+                continue;
+            }
+
+            if (mode == null) {
+                mode = IdentifierMode.QUOTING;
+            }
+
+        } // loop for
+
+        if (mode == null) {
+            mode = IdentifierMode.SIMPLE;
+        }
+        return mode;
     }
+
 
     /**
      * @see #isUseObjectNameModeMethod()
      * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     * @see <a href="https://www.sqlite.org/lang_keywords.html">SQLite Keywords</a>
      */
     @Override
     protected final IdentifierMode objectNameMode(final DatabaseObject object, final String effectiveName) {
@@ -231,11 +268,31 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     /**
      * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     * @see <a href="https://www.sqlite.org/lang_keywords.html">SQLite Keywords</a>
      */
     @Override
     protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
-        // no bug never here
-        throw new UnsupportedOperationException();
+        final int length = identifier.length();
+
+        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
+
+        int lastWritten = 0;
+        for (int i = 0; i < length; i++) {
+            if (identifier.charAt(i) == _Constant.DOUBLE_QUOTE) {
+                if (i > lastWritten) {
+                    sqlBuilder.append(identifier, lastWritten, i);
+                }
+                sqlBuilder.append(_Constant.DOUBLE_QUOTE);
+                lastWritten = i; // not i + 1 as current char wasn't written
+            }
+
+        } // loop for
+
+        if (lastWritten < length) {
+            sqlBuilder.append(identifier, lastWritten, length);
+        }
+        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
+
     }
 
 
@@ -554,7 +611,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     private static class Standard extends SQLiteParser {
 
-        private Standard(DialectEnv dialectEnv, Dialect dialect) {
+        private Standard(DialectEnv dialectEnv, SQLiteDialect dialect) {
             super(dialectEnv, dialect);
         }
 

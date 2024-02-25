@@ -16,8 +16,11 @@
 
 package io.army.dialect.sqlite;
 
+import io.army.dialect._Constant;
 import io.army.dialect._DdlParser;
+import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
+import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
 import io.army.sqltype.DataType;
@@ -46,7 +49,8 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
      */
     @Override
     public void modifyTableComment(TableMeta<?> table, List<String> sqlList) {
-
+        // no bug , never here
+        throw sqLiteDontSupportComment();
     }
 
     /**
@@ -122,8 +126,12 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
         final String optionClause;
         optionClause = table.tableOption();
         if (_StringUtils.hasText(optionClause)) {
+            checkEnclosing(optionClause);
 
+            builder.append(_Constant.SPACE)
+                    .append(optionClause);
         }
+
     }
 
     /**
@@ -135,11 +143,48 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
     }
 
     /**
-     * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+     * @see <a href="https://www.sqlite.org/lang_altertable.html">ALTER TABLE</a>
      */
     @Override
     protected void doModifyColumn(_FieldResult result, StringBuilder builder) {
+        // no bug , never here
+        throw new UnsupportedOperationException("SQLite don't support modify column");
+    }
 
+    @Override
+    protected void appendOuterComment(DatabaseObject object, StringBuilder builder) {
+        // no bug , never here
+        throw sqLiteDontSupportComment();
+    }
+
+
+    /**
+     * @see <a href="https://www.sqlite.org/lang_createindex.html">CREATE INDEX</a>
+     */
+    @Override
+    protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
+        if (index.isPrimaryKey()) {
+            throw new IllegalArgumentException();
+        }
+        if (builder.length() > 0) {
+            builder.append(_Constant.SPACE);
+        }
+        builder.append("CREATE");
+        if (index.isUnique()) {
+            builder.append(" UNIQUE");
+        }
+
+        builder.append(" INDEX IF NOT EXISTS ");
+        this.parser.identifier(index.name(), builder);
+
+        builder.append(_Constant.SPACE_ON_SPACE);
+        this.parser.safeObjectName(index.tableMeta(), builder);
+        appendIndexFieldList(index, builder);
+    }
+
+
+    private static UnsupportedOperationException sqLiteDontSupportComment() {
+        return new UnsupportedOperationException("SQLite don't support comment");
     }
 
 

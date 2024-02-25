@@ -16,8 +16,9 @@
 
 package io.army.dialect;
 
-import io.army.dialect.mysql._MySQLDialectFactory;
+import io.army.dialect.mysql._MySQLParserFactory;
 import io.army.dialect.postgre._PostgreDialectFactory;
+import io.army.dialect.sqlite._SQLiteParserFactory;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 
@@ -37,10 +38,13 @@ public abstract class DialectParserFactory {
         final DialectParser parser;
         switch (database) {
             case MySQL:
-                parser = _MySQLDialectFactory.mysqlDialectParser(environment);
+                parser = _MySQLParserFactory.mysqlDialectParser(environment);
                 break;
             case PostgreSQL:
                 parser = _PostgreDialectFactory.postgreDialectParser(environment);
+                break;
+            case SQLite:
+                parser = _SQLiteParserFactory.sqliteDialectParser(environment);
                 break;
             case Oracle:
             default:
@@ -50,13 +54,9 @@ public abstract class DialectParserFactory {
     }
 
     /**
-     * <p>
-     * Inner method
-     *
+     * <p>Inner method
      */
-    @SuppressWarnings("unchecked")
-    protected static <T extends ArmyParser> T invokeFactoryMethod(Class<T> dialectType, String className
-            , DialectEnv environment) {
+    protected static DialectParser invokeFactoryMethod(Class<?> dialectType, String className, DialectEnv environment) {
         final Class<?> clazz;
         try {
             clazz = Class.forName(className);
@@ -69,16 +69,17 @@ public abstract class DialectParserFactory {
             method = clazz.getMethod(methodName, DialectEnv.class);
             final int modifiers = method.getModifiers();
             if (!(Modifier.isPublic(modifiers)
-                    && Modifier.isStatic(modifiers)
-                    && dialectType.isAssignableFrom(method.getReturnType()))) {
+                    && Modifier.isStatic(modifiers))) {
                 String m = String.format("Not found factory method,public static %s %s(%s) in class %s"
                         , className, methodName, DialectEnv.class.getName(), className);
                 throw new RuntimeException(m);
             }
-            final T dialect;
-            dialect = (T) method.invoke(null, environment);
-            assert dialect != null;
-            return dialect;
+            final DialectParser parser;
+            parser = (DialectParser) method.invoke(null, environment);
+            if (!dialectType.isInstance(parser)) {
+                throw new RuntimeException("return type don't match");
+            }
+            return parser;
         } catch (NoSuchMethodException e) {
             String m = String.format("Not found factory method,public static %s %s(%s) in class %s"
                     , className, methodName, DialectEnv.class.getName(), className);

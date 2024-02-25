@@ -453,6 +453,83 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     protected abstract void doModifyColumn(_FieldResult result, StringBuilder builder);
 
 
+    protected void checkEnclosing(final String text) {
+        final int length = text.length(), lastIndex = length - 1;
+
+        final char identifierQuote = this.parser.identifierQuote;
+
+        boolean inQuote = false, inIdentifierQuote = false;
+        char ch;
+        int parenCount = 0, braceCount = 0, squareCount = 0;
+        for (int i = 0; i < length; i++) {
+            ch = text.charAt(i);
+            if (inQuote) {
+                if (ch != _Constant.QUOTE) {
+                    continue;
+                } else if (i < lastIndex && text.charAt(i + 1) == _Constant.QUOTE) {
+                    i++;
+                } else {
+                    inQuote = false;
+                }
+                continue;
+            } else if (inIdentifierQuote) {
+                if (ch != identifierQuote) {
+                    continue;
+                } else if (i < lastIndex && text.charAt(i + 1) == _Constant.DOUBLE_QUOTE) {
+                    i++;
+                } else {
+                    inIdentifierQuote = false;
+                }
+                continue;
+            }
+
+            switch (ch) {
+                case _Constant.QUOTE:
+                    inQuote = true;
+                    break;
+                case _Constant.DOUBLE_QUOTE:
+                    inIdentifierQuote = true;
+                    break;
+                case _Constant.LEFT_PAREN:
+                    parenCount++;
+                    break;
+                case _Constant.LEFT_BRACE:
+                    braceCount++;
+                    break;
+                case _Constant.LEFT_SQUARE_BRACKET:
+                    squareCount++;
+                    break;
+                case _Constant.RIGHT_PAREN:
+                    parenCount--;
+                    break;
+                case _Constant.RIGHT_BRACE:
+                    braceCount--;
+                    break;
+                case _Constant.RIGHT_SQUARE_BRACKET:
+                    squareCount--;
+                    break;
+                default:
+                    // no-op
+
+            } // switch
+
+
+        } // loop for
+
+        if (inQuote) {
+            this.errorMsgList.add("string literal not close");
+        } else if (inIdentifierQuote) {
+            this.errorMsgList.add("identifier not close");
+        } else if (parenCount != 0) {
+            this.errorMsgList.add("'(' and ')' count not match");
+        } else if (braceCount != 0) {
+            this.errorMsgList.add("'{' and '}' count not match");
+        } else if (squareCount != 0) {
+            this.errorMsgList.add("'[' and ']' count not match");
+        }
+    }
+
+
     protected final <T> void appendIndexInTableDef(final IndexMeta<T> index, final StringBuilder builder) {
         if (index.isPrimaryKey()) {
             builder.append(COMMA_PRIMARY_KEY);

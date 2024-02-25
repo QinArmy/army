@@ -97,7 +97,7 @@ abstract class ArmyParser implements DialectParser {
     protected final Map<String, Boolean> keyWordMap;
 
 
-    protected final char identifierQuote;
+    public final char identifierQuote;
 
     protected final boolean unrecognizedTypeAllowed;
 
@@ -1837,49 +1837,6 @@ abstract class ArmyParser implements DialectParser {
             , _SqlContext context);
 
 
-    /**
-     * @return never {@link IdentifierMode#ESCAPES}
-     * @see #safeObjectName(DatabaseObject)
-     * @see #safeObjectName(DatabaseObject, StringBuilder)
-     * @see #identifier(String)
-     * @see #identifier(String, StringBuilder)
-     */
-    protected final IdentifierMode scanStandardSimpleIdentifier(final String identifier) {
-        final int length = identifier.length();
-        if (length == 0) {
-            return IdentifierMode.ERROR;
-
-        }
-
-        final char identifierQuote = this.identifierQuote;
-
-        IdentifierMode mode = null;
-        char ch;
-        for (int i = 0; i < length; i++) {
-            ch = identifier.charAt(i);
-            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
-                continue;
-            } else if (ch >= '0' && ch <= '9') {
-                if (i == 0) {
-                    mode = IdentifierMode.QUOTING;
-                }
-                continue;
-            } else if (ch == identifierQuote || ch == _Constant.NUL_CHAR) {
-                mode = IdentifierMode.ERROR;
-                break;
-            }
-
-            if (mode == null) {
-                mode = IdentifierMode.QUOTING;
-            }
-
-        } // loop for
-
-        if (mode == null) {
-            mode = IdentifierMode.SIMPLE;
-        }
-        return mode;
-    }
 
     /**
      * @see #parseDomainParentDeleteWithId(_Predicate, DomainDeleteContext)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
@@ -22,21 +22,22 @@ import io.army.dialect.DialectParser;
 import io.army.dialect.DialectParserFactory;
 import io.army.util.ClassUtils;
 
-public abstract class _PostgreDialectFactory extends DialectParserFactory {
+public abstract class _MySQLParserFactory extends DialectParserFactory {
 
-    private _PostgreDialectFactory() {
+    private _MySQLParserFactory() {
         throw new UnsupportedOperationException();
     }
 
-    public static DialectParser postgreDialectParser(DialectEnv environment) {
-        final String className = "io.army.dialect.postgre._PostgreDialects";
-        final DialectParser parser;
-        if (ClassUtils.isPresent(className, PostgreParser.class.getClassLoader())) {
-            parser = DialectParserFactory.invokeFactoryMethod(PostgreParser.class, className, environment);
+    public static DialectParser mysqlDialectParser(final DialectEnv environment) {
+        final String className = "io.army.dialect.mysql._MySQLParsers";
+        final DialectParser _dialect;
+        if (ClassUtils.isPresent(className, MySQLParser.class.getClassLoader())) {
+            _dialect = DialectParserFactory.invokeFactoryMethod(MySQLParser.class, className, environment);
         } else {
-            parser = PostgreParser.standard(environment, (PostgreDialect) targetDialect(environment, Database.PostgreSQL));
+            _dialect = MySQLParser.standard(environment, (MySQLDialect) targetDialect(environment, Database.MySQL));
         }
-        return parser;
+        return _dialect;
     }
+
 
 }

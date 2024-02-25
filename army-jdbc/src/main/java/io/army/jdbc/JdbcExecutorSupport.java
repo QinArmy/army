@@ -85,13 +85,13 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         } else if (isolation == Isolation.READ_UNCOMMITTED) {
             builder.append("READ UNCOMMITTED");
         } else {
-            throw new ArmyException(String.format("unknown isolation %s", isolation));
+            throw _Exceptions.unknownIsolation(isolation);
         }
 
     }
 
     /**
-     * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption, Class)
+     * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption, Class, Function)
      * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption, Class, Function)
      */
     @Nullable

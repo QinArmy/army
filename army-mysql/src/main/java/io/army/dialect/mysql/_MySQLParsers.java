@@ -18,31 +18,18 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
+import io.army.dialect.DialectParser;
 import io.army.dialect.DialectParserFactory;
-import io.army.util._Exceptions;
 
 @SuppressWarnings("unused")
-public abstract class _MySQLDialects extends DialectParserFactory {
+public abstract class _MySQLParsers extends DialectParserFactory {
 
-    private _MySQLDialects() {
+    private _MySQLParsers() {
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLParser create(final DialectEnv env) {
-        final MySQLDialect targetDialect;
-        targetDialect = (MySQLDialect) targetDialect(env, Database.MySQL);
-        final MySQLParser mySQL;
-        switch (targetDialect) {
-            case MySQL55:
-            case MySQL56:
-            case MySQL57:
-            case MySQL80:
-                mySQL = MySQLDialectParser.create(env, targetDialect);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(targetDialect);
-        }
-        return mySQL;
+    public static DialectParser create(final DialectEnv env) {
+        return MySQLDialectParser.create(env, (MySQLDialect) targetDialect(env, Database.MySQL));
     }
 
 

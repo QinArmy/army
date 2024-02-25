@@ -22,6 +22,7 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
+import io.army.util._Exceptions;
 
 final class SQLiteComparer extends ArmySchemaComparer {
 
@@ -39,19 +40,15 @@ final class SQLiteComparer extends ArmySchemaComparer {
         return false;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_altertable.html">ALTER TABLE</a>
+     */
     @Override
     boolean compareSqlType(final ColumnInfo columnInfo, final FieldMeta<?> field, final DataType dataType) {
         if (!(dataType instanceof SQLiteType)) {
-            return true;
+            throw _Exceptions.mapMethodError(field.mappingType(), SQLiteType.class);
         }
-
-        final boolean match;
-        if (dataType == SQLiteType.DYNAMIC) {
-            match = true;
-        } else {
-            match = dataType.typeName().equalsIgnoreCase(columnInfo.typeName());
-        }
-        return !match;
+        return false; // SQLite don't support modify column
     }
 
     @Override

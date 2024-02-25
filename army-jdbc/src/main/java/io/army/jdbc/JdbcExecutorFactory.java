@@ -363,8 +363,11 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
                 localFunc = PostgreExecutor::localExecutor;
                 rmFunc = PostgreExecutor::rmExecutor;
                 break;
-            case H2:
             case SQLite:
+                localFunc = SQLiteExecutor::localExecutor;
+                rmFunc = SQLiteExecutor::rmExecutor;
+                break;
+            case H2:
             case Oracle:
             default:
                 throw _Exceptions.unexpectedEnum(serverDatabase);
