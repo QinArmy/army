@@ -33,7 +33,7 @@ import java.time.*;
 public enum SQLiteType implements SQLType {
 
     NULL("NULL", ArmyType.NULL, Object.class),
-    BOOLEAN("BOOLEAN", ArmyType.BOOLEAN, Boolean.class), // alias of TEXT class
+    BOOLEAN("BOOLEAN", ArmyType.BOOLEAN, Boolean.class), // alias of INTEGER class
 
     TINYINT("TINYINT", ArmyType.TINYINT, Byte.class),  // alias of INTEGER class
     SMALLINT("SMALLINT", ArmyType.SMALLINT, Short.class), // alias of INTEGER class

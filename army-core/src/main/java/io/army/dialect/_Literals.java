@@ -21,10 +21,10 @@ import io.army.mapping.BooleanType;
 import io.army.meta.TypeMeta;
 import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
-import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.*;
 
 public abstract class _Literals {
@@ -64,10 +64,13 @@ public abstract class _Literals {
 
     public static void bindBigDecimal(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                       final StringBuilder sqlBuilder) {
-        if (!(value instanceof BigDecimal)) {
-            throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+        if (value instanceof BigDecimal) {
+            sqlBuilder.append(((BigDecimal) value).toPlainString());
+        } else if (value instanceof BigInteger) {
+            sqlBuilder.append(value);
+        } else {
+            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
         }
-        sqlBuilder.append(((BigDecimal) value).toPlainString());
     }
 
 

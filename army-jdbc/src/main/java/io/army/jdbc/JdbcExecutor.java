@@ -704,112 +704,115 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      * @see #bindParameter(PreparedStatement, List)
      */
     final void bindArmyType(PreparedStatement stmt, final int indexBasedOne, final MappingType type,
-                            final DataType dataType, final ArmyType armyType, Object nonNull) throws SQLException {
+                            final DataType dataType, final ArmyType armyType, Object value) throws SQLException {
         switch (armyType) {
             case BOOLEAN: {
-                if (!(nonNull instanceof Boolean)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Boolean)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setBoolean(indexBasedOne, (Boolean) nonNull);
+                stmt.setBoolean(indexBasedOne, (Boolean) value);
             }
             break;
             case TINYINT: {
-                if (!(nonNull instanceof Byte)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Byte)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setByte(indexBasedOne, (Byte) nonNull);
+                stmt.setByte(indexBasedOne, (Byte) value);
             }
             break;
             case TINYINT_UNSIGNED:
             case SMALLINT: {
-                if (!(nonNull instanceof Short)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Short)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setShort(indexBasedOne, (Short) nonNull);
+                stmt.setShort(indexBasedOne, (Short) value);
             }
             break;
             case SMALLINT_UNSIGNED:
             case MEDIUMINT:
             case MEDIUMINT_UNSIGNED:
             case INTEGER: {
-                if (!(nonNull instanceof Integer)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Integer)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setInt(indexBasedOne, (Integer) nonNull);
+                stmt.setInt(indexBasedOne, (Integer) value);
             }
             break;
             case INTEGER_UNSIGNED:
             case BIGINT: {
-                if (!(nonNull instanceof Long)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Long)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setLong(indexBasedOne, (Long) nonNull);
+                stmt.setLong(indexBasedOne, (Long) value);
             }
             break;
             case BIGINT_UNSIGNED: {
-                if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof BigInteger || value instanceof BigDecimal)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case DECIMAL:
             case DECIMAL_UNSIGNED: {
-                if (!(nonNull instanceof BigDecimal)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof BigDecimal)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setBigDecimal(indexBasedOne, (BigDecimal) nonNull);
+                stmt.setBigDecimal(indexBasedOne, (BigDecimal) value);
             }
             break;
             case FLOAT: {
-                if (!(nonNull instanceof Float)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof Float)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setFloat(indexBasedOne, (Float) nonNull);
+                stmt.setFloat(indexBasedOne, (Float) value);
             }
             break;
             case DOUBLE: {
-                if (!(nonNull instanceof Double)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (value instanceof Double) {
+                    stmt.setDouble(indexBasedOne, (Double) value);
+                } else if (value instanceof Float) {
+                    stmt.setFloat(indexBasedOne, (Float) value);
+                } else {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setDouble(indexBasedOne, (Double) nonNull);
             }
             break;
             case TIME: {
-                if (!(nonNull instanceof LocalTime)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof LocalTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case YEAR_MONTH:
             case MONTH_DAY:
             case DATE: {
-                if (!(nonNull instanceof LocalDate)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof LocalDate)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case TIMESTAMP: {
-                if (!(nonNull instanceof LocalDateTime)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof LocalDateTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case TIME_WITH_TIMEZONE: {
-                if (!(nonNull instanceof OffsetTime)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof OffsetTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case TIMESTAMP_WITH_TIMEZONE: {
-                if (!(nonNull instanceof OffsetDateTime)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof OffsetDateTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setObject(indexBasedOne, nonNull);
+                stmt.setObject(indexBasedOne, value);
             }
             break;
             case CHAR:
@@ -818,46 +821,46 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             case TINYTEXT:
             case TEXT:
             case MEDIUMTEXT: {
-                if (!(nonNull instanceof String)) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof String)) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setString(indexBasedOne, (String) nonNull);
+                stmt.setString(indexBasedOne, (String) value);
             }
             break;
             case JSON:
             case JSONB:
             case LONGTEXT:
-                setLongText(stmt, indexBasedOne, type, dataType, nonNull);
+                setLongText(stmt, indexBasedOne, type, dataType, value);
                 break;
             case BINARY:
             case VARBINARY:
             case TINYBLOB:
             case BLOB:
             case MEDIUMBLOB: {
-                if (!(nonNull instanceof byte[])) {
-                    throw beforeBindMethodError(type, dataType, nonNull);
+                if (!(value instanceof byte[])) {
+                    throw beforeBindMethodError(type, dataType, value);
                 }
-                stmt.setBytes(indexBasedOne, (byte[]) nonNull);
+                stmt.setBytes(indexBasedOne, (byte[]) value);
             }
             break;
             case LONGBLOB:
-                setLongBinary(stmt, indexBasedOne, type, dataType, nonNull);
+                setLongBinary(stmt, indexBasedOne, type, dataType, value);
                 break;
             case GEOMETRY: {
-                if (nonNull instanceof String) {
-                    stmt.setString(indexBasedOne, (String) nonNull);
-                } else if (nonNull instanceof Reader) {
-                    stmt.setCharacterStream(indexBasedOne, (Reader) nonNull);
-                } else if (nonNull instanceof byte[]) {
-                    stmt.setBytes(indexBasedOne, (byte[]) nonNull);
-                } else if (nonNull instanceof InputStream) {
-                    stmt.setBinaryStream(indexBasedOne, (InputStream) nonNull);
-                } else if (nonNull instanceof Path) {
-                    try (InputStream inputStream = Files.newInputStream((Path) nonNull, StandardOpenOption.READ)) {
+                if (value instanceof String) {
+                    stmt.setString(indexBasedOne, (String) value);
+                } else if (value instanceof Reader) {
+                    stmt.setCharacterStream(indexBasedOne, (Reader) value);
+                } else if (value instanceof byte[]) {
+                    stmt.setBytes(indexBasedOne, (byte[]) value);
+                } else if (value instanceof InputStream) {
+                    stmt.setBinaryStream(indexBasedOne, (InputStream) value);
+                } else if (value instanceof Path) {
+                    try (InputStream inputStream = Files.newInputStream((Path) value, StandardOpenOption.READ)) {
                         stmt.setBinaryStream(indexBasedOne, inputStream);
                     } catch (IOException e) {
                         String m = String.format("Parameter[%s] %s[%s] read occur error."
-                                , indexBasedOne, Path.class.getName(), nonNull);
+                                , indexBasedOne, Path.class.getName(), value);
                         throw new SQLException(m, e);
                     }
                 }

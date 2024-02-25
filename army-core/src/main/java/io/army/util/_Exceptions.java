@@ -348,6 +348,16 @@ public abstract class _Exceptions {
         return new ErrorChildInsertException(m);
     }
 
+    public static ArmyException literalEscapeModeError(EscapeMode mode, Dialect dialect) {
+        String m = String.format("%s don't support %s for %s", dialect, mode, ArmyKey.LITERAL_ESCAPE_MODE.name);
+        return new ArmyException(m);
+    }
+
+    public static ArmyException identifierEscapeModeError(EscapeMode mode, Dialect dialect) {
+        String m = String.format("%s don't support %s for %s", dialect, mode, ArmyKey.IDENTIFIER_ESCAPE_MODE.name);
+        return new ArmyException(m);
+    }
+
 
     public static CriteriaException nonNullNamedParam(NamedParam param) {
         String m = String.format("%s[%s] must be non-null.", NamedParam.class.getName(), param.name());

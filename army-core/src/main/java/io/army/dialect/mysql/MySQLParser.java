@@ -16,13 +16,11 @@
 
 package io.army.dialect.mysql;
 
-import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
-import io.army.env.ArmyKey;
 import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -57,17 +55,24 @@ abstract class MySQLParser extends _ArmyDialectParser {
         super(environment, dialect);
         switch (this.literalEscapeMode) {
             case DEFAULT:
+            case DEFAULT_NO_TYPE:
             case BACK_SLASH:
                 break;
             default:
-                String m = String.format("%s don't support %s for %s", this.dialect, this.literalEscapeMode, ArmyKey.LITERAL_ESCAPE_MODE.name);
-                throw new ArmyException(m);
+                throw _Exceptions.literalEscapeModeError(this.literalEscapeMode, this.dialect);
+
         }
 
-        if (this.identifierEscapeMode != EscapeMode.DEFAULT) {
-            String m = String.format("%s don't support %s for %s", this.dialect, this.identifierEscapeMode, ArmyKey.IDENTIFIER_ESCAPE_MODE.name);
-            throw new ArmyException(m);
+        switch (this.identifierEscapeMode) {
+            case DEFAULT:
+            case DEFAULT_NO_TYPE:
+            case BACK_SLASH:
+                break;
+            default:
+                throw _Exceptions.identifierEscapeModeError(this.identifierEscapeMode, this.dialect);
+
         }
+
 
         // Prior to / as of
         this.asOf80 = ((MySQLDialect) this.dialect).compareWith(MySQLDialect.MySQL80) >= 0;
@@ -274,7 +279,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
             }
             break;
             case DOUBLE: {
-                if (!(value instanceof Double)) {
+                if (!(value instanceof Double || value instanceof Float)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value);
@@ -302,12 +307,21 @@ abstract class MySQLParser extends _ArmyDialectParser {
             }
             break;
             case TINYINT_UNSIGNED:
-            case SMALLINT:
-            case YEAR: {
+            case SMALLINT: {
                 if (!(value instanceof Short)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(value);
+            }
+            break;
+            case YEAR: {
+                if (value instanceof Short) {
+                    sqlBuilder.append(value);
+                } else if (value instanceof Year) {
+                    sqlBuilder.append(((Year) value).getValue());
+                } else {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
             }
             break;
             case POINT:
