@@ -19,28 +19,35 @@ package io.army.jdbc;
 
 import io.army.mapping.MappingType;
 import io.army.session.*;
+import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
+import io.army.sqltype.SQLiteType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
+import java.time.*;
+import java.time.temporal.TemporalAccessor;
 import java.util.function.Function;
 
-abstract class SQLiteExecutor extends JdbcExecutor {
+final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(SQLiteExecutor.class);
 
 
     static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
-        return new LocalExecutor(factory, conn, sessionName);
+        return new SQLiteExecutor(factory, conn, sessionName);
     }
 
     static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
-        throw new UnsupportedOperationException("SQLite don't support XA transaction");
+        throw new DataAccessException("SQLite don't support XA transaction");
     }
 
     /**
@@ -52,7 +59,7 @@ abstract class SQLiteExecutor extends JdbcExecutor {
 
 
     @Override
-    public final TransactionInfo sessionTransactionCharacteristics(final Function<Option<?>, ?> optionFunc)
+    public TransactionInfo sessionTransactionCharacteristics(final Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
 
         try {
@@ -81,7 +88,7 @@ abstract class SQLiteExecutor extends JdbcExecutor {
     }
 
     @Override
-    public final void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
+    public void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
         final Isolation isolation;
         isolation = option.isolation();
 
@@ -114,68 +121,246 @@ abstract class SQLiteExecutor extends JdbcExecutor {
     }
 
     @Override
-    final void bind(PreparedStatement stmt, final int indexBasedOne, MappingType type, DataType dataType, final Object value)
-            throws SQLException {
+    public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
 
-    }
-
-    @Override
-    final DataType getDataType(ResultSetMetaData meta, int indexBasedOne) throws SQLException {
         return null;
     }
 
     @Nullable
     @Override
-    final Object get(ResultSet resultSet, int indexBasedOne, MappingType type, DataType dataType) throws SQLException {
+    public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+        return null;
+    }
+
+    @Override
+    void bind(PreparedStatement stmt, final int indexBasedOne, MappingType type, DataType dataType, final Object value)
+            throws SQLException {
+        if (!(dataType instanceof SQLiteType)) {
+            throw mapMethodError(type, dataType);
+        }
+        switch ((SQLiteType) dataType) {
+            case BOOLEAN: {
+                if (!(value instanceof Boolean)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setBoolean(indexBasedOne, (Boolean) value);
+            }
+            break;
+            case TINYINT: {
+                if (!(value instanceof Byte)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setObject(indexBasedOne, ((Byte) value).intValue());
+            }
+            break;
+            case SMALLINT: {
+                if (!(value instanceof Short)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setObject(indexBasedOne, ((Short) value).intValue());
+            }
+            break;
+            case MEDIUMINT:
+            case INTEGER: {
+                if (!(value instanceof Integer)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setObject(indexBasedOne, value);
+            }
+            break;
+            case BIGINT: {
+                if (!(value instanceof Long)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setObject(indexBasedOne, value);
+            }
+            break;
+            case DECIMAL: {
+                if (value instanceof BigDecimal) {
+                    stmt.setString(indexBasedOne, ((BigDecimal) value).toPlainString());
+                } else if (value instanceof BigInteger) {
+                    stmt.setString(indexBasedOne, value.toString());
+                } else {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+            }
+            break;
+            case FLOAT: {
+                if (!(value instanceof Float)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setObject(indexBasedOne, value);
+            }
+            break;
+            case DOUBLE: {
+                if (!(value instanceof Double || value instanceof Float)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setObject(indexBasedOne, value);
+            }
+            break;
+            case VARCHAR:
+            case TEXT:
+            case JSON: {
+                if (!(value instanceof String)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, (String) value);
+            }
+            break;
+            case VARBINARY:
+            case BLOB: {
+                if (!(value instanceof byte[])) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setBytes(indexBasedOne, (byte[]) value);
+            }
+            break;
+            case TIMESTAMP: {
+                if (!(value instanceof LocalDateTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, _TimeUtils.DATETIME_FORMATTER_6.format((TemporalAccessor) value));
+            }
+            break;
+            case TIMESTAMP_WITH_TIMEZONE: {
+                if (!(value instanceof OffsetDateTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, _TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) value));
+            }
+            break;
+            case DATE: {
+                if (!(value instanceof LocalDate)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, value.toString());
+            }
+            break;
+            case TIME: {
+                if (!(value instanceof LocalTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, _TimeUtils.TIME_FORMATTER_6.format((TemporalAccessor) value));
+            }
+            break;
+            case TIME_WITH_TIMEZONE: {
+                if (!(value instanceof OffsetTime)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, _TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) value));
+            }
+            break;
+            case BIT: {
+                if (!(value instanceof Long)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setLong(indexBasedOne, (Long) value);
+            }
+            break;
+            case YEAR: {
+                if (value instanceof Short) {
+                    stmt.setShort(indexBasedOne, (Short) value);
+                } else if (value instanceof Year) {
+                    stmt.setInt(indexBasedOne, ((Year) value).getValue());
+                } else {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+            }
+            break;
+            case MONTH_DAY: {
+                if (!(value instanceof MonthDay)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, value.toString());
+            }
+            break;
+            case YEAR_MONTH: {
+                if (!(value instanceof YearMonth)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, value.toString());
+            }
+            break;
+            case PERIOD: {
+                if (!(value instanceof Period)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, value.toString());
+            }
+            break;
+            case DURATION: {
+                if (!(value instanceof Duration)) {
+                    throw beforeBindMethodError(type, dataType, value);
+                }
+                stmt.setString(indexBasedOne, value.toString());
+            }
+            break;
+            case DYNAMIC: {
+                if (value instanceof String) {
+                    stmt.setString(indexBasedOne, (String) value);
+                } else if (value instanceof byte[]) {
+                    stmt.setBytes(indexBasedOne, (byte[]) value);
+                } else if (value instanceof BigDecimal) {
+                    stmt.setString(indexBasedOne, ((BigDecimal) value).toPlainString());
+                } else if (value instanceof BigInteger) {
+                    stmt.setString(indexBasedOne, value.toString());
+                } else if (value instanceof Integer
+                        || value instanceof Long
+                        || value instanceof Double
+                        || value instanceof Float) {
+                    stmt.setObject(indexBasedOne, value);
+                } else if (value instanceof Short || value instanceof Byte) {
+                    stmt.setObject(indexBasedOne, ((Number) value).intValue());
+                } else {
+                    throw ExecutorSupport.beforeBindMethodError(type, dataType, value);
+                }
+            }
+            break;
+            case NULL:
+            case UNKNOWN:
+            default:
+                throw ExecutorSupport.beforeBindMethodError(type, dataType, value);
+
+        }
+    }
+
+    @Override
+    DataType getDataType(ResultSetMetaData meta, int indexBasedOne) throws SQLException {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    Object get(ResultSet resultSet, int indexBasedOne, MappingType type, DataType dataType) throws SQLException {
         return null;
     }
 
 
     @Override
-    final Isolation readIsolation(String level) {
-        return null;
+    Isolation readIsolation(String level) {
+        // no bug ,never here
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
-    final Logger getLogger() {
+    Logger getLogger() {
         return LOG;
     }
 
 
-    private static final class LocalExecutor extends SQLiteExecutor implements SyncLocalStmtExecutor {
-
-
-        private LocalExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
-            super(factory, conn, sessionName);
-        }
-
-        @Override
-        public TransactionInfo startTransaction(TransactionOption option, HandleMode mode) {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
-            return null;
-        }
-
-
-        @Nullable
-        @Override
-        TransactionInfo obtainTransaction() {
-            return null;
-        }
-
-
-    } // LocalExecutor
+    @Nullable
+    @Override
+    TransactionInfo obtainTransaction() {
+        return null;
+    }
 
 
 }

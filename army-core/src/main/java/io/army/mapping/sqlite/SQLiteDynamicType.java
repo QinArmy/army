@@ -19,13 +19,23 @@ package io.army.mapping.sqlite;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
+import io.army.util._StringUtils;
+import io.army.util._TimeUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.*;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
+import java.util.BitSet;
 import java.util.Objects;
 
 public final class SQLiteDynamicType extends _ArmyBuildInMapping {
@@ -64,12 +74,88 @@ public final class SQLiteDynamicType extends _ArmyBuildInMapping {
 
     @Override
     public Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return source;
+        return dynamicTypeBeforeBind(this, dataType, source, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Object afterGet(DataType dataType, MappingEnv env, Object source) throws DataAccessException {
         return source;
+    }
+
+
+    public static Object dynamicTypeBeforeBind(MappingType type, final DataType dataType, final Object source,
+                                               ErrorHandler errorHandler) {
+        final Object value;
+        if (source instanceof BigDecimal) {
+            value = ((BigDecimal) source).toPlainString();
+        } else if (source instanceof Number) {
+            if (source instanceof Integer
+                    || source instanceof Long
+                    || source instanceof Double
+                    || source instanceof Float
+                    || source instanceof Short
+                    || source instanceof Byte
+                    || source instanceof BigInteger) {
+                value = source;
+            } else {
+                value = source.toString();
+            }
+        } else if (source instanceof String) {
+            value = source;
+        } else if (source instanceof byte[]) {
+            value = source;
+        } else if (source instanceof BitSet) {
+            final BitSet v = (BitSet) source;
+            if (v.length() > 64) {
+                throw errorHandler.apply(type, dataType, source, null);
+            }
+            value = v.toLongArray()[0];
+        } else if (source instanceof Temporal) {
+            if (source instanceof LocalDateTime) {
+                value = _StringUtils.builder()
+                        .append(_Constant.QUOTE)
+                        .append(_TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) source))
+                        .append(_Constant.QUOTE)
+                        .toString();
+            } else if (source instanceof OffsetDateTime || source instanceof ZonedDateTime) {
+                value = _StringUtils.builder()
+                        .append(_Constant.QUOTE)
+                        .append(_TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) source))
+                        .append(_Constant.QUOTE)
+                        .toString();
+            } else if (source instanceof LocalDate || source instanceof YearMonth) {
+                value = _StringUtils.builder()
+                        .append(_Constant.QUOTE)
+                        .append(source)
+                        .append(_Constant.QUOTE)
+                        .toString();
+            } else if (source instanceof LocalTime) {
+                value = _StringUtils.builder()
+                        .append(_Constant.QUOTE)
+                        .append(_TimeUtils.TIME_FORMATTER_6.format((TemporalAccessor) source))
+                        .append(_Constant.QUOTE)
+                        .toString();
+            } else if (source instanceof OffsetTime) {
+                value = _StringUtils.builder()
+                        .append(_Constant.QUOTE)
+                        .append(_TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) source))
+                        .append(_Constant.QUOTE)
+                        .toString();
+            } else if (source instanceof Year) {
+                value = ((Year) source).getValue();
+            } else {
+                value = source.toString();
+            }
+        } else if (source instanceof Period || source instanceof Duration || source instanceof MonthDay) {
+            value = _StringUtils.builder()
+                    .append(_Constant.QUOTE)
+                    .append(source)
+                    .append(_Constant.QUOTE)
+                    .toString();
+        } else {
+            value = source.toString();
+        }
+        return value;
     }
 
 

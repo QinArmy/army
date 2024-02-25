@@ -79,7 +79,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
                 dataType = PostgreType.REAL;
                 break;
             case SQLite:
-                dataType = SQLiteType.DOUBLE;
+                dataType = SQLiteType.FLOAT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

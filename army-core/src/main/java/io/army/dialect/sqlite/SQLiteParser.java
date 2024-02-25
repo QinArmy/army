@@ -39,7 +39,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
-import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.util.Set;
 
@@ -363,6 +362,13 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(value);
             }
             break;
+            case FLOAT: {
+                if (!(value instanceof Float)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(value);
+            }
+            break;
             case DOUBLE: {
                 if (!(value instanceof Double || value instanceof Float)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
@@ -514,40 +520,8 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                             .append(_Constant.QUOTE)
                             .append(HexUtils.hexEscapesText(true, (byte[]) value))
                             .append(_Constant.QUOTE);
-                } else if (value instanceof Temporal) {
-                    if (value instanceof LocalDateTime) {
-                        sqlBuilder.append(_Constant.QUOTE)
-                                .append(_TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) value))
-                                .append(_Constant.QUOTE);
-                    } else if (value instanceof OffsetDateTime || value instanceof ZonedDateTime) {
-                        sqlBuilder.append(_Constant.QUOTE)
-                                .append(_TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) value))
-                                .append(_Constant.QUOTE);
-                    } else if (value instanceof LocalDate || value instanceof YearMonth) {
-                        sqlBuilder.append(_Constant.QUOTE)
-                                .append(value)
-                                .append(_Constant.QUOTE);
-                    } else if (value instanceof LocalTime) {
-                        sqlBuilder.append(_Constant.QUOTE)
-                                .append(_TimeUtils.TIME_FORMATTER_6.format((TemporalAccessor) value))
-                                .append(_Constant.QUOTE);
-                    } else if (value instanceof OffsetTime) {
-                        sqlBuilder.append(_Constant.QUOTE)
-                                .append(_TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) value))
-                                .append(_Constant.QUOTE);
-                    } else if (value instanceof Year) {
-                        sqlBuilder.append(((Year) value).getValue());
-                    } else {
-                        final String v = value.toString();
-                        escapeText(v, 0, v.length(), sqlBuilder);
-                    }
-                } else if (value instanceof Period || value instanceof Duration || value instanceof MonthDay) {
-                    sqlBuilder.append(_Constant.QUOTE)
-                            .append(value)
-                            .append(_Constant.QUOTE);
                 } else {
-                    final String v = value.toString();
-                    escapeText(v, 0, v.length(), sqlBuilder);
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
             }
             break;

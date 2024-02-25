@@ -44,6 +44,9 @@ public enum SQLiteType implements SQLType {
 
     DECIMAL("DECIMAL", ArmyType.DECIMAL, BigDecimal.class), // alias of TEXT class
 
+
+    FLOAT("FLOAT", ArmyType.FLOAT, Float.class), // alias of REAL class
+
     DOUBLE("DOUBLE", ArmyType.DOUBLE, Double.class), // alias of REAL class
 
     TIME("TIME", ArmyType.TIME, LocalTime.class), // alias of TEXT class
