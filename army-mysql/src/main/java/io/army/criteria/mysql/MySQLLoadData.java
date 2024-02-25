@@ -271,6 +271,7 @@ public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
     interface _ChildLoadDataClause<I extends Item, P> {
 
+
         _ChildLocalInfileClause<I, P> loadData(MySQLs.Modifier local);
 
         _ChildLocalInfileClause<I, P> loadData(List<MySQLs.Modifier> modifierList);
@@ -314,6 +315,7 @@ public interface MySQLLoadData extends MySQLStatement, DmlCommand {
 
 
     interface _LoadDataClause<I extends Item> {
+
 
         _LocalInfileClause<I> loadData(MySQLs.Modifier local);
 

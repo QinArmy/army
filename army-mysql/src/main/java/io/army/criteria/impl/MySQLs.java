@@ -321,7 +321,9 @@ public abstract class MySQLs extends MySQLSyntax {
      * </pre>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html">LOAD DATA Statement</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-local">Non-LOCAL Versus LOCAL Operation</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile">Server local_infile system variables</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_secure_file_priv">secure_file_priv</a>
      * @see <a href="https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-security.html">client allowLoadLocalInfile property </a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_no_backslash_escapes">NO_BACKSLASH_ESCAPES</a>
      * @see <a href="https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_local_infile_request.html">LOCAL INFILE Request</a>

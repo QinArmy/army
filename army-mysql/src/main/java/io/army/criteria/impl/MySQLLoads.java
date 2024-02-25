@@ -21,8 +21,6 @@ import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner.mysql._MySQLLoadData;
 import io.army.criteria.mysql.MySQLLoadData;
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
@@ -678,11 +676,6 @@ abstract class MySQLLoads {
             ContextStack.pop(this.context);
             this.prepared = Boolean.TRUE;
             return (I) this;
-        }
-
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
         }
 
 

@@ -21,7 +21,7 @@ public class LoadDataTests extends SessionTestSupport {
 
 
     @Test
-    public void singleLoadData(final SyncLocalSession session) {
+    public void singleLoadDataLocal(final SyncLocalSession session) {
         final Path csvFile;
         csvFile = MyPaths.myLocal("china_region.csv");
         if (Files.notExists(csvFile)) {
