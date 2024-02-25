@@ -23,12 +23,12 @@ import io.army.util._Exceptions;
 
 import java.util.Collection;
 
-public interface _SchemaComparer {
+public interface SchemaComparer {
 
     SchemaResult compare(SchemaInfo schemaInfo, SchemaMeta schemaMeta, Collection<TableMeta<?>> tableMetas);
 
-    static _SchemaComparer create(final ServerMeta serverMeta) {
-        final _SchemaComparer comparer;
+    static SchemaComparer create(final ServerMeta serverMeta) {
+        final SchemaComparer comparer;
         switch (serverMeta.serverDatabase()) {
             case MySQL:
                 comparer = MySQLComparer.create(serverMeta);
@@ -36,9 +36,11 @@ public interface _SchemaComparer {
             case PostgreSQL:
                 comparer = PostgreComparer.create(serverMeta);
                 break;
+            case SQLite:
+                comparer = SQLiteComparer.create(serverMeta);
+                break;
             case Oracle:
             case H2:
-
             default:
                 throw _Exceptions.unexpectedEnum(serverMeta.serverDatabase());
         }

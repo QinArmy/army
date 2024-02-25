@@ -20,8 +20,6 @@ import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
 import io.army.util._Collections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;
@@ -31,16 +29,16 @@ import java.util.Map;
 
 class JdbcMetaExecutor implements MetaExecutor {
 
-    static JdbcMetaExecutor from(Connection conn, String sessionFactoryName) {
-        return new JdbcMetaExecutor(conn, sessionFactoryName);
+    static JdbcMetaExecutor from(Connection conn) {
+        return new JdbcMetaExecutor(conn);
     }
 
-    static JdbcMetaExecutor fromXa(final XAConnection xaConn, String sessionFactoryName) {
+    static JdbcMetaExecutor fromXa(final XAConnection xaConn) {
         try {
             final Connection conn;
             conn = xaConn.getConnection();
 
-            return new XaConnMetaExecutor(xaConn, conn, sessionFactoryName);
+            return new XaConnMetaExecutor(xaConn, conn);
         } catch (SQLException e) {
             try {
                 xaConn.close();
@@ -52,21 +50,15 @@ class JdbcMetaExecutor implements MetaExecutor {
         }
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
-
 
     private final Connection conn;
-
-    private final String sessionFactoryName;
-
 
     /**
      * private constructor
      */
 
-    private JdbcMetaExecutor(Connection conn, String sessionFactoryName) {
+    private JdbcMetaExecutor(Connection conn) {
         this.conn = conn;
-        this.sessionFactoryName = sessionFactoryName;
     }
 
 
@@ -292,8 +284,8 @@ class JdbcMetaExecutor implements MetaExecutor {
 
         private final XAConnection xaConn;
 
-        private XaConnMetaExecutor(XAConnection xaConn, Connection conn, String sessionFactoryName) {
-            super(conn, sessionFactoryName);
+        private XaConnMetaExecutor(XAConnection xaConn, Connection conn) {
+            super(conn);
             this.xaConn = xaConn;
         }
 

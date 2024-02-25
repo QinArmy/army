@@ -23,8 +23,6 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
@@ -33,8 +31,6 @@ final class MySQLComparer extends ArmySchemaComparer {
     static MySQLComparer create(ServerMeta serverMeta) {
         return new MySQLComparer(serverMeta);
     }
-
-    private static final Logger LOG = LoggerFactory.getLogger(MySQLComparer.class);
 
     private MySQLComparer(ServerMeta serverMeta) {
         super(serverMeta);

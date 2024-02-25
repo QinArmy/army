@@ -32,45 +32,46 @@ import java.time.*;
  */
 public enum SQLiteType implements SQLType {
 
-    BOOLEAN("BOOLEAN", ArmyType.BOOLEAN, Boolean.class),
+    NULL("NULL", ArmyType.NULL, Object.class),
+    BOOLEAN("BOOLEAN", ArmyType.BOOLEAN, Boolean.class), // alias of TEXT class
 
-    TINYINT("TINYINT", ArmyType.TINYINT, Byte.class),
-    SMALLINT("SMALLINT", ArmyType.SMALLINT, Short.class),
-    MEDIUMINT("MEDIUMINT", ArmyType.MEDIUMINT, Integer.class),
-    INTEGER("INTEGER", ArmyType.INTEGER, Integer.class),
+    TINYINT("TINYINT", ArmyType.TINYINT, Byte.class),  // alias of INTEGER class
+    SMALLINT("SMALLINT", ArmyType.SMALLINT, Short.class), // alias of INTEGER class
+    MEDIUMINT("MEDIUMINT", ArmyType.MEDIUMINT, Integer.class), // alias of INTEGER class
+    INTEGER("INTEGER", ArmyType.INTEGER, Integer.class), // alias of INTEGER class
 
-    BIGINT("BIGINT", ArmyType.BIGINT, Long.class),
+    BIGINT("BIGINT", ArmyType.BIGINT, Long.class), // alias of INTEGER class
 
-    DECIMAL("DECIMAL", ArmyType.DECIMAL, BigDecimal.class),
+    DECIMAL("DECIMAL", ArmyType.DECIMAL, BigDecimal.class), // alias of TEXT class
 
-    DOUBLE("DOUBLE", ArmyType.DOUBLE, Double.class),
+    DOUBLE("DOUBLE", ArmyType.DOUBLE, Double.class), // alias of REAL class
 
-    TIME("TIME", ArmyType.TIME, LocalTime.class),
-    TIME_WITH_TIMEZONE("TIME WITH TIMEZONE", ArmyType.TIME_WITH_TIMEZONE, OffsetTime.class),
-    TIMESTAMP("TIMESTAMP", ArmyType.TIMESTAMP, LocalDateTime.class),
-    TIMESTAMP_WITH_TIMEZONE("TIMESTAMP WITH TIMEZONE", ArmyType.TIMESTAMP_WITH_TIMEZONE, OffsetDateTime.class),
+    TIME("TIME", ArmyType.TIME, LocalTime.class), // alias of TEXT class
+    TIME_WITH_TIMEZONE("TIME WITH TIMEZONE", ArmyType.TIME_WITH_TIMEZONE, OffsetTime.class), // alias of TEXT class
+    TIMESTAMP("TIMESTAMP", ArmyType.TIMESTAMP, LocalDateTime.class), // alias of TEXT class
+    TIMESTAMP_WITH_TIMEZONE("TIMESTAMP WITH TIMEZONE", ArmyType.TIMESTAMP_WITH_TIMEZONE, OffsetDateTime.class), // alias of TEXT class
 
-    DATE("DATE", ArmyType.DATE, LocalDate.class),
+    DATE("DATE", ArmyType.DATE, LocalDate.class), // alias of TEXT class
 
-    YEAR("YEAR", ArmyType.YEAR, Year.class),
-    YEAR_MONTH("YEAR MONTH", ArmyType.YEAR, YearMonth.class),
-    MONTH_DAY("MONTH DAY", ArmyType.YEAR, MonthDay.class),
+    YEAR("YEAR", ArmyType.YEAR, Year.class), // alias of INTEGER class
+    YEAR_MONTH("YEAR MONTH", ArmyType.YEAR, YearMonth.class), // alias of TEXT class
+    MONTH_DAY("MONTH DAY", ArmyType.YEAR, MonthDay.class), // alias of TEXT class
 
-    DURATION("DURATION", ArmyType.DURATION, Duration.class),
+    DURATION("DURATION", ArmyType.DURATION, Duration.class), // alias of TEXT class
 
-    PERIOD("PERIOD", ArmyType.PERIOD, Period.class),
+    PERIOD("PERIOD", ArmyType.PERIOD, Period.class), // alias of TEXT class
 
 
-    VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class),
+    VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class), // alias of TEXT class
     TEXT("TEXT", ArmyType.TEXT, String.class),
 
-    VARBINARY("VARBINARY", ArmyType.VARBINARY, byte[].class),
-    BLOB("BLOB", ArmyType.BLOB, byte[].class),
+    VARBINARY("VARBINARY", ArmyType.VARBINARY, byte[].class), // alias of BLOB class
+    BLOB("BLOB", ArmyType.BLOB, byte[].class), // alias of BLOB class
 
-    BIT("BIT", ArmyType.BIT, Long.class),
-    JSON("JSON", ArmyType.JSON, String.class),
+    BIT("BIT", ArmyType.BIT, Long.class), // alias of INTEGER class
+    JSON("JSON", ArmyType.JSON, String.class), // alias of TEXT class
 
-    DYNAMIC("", ArmyType.DIALECT_TYPE, Object.class),
+    DYNAMIC("", ArmyType.DIALECT_TYPE, Object.class), // alias of empty class
 
     UNKNOWN("UNKNOWN", ArmyType.UNKNOWN, Object.class);
 
@@ -172,6 +173,45 @@ public enum SQLiteType implements SQLType {
         // SQLite don't support array operation
         return null;
     }
+
+//              case BOOLEAN:
+//
+//            case TINYINT:
+//            case SMALLINT:
+//            case MEDIUMINT:
+//            case INTEGER:
+//            case BIGINT:
+//
+//            case DOUBLE:
+//            case DECIMAL:
+//
+//
+//            case BIT:
+//
+//            case VARCHAR:
+//            case TEXT:
+//            case JSON:
+//
+//            case VARBINARY:
+//            case BLOB:
+//
+//            case TIME:
+//            case TIME_WITH_TIMEZONE:
+//            case DATE:
+//            case YEAR:
+//
+//            case TIMESTAMP:
+//            case TIMESTAMP_WITH_TIMEZONE:
+//
+//            case MONTH_DAY:
+//            case YEAR_MONTH:
+//            case PERIOD:
+//            case DURATION:
+//
+//            case DYNAMIC:
+//            case NULL:
+//
+//            case UNKNOWN:
 
 
 }

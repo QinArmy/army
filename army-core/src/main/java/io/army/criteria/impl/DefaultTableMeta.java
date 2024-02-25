@@ -288,7 +288,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
     private final String comment;
 
-    private final String charset;
+    private final String tableOption;
 
     private final SchemaMeta schemaMeta;
 
@@ -315,7 +315,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
             this.immutable = TableMetaUtils.immutable(table, domainClass);
             this.schemaMeta = _SchemaMetaFactory.getSchema(table.catalog(), table.schema());
 
-            this.charset = table.charset();
+            this.tableOption = table.tableOption();
 
             final TableMetaUtils.FieldMetaPair<T> pair;
             pair = TableMetaUtils.createFieldMetaPair(this);
@@ -414,8 +414,8 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
 
     @Override
-    public final String charset() {
-        return this.charset;
+    public final String tableOption() {
+        return this.tableOption;
     }
 
     @Override

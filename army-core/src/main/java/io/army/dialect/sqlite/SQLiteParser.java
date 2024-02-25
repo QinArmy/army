@@ -28,6 +28,7 @@ import io.army.meta.DatabaseObject;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.DataType;
+import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -43,6 +44,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
     public final void typeName(MappingType type, StringBuilder sqlBuilder) {
 
     }
+
 
     @Override
     protected final Set<String> createKeyWordSet() {
@@ -62,7 +64,8 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isSupportZone() {
-        return false;
+        // support
+        return true;
     }
 
     @Override
@@ -92,7 +95,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     @Override
     protected final ChildUpdateMode childUpdateMode() {
-        return null;
+        return ChildUpdateMode.WITH_ID;
     }
 
     @Override
@@ -145,36 +148,81 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     }
 
+    /**
+     * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     */
     @Override
-    protected final String qualifiedSchemaName(ServerMeta meta) {
-        return null;
-    }
+    protected final String qualifiedSchemaName(final ServerMeta meta) {
+        final String catalog, schema, name;
+        catalog = meta.catalog();
+        schema = meta.schema();
 
-    @Override
-    protected final IdentifierMode identifierMode(String identifier) {
-        return null;
-    }
+        final boolean catalogHasText, schemaHasText;
+        catalogHasText = _StringUtils.hasText(catalog);
+        schemaHasText = _StringUtils.hasText(schema);
 
-    @Override
-    protected final void escapesIdentifier(String identifier, StringBuilder sqlBuilder) {
-
+        if (catalogHasText && schemaHasText) {
+            name = _StringUtils.builder(catalog.length() + 1 + schema.length())
+                    .append(catalog)
+                    .append(_Constant.PERIOD)
+                    .append(schema)
+                    .toString();
+        } else if (catalogHasText) {
+            name = catalog;
+        } else if (schemaHasText) {
+            name = schema;
+        } else {
+            name = "main";
+        }
+        return name;
     }
 
     @Override
     protected final boolean isUseObjectNameModeMethod() {
+        // don't use object name mode
         return false;
     }
 
+    /**
+     * @return never {@link IdentifierMode#ESCAPES}
+     * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     */
     @Override
-    protected final IdentifierMode objectNameMode(DatabaseObject object, String effectiveName) {
-        return null;
+    protected final IdentifierMode identifierMode(final String identifier) {
+        return scanStandardSimpleIdentifier(identifier);
     }
 
+    /**
+     * @see #isUseObjectNameModeMethod()
+     * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     */
+    @Override
+    protected final IdentifierMode objectNameMode(final DatabaseObject object, final String effectiveName) {
+        // no bug never here
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     */
+    @Override
+    protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
+        // no bug never here
+        throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * @see <a href="https://sqlite.org/lang_expr.html">Literal Values (Constants)</a>
+     */
     @Override
     protected final void bindLiteralNull(MappingType type, DataType dataType, EscapeMode mode, StringBuilder sqlBuilder) {
 
     }
 
+    /**
+     * @see <a href="https://sqlite.org/lang_expr.html">Literal Values (Constants)</a>
+     */
     @Override
     protected final boolean bindLiteral(TypeMeta typeMeta, DataType dataType, Object value, EscapeMode mode, StringBuilder sqlBuilder) {
         return false;
@@ -182,7 +230,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     @Override
     protected final SQLiteDdlParser createDdlDialect() {
-        return null;
+        return SQLiteDdlParser.create(this);
     }
 
     @Override

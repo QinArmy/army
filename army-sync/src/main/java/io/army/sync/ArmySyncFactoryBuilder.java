@@ -23,9 +23,9 @@ import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
+import io.army.schema.SchemaComparer;
 import io.army.schema.SchemaInfo;
 import io.army.schema.SchemaResult;
-import io.army.schema._SchemaComparer;
 import io.army.session.DdlMode;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmyFactoryBuilder;
@@ -188,8 +188,8 @@ final class ArmySyncFactoryBuilder
             switch (ddlMode) {
                 case VALIDATE:
                 case UPDATE: {
-                    final _SchemaComparer schemaComparer;
-                    schemaComparer = _SchemaComparer.create(sessionFactory.serverMeta());
+                    final SchemaComparer schemaComparer;
+                    schemaComparer = SchemaComparer.create(sessionFactory.serverMeta());
                     final Collection<TableMeta<?>> tableCollection;
                     tableCollection = sessionFactory.tableMap().values();
                     schemaResult = schemaComparer.compare(schemaInfo, sessionFactory.schemaMeta(), tableCollection);

@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-abstract class ArmySchemaComparer implements _SchemaComparer {
+abstract class ArmySchemaComparer implements SchemaComparer {
 
     final ServerMeta serverMeta;
 

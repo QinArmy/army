@@ -594,7 +594,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return mode;
     }
 
-
+    @Override
     protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
         final int length;
         length = identifier.length();

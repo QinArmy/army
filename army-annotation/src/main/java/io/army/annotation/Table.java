@@ -80,14 +80,8 @@ public @interface Table {
     boolean defaultNullable() default true;
 
     /**
-     * (Optional) The charset of the table in database.
-     * <p>
-     * Default:
-     *     <ul>
-     *         <li>MySQL : utf8</li>
-     *         <li>Oracle : utf8</li>
-     *     </ul>
+     * (Optional) The option clause of create table
      *
      */
-    String charset() default "";
+    String tableOption() default "";
 }

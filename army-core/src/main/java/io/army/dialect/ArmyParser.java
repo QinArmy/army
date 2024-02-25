@@ -486,9 +486,11 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract String qualifiedSchemaName(ServerMeta meta);
 
+    @Deprecated
     protected abstract IdentifierMode identifierMode(String identifier);
 
     protected abstract void escapesIdentifier(String identifier, StringBuilder sqlBuilder);
+
 
     /**
      * @see #objectNameMode(DatabaseObject, String)
@@ -496,7 +498,7 @@ abstract class ArmyParser implements DialectParser {
     protected abstract boolean isUseObjectNameModeMethod();
 
     /**
-     * @see #isUseObjectNameModeMethod()
+     * @see #safeObjectName(DatabaseObject)
      */
     protected abstract IdentifierMode objectNameMode(DatabaseObject object, String effectiveName);
 
@@ -541,13 +543,12 @@ abstract class ArmyParser implements DialectParser {
                 upperObjectName = objectName.toUpperCase(Locale.ROOT);
                 break;
             case UPPER_CASE:
-                effectiveName = objectName.toUpperCase(Locale.ROOT);
-                upperObjectName = effectiveName;
+                upperObjectName = objectName.toUpperCase(Locale.ROOT);
+                effectiveName = upperObjectName;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(this.columnNameMode);
         }
-
 
         final IdentifierMode mode;
         if (this.keyWordMap.containsKey(upperObjectName)) {
@@ -557,6 +558,7 @@ abstract class ArmyParser implements DialectParser {
         } else {
             mode = this.identifierMode(effectiveName);
         }
+
         switch (mode) {
             case ERROR:
                 throw _Exceptions.objectNameError(object, this.dialect);
@@ -589,10 +591,7 @@ abstract class ArmyParser implements DialectParser {
                 } else {
                     builder = schemaTableBuilder;
                 }
-                final int oldLength;
-                oldLength = builder.length();
-                this.escapesIdentifier(effectiveName, builder);
-                assert builder.length() > oldLength;
+                escapesIdentifier(effectiveName, builder);
                 safeObjectName = builder.toString();
             }
             break;
@@ -631,8 +630,8 @@ abstract class ArmyParser implements DialectParser {
                 upperObjectName = effectiveName.toUpperCase(Locale.ROOT);
                 break;
             case UPPER_CASE:
-                effectiveName = object.objectName().toUpperCase(Locale.ROOT);
-                upperObjectName = effectiveName;
+                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
+                effectiveName = upperObjectName;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(this.columnNameMode);
@@ -657,12 +656,8 @@ abstract class ArmyParser implements DialectParser {
                         .append(effectiveName)
                         .append(this.identifierQuote);
                 break;
-            case ESCAPES: {
-                final int oldLength;
-                oldLength = builder.length();
-                this.escapesIdentifier(effectiveName, builder);
-                assert builder.length() > oldLength;
-            }
+            case ESCAPES:
+                escapesIdentifier(effectiveName, builder);
             break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
@@ -1840,6 +1835,51 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract void standardLimitClause(@Nullable _Expression offset, @Nullable _Expression rowCount
             , _SqlContext context);
+
+
+    /**
+     * @return never {@link IdentifierMode#ESCAPES}
+     * @see #safeObjectName(DatabaseObject)
+     * @see #safeObjectName(DatabaseObject, StringBuilder)
+     * @see #identifier(String)
+     * @see #identifier(String, StringBuilder)
+     */
+    protected final IdentifierMode scanStandardSimpleIdentifier(final String identifier) {
+        final int length = identifier.length();
+        if (length == 0) {
+            return IdentifierMode.ERROR;
+
+        }
+
+        final char identifierQuote = this.identifierQuote;
+
+        IdentifierMode mode = null;
+        char ch;
+        for (int i = 0; i < length; i++) {
+            ch = identifier.charAt(i);
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
+                continue;
+            } else if (ch >= '0' && ch <= '9') {
+                if (i == 0) {
+                    mode = IdentifierMode.QUOTING;
+                }
+                continue;
+            } else if (ch == identifierQuote || ch == _Constant.NUL_CHAR) {
+                mode = IdentifierMode.ERROR;
+                break;
+            }
+
+            if (mode == null) {
+                mode = IdentifierMode.QUOTING;
+            }
+
+        } // loop for
+
+        if (mode == null) {
+            mode = IdentifierMode.SIMPLE;
+        }
+        return mode;
+    }
 
     /**
      * @see #parseDomainParentDeleteWithId(_Predicate, DomainDeleteContext)

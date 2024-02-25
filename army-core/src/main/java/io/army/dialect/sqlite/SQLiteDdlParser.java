@@ -21,10 +21,16 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
 import io.army.sqltype.DataType;
+import io.army.sqltype.SQLiteType;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.List;
 
-
+/**
+ * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+ * @since 0.6.7
+ */
 final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
 
     static SQLiteDdlParser create(SQLiteParser parser) {
@@ -35,34 +41,106 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
         super(parser);
     }
 
-
+    /**
+     * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+     */
     @Override
     public void modifyTableComment(TableMeta<?> table, List<String> sqlList) {
 
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+     */
     @Override
-    protected void dataType(FieldMeta<?> field, DataType dataType, StringBuilder builder) {
+    protected void dataType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
 
+        switch ((SQLiteType) dataType) {
+            case BOOLEAN:
+
+            case TINYINT:
+            case SMALLINT:
+            case MEDIUMINT:
+            case INTEGER:
+            case BIGINT:
+
+            case DOUBLE:
+            case BIT:
+
+            case VARCHAR:
+            case TEXT:
+            case JSON:
+
+            case VARBINARY:
+            case BLOB:
+
+            case DATE:
+            case YEAR:
+
+            case MONTH_DAY:
+            case YEAR_MONTH:
+            case PERIOD:
+            case DURATION:
+                builder.append(dataType.typeName());
+                break;
+            case DECIMAL: {
+                builder.append(dataType.typeName());
+                decimalType(field, builder);
+            }
+            break;
+            case TIME:
+            case TIME_WITH_TIMEZONE:
+            case TIMESTAMP:
+            case TIMESTAMP_WITH_TIMEZONE: {
+                builder.append(dataType.typeName());
+                timeTypeScale(field, dataType, builder);
+            }
+            break;
+            case DYNAMIC:
+                // no-op
+                break;
+            case NULL:
+            case UNKNOWN:
+            default:
+                throw _Exceptions.unexpectedEnum((SQLiteType) dataType);
+        }
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+     */
     @Override
     protected void postDataType(FieldMeta<?> field, DataType dataType, StringBuilder builder) {
-
+        dataType(field, dataType, builder);
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+     */
     @Override
     protected void appendTableOption(TableMeta<?> table, StringBuilder builder) {
+        final String optionClause;
+        optionClause = table.tableOption();
+        if (_StringUtils.hasText(optionClause)) {
 
+        }
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+     */
     @Override
     protected void appendPostGenerator(FieldMeta<?> field, StringBuilder builder) {
-
+        builder.append(" AUTOINCREMENT");
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
+     */
     @Override
     protected void doModifyColumn(_FieldResult result, StringBuilder builder) {
 
     }
+
+
 }

@@ -96,6 +96,9 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
 
+
+    /*-------------------below protected methods -------------------*/
+
     @Override
     protected final void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
         final List<_Cte> cteList;
@@ -336,8 +339,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount
-            , _SqlContext context) {
+    protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount,
+                                             _SqlContext context) {
 
         final StringBuilder sqlBuilder;
         if (offset != null && rowCount != null) {
@@ -682,6 +685,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 .append(BACKTICK);
 
     }
+
 
     @Override
     protected final boolean isUseObjectNameModeMethod() {
