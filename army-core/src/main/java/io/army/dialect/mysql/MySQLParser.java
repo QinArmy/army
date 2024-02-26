@@ -123,12 +123,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final boolean existsIgnoreOnConflict() {
-        //false,MySQL don't support ignore in ON DUPLICATE KEY clause.
-        return false;
-    }
-
-    @Override
     protected final CriteriaException supportChildInsert(final _Insert._ChildInsert childStmt, final Visible visible) {
 
         return null;

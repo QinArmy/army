@@ -409,12 +409,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final boolean existsIgnoreOnConflict() {
-        //true,Postgre support DO NOTHING and WHERE in ON CONFLICT clause.
-        return true;
-    }
-
-    @Override
     protected final CriteriaException supportChildInsert(_Insert._ChildInsert childStmt, Visible visible) {
         return null;
     }

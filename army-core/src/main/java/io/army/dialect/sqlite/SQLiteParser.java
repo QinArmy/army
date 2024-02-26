@@ -17,6 +17,7 @@
 package io.army.dialect.sqlite;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.SQLWords;
 import io.army.criteria.Visible;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner._Expression;
@@ -39,6 +40,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Set;
 
@@ -72,7 +74,17 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     @Override
     public final void typeName(MappingType type, StringBuilder sqlBuilder) {
-
+        final DataType dataType;
+        dataType = type.map(this.serverMeta);
+        if (!(dataType instanceof SQLiteType)) {
+            unrecognizedTypeName(type, dataType, false, sqlBuilder);
+        } else switch ((SQLiteType) dataType) {
+            case UNKNOWN:
+            case NULL:
+                throw ExecutorSupport.mapMethodError(type, dataType);
+            default:
+                sqlBuilder.append(dataType.typeName());
+        }
     }
 
 
@@ -81,6 +93,10 @@ abstract class SQLiteParser extends _ArmyDialectParser {
         return SQLiteDialectUtils.createKeyWordSet();
     }
 
+    /**
+     * @see <a href="https://sqlite.org/lang_naming.html">Database Object Name Resolution</a>
+     * @see <a href="https://www.sqlite.org/lang_keywords.html">SQLite Keywords</a>
+     */
     @Override
     protected final char identifierDelimitedQuote() {
         return _Constant.DOUBLE_QUOTE;
@@ -94,23 +110,32 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isSupportZone() {
-        // support
+        //true  support
         return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_update.html">update statement</a>
+     * @see <a href="https://www.sqlite.org/lang_insert.html">upsert clause</a>
+     */
     @Override
     protected final boolean isSetClauseTableAlias() {
+        // false , SQLite don't support
         return false;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     */
     @Override
     protected final boolean isTableAliasAfterAs() {
-        // SQLite support
+        // true , SQLite support
         return true;
     }
 
     @Override
     protected final boolean isSupportOnlyDefault() {
+        // false , SQLite don't support default() function
         return false;
     }
 
@@ -123,26 +148,48 @@ abstract class SQLiteParser extends _ArmyDialectParser {
         return false;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     */
     @Override
     protected final boolean isSupportTableOnly() {
+        // false , SQLite don't support
         return false;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     * @see <a href="https://www.sqlite.org/lang_delete.html">DELETE statement</a>
+     */
     @Override
     protected final ChildUpdateMode childUpdateMode() {
         return ChildUpdateMode.WITH_ID;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     */
     @Override
     protected final boolean isSupportSingleUpdateAlias() {
-        return false;
+        // true , SQLite support
+        return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_delete.html">DELETE statement</a>
+     */
     @Override
     protected final boolean isSupportSingleDeleteAlias() {
-        return false;
+        // true , SQLite support
+        return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_insert.html">INSERT clause</a>
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     * @see <a href="https://www.sqlite.org/lang_delete.html">DELETE statement</a>
+     */
     @Override
     protected final boolean isSupportWithClause() {
         // true , SQLite support WITH clause
@@ -150,7 +197,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see <a href="https://www.sqlite.org/lang_insert.html">WITH clause</a>
+     * @see <a href="https://www.sqlite.org/lang_insert.html">INSERT clause</a>
      */
     @Override
     protected final boolean isSupportWithClauseInInsert() {
@@ -158,37 +205,61 @@ abstract class SQLiteParser extends _ArmyDialectParser {
         return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     */
     @Override
     protected final boolean isSupportWindowClause() {
-        return false;
+        // true , SQLite support WINDOW clause
+        return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     */
     @Override
     protected final boolean isSupportUpdateRow() {
-        return false;
+        // true , SQLite support
+        return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     */
     @Override
     protected final boolean isSupportUpdateDerivedField() {
+        // false , SQLite don't support
         return false;
     }
 
     /**
+     * @see <a href="https://www.sqlite.org/lang_insert.html">INSERT clause</a>
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     * @see <a href="https://www.sqlite.org/lang_delete.html">DELETE statement</a>
      * @see <a href="https://www.sqlite.org/lang_insert.html">RETURNING clause</a>
      */
     @Override
     protected final boolean isSupportReturningClause() {
+        // true , SQLite support
         return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     */
     @Override
     protected final boolean isValidateUnionType() {
+        // false , SQLite don't need
         return false;
     }
 
+    /**
+     * @see #isValidateUnionType()
+     */
     @Override
     protected final void validateUnionType(_UnionType unionType) {
-
+        // no bug,never here
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -342,6 +413,8 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
         }
 
+        boolean encloseOrEscape = false;
+
         switch ((SQLiteType) dataType) {
             case BOOLEAN:
                 _Literals.bindBoolean(typeMeta, dataType, value, sqlBuilder);
@@ -406,6 +479,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 escapeText((String) value, 0, ((String) value).length(), sqlBuilder);
+                encloseOrEscape = true;
             }
             break;
             case VARBINARY:
@@ -417,6 +491,8 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                         .append(_Constant.QUOTE)
                         .append(HexUtils.hexEscapesText(true, (byte[]) value))
                         .append(_Constant.QUOTE);
+
+                encloseOrEscape = true;
             }
             break;
             case TIMESTAMP: {
@@ -426,6 +502,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) value))
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case TIMESTAMP_WITH_TIMEZONE: {
@@ -435,6 +512,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case DATE: {
@@ -442,8 +520,9 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 sqlBuilder.append(_Constant.QUOTE)
-                        .append(value)
+                        .append(DateTimeFormatter.ISO_LOCAL_DATE.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case TIME: {
@@ -453,6 +532,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.TIME_FORMATTER_6.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case TIME_WITH_TIMEZONE: {
@@ -462,6 +542,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case YEAR: {
@@ -481,6 +562,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case YEAR_MONTH: {
@@ -490,6 +572,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case PERIOD: {
@@ -499,6 +582,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case DURATION: {
@@ -508,6 +592,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
+                encloseOrEscape = true;
             }
             break;
             case DYNAMIC: {
@@ -525,14 +610,17 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                     } else {
                         final String v = value.toString();
                         escapeText(v, 0, v.length(), sqlBuilder);
+                        encloseOrEscape = true;
                     }
                 } else if (value instanceof String) {
                     escapeText((String) value, 0, ((String) value).length(), sqlBuilder);
+                    encloseOrEscape = true;
                 } else if (value instanceof byte[]) {
                     sqlBuilder.append('x')
                             .append(_Constant.QUOTE)
                             .append(HexUtils.hexEscapesText(true, (byte[]) value))
                             .append(_Constant.QUOTE);
+                    encloseOrEscape = true;
                 } else {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
@@ -545,7 +633,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 throw _Exceptions.unexpectedEnum((SQLiteType) dataType);
         }
 
-        return false;
+        return encloseOrEscape;
     }
 
     @Override
@@ -553,10 +641,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
         return SQLiteDdlParser.create(this);
     }
 
-    @Override
-    protected final boolean existsIgnoreOnConflict() {
-        return false;
-    }
 
     @Nullable
     @Override
@@ -564,11 +648,34 @@ abstract class SQLiteParser extends _ArmyDialectParser {
         return null;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     */
     @Override
-    protected final void standardLimitClause(@Nullable _Expression offset, @Nullable _Expression rowCount, _SqlContext context) {
+    protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount,
+                                             _SqlContext context) {
+
+        final StringBuilder sqlBuilder;
+        if (offset != null && rowCount != null) {
+            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LIMIT);
+            offset.appendSql(sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            rowCount.appendSql(sqlBuilder, context);
+        } else if (rowCount != null) {
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LIMIT);
+            rowCount.appendSql(sqlBuilder, context);
+        }
 
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     */
+    @Override
+    protected final void standardLockClause(final SQLWords lockMode, final _SqlContext context) {
+        throw _Exceptions.dontSupportForUpdateClause(this.dialect);
+    }
 
     static void escapeText(final CharSequence value, final int offset, final int end, final StringBuilder builder) {
 

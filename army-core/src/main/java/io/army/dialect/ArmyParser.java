@@ -801,11 +801,6 @@ abstract class ArmyParser implements DialectParser {
     protected abstract DdlParser createDdlDialect();
 
     /**
-     * @return true: exists ignore possibility,for example support DO NOTHING clause in CONFLICT clause.
-     */
-    protected abstract boolean existsIgnoreOnConflict();
-
-    /**
      * @param childStmt not {@link StandardInsert}
      * @see #handleInsert(_SqlContext, InsertStatement, SessionSpec)
      */

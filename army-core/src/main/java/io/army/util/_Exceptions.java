@@ -551,6 +551,10 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("%s don't support WITH clause", dialect));
     }
 
+    public static CriteriaException dontSupportForUpdateClause(Dialect dialect) {
+        return new CriteriaException(String.format("%s don't support FOR UPDATE clause", dialect));
+    }
+
     public static CriteriaException dontSupportWithClauseInInsert(Dialect dialect) {
         String m = String.format("%s don't support WITH clause in INSERT statement.", dialect);
         return new CriteriaException(m);

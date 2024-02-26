@@ -19,7 +19,6 @@ package io.army.mapping.sqlite;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
@@ -27,12 +26,12 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
-import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.util.BitSet;
@@ -112,46 +111,20 @@ public final class SQLiteDynamicType extends _ArmyBuildInMapping {
             value = v.toLongArray()[0];
         } else if (source instanceof Temporal) {
             if (source instanceof LocalDateTime) {
-                value = _StringUtils.builder()
-                        .append(_Constant.QUOTE)
-                        .append(_TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) source))
-                        .append(_Constant.QUOTE)
-                        .toString();
+                value = _TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) source);
             } else if (source instanceof OffsetDateTime || source instanceof ZonedDateTime) {
-                value = _StringUtils.builder()
-                        .append(_Constant.QUOTE)
-                        .append(_TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) source))
-                        .append(_Constant.QUOTE)
-                        .toString();
-            } else if (source instanceof LocalDate || source instanceof YearMonth) {
-                value = _StringUtils.builder()
-                        .append(_Constant.QUOTE)
-                        .append(source)
-                        .append(_Constant.QUOTE)
-                        .toString();
+                value = _TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) source);
+            } else if (source instanceof LocalDate) {
+                value = DateTimeFormatter.ISO_LOCAL_DATE.format((TemporalAccessor) source);
             } else if (source instanceof LocalTime) {
-                value = _StringUtils.builder()
-                        .append(_Constant.QUOTE)
-                        .append(_TimeUtils.TIME_FORMATTER_6.format((TemporalAccessor) source))
-                        .append(_Constant.QUOTE)
-                        .toString();
+                value = _TimeUtils.TIME_FORMATTER_6.format((TemporalAccessor) source);
             } else if (source instanceof OffsetTime) {
-                value = _StringUtils.builder()
-                        .append(_Constant.QUOTE)
-                        .append(_TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) source))
-                        .append(_Constant.QUOTE)
-                        .toString();
+                value = _TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) source);
             } else if (source instanceof Year) {
                 value = ((Year) source).getValue();
             } else {
                 value = source.toString();
             }
-        } else if (source instanceof Period || source instanceof Duration || source instanceof MonthDay) {
-            value = _StringUtils.builder()
-                    .append(_Constant.QUOTE)
-                    .append(source)
-                    .append(_Constant.QUOTE)
-                    .toString();
         } else {
             value = source.toString();
         }
