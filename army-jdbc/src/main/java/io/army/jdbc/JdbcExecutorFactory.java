@@ -133,10 +133,8 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
                 this.useMultiStmt = (methodFlag & MULTI_STMT) != 0;
                 break;
             case PostgreSQL:
-                this.useMultiStmt = true;
-                break;
             case SQLite:
-                this.useMultiStmt = false; // TODO right ?
+                this.useMultiStmt = true;
                 break;
             case H2:
             default:

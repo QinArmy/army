@@ -33,19 +33,6 @@ public abstract class DataSourceUtils {
 
     public static DruidDataSource createDataSource(final Database database) {
 
-        final Properties properties = new Properties();
-        properties.put("user", "army_w");
-        properties.put("password", "army123");
-
-        if (MyPaths.isMyLocal()) {
-            properties.put("sslMode", "DISABLED");
-            if (database == Database.MySQL) {
-                properties.put("allowMultiQueries", "true");
-                properties.put("allowLoadLocalInfile", "true");
-            }
-
-        }
-
         final String url;
         url = mapDatabaseToUrl(database);
 
@@ -54,7 +41,7 @@ public abstract class DataSourceUtils {
 
         ds.setUrl(url);
         ds.setDriverClassName(mapDriverName(url));
-        ds.setConnectProperties(properties);
+        ds.setConnectProperties(mapDatabaseToProperties(database));
 
         ds.setInitialSize(10);
         ds.setMaxActive(200);
@@ -87,7 +74,7 @@ public abstract class DataSourceUtils {
     }
 
 
-    static String mapDatabaseToUrl(final Database database) {
+    public static String mapDatabaseToUrl(final Database database) {
         final String url;
         switch (database) {
             case MySQL:
@@ -103,6 +90,22 @@ public abstract class DataSourceUtils {
                 throw _Exceptions.unexpectedEnum(database);
         }
         return url;
+    }
+
+    public static Properties mapDatabaseToProperties(final Database database) {
+        final Properties properties = new Properties();
+        properties.put("user", "army_w");
+        properties.put("password", "army123");
+
+        if (MyPaths.isMyLocal()) {
+            properties.put("sslMode", "DISABLED");
+            if (database == Database.MySQL) {
+                properties.put("allowMultiQueries", "true");
+                properties.put("allowLoadLocalInfile", "true");
+            }
+
+        }
+        return properties;
     }
 
 

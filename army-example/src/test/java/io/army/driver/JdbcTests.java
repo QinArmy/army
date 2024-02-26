@@ -16,12 +16,13 @@
 
 package io.army.driver;
 
+import io.army.dialect.Database;
+import io.army.session.DataSourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.sql.*;
-import java.util.Properties;
 
 public class JdbcTests {
 
@@ -38,7 +39,7 @@ public class JdbcTests {
 
     @Test
     public void indexMeta() throws Exception {
-        try (Connection conn = createPostgreConnection()) {
+        try (Connection conn = createConnection(Database.PostgreSQL)) {
             final DatabaseMetaData metaData;
             metaData = conn.getMetaData();
 
@@ -53,28 +54,15 @@ public class JdbcTests {
     }
 
 
-    private Connection createConnection() {
-        String url = "jdbc:mysql://localhost:3306/army_bank?sslMode=DISABLED";
-        Properties properties = new Properties();
-        properties.setProperty("user", "army_w");
-        properties.setProperty("password", "army123");
+    private Connection createConnection(Database database) {
         try {
-            return DriverManager.getConnection(url, properties);
+            return DriverManager.getConnection(DataSourceUtils.mapDatabaseToUrl(database),
+                    DataSourceUtils.mapDatabaseToProperties(database)
+            );
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Connection createPostgreConnection() {
-        String url = "jdbc:postgresql://localhost:5432/army_bank";
-        Properties properties = new Properties();
-        properties.setProperty("user", "army_w");
-        properties.setProperty("password", "army123");
-        try {
-            return DriverManager.getConnection(url, properties);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 }

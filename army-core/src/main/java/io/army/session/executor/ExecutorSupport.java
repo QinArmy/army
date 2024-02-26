@@ -777,7 +777,7 @@ public abstract class ExecutorSupport {
      * @see <a href="https://sqlite.org/datatype3.html">Datatypes In SQLite</a>
      * @see <a href="https://sqlite.org/datatypes.html">Datatypes In SQLite Version 2</a>
      */
-    protected final DataType getSQLiteType(final String typeName) {
+    protected static DataType getSQLiteType(final String typeName) {
         final SQLiteType dataType;
         switch (typeName.toUpperCase(Locale.ROOT)) {
             case "BOOLEAN":

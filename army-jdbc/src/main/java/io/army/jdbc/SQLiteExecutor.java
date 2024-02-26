@@ -17,6 +17,7 @@
 
 package io.army.jdbc;
 
+import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
@@ -50,11 +51,30 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
         throw new DataAccessException("SQLite don't support XA transaction");
     }
 
+    private static final Option<Boolean> DEFERRED = Option.from("DEFERRED", Boolean.class);
+
+    private static final Option<Boolean> IMMEDIATE = Option.from("IMMEDIATE", Boolean.class);
+
+    private static final Option<Boolean> EXCLUSIVE = Option.from("EXCLUSIVE", Boolean.class);
+
+
+    private TransactionInfo transactionInfo;
+
+    private boolean sessionReadonly;
+
+    private int sessionIsolationLevel;
+
     /**
      * private constructor
      */
     private SQLiteExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         super(factory, conn, sessionName);
+        try {
+            this.sessionReadonly = conn.isReadOnly();
+            this.sessionIsolationLevel = conn.getTransactionIsolation();
+        } catch (Exception e) {
+            throw handleException(e);
+        }
     }
 
 
@@ -62,78 +82,115 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
     public TransactionInfo sessionTransactionCharacteristics(final Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
 
-        try {
-            final Isolation isolation;
-            switch (this.conn.getTransactionIsolation()) {
-                case Connection.TRANSACTION_SERIALIZABLE:
-                    isolation = Isolation.SERIALIZABLE;
-                    break;
-                case Connection.TRANSACTION_READ_COMMITTED:
-                    isolation = Isolation.READ_COMMITTED;
-                    break;
-                case Connection.TRANSACTION_REPEATABLE_READ:
-                    isolation = Isolation.REPEATABLE_READ;
-                    break;
-                case Connection.TRANSACTION_READ_UNCOMMITTED:
-                    isolation = Isolation.READ_UNCOMMITTED;
-                    break;
-                default:
-                    throw new IllegalStateException("unknown isolation");
+        final Isolation isolationLevel;
+        final boolean readOnly;
+        readOnly = this.sessionReadonly;
+        isolationLevel = jdbcIsolationToArmyIsolation(this.sessionIsolationLevel);
 
-            }
-            return TransactionInfo.notInTransaction(isolation, this.conn.isReadOnly());
-        } catch (Exception e) {
-            throw handleException(e);
-        }
+        return TransactionInfo.notInTransaction(isolationLevel, readOnly);
     }
+
 
     @Override
     public void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
         final Isolation isolation;
         isolation = option.isolation();
 
-        final int isolationLevel;
+        this.sessionReadonly = option.isReadOnly();
+        if (isolation != null) {
+            this.sessionIsolationLevel = armyIsolationToJdbcIsolation(isolation);
+        }
+    }
 
-        if (isolation == null) {
-            isolationLevel = Connection.TRANSACTION_NONE;
-        } else if (isolation == Isolation.SERIALIZABLE) {
-            isolationLevel = Connection.TRANSACTION_SERIALIZABLE;
-        } else if (isolation == Isolation.READ_COMMITTED) {
-            isolationLevel = Connection.TRANSACTION_READ_COMMITTED;
-        } else if (isolation == Isolation.REPEATABLE_READ) {
-            isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
-        } else if (isolation == Isolation.READ_UNCOMMITTED) {
-            isolationLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
-        } else {
-            throw _Exceptions.unknownIsolation(isolation);
+
+    @Override
+    public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
+        final StringBuilder builder = new StringBuilder(168);
+        int stmtCount = 0;
+        if (inTransaction()) {
+            handleInTransaction(builder, mode);
+            stmtCount++;
         }
 
-        try {
-            this.conn.setReadOnly(option.isReadOnly());
-            if (isolation != null) {
-                this.conn.setTransactionIsolation(isolationLevel);
+        final boolean deferred, immediate, exclusive;
+        deferred = Boolean.TRUE.equals(option.valueOf(DEFERRED));
+        immediate = Boolean.TRUE.equals(option.valueOf(IMMEDIATE));
+        exclusive = Boolean.TRUE.equals(option.valueOf(EXCLUSIVE));
+
+        builder.append("BEGIN");
+
+        if (deferred) {
+            if (immediate || exclusive) {
+                throw transactionModifierError();
             }
+            builder.append(_Constant.SPACE)
+                    .append("DEFERRED");
+        } else if (immediate) {
+            if (exclusive) {
+                throw transactionModifierError();
+            }
+            builder.append(_Constant.SPACE)
+                    .append("IMMEDIATE");
+        } else if (exclusive) {
+            builder.append(_Constant.SPACE)
+                    .append("EXCLUSIVE");
+        }
+
+        builder.append(_Constant.SPACE)
+                .append("TRANSACTION");
+
+        stmtCount++;
+
+        final boolean readOnly = option.isReadOnly();
+
+        final Isolation isolation, finalIsolation;
+        isolation = option.isolation();
+
+        try {
+            if (isolation == null) {
+                this.conn.setTransactionIsolation(this.sessionIsolationLevel);
+            } else {
+                this.conn.setTransactionIsolation(armyIsolationToJdbcIsolation(isolation));
+            }
+
+            this.conn.setReadOnly(readOnly);
         } catch (Exception e) {
             throw handleException(e);
         }
 
+        // execute start transaction statements
+        finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
 
+        final TransactionInfo.InfoBuilder infoBuilder;
+        infoBuilder = TransactionInfo.builder(true, finalIsolation, readOnly);
+        infoBuilder.option(option);
+        if (deferred) {
+            infoBuilder.option(DEFERRED, Boolean.TRUE);
+        } else if (immediate) {
+            infoBuilder.option(IMMEDIATE, Boolean.TRUE);
+        } else if (exclusive) {
+            infoBuilder.option(EXCLUSIVE, Boolean.TRUE);
+        }
+
+        final TransactionInfo info;
+        this.transactionInfo = info = infoBuilder.build();
+        return info;
     }
 
-    @Override
-    public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
-        throw new DataAccessException("");
-    }
 
     @Nullable
     @Override
     public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+        executeSimpleStaticStatement(COMMIT, LOG);
+        this.transactionInfo = null;
         return null;
     }
 
     @Nullable
     @Override
     public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+        executeSimpleStaticStatement(ROLLBACK, LOG);
+        this.transactionInfo = null;
         return null;
     }
 
@@ -173,7 +230,9 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
                 stmt.setObject(indexBasedOne, value);
             }
             break;
-            case BIGINT: {
+            case BIGINT:
+            case UNSIGNED_BIG_INT:
+            case BIT: {
                 if (!(value instanceof Long)) {
                     throw beforeBindMethodError(type, dataType, value);
                 }
@@ -204,6 +263,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
                 stmt.setObject(indexBasedOne, value);
             }
             break;
+            case CHAR:
             case VARCHAR:
             case TEXT:
             case JSON: {
@@ -213,6 +273,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
                 stmt.setString(indexBasedOne, (String) value);
             }
             break;
+            case BINARY:
             case VARBINARY:
             case BLOB: {
                 if (!(value instanceof byte[])) {
@@ -254,13 +315,6 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
                     throw beforeBindMethodError(type, dataType, value);
                 }
                 stmt.setString(indexBasedOne, _TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) value));
-            }
-            break;
-            case BIT: {
-                if (!(value instanceof Long)) {
-                    throw beforeBindMethodError(type, dataType, value);
-                }
-                stmt.setLong(indexBasedOne, (Long) value);
             }
             break;
             case YEAR: {
@@ -438,7 +492,52 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
     @Nullable
     @Override
     TransactionInfo obtainTransaction() {
-        return null;
+        return this.transactionInfo;
+    }
+
+    /*-------------------below static methods -------------------*/
+
+
+    private static Isolation jdbcIsolationToArmyIsolation(final int isolationLevel) {
+        final Isolation isolation;
+        switch (isolationLevel) {
+            case Connection.TRANSACTION_REPEATABLE_READ:
+                isolation = Isolation.REPEATABLE_READ;
+                break;
+            case Connection.TRANSACTION_READ_COMMITTED:
+                isolation = Isolation.READ_COMMITTED;
+                break;
+            case Connection.TRANSACTION_SERIALIZABLE:
+                isolation = Isolation.SERIALIZABLE;
+                break;
+            case Connection.TRANSACTION_READ_UNCOMMITTED:
+                isolation = Isolation.READ_UNCOMMITTED;
+                break;
+            default:
+                throw new DataAccessException(String.format("unknown jdbc isolation level[%s]", isolationLevel));
+        }
+        return isolation;
+    }
+
+    private static int armyIsolationToJdbcIsolation(final Isolation isolation) {
+        final int isolationLevel;
+        if (isolation == Isolation.SERIALIZABLE) {
+            isolationLevel = Connection.TRANSACTION_SERIALIZABLE;
+        } else if (isolation == Isolation.READ_COMMITTED) {
+            isolationLevel = Connection.TRANSACTION_READ_COMMITTED;
+        } else if (isolation == Isolation.REPEATABLE_READ) {
+            isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
+        } else if (isolation == Isolation.READ_UNCOMMITTED) {
+            isolationLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
+        } else {
+            throw _Exceptions.unknownIsolation(isolation);
+        }
+        return isolationLevel;
+    }
+
+
+    private static DataAccessException transactionModifierError() {
+        return new DataAccessException("couldn't specify DEFERRED,IMMEDIATE,EXCLUSIVE at the same time");
     }
 
 
