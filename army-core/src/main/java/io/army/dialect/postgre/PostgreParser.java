@@ -331,7 +331,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                     sqlBuilder.append(dataType.typeName())
                             .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
                 }
-                PostgreLiterals.postgreBackslashEscapes(EscapeMode.DEFAULT, (String) value, 0, ((String) value).length(), sqlBuilder);
+                _PostgreLiterals.postgreTextLiteral(EscapeMode.DEFAULT, (String) value, 0, ((String) value).length(), sqlBuilder);
             }
             break;
             case RECORD: {
@@ -345,7 +345,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         || v.charAt(length - 1) != _Constant.RIGHT_PAREN) {
                     throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
-                PostgreLiterals.postgreBackslashEscapes(EscapeMode.DEFAULT, v, 0, length, sqlBuilder);
+                _PostgreLiterals.postgreTextLiteral(EscapeMode.DEFAULT, v, 0, length, sqlBuilder);
 
             }
             break;
@@ -372,7 +372,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                     sqlBuilder.append(dataType.typeName())
                             .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
                 }
-                PostgreLiterals.postgreBitString(typeMeta, dataType, value, sqlBuilder);
+                _PostgreLiterals.postgreBitString(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case UNKNOWN:
@@ -992,7 +992,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             arrayForStringValue(typeMeta, dataType, (String) value, sqlBuilder);
         } else if (value.getClass().isArray()) {
             sqlBuilder.append(_Constant.QUOTE);
-            PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, sqlBuilder, handler);
+            _PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, sqlBuilder, handler);
             sqlBuilder.append(_Constant.QUOTE);
         } else {
             throw _Exceptions.valueOutRange(dataType, value);
@@ -1019,8 +1019,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
         } else if (value.getClass().isArray()) {
 
             final StringBuilder tempBuilder = new StringBuilder();
-            PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, tempBuilder, handler);
-            PostgreLiterals.postgreBackslashEscapes(EscapeMode.ARRAY_ELEMENT, tempBuilder, 0, tempBuilder.length(), sqlBuilder);
+            _PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, tempBuilder, handler);
+            _PostgreLiterals.postgreTextLiteral(EscapeMode.ARRAY_ELEMENT, tempBuilder, 0, tempBuilder.length(), sqlBuilder);
         } else {
             throw _Exceptions.valueOutRange(dataType, value);
         }
@@ -1041,7 +1041,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 || value.charAt(length - 1) != _Constant.RIGHT_BRACE) {
             throw _Exceptions.valueOutRange(dataType, value);
         }
-        PostgreLiterals.postgreBackslashEscapes(EscapeMode.ARRAY_ELEMENT, value, 0, length, sqlBuilder);
+        _PostgreLiterals.postgreTextLiteral(EscapeMode.ARRAY_ELEMENT, value, 0, length, sqlBuilder);
     }
 
 
