@@ -42,6 +42,8 @@ public enum SQLiteType implements SQLType {
 
     BIGINT("BIGINT", ArmyType.BIGINT, Long.class), // alias of INTEGER class
 
+    UNSIGNED_BIG_INT("UNSIGNED BIG INT", ArmyType.BIGINT_UNSIGNED, Long.class), // alias of INTEGER class
+
     DECIMAL("DECIMAL", ArmyType.DECIMAL, BigDecimal.class), // alias of TEXT class
 
 
@@ -64,10 +66,11 @@ public enum SQLiteType implements SQLType {
 
     PERIOD("PERIOD", ArmyType.PERIOD, Period.class), // alias of TEXT class
 
-
+    CHAR("CHAR", ArmyType.CHAR, String.class), // alias of TEXT class
     VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class), // alias of TEXT class
     TEXT("TEXT", ArmyType.TEXT, String.class),
 
+    BINARY("BINARY", ArmyType.BINARY, byte[].class), // alias of BLOB class
     VARBINARY("VARBINARY", ArmyType.VARBINARY, byte[].class), // alias of BLOB class
     BLOB("BLOB", ArmyType.BLOB, byte[].class), // alias of BLOB class
 

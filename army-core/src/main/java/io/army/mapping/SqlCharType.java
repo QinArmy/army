@@ -70,7 +70,7 @@ public final class SqlCharType extends _ArmyBuildInMapping implements MappingTyp
                 dataType = PostgreType.CHAR;
                 break;
             case SQLite:
-                dataType = SQLiteType.VARCHAR;
+                dataType = SQLiteType.CHAR;
                 break;
             case Oracle:
                 dataType = OracleDataType.CHAR;

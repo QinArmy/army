@@ -117,15 +117,15 @@ public final class BigIntegerType extends _NumericType._IntegerType {
             value = (Boolean) nonNull ? BigInteger.ONE : BigInteger.ZERO;
         } else if (nonNull instanceof BigDecimal) {
             try {
-                value = ((BigDecimal) nonNull).toBigIntegerExact();
-            } catch (ArithmeticException e) {
-                throw errorHandler.apply(type, dataType, nonNull, null);
+                value = ((BigDecimal) nonNull).stripTrailingZeros().toBigIntegerExact();
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else if (nonNull instanceof String) {
             try {
                 value = new BigInteger((String) nonNull);
             } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, dataType, nonNull, null);
+                throw errorHandler.apply(type, dataType, nonNull, e);
             }
         } else {
             throw errorHandler.apply(type, dataType, nonNull, null);

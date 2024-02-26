@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
+ * @see UnsignedBigintType
  * @see UnsignedIntegerType
  */
 public final class UnsignedLongType extends _ArmyNoInjectionMapping
@@ -61,8 +62,8 @@ public final class UnsignedLongType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public BigInteger beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
-        return BigInteger.valueOf(toUnsignedLong(this, dataType, source, -1L, PARAM_ERROR_HANDLER));
+    public Long beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException {
+        return toUnsignedLong(this, dataType, source, -1L, PARAM_ERROR_HANDLER);
     }
 
     @Override
@@ -76,13 +77,12 @@ public final class UnsignedLongType extends _ArmyNoInjectionMapping
         final long value;
         if (source instanceof Long) {
             value = (Long) source;
-        } else if (source instanceof Integer
-                || source instanceof Short
-                || source instanceof Byte) {
-            value = ((Number) source).longValue();
-            if (value < 0L) {
-                throw errorHandler.apply(type, dataType, source, null);
-            }
+        } else if (source instanceof Integer) {
+            value = (Integer) source & 0xFFFF_FFFFL;
+        } else if (source instanceof Short) {
+            value = (Short) source & 0xFFFFL;
+        } else if (source instanceof Byte) {
+            value = (Byte) source & 0xFFL;
         } else if (source instanceof String) {
             try {
                 value = Long.parseUnsignedLong((String) source);

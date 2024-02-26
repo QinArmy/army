@@ -787,6 +787,7 @@ public abstract class ExecutorSupport {
                 dataType = SQLiteType.TINYINT;
                 break;
             case "SMALLINT":
+            case "INT2":
                 dataType = SQLiteType.SMALLINT;
                 break;
             case "MEDIUMINT":
@@ -794,35 +795,66 @@ public abstract class ExecutorSupport {
                 break;
             case "INTEGER":
             case "INT":
+            case "INT4":
                 dataType = SQLiteType.INTEGER;
                 break;
             case "BIGINT":
+            case "INT8":
                 dataType = SQLiteType.BIGINT;
+                break;
+            case "UNSIGNED BIG INT":
+                dataType = SQLiteType.UNSIGNED_BIG_INT;
                 break;
             case "DECIMAL":
             case "NUMERIC":
+            case "DATETIME":
                 dataType = SQLiteType.DECIMAL;
                 break;
             case "FLOAT":
+            case "FLOAT4":
                 dataType = SQLiteType.FLOAT;
                 break;
             case "DOUBLE":
             case "REAL":
+            case "FLOAT8":
+            case "DOUBLE PRECISION":
                 dataType = SQLiteType.DOUBLE;
+                break;
+            case "CHAR":
+            case "CHARACTER":
+            case "NCHAR":
+            case "NATIVE CHARACTER":
+                dataType = SQLiteType.CHAR;
+                break;
+            case "VARCHAR":
+            case "VARYING CHARACTER":
+                dataType = SQLiteType.VARCHAR;
+                break;
+            case "TEXT":
+            case "CLOB":
+                dataType = SQLiteType.TEXT;
+                break;
+            case "VARBINARY":
+                dataType = SQLiteType.VARBINARY;
+                break;
+            case "BLOB":
+                dataType = SQLiteType.BLOB;
                 break;
             case "TIME":
                 dataType = SQLiteType.TIME;
                 break;
             case "TIME WITH TIMEZONE":
+            case "TIMETZ":
                 dataType = SQLiteType.TIME_WITH_TIMEZONE;
                 break;
             case "TIMESTAMP":
                 dataType = SQLiteType.TIMESTAMP;
                 break;
             case "TIMESTAMP WITH TIMEZONE":
+            case "TIMESTAMPTZ":
                 dataType = SQLiteType.TIMESTAMP_WITH_TIMEZONE;
                 break;
-            case "DATE":
+            case "DATE": // TODO ?
                 dataType = SQLiteType.DATE;
                 break;
             case "YEAR":
@@ -839,20 +871,6 @@ public abstract class ExecutorSupport {
                 break;
             case "PERIOD":
                 dataType = SQLiteType.PERIOD;
-                break;
-            case "VARCHAR":
-            case "CHAR":
-                dataType = SQLiteType.VARCHAR;
-                break;
-            case "TEXT":
-            case "CLOB":
-                dataType = SQLiteType.TEXT;
-                break;
-            case "VARBINARY":
-                dataType = SQLiteType.VARBINARY;
-                break;
-            case "BLOB":
-                dataType = SQLiteType.BLOB;
                 break;
             case "BIT":
                 dataType = SQLiteType.BIT;

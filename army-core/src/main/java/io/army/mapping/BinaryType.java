@@ -70,7 +70,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
                 dataType = PostgreType.BYTEA;
                 break;
             case SQLite:
-                dataType = SQLiteType.VARBINARY;
+                dataType = SQLiteType.BINARY;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

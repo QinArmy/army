@@ -338,8 +338,88 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
 
     @Nullable
     @Override
-    Object get(ResultSet resultSet, int indexBasedOne, MappingType type, DataType dataType) throws SQLException {
-        return null;
+    Object get(ResultSet resultSet, final int indexBasedOne, MappingType type, final DataType dataType) throws SQLException {
+        final Object value;
+        switch ((SQLiteType) dataType) {
+            case NULL:
+                value = null;
+                break;
+            case BOOLEAN: {
+                if (resultSet.getObject(indexBasedOne) == null) {
+                    value = null;
+                } else {
+                    value = resultSet.getBoolean(indexBasedOne);
+                }
+            }
+            break;
+            case TINYINT:
+            case SMALLINT:
+            case MEDIUMINT:
+            case INTEGER: {
+                if (resultSet.getObject(indexBasedOne) == null) {
+                    value = null;
+                } else {
+                    value = resultSet.getInt(indexBasedOne);
+                }
+            }
+            break;
+            case BIGINT:
+            case UNSIGNED_BIG_INT:
+            case BIT: {
+                if (resultSet.getObject(indexBasedOne) == null) {
+                    value = null;
+                } else {
+                    value = resultSet.getLong(indexBasedOne);
+                }
+            }
+            break;
+            case FLOAT: {
+                if (resultSet.getObject(indexBasedOne) == null) {
+                    value = null;
+                } else {
+                    value = resultSet.getFloat(indexBasedOne);
+                }
+            }
+            break;
+            case DOUBLE: {
+                if (resultSet.getObject(indexBasedOne) == null) {
+                    value = null;
+                } else {
+                    value = resultSet.getDouble(indexBasedOne);
+                }
+            }
+            break;
+            case DECIMAL:
+                value = resultSet.getBigDecimal(indexBasedOne);
+                break;
+            case CHAR:
+            case VARCHAR:
+            case TEXT:
+            case JSON:
+            case TIME:
+            case TIME_WITH_TIMEZONE:
+            case DATE:
+            case YEAR:
+            case TIMESTAMP:
+            case TIMESTAMP_WITH_TIMEZONE:
+
+            case MONTH_DAY:
+            case YEAR_MONTH:
+            case PERIOD:
+            case DURATION:
+                value = resultSet.getString(indexBasedOne);
+                break;
+            case BINARY:
+            case VARBINARY:
+            case BLOB:
+                value = resultSet.getBytes(indexBasedOne);
+                break;
+            case DYNAMIC:
+            case UNKNOWN:
+            default:
+                value = resultSet.getObject(indexBasedOne);
+        }
+        return value;
     }
 
 

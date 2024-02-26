@@ -79,15 +79,50 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
 
-     static BigInteger toUnsignedBigInteger(MappingType type, DataType dataType, final Object nonNull,
-                                            ErrorHandler errorHandler) {
-         final BigInteger value;
-         value = BigIntegerType.toBigInteger(type, dataType, nonNull, errorHandler);
-         if (value.compareTo(BigInteger.ZERO) < 0) {
-             throw errorHandler.apply(type, dataType, nonNull, null);
-         }
-         return value;
-     }
+    static BigInteger toUnsignedBigInteger(MappingType type, DataType dataType, final Object source,
+                                           ErrorHandler errorHandler) {
+        final BigInteger value;
+        if (source instanceof BigInteger) {
+            value = (BigInteger) source;
+        } else if (source instanceof BigDecimal) {
+            try {
+                value = ((BigDecimal) source).stripTrailingZeros().toBigIntegerExact();
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof Long) {
+            final long v = (Long) source;
+            if (v < 0) {
+                value = new BigInteger(Long.toUnsignedString(v));
+            } else {
+                value = BigInteger.valueOf(v);
+            }
+        } else if (source instanceof Integer) {
+            final long v = (Integer) source & 0xFFFF_FFFFL;
+            value = BigInteger.valueOf(v);
+        } else if (source instanceof Short) {
+            final long v = (Short) source & 0xFFFF_FFFFL;
+            value = BigInteger.valueOf(v);
+        } else if (source instanceof Byte) {
+            final long v = (Byte) source & 0xFFFF_FFFFL;
+            value = BigInteger.valueOf(v);
+        } else if (source instanceof String) {
+            try {
+                value = new BigInteger((String) source);
+            } catch (Exception e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof Boolean) {
+            value = (Boolean) source ? BigInteger.ONE : BigInteger.ZERO;
+        } else {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+
+        if (value.compareTo(BigInteger.ZERO) < 0) {
+            throw errorHandler.apply(type, dataType, source, null);
+        }
+        return value;
+    }
 
     static BigDecimal toUnsignedBigDecimal(MappingType type, DataType dataType, final Object nonNull,
                                            ErrorHandler errorHandler) {
