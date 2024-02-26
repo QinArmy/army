@@ -23,7 +23,6 @@ import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.*;
-import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.ServerMeta;
@@ -383,15 +382,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
      * @see <a href="https://sqlite.org/lang_expr.html">Literal Values (Constants)</a>
      */
     @Override
-    protected final void bindLiteralNull(MappingType type, DataType dataType, EscapeMode mode, boolean typeName, StringBuilder sqlBuilder) {
-        switch (mode) {
-            case DEFAULT:
-            case DEFAULT_NO_TYPE:
-                break;
-            default:
-                throw _Exceptions.literalEscapeModeError(mode, this.dialect);
-
-        }
+    protected final void bindLiteralNull(MappingType type, DataType dataType, boolean typeName, StringBuilder sqlBuilder) {
         sqlBuilder.append(_Constant.NULL);
     }
 
@@ -399,21 +390,11 @@ abstract class SQLiteParser extends _ArmyDialectParser {
      * @see <a href="https://sqlite.org/lang_expr.html">Literal Values (Constants)</a>
      */
     @Override
-    protected final boolean bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                                        final EscapeMode mode, boolean typeName, final StringBuilder sqlBuilder) {
+    protected final void bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
+                                     boolean typeName, final StringBuilder sqlBuilder) {
         if (!(dataType instanceof SQLiteType)) {
             throw _Exceptions.unrecognizedTypeLiteral(this.dialectDatabase, dataType);
         }
-        switch (mode) {
-            case DEFAULT:
-            case DEFAULT_NO_TYPE:
-                break;
-            default:
-                throw _Exceptions.literalEscapeModeError(mode, this.dialect);
-
-        }
-
-        boolean encloseOrEscape = false;
 
         switch ((SQLiteType) dataType) {
             case BOOLEAN:
@@ -479,7 +460,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
                 escapeText((String) value, 0, ((String) value).length(), sqlBuilder);
-                encloseOrEscape = true;
             }
             break;
             case VARBINARY:
@@ -492,7 +472,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                         .append(HexUtils.hexEscapesText(true, (byte[]) value))
                         .append(_Constant.QUOTE);
 
-                encloseOrEscape = true;
             }
             break;
             case TIMESTAMP: {
@@ -502,7 +481,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) value))
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case TIMESTAMP_WITH_TIMEZONE: {
@@ -512,7 +490,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case DATE: {
@@ -522,7 +499,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(DateTimeFormatter.ISO_LOCAL_DATE.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case TIME: {
@@ -532,7 +508,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.TIME_FORMATTER_6.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case TIME_WITH_TIMEZONE: {
@@ -542,7 +517,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(_TimeUtils.OFFSET_TIME_FORMATTER_6.format((TemporalAccessor) value))
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case YEAR: {
@@ -562,7 +536,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case YEAR_MONTH: {
@@ -572,7 +545,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case PERIOD: {
@@ -582,7 +554,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case DURATION: {
@@ -592,7 +563,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(value)
                         .append(_Constant.QUOTE);
-                encloseOrEscape = true;
             }
             break;
             case DYNAMIC: {
@@ -610,17 +580,14 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                     } else {
                         final String v = value.toString();
                         escapeText(v, 0, v.length(), sqlBuilder);
-                        encloseOrEscape = true;
                     }
                 } else if (value instanceof String) {
                     escapeText((String) value, 0, ((String) value).length(), sqlBuilder);
-                    encloseOrEscape = true;
                 } else if (value instanceof byte[]) {
                     sqlBuilder.append('x')
                             .append(_Constant.QUOTE)
                             .append(HexUtils.hexEscapesText(true, (byte[]) value))
                             .append(_Constant.QUOTE);
-                    encloseOrEscape = true;
                 } else {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
@@ -633,7 +600,6 @@ abstract class SQLiteParser extends _ArmyDialectParser {
                 throw _Exceptions.unexpectedEnum((SQLiteType) dataType);
         }
 
-        return encloseOrEscape;
     }
 
     @Override

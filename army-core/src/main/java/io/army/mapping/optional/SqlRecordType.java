@@ -20,7 +20,6 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
-import io.army.env.EscapeMode;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.ObjectType;
@@ -138,7 +137,7 @@ public final class SqlRecordType extends _SqlRecordSupport implements MappingTyp
             }
             final StringBuilder builder = new StringBuilder();
             builder.append(_Constant.LEFT_PAREN);
-            env.literalParser().parse(type, source, EscapeMode.DEFAULT, false, builder);
+            env.literalParser().parse(type, source, false, builder);
             builder.append(_Constant.RIGHT_PAREN);
 
             value = builder.toString();

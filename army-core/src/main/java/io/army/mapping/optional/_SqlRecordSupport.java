@@ -206,7 +206,7 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
             if (column == DOCUMENT_NULL_VALUE) {
                 builder.append(_Constant.NULL);
             } else {
-                escapse |= literalParser.parse(columnType, column, mode, false, builder);
+                literalParser.parse(columnType, column, false, builder);
             }
 
             index++;

@@ -24,7 +24,6 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.env.EscapeMode;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.optional.CompositeTypeField;
@@ -1133,7 +1132,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
                 }
                 field = (FieldMeta<?>) selectionList.get(i);
 
-                context.appendLiteral(NoCastTextType.INSTANCE, field.columnName(), EscapeMode.DEFAULT); // here use column name not field name
+                context.appendLiteral(NoCastTextType.INSTANCE, field.columnName(), true); // here use column name not field name
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
                 context.appendField(tableAlias, field);
             }

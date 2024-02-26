@@ -18,7 +18,6 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
-import io.army.env.EscapeMode;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -199,16 +198,16 @@ abstract class StatementContext implements _StmtContext, StmtParams {
     }
 
     @Override
-    public final void appendLiteral(final TypeMeta typeMeta, final @Nullable Object value, EscapeMode mode) {
+    public final void appendLiteral(final TypeMeta typeMeta, final @Nullable Object value, boolean typeName) {
         if (!this.paramAccepter.hasLiteral) {
             this.paramAccepter.setHasLiteral();
         }
-        this.parser.literal(typeMeta, value, mode, true, this.sqlBuilder.append(_Constant.SPACE));
+        this.parser.literal(typeMeta, value, typeName, this.sqlBuilder.append(_Constant.SPACE));
 
     }
 
     @Override
-    public final void appendLiteral(final NamedLiteral namedLiteral, final EscapeMode mode) {
+    public final void appendLiteral(final NamedLiteral namedLiteral, final boolean typeName) {
 
         final Function<String, Object> nameValueFunc;
         final Object value;
@@ -238,11 +237,16 @@ abstract class StatementContext implements _StmtContext, StmtParams {
                 String m = String.format("named literal(%s) must non-null.", namedLiteral.name());
                 throw new CriteriaException(m);
             }
-            sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.typeMeta(), null, mode, true, sqlBuilder);
+
+            if (this.parser.serverDatabase == Database.PostgreSQL) {
+                sqlBuilder.append(_Constant.SPACE);
+                this.parser.literal(namedLiteral.typeMeta(), null, typeName, sqlBuilder);
+            } else {
+                sqlBuilder.append(_Constant.SPACE_NULL);
+            }
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.typeMeta(), value, mode, true, sqlBuilder);
+            this.parser.literal(namedLiteral.typeMeta(), value, typeName, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -260,7 +264,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
                 } else {
                     sqlBuilder.append(_Constant.SPACE);
                 }
-                parser.literal(typeMeta, v, mode, true, sqlBuilder);
+                parser.literal(typeMeta, v, typeName, sqlBuilder);
                 i++;
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -354,7 +358,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
             appendParam(SingleParam.build(updateTime, this.parser.createUpdateTimeValue(updateTime)));
         } else if (updateTimePlaceholder == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
             this.sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            appendLiteral(updateTime, this.parser.createUpdateTimeValue(updateTime), EscapeMode.DEFAULT);
+            appendLiteral(updateTime, this.parser.createUpdateTimeValue(updateTime), true);
         } else {
             // no bug,never here
             throw _Exceptions.illegalExpression(updateTimePlaceholder);

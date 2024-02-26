@@ -20,7 +20,6 @@ import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.env.EscapeMode;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
@@ -508,7 +507,7 @@ abstract class LiteralFunctions {
                 if (count > 0) {
                     sqlBuilder.append(_Constant.COMMA);
                 }
-                context.appendLiteral(StringType.INSTANCE, entry.getKey(), EscapeMode.DEFAULT);
+                context.appendLiteral(StringType.INSTANCE, entry.getKey(), true);
                 sqlBuilder.append(_Constant.COMMA);
                 FuncExpUtils.appendLiteral(this.name, entry.getValue(), sqlBuilder, context);
 

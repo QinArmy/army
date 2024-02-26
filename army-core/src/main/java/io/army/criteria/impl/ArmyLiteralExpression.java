@@ -212,12 +212,12 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
 
         @Override
         public void appendSqlWithoutType(StringBuilder sqlBuilder, _SqlContext context) {
-            context.appendLiteral(this.type, this.value, this.mode.switchNoTypeMode());
+            context.appendLiteral(this.type, this.value, false);
         }
 
         @Override
         public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            context.appendLiteral(this.type, this.value, this.mode);
+            context.appendLiteral(this.type, this.value, true);
         }
 
         @Override
@@ -276,12 +276,12 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
 
         @Override
         public void appendSqlWithoutType(StringBuilder sqlBuilder, _SqlContext context) {
-            context.appendLiteral(this, this.mode.switchNoTypeMode());
+            context.appendLiteral(this, false);
         }
 
         @Override
         public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            context.appendLiteral(this, this.mode);
+            context.appendLiteral(this, true);
         }
 
 

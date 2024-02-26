@@ -21,7 +21,6 @@ import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
-import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -130,8 +129,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
 
     @Override
-    protected final void bindLiteralNull(final MappingType type, final DataType dataType, final EscapeMode mode,
-                                         final boolean typeName, final StringBuilder sqlBuilder) {
+    protected final void bindLiteralNull(final MappingType type, final DataType dataType, final boolean typeName,
+                                         final StringBuilder sqlBuilder) {
         if (!(dataType instanceof MySQLType)) {
             if (!this.unrecognizedTypeAllowed) {
                 throw _Exceptions.unrecognizedType(this.dialectDatabase, dataType);
@@ -148,22 +147,13 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final boolean bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                                        final EscapeMode mode, final boolean typeName, final StringBuilder sqlBuilder) {
+    protected final void bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
+                                     final boolean typeName, final StringBuilder sqlBuilder) {
 
         if (!(dataType instanceof MySQLType)) {
             throw _Exceptions.unrecognizedTypeLiteral(this.dialectDatabase, dataType);
-        } else switch (mode) {
-            case DEFAULT:
-            case DEFAULT_NO_TYPE:
-            case BACK_SLASH:
-            case BACK_SLASH_NO_TYPE:
-                break;
-            default:
-                throw _Exceptions.dontSupportEscapeMode(mode, this.dialect);
         }
 
-        boolean escapes = false;
         switch ((MySQLType) dataType) {
             case BOOLEAN:
                 _Literals.bindBoolean(typeMeta, dataType, value, sqlBuilder);
@@ -204,7 +194,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                     throw _Exceptions.outRangeOfSqlType(MySQLType.DATETIME, value);
                 }
 
-                if (mode.typeMode == BooleanMode.TRUE) {
+                if (typeName) {
                     sqlBuilder.append("TIMESTAMP ");
                 }
                 sqlBuilder.append(_Constant.QUOTE)
@@ -213,14 +203,14 @@ abstract class MySQLParser extends _ArmyDialectParser {
             }
             break;
             case DATE: {
-                if (mode.typeMode == BooleanMode.TRUE) {
+                if (typeName) {
                     sqlBuilder.append("DATE ");
                 }
                 _Literals.bindLocalDate(typeMeta, dataType, value, sqlBuilder);
             }
             break;
             case TIME: {
-                if (mode.typeMode == BooleanMode.TRUE) {
+                if (typeName) {
                     sqlBuilder.append("TIME ");
                 }
                 sqlBuilder.append(_Constant.QUOTE);
@@ -246,7 +236,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 if (!(value instanceof String)) {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
-                escapes = MySQLLiterals.mysqlEscapes(mode, (String) value, sqlBuilder);
+                MySQLLiterals.mysqlEscapes(this.literalEscapeMode, (String) value, sqlBuilder);
             }
             break;
             case BINARY:
@@ -330,7 +320,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                     sqlBuilder.append("0x")
                             .append(HexUtils.hexEscapesText(true, (byte[]) value));
                 } else if (value instanceof String) {
-                    escapes = MySQLLiterals.mysqlEscapes(mode, (String) value, sqlBuilder);
+                    MySQLLiterals.mysqlEscapes(this.literalEscapeMode, (String) value, sqlBuilder);
                 } else {
                     throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
                 }
@@ -343,7 +333,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 throw _Exceptions.unexpectedEnum((MySQLType) dataType);
         }
 
-        return escapes;
     }
 
     @Override

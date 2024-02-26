@@ -23,7 +23,6 @@ import io.army.criteria.SqlValueParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.env.EscapeMode;
 import io.army.meta.*;
 import io.army.session.SessionSpec;
 import io.army.stmt.InsertStmtParams;
@@ -170,7 +169,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             assert discriminator != null;
 
             final StringBuilder codeBuilder = new StringBuilder(10);
-            parser.literal(discriminator.mappingType(), codeEnum, EscapeMode.DEFAULT, true, codeBuilder);
+            parser.literal(discriminator.mappingType(), codeEnum, true, codeBuilder);
             discriminatorLiteral = codeBuilder.toString();
 
             discriminatorParam = null;

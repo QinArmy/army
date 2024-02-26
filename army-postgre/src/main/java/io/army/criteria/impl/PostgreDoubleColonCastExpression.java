@@ -22,7 +22,6 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
-import io.army.env.EscapeMode;
 import io.army.mapping.TextType;
 import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.TypeMeta;
@@ -67,7 +66,7 @@ final class PostgreDoubleColonCastExpression extends OperationExpression.Operati
             throw new CriteriaException(String.format("%s isn't postgre type name", typeName));
         }
 
-        context.appendLiteral(TextType.INSTANCE, this.literal, EscapeMode.DEFAULT_NO_TYPE);
+        context.appendLiteral(TextType.INSTANCE, this.literal, false);
 
         sqlBuilder.append(_Constant.DOUBLE_COLON)
                 .append(typeName);

@@ -20,7 +20,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.env.EscapeMode;
 import io.army.mapping.*;
 import io.army.sqltype.SQLType;
 import io.army.util.ClassUtils;
@@ -217,13 +216,13 @@ abstract class FuncExpUtils {
         if (jsonDoc instanceof Expression) {
             ((ArmyExpression) jsonDoc).appendSql(sqlBuilder, context);
         } else {
-            context.appendLiteral(JsonType.TEXT, jsonDoc, EscapeMode.DEFAULT);
+            context.appendLiteral(JsonType.TEXT, jsonDoc, true);
         }
     }
 
     static void appendPathExp(final Object pathExp, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (pathExp instanceof String) {
-            context.appendLiteral(StringType.INSTANCE, pathExp, EscapeMode.DEFAULT);
+            context.appendLiteral(StringType.INSTANCE, pathExp, true);
         } else if (pathExp instanceof Expression) {
             ((ArmyExpression) pathExp).appendSql(sqlBuilder, context);
         } else {
@@ -237,7 +236,7 @@ abstract class FuncExpUtils {
         if (intExp instanceof Expression) {
             ((ArmyExpression) intExp).appendSql(sqlBuilder, context);
         } else {
-            context.appendLiteral(IntegerType.INSTANCE, intExp, EscapeMode.DEFAULT);
+            context.appendLiteral(IntegerType.INSTANCE, intExp, true);
         }
     }
 
@@ -274,7 +273,7 @@ abstract class FuncExpUtils {
             if (type == null) {
                 throw _Exceptions.funcNotFoundMappingType(funcName, literal);
             }
-            context.appendLiteral(type, literal, EscapeMode.DEFAULT);
+            context.appendLiteral(type, literal, true);
         }
 
     }
@@ -353,7 +352,7 @@ abstract class FuncExpUtils {
                             MappingType.class.getName(), ClassUtils.safeClassName(value));
                     throw new CriteriaException(m);
                 }
-                context.appendLiteral(type, value, EscapeMode.DEFAULT);
+                context.appendLiteral(type, value, true);
             }
 
         } // for loop

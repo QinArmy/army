@@ -25,7 +25,6 @@ import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;
-import io.army.env.EscapeMode;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.TextType;
@@ -321,7 +320,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            context.appendLiteral(this.typeMeta(), context.parser().sqlElement(this), EscapeMode.DEFAULT);
+            context.appendLiteral(this.typeMeta(), context.parser().sqlElement(this), false);
         }
 
 
@@ -967,7 +966,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             if (stmt.paramGroup().size() > 0) {
                 throw new CriteriaException("query expression couldn't have any parameter.");
             }
-            context.appendLiteral(this.typeMeta(), stmt.sqlText(), EscapeMode.DEFAULT);
+            context.appendLiteral(this.typeMeta(), stmt.sqlText(), true);
         }
 
 

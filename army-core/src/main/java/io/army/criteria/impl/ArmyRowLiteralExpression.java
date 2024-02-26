@@ -19,7 +19,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -213,7 +212,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                context.appendLiteral(type, valueList.get(i), EscapeMode.DEFAULT);
+                context.appendLiteral(type, valueList.get(i), true);
             }
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -317,7 +316,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
 
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            context.appendLiteral(this, EscapeMode.DEFAULT);
+            context.appendLiteral(this, true);
         }
 
 

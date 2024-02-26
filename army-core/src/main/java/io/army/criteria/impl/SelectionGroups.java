@@ -23,7 +23,6 @@ import io.army.criteria.impl.inner._SelectionMap;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.env.EscapeMode;
 import io.army.mapping.TextType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -277,7 +276,7 @@ abstract class SelectionGroups {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 field = fieldList.get(i);
-                context.appendLiteral(TextType.INSTANCE, field.columnName(), EscapeMode.DEFAULT_NO_TYPE); // here output column name not field name
+                context.appendLiteral(TextType.INSTANCE, field.columnName(), false); // here output column name not field name
                 sqlBuilder.append(_Constant.SPACE_COMMA);
                 context.appendField(tableAlias, field);
             }
@@ -407,7 +406,7 @@ abstract class SelectionGroups {
                 }
                 selectionAlias = selectionList.get(i).label();
 
-                context.appendLiteral(TextType.INSTANCE, selectionAlias, EscapeMode.DEFAULT_NO_TYPE);
+                context.appendLiteral(TextType.INSTANCE, selectionAlias, false);
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE)
                         .append(safeDerivedAlias)
                         .append(_Constant.PERIOD);

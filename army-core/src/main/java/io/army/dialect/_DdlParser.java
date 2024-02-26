@@ -17,7 +17,6 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.env.EscapeMode;
 import io.army.mapping.TextType;
 import io.army.meta.*;
 import io.army.schema._FieldResult;
@@ -455,7 +454,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
         builder.append(SPACE_COMMENT)
                 .append(_Constant.SPACE);
-        this.parser.literal(TextType.INSTANCE, object.comment(), EscapeMode.DEFAULT, false, builder);
+        this.parser.literal(TextType.INSTANCE, object.comment(), false, builder);
     }
 
 

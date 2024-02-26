@@ -20,7 +20,6 @@ import io.army.criteria.NamedLiteral;
 import io.army.criteria.SQLParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
-import io.army.env.EscapeMode;
 import io.army.meta.TypeMeta;
 import io.army.session.SessionSpec;
 
@@ -62,9 +61,9 @@ public interface _SqlContext extends SqlContextSpec {
      *     */
     void appendParam(SQLParam sqlParam);
 
-    void appendLiteral(TypeMeta typeMeta, @Nullable Object value, EscapeMode mode);
+    void appendLiteral(TypeMeta typeMeta, @Nullable Object value, boolean typeName);
 
-    void appendLiteral(NamedLiteral namedLiteral, EscapeMode mode);
+    void appendLiteral(NamedLiteral namedLiteral, boolean typeName);
 
     /**
      * @see DialectParser#identifier(String, StringBuilder)

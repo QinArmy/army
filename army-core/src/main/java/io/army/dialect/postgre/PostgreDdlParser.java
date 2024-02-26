@@ -19,7 +19,6 @@ package io.army.dialect.postgre;
 import io.army.annotation.GeneratorType;
 import io.army.dialect._Constant;
 import io.army.dialect._DdlParser;
-import io.army.env.EscapeMode;
 import io.army.mapping.TextType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
@@ -179,7 +178,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
         builder.append(" IS ");
 
-        this.parser.literal(TextType.INSTANCE, object.comment(), EscapeMode.DEFAULT, false, builder);
+        this.parser.literal(TextType.INSTANCE, object.comment(), false, builder);
 
     }
 
