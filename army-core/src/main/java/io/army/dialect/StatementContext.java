@@ -203,7 +203,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
         if (!this.paramAccepter.hasLiteral) {
             this.paramAccepter.setHasLiteral();
         }
-        this.parser.literal(typeMeta, value, mode, this.sqlBuilder.append(_Constant.SPACE));
+        this.parser.literal(typeMeta, value, mode, true, this.sqlBuilder.append(_Constant.SPACE));
 
     }
 
@@ -239,10 +239,10 @@ abstract class StatementContext implements _StmtContext, StmtParams {
                 throw new CriteriaException(m);
             }
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.typeMeta(), null, mode, sqlBuilder);
+            this.parser.literal(namedLiteral.typeMeta(), null, mode, true, sqlBuilder);
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.typeMeta(), value, mode, sqlBuilder);
+            this.parser.literal(namedLiteral.typeMeta(), value, mode, true, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -260,7 +260,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
                 } else {
                     sqlBuilder.append(_Constant.SPACE);
                 }
-                parser.literal(typeMeta, v, mode, sqlBuilder);
+                parser.literal(typeMeta, v, mode, true, sqlBuilder);
                 i++;
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

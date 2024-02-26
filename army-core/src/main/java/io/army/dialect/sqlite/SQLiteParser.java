@@ -383,7 +383,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
      * @see <a href="https://sqlite.org/lang_expr.html">Literal Values (Constants)</a>
      */
     @Override
-    protected final void bindLiteralNull(MappingType type, DataType dataType, EscapeMode mode, StringBuilder sqlBuilder) {
+    protected final void bindLiteralNull(MappingType type, DataType dataType, EscapeMode mode, boolean typeName, StringBuilder sqlBuilder) {
         switch (mode) {
             case DEFAULT:
             case DEFAULT_NO_TYPE:
@@ -400,7 +400,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
      */
     @Override
     protected final boolean bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                                        final EscapeMode mode, final StringBuilder sqlBuilder) {
+                                        final EscapeMode mode, boolean typeName, final StringBuilder sqlBuilder) {
         if (!(dataType instanceof SQLiteType)) {
             throw _Exceptions.unrecognizedTypeLiteral(this.dialectDatabase, dataType);
         }

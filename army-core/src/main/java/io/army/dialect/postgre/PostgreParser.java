@@ -127,7 +127,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void bindLiteralNull(final MappingType type, final DataType dataType, final EscapeMode mode,
-                                         final StringBuilder sqlBuilder) {
+                                         final boolean typeName, final StringBuilder sqlBuilder) {
         if (!(dataType instanceof SQLType)) {
             sqlBuilder.append(_Constant.NULL);
             if (!(type instanceof NoCastType)) {
@@ -152,7 +152,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                                        final EscapeMode mode, final StringBuilder sqlBuilder) {
+                                        final EscapeMode mode, final boolean typeName, final StringBuilder sqlBuilder) {
 
         final MappingType type;
         if (typeMeta instanceof MappingType) {

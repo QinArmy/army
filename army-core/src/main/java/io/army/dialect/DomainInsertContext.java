@@ -140,7 +140,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
             assert discriminator != null;
 
             final StringBuilder codeBuilder = new StringBuilder(10);
-            parser.literal(discriminator.mappingType(), codeEnum, EscapeMode.DEFAULT, codeBuilder);
+            parser.literal(discriminator.mappingType(), codeEnum, EscapeMode.DEFAULT, true, codeBuilder);
             discriminatorLiteral = codeBuilder.toString();
 
             discriminatorParam = null;

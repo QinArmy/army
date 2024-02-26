@@ -269,7 +269,7 @@ final class AssignmentInsertContext extends InsertContext
         if (this.literalMode == LiteralMode.DEFAULT) {
             appendParam(SingleParam.build(discriminator.mappingType(), codeEnum));
         } else {
-            this.parser.literal(discriminator.mappingType(), codeEnum, EscapeMode.DEFAULT, this.sqlBuilder.append(_Constant.SPACE));
+            this.parser.literal(discriminator.mappingType(), codeEnum, EscapeMode.DEFAULT, true, this.sqlBuilder.append(_Constant.SPACE));
         }
 
     }

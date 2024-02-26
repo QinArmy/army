@@ -658,7 +658,7 @@ abstract class ArmyParser implements DialectParser {
                 break;
             case ESCAPES:
                 escapesIdentifier(effectiveName, builder);
-            break;
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
@@ -737,7 +737,7 @@ abstract class ArmyParser implements DialectParser {
      * @return true : append boundary char (quote/double quote) or occur escape.
      */
     public final boolean literal(final TypeMeta typeMeta, @Nullable Object value, final EscapeMode mode,
-                                 final StringBuilder sqlBuilder) {
+                                 final boolean typeName, final StringBuilder sqlBuilder) {
         final MappingType type;
         if (typeMeta instanceof MappingType) {
             type = (MappingType) typeMeta;
@@ -750,13 +750,13 @@ abstract class ArmyParser implements DialectParser {
         if (value == null) {
             switch (mode) {
                 case DEFAULT:
-                    bindLiteralNull(type, dataType, this.literalEscapeMode, sqlBuilder);
+                    bindLiteralNull(type, dataType, this.literalEscapeMode, typeName, sqlBuilder);
                     break;
                 case DEFAULT_NO_TYPE:
-                    bindLiteralNull(type, dataType, this.literalEscapeMode.switchNoTypeMode(), sqlBuilder);
+                    bindLiteralNull(type, dataType, this.literalEscapeMode.switchNoTypeMode(), typeName, sqlBuilder);
                     break;
                 default:
-                    bindLiteralNull(type, dataType, mode, sqlBuilder);
+                    bindLiteralNull(type, dataType, mode, typeName, sqlBuilder);
 
             }
             return false;
@@ -773,13 +773,13 @@ abstract class ArmyParser implements DialectParser {
         final boolean escape;
         switch (mode) {
             case DEFAULT:
-                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, sqlBuilder);
+                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, typeName, sqlBuilder);
                 break;
             case DEFAULT_NO_TYPE:
-                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode.switchNoTypeMode(), sqlBuilder);
+                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode.switchNoTypeMode(), typeName, sqlBuilder);
                 break;
             default:
-                escape = bindLiteral(typeMeta, dataType, value, mode, sqlBuilder);
+                escape = bindLiteral(typeMeta, dataType, value, mode, typeName, sqlBuilder);
         }
         return escape;
     }
@@ -791,12 +791,12 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected abstract void bindLiteralNull(MappingType type, DataType dataType, EscapeMode mode, StringBuilder sqlBuilder);
+    protected abstract void bindLiteralNull(MappingType type, DataType dataType, EscapeMode mode, boolean typeName, StringBuilder sqlBuilder);
 
     /**
      * @return true : append boundary char (quote/double quote) or occur escape.
      */
-    protected abstract boolean bindLiteral(TypeMeta typeMeta, DataType dataType, Object value, EscapeMode mode, StringBuilder sqlBuilder);
+    protected abstract boolean bindLiteral(TypeMeta typeMeta, DataType dataType, Object value, EscapeMode mode, boolean typeName, StringBuilder sqlBuilder);
 
     protected abstract DdlParser createDdlDialect();
 
@@ -1219,7 +1219,7 @@ abstract class ArmyParser implements DialectParser {
                     if (mappingType == null) {
                         throw _Exceptions.notFoundMappingType(columnValue);
                     }
-                    literal(mappingType, columnValue, EscapeMode.DEFAULT, sqlBuilder.append(_Constant.SPACE));
+                    literal(mappingType, columnValue, EscapeMode.DEFAULT, true, sqlBuilder.append(_Constant.SPACE));
                 }
 
             }
@@ -1832,7 +1832,6 @@ abstract class ArmyParser implements DialectParser {
             , _SqlContext context);
 
 
-
     /**
      * @see #parseDomainParentDeleteWithId(_Predicate, DomainDeleteContext)
      * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
@@ -1861,7 +1860,7 @@ abstract class ArmyParser implements DialectParser {
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
 
-        literal(field.mappingType(), table.discriminatorValue(), EscapeMode.DEFAULT, sqlBuilder);
+        literal(field.mappingType(), table.discriminatorValue(), EscapeMode.DEFAULT, true, sqlBuilder);
     }
 
 
@@ -1893,7 +1892,7 @@ abstract class ArmyParser implements DialectParser {
         sqlBuilder.append(_Constant.PERIOD);
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
-        this.literal(field.mappingType(), visibleValue, EscapeMode.DEFAULT, sqlBuilder);
+        this.literal(field.mappingType(), visibleValue, EscapeMode.DEFAULT, false, sqlBuilder);
     }
 
     protected final void parentVisiblePredicate(final _InsertContext childContext, final boolean firstPredicate) {
@@ -1959,7 +1958,7 @@ abstract class ArmyParser implements DialectParser {
         this.safeObjectName(discriminator, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
 
-        this.literal(discriminator.typeMeta(), childTable.discriminatorValue(), EscapeMode.DEFAULT, sqlBuilder);
+        this.literal(discriminator.typeMeta(), childTable.discriminatorValue(), EscapeMode.DEFAULT, false, sqlBuilder);
 
         // below visible predicate
         final FieldMeta<?> visibleField;
@@ -1972,7 +1971,7 @@ abstract class ArmyParser implements DialectParser {
         this.safeObjectName(visibleField, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
 
-        this.literal(visibleField, visibleValue, EscapeMode.DEFAULT, sqlBuilder);
+        this.literal(visibleField, visibleValue, EscapeMode.DEFAULT, false, sqlBuilder);
 
         //below sub query right paren
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -2178,7 +2177,7 @@ abstract class ArmyParser implements DialectParser {
                 throw _Exceptions.notFoundMappingType(value);
             }
             sqlBuilder.append(_Constant.SPACE);
-            literal(mappingType, value, EscapeMode.DEFAULT, sqlBuilder);
+            literal(mappingType, value, EscapeMode.DEFAULT, true, sqlBuilder);
         }
 
     }
@@ -2772,7 +2771,7 @@ abstract class ArmyParser implements DialectParser {
             sqlBuilder.append(_Constant.SPACE_AND);
             context.parentColumnFromSubQuery(visibleField);
             sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            this.literal(visibleField.mappingType(), visibleValue, EscapeMode.DEFAULT, sqlBuilder);
+            this.literal(visibleField.mappingType(), visibleValue, EscapeMode.DEFAULT, false, sqlBuilder);
         }
         return firstPredicate;
     }
@@ -3043,7 +3042,7 @@ abstract class ArmyParser implements DialectParser {
             childBuilder.append(_Constant.SPACE_AND);
             childContext.parentColumnFromSubQuery(visibleField);
             childBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            this.literal(visibleField.mappingType(), visibleValue, EscapeMode.DEFAULT, childBuilder);
+            this.literal(visibleField.mappingType(), visibleValue, EscapeMode.DEFAULT, false, childBuilder);
         }
 
         return firstPredicate;

@@ -131,7 +131,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final void bindLiteralNull(final MappingType type, final DataType dataType, final EscapeMode mode,
-                                         final StringBuilder sqlBuilder) {
+                                         final boolean typeName, final StringBuilder sqlBuilder) {
         if (!(dataType instanceof MySQLType)) {
             if (!this.unrecognizedTypeAllowed) {
                 throw _Exceptions.unrecognizedType(this.dialectDatabase, dataType);
@@ -149,7 +149,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                                        final EscapeMode mode, final StringBuilder sqlBuilder) {
+                                        final EscapeMode mode, final boolean typeName, final StringBuilder sqlBuilder) {
 
         if (!(dataType instanceof MySQLType)) {
             throw _Exceptions.unrecognizedTypeLiteral(this.dialectDatabase, dataType);

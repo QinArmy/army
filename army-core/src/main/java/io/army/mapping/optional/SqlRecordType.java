@@ -138,7 +138,7 @@ public final class SqlRecordType extends _SqlRecordSupport implements MappingTyp
             }
             final StringBuilder builder = new StringBuilder();
             builder.append(_Constant.LEFT_PAREN);
-            env.literalParser().parse(type, source, EscapeMode.DEFAULT, builder);
+            env.literalParser().parse(type, source, EscapeMode.DEFAULT, false, builder);
             builder.append(_Constant.RIGHT_PAREN);
 
             value = builder.toString();

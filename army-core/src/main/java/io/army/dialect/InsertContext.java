@@ -921,7 +921,7 @@ abstract class InsertContext extends StatementContext
                 } else if (value == null) {
                     this.sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {
-                    this.parser.literal(field, value, EscapeMode.DEFAULT, this.sqlBuilder.append(_Constant.SPACE));
+                    this.parser.literal(field, value, EscapeMode.DEFAULT, true, this.sqlBuilder.append(_Constant.SPACE));
                 }
             }
             break;
@@ -929,7 +929,7 @@ abstract class InsertContext extends StatementContext
                 if (value == null) {
                     this.sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {
-                    this.parser.literal(field, value, EscapeMode.DEFAULT, this.sqlBuilder.append(_Constant.SPACE));
+                    this.parser.literal(field, value, EscapeMode.DEFAULT, true, this.sqlBuilder.append(_Constant.SPACE));
                 }
             }
             break;

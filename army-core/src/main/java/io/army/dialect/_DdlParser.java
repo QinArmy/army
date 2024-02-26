@@ -455,7 +455,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
         builder.append(SPACE_COMMENT)
                 .append(_Constant.SPACE);
-        this.parser.literal(TextType.INSTANCE, object.comment(), EscapeMode.DEFAULT_NO_TYPE, builder);
+        this.parser.literal(TextType.INSTANCE, object.comment(), EscapeMode.DEFAULT, false, builder);
     }
 
 
