@@ -807,7 +807,6 @@ public abstract class ExecutorSupport {
                 break;
             case "DECIMAL":
             case "NUMERIC":
-            case "DATETIME":
                 dataType = SQLiteType.DECIMAL;
                 break;
             case "FLOAT":
@@ -848,13 +847,14 @@ public abstract class ExecutorSupport {
                 dataType = SQLiteType.TIME_WITH_TIMEZONE;
                 break;
             case "TIMESTAMP":
+            case "DATETIME":
                 dataType = SQLiteType.TIMESTAMP;
                 break;
             case "TIMESTAMP WITH TIMEZONE":
             case "TIMESTAMPTZ":
                 dataType = SQLiteType.TIMESTAMP_WITH_TIMEZONE;
                 break;
-            case "DATE": // TODO ?
+            case "DATE":
                 dataType = SQLiteType.DATE;
                 break;
             case "YEAR":

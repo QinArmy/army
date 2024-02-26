@@ -18,10 +18,7 @@ package io.army.dialect.sqlite;
 
 import io.army.dialect._Constant;
 import io.army.dialect._DdlParser;
-import io.army.meta.DatabaseObject;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.schema._FieldResult;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
@@ -115,7 +112,23 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
      */
     @Override
     protected void postDataType(FieldMeta<?> field, DataType dataType, StringBuilder builder) {
-        dataType(field, dataType, builder);
+        switch ((SQLiteType) dataType) {
+            case TINYINT:
+            case SMALLINT:
+            case INTEGER:
+            case MEDIUMINT:
+            case BIGINT:
+            case UNSIGNED_BIG_INT: {
+                if (!(field instanceof PrimaryFieldMeta)) {
+                    throw new MetaException("non-primary key");
+                }
+                builder.append("INTEGER");
+            }
+            break;
+            default:
+                throw new MetaException(String.format("error,SQLite AUTOINCREMENT don't support %s", dataType));
+        }
+
     }
 
     /**
@@ -139,7 +152,8 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
      */
     @Override
     protected void appendPostGenerator(FieldMeta<?> field, StringBuilder builder) {
-        builder.append(" AUTOINCREMENT");
+        // no bug , never here
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -152,7 +166,7 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
     }
 
     @Override
-    protected void appendOuterComment(DatabaseObject object, StringBuilder builder) {
+    protected void appendColumnComment(DatabaseObject object, StringBuilder builder) {
         // no bug , never here
         throw sqLiteDontSupportComment();
     }

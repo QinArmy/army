@@ -28,7 +28,6 @@ import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util.ClassUtils;
-import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,6 @@ import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.lang.reflect.Method;
 import java.sql.*;
-import java.util.Objects;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
@@ -216,19 +214,6 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
 
     }
 
-
-    private static Database getDatabase(final String productName) {
-        Objects.requireNonNull(productName, "productName is null");
-        final Database database;
-        if (productName.equals("MySQL")) {
-            database = Database.MySQL;
-        } else if (productName.equals("PostgreSQL")) {
-            database = Database.PostgreSQL;
-        } else {
-            throw _Exceptions.unsupportedDatabaseFamily(productName);
-        }
-        return database;
-    }
 
     private static boolean definiteSetObjectMethod(final Class<?> statementClass) {
         boolean match;

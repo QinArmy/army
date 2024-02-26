@@ -67,17 +67,14 @@ public enum SQLiteDialect implements Dialect {
     public static SQLiteDialect from(final ServerMeta meta) {
         final SQLiteDialect dialect;
         switch (meta.major()) {
-            case 3:
-                switch (meta.minor()) {
-                    case 4:
-                        dialect = SQLiteDialect.SQLite34;
-                        break;
-                    case 3:
-                    case 2:
-                    default:
-                        throw Database.unsupportedVersion(meta);
+            case 3: {
+                if (meta.minor() / 10 == 4) {
+                    dialect = SQLiteDialect.SQLite34;
+                } else {
+                    throw Database.unsupportedVersion(meta);
                 }
-                break;
+            }
+            break;
             case 2:
             case 1:
             default:

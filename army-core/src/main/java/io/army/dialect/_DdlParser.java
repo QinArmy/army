@@ -134,13 +134,16 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         appendTableOption(table, builder);
         sqlList.add(builder.toString());
 
-        switch (this.parser.dialectDatabase) {
+        switch (this.parser.serverDatabase) {
             case PostgreSQL: {
                 appendIndexAfterTableDef(table, sqlList);
                 appendOuterComment(table, sqlList);
             }
             break;
             case MySQL:
+            case SQLite:
+                appendIndexAfterTableDef(table, sqlList);
+                break;
             case Oracle:
             case H2:
                 break;
@@ -178,11 +181,11 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
         sqlList.add(builder.toString());
 
-        switch (this.parser.dialectDatabase) {
+        switch (this.parser.serverDatabase) {
             case PostgreSQL: {
                 for (int i = 0; i < fieldSize; i++) {
                     builder.setLength(0); // clear
-                    appendOuterComment(fieldList.get(i), builder);
+                    appendColumnComment(fieldList.get(i), builder);
                     sqlList.add(builder.toString());
                 }
             }
@@ -263,7 +266,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         if (commentFieldList != null) {
             for (FieldMeta<?> f : commentFieldList) {
                 builder.setLength(0); // firstly,clear
-                appendOuterComment(f, builder);
+                appendColumnComment(f, builder);
                 sqlList.add(builder.toString());
 
             }
@@ -405,12 +408,18 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         }
 
         if (field.generatorType() == GeneratorType.POST) {
-            appendPostGenerator(field, builder);
+            if (this.parser.serverDatabase == Database.SQLite) {
+                assert field instanceof PrimaryFieldMeta;
+                builder.append(" PRIMARY KEY AUTOINCREMENT");
+            } else {
+                appendPostGenerator(field, builder);
+            }
         }
-        switch (this.parser.dialectDatabase) {
+        switch (this.parser.serverDatabase) {
             case MySQL:
-                appendOuterComment(field, builder);
+                appendColumnComment(field, builder);
                 break;
+            case SQLite:
             case H2:
             case Oracle:
             case PostgreSQL:
@@ -442,7 +451,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
     protected abstract void appendPostGenerator(final FieldMeta<?> field, final StringBuilder builder);
 
-    protected void appendOuterComment(final DatabaseObject object, final StringBuilder builder) {
+    protected void appendColumnComment(final DatabaseObject object, final StringBuilder builder) {
 
         builder.append(SPACE_COMMENT)
                 .append(_Constant.SPACE);
@@ -534,12 +543,18 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         if (index.isPrimaryKey()) {
             builder.append(COMMA_PRIMARY_KEY);
         } else if (index.isUnique()) {
-            builder.append(COMMA_UNIQUE);
+            if (this.parser.serverDatabase == Database.SQLite) {
+                builder.append(",\n\tCONSTRAINT ");
+                this.parser.identifier(index.name(), builder)
+                        .append(" UNIQUE ");
+            } else {
+                builder.append(COMMA_UNIQUE);
+            }
         } else {
             builder.append(COMMA_INDEX);
         }
 
-        switch (this.parser.dialectDatabase) {
+        switch (this.parser.serverDatabase) {
             case MySQL: {
                 if (!index.isPrimaryKey()) {
                     builder.append(_Constant.SPACE);
@@ -555,7 +570,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             default:// no-op
         }
 
-        switch (this.parser.dialectDatabase) {
+        switch (this.parser.serverDatabase) {
             case MySQL:
                 appendIndexType(index, builder);
                 break;
@@ -779,25 +794,38 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         StringBuilder commentBuilder;
 
         commentBuilder = new StringBuilder();
-        this.appendOuterComment(table, commentBuilder);
+        this.appendColumnComment(table, commentBuilder);
         sqlList.add(commentBuilder.toString());
 
         for (FieldMeta<T> field : table.fieldList()) {
             commentBuilder = new StringBuilder(30);
-            this.appendOuterComment(field, commentBuilder);
+            this.appendColumnComment(field, commentBuilder);
             sqlList.add(commentBuilder.toString());
         }
 
 
     }
 
+    /**
+     * @see #createTable(TableMeta, List)
+     */
     private <T> void doAppendIndexInTableDef(final TableMeta<T> table, final StringBuilder builder) {
         final ArmyParser parser = this.parser;
         for (IndexMeta<T> index : table.indexList()) {
 
-            switch (parser.dialectDatabase) {
+            switch (parser.serverDatabase) {
                 case PostgreSQL: {
                     if (!index.isPrimaryKey()) {
+                        continue;
+                    }
+                }
+                break;
+                case SQLite: {
+                    if (!index.isPrimaryKey()) {
+                        continue;
+                    }
+                    final List<IndexFieldMeta<T>> fieldList = index.fieldList();
+                    if (fieldList.size() == 1 && fieldList.get(0).generatorType() == GeneratorType.POST) {
                         continue;
                     }
                 }
@@ -813,13 +841,18 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
     }
 
+    /**
+     * @see #createTable(TableMeta, List)
+     */
     private <T> void appendIndexAfterTableDef(final TableMeta<T> table, final List<String> sqlList) {
         final ArmyParser parser = this.parser;
         final StringBuilder builder = new StringBuilder(30);
         for (IndexMeta<T> index : table.indexList()) {
 
-            switch (parser.dialectDatabase) {
-                case PostgreSQL: {
+            switch (parser.serverDatabase) {
+
+                case PostgreSQL:
+                case SQLite: {
                     if (index.isPrimaryKey()) {
                         continue;
                     }

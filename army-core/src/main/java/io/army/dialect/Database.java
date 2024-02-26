@@ -83,6 +83,9 @@ public enum Database {
             case PostgreSQL:
                 dialect = PostgreDialect.from(meta);
                 break;
+            case SQLite:
+                dialect = SQLiteDialect.from(meta);
+                break;
             case Oracle:
                 dialect = OracleDialect.from(meta);
                 break;

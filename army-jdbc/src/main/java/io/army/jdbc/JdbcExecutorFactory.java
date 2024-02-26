@@ -135,6 +135,9 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
             case PostgreSQL:
                 this.useMultiStmt = true;
                 break;
+            case SQLite:
+                this.useMultiStmt = false; // TODO right ?
+                break;
             case H2:
             default:
                 throw _Exceptions.unexpectedEnum(this.serverDatabase);

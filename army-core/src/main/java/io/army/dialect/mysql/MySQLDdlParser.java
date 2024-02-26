@@ -45,7 +45,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
         final StringBuilder builder = new StringBuilder()
                 .append("ALTER TABLE ");
         this.parser.safeObjectName(table, builder);
-        appendOuterComment(table, builder);
+        appendColumnComment(table, builder);
 
     }
 
@@ -177,7 +177,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     @Override
     protected void appendTableOption(final TableMeta<?> table, final StringBuilder builder) {
         builder.append(" ENGINE = InnoDB CHARACTER SET  = 'utf8mb4'");
-        appendOuterComment(table, builder);
+        appendColumnComment(table, builder);
     }
 
 

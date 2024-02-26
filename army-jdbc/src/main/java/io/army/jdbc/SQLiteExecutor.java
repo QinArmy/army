@@ -122,8 +122,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
 
     @Override
     public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
-
-        return null;
+        throw new DataAccessException("");
     }
 
     @Nullable

@@ -19,6 +19,7 @@ package io.army.session;
 import io.army.dialect.Database;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.postgre.PostgreDialect;
+import io.army.dialect.sqlite.SQLiteDialect;
 import io.army.env.*;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.util.FastJsonCodec;
@@ -96,6 +97,9 @@ public abstract class FactoryUtils {
             case PostgreSQL:
                 map.put(ArmyKey.DIALECT.name, PostgreDialect.POSTGRE15);
                 break;
+            case SQLite:
+                map.put(ArmyKey.DIALECT.name, SQLiteDialect.SQLite34);
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(database);
         }
@@ -130,6 +134,9 @@ public abstract class FactoryUtils {
                 break;
             case PostgreSQL:
                 name = "postgre-bank";
+                break;
+            case SQLite:
+                name = "sqlite-bank";
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(database);

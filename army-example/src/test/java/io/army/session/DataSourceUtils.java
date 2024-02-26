@@ -97,7 +97,7 @@ public abstract class DataSourceUtils {
                 url = "jdbc:postgresql://localhost:5432/army_bank";
                 break;
             case SQLite:
-                url = "jdbc:sqlite:army_bank";
+                url = "jdbc:sqlite:src/test/resources/my-local/army_bank.sqlite";
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(database);

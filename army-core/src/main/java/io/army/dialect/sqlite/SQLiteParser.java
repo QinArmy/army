@@ -105,7 +105,8 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isTableAliasAfterAs() {
-        return false;
+        // SQLite support
+        return true;
     }
 
     @Override
@@ -113,8 +114,12 @@ abstract class SQLiteParser extends _ArmyDialectParser {
         return false;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_insert.html">upsert clause</a>
+     */
     @Override
     protected final boolean isSupportRowAlias() {
+        // false , SQLite don't support
         return false;
     }
 
@@ -140,12 +145,17 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isSupportWithClause() {
-        return false;
+        // true , SQLite support WITH clause
+        return true;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_insert.html">WITH clause</a>
+     */
     @Override
     protected final boolean isSupportWithClauseInInsert() {
-        return false;
+        // true , SQLite support WITH clause
+        return true;
     }
 
     @Override
@@ -163,9 +173,12 @@ abstract class SQLiteParser extends _ArmyDialectParser {
         return false;
     }
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_insert.html">RETURNING clause</a>
+     */
     @Override
     protected final boolean isSupportReturningClause() {
-        return false;
+        return true;
     }
 
     @Override

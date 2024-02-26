@@ -160,7 +160,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
     @Override
-    protected void appendOuterComment(final DatabaseObject object, final StringBuilder builder) {
+    protected void appendColumnComment(final DatabaseObject object, final StringBuilder builder) {
         builder.append(SPACE_COMMENT)
                 .append(_Constant.SPACE_ON);
 
