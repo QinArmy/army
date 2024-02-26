@@ -773,11 +773,101 @@ public abstract class ExecutorSupport {
     }
 
 
+    /**
+     * @see <a href="https://sqlite.org/datatype3.html">Datatypes In SQLite</a>
+     * @see <a href="https://sqlite.org/datatypes.html">Datatypes In SQLite Version 2</a>
+     */
     protected final DataType getSQLiteType(final String typeName) {
+        final SQLiteType dataType;
         switch (typeName.toUpperCase(Locale.ROOT)) {
-
+            case "BOOLEAN":
+                dataType = SQLiteType.BOOLEAN;
+                break;
+            case "TINYINT":
+                dataType = SQLiteType.TINYINT;
+                break;
+            case "SMALLINT":
+                dataType = SQLiteType.SMALLINT;
+                break;
+            case "MEDIUMINT":
+                dataType = SQLiteType.MEDIUMINT;
+                break;
+            case "INTEGER":
+            case "INT":
+                dataType = SQLiteType.INTEGER;
+                break;
+            case "BIGINT":
+                dataType = SQLiteType.BIGINT;
+                break;
+            case "DECIMAL":
+            case "NUMERIC":
+                dataType = SQLiteType.DECIMAL;
+                break;
+            case "FLOAT":
+                dataType = SQLiteType.FLOAT;
+                break;
+            case "DOUBLE":
+            case "REAL":
+                dataType = SQLiteType.DOUBLE;
+                break;
+            case "TIME":
+                dataType = SQLiteType.TIME;
+                break;
+            case "TIME WITH TIMEZONE":
+                dataType = SQLiteType.TIME_WITH_TIMEZONE;
+                break;
+            case "TIMESTAMP":
+                dataType = SQLiteType.TIMESTAMP;
+                break;
+            case "TIMESTAMP WITH TIMEZONE":
+                dataType = SQLiteType.TIMESTAMP_WITH_TIMEZONE;
+                break;
+            case "DATE":
+                dataType = SQLiteType.DATE;
+                break;
+            case "YEAR":
+                dataType = SQLiteType.YEAR;
+                break;
+            case "YEAR MONTH":
+                dataType = SQLiteType.YEAR_MONTH;
+                break;
+            case "MONTH DAY":
+                dataType = SQLiteType.MONTH_DAY;
+                break;
+            case "DURATION":
+                dataType = SQLiteType.DURATION;
+                break;
+            case "PERIOD":
+                dataType = SQLiteType.PERIOD;
+                break;
+            case "VARCHAR":
+            case "CHAR":
+                dataType = SQLiteType.VARCHAR;
+                break;
+            case "TEXT":
+            case "CLOB":
+                dataType = SQLiteType.TEXT;
+                break;
+            case "VARBINARY":
+                dataType = SQLiteType.VARBINARY;
+                break;
+            case "BLOB":
+                dataType = SQLiteType.BLOB;
+                break;
+            case "BIT":
+                dataType = SQLiteType.BIT;
+                break;
+            case "JSON":
+                dataType = SQLiteType.JSON;
+                break;
+            case "":
+                dataType = SQLiteType.DYNAMIC;
+                break;
+            case "UNKNOWN":
+            default:
+                dataType = SQLiteType.UNKNOWN;
         }
-        return null;
+        return dataType;
     }
 
     /*-------------------below Exception  -------------------*/
