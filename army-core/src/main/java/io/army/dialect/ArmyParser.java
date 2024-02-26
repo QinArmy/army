@@ -86,7 +86,6 @@ abstract class ArmyParser implements DialectParser {
 
     protected final EscapeMode identifierEscapeMode;
 
-
     final boolean mockEnv;
 
     /**
@@ -154,6 +153,8 @@ abstract class ArmyParser implements DialectParser {
 
     private final boolean useObjectNameModeMethod;
 
+    private final boolean literalTypeNameEnable;
+
     private final BiConsumer<String, Consumer<String>> beautifySqlFunc = this::beautifySql;
 
     ArmyParser(final DialectEnv dialectEnv, final Dialect dialect) {
@@ -214,6 +215,7 @@ abstract class ArmyParser implements DialectParser {
         this.supportLastInsertedId = this.dialectDatabase != Database.PostgreSQL || this.dialect.compareWith(PostgreDialect.POSTGRE12) < 0;
         this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
 
+        this.literalTypeNameEnable = env.getOrDefault(ArmyKey.LITERAL_TYPE_NAME_ENABLE);
         this.unrecognizedTypeAllowed = env.getOrDefault(ArmyKey.UNRECOGNIZED_TYPE_ALLOWED);
     }
 
@@ -747,16 +749,18 @@ abstract class ArmyParser implements DialectParser {
         final DataType dataType;
         dataType = type.map(this.serverMeta);
 
+        final boolean typeNameEnable = typeName && this.literalTypeNameEnable;
+
         if (value == null) {
             switch (mode) {
                 case DEFAULT:
-                    bindLiteralNull(type, dataType, this.literalEscapeMode, typeName, sqlBuilder);
+                    bindLiteralNull(type, dataType, this.literalEscapeMode, typeNameEnable, sqlBuilder);
                     break;
                 case DEFAULT_NO_TYPE:
-                    bindLiteralNull(type, dataType, this.literalEscapeMode.switchNoTypeMode(), typeName, sqlBuilder);
+                    bindLiteralNull(type, dataType, this.literalEscapeMode.switchNoTypeMode(), typeNameEnable, sqlBuilder);
                     break;
                 default:
-                    bindLiteralNull(type, dataType, mode, typeName, sqlBuilder);
+                    bindLiteralNull(type, dataType, mode, typeNameEnable, sqlBuilder);
 
             }
             return false;
@@ -773,13 +777,13 @@ abstract class ArmyParser implements DialectParser {
         final boolean escape;
         switch (mode) {
             case DEFAULT:
-                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, typeName, sqlBuilder);
+                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode, typeNameEnable, sqlBuilder);
                 break;
             case DEFAULT_NO_TYPE:
-                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode.switchNoTypeMode(), typeName, sqlBuilder);
+                escape = bindLiteral(typeMeta, dataType, value, this.literalEscapeMode.switchNoTypeMode(), typeNameEnable, sqlBuilder);
                 break;
             default:
-                escape = bindLiteral(typeMeta, dataType, value, mode, typeName, sqlBuilder);
+                escape = bindLiteral(typeMeta, dataType, value, mode, typeNameEnable, sqlBuilder);
         }
         return escape;
     }

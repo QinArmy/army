@@ -74,6 +74,8 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<EscapeMode> IDENTIFIER_ESCAPE_MODE = new ArmyKey<>("identifier.escape_mode", EscapeMode.class, EscapeMode.DEFAULT);
 
+    public static final ArmyKey<Boolean> LITERAL_TYPE_NAME_ENABLE = new ArmyKey<>("literal.type_name_enable", Boolean.class, Boolean.TRUE);
+
 
     /**
      * @see Column#scale()
