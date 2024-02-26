@@ -90,10 +90,8 @@ public enum PostgreDialect implements Dialect {
                 dialect = PostgreDialect.POSTGRE15;
                 break;
             case 16:
-                dialect = PostgreDialect.POSTGRE16;
-                break;
             default:
-                throw Database.unsupportedVersion(meta);
+                dialect = PostgreDialect.POSTGRE16;
         }
         return dialect;
 

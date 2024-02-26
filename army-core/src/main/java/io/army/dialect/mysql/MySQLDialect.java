@@ -90,10 +90,8 @@ public enum MySQLDialect implements Dialect {
                 }
                 break;
             case 8:
-                dialect = MySQLDialect.MySQL80;
-                break;
             default:
-                throw Database.unsupportedVersion(meta);
+                dialect = MySQLDialect.MySQL80;
         }
         return dialect;
     }
