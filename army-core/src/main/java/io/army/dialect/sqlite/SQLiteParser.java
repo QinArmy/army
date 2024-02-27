@@ -23,6 +23,7 @@ import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.*;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.ServerMeta;
@@ -52,23 +53,12 @@ abstract class SQLiteParser extends _ArmyDialectParser {
 
     SQLiteParser(DialectEnv dialectEnv, SQLiteDialect dialect) {
         super(dialectEnv, dialect);
-        switch (this.literalEscapeMode) {
-            case DEFAULT:
-            case DEFAULT_NO_TYPE:
-                break;
-            default:
-                throw _Exceptions.literalEscapeModeError(this.literalEscapeMode, this.dialect);
-
+        if (this.literalEscapeMode != EscapeMode.DEFAULT) {
+            throw _Exceptions.literalEscapeModeError(this.literalEscapeMode, this.dialect);
+        } else if (this.identifierEscapeMode != EscapeMode.DEFAULT) {
+            throw _Exceptions.identifierEscapeModeError(this.identifierEscapeMode, this.dialect);
         }
 
-        switch (this.identifierEscapeMode) {
-            case DEFAULT:
-            case DEFAULT_NO_TYPE:
-                break;
-            default:
-                throw _Exceptions.identifierEscapeModeError(this.identifierEscapeMode, this.dialect);
-
-        }
     }
 
     @Override
@@ -354,27 +344,7 @@ abstract class SQLiteParser extends _ArmyDialectParser {
      */
     @Override
     protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
-        final int length = identifier.length();
-
-        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
-
-        int lastWritten = 0;
-        for (int i = 0; i < length; i++) {
-            if (identifier.charAt(i) == _Constant.DOUBLE_QUOTE) {
-                if (i > lastWritten) {
-                    sqlBuilder.append(identifier, lastWritten, i);
-                }
-                sqlBuilder.append(_Constant.DOUBLE_QUOTE);
-                lastWritten = i; // not i + 1 as current char wasn't written
-            }
-
-        } // loop for
-
-        if (lastWritten < length) {
-            sqlBuilder.append(identifier, lastWritten, length);
-        }
-        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
-
+        simplyEscapeIdentifier(identifier, _Constant.DOUBLE_QUOTE, sqlBuilder);
     }
 
 

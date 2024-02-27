@@ -120,7 +120,6 @@ public abstract class PostgreArrays extends ArrayMappings {
         char ch;
         for (int i = 0; i < length; i++) {
             ch = element.charAt(i);
-
             if (ch == _Constant.BACK_SLASH || ch == _Constant.DOUBLE_QUOTE) {
                 if (i > lastWritten) {
                     builder.append(element, lastWritten, i);

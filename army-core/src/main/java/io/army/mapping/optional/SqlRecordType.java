@@ -105,67 +105,30 @@ public final class SqlRecordType extends _SqlRecordSupport implements MappingTyp
     }
 
     @Override
-    public SqlRecord convert(MappingEnv env, final Object source) throws CriteriaException {
-        return toSqlRecord(map(env.serverMeta()), env, source, PARAM_ERROR_HANDLER);
+    public Object convert(MappingEnv env, final Object source) throws CriteriaException {
+        throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, dontSupportBind());
     }
 
     @Override
-    public String beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
-        final String value;
-        if (source instanceof SqlRecord) {
-            value = postgreRecordText(dataType, env, (SqlRecord) source, new StringBuilder())
-                    .toString();
-        } else if (source instanceof String && isRecordText((String) source)) {
-            if (this == UNLIMITED) {
-                value = (String) source;
-            } else if (readColumnSize(dataType, (String) source) == this.columnTypeList.size()) {
-                value = (String) source;
-            } else {
-                final IllegalArgumentException e = new IllegalArgumentException("column size not match");
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, e);
-            }
-        } else {
-
-            final MappingType type;
-            if (this == UNLIMITED) {
-                type = ObjectType.INSTANCE;
-            } else if (this.columnTypeList.size() == 1) {
-                type = this.columnTypeList.get(0);
-            } else {
-                final IllegalArgumentException e = new IllegalArgumentException("column size not match");
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, source, e);
-            }
-            final StringBuilder builder = new StringBuilder();
-            builder.append(_Constant.LEFT_PAREN);
-            env.literalParser().parse(type, source, false, builder);
-            builder.append(_Constant.RIGHT_PAREN);
-
-            value = builder.toString();
-        }
-        return value;
+    public Object beforeBind(DataType dataType, MappingEnv env, final Object source) throws CriteriaException {
+        throw PARAM_ERROR_HANDLER.apply(this, dataType, source, dontSupportBind());
     }
 
     @Override
     public SqlRecord afterGet(DataType dataType, MappingEnv env, final Object source) throws DataAccessException {
-        return toSqlRecord(dataType, env, source, ACCESS_ERROR_HANDLER);
-    }
-
-
-    private SqlRecord toSqlRecord(final DataType dataType, final MappingEnv env, final Object source,
-                                  final ErrorHandler errorHandler) {
         final SqlRecord value;
         if (source instanceof SqlRecord) {
             if (this != UNLIMITED && ((SqlRecord) source).size() != this.columnTypeList.size()) {
                 final IllegalArgumentException error;
                 error = _Exceptions.recordColumnCountNotMatch((SqlRecord) source, this.columnTypeList.size(), this);
-                throw errorHandler.apply(this, dataType, source, error);
+                throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, error);
             }
             value = (SqlRecord) source;
         } else if (source instanceof String && isRecordText((String) source)) {
             try {
                 value = parseSqlRecord(env, (String) source, 0, ((String) source).length());
             } catch (Exception e) {
-                throw errorHandler.apply(this, dataType, source, e);
+                throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, e);
             }
         } else if (this == UNLIMITED) {
             value = ArraySqlRecord.forSize(1);
@@ -174,53 +137,9 @@ public final class SqlRecordType extends _SqlRecordSupport implements MappingTyp
             value = ArraySqlRecord.forSize(1);
             value.add(this.columnTypeList.get(0).afterGet(dataType, env, source));
         } else {
-            throw errorHandler.apply(this, dataType, source, null);
+            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
         return value;
-    }
-
-
-    private int readColumnSize(final DataType dataType, final String source) {
-        final int length = source.length();
-        boolean inDoubleQuote = false, recordEnd = false;
-        int leftParenCount = 0;
-        char ch;
-        int commaCount = 0;
-        for (int i = 0; i < length; i++) {
-            ch = source.charAt(i);
-            if (inDoubleQuote) {
-                if (ch == _Constant.BACK_SLASH) {
-                    i++;
-                } else if (ch == _Constant.DOUBLE_QUOTE) {
-                    inDoubleQuote = false;
-                }
-            } else if (ch == _Constant.DOUBLE_QUOTE) {
-                inDoubleQuote = true;
-            } else if (ch == _Constant.LEFT_PAREN) {
-                if (recordEnd) {
-                    throw _Exceptions.parenNotMatch(source.substring(i, 3));
-                }
-                leftParenCount++;
-            } else if (leftParenCount == 0) {
-                throw _Exceptions.parenNotMatch(source.substring(i, 3));
-            } else if (ch == _Constant.COMMA) {
-                commaCount++;
-            } else if (ch == _Constant.RIGHT_PAREN) {
-                if (leftParenCount > 1) {
-                    leftParenCount--;
-                } else {
-                    recordEnd = true;
-                }
-            }
-
-        } // loop for
-
-        if (!recordEnd) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, _Exceptions.parenNotMatch(source.substring(0, 3)));
-        } else if (inDoubleQuote) {
-            throw PARAM_ERROR_HANDLER.apply(this, dataType, source, _Exceptions.doubleQuoteNotMatch());
-        }
-        return commaCount + 1;
     }
 
 

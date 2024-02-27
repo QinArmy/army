@@ -36,28 +36,26 @@ public abstract class _PostgreLiterals extends _Literals {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-STRINGS-ESCAPE">String Constants With C-Style Escapes</a>
      */
-    public static void backslashEscape(final CharSequence literal, final int offset, final int end, final char delimiter,
+    public static void backslashEscape(final CharSequence literal, final int offset, final int end,
                                        final StringBuilder sqlBuilder) {
 
-        if (delimiter != _Constant.QUOTE && delimiter != _Constant.DOUBLE_QUOTE) {
-            throw new CriteriaException("error delimiter");
-        }
 
         final int startIndex;
         startIndex = sqlBuilder.length();
 
-        sqlBuilder.append(delimiter);
+        sqlBuilder.append(_Constant.QUOTE);
 
         int lastWritten = 0;
-        char followChar = _Constant.NUL_CHAR;
+        char ch, followChar = _Constant.NUL_CHAR;
         for (int i = offset; i < end; i++) {
-            switch (literal.charAt(i)) {
+            ch = literal.charAt(i);
+            switch (ch) {
                 case _Constant.QUOTE: {
                     if (i > lastWritten) {
                         sqlBuilder.append(literal, lastWritten, i);
                     }
                     sqlBuilder.append(_Constant.QUOTE);
-                    lastWritten = i;//not i + 1 as current char wasn't written
+                    lastWritten = i; // not i + 1 as current char wasn't written
                 }
                 continue;
                 case _Constant.BACK_SLASH:
@@ -83,6 +81,7 @@ public abstract class _PostgreLiterals extends _Literals {
                     break;
                 default:
                     continue;
+
             }
 
             if (i > lastWritten) {
@@ -99,11 +98,11 @@ public abstract class _PostgreLiterals extends _Literals {
             sqlBuilder.append(literal, lastWritten, end);
         }
 
-        if (followChar != _Constant.NUL_CHAR && delimiter == _Constant.QUOTE) {
+        if (followChar != _Constant.NUL_CHAR) {
             sqlBuilder.insert(startIndex, 'E');
         }
 
-        sqlBuilder.append(delimiter);
+        sqlBuilder.append(_Constant.QUOTE);
 
     }
 
@@ -188,6 +187,16 @@ public abstract class _PostgreLiterals extends _Literals {
         }
 
         sqlBuilder.append(_Constant.QUOTE);
+
+        if (escapeChar != _Constant.BACK_SLASH) {
+            sqlBuilder.append(_Constant.SPACE)
+                    .append("UESCAPE")
+                    .append(_Constant.SPACE)
+                    .append(_Constant.QUOTE)
+                    .append(escapeChar)
+                    .append(_Constant.QUOTE);
+        }
+
 
     }
 

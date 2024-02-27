@@ -21,6 +21,7 @@ import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
+import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -52,26 +53,17 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     MySQLParser(DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
-        switch (this.literalEscapeMode) {
+
+        if (this.identifierEscapeMode != EscapeMode.DEFAULT) {
+            throw _Exceptions.identifierEscapeModeError(this.identifierEscapeMode, this.dialect);
+        } else switch (this.literalEscapeMode) {
             case DEFAULT:
-            case DEFAULT_NO_TYPE:
             case BACK_SLASH:
                 break;
             default:
                 throw _Exceptions.literalEscapeModeError(this.literalEscapeMode, this.dialect);
 
         }
-
-        switch (this.identifierEscapeMode) {
-            case DEFAULT:
-            case DEFAULT_NO_TYPE:
-            case BACK_SLASH:
-                break;
-            default:
-                throw _Exceptions.identifierEscapeModeError(this.identifierEscapeMode, this.dialect);
-
-        }
-
 
         // Prior to / as of
         this.asOf80 = ((MySQLDialect) this.dialect).compareWith(MySQLDialect.MySQL80) >= 0;
@@ -625,9 +617,12 @@ abstract class MySQLParser extends _ArmyDialectParser {
             }
 
             switch (ch) {
-                case BACKTICK:
-                    mode = IdentifierMode.ESCAPES;
-                    break outerFor;
+                case BACKTICK: {
+                    if (mode != IdentifierMode.ESCAPES) {
+                        mode = IdentifierMode.ESCAPES;
+                    }
+                }
+                break;
                 case _Constant.NUL_CHAR:
                     mode = IdentifierMode.ERROR;
                     break outerFor;
@@ -653,34 +648,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
      */
     @Override
     protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
-        final int length;
-        length = identifier.length();
-        if (length == 0) {
-            throw _Exceptions.identifierError(identifier, this.dialect);
-        }
-        sqlBuilder.append(BACKTICK);
-        int lastWritten = 0;
-        char ch;
-        for (int i = 0; i < length; i++) {
-            ch = identifier.charAt(i);
-            switch (ch) {
-                case _Constant.NUL_CHAR:
-                    throw _Exceptions.identifierError(identifier, this.dialect);
-                case BACKTICK: {
-                    if (i > lastWritten) {
-                        sqlBuilder.append(identifier, lastWritten, i);// identifier is String not char[],so is i not i- lastWritten
-                    }
-                    sqlBuilder.append(BACKTICK);
-                    lastWritten = i;//not i + 1 as current char wasn't written
-                }
-                break;
-                default:
-            }
-        }
-
-        sqlBuilder.append(identifier, lastWritten, length)// identifier is String not char[],so is length not length- lastWritten
-                .append(BACKTICK);
-
+        simplyEscapeIdentifier(identifier, BACKTICK, sqlBuilder);
     }
 
 

@@ -22,7 +22,6 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping.UnaryGenericsMapping;
 import io.army.mapping.optional.SqlRecordType;
 import io.army.mapping.optional._SqlRecordSupport;
 import io.army.meta.ServerMeta;
@@ -33,19 +32,16 @@ import io.army.type.SqlRecord;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 
 
 /**
  * @see SqlRecord
  * @see io.army.mapping.optional.SqlRecordType
  */
-public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType.SqlArrayType {
+public final class SqlRecordArrayType extends _SqlRecordSupport implements MappingType.SqlArrayType {
 
     public static SqlRecordArrayType fromColumn(final Class<?> arrayType, final MappingType columnType) {
         Objects.requireNonNull(columnType);
@@ -72,13 +68,6 @@ public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType
     }
 
 
-    public static SqlRecordArrayType fromList(final @Nullable Supplier<List<SqlRecord>> constructor,
-                                              final List<MappingType> columnTypeList) {
-        if (columnTypeList.size() == 0) {
-            throw new IllegalArgumentException("column type list must be non-empty");
-        }
-        return new ListType(columnTypeList, constructor);
-    }
 
 
     public static MappingType elementTypeOf(final SqlRecordArrayType arrayType) {
@@ -86,7 +75,7 @@ public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType
         final MappingType instance;
         if (javaType == Object.class) {
             instance = arrayType;
-        } else if (javaType == SqlRecord[].class || arrayType instanceof ListType) {
+        } else if (javaType == SqlRecord[].class) {
             instance = SqlRecordType.fromRow(arrayType.columnTypeList);
         } else {
             instance = new SqlRecordArrayType(javaType.getComponentType(), arrayType.columnTypeList);
@@ -99,8 +88,6 @@ public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType
         final SqlRecordArrayType instance;
         if (javaType == Object.class) { // unlimited dimension array
             instance = arrayType;
-        } else if (arrayType instanceof ListType) {
-            instance = new SqlRecordArrayType(SqlRecord[][].class, arrayType.columnTypeList);
         } else {
             instance = new SqlRecordArrayType(ArrayUtils.arrayClassOf(javaType), arrayType.columnTypeList);
         }
@@ -125,27 +112,27 @@ public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType
     }
 
     @Override
-    public final Class<?> javaType() {
+    public Class<?> javaType() {
         return this.javaType;
     }
 
     @Override
-    public final Class<?> underlyingJavaType() {
+    public Class<?> underlyingJavaType() {
         return SqlRecord.class;
     }
 
     @Override
-    public final MappingType elementType() {
+    public MappingType elementType() {
         return elementTypeOf(this);
     }
 
     @Override
-    public final MappingType arrayTypeOfThis() throws CriteriaException {
+    public MappingType arrayTypeOfThis() throws CriteriaException {
         return arrayTypeOf(this);
     }
 
     @Override
-    public final DataType map(final ServerMeta meta) throws UnsupportedDialectException {
+    public DataType map(final ServerMeta meta) throws UnsupportedDialectException {
         if (meta.serverDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -153,71 +140,23 @@ public class SqlRecordArrayType extends _SqlRecordSupport implements MappingType
     }
 
     @Override
-    public final Object convert(MappingEnv env, Object source) throws CriteriaException {
-        if (this == UNLIMITED) {
-            throw errorUseCase();
-        }
-        return PostgreArrays.arrayAfterGet(this, map(env.serverMeta()), source, false, PostgreArrays::decodeElement,
-                PARAM_ERROR_HANDLER);
+    public Object convert(MappingEnv env, Object source) throws CriteriaException {
+        throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), source, dontSupportBind());
     }
 
     @Override
-    public final String beforeBind(final DataType dataType, final MappingEnv env, Object source) throws CriteriaException {
-        if (this == UNLIMITED) {
-            throw errorUseCase();
-        }
-        final BiConsumer<Object, StringBuilder> consumer;
-        consumer = (o, c) -> appendToText(dataType, env, o, c);
-
-        return PostgreArrays.arrayBeforeBind(source, consumer, dataType, this, PARAM_ERROR_HANDLER);
+    public String beforeBind(final DataType dataType, final MappingEnv env, Object source) throws CriteriaException {
+        throw PARAM_ERROR_HANDLER.apply(this, dataType, source, dontSupportBind());
     }
 
     @Override
-    public final Object afterGet(DataType dataType, final MappingEnv env, Object source) throws DataAccessException {
+    public Object afterGet(DataType dataType, final MappingEnv env, Object source) throws DataAccessException {
         final TextFunction<?> function;
         function = (text, offset, end) -> parseSqlRecord(env, text, offset, end);
         return PostgreArrays.arrayAfterGet(this, dataType, source, false, function, ACCESS_ERROR_HANDLER);
     }
 
 
-    private void appendToText(final DataType dataType, final MappingEnv env, final Object element, final StringBuilder builder) {
-        if (!(element instanceof SqlRecord)) {
-            // no bug,never here
-            throw new IllegalArgumentException();
-        }
-
-        postgreRecordText(dataType, env, (SqlRecord) element, builder);
-
-    }
-
-    private static CriteriaException errorUseCase() {
-        String m = String.format("%s.UNLIMITED only can use read column from database", SqlRecordArrayType.class.getName());
-        return new CriteriaException(m);
-    }
-
-
-    private static final class ListType extends SqlRecordArrayType
-            implements UnaryGenericsMapping.ListMapping<SqlRecord> {
-
-        private final Supplier<List<SqlRecord>> constructor;
-
-        private ListType(List<MappingType> columnTypeList, @Nullable Supplier<List<SqlRecord>> constructor) {
-            super(List.class, columnTypeList);
-            this.constructor = constructor;
-        }
-
-        @Override
-        public Class<SqlRecord> genericsType() {
-            return SqlRecord.class;
-        }
-
-        @Override
-        public Supplier<List<SqlRecord>> listConstructor() {
-            return this.constructor;
-        }
-
-
-    } // ListType
 
 
 }

@@ -18,7 +18,6 @@ package io.army.mapping;
 
 import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
-import io.army.dialect.LiteralParser;
 import io.army.meta.ServerMeta;
 
 import javax.annotation.Nullable;
@@ -38,8 +37,6 @@ public interface MappingEnv {
     ServerMeta serverMeta();
 
     ZoneOffset zoneOffset();
-
-    LiteralParser literalParser();
 
     /**
      * @throws IllegalStateException throw when don't support  {@link JsonCodec}.
@@ -62,8 +59,6 @@ public interface MappingEnv {
         Builder serverMeta(ServerMeta meta);
 
         Builder zoneOffset(@Nullable ZoneOffset zoneOffset);
-
-        Builder literalParser(LiteralParser literalBinder);
 
         Builder jsonCodec(@Nullable JsonCodec codec);
 

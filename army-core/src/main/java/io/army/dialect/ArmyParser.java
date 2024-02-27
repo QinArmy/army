@@ -3369,27 +3369,53 @@ abstract class ArmyParser implements DialectParser {
         return context.build();
     }
 
-
-    /**
-     * @see #ArmyParser(DialectEnv, Dialect)
-     */
-    private MappingEnv createMappingEnv(final DialectEnv env) {
-        return MappingEnv.builder()
-                .reactive(env.isReactive())
-                .serverMeta(env.serverMeta())
-                .zoneOffset(env.zoneOffset())
-                .literalParser(this::literal) // avoid to cast
-                .jsonCodec(env.jsonCodec())
-                .xmlCodec(env.xmlCodec())
-                .build();
-    }
-
     /*-------------------below protected static methods -------------------*/
 
 
     protected static String parentAlias(final String tableAlias) {
         return "p_of_" + tableAlias;
     }
+
+
+    protected static void simplyEscapeIdentifier(final String identifier, final char boundaryChar,
+                                                 final StringBuilder sqlBuilder) {
+
+        final int length = identifier.length();
+
+        sqlBuilder.append(boundaryChar);
+
+        int lastWritten = 0;
+        for (int i = 0; i < length; i++) {
+            if (identifier.charAt(i) == boundaryChar) {
+                if (i > lastWritten) {
+                    sqlBuilder.append(identifier, lastWritten, i);
+                }
+                sqlBuilder.append(boundaryChar);
+                lastWritten = i; // not i + 1 as current char wasn't written
+            }
+
+        } // loop for
+
+        if (lastWritten < length) {
+            sqlBuilder.append(identifier, lastWritten, length);
+        }
+        sqlBuilder.append(boundaryChar);
+    }
+
+
+    /**
+     * @see #ArmyParser(DialectEnv, Dialect)
+     */
+    private static MappingEnv createMappingEnv(final DialectEnv env) {
+        return MappingEnv.builder()
+                .reactive(env.isReactive())
+                .serverMeta(env.serverMeta())
+                .zoneOffset(env.zoneOffset())
+                .jsonCodec(env.jsonCodec())
+                .xmlCodec(env.xmlCodec())
+                .build();
+    }
+
 
 
     protected static CriteriaException standardParserDontSupportDialect(Dialect dialect) {

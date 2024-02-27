@@ -23,7 +23,6 @@ import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardStatement;
 import io.army.dialect.*;
-import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -48,6 +47,23 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     PostgreParser(DialectEnv environment, PostgreDialect dialect) {
         super(environment, dialect);
+        switch (this.literalEscapeMode) {
+            case DEFAULT:
+            case BACK_SLASH:
+            case UNICODE:
+                break;
+            default:
+                throw _Exceptions.literalEscapeModeError(this.literalEscapeMode, this.dialect);
+        }
+
+        switch (this.identifierEscapeMode) {
+            case DEFAULT:
+            case UNICODE:
+                break;
+            default:
+                throw _Exceptions.literalEscapeModeError(this.identifierEscapeMode, this.dialect);
+        }
+
     }
 
 
@@ -151,7 +167,249 @@ abstract class PostgreParser extends _ArmyDialectParser {
     protected final void bindLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                      final boolean typeName, final StringBuilder sqlBuilder) {
 
-        bindPostgreLiteral(typeMeta, dataType, value, this.literalEscapeMode, typeName, _Constant.QUOTE, sqlBuilder);
+
+        if (!(dataType instanceof PostgreType)) {
+            if (!(value instanceof String)) {
+                throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+            }
+            bindUserDefinedLiteral(typeMeta, dataType, (String) value, typeName, sqlBuilder);
+        } else if (dataType.isArray()) {
+            if (!(value instanceof String) || dataType == PostgreType.RECORD_ARRAY) {
+                throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+            }
+            final SQLType elementType = ((SQLType) dataType).elementType();
+            assert elementType != null;
+
+            stringEscape((String) value, sqlBuilder);
+
+            if (typeName) {
+                sqlBuilder.append("::");
+                arrayTypeName(elementType.typeName(), ArrayUtils.dimensionOfType(typeMeta.mappingType()), sqlBuilder);
+            }
+        } else switch ((PostgreType) dataType) {
+            case BOOLEAN:
+                _Literals.bindBoolean(typeMeta, dataType, value, sqlBuilder);
+                break;
+            case SMALLINT: {
+                if (!(value instanceof Short)) {
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                }
+                sqlBuilder.append(value);
+                if (typeName) {
+                    sqlBuilder.append("::SMALLINT");
+                }
+            }
+            break;
+            case INTEGER: {
+                if (!(value instanceof Integer)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(value);
+                if (typeName) {
+                    sqlBuilder.append("::INTEGER");
+                }
+            }
+            break;
+            case BIGINT: {
+                if (!(value instanceof Long)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(value);
+                if (typeName) {
+                    sqlBuilder.append("::BIGINT");
+                }
+            }
+            break;
+            case DECIMAL: {
+                if (!(value instanceof BigDecimal)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(((BigDecimal) value).toPlainString());
+                if (typeName) {
+                    sqlBuilder.append("::DECIMAL");
+                }
+            }
+            break;
+            case FLOAT8: {
+                if (!(value instanceof Double)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(value);
+                if (typeName) {
+                    sqlBuilder.append("::FLOAT8");
+                }
+            }
+            break;
+            case REAL: {
+                if (!(value instanceof Float)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                sqlBuilder.append(value);
+                if (typeName) {
+                    sqlBuilder.append("::REAL");
+                }
+            }
+            break;
+            case TIME: {
+                if (!(value instanceof LocalTime)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                if (typeName) {
+                    sqlBuilder.append("TIME ");
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(_TimeUtils.TIME_FORMATTER_6.format((LocalTime) value))
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case DATE: {
+                if (!(value instanceof LocalDate)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                if (typeName) {
+                    sqlBuilder.append("DATE ");
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(DateTimeFormatter.ISO_LOCAL_DATE.format((LocalDate) value))
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case TIMETZ: {
+                if (!(value instanceof OffsetTime)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                if (typeName) {
+                    sqlBuilder.append("TIMETZ ");
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(_TimeUtils.OFFSET_TIME_FORMATTER_6.format((OffsetTime) value))
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case TIMESTAMP: {
+                if (!(value instanceof LocalDateTime)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                if (typeName) {
+                    sqlBuilder.append("TIMESTAMP ");
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(_TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) value))
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case TIMESTAMPTZ: {
+                if (!(value instanceof OffsetDateTime)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                }
+                if (typeName) {
+                    sqlBuilder.append("TIMESTAMPTZ ");
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(_TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((OffsetDateTime) value))
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case CHAR:
+            case BPCHAR:
+            case VARCHAR:
+            case TEXT:
+            case JSON:
+            case JSONB:
+            case JSONPATH:
+            case XML:
+                // Geometric Types
+            case POINT:
+            case LINE:
+            case LSEG:
+            case BOX:
+            case PATH:
+            case POLYGON:
+            case CIRCLE:
+                // Network Address Types
+            case CIDR:
+            case INET:
+            case MACADDR:
+            case MACADDR8:
+                //
+            case UUID:
+            case MONEY:
+            case TSQUERY:
+            case TSVECTOR:
+                // Range Types
+            case INT4RANGE:
+            case INT8RANGE:
+            case NUMRANGE:
+            case TSRANGE:
+            case TSTZRANGE:
+            case DATERANGE:
+                // multi range Types
+            case INT4MULTIRANGE:
+            case INT8MULTIRANGE:
+            case NUMMULTIRANGE:
+            case DATEMULTIRANGE:
+            case TSMULTIRANGE:
+            case TSTZMULTIRANGE:
+
+            case INTERVAL:
+
+            case ACLITEM:
+            case PG_LSN:
+            case PG_SNAPSHOT: {
+                if (!(value instanceof String)) {
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                }
+                if (typeName) {
+                    sqlBuilder.append(dataType.typeName())
+                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                }
+                stringEscape((String) value, sqlBuilder);
+            }
+            break;
+            case BYTEA: {
+                if (!(value instanceof byte[])) {
+                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
+                }
+
+                if (typeName) {
+                    sqlBuilder.append(dataType.typeName())
+                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                }
+
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(_Constant.BACK_SLASH)
+                        .append('x')
+                        .append(HexUtils.hexEscapesText(true, (byte[]) value))
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case VARBIT:
+            case BIT: {
+
+                if (!(value instanceof String)) {
+                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
+                } else if (!_StringUtils.isBinary((String) value)) {
+                    throw _Exceptions.valueOutRange(dataType, value);
+                }
+                if (typeName) {
+                    sqlBuilder.append(dataType.typeName())
+                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                }
+                sqlBuilder.append('B')
+                        .append(_Constant.QUOTE)
+                        .append(value)
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case UNKNOWN:
+            case REF_CURSOR:
+            case RECORD:
+                throw ExecutorSupport.mapMethodError(typeMeta.mappingType(), dataType);
+            default:
+                throw _Exceptions.unexpectedEnum((PostgreType) dataType);
+
+
+        } // switch
     }
 
 
@@ -296,12 +554,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
             if ((ch >= 'a' && ch <= 'z') || ch == '_') {
                 continue;
             } else if (ch >= 'A' && ch <= 'Z') {
-                upperCase = true;
+                if (!upperCase) {
+                    upperCase = true;
+                }
                 continue;
             } else if ((ch >= '0' && ch <= '9') || ch == '$') {
                 if (i == 0) {
                     mode = IdentifierMode.QUOTING;
-                    break;
                 }
                 continue;
             }
@@ -316,16 +575,19 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 case '\r':
                 case '\t':
                 case _Constant.DOUBLE_QUOTE:
-                case _Constant.BACK_SLASH:
-                    mode = IdentifierMode.ESCAPES;
-                    break outerFor;
+                case _Constant.BACK_SLASH: {
+                    if (mode != IdentifierMode.ESCAPES) {
+                        mode = IdentifierMode.ESCAPES;
+                    }
+                }
+                break;
                 default: {
                     if (mode == null) {
                         mode = IdentifierMode.QUOTING;
                     }
-                }
-                break;
-            }// switch
+                    break;
+                } // default
+            } // switch
 
 
         } // for
@@ -342,70 +604,16 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
-        final int length;
-        length = identifier.length();
-        if (length == 0) {
-            throw _Exceptions.identifierError(identifier, this.dialect);
+        switch (this.identifierEscapeMode) {
+            case DEFAULT:
+                simplyEscapeIdentifier(identifier, _Constant.DOUBLE_QUOTE, sqlBuilder);
+                break;
+            case UNICODE:
+                _PostgreLiterals.unicodeEscape(identifier, 0, identifier.length(), _Constant.BACK_SLASH, sqlBuilder);
+                break;
+            default:
+                throw _Exceptions.identifierEscapeModeError(this.identifierEscapeMode, this.dialect);
         }
-        final int startIndex;
-        startIndex = sqlBuilder.length();
-
-        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
-        int lastWritten = 0;
-        String unicode = null;
-        char ch;
-        for (int i = 0; i < length; i++) {
-            ch = identifier.charAt(i);
-            switch (ch) {
-                case _Constant.NUL_CHAR:
-                    throw _Exceptions.identifierError(identifier, this.dialect);
-                case _Constant.DOUBLE_QUOTE: {
-                    if (i > lastWritten) {
-                        sqlBuilder.append(identifier, lastWritten, i); // identifier is String not char[],so is i not i- lastWritten
-                    }
-                    sqlBuilder.append(_Constant.DOUBLE_QUOTE); //
-                    lastWritten = i;//not i + 1 as current char wasn't written
-                }
-                continue;
-                case '\b':
-                    unicode = "\\u0008";
-                    break;
-                case '\f':
-                    unicode = "\\u000c";
-                    break;
-                case '\n':
-                    unicode = "\\u000a";
-                    break;
-                case '\r':
-                    unicode = "\\u000d";
-                    break;
-                case '\t':
-                    unicode = "\\u0009";
-                    break;
-                case _Constant.BACK_SLASH:
-                    unicode = "\\\\";
-                    break;
-                default:
-                    continue;
-            }
-
-            if (i > lastWritten) {
-                sqlBuilder.append(identifier, lastWritten, i); // identifier is String not char[],so is i not i- lastWritten
-            }
-            sqlBuilder.append(unicode);
-            lastWritten = i + 1;
-
-        }// for
-
-        if (lastWritten < length) {
-            sqlBuilder.append(identifier, lastWritten, length); // identifier is String not char[],so is length not length- lastWritten
-        }
-        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
-        if (unicode != null) {
-            sqlBuilder.insert(startIndex, "U&");
-            sqlBuilder.append(" UESCAPE '\\'");
-        }
-
 
     }
 
@@ -747,11 +955,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
 
     /**
-     * @see #bindPostgreLiteral(TypeMeta, DataType, Object, EscapeMode, boolean, char, StringBuilder)
+     * @see #bindLiteral(TypeMeta, DataType, Object, boolean, StringBuilder)
      */
     private void bindUserDefinedLiteral(final TypeMeta typeMeta, final DataType dataType, final String value,
-                                        final EscapeMode mode, final boolean typeName, final char delimiter,
-                                        final StringBuilder sqlBuilder) {
+                                        final boolean typeName, final StringBuilder sqlBuilder) {
 
         final int length = value.length();
         if (dataType.isArray()) {
@@ -762,7 +969,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             }
         }
 
-        stringEscape(mode, value, 0, length, delimiter, sqlBuilder);
+        stringEscape(value, sqlBuilder);
 
         if (typeName) {
             sqlBuilder.append("::");
@@ -773,312 +980,21 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
 
     /**
-     * @see #bindPostgreLiteral(TypeMeta, DataType, Object, EscapeMode, boolean, char, StringBuilder)
-     * @see #bindUserDefinedLiteral(TypeMeta, DataType, String, EscapeMode, boolean, char, StringBuilder)
-     */
-    private void stringEscape(EscapeMode mode, CharSequence value, int offset, int end, char delimiter,
-                              StringBuilder builder) {
-        switch (mode) {
-            case DEFAULT:
-            case BACK_SLASH:
-                _PostgreLiterals.backslashEscape(value, offset, end, delimiter, builder);
-                break;
-            case UNICODE:
-                _PostgreLiterals.unicodeEscape(value, offset, end, delimiter, builder);
-                break;
-            default:
-                throw _Exceptions.dontSupportEscapeMode(mode, this.dialect);
-        }
-
-    }
-
-    /**
      * @see #bindLiteral(TypeMeta, DataType, Object, boolean, StringBuilder)
      */
-    private boolean bindPostgreLiteral(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                                       final EscapeMode mode, final boolean typeName, final char delimiter,
-                                       final StringBuilder sqlBuilder) {
-
-        boolean enclose = false;
-
-        if (!(dataType instanceof PostgreType)) {
-            if (!(value instanceof String)) {
-                throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-            }
-            bindUserDefinedLiteral(typeMeta, dataType, (String) value, mode, typeName, delimiter, sqlBuilder);
-            enclose = true;
-        } else if (dataType.isArray()) {
-            if (!(value instanceof String)) {
-                throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-            }
-            final SQLType elementType = ((SQLType) dataType).elementType();
-            assert elementType != null;
-
-            stringEscape(mode, (String) value, 0, ((String) value).length(), delimiter, sqlBuilder);
-
-            if (typeName) {
-                sqlBuilder.append("::");
-                arrayTypeName(elementType.typeName(), ArrayUtils.dimensionOfType(typeMeta.mappingType()), sqlBuilder);
-            }
-            enclose = true;
-        } else switch ((PostgreType) dataType) {
-            case BOOLEAN:
-                _Literals.bindBoolean(typeMeta, dataType, value, sqlBuilder);
+    private void stringEscape(final CharSequence value, final StringBuilder builder) {
+        switch (this.literalEscapeMode) {
+            case DEFAULT:
+            case BACK_SLASH:
+                _PostgreLiterals.backslashEscape(value, 0, value.length(), builder);
                 break;
-            case SMALLINT: {
-                if (!(value instanceof Short)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
-                }
-                sqlBuilder.append(value);
-                if (typeName) {
-                    sqlBuilder.append("::SMALLINT");
-                }
-            }
-            break;
-            case INTEGER: {
-                if (!(value instanceof Integer)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                sqlBuilder.append(value);
-                if (typeName) {
-                    sqlBuilder.append("::INTEGER");
-                }
-            }
-            break;
-            case BIGINT: {
-                if (!(value instanceof Long)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                sqlBuilder.append(value);
-                if (typeName) {
-                    sqlBuilder.append("::BIGINT");
-                }
-            }
-            break;
-            case DECIMAL: {
-                if (!(value instanceof BigDecimal)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                sqlBuilder.append(((BigDecimal) value).toPlainString());
-                if (typeName) {
-                    sqlBuilder.append("::DECIMAL");
-                }
-            }
-            break;
-            case FLOAT8: {
-                if (!(value instanceof Double)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                sqlBuilder.append(value);
-                if (typeName) {
-                    sqlBuilder.append("::FLOAT8");
-                }
-            }
-            break;
-            case REAL: {
-                if (!(value instanceof Float)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                sqlBuilder.append(value);
-                if (typeName) {
-                    sqlBuilder.append("::REAL");
-                }
-            }
-            break;
-            case TIME: {
-                if (!(value instanceof LocalTime)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                if (typeName) {
-                    sqlBuilder.append("TIME ");
-                }
-                sqlBuilder.append(delimiter)
-                        .append(_TimeUtils.TIME_FORMATTER_6.format((LocalTime) value))
-                        .append(delimiter);
-
-                enclose = true;
-            }
-            break;
-            case DATE: {
-                if (!(value instanceof LocalDate)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                if (typeName) {
-                    sqlBuilder.append("DATE ");
-                }
-                sqlBuilder.append(delimiter)
-                        .append(DateTimeFormatter.ISO_LOCAL_DATE.format((LocalDate) value))
-                        .append(delimiter);
-
-                enclose = true;
-            }
-            break;
-            case TIMETZ: {
-                if (!(value instanceof OffsetTime)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                if (typeName) {
-                    sqlBuilder.append("TIMETZ ");
-                }
-                sqlBuilder.append(delimiter)
-                        .append(_TimeUtils.OFFSET_TIME_FORMATTER_6.format((OffsetTime) value))
-                        .append(delimiter);
-
-                enclose = true;
-            }
-            break;
-            case TIMESTAMP: {
-                if (!(value instanceof LocalDateTime)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                if (typeName) {
-                    sqlBuilder.append("TIMESTAMP ");
-                }
-                sqlBuilder.append(delimiter)
-                        .append(_TimeUtils.DATETIME_FORMATTER_6.format((LocalDateTime) value))
-                        .append(delimiter);
-
-                enclose = true;
-            }
-            break;
-            case TIMESTAMPTZ: {
-                if (!(value instanceof OffsetDateTime)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                }
-                if (typeName) {
-                    sqlBuilder.append("TIMESTAMPTZ ");
-                }
-                sqlBuilder.append(delimiter)
-                        .append(_TimeUtils.OFFSET_DATETIME_FORMATTER_6.format((OffsetDateTime) value))
-                        .append(delimiter);
-
-                enclose = true;
-            }
-            break;
-            case CHAR:
-            case BPCHAR:
-            case VARCHAR:
-            case TEXT:
-            case JSON:
-            case JSONB:
-            case JSONPATH:
-            case XML:
-                // Geometric Types
-            case POINT:
-            case LINE:
-            case LSEG:
-            case BOX:
-            case PATH:
-            case POLYGON:
-            case CIRCLE:
-                // Network Address Types
-            case CIDR:
-            case INET:
-            case MACADDR:
-            case MACADDR8:
-                //
-            case UUID:
-            case MONEY:
-            case TSQUERY:
-            case TSVECTOR:
-                // Range Types
-            case INT4RANGE:
-            case INT8RANGE:
-            case NUMRANGE:
-            case TSRANGE:
-            case TSTZRANGE:
-            case DATERANGE:
-                // multi range Types
-            case INT4MULTIRANGE:
-            case INT8MULTIRANGE:
-            case NUMMULTIRANGE:
-            case DATEMULTIRANGE:
-            case TSMULTIRANGE:
-            case TSTZMULTIRANGE:
-
-            case INTERVAL:
-
-            case ACLITEM:
-            case PG_LSN:
-            case PG_SNAPSHOT: {
-                if (!(value instanceof String)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
-                }
-                if (typeName) {
-                    sqlBuilder.append(dataType.typeName())
-                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                }
-                stringEscape(mode, (String) value, 0, ((String) value).length(), delimiter, sqlBuilder);
-
-                enclose = true;
-            }
-            break;
-            case RECORD: {
-                if (!(value instanceof String)) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
-                }
-                final String v = (String) value;
-                final int length = v.length();
-                if (v.length() < 2
-                        || v.charAt(0) != _Constant.LEFT_PAREN
-                        || v.charAt(length - 1) != _Constant.RIGHT_PAREN) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
-                }
-
-                stringEscape(mode, (String) value, 0, ((String) value).length(), delimiter, sqlBuilder);
-
-                enclose = true; // TODO right ?
-            }
-            break;
-            case BYTEA: {
-                if (!(value instanceof byte[])) {
-                    throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
-                }
-
-                if (typeName) {
-                    sqlBuilder.append(dataType.typeName())
-                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                }
-
-                sqlBuilder.append(delimiter)
-                        .append(_Constant.BACK_SLASH)
-                        .append('x')
-                        .append(HexUtils.hexEscapesText(true, (byte[]) value))
-                        .append(delimiter);
-
-                enclose = true;
-            }
-            break;
-            case VARBIT:
-            case BIT: {
-
-                if (!(value instanceof String)) {
-                    throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-                } else if (!_StringUtils.isBinary((String) value)) {
-                    throw _Exceptions.valueOutRange(dataType, value);
-                }
-                if (typeName) {
-                    sqlBuilder.append(dataType.typeName())
-                            .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                }
-                sqlBuilder.append('B')
-                        .append(delimiter)
-                        .append(value)
-                        .append(delimiter);
-
-                enclose = true;
-            }
-            break;
-            case UNKNOWN:
-            case REF_CURSOR:
-                throw ExecutorSupport.mapMethodError(typeMeta.mappingType(), dataType);
+            case UNICODE:
+                _PostgreLiterals.unicodeEscape(value, 0, value.length(), _Constant.BACK_SLASH, builder);
+                break;
             default:
-                throw _Exceptions.unexpectedEnum((PostgreType) dataType);
+                throw _Exceptions.dontSupportEscapeMode(this.literalEscapeMode, this.dialect);
+        }
 
-
-        } // switch
-
-        return enclose;
     }
 
 

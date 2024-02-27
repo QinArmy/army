@@ -16,10 +16,12 @@
 
 package io.army.mapping.optional;
 
-import io.army.dialect.LiteralParser;
+import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
-import io.army.env.EscapeMode;
-import io.army.mapping.*;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.ObjectType;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping.array.PostgreArrays;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
@@ -149,86 +151,18 @@ public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
         return record;
     }
 
-    protected final StringBuilder postgreRecordText(final DataType dataType, final MappingEnv env, final SqlRecord record,
-                                                    final StringBuilder builder) {
-        final List<MappingType> columnTypeList = this.columnTypeList;
-        final int columnSize = record.size(), typeSize = columnTypeList.size();
-        if (typeSize > 0 && typeSize != columnSize) {
-            final IllegalArgumentException error;
-            error = _Exceptions.recordColumnCountNotMatch(record, columnSize, this);
-            if (this instanceof SqlRecordType) {
-                throw PARAM_ERROR_HANDLER.apply(this, dataType, record, error);
-            } else {
-                throw error;
-            }
-        }
-
-        final EscapeMode mode;
-        final int startIndex;
-        if (this instanceof SqlRecordType) {
-            mode = EscapeMode.DEFAULT;
-            startIndex = 0;
-        } else {
-            mode = EscapeMode.ARRAY_ELEMENT_PART;
-            startIndex = builder.length();
-        }
-
-        final ServerMeta meta = env.serverMeta();
-        final LiteralParser literalParser = env.literalParser();
-
-
-        final boolean unlimited = typeSize == 0;
-
-        MappingType columnType;
-        DataType columnDataType;
-
-        builder.append(_Constant.LEFT_PAREN);
-        boolean escapse = false;
-        int index = 0;
-        for (Object column : record) {
-            if (index > 0) {
-                builder.append(_Constant.COMMA);
-            }
-            if (column == null) {
-                builder.append(_Constant.NULL);
-                index++;
-                continue;
-            }
-
-            if (unlimited) {
-                columnType = TextType.INSTANCE;
-            } else {
-                columnType = columnTypeList.get(index);
-            }
-            columnDataType = columnType.map(meta);
-            columnType.beforeBind(columnDataType, env, column);
-
-            if (column == DOCUMENT_NULL_VALUE) {
-                builder.append(_Constant.NULL);
-            } else {
-                literalParser.parse(columnType, column, false, builder);
-            }
-
-            index++;
-
-        } // loop for
-
-        builder.append(_Constant.RIGHT_PAREN);
-
-        if (escapse && mode == EscapeMode.ARRAY_ELEMENT_PART) {  // array
-            builder.insert(startIndex, _Constant.DOUBLE_QUOTE);
-            builder.append(_Constant.DOUBLE_QUOTE);
-        }
-
-        return builder;
-    }
-
 
     private IllegalArgumentException columnSizeNotMatch(int recordColumnSize, int columnSize) {
         String m = String.format("record column size[%s] and column size[%s] of %s not match.", recordColumnSize,
                 columnSize, getClass().getName());
         return new IllegalArgumentException(m);
     }
+
+
+    protected static UnsupportedDialectException dontSupportBind() {
+        return new UnsupportedDialectException("record type don't support bind");
+    }
+
 
 
 }
