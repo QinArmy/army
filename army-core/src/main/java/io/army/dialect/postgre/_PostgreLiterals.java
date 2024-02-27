@@ -135,10 +135,15 @@ public abstract class _PostgreLiterals extends _Literals {
                 case '\t':
                     break;
                 default: {
-                    if (ch != escapeChar) {
-                        continue;
+                    if (ch == escapeChar) {
+                        if (i > lastWritten) {
+                            sqlBuilder.append(literal, lastWritten, i);
+                        }
+                        sqlBuilder.append(escapeChar);
+                        lastWritten = i; //not i + 1 as current char wasn't written
                     }
-                }
+                    continue;
+                } // default
 
             } // switch
 
@@ -186,6 +191,38 @@ public abstract class _PostgreLiterals extends _Literals {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING">Dollar-Quoted String Constants</a>
+     */
+    public static void dollarQuotedEscape(final CharSequence literal, int offset, int end, final String tag,
+                                          final StringBuilder sqlBuilder) {
+
+        final String dollarQuote;
+        dollarQuote = parseDollarQuotedTag(tag);
+
+        final String value;
+        if (literal instanceof String) {
+            value = (String) literal;
+        } else {
+            value = literal.subSequence(offset, end).toString();
+            offset = 0;
+            end = value.length();
+        }
+
+        if (value.regionMatches(false, offset, dollarQuote, 0, dollarQuote.length())) {
+            throw containDollarDelimiter(dollarQuote);
+        }
+
+        sqlBuilder.append(dollarQuote)
+                .append(value, offset, end)
+                .append(dollarQuote);
+
+    }
+
+    private static CriteriaException containDollarDelimiter(String dollarQuote) {
+        return new CriteriaException(String.format("lDollar-Quoted String literal couldn't contain %s ", dollarQuote));
+    }
+
 
     static void postgreBitString(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                  final StringBuilder sqlBuilder) {
@@ -229,6 +266,35 @@ public abstract class _PostgreLiterals extends _Literals {
         }
         sqlBuilder.append(_Constant.RIGHT_BRACE);
 
+    }
+
+
+    /**
+     * @see #dollarQuotedEscape(CharSequence, int, int, String, StringBuilder)
+     */
+    private static String parseDollarQuotedTag(final String tag) {
+        final int tagLength = tag.length();
+        char ch;
+        for (int i = 0; i < tagLength; i++) {
+            ch = tag.charAt(i);
+            if (ch == '$' || ch == _Constant.BACK_SLASH || Character.isWhitespace(ch)) {
+                throw new CriteriaException(String.format("tag[%s] contain '$' or back slash or  white space", tag));
+            }
+        }
+
+        final boolean useTag = tagLength > 0;
+
+        final String quoteTag;
+        if (useTag) {
+            quoteTag = _StringUtils.builder(2 + tagLength)
+                    .append('$')
+                    .append(tag)
+                    .append('$')
+                    .toString();
+        } else {
+            quoteTag = "$$";
+        }
+        return quoteTag;
     }
 
 
