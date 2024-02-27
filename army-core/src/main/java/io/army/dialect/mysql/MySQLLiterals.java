@@ -27,10 +27,9 @@ abstract class MySQLLiterals extends _Literals {
 
 
     /**
-     * @return true : occur escape
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-literals.html#character-escape-sequences">String Literals</a>
      */
-    static boolean mysqlEscapes(final EscapeMode mode, final String literal, final StringBuilder sqlBuilder) {
+    static void mysqlEscapes(final EscapeMode mode, final String literal, final StringBuilder sqlBuilder) {
         //firstly,store start index
         final int startIndex, valueLength;
         startIndex = sqlBuilder.length();
@@ -39,11 +38,9 @@ abstract class MySQLLiterals extends _Literals {
         final boolean backSlashEscape;
         switch (mode) {
             case DEFAULT:
-            case DEFAULT_NO_TYPE:
                 backSlashEscape = false;
                 break;
             case BACK_SLASH:
-            case BACK_SLASH_NO_TYPE:
                 backSlashEscape = true;
                 break;
             default:
@@ -121,7 +118,7 @@ abstract class MySQLLiterals extends _Literals {
             sqlBuilder.append(_Constant.QUOTE);
         }
 
-        return charAfterBachSlash != _Constant.NUL_CHAR;
+
     }
 
 

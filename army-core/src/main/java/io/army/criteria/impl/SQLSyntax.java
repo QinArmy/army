@@ -17,7 +17,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.mapping.optional.NoCastBigDecimalType;
@@ -283,7 +282,7 @@ abstract class SQLSyntax extends Functions {
      * @see SQLs#space(Object)
      */
     public static LiteralExpression literalValue(final Object value) {
-        return ArmyLiteralExpression.from(value, EscapeMode.DEFAULT);
+        return ArmyLiteralExpression.from(value, true);
     }
 
     /**
@@ -301,7 +300,7 @@ abstract class SQLSyntax extends Functions {
      * @see SQLs#literalValue(Object)
      */
     public static LiteralExpression space(final Object nonNullValue) {
-        return ArmyLiteralExpression.from(nonNullValue, EscapeMode.DEFAULT_NO_TYPE);
+        return ArmyLiteralExpression.from(nonNullValue, false);
     }
 
 
@@ -317,9 +316,9 @@ abstract class SQLSyntax extends Functions {
     public static LiteralExpression literal(final TypeInfer type, final @Nullable Object value) {
         final LiteralExpression result;
         if (value instanceof Supplier) {
-            result = ArmyLiteralExpression.single(type, ((Supplier<?>) value).get(), EscapeMode.DEFAULT);
+            result = ArmyLiteralExpression.single(type, ((Supplier<?>) value).get(), true);
         } else {
-            result = ArmyLiteralExpression.single(type, value, EscapeMode.DEFAULT);
+            result = ArmyLiteralExpression.single(type, value, true);
         }
         return result;
     }
@@ -336,9 +335,9 @@ abstract class SQLSyntax extends Functions {
     public static LiteralExpression encodingLiteral(final TypeInfer type, final @Nullable Object value) {
         final LiteralExpression result;
         if (value instanceof Supplier) {
-            result = ArmyLiteralExpression.encodingSingle(type, ((Supplier<?>) value).get(), EscapeMode.DEFAULT);
+            result = ArmyLiteralExpression.encodingSingle(type, ((Supplier<?>) value).get(), true);
         } else {
-            result = ArmyLiteralExpression.encodingSingle(type, value, EscapeMode.DEFAULT);
+            result = ArmyLiteralExpression.encodingSingle(type, value, true);
         }
         return result;
     }
@@ -367,7 +366,7 @@ abstract class SQLSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static LiteralExpression namedLiteral(final TypeInfer type, final String name) {
-        return ArmyLiteralExpression.named(type, name, EscapeMode.DEFAULT);
+        return ArmyLiteralExpression.named(type, name, true);
     }
 
     /**
@@ -393,7 +392,7 @@ abstract class SQLSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static LiteralExpression encodingNamedLiteral(final TypeInfer type, final String name) {
-        return ArmyLiteralExpression.encodingNamed(type, name, EscapeMode.DEFAULT);
+        return ArmyLiteralExpression.encodingNamed(type, name, true);
     }
 
     /**
@@ -419,7 +418,7 @@ abstract class SQLSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static LiteralExpression namedNullableLiteral(final TypeInfer type, final String name) {
-        return ArmyLiteralExpression.namedNullable(type, name, EscapeMode.DEFAULT);
+        return ArmyLiteralExpression.namedNullable(type, name, true);
     }
 
     /**
@@ -443,7 +442,7 @@ abstract class SQLSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      */
     public static LiteralExpression encodingNamedNullableLiteral(final TypeInfer type, final String name) {
-        return ArmyLiteralExpression.encodingNamedNullable(type, name, EscapeMode.DEFAULT);
+        return ArmyLiteralExpression.encodingNamedNullable(type, name, true);
     }
 
     /**
