@@ -65,7 +65,8 @@ enum AssignOperator {
     final void appendOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
         switch (context.database()) {
             case MySQL:
-            case PostgreSQL: {
+            case PostgreSQL:
+            case SQLite: {
                 sqlBuilder.append(_Constant.SPACE_EQUAL);
                 ((_SelfDescribed) field).appendSql(sqlBuilder, context);
                 appendAppropriateExpressionOperator(sqlBuilder);

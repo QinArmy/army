@@ -29,6 +29,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -1024,6 +1025,12 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         public final void appendSelectItem(final StringBuilder sqlBuilder, _SqlContext context) {
             // no bug,never here
             throw new UnsupportedOperationException("invoking error");
+        }
+
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
         }
 
         @Override

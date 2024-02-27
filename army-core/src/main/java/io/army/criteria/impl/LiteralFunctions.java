@@ -26,6 +26,7 @@ import io.army.function.ExpressionOperator;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.TextType;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.DataType;
@@ -582,6 +583,12 @@ abstract class LiteralFunctions {
                 t = returnType.mappingType();
             }
             return t;
+        }
+
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // function always false
+            return false;
         }
 
         @Override

@@ -26,6 +26,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -102,6 +103,11 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
             throw _Exceptions.visibleField(context.visible(), this);
         }
         context.appendField(this.tableAlias, this.field);
+    }
+
+    @Override
+    public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+        return this.field.table == table;
     }
 
     @Override

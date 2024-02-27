@@ -25,6 +25,7 @@ import io.army.function.TeFunction;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
@@ -391,6 +392,11 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation(this);
     }
 
+    @Override
+    public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+        // always false
+        return false;
+    }
 
     @Override
     public final Selection as(String selectionLabel) {

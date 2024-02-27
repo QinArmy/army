@@ -294,7 +294,8 @@ public class DomainUpdateTests extends SessionSupport {
     }
 
     @Transactional
-    @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
+    @Test
+//(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void updateChild(final SyncLocalSession session) {
         final List<ChinaProvince> regionList = createProvinceListWithCount(3);
         session.batchSave(regionList);

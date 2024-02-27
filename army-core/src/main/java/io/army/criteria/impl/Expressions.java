@@ -26,6 +26,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.JsonPathType;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -35,7 +36,6 @@ import io.army.util._StringUtils;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -809,6 +809,11 @@ abstract class Expressions {
         }
 
         @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.left.currentLevelContainFieldOf(table) || this.right.currentLevelContainFieldOf(table);
+        }
+
+        @Override
         public final String toString() {
             final StringBuilder sqlBuilder = new StringBuilder();
             final ArmyExpression left = this.left, right = this.right;
@@ -956,6 +961,11 @@ abstract class Expressions {
         }
 
         @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.operand.currentLevelContainFieldOf(table);
+        }
+
+        @Override
         public final String toString() {
             final Operator.SqlUnaryExpOperator operator = this.operator;
             final boolean outerParens;
@@ -1028,6 +1038,11 @@ abstract class Expressions {
             context.appendSubQuery(this.subQuery);
         }
 
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
+        }
 
         @Override
         public String toString() {
@@ -1077,6 +1092,12 @@ abstract class Expressions {
             }
             sqlBuilder.append(_Constant.SPACE_EXISTS);
             context.appendSubQuery(this.subQuery);
+        }
+
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
         }
 
         @Override
@@ -1141,6 +1162,19 @@ abstract class Expressions {
                 }
             }
 
+        }
+
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            boolean contain = false;
+            if (this.left instanceof ArmyExpression) {
+                contain = ((ArmyExpression) this.left).currentLevelContainFieldOf(table);
+            }
+
+            if (!contain && this.right instanceof ArmyExpression) {
+                contain = ((ArmyExpression) this.right).currentLevelContainFieldOf(table);
+            }
+            return contain;
         }
 
         @Override
@@ -1276,26 +1310,10 @@ abstract class Expressions {
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.left, this.operator, this.right, this.escapeChar);
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.left.currentLevelContainFieldOf(table) || this.right.currentLevelContainFieldOf(table);
         }
 
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof LikePredicate) {
-                final LikePredicate o = (LikePredicate) obj;
-                match = o.left.equals(this.left)
-                        && o.operator == this.operator
-                        && o.right.equals(this.right)
-                        && Objects.equals(o.escapeChar, this.escapeChar);
-            } else {
-                match = false;
-            }
-            return match;
-        }
 
         @Override
         public String toString() {
@@ -1392,28 +1410,11 @@ abstract class Expressions {
 
         }
 
-
         @Override
-        public int hashCode() {
-            return Objects.hash(this.not, this.modifier, this.left, this.center, this.right);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof BetweenPredicate) {
-                final BetweenPredicate o = (BetweenPredicate) obj;
-                match = o.not == this.not
-                        && o.modifier == this.modifier
-                        && o.left.equals(this.left)
-                        && o.center.equals(this.center)
-                        && o.right.equals(this.right);
-            } else {
-                match = false;
-            }
-            return match;
+        public boolean currentLevelContainFieldOf(final ParentTableMeta<?> table) {
+            return this.left.currentLevelContainFieldOf(table)
+                    || this.center.currentLevelContainFieldOf(table)
+                    || this.right.currentLevelContainFieldOf(table);
         }
 
         @Override
@@ -1487,30 +1488,15 @@ abstract class Expressions {
             this.expression.appendSql(sqlBuilder, context);
         }
 
+
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.expression.currentLevelContainFieldOf(table);
+        }
+
         @Override
         public final String toString() {
             return this.expression.toString();
-        }
-
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.expression, this.castType);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof CastExpression) {
-                final CastExpression o = (CastExpression) obj;
-                match = o.expression.equals(this.expression)
-                        && o.castType.equals(this.castType);
-            } else {
-                match = false;
-            }
-            return match;
         }
 
 
@@ -1558,6 +1544,11 @@ abstract class Expressions {
         }
 
         @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.left instanceof ArmyExpression && ((ArmyExpression) this.left).currentLevelContainFieldOf(table);
+        }
+
+        @Override
         public String toString() {
             return _StringUtils.builder()
                     .append(this.left)
@@ -1568,7 +1559,7 @@ abstract class Expressions {
         }
 
 
-    }//SubQueryPredicate
+    } // SubQueryPredicate
 
 
     private static final class BooleanTestPredicate extends OperationPredicate.OperationCompoundPredicate {
@@ -1600,27 +1591,11 @@ abstract class Expressions {
             sqlBuilder.append(this.operand.spaceRender());
         }
 
-
         @Override
-        public int hashCode() {
-            return Objects.hash(this.expression, this.not, this.operand);
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.expression.currentLevelContainFieldOf(table);
         }
 
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof BooleanTestPredicate) {
-                final BooleanTestPredicate o = (BooleanTestPredicate) obj;
-                match = o.expression.equals(this.expression)
-                        && o.not == this.not
-                        && o.operand == this.operand;
-            } else {
-                match = false;
-            }
-            return match;
-        }
 
         @Override
         public String toString() {
@@ -1686,26 +1661,10 @@ abstract class Expressions {
             }
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.left, this.not, this.operator, this.right);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof IsComparisonPredicate) {
-                final IsComparisonPredicate o = (IsComparisonPredicate) obj;
-                match = o.left.equals(this.left)
-                        && o.not == this.not
-                        && o.operator == this.operator
-                        && o.right.equals(this.right);
-            } else {
-                match = false;
-            }
-            return match;
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.left.currentLevelContainFieldOf(table) || this.right.currentLevelContainFieldOf(table);
         }
 
         @Override
@@ -1769,6 +1728,11 @@ abstract class Expressions {
             } else {
                 ((ArmyRowExpression) right).appendSql(sqlBuilder, context);
             }
+        }
+
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.left instanceof ArmyExpression && ((ArmyExpression) this.left).currentLevelContainFieldOf(table);
         }
 
         @Override
@@ -1837,6 +1801,13 @@ abstract class Expressions {
             }
 
             this.appendSubscripts(sqlBuilder, context);
+        }
+
+
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
         }
 
         @Override
@@ -2117,6 +2088,13 @@ abstract class Expressions {
         @Override
         public final TypeMeta typeMeta() {
             return this.type;
+        }
+
+
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
         }
 
         final void jsonToString(StringBuilder builder) {
@@ -2413,7 +2391,14 @@ abstract class Expressions {
             return this;
         }
 
-    }//ArrayConstructor
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
+        }
+
+
+    } //ArrayConstructor
 
 
     private static final class SimpleArrayConstructor extends ArrayConstructor {
@@ -2573,6 +2558,11 @@ abstract class Expressions {
 
             sqlBuilder.append(" COLLATE ");
             context.identifier(this.collation, sqlBuilder);
+        }
+
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.exp.currentLevelContainFieldOf(table);
         }
 
         @Override

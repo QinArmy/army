@@ -21,15 +21,15 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.*;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.PrimaryFieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.*;
 
 /**
@@ -40,7 +40,6 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     /**
      * <p>
      * Private constructor .
-     *
      *
      * @see OperationSimplePredicate#OperationSimplePredicate()
      * @see OperationCompoundPredicate#OperationPredicate()
@@ -644,7 +643,6 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
 
-
     @Override
     public final TableField findParentId(final ChildTableMeta<?> child, final String alias) {
         final TableField parentId;
@@ -679,7 +677,6 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         }
         return parentId;
     }
-
 
     static OperationSimplePredicate bracketPredicate(final IPredicate predicate) {
         final OperationSimplePredicate result;
@@ -784,7 +781,6 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * <li>{@link BracketPredicate}</li>
      * <li>{@link SqlFunctionPredicate}</li>
      * <li>{@link OrPredicate},because OR/XOR operator always have outer parentheses。</li>
-     *
      */
     static abstract class OperationSimplePredicate extends OperationPredicate
             implements SimplePredicate, ArmySimpleExpression {
@@ -792,7 +788,6 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         /**
          * <p>
          * <strong>Private constructor</strong>
-         *
          */
         private OperationSimplePredicate() {
         }
@@ -839,6 +834,12 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
                 ((FunctionUtils.FunctionOuterClause) this).appendFuncRest(sqlBuilder, context);
             }
 
+        }
+
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // function always false
+            return false;
         }
 
         @Override
@@ -898,8 +899,12 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
         }
 
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.predicate.currentLevelContainFieldOf(table);
+        }
 
-    }//BracketPredicate
+    } //BracketPredicate
 
     private static final class OrPredicate extends OperationSimplePredicate {
 
@@ -918,25 +923,20 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             this.appendOrPredicate(sqlBuilder, context);
         }
 
-
         @Override
-        public int hashCode() {
-            return Objects.hash(this.left, this.rightList);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof OrPredicate) {
-                final OrPredicate o = (OrPredicate) obj;
-                match = o.left.equals(this.left)
-                        && o.rightList.equals(this.rightList);
-            } else {
-                match = false;
+        public boolean currentLevelContainFieldOf(final ParentTableMeta<?> table) {
+            if (this.left.currentLevelContainFieldOf(table)) {
+                return true;
             }
-            return match;
+
+            boolean contain = false;
+            for (OperationPredicate predicate : rightList) {
+                if (predicate.currentLevelContainFieldOf(table)) {
+                    contain = true;
+                    break;
+                }
+            }
+            return contain;
         }
 
         @Override
@@ -995,7 +995,6 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             this.right = right;
         }
 
-
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             // 1. append left operand
@@ -1018,6 +1017,10 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
         }
 
+        @Override
+        public boolean currentLevelContainFieldOf(final ParentTableMeta<?> table) {
+            return this.left.currentLevelContainFieldOf(table) || this.right.currentLevelContainFieldOf(table);
+        }
 
         @Override
         public String toString() {
@@ -1075,21 +1078,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         }
 
         @Override
-        public int hashCode() {
-            return this.predicate.hashCode();
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof NotPredicate) {
-                match = ((NotPredicate) obj).predicate.equals(this.predicate);
-            } else {
-                match = false;
-            }
-            return match;
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.predicate.currentLevelContainFieldOf(table);
         }
 
         @Override
@@ -1141,6 +1131,12 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         @Override
         public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             sqlBuilder.append(this.spaceWord);
+        }
+
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // key word , always false
+            return false;
         }
 
         @Override

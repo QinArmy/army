@@ -22,6 +22,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -187,6 +188,12 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
     @Override
     public final TypeMeta typeMeta() {
         return this.type;
+    }
+
+    @Override
+    public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+        // always false
+        return false;
     }
 
     private static class AnonymousLiteral extends ArmyLiteralExpression

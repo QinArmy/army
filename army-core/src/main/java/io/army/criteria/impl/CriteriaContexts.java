@@ -27,6 +27,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util.ClassUtils;
@@ -4362,6 +4363,11 @@ abstract class CriteriaContexts {
 
         }
 
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // false
+            return false;
+        }
 
         @Override
         public final String toString() {
@@ -4373,7 +4379,7 @@ abstract class CriteriaContexts {
                     .toString();
         }
 
-    }//ImmutableDerivedField
+    } // ImmutableDerivedField
 
 
     /**
@@ -4426,6 +4432,12 @@ abstract class CriteriaContexts {
             sqlBuilder.append(_Constant.SPACE);
 
             context.parser().identifier(this.selection.label(), sqlBuilder);
+        }
+
+        @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
         }
 
         @Override

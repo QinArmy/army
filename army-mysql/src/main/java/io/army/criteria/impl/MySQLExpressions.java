@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -526,6 +527,12 @@ abstract class MySQLExpressions {
 
 
         @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
+        }
+
+        @Override
         public String toString() {
             final StringBuilder builder = new StringBuilder();
             builder.append(" _")
@@ -567,6 +574,12 @@ abstract class MySQLExpressions {
         @Override
         public MappingType typeMeta() {
             return this.type;
+        }
+
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
         }
 
         @Override

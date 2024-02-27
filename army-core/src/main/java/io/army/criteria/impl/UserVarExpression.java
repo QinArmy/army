@@ -26,6 +26,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -167,6 +168,11 @@ final class UserVarExpression extends OperationExpression.OperationDefiniteExpre
 
     }
 
+    @Override
+    public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+        // always false
+        return false;
+    }
 
     @Override
     public int hashCode() {
@@ -248,6 +254,11 @@ final class UserVarExpression extends OperationExpression.OperationDefiniteExpre
 
         } // VarOperationExpression
 
+        @Override
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // always false
+            return false;
+        }
 
         @Override
         public String toString() {

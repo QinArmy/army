@@ -17,10 +17,17 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.Expression;
+import io.army.meta.ParentTableMeta;
 
 public interface _Expression extends Expression, _SelfDescribed {
 
 
     boolean isNullValue();
+
+
+    /**
+     * <p>Don't search in sub statement
+     */
+    boolean currentLevelContainFieldOf(ParentTableMeta<?> table);
 
 }

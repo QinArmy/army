@@ -30,6 +30,7 @@ import io.army.mapping.StringType;
 import io.army.mapping.optional.JsonPathType;
 import io.army.mapping.optional.NoCastIntegerType;
 import io.army.mapping.optional.NoCastTextType;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -376,6 +377,13 @@ abstract class OperationExpression extends OperationSQLExpression
     @Override
     public final SortItem descSpace(@Nullable SQLs.NullsFirstLast firstLast) {
         return ArmySortItems.create(this, SQLs.DESC, firstLast);
+    }
+
+
+    @Override
+    public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+        // default false
+        return false;
     }
 
     static OperationExpression bracketExp(final @Nullable Expression expression) {
@@ -940,6 +948,12 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
         @Override
+        public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            // function always false
+            return false;
+        }
+
+        @Override
         public final String toString() {
             final StringBuilder builder = new StringBuilder();
 
@@ -1034,23 +1048,9 @@ abstract class OperationExpression extends OperationSQLExpression
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
-
         @Override
-        public int hashCode() {
-            return this.expression.hashCode();
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof BracketsExpression) {
-                match = ((BracketsExpression) obj).expression.equals(this.expression);
-            } else {
-                match = false;
-            }
-            return match;
+        public boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+            return this.expression.currentLevelContainFieldOf(table);
         }
 
         @Override

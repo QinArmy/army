@@ -21,6 +21,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.SingleParam;
 import io.army.util._StringUtils;
@@ -193,6 +194,11 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
         context.appendParam(this);
     }
 
+    @Override
+    public final boolean currentLevelContainFieldOf(ParentTableMeta<?> table) {
+        // always false
+        return false;
+    }
 
     private static final class AnonymousParam extends ArmyParamExpression
             implements SingleParam, SingleAnonymousValue {
