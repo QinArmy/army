@@ -40,7 +40,7 @@ public abstract class SyncSessionTestSupport extends SessionTestSupport {
 
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
-    private static final List<Database> DATABASE_LIST = ArrayUtils.of(Database.MySQL, Database.PostgreSQL);
+    private static final List<Database> DATABASE_LIST = ArrayUtils.of(Database.SQLite);
 
     private static final ConcurrentMap<Database, SyncSessionFactory> SYNC_FACTORY_MAP = _Collections.concurrentHashMap();
 

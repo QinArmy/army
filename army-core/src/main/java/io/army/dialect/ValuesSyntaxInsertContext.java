@@ -20,6 +20,7 @@ import io.army.criteria.NullMode;
 import io.army.criteria.impl.inner._Insert;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.session.SessionSpec;
+import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 
@@ -39,15 +40,17 @@ abstract class ValuesSyntaxInsertContext extends InsertContext implements _Value
         } else {
             targetStmt = stmt;
         }
-        this.nullMode = targetStmt.nullHandle();
 
+        this.nullMode = handleNullMode(targetStmt.nullHandle(), parser);
     }
 
 
     ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, _Insert._ChildInsert stmt,
                               ValuesSyntaxInsertContext parentContext) {
         super(outerContext, stmt, parentContext);
-        this.nullMode = ((_Insert._ValuesSyntaxInsert) stmt).nullHandle();
+
+        this.nullMode = handleNullMode(((_Insert._ValuesSyntaxInsert) stmt).nullHandle(), this.parser);
+
         assert this.nullMode == parentContext.nullMode;
 
     }
@@ -56,6 +59,34 @@ abstract class ValuesSyntaxInsertContext extends InsertContext implements _Value
     static IllegalStateException parentStmtDontExecute(PrimaryFieldMeta<?> filed) {
         String m = String.format("parent stmt don't execute so %s parameter value is null", filed);
         return new IllegalStateException(m);
+    }
+
+
+    private static NullMode handleNullMode(final NullMode userMode, final ArmyParser parser) {
+        final NullMode mode;
+        switch (userMode) {
+            case DEFAULT: {
+                if (parser.serverDatabase == Database.SQLite) {
+                    mode = NullMode.INSERT_NULL;
+                } else {
+                    mode = userMode;
+                }
+            }
+            break;
+            case INSERT_DEFAULT: {
+                if (parser.serverDatabase == Database.SQLite) {
+                    throw _Exceptions.dontSupportNullMode(userMode, parser.dialect);
+                }
+                mode = userMode;
+            }
+            break;
+            case INSERT_NULL:
+                mode = userMode;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(userMode);
+        }
+        return mode;
     }
 
 

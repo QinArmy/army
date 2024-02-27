@@ -171,7 +171,7 @@ abstract class InsertSupports {
             implements ValueSyntaxOptions {
 
 
-        private NullMode nullMode = NullMode.INSERT_DEFAULT;
+        private NullMode nullMode = NullMode.DEFAULT;
 
         private boolean ignoreReturnIds;
 

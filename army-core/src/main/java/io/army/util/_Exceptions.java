@@ -359,6 +359,10 @@ public abstract class _Exceptions {
     }
 
 
+    public static CriteriaException dontSupportNullMode(NullMode mode, Dialect dialect) {
+        return new CriteriaException(String.format("%s don't support %s", mode, dialect));
+    }
+
     public static CriteriaException nonNullNamedParam(NamedParam param) {
         String m = String.format("%s[%s] must be non-null.", NamedParam.class.getName(), param.name());
         return new CriteriaException(m);

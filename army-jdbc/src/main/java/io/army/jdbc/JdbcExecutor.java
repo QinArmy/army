@@ -600,9 +600,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final Isolation finalIsolation;
             if (isolation == null) {
-                if (sessionIsolation == null) {
-                    throw new AssertionError();
-                }
                 assert sessionIsolation != null;
                 finalIsolation = sessionIsolation;
             } else {

@@ -55,8 +55,9 @@ public class ChinaProvince extends ChinaRegion<ChinaProvince> {
         return relationId;
     }
 
-    public void setRelationId(Long relationId) {
+    public ChinaProvince setRelationId(Long relationId) {
         this.relationId = relationId;
+        return this;
     }
 
 

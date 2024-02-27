@@ -279,6 +279,7 @@ abstract class WindowFunctions {
                 case MySQL:
                     dontSupport = dialect.compareWith(MySQLDialect.MySQL80) < 0;
                     break;
+                case SQLite:
                 case PostgreSQL:
                     dontSupport = false;
                     break;

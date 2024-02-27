@@ -865,6 +865,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 case PostgreSQL:
                     support = meta.major() < 12;
                     break;
+                case SQLite:
+                    support = false;
+                    break;
                 case MySQL:
                 case H2:
                 default:

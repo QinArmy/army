@@ -157,6 +157,8 @@ public abstract class ArmyTestDataSupport {
                     .setRegionGdp(randomDecimal(random))
 
                     .setVersion(0)
+                    .setPopulation(0) // SQLite don't support DEFAULT in VALUES clause .
+                    .setParentId(0L) // SQLite don't support DEFAULT in VALUES clause .
                     .setVisible(Boolean.TRUE);
 
             list.add(c);
@@ -212,8 +214,11 @@ public abstract class ArmyTestDataSupport {
 
                     .setVersion(0)
                     .setVisible(Boolean.TRUE)
+                    .setPopulation(0) // SQLite don't support DEFAULT in VALUES clause .
+                    .setParentId(0L) // SQLite don't support DEFAULT in VALUES clause .
 
                     .setGovernor(randomPerson(random))
+                    .setRelationId(0L) // SQLite don't support DEFAULT in VALUES clause .
                     .setProvincialCapital(randomCity(random));
 
             list.add(c);

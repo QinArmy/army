@@ -202,7 +202,6 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             defaultValueMap = rowWrapper.nonChildDefaultMap;
         }
 
-
         final Map<FieldMeta<?>, Object> emptyMap = Collections.emptyMap();
         final PrimaryFieldMeta<?> nonChildId = insertTable.nonChildId();
         final GeneratorType nonChildIdType = nonChildId.generatorType();

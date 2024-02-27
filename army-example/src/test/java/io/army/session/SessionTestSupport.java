@@ -81,6 +81,7 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
                 match = true;
                 break;
             case PostgreSQL:
+            case SQLite:
             default:
                 match = false;
         }

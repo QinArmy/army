@@ -18,6 +18,8 @@ package io.army.criteria;
 
 public enum NullMode {
 
+    DEFAULT,
+
     INSERT_DEFAULT,
     INSERT_NULL
 }

@@ -103,6 +103,9 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
     }
 
 
+    /**
+     * @see <a href="https://www.sqlite.org/lang_transaction.html">BEGIN Transaction</a>
+     */
     @Override
     public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
         final StringBuilder builder = new StringBuilder(168);
@@ -146,20 +149,22 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor
         final Isolation isolation, finalIsolation;
         isolation = option.isolation();
 
+        final int isolationLevel = this.sessionIsolationLevel;
+        final Isolation tempIsolation;
         try {
             if (isolation == null) {
-                this.conn.setTransactionIsolation(this.sessionIsolationLevel);
+                this.conn.setTransactionIsolation(isolationLevel);
+                tempIsolation = jdbcIsolationToArmyIsolation(isolationLevel);
             } else {
-                this.conn.setTransactionIsolation(armyIsolationToJdbcIsolation(isolation));
+                tempIsolation = isolation;
             }
-
             this.conn.setReadOnly(readOnly);
         } catch (Exception e) {
             throw handleException(e);
         }
 
         // execute start transaction statements
-        finalIsolation = executeStartTransaction(stmtCount, isolation, builder.toString());
+        finalIsolation = executeStartTransaction(stmtCount, tempIsolation, builder.toString());
 
         final TransactionInfo.InfoBuilder infoBuilder;
         infoBuilder = TransactionInfo.builder(true, finalIsolation, readOnly);

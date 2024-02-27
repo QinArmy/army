@@ -30,10 +30,6 @@ import io.army.util._StringUtils;
  */
 public enum SQLiteDialect implements Dialect {
 
-    SQLite30(30),
-    SQLite31(31),
-    SQLite32(32),
-    SQLite33(33),
     SQLite34(34);
 
     private final byte version;
@@ -69,38 +65,11 @@ public enum SQLiteDialect implements Dialect {
 
 
     public static SQLiteDialect from(final ServerMeta meta) {
-        final SQLiteDialect dialect;
         final int major = meta.major();
-        if (major > 3) {
-            dialect = SQLiteDialect.SQLite34;
-        } else switch (major) {
-            case 3: {
-                switch (meta.minor() / 10) {
-                    case 0:
-                        dialect = SQLiteDialect.SQLite30;
-                        break;
-                    case 1:
-                        dialect = SQLiteDialect.SQLite31;
-                        break;
-                    case 2:
-                        dialect = SQLiteDialect.SQLite32;
-                        break;
-                    case 3:
-                        dialect = SQLiteDialect.SQLite33;
-                        break;
-                    default:
-                        dialect = SQLiteDialect.SQLite34;
-                }
-            }
-            break;
-            case 2:
-            case 1:
-                dialect = SQLiteDialect.SQLite30;
-                break;
-            default:
-                throw Database.unsupportedVersion(meta);
+        if (major < 3 || (meta.minor() / 10) < 4) {
+            throw Database.unsupportedVersion(meta);
         }
-        return dialect;
+        return SQLiteDialect.SQLite34;
     }
 
 

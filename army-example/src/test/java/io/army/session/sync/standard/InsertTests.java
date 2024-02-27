@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class InsertTests extends SessionSupport {
@@ -114,9 +113,9 @@ public class InsertTests extends SessionSupport {
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
                         .comma(ChinaRegion_.parentId)
                 )
-                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::param, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
-                .defaultValue(ChinaRegion_.parentId, SQLs::literal, 0)
+                .defaultValue(ChinaRegion_.parentId, LITERAL_0)  // SQLite don't support DEFAULT in VALUES clause .
                 .values(regionList)
                 .asInsert()
 
@@ -124,6 +123,7 @@ public class InsertTests extends SessionSupport {
 
                 .insertInto(ChinaProvince_.T)
                 .defaultValue(ChinaProvince_.governor, SQLs::literal, randomPerson())
+                .defaultValue(ChinaProvince_.relationId, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
                 .values(regionList)
                 .asInsert();
 
@@ -270,6 +270,8 @@ public class InsertTests extends SessionSupport {
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .defaultValue(ChinaRegion_.parentId, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
+                .defaultValue(ChinaRegion_.population, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
                 .values()
 
                 .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
@@ -298,6 +300,8 @@ public class InsertTests extends SessionSupport {
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .defaultValue(ChinaRegion_.parentId, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
+                .defaultValue(ChinaRegion_.population, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
                 .values()
 
                 .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion())
@@ -355,6 +359,7 @@ public class InsertTests extends SessionSupport {
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::param, BigDecimal.ZERO)
+                .defaultValue(ChinaRegion_.population, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
                 .defaultValue(ChinaRegion_.parentId, SQLs.scalarSubQuery()
                         .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
                         .from("cte")
@@ -413,6 +418,7 @@ public class InsertTests extends SessionSupport {
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, BigDecimal.ZERO)
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .defaultValue(ChinaRegion_.population, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
                 .defaultValue(ChinaRegion_.parentId, SQLs.scalarSubQuery()
                         .select(s -> s.space(SQLs.refField("cte", ChinaRegion_.ID)))
                         .from("cte")
@@ -475,6 +481,8 @@ public class InsertTests extends SessionSupport {
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .defaultValue(ChinaRegion_.parentId, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
+                .defaultValue(ChinaRegion_.population, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
                 .values(r -> {
                     for (int i = 0; i < rowCount; i++) {
                         r.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
@@ -500,6 +508,8 @@ public class InsertTests extends SessionSupport {
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .defaultValue(ChinaRegion_.parentId, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
+                .defaultValue(ChinaRegion_.population, LITERAL_0) // SQLite don't support DEFAULT in VALUES clause .
                 .values(r -> {
                     for (int i = 0; i < rowCount; i++) {
                         r.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
