@@ -21,10 +21,8 @@ import io.army.dialect._Constant;
 import io.army.dialect._Literals;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
-import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
-import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.lang.reflect.Array;
@@ -38,12 +36,17 @@ public abstract class _PostgreLiterals extends _Literals {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-STRINGS-ESCAPE">String Constants With C-Style Escapes</a>
      */
-    public static void backslashEscape(final CharSequence literal, final int offset, final int end, final StringBuilder sqlBuilder) {
+    public static void backslashEscape(final CharSequence literal, final int offset, final int end, final char delimiter,
+                                       final StringBuilder sqlBuilder) {
+
+        if (delimiter != _Constant.QUOTE && delimiter != _Constant.DOUBLE_QUOTE) {
+            throw new CriteriaException("error delimiter");
+        }
 
         final int startIndex;
         startIndex = sqlBuilder.length();
 
-        sqlBuilder.append(_Constant.QUOTE);
+        sqlBuilder.append(delimiter);
 
         int lastWritten = 0;
         char followChar = _Constant.NUL_CHAR;
@@ -95,10 +98,12 @@ public abstract class _PostgreLiterals extends _Literals {
         if (lastWritten < end) {
             sqlBuilder.append(literal, lastWritten, end);
         }
-        if (followChar != _Constant.NUL_CHAR) {
+
+        if (followChar != _Constant.NUL_CHAR && delimiter == _Constant.QUOTE) {
             sqlBuilder.insert(startIndex, 'E');
         }
-        sqlBuilder.append(_Constant.QUOTE);
+
+        sqlBuilder.append(delimiter);
 
     }
 
@@ -135,14 +140,9 @@ public abstract class _PostgreLiterals extends _Literals {
                 case '\t':
                     break;
                 default: {
-                    if (ch == escapeChar) {
-                        if (i > lastWritten) {
-                            sqlBuilder.append(literal, lastWritten, i);
-                        }
-                        sqlBuilder.append(escapeChar);
-                        lastWritten = i; //not i + 1 as current char wasn't written
+                    if (ch != escapeChar) {
+                        continue;
                     }
-                    continue;
                 } // default
 
             } // switch
@@ -210,7 +210,7 @@ public abstract class _PostgreLiterals extends _Literals {
         }
 
         if (value.regionMatches(false, offset, dollarQuote, 0, dollarQuote.length())) {
-            throw containDollarDelimiter(dollarQuote);
+            throw new CriteriaException(String.format("lDollar-Quoted String literal couldn't contain %s ", dollarQuote));
         }
 
         sqlBuilder.append(dollarQuote)
@@ -219,23 +219,10 @@ public abstract class _PostgreLiterals extends _Literals {
 
     }
 
-    private static CriteriaException containDollarDelimiter(String dollarQuote) {
-        return new CriteriaException(String.format("lDollar-Quoted String literal couldn't contain %s ", dollarQuote));
-    }
-
 
     static void postgreBitString(final TypeMeta typeMeta, final DataType dataType, final Object value,
                                  final StringBuilder sqlBuilder) {
-        if (!(value instanceof String)) {
-            throw ExecutorSupport.beforeBindMethodError(typeMeta.mappingType(), dataType, value);
-        } else if (!_StringUtils.isBinary((String) value)) {
-            throw _Exceptions.valueOutRange(dataType, value);
-        }
 
-        sqlBuilder.append('B')
-                .append(_Constant.QUOTE)
-                .append(value)
-                .append(_Constant.QUOTE);
 
     }
 

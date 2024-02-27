@@ -319,4 +319,121 @@ public enum PostgreType implements SQLType {
     }
 
 
+    //            case BOOLEAN:
+//            case INTEGER:
+//            case BIGINT:
+//            case DECIMAL:
+//            case FLOAT8:
+//            case REAL:
+//            case TIME:
+//            case DATE:
+//            case TIMETZ:
+//            case TIMESTAMP:
+//            case TIMESTAMPTZ:
+//            case SMALLINT:
+//            case CHAR:
+//            case TEXT:
+//            case JSON:
+//
+//            case BYTEA:
+//            case BIT:
+//            case VARBIT:
+//
+//            case BOX:
+//            case XML:
+//            case CIDR:
+//            case INET:
+//            case LINE:
+//            case PATH:
+//            case UUID:
+//            case JSONB:
+//            case MONEY:
+//            case POINT:
+//            case CIRCLE:
+//
+//            case MACADDR:
+//            case POLYGON:
+//            case TSQUERY:
+//            case TSRANGE:
+//            case VARCHAR:
+//            case INTERVAL:
+//            case MACADDR8:
+//            case NUMRANGE:
+//
+//            case TSVECTOR:
+//
+//            case DATERANGE:
+//            case BOX_ARRAY:
+//            case INT4RANGE:
+//            case INT8RANGE:
+//            case OID_ARRAY:
+//            case LINE_SEGMENT:
+//
+//            case TSTZRANGE:
+//           case INT4MULTIRANGE:
+//            case INT8MULTIRANGE:
+//            case NUMMULTIRANGE:
+//            case DATEMULTIRANGE:
+//            case TSMULTIRANGE:
+//            case TSTZMULTIRANGE:
+//
+//            case PG_SNAPSHOT:
+//            case PG_LSN:
+//            case LSEG:
+//            case ACLITEM:
+//
+//            case BIT_ARRAY:
+//            case XML_ARRAY:
+//            case CHAR_ARRAY:
+//            case CIDR_ARRAY:
+//            case DATE_ARRAY:
+//            case INET_ARRAY:
+//            case JSON_ARRAY:
+//            case LINE_ARRAY:
+//            case PATH_ARRAY:
+//            case REAL_ARRAY:
+//            case REF_CURSOR:
+//            case TEXT_ARRAY:
+//            case TIME_ARRAY:
+//            case UUID_ARRAY:
+//            case BYTEA_ARRAY:
+//            case JSONB_ARRAY:
+//            case MONEY_ARRAY:
+//            case POINT_ARRAY:
+//            case BIGINT_ARRAY:
+//            case DOUBLE_ARRAY:
+//            case TIMETZ_ARRAY:
+//            case VARBIT_ARRAY:
+//            case BOOLEAN_ARRAY:
+//            case CIRCLES_ARRAY:
+//            case DECIMAL_ARRAY:
+//            case INTEGER_ARRAY:
+//            case MACADDR_ARRAY:
+//            case POLYGON_ARRAY:
+//            case TSQUERY_ARRAY:
+//            case TSRANGE_ARRAY:
+//            case VARCHAR_ARRAY:
+//            case INTERVAL_ARRAY:
+//            case MACADDR8_ARRAY:
+//            case NUMRANGE_ARRAY:
+//            case SMALLINT_ARRAY:
+//            case TSVECTOR_ARRAY:
+//            case DATERANGE_ARRAY:
+//            case INT4RANGE_ARRAY:
+//            case INT8RANGE_ARRAY:
+//            case TIMESTAMP_ARRAY:
+//            case TSTZRANGE_ARRAY:
+//            case TIMESTAMPTZ_ARRAY:
+
+//    case INT4MULTIRANGE_ARRAY:
+//            case INT8MULTIRANGE_ARRAY:
+//            case NUMMULTIRANGE_ARRAY:
+//            case DATEMULTIRANGE_ARRAY:
+//            case TSMULTIRANGE_ARRAY:
+//            case TSTZMULTIRANGE_ARRAY:
+//                break;
+//            default:
+//                throw _Exceptions.unexpectedEnum((PostgreType) type);
+
+
 }
