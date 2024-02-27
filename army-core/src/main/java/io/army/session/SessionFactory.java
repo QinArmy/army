@@ -17,6 +17,7 @@
 package io.army.session;
 
 import io.army.criteria.Visible;
+import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
@@ -47,6 +48,8 @@ public interface SessionFactory extends CloseableSpec, OptionSpec {
     SchemaMeta schemaMeta();
 
     ServerMeta serverMeta();
+
+    Database serverDatabase();
 
     Map<Class<?>, TableMeta<?>> tableMap();
 

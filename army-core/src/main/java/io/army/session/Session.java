@@ -17,6 +17,7 @@
 package io.army.session;
 
 
+import io.army.dialect.Database;
 import io.army.meta.TableMeta;
 
 import javax.annotation.Nullable;
@@ -178,6 +179,8 @@ public interface Session extends CloseableSpec, SessionSpec {
      */
     boolean isQueryInsertAllowed();
 
+    Database serverDatabase();
+
 
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
@@ -185,6 +188,7 @@ public interface Session extends CloseableSpec, SessionSpec {
      * @throws IllegalArgumentException throw,when not found {@link TableMeta}.
      */
     <T> TableMeta<T> tableMeta(Class<T> domainClass);
+
 
     /**
      * @param key The key of the attribute to return

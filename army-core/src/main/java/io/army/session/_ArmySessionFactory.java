@@ -157,6 +157,11 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     }
 
     @Override
+    public final Database serverDatabase() {
+        return this.serverDatabase;
+    }
+
+    @Override
     public final boolean isSupportSavePoints() {
         return this.mappingEnv.serverMeta().isSupportSavePoints();
     }

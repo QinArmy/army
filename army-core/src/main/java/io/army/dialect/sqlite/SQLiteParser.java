@@ -19,9 +19,13 @@ package io.army.dialect.sqlite;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Visible;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.standard.StandardStatement;
 import io.army.dialect.*;
 import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
@@ -42,6 +46,7 @@ import java.math.BigInteger;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.List;
 import java.util.Set;
 
 abstract class SQLiteParser extends _ArmyDialectParser {
@@ -582,6 +587,29 @@ abstract class SQLiteParser extends _ArmyDialectParser {
     @Override
     protected final CriteriaException supportChildInsert(_Insert._ChildInsert childStmt, Visible visible) {
         return null;
+    }
+
+
+    /**
+     * @see <a href="https://www.sqlite.org/lang_select.html">SELECT statement</a>
+     */
+    @Override
+    protected final void parseWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
+        final List<_Cte> cteList;
+        cteList = spec.cteList();
+        if (cteList.size() == 0) {
+            return;
+        }
+        if (spec instanceof StandardStatement) {
+            withSubQuery(spec.isRecursive(), cteList, context, _SQLConsultant::assertStandardCte);
+        } else {
+            sqliteWithClause(cteList, spec.isRecursive(), context);
+        }
+    }
+
+
+    protected void sqliteWithClause(final List<_Cte> cteList, final boolean recursive, final _SqlContext mainContext) {
+        throw _Exceptions.dontSupportWithClause(this.dialect);
     }
 
     /**

@@ -89,6 +89,21 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
     }
 
 
+    protected static boolean isNotSupportParenthesizedQuery(final Session session) {
+        final boolean dontSupport;
+        switch (session.serverDatabase()) {
+            case SQLite:  // SQLite don't support Parenthesized Query Expressions , https://www.sqlite.org/lang_select.html
+                dontSupport = true;
+                break;
+            case PostgreSQL:
+            case MySQL:
+            default:
+                dontSupport = false;
+        }
+        return dontSupport;
+    }
+
+
     private static void assertDomainUpdate(final Database database, final long rows, final long dataRows) {
         switch (database) {
             case MySQL:
@@ -99,7 +114,6 @@ public abstract class SessionTestSupport extends ArmyTestDataSupport {
                 Assert.assertEquals(rows, dataRows);
         }
     }
-
 
 
 }

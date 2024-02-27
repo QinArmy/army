@@ -178,6 +178,10 @@ public class QueryTests extends SessionSupport {
 
     @Test(invocationCount = 3) // because first execution time contain class loading time and class initialization time
     public void unionQuery(final SyncLocalSession session) {
+        if (isNotSupportParenthesizedQuery(session)) {
+            return;
+        }
+
         final List<ChinaRegion<?>> regionList = createReginListWithCount(3);
         session.batchSave(regionList);
 
@@ -233,6 +237,10 @@ public class QueryTests extends SessionSupport {
      */
     @Test
     public void contextMigration(final SyncLocalSession session) {
+        if (isNotSupportParenthesizedQuery(session)) {
+            return;
+        }
+
         final List<ChinaRegion<?>> regionList = createReginListWithCount(2);
         session.batchSave(regionList);
 
@@ -274,7 +282,40 @@ public class QueryTests extends SessionSupport {
 
     }
 
+
     @Test
+    public void standard20SimpleUnion(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(2);
+        session.batchSave(regionList);
+
+        final List<Long> idList = extractRegionIdList(regionList);
+
+        final Select stmt;
+        stmt = SQLs.query20()
+                .with("cte").as(sw -> sw.select("t", PERIOD, ChinaRegion_.T)
+                        .from(ChinaRegion_.T, AS, "t")
+                        .where(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                        .asQuery()
+                ).space()
+                .select(s -> s.space("cte", PERIOD, ASTERISK))
+                .from("cte")
+
+                .unionAll()
+
+                .select("t", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "t")
+                .where(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                .asQuery();
+
+        final List<ChinaRegion<?>> rowList;
+        rowList = session.queryList(stmt, ChinaRegion_.CLASS);
+
+        Assert.assertEquals(rowList.size(), idList.size() << 1);
+
+
+    }
+
+    @Test(enabled = false)
     public void dynamicUnion(final SyncLocalSession session) {
 //        final Select stmt;
 //        stmt = query()

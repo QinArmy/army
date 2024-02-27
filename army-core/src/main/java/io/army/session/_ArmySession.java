@@ -138,6 +138,11 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
     }
 
     @Override
+    public final Database serverDatabase() {
+        return this.factory.serverDatabase;
+    }
+
+    @Override
     public final <T> TableMeta<T> tableMeta(Class<T> domainClass) {
         final TableMeta<T> table;
         table = this.factory.getTable(domainClass);
