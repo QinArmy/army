@@ -44,10 +44,7 @@ import io.army.schema._FieldResult;
 import io.army.schema._TableResult;
 import io.army.session.SessionSpec;
 import io.army.sqltype.DataType;
-import io.army.stmt.MultiStmt;
-import io.army.stmt.SingleParam;
-import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util.*;
 
 import javax.annotation.Nullable;
@@ -277,8 +274,16 @@ abstract class ArmyParser implements DialectParser {
             stmt = this.updateWithMultiStmt(MultiStmtBatchContext.create(this, sessionSpec), update)
                     .build();
         } else {
-            stmt = this.handleUpdate(null, update, sessionSpec, null)
-                    .build();
+            final _UpdateContext context, parentContext;
+            context = this.handleUpdate(null, update, sessionSpec, null);
+            parentContext = context.parentContext();
+            if (parentContext == null) {
+                stmt = context.build();
+            } else if (update instanceof BatchDmlStatement) {
+                stmt = Stmts.pairBatch((BatchStmt) context.build(), (BatchStmt) parentContext.build());
+            } else {
+                stmt = Stmts.pair((SimpleStmt) context.build(), (SimpleStmt) parentContext.build());
+            }
         }
         return stmt;
     }
@@ -2676,9 +2681,9 @@ abstract class ArmyParser implements DialectParser {
             this.parseDomainChildUpdate(stmt, context);
         } else if (mode == ChildUpdateMode.CTE) {
             if (prevContext == null) {
-                final DomainUpdateContext primaryContext;
-                primaryContext = DomainUpdateContext.forSingle(outerContext, stmt, this, sessionSpec);
-                context = DomainUpdateContext.forChild(stmt, primaryContext);
+                final DomainUpdateContext parentContext;
+                parentContext = DomainUpdateContext.forSingle(outerContext, stmt, this, sessionSpec);
+                context = DomainUpdateContext.forChild(stmt, parentContext);
             } else {
                 context = prevContext;
             }
@@ -2686,7 +2691,7 @@ abstract class ArmyParser implements DialectParser {
         } else if (mode == ChildUpdateMode.WITH_ID) {
             final DomainUpdateContext parentContext;
             if (prevContext == null) {
-                parentContext = DomainUpdateContext.forSingle(null, stmt, this, sessionSpec);
+                parentContext = DomainUpdateContext.forSingle(outerContext, stmt, this, sessionSpec);
                 context = DomainUpdateContext.forChild(stmt, parentContext);
             } else {
                 context = prevContext;
@@ -2760,8 +2765,8 @@ abstract class ArmyParser implements DialectParser {
      * @see #parseDomainChildUpdateWithId(_DomainUpdate, DomainUpdateContext)
      * @see ChildUpdateMode#WITH_ID
      */
-    private void parseDomainParentUpdateWithId(final _DomainUpdate stmt, final _Predicate idPredicate
-            , final DomainUpdateContext context) {
+    private void parseDomainParentUpdateWithId(final _DomainUpdate stmt, final _Predicate idPredicate,
+                                               final DomainUpdateContext context) {
 
         assert idPredicate.getIdPredicate() != null
                 && context.parentContext == null
@@ -2786,12 +2791,10 @@ abstract class ArmyParser implements DialectParser {
         } else {
             this.appendUpdateTimeAndVersion(parentTable, safeTableAlias, context, true);
         }
+
         //3. append parent WHERE clause
         this.dmlWhereClause(Collections.singletonList(idPredicate), context);
-        //3.1 append parent condition field
-        context.appendConditionFields();
-        //3.2 append discriminator
-        this.discriminator(context.domainTable, safeTableAlias, context);
+
     }
 
 
@@ -2806,7 +2809,8 @@ abstract class ArmyParser implements DialectParser {
             sqlBuilder.append(_Constant.SPACE);
         }
         // 2. append  table UPDATE key word
-        sqlBuilder.append(_Constant.UPDATE_SPACE);
+        sqlBuilder.append(_Constant.UPDATE)
+                .append(_Constant.SPACE);
         this.safeObjectName(context.targetTable, sqlBuilder);
 
         //3. append table alias
@@ -3416,6 +3420,24 @@ abstract class ArmyParser implements DialectParser {
                 .build();
     }
 
+
+    /**
+     * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, SessionSpec, _UpdateContext)
+     */
+    private static boolean containParentField(final _DomainUpdate stmt) {
+        final List<_Predicate> list = stmt.wherePredicateList();
+        final int size = list.size();
+        final ParentTableMeta<?> parent = ((ChildTableMeta<?>) stmt.table()).parentMeta();
+
+        boolean contain = false;
+        for (int i = 0; i < size; i++) {
+            if (list.get(i).currentLevelContainFieldOf(parent)) {
+                contain = true;
+                break;
+            }
+        }
+        return contain;
+    }
 
 
     protected static CriteriaException standardParserDontSupportDialect(Dialect dialect) {

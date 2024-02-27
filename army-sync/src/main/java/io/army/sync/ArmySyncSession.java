@@ -828,7 +828,13 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         } else if (!inTransaction()) {
             throw updateChildNoTransaction();
         } else if (statement instanceof NarrowDmlStatement) {
-            final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
+            final ChildTableMeta<?> domainTable;
+            if (statement instanceof _SingleDml._DomainDml) {
+                domainTable = (ChildTableMeta<?>) ((_SingleDml._DomainDml) statement).table();
+            } else { // example SQLite/H2 update child table
+                domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
+            }
+
             final PairStmt pairStmt = (PairStmt) stmt;
 
             final R childResult;

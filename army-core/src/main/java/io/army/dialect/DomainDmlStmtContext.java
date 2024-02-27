@@ -82,8 +82,15 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         final TableMeta<?> fieldTable = field.tableMeta();
         final StringBuilder sqlBuilder = this.sqlBuilder;
         final TableMeta<?> targetTable = this.targetTable;
-        if (fieldTable == targetTable
-                || (fieldTable == this.domainTable && field instanceof PrimaryFieldMeta)) {
+        if (fieldTable == targetTable || field instanceof PrimaryFieldMeta) {
+            if (targetTable instanceof ChildTableMeta) {
+                if (fieldTable != targetTable && fieldTable != ((ChildTableMeta<?>) targetTable).parentMeta()) {
+                    throw _Exceptions.unknownColumn(field);
+                }
+            } else if (fieldTable != targetTable && fieldTable != this.domainTable) {
+                throw _Exceptions.unknownColumn(field);
+            }
+
             sqlBuilder.append(_Constant.SPACE);
             if (this.safeTargetTableName != null) {
                 sqlBuilder.append(this.safeTargetTableName);
