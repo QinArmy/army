@@ -23,10 +23,7 @@ import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardStatement;
 import io.army.dialect.*;
-import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.executor.ExecutorSupport;
@@ -331,7 +328,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                     sqlBuilder.append(dataType.typeName())
                             .append(_Constant.SPACE); //use dataType 'string' syntax not 'string'::dataType syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
                 }
-                _PostgreLiterals.postgreTextLiteral(EscapeMode.DEFAULT, (String) value, 0, ((String) value).length(), sqlBuilder);
+                _PostgreLiterals.backslashEscape((String) value, 0, ((String) value).length(), sqlBuilder);
             }
             break;
             case RECORD: {
@@ -345,7 +342,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         || v.charAt(length - 1) != _Constant.RIGHT_PAREN) {
                     throw _Exceptions.beforeBindMethod(dataType, typeMeta.mappingType(), value);
                 }
-                _PostgreLiterals.postgreTextLiteral(EscapeMode.DEFAULT, v, 0, length, sqlBuilder);
+                _PostgreLiterals.backslashEscape(v, 0, length, sqlBuilder);
 
             }
             break;
@@ -972,76 +969,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
     protected final void parseMultiDelete(_MultiDelete delete, _MultiDeleteContext context) {
         // Postgre don't support multi-table DELETE syntax
         throw _Exceptions.unexpectedStatement(delete);
-    }
-
-    /**
-     * @see #bindLiteral(TypeMeta, DataType, Object, boolean, StringBuilder)
-     */
-    private void safeArray(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                           final StringBuilder sqlBuilder,
-                           final _Literals.ArrayElementHandler handler) {
-        final MappingType mappingType;
-        if (typeMeta instanceof MappingType) {
-            mappingType = (MappingType) typeMeta;
-        } else {
-            mappingType = typeMeta.mappingType();
-        }
-        assert !(mappingType instanceof _ArmyBuildInMapping) || mappingType instanceof _ArmyNoInjectionMapping;
-
-        if (value instanceof String) {
-            arrayForStringValue(typeMeta, dataType, (String) value, sqlBuilder);
-        } else if (value.getClass().isArray()) {
-            sqlBuilder.append(_Constant.QUOTE);
-            _PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, sqlBuilder, handler);
-            sqlBuilder.append(_Constant.QUOTE);
-        } else {
-            throw _Exceptions.valueOutRange(dataType, value);
-        }
-        sqlBuilder.append("::");
-        this.typeName(mappingType, sqlBuilder);
-    }
-
-    /**
-     * @see #bindLiteral(TypeMeta, DataType, Object, boolean, StringBuilder)
-     */
-    private void unsafeArray(final TypeMeta typeMeta, final DataType dataType, final Object value,
-                             final StringBuilder sqlBuilder,
-                             final _Literals.ArrayElementHandler handler) {
-        final MappingType mappingType;
-        if (typeMeta instanceof MappingType) {
-            mappingType = (MappingType) typeMeta;
-        } else {
-            mappingType = typeMeta.mappingType();
-        }
-        assert !(mappingType instanceof _ArmyNoInjectionMapping);
-        if (value instanceof String) {
-            arrayForStringValue(typeMeta, dataType, (String) value, sqlBuilder);
-        } else if (value.getClass().isArray()) {
-
-            final StringBuilder tempBuilder = new StringBuilder();
-            _PostgreLiterals.appendSimpleTypeArray(mappingType, dataType, value, tempBuilder, handler);
-            _PostgreLiterals.postgreTextLiteral(EscapeMode.ARRAY_ELEMENT, tempBuilder, 0, tempBuilder.length(), sqlBuilder);
-        } else {
-            throw _Exceptions.valueOutRange(dataType, value);
-        }
-        sqlBuilder.append("::");
-        this.typeName(mappingType, sqlBuilder);
-    }
-
-    /**
-     * @see #bindLiteral(TypeMeta, DataType, Object, boolean, StringBuilder)
-     * @see #safeArray(TypeMeta, DataType, Object, StringBuilder, _Literals.ArrayElementHandler)
-     */
-    private void arrayForStringValue(final TypeMeta typeMeta, final DataType dataType, final String value,
-                                     final StringBuilder sqlBuilder) {
-        final int length;
-        length = value.length();
-        if (length < 2
-                || value.charAt(0) != _Constant.LEFT_BRACE
-                || value.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw _Exceptions.valueOutRange(dataType, value);
-        }
-        _PostgreLiterals.postgreTextLiteral(EscapeMode.ARRAY_ELEMENT, value, 0, length, sqlBuilder);
     }
 
 
