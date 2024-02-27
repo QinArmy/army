@@ -101,6 +101,8 @@ abstract class ArmyParser implements DialectParser {
 
     final boolean supportSingleDeleteAlias;
 
+    final boolean supportJoinableSingleUpdate;
+
     final boolean supportOnlyDefault;
 
     final boolean supportRowAlias;
@@ -186,6 +188,7 @@ abstract class ArmyParser implements DialectParser {
         this.setClauseTableAlias = this.isSetClauseTableAlias();
         this.supportUpdateRow = this.isSupportUpdateRow();
 
+        this.supportJoinableSingleUpdate = isSupportJoinableSingleUpdate();
         this.supportUpdateDerivedField = this.isSupportUpdateDerivedField();
         this.supportReturningClause = this.isSupportReturningClause();
 
@@ -483,6 +486,8 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract boolean isSupportUpdateRow();
 
+    protected abstract boolean isSupportJoinableSingleUpdate();
+
     protected abstract boolean isSupportUpdateDerivedField();
 
     protected abstract boolean isSupportReturningClause();
@@ -493,7 +498,7 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract String qualifiedSchemaName(ServerMeta meta);
 
-    @Deprecated
+
     protected abstract IdentifierMode identifierMode(String identifier);
 
     protected abstract void escapesIdentifier(String identifier, StringBuilder sqlBuilder);
@@ -1689,17 +1694,12 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected final void appendChildJoinParent(final _MultiTableStmtContext context, final ChildTableMeta<?> child) {
+    protected final void appendChildJoinParent(String safeParentTableAlias, final StringBuilder builder,
+                                               final String safeChildTableAlias, final ChildTableMeta<?> child) {
         final ParentTableMeta<?> parent = child.parentMeta();
-
-        final String safeChildTableAlias = context.saTableAliasOf(child);
-        final String safeParentTableAlias = context.saTableAliasOf(parent);
 
         final String safeIdColumnName;
         safeIdColumnName = safeObjectName(child.id());
-
-
-        final StringBuilder builder = context.sqlBuilder();
 
         // 1. child table name
         builder.append(_Constant.SPACE);
@@ -2164,6 +2164,19 @@ abstract class ArmyParser implements DialectParser {
             literal(mappingType, value, true, sqlBuilder);
         }
 
+    }
+
+    /**
+     * @see #parseDomainChildUpdateWithId(_DomainUpdate, DomainUpdateContext)
+     * @see #parseDomainChildDeleteWithId(_DomainDelete, DomainDeleteContext)
+     */
+    protected final _Predicate findIdPredicate(final List<_Predicate> whereList) {
+        final _Predicate firstPredicate;
+        firstPredicate = whereList.get(0).getIdPredicate();
+        if (firstPredicate == null) {
+            throw _Exceptions.notFondIdPredicate(this.dialect);
+        }
+        return firstPredicate;
     }
 
 
@@ -2688,7 +2701,16 @@ abstract class ArmyParser implements DialectParser {
                 context = prevContext;
             }
             this.parseDomainChildUpdate(stmt, context);
-        } else if (mode == ChildUpdateMode.WITH_ID) {
+        } else if (mode != ChildUpdateMode.WITH_ID) {
+            throw _Exceptions.unexpectedEnum(mode);
+        } else if (this.supportJoinableSingleUpdate) {
+            final SingleJoinableUpdateContext parentContext;
+            if (prevContext == null) {
+                parentContext = SingleJoinableUpdateContext.forParent()
+            } else {
+
+            }
+        } else {
             final DomainUpdateContext parentContext;
             if (prevContext == null) {
                 parentContext = DomainUpdateContext.forSingle(outerContext, stmt, this, sessionSpec);
@@ -2710,8 +2732,6 @@ abstract class ArmyParser implements DialectParser {
             }
             this.parseDomainParentUpdateWithId(stmt, idPredicate, parentContext);
 
-        } else {
-            throw _Exceptions.unexpectedEnum(mode);
         }
         return context;
     }
@@ -2735,10 +2755,7 @@ abstract class ArmyParser implements DialectParser {
         whereList = stmt.wherePredicateList();
         //check first predicate
         final _Predicate firstPredicate;
-        firstPredicate = whereList.get(0).getIdPredicate();
-        if (firstPredicate == null) {
-            throw _Exceptions.notFondIdPredicate(this.dialect);
-        }
+        firstPredicate = findIdPredicate(whereList);
         this.dmlWhereClause(whereList, context);
         //3.1 append parent condition field
         context.appendConditionFields();

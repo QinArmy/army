@@ -500,6 +500,15 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return true;
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">UPDATE statement</a>
+     */
+    @Override
+    protected final boolean isSupportJoinableSingleUpdate() {
+        // true ,Postgre support single-table joinable update
+        return true;
+    }
+
     @Override
     protected final boolean isSupportUpdateDerivedField() {
         // Postgre don't support update derived field

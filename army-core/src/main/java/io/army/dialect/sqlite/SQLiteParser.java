@@ -21,17 +21,13 @@ import io.army.criteria.SQLWords;
 import io.army.criteria.Visible;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardStatement;
 import io.army.dialect.*;
 import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
-import io.army.meta.DatabaseObject;
-import io.army.meta.ServerMeta;
-import io.army.meta.TypeMeta;
+import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
@@ -213,6 +209,15 @@ abstract class SQLiteParser extends _ArmyDialectParser {
      */
     @Override
     protected final boolean isSupportUpdateRow() {
+        // true , SQLite support
+        return true;
+    }
+
+    /**
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     */
+    @Override
+    protected final boolean isSupportJoinableSingleUpdate() {
         // true , SQLite support
         return true;
     }
@@ -639,6 +644,72 @@ abstract class SQLiteParser extends _ArmyDialectParser {
     @Override
     protected final void standardLockClause(final SQLWords lockMode, final _SqlContext context) {
         throw _Exceptions.dontSupportForUpdateClause(this.dialect);
+    }
+
+
+    /**
+     * @see <a href="https://www.sqlite.org/lang_update.html">UPDATE statement</a>
+     */
+    @Override
+    protected final void parseDomainChildUpdate(final _SingleUpdate update, final _UpdateContext context) {
+        final _DomainUpdate stmt = (_DomainUpdate) update;
+
+        final ChildTableMeta<?> child;
+        child = (ChildTableMeta<?>) stmt.table();
+
+        final ParentTableMeta<?> parent = child.parentMeta();
+
+        final _SingleUpdateContext childContext, parentContext;
+        childContext = (_SingleUpdateContext) context;
+
+        assert childContext.targetTable() == child;
+
+
+        final StringBuilder childBuilder, parentBuilder;
+        childBuilder = childContext.sqlBuilder();
+
+        if (childBuilder.length() > 0) {
+            childBuilder.append(_Constant.SPACE);
+        }
+
+        // 1. child UPDATE kew word
+        childBuilder.append(_Constant.UPDATE)
+                .append(_Constant.SPACE);
+
+        // 2. child table name
+        safeObjectName(child, childBuilder);
+
+        childBuilder.append(_Constant.SPACE_AS_SPACE);
+
+        // 3. child table alias
+        childBuilder.append(childContext.safeTargetTableAlias());
+
+        // 4. child SET clause
+        singleTableSetClause(stmt.childItemPairList(), childContext);
+
+        // 5. child from clause
+
+        // appendChildJoinParent(childContext.ta);
+
+        final List<_Predicate> whereList;
+        whereList = stmt.wherePredicateList();
+
+        final _Predicate idPredicate;
+        idPredicate = findIdPredicate(whereList);
+
+        dmlWhereClause(whereList, childContext);
+
+        childContext.appendConditionFields();
+
+        parentContext = (_SingleUpdateContext) childContext.parentContext();
+        assert parentContext != null;
+        if (parent.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(parent, parentContext.safeTargetTableAlias(), childContext, false); // note : here use childContext not parentContext
+        }
+
+        // following parsing parent statement
+
+
     }
 
     static void escapeText(final CharSequence value, final int offset, final int end, final StringBuilder builder) {

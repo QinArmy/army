@@ -360,6 +360,11 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final void parseDomainChildUpdate(final _SingleUpdate update, final _UpdateContext ctx) {
         final _MultiUpdateContext context = (_MultiUpdateContext) ctx;
 
+
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
+        final ParentTableMeta<?> parentTable = childTable.parentMeta();
+        final String safeParentTableAlias = context.saTableAliasOf(parentTable);
+
         // 1. UPDATE clause
         final StringBuilder sqlBuilder = context.sqlBuilder();
         if (sqlBuilder.length() > 0) {
@@ -368,7 +373,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
         sqlBuilder.append(_Constant.UPDATE);
 
         //2. child join parent
-        this.appendChildJoinParent(context, (ChildTableMeta<?>) update.table());
+        this.appendChildJoinParent(safeParentTableAlias, sqlBuilder, context.saTableAliasOf(childTable), childTable);
 
         //3. set clause
         this.multiTableChildSetClause(update, context);
@@ -376,9 +381,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
         //4. where clause
         this.dmlWhereClause(update.wherePredicateList(), context);
 
-        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
-        final ParentTableMeta<?> parentTable = childTable.parentMeta();
-        final String safeParentTableAlias = context.saTableAliasOf(parentTable);
 
         //4.1 append discriminator for child
         this.discriminator(childTable, safeParentTableAlias, context);
@@ -420,7 +422,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 .append(_Constant.SPACE_FROM);
 
         //2. child join parent
-        this.appendChildJoinParent(context, childTable);
+        this.appendChildJoinParent(safeParentTableAlias, sqlBuilder, safeChildTableAlias, childTable);
 
         //3. where clause
         this.dmlWhereClause(delete.wherePredicateList(), context);
@@ -541,7 +543,16 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isSupportUpdateRow() {
-        //MySQL don't support update row
+        // MySQL don't support update row
+        return false;
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/update.html">single-table UPDATE statement</a>
+     */
+    @Override
+    protected final boolean isSupportJoinableSingleUpdate() {
+        // false ,MySQL don't support single-table joinable update
         return false;
     }
 
