@@ -2706,10 +2706,12 @@ abstract class ArmyParser implements DialectParser {
         } else if (this.supportJoinableSingleUpdate) {
             final SingleJoinableUpdateContext parentContext;
             if (prevContext == null) {
-                parentContext = SingleJoinableUpdateContext.forParent()
+                parentContext = SingleJoinableUpdateContext.forDomainParent(outerContext, stmt, this, sessionSpec);
+                context = SingleJoinableUpdateContext.forDomainChild(parentContext, stmt);
             } else {
-
+                context = prevContext;
             }
+            this.parseDomainChildUpdate(stmt, context);
         } else {
             final DomainUpdateContext parentContext;
             if (prevContext == null) {

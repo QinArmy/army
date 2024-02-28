@@ -71,12 +71,27 @@ final class SingleJoinableUpdateContext extends SingleJoinableDmlContext impleme
         throw new UnsupportedOperationException();
     }
 
+    static SingleJoinableUpdateContext forDomainParent(@Nullable _SqlContext outerContext, _DomainUpdate stmt,
+                                                       ArmyParser parser, SessionSpec sessionSpec) {
+        final TableContext tableContext;
+        tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), parser);
+        return new SingleJoinableUpdateContext((StatementContext) outerContext, stmt, tableContext, parser, sessionSpec);
+    }
+
+    static SingleJoinableUpdateContext forDomainChild(SingleJoinableUpdateContext parentContext, _DomainUpdate stmt) {
+        return new SingleJoinableUpdateContext(stmt, parentContext);
+    }
+
 
     private SingleJoinableUpdateContext(@Nullable StatementContext outerContext, _SingleDml stmt,
                                         TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
         super(outerContext, stmt, tableContext, parser, sessionSpec);
     }
 
+
+    private SingleJoinableUpdateContext(_SingleDml stmt, SingleJoinableUpdateContext parentContext) {
+        super(stmt, parentContext);
+    }
 
     @Override
     public _UpdateContext parentContext() {

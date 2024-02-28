@@ -29,15 +29,20 @@ abstract class SingleJoinableDmlContext extends SingleTableDmlContext implements
 
     final MultiTableContext multiTableContext;
 
+    // store table context for child
+    final TableContext tableContext;
+
     SingleJoinableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt,
                              TableContext tableContext, ArmyParser parser, SessionSpec sessionSpec) {
         super(outerContext, stmt, parser, sessionSpec);
+        this.tableContext = tableContext;   // store table context for child
         this.multiTableContext = new MultiTableContext(this, tableContext, null, null);
     }
 
-    SingleJoinableDmlContext(_SingleDml stmt, SingleTableDmlContext parentOrOuterContext, TableContext tableContext) {
-        super(stmt, parentOrOuterContext);
-        this.multiTableContext = new MultiTableContext(this, tableContext, null, null);
+    SingleJoinableDmlContext(_SingleDml stmt, SingleJoinableDmlContext parentContext) {
+        super(stmt, parentContext);
+        this.tableContext = parentContext.tableContext;
+        this.multiTableContext = new MultiTableContext(this, this.tableContext, null, null);
     }
 
 
@@ -81,7 +86,6 @@ abstract class SingleJoinableDmlContext extends SingleTableDmlContext implements
     public final String trySaTableAliasOf(TableMeta<?> table) {
         return this.multiTableContext.trySaTableAliasOf(table);
     }
-
 
 
 }
