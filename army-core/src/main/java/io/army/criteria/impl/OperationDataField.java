@@ -54,12 +54,12 @@ abstract class OperationDataField extends OperationExpression.OperationDefiniteE
     }
 
     @Override
-    public final CompoundPredicate great(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate greater(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.GREATER, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate greatEqual(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate greaterEqual(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 

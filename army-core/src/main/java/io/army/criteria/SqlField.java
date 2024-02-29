@@ -42,9 +42,9 @@ public interface SqlField extends NamedExpression {
 
     CompoundPredicate lessEqual(BiFunction<SqlField, String, Expression> namedOperator);
 
-    CompoundPredicate great(BiFunction<SqlField, String, Expression> namedOperator);
+    CompoundPredicate greater(BiFunction<SqlField, String, Expression> namedOperator);
 
-    CompoundPredicate greatEqual(BiFunction<SqlField, String, Expression> namedOperator);
+    CompoundPredicate greaterEqual(BiFunction<SqlField, String, Expression> namedOperator);
 
     CompoundPredicate notEqual(BiFunction<SqlField, String, Expression> namedOperator);
 
