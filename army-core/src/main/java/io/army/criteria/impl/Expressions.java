@@ -60,13 +60,9 @@ abstract class Expressions {
         final BinaryOperator<MappingType> inferFunc;
         switch (operator) {
             case PLUS:
-                inferFunc = Expressions::plusType;
-                break;
-            case DIVIDE:
-                inferFunc = Expressions::divideType;
-                break;
             case MINUS:
             case TIMES:
+            case DIVIDE:
             case MOD:
                 inferFunc = Expressions::mathExpType;
                 break;
@@ -553,7 +549,7 @@ abstract class Expressions {
     }
 
 
-    static MappingType plusType(final MappingType left, final MappingType right) {
+    static MappingType mathExpType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
             returnType = left;
@@ -570,41 +566,18 @@ abstract class Expressions {
         } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
             returnType = BigDecimalType.INSTANCE;
         } else if (left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType) {
-            if (((MappingType.SqlIntegerType) left).lengthType()
-                    .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
-                returnType = left;
-            } else {
-                returnType = right;
-            }
-        } else if (left.isSameType(right)) {
-            returnType = left;
-        } else {
-            returnType = TextType.INSTANCE;
-        }
-        return returnType;
-    }
+            final MappingType.LengthType leftLength, rightLength;
+            leftLength = ((MappingType.SqlIntegerType) left).lengthType();
+            rightLength = ((MappingType.SqlIntegerType) right).lengthType();
 
-
-    static MappingType mathExpType(final MappingType left, final MappingType right) {
-        final MappingType returnType;
-        if (left == right) {
-            returnType = left;
-        } else if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
-            if (left.isSameType(right)) {
-                returnType = left;
+            if (leftLength.compareWith(MappingType.LengthType.DEFAULT) < 0
+                    && rightLength.compareWith(MappingType.LengthType.DEFAULT) < 0) {
+                returnType = IntegerType.INSTANCE;
+            } else if (leftLength.compareWith(MappingType.LengthType.LONG) < 0
+                    && rightLength.compareWith(MappingType.LengthType.LONG) < 0) {
+                returnType = LongType.INSTANCE;
             } else {
-                returnType = TextType.INSTANCE;
-            }
-        } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
-            returnType = DoubleType.INSTANCE;
-        } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
-            returnType = BigDecimalType.INSTANCE;
-        } else if (left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType) {
-            if (((MappingType.SqlIntegerType) left).lengthType()
-                    .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
-                returnType = left;
-            } else {
-                returnType = right;
+                returnType = BigIntegerType.INSTANCE;
             }
         } else if (left.isSameType(right)) {
             returnType = left;

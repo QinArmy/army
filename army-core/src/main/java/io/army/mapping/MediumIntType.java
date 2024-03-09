@@ -42,7 +42,7 @@ import io.army.sqltype.SQLiteType;
  *
  * @since 0.6.0
  */
-public final class MediumIntType extends _NumericType {
+public final class MediumIntType extends _NumericType._IntegerType {
 
     public static MediumIntType from(final Class<?> javaType) {
         if (javaType != Integer.class) {
@@ -66,6 +66,11 @@ public final class MediumIntType extends _NumericType {
     @Override
     public Class<?> javaType() {
         return Integer.class;
+    }
+
+    @Override
+    public LengthType lengthType() {
+        return LengthType.MEDIUM;
     }
 
     @Override

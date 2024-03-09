@@ -76,7 +76,7 @@ public final class MediumTextType extends ArmyTextType {
 
     @Override
     public LengthType lengthType() {
-        return LengthType.MEDIUM;
+        return LengthType.DEFAULT;
     }
 
     @Override

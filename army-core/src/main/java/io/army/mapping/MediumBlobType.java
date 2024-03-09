@@ -55,7 +55,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping implements Mapping
 
     @Override
     public LengthType lengthType() {
-        return LengthType.MEDIUM;
+        return LengthType.DEFAULT;
     }
 
     @Override

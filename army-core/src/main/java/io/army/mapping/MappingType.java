@@ -783,8 +783,10 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
         TINY(1),
         SMALL(2),
-        DEFAULT(3),
-        MEDIUM(4),
+        MEDIUM(3),
+
+        DEFAULT(4),
+
         LONG(5),
         BIG_LONG(6);
 

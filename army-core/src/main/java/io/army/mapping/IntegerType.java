@@ -47,9 +47,9 @@ import java.math.BigInteger;
 public final class IntegerType extends _NumericType._IntegerType {
 
 
-    public static IntegerType from(final Class<?> fieldType) {
-        if (fieldType != Integer.class) {
-            throw errorJavaType(IntegerType.class, fieldType);
+    public static IntegerType from(final Class<?> javaType) {
+        if (javaType != Integer.class) {
+            throw errorJavaType(IntegerType.class, javaType);
         }
         return INSTANCE;
     }

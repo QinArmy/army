@@ -84,12 +84,12 @@ public abstract class _ArmyStmtOptions {
 
         @Override
         public int timeoutMillis() {
-            throw dontSupportTimeout();
+            return 0;
         }
 
         @Override
         public long startTimeMillis() {
-            throw dontSupportTimeout();
+            return 0L;
         }
 
         @Override

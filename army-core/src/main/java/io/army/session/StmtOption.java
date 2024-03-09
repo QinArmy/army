@@ -37,16 +37,14 @@ public interface StmtOption extends StmtOptionSpec {
     /**
      * <p>Transaction or statement timeout milli seconds
      *
-     * @return timeout millis
-     * @throws IllegalStateException throw when {@link #isSupportTimeout()} is false
+     * @return 0 or timeout millis
      */
     int timeoutMillis();
 
     /**
      * <p>Transaction or statement start milli seconds
      *
-     * @return start time millis
-     * @throws IllegalStateException throw when {@link #isSupportTimeout()} is false
+     * @return 0 or  start time millis
      */
     long startTimeMillis();
 
