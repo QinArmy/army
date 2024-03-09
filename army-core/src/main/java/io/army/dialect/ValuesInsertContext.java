@@ -20,7 +20,6 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.NullMode;
 import io.army.criteria.SqlValueParam;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.meta.*;
@@ -71,12 +70,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
     private int currentBatchIndex = -1;
 
     /**
-     * <p>
-     * For {@link  io.army.meta.SingleTableMeta}
-     * *
-     *
-     * @see #forSingle(_SqlContext, _Insert._ValuesInsert, ArmyParser, Visible)
-     * @see #forParent(_SqlContext, _Insert._ChildValuesInsert, ArmyParser, Visible)
+     * <p>For {@link  io.army.meta.SingleTableMeta}
      */
     private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ValuesInsert domainStmt,
                                 ArmyParser parser, SessionSpec sessionSpec) {

@@ -69,22 +69,20 @@ abstract class ValuesSyntaxInsertContext extends InsertContext implements _Value
                 if (parser.serverDatabase == Database.SQLite) {
                     mode = NullMode.INSERT_NULL;
                 } else {
-                    mode = userMode;
+                    mode = NullMode.INSERT_DEFAULT;
                 }
             }
             break;
-            case INSERT_DEFAULT: {
-                if (parser.serverDatabase == Database.SQLite) {
-                    throw _Exceptions.dontSupportNullMode(userMode, parser.dialect);
-                }
-                mode = userMode;
-            }
-            break;
+            case INSERT_DEFAULT:
             case INSERT_NULL:
                 mode = userMode;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(userMode);
+        }
+
+        if (mode == NullMode.INSERT_DEFAULT && parser.serverDatabase == Database.SQLite) {
+            throw _Exceptions.dontSupportNullMode(userMode, parser.dialect);
         }
         return mode;
     }
