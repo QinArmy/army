@@ -122,7 +122,7 @@ abstract class PostgreExpressions {
         } else if (left instanceof MappingType.SqlNumberType && !(right instanceof MappingType.SqlNumberOrStringType)) { // date + integer → date ; inet + bigint → inet
             returnType = right;
         } else if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type + numeric_type → numeric_type
-            returnType = Expressions.plusOrTimesType(left, right);
+            returnType = Expressions.mathExpType(left, right);
         } else if (left instanceof MappingType.SqlLocalDateType || right instanceof MappingType.SqlLocalDateType) {
             if (right instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlIntervalType) { // date + interval → timestamp or date + time → timestamp
                 returnType = LocalDateTimeType.INSTANCE;
@@ -148,7 +148,7 @@ abstract class PostgreExpressions {
         } else if (left.isSameType(right)) { // anyrange + anyrange → anyrange
             returnType = left;
         } else {
-            returnType = Expressions.plusOrTimesType(left, right);
+            returnType = Expressions.mathExpType(left, right);
         }
         return returnType;
     }
