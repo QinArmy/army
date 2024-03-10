@@ -229,6 +229,10 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final LiteralExpression LITERAL_1 = SQLs.literal(IntegerType.INSTANCE, 1);
 
+    public static final LiteralExpression LITERAL_2 = SQLs.literal(IntegerType.INSTANCE, 2);
+
+    public static final LiteralExpression LITERAL_10 = SQLs.literal(IntegerType.INSTANCE, 10);
+
     public static final LiteralExpression LITERAL_DECIMAL_0;
 
     /**
@@ -248,6 +252,10 @@ public abstract class SQLs extends SQLSyntax {
     public static final ParamExpression PARAM_0 = SQLs.param(IntegerType.INSTANCE, 0);
 
     public static final ParamExpression PARAM_1 = SQLs.param(IntegerType.INSTANCE, 1);
+
+    public static final ParamExpression PARAM_2 = SQLs.param(IntegerType.INSTANCE, 2);
+
+    public static final ParamExpression PARAM_10 = SQLs.param(IntegerType.INSTANCE, 10);
 
     public static final ParamExpression PARAM_DECIMAL_0;
 
