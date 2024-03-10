@@ -23,5 +23,8 @@ public interface MySQLCtes extends CteBuilderSpec {
 
     MySQLQuery._DynamicCteParensSpec subQuery(String name);
 
+    MySQLValues._DynamicCteParensSpec subValues(String name);
+
+
 
 }

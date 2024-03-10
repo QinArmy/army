@@ -302,8 +302,18 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
+
+    interface _StaticCteSelectSpec<I extends Item> extends _MySQLSelectClause<I>,
+            _DynamicParensRowSetClause<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+
+    }
+
+    interface _StaticCteComplexCommandSpec<I extends Item> extends _StaticCteSelectSpec<_CteComma<I>>,
+            MySQLValues._MySQLValuesClause<_CteComma<I>> {
+    }
+
     interface _StaticCteAsClause<I extends Item> {
-        _CteComma<I> as(Function<_SelectSpec<_CteComma<I>>, _CteComma<I>> function);
+        _CteComma<I> as(Function<_StaticCteComplexCommandSpec<I>, _CteComma<I>> function);
 
     }
 
@@ -320,8 +330,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<WithSpec<_CommaClause<MySQLCtes>>,
-            _CommaClause<MySQLCtes>> {
+    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<WithSpec<_CommaClause<MySQLCtes>>, _CommaClause<MySQLCtes>> {
 
     }
 

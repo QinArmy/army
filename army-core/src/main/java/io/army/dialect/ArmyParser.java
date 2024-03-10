@@ -1270,7 +1270,7 @@ abstract class ArmyParser implements DialectParser {
         }
         _Cte cte;
         List<String> columnAliasList;
-        SubQuery subQuery;
+        SubStatement subStatement;
         for (int i = 0, columnAliasSize; i < cteSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1278,7 +1278,7 @@ abstract class ArmyParser implements DialectParser {
             cte = cteList.get(i);
             assetConsumer.accept(cte);
             columnAliasList = cte.columnAliasList();
-            subQuery = (SubQuery) cte.subStatement();
+            subStatement = cte.subStatement();
 
             sqlBuilder.append(_Constant.SPACE);
             this.identifier(cte.name(), sqlBuilder);// cte name
@@ -1297,7 +1297,14 @@ abstract class ArmyParser implements DialectParser {
             }
             sqlBuilder.append(_Constant.SPACE_AS)
                     .append(_Constant.SPACE_LEFT_PAREN);
-            this.handleQuery(subQuery, context);
+
+            if (subStatement instanceof SubQuery) {
+                this.handleQuery((SubQuery) subStatement, context);
+            } else if (subStatement instanceof SubValues) {
+                handleValuesQuery((SubValues) subStatement, context);
+            } else {
+                throw _Exceptions.unexpectedStatement(subStatement);
+            }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
         }

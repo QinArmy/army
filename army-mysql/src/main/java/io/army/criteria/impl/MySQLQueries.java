@@ -23,7 +23,6 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.*;
-import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -807,7 +806,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
 
-
     /**
      * @see #onFromDerived(_JoinType, SQLs.DerivedModifier, DerivedTable)
      * @see #parens(String, String...)
@@ -830,7 +828,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         ((MySQLSupports.MySQLFromClauseTableBlock) block).addIndexHint(indexHint);
         return this;
     }
-
 
 
     /**
@@ -1249,8 +1246,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public _CteComma<I> as(Function<_SelectSpec<_CteComma<I>>, _CteComma<I>> function) {
-            return function.apply(MySQLQueries.subQuery(this.comma.context, this::subQueryEnd));
+        public _CteComma<I> as(Function<_StaticCteComplexCommandSpec<I>, _CteComma<I>> function) {
+            return ClauseUtils.invokeFunction(function, new StaticCteComplexCommand<>(this.comma.context, this::subQueryEnd, this::subStatementEnd));
         }
 
         private _StaticCteAsClause<I> onColumnAliasList(final List<String> list) {
@@ -1264,13 +1261,18 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             return this;
         }
 
-        private _CteComma<I> subQueryEnd(final SubQuery query) {
-            CriteriaUtils.createAndAddCte(this.comma.context, this.name, this.columnAliasList, query);
+        private _CteComma<I> subQueryEnd(final SubQuery subStatement) {
+            CriteriaUtils.createAndAddCte(this.comma.context, this.name, this.columnAliasList, subStatement);
+            return this.comma;
+        }
+
+        private _CteComma<I> subStatementEnd(final SubStatement subStatement) {
+            CriteriaUtils.createAndAddCte(this.comma.context, this.name, this.columnAliasList, subStatement);
             return this.comma;
         }
 
 
-    }//StaticCteParensClause
+    } // StaticCteParensClause
 
 
     static abstract class MySQLBracketQuery<I extends Item>
@@ -1331,11 +1333,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             super(select, paramList);
         }
 
-        @Override
-        Dialect statementDialect() {
-            return MySQLUtils.DIALECT;
-        }
-
 
     }//BatchBracketSelect
 
@@ -1366,13 +1363,24 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }//BracketSubQuery
 
 
-    private static abstract class MySQLQueryDispatcher<I extends Item>
+    private static abstract class MySQLSelectClauseDispatcher<I extends Item, WE extends Item>
             extends WithBuilderSelectClauseDispatcher<
             MySQLCtes,
-            MySQLQuery._QueryComplexSpec<I>,
+            WE,
             MySQLs.Modifier,
             MySQLQuery._MySQLSelectCommaSpec<I>,
-            MySQLQuery._FromSpec<I>>
+            MySQLQuery._FromSpec<I>> implements MySQLQuery._MySQLSelectClause<I>, ArmyStmtSpec {
+
+        private MySQLSelectClauseDispatcher(CriteriaContext dispatcherContext) {
+            super(dispatcherContext);
+        }
+
+
+    } // MySQLSelectClauseDispatcher
+
+
+    private static abstract class MySQLQueryDispatcher<I extends Item>
+            extends MySQLSelectClauseDispatcher<I, MySQLQuery._QueryComplexSpec<I>>
             implements MySQLQuery._QueryWithComplexSpec<I> {
 
         final Function<RowSet, I> function;
@@ -1381,7 +1389,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             super(dispatcherContext);
             this.function = function;
         }
-
 
 
         @Override
@@ -1395,7 +1402,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
-
 
         @Override
         final MySQLCtes createCteBuilder(boolean recursive) {
@@ -1501,6 +1507,84 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     } // SubQueryDispatcher
 
 
+    /**
+     * <p>This class is base class of {@link StaticCteComplexCommand}
+     */
+    private static class StaticCteSubQuery<I extends Item>
+            extends MySQLSelectClauseDispatcher<I, Item>
+            implements MySQLQuery._StaticCteSelectSpec<I> {
+
+        private final Function<SubQuery, I> queryFunction;
+
+        private StaticCteSubQuery(CriteriaContext outerContext, Function<SubQuery, I> queryFunction) {
+            super(CriteriaContexts.subDispatcherContext(outerContext, null));
+            this.queryFunction = queryFunction;
+        }
+
+
+        @Override
+        public final _UnionOrderBySpec<I> parens(Function<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+            this.endDispatcher();
+
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(this, this.queryFunction);
+
+            return ClauseUtils.invokeFunction(function, new StaticCteSubQuery<>(bracket.context, bracket::parensEnd));
+        }
+
+
+        @Override
+        final MySQLQueries<I> createSelectClause() {
+            this.endDispatcher();
+
+            return MySQLQueries.fromSubDispatcher(this, this.queryFunction);
+        }
+
+        @Override
+        final MySQLCtes createCteBuilder(boolean recursive) {
+            // static WITH clause don't support this
+            throw ContextStack.clearStackAndCastCriteriaApi();
+        }
+
+
+    } // StaticCteSubQuery
+
+
+    private static final class StaticCteComplexCommand<I extends Item>
+            extends StaticCteSubQuery<_CteComma<I>>
+            implements MySQLQuery._StaticCteComplexCommandSpec<I> {
+
+        private final Function<SubStatement, _CteComma<I>> function;
+
+        /**
+         * @see StaticCteParensClause#as(Function)
+         */
+        private StaticCteComplexCommand(CriteriaContext outerContext, Function<SubQuery, _CteComma<I>> queryFunction,
+                                        Function<SubStatement, _CteComma<I>> function) {
+            super(outerContext, queryFunction);
+            this.function = function;
+        }
+
+        @Override
+        public MySQLValues._OrderBySpec<_CteComma<I>> values(Consumer<ValuesRows> consumer) {
+            this.endDispatcher();
+
+            return MySQLSimpleValues.fromSubDispatcher(this, this.function)
+                    .values(consumer);
+        }
+
+        @Override
+        public MySQLValues._StaticValuesRowClause<_CteComma<I>> values() {
+            this.endDispatcher();
+
+            return MySQLSimpleValues.fromSubDispatcher(this, this.function)
+                    .values();
+        }
+
+
+    } // StaticCteComplexCommand
+
+
     private static final class MySQLBatchSimpleSelect extends ArmyBatchSimpleSelect
             implements MySQLQuery, _MySQLQuery {
 
@@ -1551,11 +1635,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             return this.intoVarList;
         }
 
-
-        @Override
-        Dialect statementDialect() {
-            return MySQLUtils.DIALECT;
-        }
 
 
     } // MySQLBatchSelect

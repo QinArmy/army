@@ -20,10 +20,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
-import io.army.criteria.mysql.MySQLCtes;
-import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLStatement;
-import io.army.criteria.mysql.MySQLWindow;
+import io.army.criteria.mysql.*;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -179,7 +176,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public DialectStatement._CommaClause<MySQLCtes> as(Function<MySQLQuery.WithSpec<DialectStatement._CommaClause<MySQLCtes>>, DialectStatement._CommaClause<MySQLCtes>> function) {
-            return function.apply(MySQLQueries.subQuery(this.context, this::subQueryEnd));
+            return ClauseUtils.invokeFunction(function, MySQLQueries.subQuery(this.context, this::subQueryEnd));
         }
 
         private DialectStatement._CommaClause<MySQLCtes> subQueryEnd(final SubQuery query) {
@@ -188,7 +185,31 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
 
-    }//DynamicCteQueryParensSpec
+    } // DynamicCteQueryParensSpec
+
+    private static final class DynamicCteValuesParensSpec
+            extends CteParensClause<MySQLValues._ValuesDynamicCteAsClause>
+            implements MySQLValues._DynamicCteParensSpec {
+
+        private final MySQLCteBuilder builder;
+
+        public DynamicCteValuesParensSpec(MySQLCteBuilder builder, String name) {
+            super(name, builder.context);
+            this.builder = builder;
+        }
+
+        @Override
+        public Statement._CommaClause<MySQLCtes> as(Function<MySQLValues.ValuesSpec<Statement._CommaClause<MySQLCtes>>, Statement._CommaClause<MySQLCtes>> function) {
+            return ClauseUtils.invokeFunction(function, MySQLSimpleValues.subValues(this.context, this::subValuesEnd));
+        }
+
+        private DialectStatement._CommaClause<MySQLCtes> subValuesEnd(final SubValues values) {
+            CriteriaUtils.createAndAddCte(this.context, this.name, this.columnAliasList, values);
+            return this.builder;
+        }
+
+
+    } // DynamicCteValuesParensSpec
 
     private static final class MySQLCteBuilder implements MySQLCtes, CteBuilder,
             Statement._CommaClause<MySQLCtes> {
@@ -215,6 +236,11 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
+        public MySQLValues._DynamicCteParensSpec subValues(String name) {
+            return new DynamicCteValuesParensSpec(this, name);
+        }
+
+        @Override
         public void endLastCte() {
             //no-op
         }
@@ -233,7 +259,6 @@ abstract class MySQLSupports extends CriteriaSupports {
         List<String> partitionList();
 
     }
-
 
 
     static final class MySQLFromClauseTableBlock
@@ -297,7 +322,6 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     } // MySQLFromClauseTableBlock
-
 
 
     /**
@@ -677,7 +701,6 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     }//PartitionAsClause
-
 
 
     enum IndexHintCommand implements SQLWords {

@@ -302,7 +302,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
      */
     public static CompoundExpression mode(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualExpOperator.MOD, right, Expressions::mathExpType);
+        return Expressions.dialectDualExp(left, DualExpOperator.MOD, right, Expressions::timesDivideType);
     }
 
 

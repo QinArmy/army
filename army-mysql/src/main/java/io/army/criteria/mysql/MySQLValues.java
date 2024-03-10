@@ -122,4 +122,14 @@ public interface MySQLValues extends MySQLStatement, RowSet {
     }
 
 
+    interface _ValuesDynamicCteAsClause extends _DynamicCteAsClause<ValuesSpec<_CommaClause<MySQLCtes>>, _CommaClause<MySQLCtes>> {
+
+    }
+
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_ValuesDynamicCteAsClause>,
+            _ValuesDynamicCteAsClause {
+
+    }
+
+
 }

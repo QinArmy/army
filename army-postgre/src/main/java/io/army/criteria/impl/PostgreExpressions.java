@@ -113,7 +113,7 @@ abstract class PostgreExpressions {
      * </ul>
      *
      * @see Postgres#plus(Expression, Expression)
-     * @see Expressions#plusOrTimesType(MappingType, MappingType)
+     * @see Expressions#plusMinusType(MappingType, MappingType)
      */
     static MappingType plusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
@@ -122,7 +122,7 @@ abstract class PostgreExpressions {
         } else if (left instanceof MappingType.SqlNumberType && !(right instanceof MappingType.SqlNumberOrStringType)) { // date + integer → date ; inet + bigint → inet
             returnType = right;
         } else if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type + numeric_type → numeric_type
-            returnType = Expressions.mathExpType(left, right);
+            returnType = Expressions.plusMinusType(left, right);
         } else if (left instanceof MappingType.SqlLocalDateType || right instanceof MappingType.SqlLocalDateType) {
             if (right instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlIntervalType) { // date + interval → timestamp or date + time → timestamp
                 returnType = LocalDateTimeType.INSTANCE;
@@ -148,7 +148,7 @@ abstract class PostgreExpressions {
         } else if (left.isSameType(right)) { // anyrange + anyrange → anyrange
             returnType = left;
         } else {
-            returnType = Expressions.mathExpType(left, right);
+            returnType = Expressions.plusMinusType(left, right);
         }
         return returnType;
     }
@@ -197,7 +197,7 @@ abstract class PostgreExpressions {
         } else if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) { // date - integer → date
             returnType = left;
         } else if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type - numeric_type → numeric_type
-            returnType = Expressions.mathExpType(left, right);
+            returnType = Expressions.timesDivideType(left, right);
         } else if (left.isSameType(right)) {   // anyrange - anyrange → anyrange
             returnType = left;
         } else { // error or unknown
@@ -212,7 +212,7 @@ abstract class PostgreExpressions {
     static MappingType timesType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type * numeric_type → numeric_type
-            returnType = Expressions.mathExpType(left, right);
+            returnType = Expressions.timesDivideType(left, right);
         } else if ((left instanceof MappingType.SqlTemporalAmountType || right instanceof MappingType.SqlTemporalAmountType)
                 && (right instanceof MappingType.SqlNumberType || left instanceof MappingType.SqlNumberType)) {  // interval * double precision → interval
             returnType = IntervalType.from(Interval.class);
@@ -221,7 +221,7 @@ abstract class PostgreExpressions {
         } else if (left.isSameType(right)) {   // anyrange - anyrange → anyrange
             returnType = left;
         } else { // error or unknown
-            returnType = Expressions.mathExpType(left, right);
+            returnType = Expressions.timesDivideType(left, right);
         }
         return returnType;
     }
@@ -232,7 +232,7 @@ abstract class PostgreExpressions {
     static MappingType divideType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type / numeric_type → numeric_type
-            returnType = Expressions.mathExpType(left, right);
+            returnType = Expressions.timesDivideType(left, right);
         } else if (left instanceof MappingType.SqlTemporalAmountType && right instanceof MappingType.SqlNumberType) {  // interval / double precision → interval
             returnType = IntervalType.from(Interval.class);
         } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type / point → geometric_type

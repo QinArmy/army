@@ -61,10 +61,14 @@ abstract class Expressions {
         switch (operator) {
             case PLUS:
             case MINUS:
+                inferFunc = Expressions::plusMinusType;
+                break;
             case TIMES:
             case DIVIDE:
+                inferFunc = Expressions::timesDivideType;
+                break;
             case MOD:
-                inferFunc = Expressions::mathExpType;
+                inferFunc = Expressions::modeType;
                 break;
             case BITWISE_AND:
             case BITWISE_OR:
@@ -548,8 +552,7 @@ abstract class Expressions {
         return type;
     }
 
-
-    static MappingType mathExpType(final MappingType left, final MappingType right) {
+    static MappingType plusMinusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
             returnType = left;
@@ -571,7 +574,7 @@ abstract class Expressions {
             rightLength = ((MappingType.SqlIntegerType) right).lengthType();
 
             if (leftLength.compareWith(MappingType.LengthType.DEFAULT) < 0
-                    && rightLength.compareWith(MappingType.LengthType.DEFAULT) < 0) {
+                    && rightLength.compareWith(MappingType.LengthType.DEFAULT) < 0) {   // TODO handle 无符号数
                 returnType = IntegerType.INSTANCE;
             } else if (leftLength.compareWith(MappingType.LengthType.LONG) < 0
                     && rightLength.compareWith(MappingType.LengthType.LONG) < 0) {
@@ -579,6 +582,60 @@ abstract class Expressions {
             } else {
                 returnType = BigIntegerType.INSTANCE;
             }
+        } else if (left.isSameType(right)) {
+            returnType = left;
+        } else {
+            returnType = TextType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
+    static MappingType timesDivideType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
+            returnType = left;
+        } else if (!(right instanceof MappingType.SqlNumberOrStringType) && left instanceof MappingType.SqlNumberType) {
+            returnType = right;
+        } else if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
+            if (left.isSameType(right)) {
+                returnType = left;
+            } else {
+                returnType = TextType.INSTANCE;
+            }
+        } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
+            returnType = DoubleType.INSTANCE;
+        } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else if (left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else if (left.isSameType(right)) {
+            returnType = left;
+        } else {
+            returnType = TextType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
+    static MappingType modeType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
+            returnType = left;
+        } else if (!(right instanceof MappingType.SqlNumberOrStringType) && left instanceof MappingType.SqlNumberType) {
+            returnType = right;
+        } else if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
+            if (left.isSameType(right)) {
+                returnType = left;
+            } else {
+                returnType = TextType.INSTANCE;
+            }
+        } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
+            returnType = DoubleType.INSTANCE;
+        } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else if (left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType) {
+            returnType = left;
         } else if (left.isSameType(right)) {
             returnType = left;
         } else {

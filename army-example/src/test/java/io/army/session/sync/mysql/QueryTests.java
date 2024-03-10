@@ -80,4 +80,28 @@ public class QueryTests extends SessionTestSupport {
         Assert.assertEquals(rowList.size(), 4);
 
     }
+
+    @Test
+    public void cteValues(final SyncLocalSession session) {
+        final List<ChinaRegion<?>> regionList = createReginListWithCount(2);
+        session.batchSave(regionList);
+
+        final Select stmt;
+        stmt = MySQLs.query()
+                .with("data").as(sw -> sw.values()
+                        .row(s -> s.space(1))
+                        .asValues()
+                ).space()
+                .select(ChinaRegion_.id)
+                .from(ChinaRegion_.T, AS, "t")
+                .crossJoin("data")
+                .where(ChinaRegion_.id.in(SQLs::rowLiteral, extractRegionIdList(regionList)))
+                .asQuery();
+
+        final List<Integer> rowList;
+        rowList = session.queryList(stmt, Integer.class);
+        Assert.assertEquals(rowList.size(), regionList.size());
+    }
+
+
 }
