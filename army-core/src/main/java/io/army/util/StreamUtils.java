@@ -12,6 +12,11 @@ public abstract class StreamUtils {
     }
 
 
+    public static void ignore(Object o) {
+        // no-op
+    }
+
+
     @Nullable
     public static <R> R collectAtMostOneRow(Stream<R> stream) {
         try (Stream<R> s = stream) {
