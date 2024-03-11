@@ -40,6 +40,15 @@ public interface CurrentRecord extends DataRecord {
      */
     ResultRecord asResultRecord();
 
+
+    /**
+     * <p>found compatible {@link MappingType} for columnClass
+     */
+    @Nullable
+    @Override
+    <T> T get(int indexBasedZero, Class<T> columnClass);
+
+
     @Nullable
     Object get(int indexBasedZero, MappingType type);
 

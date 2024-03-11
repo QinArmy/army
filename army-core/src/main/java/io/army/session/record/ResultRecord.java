@@ -16,6 +16,21 @@
 
 package io.army.session.record;
 
+import javax.annotation.Nullable;
+
 public interface ResultRecord extends DataRecord {
+
+
+    /**
+     * <p>This method is equivalent to following :
+     * <ol>
+     *     <li>{@link CurrentRecord#get(int)}</li>
+     *     <li>and convert column value to columnClass</li>
+     * </ol>
+     */
+    @Nullable
+    @Override
+    <T> T get(int indexBasedZero, Class<T> columnClass);
+
 
 }
