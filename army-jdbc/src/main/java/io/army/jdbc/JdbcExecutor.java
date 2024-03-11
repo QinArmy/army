@@ -1923,45 +1923,87 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         final DataType[] dataTypeArray;
 
-        private final Class<?> resultClass;
-
-        private final MappingType[] compatibleTypeArray;
-
 
         private RowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                          DataType[] dataTypeArray, @Nullable Class<?> resultClass) {
+                          DataType[] dataTypeArray) {
             if (selectionList.size() != dataTypeArray.length) {
                 throw _Exceptions.columnCountAndSelectionCountNotMatch(dataTypeArray.length, selectionList.size());
             }
             this.executor = executor;
             this.selectionList = selectionList;
             this.dataTypeArray = dataTypeArray;
+        }
+
+        @Nullable
+        abstract R readOneRow(final ResultSet resultSet) throws SQLException;
+
+
+    } // RowReader
+
+
+    private static abstract class MyRowReader<R> extends RowReader<R> {
+
+
+        private final Class<?> resultClass;
+
+        private final MappingType[] compatibleTypeArray;
+
+        private MyRowReader(JdbcExecutor executor, List<? extends Selection> selectionList, DataType[] dataTypeArray,
+                            @Nullable Class<?> resultClass) {
+            super(executor, selectionList, dataTypeArray);
             this.resultClass = resultClass;
             this.compatibleTypeArray = new MappingType[dataTypeArray.length];
         }
 
+
         @Override
-        protected Object[] copyValueArray() {
+        public final Object[] copyValueArray() {
+            // no bug,never here
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public long rowNumber() {
+        public final long rowNumber() {
+            // no bug,never here
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public ArmyResultRecordMeta getRecordMeta() {
+        public final ArmyResultRecordMeta getRecordMeta() {
+            // no bug,never here
             throw new UnsupportedOperationException();
         }
 
         @Nullable
         @Override
-        public Object get(int indexBasedZero) {
+        public final Object get(int indexBasedZero) {
+            // no bug,never here
             throw new UnsupportedOperationException();
         }
 
         @Nullable
+        @Override
+        public final Object get(int indexBasedZero, MappingType type) {
+            // no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public final <T> T get(int indexBasedZero, Class<T> columnClass) {
+            // no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public final <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
+            // no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
         final R readOneRow(final ResultSet resultSet) throws SQLException {
 
             final JdbcExecutor executor = this.executor;
@@ -1992,11 +2034,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 dataType = dataTypeArray[i];
 
                 if ((type = compatibleTypeArray[i]) == null) {
-                    if (this instanceof RecordRowReader) {
-                        type = selection.typeMeta().mappingType();
-                    } else {
-                        type = compatibleTypeFrom(selection, dataType, this.resultClass, accessor, fieldName);
-                    }
+                    type = compatibleTypeFrom(selection, dataType, this.resultClass, accessor, fieldName);
                     compatibleTypeArray[i] = type;
                 }
 
@@ -2010,6 +2048,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     continue;
                 }
 
+                //TODO field codec
+
                 // MappingType convert one column
                 columnValue = type.afterGet(dataType, env, columnValue);
 
@@ -2020,8 +2060,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     acceptColumn(i, fieldName, null);
                     continue;
                 }
-
-                //TODO field codec
 
                 // sub class handle one column
                 acceptColumn(i, fieldName, columnValue);
@@ -2039,9 +2077,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         abstract R endOneRow();
 
 
-    }//RowReader
+    } // MyRowReader
 
-    private static final class BeanRowReader<R> extends RowReader<R> {
+
+    private static final class BeanRowReader<R> extends MyRowReader<R> {
 
         private final ObjectAccessor accessor;
 
@@ -2081,7 +2120,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     }//BeanRowReader
 
-    private static final class SingleColumnRowReader<R> extends RowReader<R> {
+    private static final class SingleColumnRowReader<R> extends MyRowReader<R> {
 
         private R row;
 
@@ -2113,10 +2152,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-    }//SingleColumnRowReader
+    } // SingleColumnRowReader
 
 
-    private static final class ObjectReader<R> extends RowReader<R> {
+    private static final class ObjectReader<R> extends MyRowReader<R> {
 
         private final Supplier<R> constructor;
 
@@ -2177,107 +2216,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-    }//ObjectReader
+    } // ObjectReader
 
 
-    private static class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
-
-        private final JdbcStmtRecordMeta meta;
-
-        private final Function<CurrentRecord, R> function;
-
-        private final Object[] valueArray;
-
-        private long rowNumber = 0L;
-
-        /**
-         * @see JdbcExecutor#recordReaderFunc(List, Function)
-         */
-        private RecordRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                DataType[] dataTypeArray, Function<CurrentRecord, R> function, ResultSetMetaData meta) {
-            super(executor, selectionList, dataTypeArray, Object.class);
-            this.function = function;
-            this.valueArray = new Object[dataTypeArray.length];
-            this.meta = new JdbcStmtRecordMeta(1, executor, dataTypeArray, selectionList, meta);
-        }
-
-        private RecordRowReader(RecordRowReader<R> r, ResultSetMetaData meta) {
-            super(r.executor, r.selectionList, r.dataTypeArray, Object.class);
-            this.function = r.function;
-            this.valueArray = new Object[r.dataTypeArray.length];
-            this.meta = new JdbcStmtRecordMeta(r.meta.resultNo() + 1, r.executor, r.dataTypeArray, r.selectionList, meta);
-        }
-
-
-        @Override
-        public final ArmyResultRecordMeta getRecordMeta() {
-            return this.meta;
-        }
-
-        @Override
-        public final long rowNumber() {
-            return this.rowNumber;
-        }
-
-
-        @Override
-        public final Object get(int indexBasedZero) {
-            return this.valueArray[indexBasedZero];
-        }
-
-        /*-------------------below protected -------------------*/
-
-        @Override
-        protected final Object[] copyValueArray() {
-            final Object[] array = new Object[this.valueArray.length];
-            System.arraycopy(this.valueArray, 0, array, 0, array.length);
-            return array;
-        }
-
-
-        /*-------------------below package methods -------------------*/
-
-        @Override
-        final ObjectAccessor createRow() {
-            // just return accessor
-            this.rowNumber++;
-            return RECORD_PSEUDO_ACCESSOR;
-        }
-
-        @Override
-        final void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
-            this.valueArray[indexBasedZero] = value;
-        }
-
-        @Nullable
-        @Override
-        final R endOneRow() {
-            final R r;
-            r = this.function.apply(this);
-            if (r instanceof CurrentRecord) {
-                throw _Exceptions.recordFuncError(this.function, this);
-            }
-            return r;
-        }
-
-
-    } // RecordRowReader
-
-    private static final class ResultItemRowReader extends RecordRowReader<ResultItem> {
-
-        private ResultItemRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                    DataType[] dataTypeArray, ResultSetMetaData meta) {
-            super(executor, selectionList, dataTypeArray, CurrentRecord::asResultRecord, meta);
-        }
-
-        private ResultItemRowReader(ResultItemRowReader r, ResultSetMetaData meta) {
-            super(r, meta);
-        }
-
-
-    } // ResultItemRowReader
-
-    private static final class SecondRowReader<R> extends RowReader<R> {
+    private static final class SecondRowReader<R> extends MyRowReader<R> {
 
         /**
          * @see SimpleSecondSpliterator#readRowStream(int, Consumer)
@@ -2341,7 +2283,192 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-    }//SecondRowReader
+    } // SecondRowReader
+
+
+    private static class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
+
+        private final JdbcStmtRecordMeta meta;
+
+        private final Function<CurrentRecord, R> function;
+
+        private final MappingType[] rawTypeArray;
+
+        private final MappingType[] compatibleTypeArray;
+
+        private long rowNumber = 0L;
+
+        private ResultSet resultSet;
+
+        /**
+         * @see JdbcExecutor#recordReaderFunc(List, Function)
+         */
+        private RecordRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
+                                DataType[] dataTypeArray, Function<CurrentRecord, R> function, ResultSetMetaData meta) {
+            super(executor, selectionList, dataTypeArray);
+            this.function = function;
+            this.rawTypeArray = createRawTypeArray(selectionList);
+            this.compatibleTypeArray = new MappingType[dataTypeArray.length];
+            this.meta = new JdbcStmtRecordMeta(1, executor, dataTypeArray, selectionList, meta);
+        }
+
+        private RecordRowReader(RecordRowReader<R> r, ResultSetMetaData meta) {
+            super(r.executor, r.selectionList, r.dataTypeArray);
+            this.function = r.function;
+            this.rawTypeArray = r.rawTypeArray;
+            this.compatibleTypeArray = r.compatibleTypeArray;
+            this.meta = new JdbcStmtRecordMeta(r.meta.resultNo() + 1, r.executor, r.dataTypeArray, r.selectionList, meta);
+        }
+
+
+        @Override
+        public final ArmyResultRecordMeta getRecordMeta() {
+            return this.meta;
+        }
+
+        @Override
+        public final long rowNumber() {
+            return this.rowNumber;
+        }
+
+        @Nullable
+        @Override
+        public final Object get(final int indexBasedZero) {
+            this.meta.checkIndex(indexBasedZero);
+
+            return getColumnValue(indexBasedZero, this.rawTypeArray[indexBasedZero]);
+        }
+
+        @Nullable
+        @Override
+        public Object get(final int indexBasedZero, final @Nullable MappingType type) {
+            if (type == null) {
+                throw new NullPointerException();
+            }
+            this.meta.checkIndex(indexBasedZero);
+            return getColumnValue(indexBasedZero, type);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Nullable
+        @Override
+        public <T> T get(final int indexBasedZero, final @Nullable Class<T> columnClass) {
+            if (columnClass == null) {
+                throw new NullPointerException();
+            }
+            this.meta.checkIndex(indexBasedZero);
+
+            MappingType type;
+            type = this.compatibleTypeArray[indexBasedZero];
+            if (type == null) {
+                type = this.rawTypeArray[indexBasedZero];
+            }
+            if (!columnClass.isAssignableFrom(type.javaType())) {
+                type = type.compatibleFor(this.dataTypeArray[indexBasedZero], columnClass);
+                this.compatibleTypeArray[indexBasedZero] = type;
+            }
+            return (T) getColumnValue(indexBasedZero, type);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Nullable
+        @Override
+        public <T> T get(final int indexBasedZero, final Class<T> columnClass, final MappingType type) {
+            this.meta.checkIndex(indexBasedZero);
+            if (!columnClass.isAssignableFrom(type.javaType())) {
+                String m = String.format("%s and %s not match", columnClass.getName(), type.getClass().getName());
+                throw new IllegalArgumentException(m);
+            }
+            return (T) getColumnValue(indexBasedZero, type);
+        }
+
+
+        /*-------------------below protected -------------------*/
+
+        @Override
+        protected final Object[] copyValueArray() {
+            final MappingType[] typeArray = this.rawTypeArray;
+            final int length = typeArray.length;
+
+            final Object[] valueArray = new Object[length];
+
+            for (int i = 0; i < length; i++) {
+                valueArray[i] = getColumnValue(i, typeArray[i]);
+            }
+            return valueArray;
+        }
+
+
+        /*-------------------below package methods -------------------*/
+
+        @Nullable
+        @Override
+        R readOneRow(final ResultSet resultSet) {
+            this.resultSet = resultSet; // firstly , store
+
+            try {
+                final R row;
+                row = this.function.apply(this);
+                if (row instanceof CurrentRecord) {
+                    throw _Exceptions.recordFuncError(this.function, this);
+                }
+                this.rowNumber++;
+                return row;
+            } finally {
+                this.resultSet = null;  // clear
+            }
+        }
+
+
+        @Nullable
+        private Object getColumnValue(final int indexBasedZero, final MappingType type) {
+            final ResultSet resultSet = this.resultSet;
+            if (resultSet == null) {
+                throw new IllegalStateException("resultSet is null");
+            }
+
+            try {
+
+                final DataType dataType = this.dataTypeArray[indexBasedZero];
+
+                Object value;
+                value = this.executor.get(resultSet, indexBasedZero + 1, type, dataType);
+
+                if (value == null) {
+                    return null;
+                }
+
+                // TODO field codec
+
+                value = type.afterGet(dataType, this.executor.factory.mappingEnv, value);
+                if (value == MappingType.DOCUMENT_NULL_VALUE) {
+                    if (!(type instanceof MappingType.SqlDocumentType)) {
+                        throw afterGetMethodError(type, dataType, value);
+                    }
+                    value = null;
+                }
+                return value;
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
+        }
+
+
+    } // RecordRowReader
+
+    private static final class ResultItemRowReader extends RecordRowReader<ResultItem> {
+
+        private ResultItemRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
+                                    DataType[] dataTypeArray, ResultSetMetaData meta) {
+            super(executor, selectionList, dataTypeArray, CurrentRecord::asResultRecord, meta);
+        }
+
+        private ResultItemRowReader(ResultItemRowReader r, ResultSetMetaData meta) {
+            super(r, meta);
+        }
+
+
+    } // ResultItemRowReader
 
 
     /**
@@ -3534,6 +3661,33 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } catch (Exception e) {
                 throw this.executor.handleException(e);
             }
+        }
+
+        @Nullable
+        @Override
+        public Object get(int indexBasedZero, MappingType type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T getNonNull(int indexBasedZero, Class<T> columnClass, MappingType type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T getOrDefault(int indexBasedZero, Class<T> columnClass, MappingType type, T defaultValue) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T getOrSupplier(int indexBasedZero, Class<T> columnClass, MappingType type, Supplier<T> supplier) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

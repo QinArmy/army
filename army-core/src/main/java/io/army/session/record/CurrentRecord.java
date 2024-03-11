@@ -17,6 +17,11 @@
 package io.army.session.record;
 
 
+import io.army.mapping.MappingType;
+
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
+
 public interface CurrentRecord extends DataRecord {
 
     /**
@@ -34,5 +39,18 @@ public interface CurrentRecord extends DataRecord {
      * @return new {@link ResultRecord}
      */
     ResultRecord asResultRecord();
+
+    @Nullable
+    Object get(int indexBasedZero, MappingType type);
+
+    @Nullable
+    <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type);
+
+    <T> T getNonNull(int indexBasedZero, Class<T> columnClass, MappingType type);
+
+    <T> T getOrDefault(int indexBasedZero, Class<T> columnClass, MappingType type, T defaultValue);
+
+    <T> T getOrSupplier(int indexBasedZero, Class<T> columnClass, MappingType type, Supplier<T> supplier);
+
 
 }

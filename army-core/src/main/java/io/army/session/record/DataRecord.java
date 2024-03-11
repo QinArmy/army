@@ -37,7 +37,6 @@ public interface DataRecord extends ResultItem, ResultItem.ResultAccessSpec {
     @Nullable
     <T> T get(int indexBasedZero, Class<T> columnClass);
 
-
     <T> T getNonNull(int indexBasedZero, Class<T> columnClass);
 
     <T> T getOrDefault(int indexBasedZero, Class<T> columnClass, T defaultValue);

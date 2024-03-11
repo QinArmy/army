@@ -1571,6 +1571,24 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
 
         @Nullable
+        @Override
+        public Object get(int indexBasedZero, MappingType type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public <T> T get(int indexBasedZero, Class<T> columnClass) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
         final R readOneRow(final DataRow dataRow) {
 
             final JdbdStmtExecutor executor = this.executor;
@@ -1960,6 +1978,27 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             final JdbdStmtRowMeta meta = this.meta;
             assert meta != null;
             return this.valueArray[meta.checkIndex(indexBasedZero)];
+        }
+
+        @Nullable
+        @Override
+        public Object get(int indexBasedZero, MappingType type) {
+            // TODO
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
+            // TODO
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public <T> T get(int indexBasedZero, Class<T> columnClass) {
+            // TODO
+            throw new UnsupportedOperationException();
         }
 
         @Override

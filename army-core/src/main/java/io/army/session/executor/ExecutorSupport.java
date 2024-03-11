@@ -235,6 +235,22 @@ public abstract class ExecutorSupport {
         throw new UnsupportedOperationException();
     }
 
+    protected static MappingType[] createRawTypeArray(final List<? extends Selection> selectionList) {
+        final int size = selectionList.size();
+        final MappingType[] typeArray = new MappingType[size];
+
+        TypeMeta typeMeta;
+        for (int i = 0; i < size; i++) {
+            typeMeta = selectionList.get(i).typeMeta();
+            if (!(typeMeta instanceof MappingType)) {
+                typeMeta = typeMeta.mappingType();
+            }
+            assert typeMeta != null;
+            typeArray[i] = (MappingType) typeMeta;
+        }
+        return typeArray;
+    }
+
 
     protected static MySQLType getMySqlType(final String typeName) {
         final MySQLType type;
@@ -1308,15 +1324,42 @@ public abstract class ExecutorSupport {
             return new ArmyResultRecord(this);
         }
 
-        @SuppressWarnings("unchecked")
+
         @Override
-        public final <T> T get(int indexBasedZero, Class<T> columnClass) {
-            final Object value;
-            value = get(indexBasedZero);
-            if (value == null || columnClass.isInstance(value)) {
-                return (T) value;
+        public final <T> T getNonNull(int indexBasedZero, Class<T> columnClass, MappingType type) {
+            final T value;
+            value = get(indexBasedZero, columnClass, type);
+            if (value == null) {
+                throw currentRecordColumnIsNull(indexBasedZero, getColumnLabel(indexBasedZero));
             }
-            return convertToTarget(value, columnClass);
+            return value;
+        }
+
+        @Override
+        public final <T> T getOrDefault(int indexBasedZero, Class<T> columnClass, MappingType type,
+                                        final @Nullable T defaultValue) {
+            if (defaultValue == null) {
+                throw currentRecordDefaultValueNonNull();
+            }
+            T value;
+            value = get(indexBasedZero, columnClass, type);
+            if (value == null) {
+                value = defaultValue;
+            }
+            return value;
+        }
+
+        @Override
+        public final <T> T getOrSupplier(int indexBasedZero, Class<T> columnClass, MappingType type, Supplier<T> supplier) {
+            T value;
+            value = get(indexBasedZero, columnClass, type);
+            if (value == null) {
+                value = supplier.get();
+                if (value == null) {
+                    throw currentRecordSupplierReturnNull(supplier);
+                }
+            }
+            return value;
         }
 
         protected abstract Object[] copyValueArray();
