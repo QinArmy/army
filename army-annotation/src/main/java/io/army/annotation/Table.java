@@ -84,4 +84,9 @@ public @interface Table {
      *
      */
     String tableOption() default "";
+
+    /**
+     * (Optional) The option clause of create table
+     */
+    String partitionOption() default "";
 }

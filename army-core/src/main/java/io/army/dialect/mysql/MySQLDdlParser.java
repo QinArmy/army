@@ -176,8 +176,22 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
 
     @Override
     protected void appendTableOption(final TableMeta<?> table, final StringBuilder builder) {
-        builder.append(" ENGINE = InnoDB CHARACTER SET  = 'utf8mb4'");
+        final String tableOption, partitionOption;
+        tableOption = table.tableOption();
+        if (_StringUtils.hasText(tableOption)) {
+            // TODO validate
+            builder.append(tableOption);
+        } else {
+            builder.append(" ENGINE = InnoDB CHARACTER SET  = 'utf8mb4'");
+        }
         appendColumnComment(table, builder);
+
+        partitionOption = table.partitionOption();
+        if (_StringUtils.hasText(partitionOption)) {
+            // TODO validate
+            builder.append(partitionOption);
+        }
+
     }
 
 

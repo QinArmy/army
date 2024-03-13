@@ -290,6 +290,8 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
     private final String tableOption;
 
+    private final String partitionOption;
+
     private final SchemaMeta schemaMeta;
 
     final Map<String, FieldMeta<T>> fieldNameToFields;
@@ -316,7 +318,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
             this.schemaMeta = _SchemaMetaFactory.getSchema(table.catalog(), table.schema());
 
             this.tableOption = table.tableOption();
-
+            this.partitionOption = table.partitionOption();
             final TableMetaUtils.FieldMetaPair<T> pair;
             pair = TableMetaUtils.createFieldMetaPair(this);
 
@@ -416,6 +418,11 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
     @Override
     public final String tableOption() {
         return this.tableOption;
+    }
+
+    @Override
+    public final String partitionOption() {
+        return this.partitionOption;
     }
 
     @Override

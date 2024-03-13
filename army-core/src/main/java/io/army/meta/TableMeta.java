@@ -76,6 +76,8 @@ public interface TableMeta<T> extends TabularItem, DatabaseObject {
 
     String tableOption();
 
+    String partitionOption();
+
     SchemaMeta schema();
 
     boolean containField(String fieldName);
