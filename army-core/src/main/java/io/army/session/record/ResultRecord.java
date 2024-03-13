@@ -17,6 +17,7 @@
 package io.army.session.record;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public interface ResultRecord extends DataRecord {
 
@@ -27,6 +28,7 @@ public interface ResultRecord extends DataRecord {
      *     <li>{@link CurrentRecord#get(int)}</li>
      *     <li>and convert column value to columnClass</li>
      * </ol>
+     * @see io.army.session.FactoryBuilderSpec#columnConverterFunc(Function)
      */
     @Nullable
     @Override

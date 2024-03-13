@@ -189,7 +189,8 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
         partitionOption = table.partitionOption();
         if (_StringUtils.hasText(partitionOption)) {
             // TODO validate
-            builder.append(partitionOption);
+            builder.append('\n')
+                    .append(partitionOption);
         }
 
     }

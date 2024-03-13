@@ -20,8 +20,8 @@ import io.army.advice.FactoryAdvice;
 import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.env.ArmyEnvironment;
+import io.army.executor.ExecutorEnv;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.session.executor.ExecutorFactoryProvider;
 
@@ -123,7 +123,7 @@ public interface FactoryBuilderSpec<B, R> {
      * <p>Optional.
      * See
      * <ul>
-     *     <li>{@link ExecutorFactoryProvider#createServerMeta(Dialect, Function)}</li>
+     *     <li>{@link ExecutorFactoryProvider#createServerMeta(Function)}</li>
      *     <li>{@link Database#mapToDatabase(String, Function)}</li>
      * </ul>
      *
@@ -142,11 +142,11 @@ public interface FactoryBuilderSpec<B, R> {
 
     /**
      * <p>Optional.
-     * <p>See {@link io.army.session.record.DataRecord#get(int, Class)}
+     * <p>See {@link io.army.session.record.ResultRecord#get(int, Class)} and {@link ExecutorEnv#converterFunc()}
      *
      * @return <strong>this</strong>
      */
-    B columnConverterFunc(@Nullable Function<Class<?>, Function<?, ?>> converterFunc);
+    B columnConverterFunc(@Nullable Function<Class<?>, Function<Object, ?>> converterFunc);
 
     <T> B dataSourceOption(Option<T> option, @Nullable T value);
 

@@ -82,6 +82,8 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     private Map<Option<?>, Object> dataSourceOptionMap;
 
+    private Function<Class<?>, Function<Object, ?>> converterFunc;
+
 
     /*################################## blow non-setter fields ##################################*/
 
@@ -162,7 +164,8 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     }
 
     @Override
-    public final B columnConverterFunc(@Nullable Function<Class<?>, Function<?, ?>> converterMap) {
+    public final B columnConverterFunc(@Nullable Function<Class<?>, Function<Object, ?>> converterFunc) {
+        this.converterFunc = converterFunc;
         return (B) this;
     }
 
@@ -261,7 +264,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         final Map<FieldMeta<?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
         return new ArmyExecutorEnvironment(factoryName, dialectParser.serverMeta(), codecMap, env,
-                dialectParser.mappingEnv());
+                dialectParser.mappingEnv(), this.converterFunc);
     }
 
     protected final Map<FieldMeta<?>, FieldGenerator> createFieldGeneratorMap() {
@@ -588,8 +591,11 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
         private final MappingEnv mappingEnv;
 
+        private final Function<Class<?>, Function<Object, ?>> converterFunc;
+
         private ArmyExecutorEnvironment(String factoryName, ServerMeta serverMeta, Map<FieldMeta<?>, FieldCodec> fieldCodecMap,
-                                        ArmyEnvironment environment, MappingEnv mappingEnv) {
+                                        ArmyEnvironment environment, MappingEnv mappingEnv,
+                                        @Nullable Function<Class<?>, Function<Object, ?>> converterFunc) {
 
             this.factoryName = factoryName;
             this.serverMeta = serverMeta;
@@ -601,6 +607,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
             }
             this.environment = environment;
             this.mappingEnv = mappingEnv;
+            this.converterFunc = converterFunc;
         }
 
         @Override
@@ -626,6 +633,12 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         @Override
         public MappingEnv mappingEnv() {
             return this.mappingEnv;
+        }
+
+
+        @Override
+        public Function<Class<?>, Function<Object, ?>> converterFunc() {
+            return this.converterFunc;
         }
 
         @Override

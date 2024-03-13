@@ -54,7 +54,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
         private Set<Option<?>> optionSet;
 
         private JdbdRecordMeta(int resultNo, DataType[] dataTypeArray, JdbdStmtExecutor executor, ResultRowMeta meta) {
-            super(resultNo, dataTypeArray);
+            super(resultNo, dataTypeArray, executor.factory.executorEnv);
             this.executor = executor;
             this.meta = meta;
         }

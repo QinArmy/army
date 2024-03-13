@@ -26,6 +26,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
+import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.MetaException;
@@ -43,6 +44,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class ExecutorSupport {
@@ -231,7 +233,7 @@ public abstract class ExecutorSupport {
         return _Collections.unmodifiableMap(map);
     }
 
-    protected static <T> T convertToTarget(Object source, Class<T> targetClass) {
+    protected static <T> T convertToTarget(final Object source, final Class<T> targetClass) {
         throw new UnsupportedOperationException();
     }
 
@@ -981,10 +983,13 @@ public abstract class ExecutorSupport {
 
         final DataType[] dataTypeArray;
 
-        protected ArmyResultRecordMeta(int resultNo, DataType[] dataTypeArray) {
+        final Function<Class<?>, Function<Object, ?>> converterFunc;
+
+        protected ArmyResultRecordMeta(int resultNo, DataType[] dataTypeArray, ExecutorEnv env) {
             assert resultNo > 0;
             this.resultNo = resultNo;
             this.dataTypeArray = dataTypeArray;
+            this.converterFunc = env.converterFunc();
         }
 
         @Override
@@ -1143,11 +1148,14 @@ public abstract class ExecutorSupport {
 
     private static abstract class ArmyDataRecord implements DataRecord {
 
+        @Override
+        public abstract ArmyResultRecordMeta getRecordMeta();
 
         @Override
         public final int resultNo() {
             return getRecordMeta().resultNo();
         }
+
 
         @Override
         public final int getColumnCount() {
@@ -1286,12 +1294,34 @@ public abstract class ExecutorSupport {
         @SuppressWarnings("unchecked")
         @Override
         public final <T> T get(int indexBasedZero, Class<T> columnClass) {
-            final Object value;
+            Object value;
             value = get(indexBasedZero);
             if (value == null || columnClass.isInstance(value)) {
                 return (T) value;
             }
-            return convertToTarget(value, columnClass);
+            final Function<Class<?>, Function<Object, ?>> converterFunc;
+            converterFunc = this.getRecordMeta().converterFunc;
+            final Function<Object, ?> convertor;
+            if (converterFunc == null) {
+                convertor = null;
+            } else {
+                convertor = converterFunc.apply(columnClass);
+            }
+
+            if (convertor == null) {
+                value = convertToTarget(value, columnClass);
+            } else {
+                try {
+                    value = convertor.apply(value);
+                } catch (Exception e) {
+                    throw new DataAccessException("user custom convertor occur error.", e);
+                }
+                if (value != null && !columnClass.isInstance(value)) {
+                    String m = String.format("user custom convertor don't return %s type.", columnClass.getName());
+                    throw new DataAccessException(m);
+                }
+            }
+            return (T) value;
         }
 
     } // ArmyStmtDataRecord
@@ -1388,7 +1418,7 @@ public abstract class ExecutorSupport {
         }
 
         @Override
-        public ResultRecordMeta getRecordMeta() {
+        public ArmyResultRecordMeta getRecordMeta() {
             return this.meta;
         }
 

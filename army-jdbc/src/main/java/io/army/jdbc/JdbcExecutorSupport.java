@@ -218,7 +218,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         final ResultSetMetaData meta;
 
         JdbcRecordMeta(int resultNo, JdbcExecutor executor, DataType[] dataTypeArray, ResultSetMetaData meta) {
-            super(resultNo, dataTypeArray);
+            super(resultNo, dataTypeArray, executor.factory.executorEnv);
             this.executor = executor;
             this.meta = meta;
         }
