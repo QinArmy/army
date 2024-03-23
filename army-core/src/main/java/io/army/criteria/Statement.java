@@ -261,10 +261,10 @@ public interface Statement extends Item {
 
         OR on(IPredicate predicate1, IPredicate predicate2);
 
-        OR on(Function<Expression, IPredicate> operator, SqlField operandField);
+        OR on(Function<Expression, IPredicate> operator, Expression operandField);
 
-        OR on(Function<Expression, IPredicate> operator1, SqlField operandField1
-                , Function<Expression, IPredicate> operator2, SqlField operandField2);
+        OR on(Function<Expression, IPredicate> operator1, Expression operandField1
+                , Function<Expression, IPredicate> operator2, Expression operandField2);
 
         OR on(Consumer<Consumer<IPredicate>> consumer);
 

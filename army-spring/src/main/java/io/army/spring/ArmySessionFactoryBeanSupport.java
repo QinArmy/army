@@ -76,7 +76,7 @@ public abstract class ArmySessionFactoryBeanSupport implements InitializingBean,
 
     private Consumer<ExecutorFactoryProvider> executorFactoryProviderValidator;
 
-    private Function<Class<?>, Function<?, ?>> columnConverterFunc;
+    private Function<Class<?>, Function<Object, ?>> columnConverterFunc;
 
     private ApplicationContext applicationContext;
 
@@ -156,7 +156,7 @@ public abstract class ArmySessionFactoryBeanSupport implements InitializingBean,
         return this;
     }
 
-    public final ArmySessionFactoryBeanSupport setColumnConverterFunc(Function<Class<?>, Function<?, ?>> columnConverterFunc) {
+    public final ArmySessionFactoryBeanSupport setColumnConverterFunc(Function<Class<?>, Function<Object, ?>> columnConverterFunc) {
         this.columnConverterFunc = columnConverterFunc;
         return this;
     }
@@ -237,7 +237,7 @@ public abstract class ArmySessionFactoryBeanSupport implements InitializingBean,
     }
 
     @Nullable
-    protected final Function<Class<?>, Function<?, ?>> getColumnConverterFunc() {
+    protected final Function<Class<?>, Function<Object, ?>> getColumnConverterFunc() {
         return this.columnConverterFunc;
     }
 
