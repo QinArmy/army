@@ -207,6 +207,27 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         return onlyOneRow(this.queryList(statement, resultClass, _Collections::arrayListWithCapacity1, option));
     }
 
+
+    @Override
+    public final <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass) {
+        final R row;
+        row = queryOne(statement, resultClass, ArmySyncStmtOptions.DEFAULT);
+        if (row == null) {
+            throw _Exceptions.noAnyRow();
+        }
+        return row;
+    }
+
+    @Override
+    public final <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+        final R row;
+        row = queryOne(statement, resultClass, option);
+        if (row == null) {
+            throw _Exceptions.noAnyRow();
+        }
+        return row;
+    }
+
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
         return onlyOneRow(this.queryObjectList(statement, constructor, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));

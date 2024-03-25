@@ -302,6 +302,13 @@ public interface SyncSession extends Session, Closeable {
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
 
+    <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass);
+
+
+    <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
+
+
+
     @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
 

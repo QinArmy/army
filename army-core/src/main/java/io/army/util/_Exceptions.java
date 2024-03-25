@@ -245,6 +245,10 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(m);
     }
 
+    public static NullPointerException noAnyRow() {
+        return new NullPointerException("expected one row,but nothing");
+    }
+
     public static DataAccessException cursorHaveClosed(String name) {
         String m = String.format("cursor[%s] have closed", name);
         return new DataAccessException(m);
