@@ -385,8 +385,8 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    public static StandardQuery.SelectSpec<Select> query() {
-        return StandardQueries.simpleQuery(StandardDialect.STANDARD10, SELECT_IDENTITY);
+    public static StandardQuery.WithSpec<Select> query() {
+        return StandardQueries.simpleQuery(StandardDialect.STANDARD20, SELECT_IDENTITY);
     }
 
     public static StandardQuery.SelectSpec<Statement._BatchSelectParamSpec> batchQuery() {
