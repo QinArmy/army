@@ -100,6 +100,7 @@ public interface StandardInsert extends StandardStatement {
 
     interface _PrimaryOptionSpec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_PrimaryNullOption10Spec<I>>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_PrimaryNullOption10Spec<I>>,
             _PrimaryNullOption10Spec<I> {
 
     }
@@ -134,6 +135,7 @@ public interface StandardInsert extends StandardStatement {
 
     interface _PrimaryOption20Spec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_PrimaryNullOption20Spec<I>>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_PrimaryNullOption20Spec<I>>,
             _PrimaryNullOption20Spec<I> {
 
     }

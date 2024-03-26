@@ -29,16 +29,16 @@ import java.util.Map;
 
 class JdbcMetaExecutor implements MetaExecutor {
 
-    static JdbcMetaExecutor from(Connection conn) {
-        return new JdbcMetaExecutor(conn);
+    static JdbcMetaExecutor from(JdbcExecutorFactory factory, Connection conn) {
+        return new JdbcMetaExecutor(factory, conn);
     }
 
-    static JdbcMetaExecutor fromXa(final XAConnection xaConn) {
+    static JdbcMetaExecutor fromXa(JdbcExecutorFactory factory, XAConnection xaConn) {
         try {
             final Connection conn;
             conn = xaConn.getConnection();
 
-            return new XaConnMetaExecutor(xaConn, conn);
+            return new XaConnMetaExecutor(factory, xaConn, conn);
         } catch (SQLException e) {
             try {
                 xaConn.close();
@@ -51,13 +51,18 @@ class JdbcMetaExecutor implements MetaExecutor {
     }
 
 
+    //  private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
+
+    private final JdbcExecutorFactory factory;
+
     private final Connection conn;
 
     /**
      * private constructor
      */
 
-    private JdbcMetaExecutor(Connection conn) {
+    private JdbcMetaExecutor(JdbcExecutorFactory factory, Connection conn) {
+        this.factory = factory;
         this.conn = conn;
     }
 
@@ -87,6 +92,7 @@ class JdbcMetaExecutor implements MetaExecutor {
             throw JdbcExecutor.wrapError(e);
         }
     }
+
 
     @Override
     public final void executeDdl(final List<String> ddlList) throws DataAccessException {
@@ -135,7 +141,7 @@ class JdbcMetaExecutor implements MetaExecutor {
     }
 
 
-    private Map<String, TableInfo.Builder> getTableBuilder(final String catalog, final String schema,
+    private Map<String, TableInfo.Builder> getTableBuilder(final String catalog, final @Nullable String schema,
                                                            final DatabaseMetaData metaData) throws SQLException {
 
         try (ResultSet resultSet = metaData.getTables(catalog, schema, "%", new String[]{"TABLE", "VIEW"})) {
@@ -284,8 +290,8 @@ class JdbcMetaExecutor implements MetaExecutor {
 
         private final XAConnection xaConn;
 
-        private XaConnMetaExecutor(XAConnection xaConn, Connection conn) {
-            super(conn);
+        private XaConnMetaExecutor(JdbcExecutorFactory factory, XAConnection xaConn, Connection conn) {
+            super(factory, conn);
             this.xaConn = xaConn;
         }
 

@@ -263,7 +263,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     protected final ExecutorEnv createExecutorEnv(String factoryName, ArmyEnvironment env, DialectParser dialectParser) {
         final Map<FieldMeta<?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
-        return new ArmyExecutorEnvironment(factoryName, dialectParser.serverMeta(), codecMap, env,
+        return new ArmyExecutorEnvironment(factoryName, dialectParser.serverMeta(), codecMap, env, this.schemaMeta,
                 dialectParser.mappingEnv(), this.converterFunc);
     }
 
@@ -589,12 +589,14 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
         private final ArmyEnvironment environment;
 
+        private final SchemaMeta schemaMeta;
+
         private final MappingEnv mappingEnv;
 
         private final Function<Class<?>, Function<Object, ?>> converterFunc;
 
         private ArmyExecutorEnvironment(String factoryName, ServerMeta serverMeta, Map<FieldMeta<?>, FieldCodec> fieldCodecMap,
-                                        ArmyEnvironment environment, MappingEnv mappingEnv,
+                                        ArmyEnvironment environment, SchemaMeta schemaMeta, MappingEnv mappingEnv,
                                         @Nullable Function<Class<?>, Function<Object, ?>> converterFunc) {
 
             this.factoryName = factoryName;
@@ -606,6 +608,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
                 this.fieldCodecMap = Collections.unmodifiableMap(fieldCodecMap);
             }
             this.environment = environment;
+            this.schemaMeta = schemaMeta;
             this.mappingEnv = mappingEnv;
             this.converterFunc = converterFunc;
         }
@@ -628,6 +631,11 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         @Override
         public ArmyEnvironment environment() {
             return this.environment;
+        }
+
+        @Override
+        public SchemaMeta schemaMeta() {
+            return this.schemaMeta;
         }
 
         @Override

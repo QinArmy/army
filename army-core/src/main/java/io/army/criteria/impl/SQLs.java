@@ -305,8 +305,8 @@ public abstract class SQLs extends SQLSyntax {
     static final UnaryOperator<Insert> UPDATE_IDENTITY = SQLs::identity;
 
 
-    public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
-        return StandardInserts.singleInsert();
+    public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert() {
+        return StandardInserts.singleInsert20();
     }
 
     public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert20() {
@@ -319,8 +319,8 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
-        return StandardUpdates.singleUpdate(StandardDialect.STANDARD10);
+    public static StandardUpdate._WithSpec<Update> singleUpdate() {
+        return StandardUpdates.singleUpdate(StandardDialect.STANDARD20);
     }
 
     public static StandardUpdate._WithSpec<Update> singleUpdate20() {
@@ -341,8 +341,8 @@ public abstract class SQLs extends SQLSyntax {
      * <p>
      * Batch domain update
      */
-    public static StandardUpdate._SingleUpdateClause<Statement._BatchUpdateParamSpec> batchSingleUpdate() {
-        return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD10);
+    public static StandardUpdate._WithSpec<Statement._BatchUpdateParamSpec> batchSingleUpdate() {
+        return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD20);
     }
 
     public static StandardUpdate._WithSpec<Statement._BatchUpdateParamSpec> batchSingleUpdate20() {
@@ -350,8 +350,8 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
-        return StandardDeletes.singleDelete(StandardDialect.STANDARD10);
+    public static StandardDelete._WithSpec<Delete> singleDelete() {
+        return StandardDeletes.singleDelete(StandardDialect.STANDARD20);
     }
 
     public static StandardDelete._WithSpec<Delete> singleDelete20() {
@@ -367,8 +367,8 @@ public abstract class SQLs extends SQLSyntax {
      * <p>
      * Batch domain delete
      */
-    public static StandardDelete._StandardDeleteClause<Statement._BatchDeleteParamSpec> batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD10);
+    public static StandardDelete._WithSpec<Statement._BatchDeleteParamSpec> batchSingleDelete() {
+        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
     }
 
     /**

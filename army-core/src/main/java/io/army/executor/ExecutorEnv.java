@@ -20,6 +20,7 @@ import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
 import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
+import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 
 import javax.annotation.Nullable;
@@ -36,6 +37,8 @@ public interface ExecutorEnv {
 
 
     ArmyEnvironment environment();
+
+    SchemaMeta schemaMeta();
 
     /**
      * @return always same instance

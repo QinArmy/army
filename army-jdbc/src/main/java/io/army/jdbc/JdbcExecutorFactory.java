@@ -191,9 +191,9 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
             }
             final JdbcMetaExecutor executor;
             if (dataSource instanceof DataSource) {
-                executor = JdbcMetaExecutor.from(((DataSource) dataSource).getConnection());
+                executor = JdbcMetaExecutor.from(this, ((DataSource) dataSource).getConnection());
             } else {
-                executor = JdbcMetaExecutor.fromXa(((XADataSource) dataSource).getXAConnection());
+                executor = JdbcMetaExecutor.fromXa(this, ((XADataSource) dataSource).getXAConnection());
             }
             return executor;
         } catch (Exception e) {

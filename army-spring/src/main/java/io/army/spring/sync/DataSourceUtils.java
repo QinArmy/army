@@ -31,8 +31,14 @@ abstract class DataSourceUtils {
 
     static String putJdbcProperties(Environment env, Properties properties, final String tag, String role) {
 
-        final String url;
+        final String url, currentSchema;
         url = env.getRequiredProperty(String.format("spring.datasource.%s.%s.url", tag, role));
+
+        currentSchema = env.getProperty(String.format("spring.datasource.%s.%s.currentSchema", tag, role));
+
+        if (currentSchema != null) {
+            properties.put("currentSchema", currentSchema);
+        }
 
         properties.put("user", env.getRequiredProperty(String.format("spring.datasource.%s.%s.username", tag, role)));
         properties.put("password", env.getRequiredProperty(String.format("spring.datasource.%s.%s.password", tag, role)));

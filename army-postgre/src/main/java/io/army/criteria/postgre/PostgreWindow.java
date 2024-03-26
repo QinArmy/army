@@ -54,7 +54,9 @@ public interface PostgreWindow extends Window {
         //TODO postgre USING operator
     }
 
-    interface _OrderBySpec extends Statement._StaticOrderByClause<_OrderByCommaSpec>, _FrameExtentSpec {
+    interface _OrderBySpec extends Statement._StaticOrderByClause<_OrderByCommaSpec>,
+            Statement._DynamicOrderByClause<_FrameExtentSpec>,
+            _FrameExtentSpec {
         //TODO postgre USING operator
     }
 
