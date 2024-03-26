@@ -1548,6 +1548,7 @@ abstract class ArmyParser implements DialectParser {
         TabularItem tabularItem;
         String alias, cteName;
         _JoinType joinType;
+        SQLWords modifier;
         List<_Predicate> predicateList;
         final boolean tableOnlyModifier = this.tableOnlyModifier;
         for (int i = 0; i < blockSize; i++) {
@@ -1574,6 +1575,11 @@ abstract class ArmyParser implements DialectParser {
                         .append(_Constant.SPACE_AS_SPACE)
                         .append(context.safeTableAlias((TableMeta<?>) tabularItem, alias));
             } else if (tabularItem instanceof SubQuery) {
+                if (block instanceof _ModifierTabularBlock
+                        && (modifier = ((_ModifierTabularBlock) block).modifier()) != null) {
+                    assert modifier == SQLs.LATERAL;
+                    sqlBuilder.append(modifier.spaceRender());
+                }
                 this.handleSubQuery((SubQuery) tabularItem, context);
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                         .append(context.safeTableAlias(alias));

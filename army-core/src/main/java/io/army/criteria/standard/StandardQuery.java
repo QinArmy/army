@@ -323,7 +323,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 0.6.0
      */
-    interface _FromSpec<I extends Item> extends Statement._FromClause<_JoinSpec<I>, _AsClause<_JoinSpec<I>>>,
+    interface _FromSpec<I extends Item> extends Statement._FromModifierTabularClause<_JoinSpec<I>, _AsClause<_JoinSpec<I>>>,
             _FromCteClause<_JoinSpec<I>>,
             _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>>,
             _UnionSpec<I> {

@@ -60,7 +60,7 @@ abstract class ClauseUtils {
         return _Collections.unmodifiableList(list);
     }
 
-    static <T, C extends ArmyAcceptClause<T>> List<T> invokeConsumer(final C clause, final @Nullable Consumer<? super C> consumer) {
+    static <T, C extends ArmyAcceptClause<T>> List<T> invokeClauseConsumer(final C clause, final @Nullable Consumer<? super C> consumer) {
         if (consumer == null) {
             throw CriteriaUtils.consumerIsNull();
         }
@@ -75,6 +75,24 @@ abstract class ClauseUtils {
             throw ContextStack.clearStackAndError(e);
         }
     }
+
+
+    static <T> void invokeConsumer(final T data, final @Nullable Consumer<? super T> consumer) {
+        if (consumer == null) {
+            throw CriteriaUtils.consumerIsNull();
+        }
+        try {
+
+            consumer.accept(data);
+        } catch (CriteriaException e) {
+            throw ContextStack.clearStackAndCause(e, e.getMessage());
+        } catch (Exception e) {
+            throw ContextStack.clearStackAnd(CriteriaException::new, e);
+        } catch (Error e) {
+            throw ContextStack.clearStackAndError(e);
+        }
+    }
+
 
     static List<_Expression> invokeDynamicExpressionClause(final boolean required, final boolean nonNull,
                                                            final @Nullable Consumer<Consumer<Expression>> consumer) {
@@ -107,7 +125,7 @@ abstract class ClauseUtils {
     static List<String> staticStringClause(final boolean required, @Nullable Consumer<Clause._StaticStringSpaceClause> consumer) {
         final StaticStringClause clause;
         clause = new StaticStringClause(required);
-        return invokeConsumer(clause, consumer);
+        return invokeClauseConsumer(clause, consumer);
     }
 
 

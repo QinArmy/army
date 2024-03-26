@@ -160,62 +160,62 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     @Override
     public final _JoinSpec<I> from(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.NONE, this::fromNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.NONE, this::fromNestedEnd));
     }
 
     @Override
     public final _JoinSpec<I> crossJoin(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> leftJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> join(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> rightJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> fullJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
 
     @Override
     public final _JoinSpec<I> ifLeftJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifRightJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifFullJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifCrossJoin(Consumer<StandardCrosses> consumer) {
-        consumer.accept(StandardDynamicJoins.crossBuilder(this.context, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.crossBuilder(this.context, this.blockConsumer), consumer);
         return this;
     }
 
@@ -542,7 +542,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     } // SimpleSelect
-
 
 
     static class SimpleSubQuery<I extends Item> extends StandardQueries<I>

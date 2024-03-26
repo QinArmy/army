@@ -16,10 +16,7 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.DerivedTable;
-import io.army.criteria.Item;
-import io.army.criteria.Statement;
-import io.army.criteria.TabularItem;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
@@ -44,8 +41,8 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         StandardStatement._DynamicJoinSpec>
         implements StandardStatement._DynamicJoinSpec {
 
-    static StandardJoins joinBuilder(CriteriaContext context, _JoinType joinTyp
-            , Consumer<_TabularBlock> blockConsumer) {
+    static StandardJoins joinBuilder(CriteriaContext context, _JoinType joinTyp,
+                                     Consumer<_TabularBlock> blockConsumer) {
         return new StandardJoinBuilder(context, joinTyp, blockConsumer);
     }
 
@@ -55,62 +52,62 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
     private StandardDynamicJoins(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
-                                 TabularItem tabularItem, String alias) {
-        super(context, blockConsumer, joinType, null, tabularItem, alias);
+                                 @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
+        super(context, blockConsumer, joinType, modifier, tabularItem, alias);
     }
 
     @Override
     public final StandardStatement._DynamicJoinSpec crossJoin(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._DynamicJoinSpec>, StandardStatement._DynamicJoinSpec> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd));
     }
 
     @Override
     public final Statement._OnClause<StandardStatement._DynamicJoinSpec> leftJoin(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final Statement._OnClause<StandardStatement._DynamicJoinSpec> join(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final Statement._OnClause<StandardStatement._DynamicJoinSpec> rightJoin(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final Statement._OnClause<StandardStatement._DynamicJoinSpec> fullJoin(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
-        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
+        return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final StandardStatement._DynamicJoinSpec ifLeftJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final StandardStatement._DynamicJoinSpec ifJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final StandardStatement._DynamicJoinSpec ifRightJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final StandardStatement._DynamicJoinSpec ifFullJoin(Consumer<StandardJoins> consumer) {
-        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer), consumer);
         return this;
     }
 
     @Override
     public final StandardStatement._DynamicJoinSpec ifCrossJoin(Consumer<StandardCrosses> consumer) {
-        consumer.accept(StandardDynamicJoins.crossBuilder(this.context, this.blockConsumer));
+        ClauseUtils.invokeConsumer(StandardDynamicJoins.crossBuilder(this.context, this.blockConsumer), consumer);
         return this;
     }
 
@@ -120,7 +117,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                                                          TableMeta<?> table, String alias) {
 
         final StandardDynamicBlock block;
-        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -131,7 +128,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         return alias -> {
             final StandardDynamicBlock block;
-            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             return block;
         };
@@ -142,7 +139,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final Statement._OnClause<StandardStatement._DynamicJoinSpec> onJoinTable(
             _JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final StandardDynamicBlock block;
-        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -152,7 +149,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final StandardDynamicBlock block;
-            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             return block;
         };
@@ -169,18 +166,23 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
+    @Override
+    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
+    }
+
 
     private Statement._OnClause<StandardStatement._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
                                                                                   final _NestedItems nestedItems) {
         final StandardDynamicBlock block;
-        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, null, nestedItems, "");
         this.blockConsumer.accept(block);
         return block;
     }
 
     private StandardStatement._DynamicJoinSpec crossNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final StandardDynamicBlock block;
-        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, null, nestedItems, "");
         this.blockConsumer.accept(block);
         return block;
     }
@@ -189,12 +191,11 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class StandardDynamicBlock extends StandardDynamicJoins {
 
         private StandardDynamicBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
-                                     TabularItem table, String alias) {
-            super(context, blockConsumer, joinType, table, alias);
+                                     @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
+            super(context, blockConsumer, joinType, modifier, tabularItem, alias);
         }
 
-
-    }//StandardDynamicBlock
+    } // StandardDynamicBlock
 
 
     private static final class StandardJoinBuilder extends JoinableClause.DynamicBuilderSupport<
@@ -214,7 +215,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         public Statement._OnClause<StandardStatement._DynamicJoinSpec> space(
                 Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
             this.checkStart();
-            return function.apply(StandardNestedJoins.nestedJoin(this.context, this.joinType, this::nestedEnd));
+            return ClauseUtils.invokeFunction(function, StandardNestedJoins.nestedJoin(this.context, this.joinType, this::nestedEnd));
         }
 
 
@@ -222,7 +223,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         Statement._OnClause<StandardStatement._DynamicJoinSpec> onTable(
                 @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final StandardDynamicBlock block;
-            block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, modifier, table, tableAlias);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -232,7 +233,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardDynamicBlock block;
-                block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, alias);
+                block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 return block;
             };
@@ -245,12 +246,19 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         private Statement._OnClause<StandardStatement._DynamicJoinSpec> nestedEnd(_JoinType joinType, _NestedItems items) {
             final StandardDynamicBlock block;
-            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, items, "");
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, null, items, "");
             this.blockConsumer.accept(block);
             return block;
         }
 
-    }//StandardJoinBuilder
+
+        @Override
+        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+            return CriteriaUtils.isIllegalLateral(modifier);
+        }
+
+
+    } //StandardJoinBuilder
 
 
     private static final class StandardCrossesBuilder extends JoinableClause.DynamicBuilderSupport<
@@ -275,7 +283,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         StandardStatement._DynamicJoinSpec onTable(
                 @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final StandardDynamicBlock block;
-            block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, modifier, table, tableAlias);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -285,7 +293,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardDynamicBlock block;
-                block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, alias);
+                block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 return block;
             };
@@ -298,13 +306,18 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         private StandardStatement._DynamicJoinSpec nestedJoinEnd(_JoinType joinType, _NestedItems items) {
             final StandardDynamicBlock block;
-            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, items, "");
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, null, items, "");
             this.blockConsumer.accept(block);
             return block;
         }
 
+        @Override
+        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+            return CriteriaUtils.isIllegalLateral(modifier);
+        }
 
-    }//StandardCrossesBuilder
+
+    } // StandardCrossesBuilder
 
 
 }

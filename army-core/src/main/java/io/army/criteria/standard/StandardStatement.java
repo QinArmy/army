@@ -38,8 +38,8 @@ public interface StandardStatement extends Statement {
     }
 
 
-    interface _StandardJoinClause<FS extends Item, JS extends Item> extends _JoinClause<JS, _AsClause<JS>>,
-            _CrossJoinClause<FS, _AsClause<FS>>,
+    interface _StandardJoinClause<FS extends Item, JS extends Item> extends _JoinModifierTabularClause<JS, _AsClause<JS>>,
+            _CrossJoinModifierTabularClause<FS, _AsClause<FS>>,
             _JoinNestedClause<_NestedLeftParenSpec<JS>, JS>,
             _CrossJoinNestedClause<_NestedLeftParenSpec<FS>, FS>,
             _DynamicJoinClause<StandardJoins, FS>,
@@ -64,7 +64,7 @@ public interface StandardStatement extends Statement {
 
 
     interface _NestedLeftParenSpec<I extends Item>
-            extends _NestedLeftParenClause<_StandardNestedJoinClause<I>, _AsClause<_StandardNestedJoinClause<I>>>,
+            extends _NestedLeftParenModifierTabularClause<_StandardNestedJoinClause<I>, _AsClause<_StandardNestedJoinClause<I>>>,
             _LeftParenNestedClause<_NestedLeftParenSpec<_StandardNestedJoinClause<I>>, _StandardNestedJoinClause<I>> {
 
     }
