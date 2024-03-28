@@ -195,12 +195,11 @@ abstract class CriteriaContexts {
 
 
     /**
-     * <p>
-     * For Example , Postgre update/delete criteria context
+     * <p>For Example , Postgre update/delete criteria context
      */
-    static CriteriaContext primaryJoinableSingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
-        final PrimaryJoinableSingleDmlContext context;
-        context = new PrimaryJoinableSingleDmlContext(dialect);
+    static CriteriaContext primaryJoinableSingleDeleteContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+        final PrimaryJoinableSingleDeleteContext context;
+        context = new PrimaryJoinableSingleDeleteContext(dialect);
         if (spec != null) {
             final DispatcherContext dispatcherContext;
             dispatcherContext = (DispatcherContext) spec.getContext();
@@ -211,10 +210,33 @@ abstract class CriteriaContexts {
     }
 
     /**
+     * <p>For Example , Postgre update criteria context
+     */
+    static CriteriaContext primaryJoinableSingleUpdateContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+        final PrimaryJoinableSingleUpdateContext context;
+        context = new PrimaryJoinableSingleUpdateContext(dialect);
+        if (spec != null) {
+            final DispatcherContext dispatcherContext;
+            dispatcherContext = (DispatcherContext) spec.getContext();
+            migrateContext(context, dispatcherContext);
+            assertNonQueryContext(dispatcherContext);
+        }
+        return context;
+    }
+
+
+    /**
      * <p>For Example ,Postgre update/delete criteria context
      */
-    static CriteriaContext subJoinableSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
-        return new SubJoinableSingleDmlContext(dialect, outerContext);
+    static CriteriaContext subJoinableSingleUpdateContext(final Dialect dialect, final CriteriaContext outerContext) {
+        return new SubJoinableSingleUpdateContext(dialect, outerContext);
+    }
+
+    /**
+     * <p>For Example ,Postgre update/delete criteria context
+     */
+    static CriteriaContext subJoinableSingleDeleteContext(final Dialect dialect, final CriteriaContext outerContext) {
+        return new SubJoinableSingleDeleteContext(dialect, outerContext);
     }
 
     static CriteriaContext subSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
@@ -474,10 +496,10 @@ abstract class CriteriaContexts {
         return ContextStack.clearStackAnd(UnknownDerivedFieldException::new, m);
     }
 
-    private static CriteriaException nonDeferSelectClause() {
+    private static CriteriaException nonDeferCommandClause(String commandName) {
         String m;
-        m = String.format("%s.refField(String derivedAlias,String fieldName) isn't allowed in static SELECT clause",
-                SQLs.class.getName());
+        m = String.format("%s.refField(String derivedAlias,String fieldName) isn't allowed in static %s clause",
+                SQLs.class.getName(), commandName);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
@@ -928,7 +950,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void registerDeferSelectClause(Runnable deferSelectClause) {
+        public void registerDeferCommandClause(Runnable deferCommandClause) {
             // no bug,never here
             throw new UnsupportedOperationException();
         }
@@ -1421,6 +1443,7 @@ abstract class CriteriaContexts {
         public final DerivedField refField(final String derivedAlias, final String fieldName) {
             // here , perhaps from sub values context
             final Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
+            final boolean noFromClause;
             final Map<String, DerivedField> fieldMap;
 
             final DerivedField field;
@@ -1433,10 +1456,12 @@ abstract class CriteriaContexts {
                 field = createDerivedField(derivedAlias, fieldName);
             } else if (isInWithClause()) {
                 throw unknownDerivedField(derivedAlias, fieldName);
-            } else if (this.aliasToBlock == null
-                    && this instanceof SimpleQueryContext
-                    && ((SimpleQueryContext) this).deferSelectClause == null) { // after trigger ,if still null,then error
-                throw nonDeferSelectClause();
+            } else if ((noFromClause = this.aliasToBlock == null) && (this instanceof SimpleQueryContext
+                    && ((SimpleQueryContext) this).deferCommandClause == null)) {
+                throw nonDeferCommandClause("SELECT");
+            } else if (noFromClause && (this instanceof JoinableSingleDmlContext
+                    && ((JoinableSingleDmlContext) this).deferCommandClause == null)) {
+                throw nonDeferCommandClause("SET");
             } else if (this instanceof PrimaryContext) {
                 throw unknownDerivedField(derivedAlias, fieldName);
             } else {
@@ -1580,6 +1605,7 @@ abstract class CriteriaContexts {
         final DerivedField refOuterOrMoreOuterField(final String derivedAlias, final String fieldName) {
 
             final Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
+            final boolean noFromClause;
             final Map<String, DerivedField> fieldMap;
 
             final DerivedField field;
@@ -1590,10 +1616,12 @@ abstract class CriteriaContexts {
                 field = tempField;
             } else if (getDerived(derivedAlias) != null) { // here getDerived() trigger buffer derived table in current context
                 field = createDerivedField(derivedAlias, fieldName);
-            } else if (this.aliasToBlock == null
-                    && this instanceof SimpleQueryContext
-                    && ((SimpleQueryContext) this).deferSelectClause == null) { // after trigger ,if still null,then error
-                throw nonDeferSelectClause();
+            } else if ((noFromClause = this.aliasToBlock == null) && (this instanceof SimpleQueryContext
+                    && ((SimpleQueryContext) this).deferCommandClause == null)) {
+                throw nonDeferCommandClause("SELECT");
+            } else if (noFromClause && (this instanceof JoinableSingleDmlContext
+                    && ((JoinableSingleDmlContext) this).deferCommandClause == null)) {
+                throw nonDeferCommandClause("SET");
             } else if (this instanceof PrimaryContext) {
                 field = null;
             } else {
@@ -1637,8 +1665,8 @@ abstract class CriteriaContexts {
             this.flushBufferDerivedBlock();
 
             //3 end SimpleQueryContext ,possibly trigger defer SELECT clause.
-            if (this instanceof SimpleQueryContext) {
-                ((SimpleQueryContext) this).endQueryContext();
+            if (this instanceof JoinableDeferCommandContext) {
+                ((JoinableDeferCommandContext) this).endDeferCommand();
             }
 
             final Map<String, _TabularBlock> aliasToBlock;
@@ -2080,7 +2108,20 @@ abstract class CriteriaContexts {
         }
 
 
-    }//JoinableContext
+    } // JoinableContext
+
+    private static abstract class JoinableDeferCommandContext extends JoinableContext {
+
+
+        private JoinableDeferCommandContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
+        }
+
+
+        abstract void endDeferCommand();
+
+
+    } // JoinableDeferCommandContext
 
 
     static abstract class InsertContext extends StatementContext {
@@ -2581,11 +2622,13 @@ abstract class CriteriaContexts {
     }//PrimaryMultiDmlContext
 
 
-    private static abstract class JoinableSingleDmlContext extends JoinableContext {
+    private static abstract class JoinableSingleDmlContext extends JoinableDeferCommandContext {
 
         private TableMeta<?> targetTable;
 
         private String tableAlias;
+
+        private Runnable deferCommandClause;
 
         private JoinableSingleDmlContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
             super(dialect, outerContext);
@@ -2606,31 +2649,85 @@ abstract class CriteriaContexts {
             this.targetTable = table;
         }
 
+        @Override
+        public final void registerDeferCommandClause(final Runnable deferCommandClause) {
+            final Runnable command = this.deferCommandClause;
+            if (command == null) {
+                this.deferCommandClause = deferCommandClause;
+            } else {
+                // for multi dynamic SET clause
+                this.deferCommandClause = () -> {
+                    command.run();
+                    deferCommandClause.run();
+                };
+            }
+
+        }
+
+
+        @Override
+        final void endDeferCommand() {
+            final Runnable deferCommandClause = this.deferCommandClause;
+            if (deferCommandClause != null) {
+                this.deferCommandClause = null;
+                deferCommandClause.run();
+            }
+        }
+
 
     } //JoinableSingleDmlContext
 
 
-    private static final class PrimaryJoinableSingleDmlContext extends JoinableSingleDmlContext
+    private static abstract class JoinableSingleUpdateContext extends JoinableSingleDmlContext {
+
+        private JoinableSingleUpdateContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
+        }
+
+
+    } // JoinableSingleUpdateContext
+
+
+    private static final class PrimaryJoinableSingleUpdateContext extends JoinableSingleUpdateContext
             implements PrimaryContext {
 
-        private PrimaryJoinableSingleDmlContext(Dialect dialect) {
+        private PrimaryJoinableSingleUpdateContext(Dialect dialect) {
             super(dialect, null);
         }
 
-    }//PrimaryJoinableSingleDmlContext
+    } // PrimaryJoinableSingleUpdateContext
 
-    private static final class SubJoinableSingleDmlContext extends JoinableSingleDmlContext
+    private static final class SubJoinableSingleUpdateContext extends JoinableSingleUpdateContext
             implements SubContext {
 
-        private SubJoinableSingleDmlContext(Dialect dialect, CriteriaContext outerContext) {
+        private SubJoinableSingleUpdateContext(Dialect dialect, CriteriaContext outerContext) {
             super(dialect, outerContext);
             Objects.requireNonNull(outerContext);
         }
 
-    }//SubJoinableSingleDmlContext
+    } // SubJoinableSingleUpdateContext
+
+    private static final class PrimaryJoinableSingleDeleteContext extends JoinableSingleDmlContext
+            implements PrimaryContext {
+
+        private PrimaryJoinableSingleDeleteContext(Dialect dialect) {
+            super(dialect, null);
+        }
+
+    } // PrimaryJoinableSingleDmlContext
+
+    private static final class SubJoinableSingleDeleteContext extends JoinableSingleDmlContext
+            implements SubContext {
+
+        private SubJoinableSingleDeleteContext(Dialect dialect, CriteriaContext outerContext) {
+            super(dialect, outerContext);
+            Objects.requireNonNull(outerContext);
+        }
+
+    } //SubJoinableSingleDmlContext
 
 
-    private static abstract class SimpleQueryContext extends JoinableContext {
+    private static abstract class SimpleQueryContext extends JoinableDeferCommandContext {
 
         private final StatementContext leftContext;
 
@@ -2659,12 +2756,12 @@ abstract class CriteriaContexts {
 
         private Map<String, Boolean> refWindowNameMap;
 
-        private Runnable deferSelectClause;
+        private Runnable deferCommandClause;
 
         private Runnable selectClauseEndListener;
 
         /**
-         * @see #callDeferSelectClauseIfNeed()
+         * @see #callDeferCommandClauseIfNeed()
          */
         private boolean deferSelectClauseIng;
 
@@ -2714,11 +2811,11 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void registerDeferSelectClause(final Runnable deferSelectClause) {
-            if (this.deferSelectClause != null || this.selectItemList != null) {
+        public final void registerDeferCommandClause(final Runnable deferCommandClause) {
+            if (this.deferCommandClause != null || this.selectItemList != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            this.deferSelectClause = deferSelectClause;
+            this.deferCommandClause = deferCommandClause;
         }
 
 
@@ -2840,7 +2937,7 @@ abstract class CriteriaContexts {
 
             if (refSelectionMap == null) {
 
-                this.callDeferSelectClauseIfNeed();
+                this.callDeferCommandClauseIfNeed();
                 this.endSelectClauseIfNeed();
 
                 this.refSelectionMap = refSelectionMap = _Collections.hashMap();
@@ -2880,7 +2977,7 @@ abstract class CriteriaContexts {
 
             if (refSelectionMap == null) {
 
-                this.callDeferSelectClauseIfNeed();
+                this.callDeferCommandClauseIfNeed();
                 this.endSelectClauseIfNeed();
 
                 this.refSelectionMap = refSelectionMap = _Collections.hashMap();
@@ -3014,6 +3111,40 @@ abstract class CriteriaContexts {
         }
 
 
+        /**
+         * select statement end event handler.
+         * This method is triggered by {@link #onEndContext()}
+         */
+        @Override
+        final void endDeferCommand() {
+
+            // firstly
+            this.callDeferCommandClauseIfNeed();
+
+            //validate DerivedGroup list
+            final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
+            if (groupMap != null && groupMap.size() > 0) {
+                this.validTableGroup();
+            }
+
+            final Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
+            if (refWindowNameMap != null && refWindowNameMap.size() > 0) {
+                throw unknownWindows(refWindowNameMap);
+            }
+
+            this.endSelectClauseIfNeed();
+
+            final List<_SelectItem> selectItemList = this.selectItemList;
+            assert selectItemList != null && selectItemList.size() > 0;
+
+            this.selectionGroupMap = null;
+            this.refWindowNameMap = null;
+            this.windowNameMap = null;
+            this.deferCommandClause = null; // finally
+        }
+
+        /*-------------------below private methods -------------------*/
+
         private void onAddTable(final TableMeta<?> table, final String alias) {
             final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
 
@@ -3066,52 +3197,20 @@ abstract class CriteriaContexts {
 
 
         /**
-         * select statement end event handler.
-         * This method is triggered by {@link #onEndContext()}
-         */
-        private void endQueryContext() {
-
-            // firstly
-            this.callDeferSelectClauseIfNeed();
-
-            //validate DerivedGroup list
-            final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
-            if (groupMap != null && groupMap.size() > 0) {
-                this.validTableGroup();
-            }
-
-            final Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
-            if (refWindowNameMap != null && refWindowNameMap.size() > 0) {
-                throw unknownWindows(refWindowNameMap);
-            }
-
-            this.endSelectClauseIfNeed();
-
-            final List<_SelectItem> selectItemList = this.selectItemList;
-            assert selectItemList != null && selectItemList.size() > 0;
-
-            this.selectionGroupMap = null;
-            this.refWindowNameMap = null;
-            this.windowNameMap = null;
-            this.deferSelectClause = null; // finally
-        }
-
-
-        /**
          * <p>
          * This method is triggered by :
          * <ul>
          *     <li>{@link #refSelection(int)}</li>
          *     <li>{@link #refSelection(String)}</li>
-         *     <li>{@link #endQueryContext()}</li>
+         *     <li>{@link #endDeferCommand()}</li>
          * </ul>
          */
-        private void callDeferSelectClauseIfNeed() {
-            final Runnable deferSelectClause = this.deferSelectClause;
-            if (deferSelectClause != null && this.selectItemList == null) {
+        private void callDeferCommandClauseIfNeed() {
+            final Runnable deferCommandClause = this.deferCommandClause;
+            if (deferCommandClause != null && this.selectItemList == null) {
                 assert !this.deferSelectClauseIng;
                 this.deferSelectClauseIng = true;
-                deferSelectClause.run();
+                deferCommandClause.run();
                 this.deferSelectClauseIng = false;
                 if (this.selectItemList == null) {
                     throw ContextStack.criteriaError(this, _Exceptions::selectListIsEmpty);
@@ -3121,7 +3220,7 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @see #endQueryContext()
+         * @see #endDeferCommand()
          * @see #refSelection(String)
          * @see #onAddBlock(_TabularBlock)
          * @see #addTableBlock(_TabularBlock)
@@ -3130,7 +3229,7 @@ abstract class CriteriaContexts {
         private void endSelectClauseIfNeed() {
             final List<_SelectItem> selectItemList = this.selectItemList;
             if ((selectItemList != null && !(selectItemList instanceof ArrayList))
-                    || (selectItemList == null && this.deferSelectClause != null)
+                    || (selectItemList == null && this.deferCommandClause != null)
                     || this.deferSelectClauseIng) {
                 // have ended or defer select clause not run
                 return;
@@ -3181,7 +3280,7 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see #endQueryContext()
+         * @see #endDeferCommand()
          */
         private void validTableGroup() {
             final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
@@ -4151,7 +4250,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             // this is  DispatcherContext , so in static SELECT clause
-            throw nonDeferSelectClause();
+            throw nonDeferCommandClause("SELECT");
         }
 
         @Override

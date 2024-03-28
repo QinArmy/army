@@ -36,8 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.*;
 import java.time.*;
 import java.util.Base64;
@@ -171,12 +174,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
         final PGobject pgObject;
 
         if (!(dataType instanceof SQLType)) {
-            pgObject = new PGobject();
-
-            pgObject.setType(dataType.typeName().toLowerCase(Locale.ROOT));
-            pgObject.setValue((String) value);
-
-            stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
+            stmt.setObject(indexBasedOne, createPgObject(type, dataType, value));
         } else if (!(dataType instanceof PostgreType)) {
             throw mapMethodError(type, dataType);
         } else switch ((PostgreType) dataType) {
@@ -215,6 +213,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
             break;
 
+            case JSON:
+            case JSONB:
+
             case ACLITEM:
             case INTERVAL:
 
@@ -251,17 +252,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case PG_LSN:
             case PG_SNAPSHOT:
 
-            case JSONPATH: {
-                if (!(value instanceof String)) {
-                    throw beforeBindMethodError(type, dataType, value);
-                }
-                pgObject = new PGobject();
-                pgObject.setType(dataType.typeName().toLowerCase(Locale.ROOT));
-                pgObject.setValue((String) value);
-
-                stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
-            }
-            break;
+            case JSONPATH:
+                stmt.setObject(indexBasedOne, createPgObject(type, dataType, value));
+                break;
             default:
                 bindArmyType(stmt, indexBasedOne, type, dataType, ((PostgreType) dataType).armyType(), value);
 
@@ -555,6 +548,40 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
 
     /*-------------------below private static  -------------------*/
+
+    /**
+     * @see #bind(PreparedStatement, int, MappingType, DataType, Object)
+     */
+    private PGobject createPgObject(final MappingType type, final DataType dataType, final Object value) throws SQLException {
+        final String v;
+        if (value instanceof String) {
+            v = (String) value;
+        } else if (value instanceof Reader) {
+            try (Reader reader = (Reader) value) {
+                final char[] buffer = new char[2048];
+                final StringBuilder builder = new StringBuilder();
+                for (int length; (length = reader.read(buffer)) > 0; ) {
+                    builder.append(buffer, 0, length);
+                }
+                v = builder.toString();
+            } catch (Exception e) {
+                throw handleException(e);
+            }
+        } else if (value instanceof Path) {
+            try {
+                v = new String(Files.readAllBytes((Path) value), StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                throw handleException(e);
+            }
+        } else {
+            throw beforeBindMethodError(type, dataType, value);
+        }
+        final PGobject pgObject = new PGobject();
+        pgObject.setType(dataType.typeName().toLowerCase(Locale.ROOT));
+        pgObject.setValue(v);
+
+        return pgObject;
+    }
 
     private static void appendCursorDirection(final StringBuilder builder, Direction direction, @Nullable Long rowCount) {
         switch (direction) {

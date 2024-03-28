@@ -138,8 +138,11 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
     }
 
     @Override
-    public final _SingleFromSpec<I, Q> sets(Consumer<UpdateStatement._BatchRowPairs<FieldMeta<T>>> consumer) {
-        consumer.accept(CriteriaSupports.batchRowPairs(this::onAddItemPair));
+    public final _SingleFromSpec<I, Q> sets(final @Nullable Consumer<UpdateStatement._BatchRowPairs<FieldMeta<T>>> consumer) {
+        if (consumer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        this.context.registerDeferCommandClause(() -> ClauseUtils.invokeConsumer(CriteriaSupports.batchRowPairs(this::onAddItemPair), consumer));
         return this;
     }
 
@@ -947,7 +950,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
         private PrimarySimpleUpdateClause() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
+            super(null, CriteriaContexts.primaryJoinableSingleUpdateContext(PostgreUtils.DIALECT, null));
         }
 
         @Override
@@ -963,7 +966,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
             _BatchReturningUpdateParamSpec> {
 
         private PrimaryBatchUpdateClause() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
+            super(null, CriteriaContexts.primaryJoinableSingleUpdateContext(PostgreUtils.DIALECT, null));
         }
 
         @Override
@@ -979,7 +982,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         private final Function<SubStatement, I> function;
 
         private SubSimpleUpdateClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(null, CriteriaContexts.subJoinableSingleDmlContext(PostgreUtils.DIALECT, outerContext));
+            super(null, CriteriaContexts.subJoinableSingleUpdateContext(PostgreUtils.DIALECT, outerContext));
             this.function = function;
         }
 

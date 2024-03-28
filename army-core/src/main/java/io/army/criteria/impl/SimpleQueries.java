@@ -230,41 +230,41 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
     @Override
     public final SD select(final Consumer<_DeferSelectSpaceClause> consumer) {
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
     @Override
     public final SD selects(final Consumer<SelectionConsumer> consumer) {
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
     @Override
     public final SD select(W modifier, final Consumer<_DeferSelectSpaceClause> consumer) {
         this.modifierList = this.asSingleModifier(modifier);
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
     @Override
     public final SD selects(W modifier, final Consumer<SelectionConsumer> consumer) {
         this.modifierList = this.asSingleModifier(modifier);
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
     @Override
     public final SD select(List<W> modifiers, final Consumer<_DeferSelectSpaceClause> consumer) {
         this.modifierList = this.asModifierList(modifiers);
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
     @Override
     public final SD selects(List<W> modifierList, final Consumer<SelectionConsumer> consumer) {
         this.modifierList = this.asModifierList(modifierList);
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
@@ -272,7 +272,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final SD select(Supplier<List<Hint>> hints, List<W> modifiers, final Consumer<_DeferSelectSpaceClause> consumer) {
         this.hintList = this.asHintList(hints.get());
         this.modifierList = this.asModifierList(modifiers);
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
@@ -280,7 +280,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<SelectionConsumer> consumer) {
         this.hintList = this.asHintList(hints.get());
         this.modifierList = this.asModifierList(modifiers);
-        this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+        this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
         return (SD) this;
     }
 
@@ -1420,14 +1420,14 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         @Override
         public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer) {
             this.registerDistinctOn(true, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
         @Override
         public final SD selectIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer) {
             this.registerDistinctOn(false, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
@@ -1435,7 +1435,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         public final SD select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer,
                                Consumer<_DeferSelectSpaceClause> consumer) {
             this.registerDistinctOn(true, distinct, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
@@ -1443,21 +1443,21 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         public final SD selectIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on,
                                  Consumer<Consumer<Expression>> expConsumer, final Consumer<_DeferSelectSpaceClause> consumer) {
             this.registerDistinctOn(false, distinct, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
         @Override
         public final SD selectsDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
             this.registerDistinctOn(true, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
         @Override
         public final SD selectsIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
             this.registerDistinctOn(false, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
@@ -1466,7 +1466,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         public final SD selects(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer,
                                 Consumer<SelectionConsumer> consumer) {
             this.registerDistinctOn(true, distinct, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
@@ -1475,7 +1475,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         public final SD selectsIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on,
                                   Consumer<Consumer<Expression>> expConsumer, final Consumer<SelectionConsumer> consumer) {
             this.registerDistinctOn(false, distinct, expConsumer);
-            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            this.context.registerDeferCommandClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 

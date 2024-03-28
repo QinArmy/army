@@ -413,7 +413,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
             micro = (costNano % 1000_000L) / 1000L;
             nano = costNano % 1000L;
 
-            builder.append("\nsql parsing cost ")
+            builder.append("\n\nsql parsing cost ")
                     .append(millis)
                     .append(" millis ")
                     .append(micro)
@@ -457,7 +457,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
         this.factory.dialectParser.printStmt(stmt, sqlLogMode.beautify, builder::append);
 
 
-        builder.append("\nsql execution cost ")
+        builder.append("\n\nsql execution cost ")
                 .append(millis)
                 .append(" millis ")
                 .append(micro)

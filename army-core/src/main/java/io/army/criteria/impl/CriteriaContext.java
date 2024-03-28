@@ -97,7 +97,7 @@ interface CriteriaContext {
 
     void addSelectClauseEndListener(Runnable listener);
 
-    void registerDeferSelectClause(Runnable deferSelectClause);
+    void registerDeferCommandClause(Runnable deferCommandClause);
 
 
     /**

@@ -378,17 +378,17 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     final void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
 
+        this.onBeforeContextEnd();
+        this.tableBlockList = ContextStack.pop(this.context);
+
         final List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null || itemPairList.size() == 0) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::setClauseNotExists);
+            throw ContextStack.clearStackAnd(_Exceptions::setClauseNotExists);
         }
         this.itemPairList = Collections.unmodifiableList(itemPairList);
         if (this.endWhereClauseIfNeed().size() == 0) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
+            throw ContextStack.clearStackAnd(_Exceptions::dmlNoWhereClause);
         }
-
-        this.onBeforeContextEnd();
-        this.tableBlockList = ContextStack.pop(this.context);
 
         this.prepared = Boolean.TRUE;
     }
