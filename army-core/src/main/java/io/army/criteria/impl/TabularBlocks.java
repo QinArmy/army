@@ -191,7 +191,7 @@ abstract class TabularBlocks {
 
     static abstract class FromClauseDerivedBlock extends FromClauseBlock {
 
-         final String alias;
+        final String alias;
 
         FromClauseDerivedBlock(_JoinType joinType, DerivedTable table, String alias) {
             super(joinType, table);
@@ -340,10 +340,14 @@ abstract class TabularBlocks {
 
         @Override
         public final R on(Consumer<Consumer<IPredicate>> consumer) {
-            consumer.accept(this::addPredicate);
-            if (this.predicateList == null) {
+            final Consumer<IPredicate> func = this::addPredicate;
+            ClauseUtils.invokeConsumer(func, consumer);
+
+            final List<_Predicate> list = this.predicateList;
+            if (list == null) {
                 throw ContextStack.criteriaError(this.getContext(), _Exceptions::predicateListIsEmpty);
             }
+            this.predicateList = _Collections.unmodifiableList(list);
             return this.clause;
         }
 

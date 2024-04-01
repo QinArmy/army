@@ -496,10 +496,10 @@ abstract class CriteriaContexts {
         return ContextStack.clearStackAnd(UnknownDerivedFieldException::new, m);
     }
 
-    private static CriteriaException nonDeferCommandClause(String commandName) {
+    private static CriteriaException nonDeferCommandClause(final Dialect dialect, String commandName) {
         String m;
-        m = String.format("%s.refField(String derivedAlias,String fieldName) isn't allowed in static %s clause",
-                SQLs.class.getName(), commandName);
+        m = String.format("%s.refField(String derivedAlias,String fieldName) isn't allowed in static %s clause for %s",
+                SQLs.class.getName(), commandName, dialect);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
@@ -1458,10 +1458,10 @@ abstract class CriteriaContexts {
                 throw unknownDerivedField(derivedAlias, fieldName);
             } else if ((noFromClause = this.aliasToBlock == null) && (this instanceof SimpleQueryContext
                     && ((SimpleQueryContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause("SELECT");
+                throw nonDeferCommandClause(this.dialect, "SELECT");
             } else if (noFromClause && (this instanceof JoinableSingleDmlContext
                     && ((JoinableSingleDmlContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause("SET");
+                throw nonDeferCommandClause(this.dialect, "SET");
             } else if (this instanceof PrimaryContext) {
                 throw unknownDerivedField(derivedAlias, fieldName);
             } else {
@@ -1618,10 +1618,10 @@ abstract class CriteriaContexts {
                 field = createDerivedField(derivedAlias, fieldName);
             } else if ((noFromClause = this.aliasToBlock == null) && (this instanceof SimpleQueryContext
                     && ((SimpleQueryContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause("SELECT");
+                throw nonDeferCommandClause(this.dialect, "SELECT");
             } else if (noFromClause && (this instanceof JoinableSingleDmlContext
                     && ((JoinableSingleDmlContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause("SET");
+                throw nonDeferCommandClause(this.dialect, "SET");
             } else if (this instanceof PrimaryContext) {
                 field = null;
             } else {
@@ -4250,7 +4250,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             // this is  DispatcherContext , so in static SELECT clause
-            throw nonDeferCommandClause("SELECT");
+            throw nonDeferCommandClause(this.dialect, "SELECT");
         }
 
         @Override

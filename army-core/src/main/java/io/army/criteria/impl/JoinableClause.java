@@ -18,7 +18,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -70,7 +69,6 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     /**
      * <p>
      * private constructor
-     *
      */
     private JoinableClause(CriteriaContext context, Consumer<_TabularBlock> blockConsumer) {
         super(context);
@@ -81,7 +79,6 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     /**
      * <p>
      * package constructor for {@link  Statement}
-     *
      */
     JoinableClause(CriteriaContext context) {
         super(context);
@@ -1030,9 +1027,14 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         @Override
         public final OR on(Consumer<Consumer<IPredicate>> consumer) {
-            final List<IPredicate> list = _Collections.arrayList();
-            consumer.accept(list::add);
-            this.onPredicateList = CriteriaUtils.asPredicateList(this.context, list);
+            final Consumer<IPredicate> func = this::addPredicate;
+            ClauseUtils.invokeConsumer(func, consumer);
+
+            final List<_Predicate> list = this.onPredicateList;
+            if (list == null) {
+                throw ContextStack.criteriaError(this.getContext(), _Exceptions::predicateListIsEmpty);
+            }
+            this.onPredicateList = _Collections.unmodifiableList(list);
             return (OR) this;
         }
 
@@ -1066,10 +1068,15 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
             return list;
         }
 
-
-        @Override
-        final Dialect statementDialect() {
-            throw ContextStack.clearStackAndCastCriteriaApi();
+        private void addPredicate(final IPredicate predicate) {
+            List<_Predicate> predicateList = this.onPredicateList;
+            if (predicateList == null) {
+                predicateList = _Collections.arrayList();
+                this.onPredicateList = predicateList;
+            } else if (!(predicateList instanceof ArrayList)) {
+                throw ContextStack.clearStackAndCastCriteriaApi();
+            }
+            predicateList.add((OperationPredicate) predicate);
         }
 
 
