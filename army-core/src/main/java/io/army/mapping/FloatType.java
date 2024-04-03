@@ -25,6 +25,7 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLiteType;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * <p>
@@ -122,6 +123,12 @@ public final class FloatType extends _NumericType._FloatNumericType {
         } else if (source instanceof BigDecimal) {
             try {
                 value = Float.parseFloat(((BigDecimal) source).toPlainString());
+            } catch (NumberFormatException e) {
+                throw errorHandler.apply(type, dataType, source, e);
+            }
+        } else if (source instanceof BigInteger) {
+            try {
+                value = Float.parseFloat(source.toString());
             } catch (NumberFormatException e) {
                 throw errorHandler.apply(type, dataType, source, e);
             }

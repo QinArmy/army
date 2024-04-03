@@ -144,7 +144,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
                     type = BigIntegerType.INSTANCE;
                 } else if (targetType == Float.class) {
                     type = FloatType.INSTANCE;
-                } else if (targetType == DoubleType.class) {
+                } else if (targetType == Double.class) {
                     type = DoubleType.INSTANCE;
                 } else if (targetType == YearMonth.class) {    // for example :  https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-add
                     switch (armyType) {
