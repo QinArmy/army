@@ -522,11 +522,7 @@ abstract class Functions {
     }
 
     /**
-     * <p>The {@link MappingType} of function return type:
-     * <ul>
-     *     <li>If the {@link MappingType} of exp is number type,then {@link MappingType} of exp</li>
-     *     <li>Else {@link BigDecimalType}</li>
-     * </ul>
+     * <p>The {@link MappingType} of function return type: {@link BigDecimalType}
      *
      * @param x non-null, one of following :
      *          <ul>
@@ -537,9 +533,7 @@ abstract class Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( numeric ) → numeric</a>
      */
     public static SimpleExpression round(final Object x) {
-        final Expression expression;
-        expression = SQLs._nonNullLiteral(x);
-        return LiteralFunctions.oneArgFunc("ROUND", expression, _returnType(expression, Functions::_numberOrDecimal));
+        return LiteralFunctions.oneArgFunc("ROUND", x, BigDecimalType.INSTANCE);
     }
 
     /**
