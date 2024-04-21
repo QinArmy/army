@@ -29,15 +29,6 @@ import io.army.session.StmtOption;
 public abstract class MySQLs extends MySQLSyntax {
 
     /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
-     */
-    public static final SQLs.VarScope PERSIST = SqlWords.KeyWordVarScope.PERSIST;
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
-     */
-    public static final SQLs.VarScope PERSIST_ONLY = SqlWords.KeyWordVarScope.PERSIST_ONLY;
-
-    /**
      * private constructor
      */
     private MySQLs() {
@@ -59,6 +50,16 @@ public abstract class MySQLs extends MySQLSyntax {
     public static final Modifier IGNORE = MySQLWords.MySQLModifier.IGNORE;
     public static final Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
     public static final Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final SQLs.VarScope PERSIST = SqlWords.KeyWordVarScope.PERSIST;
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>
+     */
+    public static final SQLs.VarScope PERSIST_ONLY = SqlWords.KeyWordVarScope.PERSIST_ONLY;
+
 
 
     /**

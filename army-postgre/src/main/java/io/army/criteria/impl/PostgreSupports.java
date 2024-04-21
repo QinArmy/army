@@ -788,7 +788,7 @@ abstract class PostgreSupports extends CriteriaSupports {
                    @Nullable SQLs.WordMaterialized modifier, SubStatement subStatement,
                    final @Nullable _SearchClause searchClause, final @Nullable _CycleClause cycleClause) {
             this.name = name;
-            this.columnAliasList = _Collections.safeUnmodifiableList(columnAliasList);
+            this.columnAliasList = _Collections.safeList(columnAliasList);
             this.modifier = modifier;
             this.subStatement = subStatement;
 

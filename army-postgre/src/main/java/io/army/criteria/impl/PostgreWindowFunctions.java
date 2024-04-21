@@ -480,7 +480,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc avg(@Nullable SQLs.ArgDistinct modifier, Expression any) {
-        return PostgreFunctionUtils.oneArgAggFunc("avg", modifier, any, null, _returnType(any, PostgreWindowFunctions::_avgType));
+        return PostgreFunctionUtils.oneArgAggFunc("avg", modifier, any, null, _returnType(any, Functions::_avgType));
     }
 
     /**
@@ -506,7 +506,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc avg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return PostgreFunctionUtils.oneArgAggFunc("avg", null, any, consumer, _returnType(any, PostgreWindowFunctions::_avgType));
+        return PostgreFunctionUtils.oneArgAggFunc("avg", null, any, consumer, _returnType(any, Functions::_avgType));
     }
 
     /**
@@ -532,7 +532,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc avg(@Nullable SQLs.ArgDistinct modifier, Expression any,
                                  Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return PostgreFunctionUtils.oneArgAggFunc("avg", modifier, any, consumer, _returnType(any, PostgreWindowFunctions::_avgType));
+        return PostgreFunctionUtils.oneArgAggFunc("avg", modifier, any, consumer, _returnType(any, Functions::_avgType));
     }
 
 
@@ -557,7 +557,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _AggWindowFunc avg(Expression exp) {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("avg", exp, _returnType(exp, PostgreWindowFunctions::_avgType));
+        return PostgreFunctionUtils.oneArgAggWindowFunc("avg", exp, _returnType(exp, Functions::_avgType));
     }
 
 
@@ -2915,22 +2915,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     }
 
 
-    /**
-     * @see #avg(Expression)
-     */
-    private static MappingType _avgType(final MappingType type) {
-        final MappingType returnType;
-        if (type instanceof MappingType.SqlIntegerType || type instanceof MappingType.SqlDecimalType) {
-            returnType = BigDecimalType.INSTANCE;
-        } else if (type instanceof MappingType.SqlFloatType) {
-            returnType = DoubleType.INSTANCE;
-        } else if (type instanceof MappingType.SqlIntervalType) {
-            returnType = IntervalType.TEXT;
-        } else {
-            returnType = TextType.INSTANCE;
-        }
-        return returnType;
-    }
 
     /**
      * @see #bitAnd(Expression)

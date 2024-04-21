@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
+import io.army.mapping.optional.IntervalType;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
@@ -522,7 +523,7 @@ abstract class Functions {
     }
 
     /**
-     * <p>The {@link MappingType} of function return type: {@link BigDecimalType}
+     * <p>The {@link MappingType} of function return type: {@link BigDecimalType} .
      *
      * @param x non-null, one of following :
      *          <ul>
@@ -1083,18 +1084,30 @@ abstract class Functions {
     }
 
     /**
-     * <p>The {@link MappingType} of function return type: {@link DoubleType}
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>sql float type : {@link DoubleType}</li>
+     *     <li>sql integer/decimal type : {@link BigDecimalType}</li>
+     *     <li>sql interval : {@link IntervalType}</li>
+     *     <li>else : {@link TextType}</li>
+     * </ul>
      *
      * @param expr non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr)</a>
      */
     public static SimpleExpression avg(Expression expr) {
-        return LiteralFunctions.oneArgFunc("AVG", expr, DoubleType.INSTANCE);
+        return LiteralFunctions.oneArgFunc("AVG", expr, _returnType(expr, Functions::_avgType));
     }
 
 
     /**
-     * <p>The {@link MappingType} of function return type: {@link DoubleType}
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>sql float type : {@link DoubleType}</li>
+     *     <li>sql integer/decimal type : {@link BigDecimalType}</li>
+     *     <li>sql interval : {@link IntervalType}</li>
+     *     <li>else : {@link TextType}</li>
+     * </ul>
      *
      * @param distinct see {@link SQLs#DISTINCT}
      * @param expr     non-null
@@ -1102,7 +1115,7 @@ abstract class Functions {
      */
     public static SimpleExpression avg(SQLs.ArgDistinct distinct, Expression expr) {
         FuncExpUtils.assertDistinct(distinct, SQLs.DISTINCT);
-        return LiteralFunctions.compositeFunc("AVG", Arrays.asList(distinct, expr), DoubleType.INSTANCE);
+        return LiteralFunctions.compositeFunc("AVG", Arrays.asList(distinct, expr), _returnType(expr, Functions::_avgType));
     }
 
     /**
@@ -1514,6 +1527,24 @@ abstract class Functions {
     @Deprecated
     static TypeMeta _numericOrDecimal(final Expression exp) {
         throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * @see #avg(Expression)
+     */
+    static MappingType _avgType(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof MappingType.SqlIntegerType || type instanceof MappingType.SqlDecimalType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else if (type instanceof MappingType.SqlFloatType) {
+            returnType = DoubleType.INSTANCE;
+        } else if (type instanceof MappingType.SqlIntervalType) {
+            returnType = IntervalType.TEXT;
+        } else {
+            returnType = TextType.INSTANCE;
+        }
+        return returnType;
     }
 
 

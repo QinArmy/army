@@ -6,6 +6,7 @@ import io.army.criteria.Support;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.standard.SQLFunction;
 import io.army.mapping.*;
+import io.army.mapping.optional.IntervalType;
 
 import java.util.Arrays;
 
@@ -388,19 +389,31 @@ public abstract class Windows {
     }
 
     /**
-     * <p>The {@link MappingType} of function return type: {@link DoubleType}
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>sql float type : {@link DoubleType}</li>
+     *     <li>sql integer/decimal type : {@link BigDecimalType}</li>
+     *     <li>sql interval : {@link IntervalType}</li>
+     *     <li>else : {@link TextType}</li>
+     * </ul>
      *
      * @param expr non-null
      * @throws io.army.criteria.CriteriaException throw when not in statement context
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
     public static _WindowAggSpec avg(Expression expr) {
-        return WindowFunctions.oneArgWindowAggFunc("AVG", expr, DoubleType.INSTANCE);
+        return WindowFunctions.oneArgWindowAggFunc("AVG", expr, Functions._returnType(expr, Functions::_avgType));
     }
 
 
     /**
-     * <p>The {@link MappingType} of function return type: {@link DoubleType}
+     * <p>The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>sql float type : {@link DoubleType}</li>
+     *     <li>sql integer/decimal type : {@link BigDecimalType}</li>
+     *     <li>sql interval : {@link IntervalType}</li>
+     *     <li>else : {@link TextType}</li>
+     * </ul>
      *
      * @param distinct see {@link SQLs#DISTINCT}
      * @param expr     non-null
@@ -413,7 +426,7 @@ public abstract class Windows {
      */
     public static _WindowAggSpec avg(SQLs.ArgDistinct distinct, Expression expr) {
         FuncExpUtils.assertDistinct(distinct, SQLs.DISTINCT);
-        return WindowFunctions.compositeWindowAggFunc("AVG", Arrays.asList(distinct, expr), DoubleType.INSTANCE);
+        return WindowFunctions.compositeWindowAggFunc("AVG", Arrays.asList(distinct, expr), Functions._returnType(expr, Functions::_avgType));
     }
 
     /**
