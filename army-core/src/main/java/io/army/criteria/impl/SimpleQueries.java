@@ -1378,7 +1378,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     } // QueryUnionClause
 
 
-    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
+    public static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
             extends SimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
             implements _SelectDistinctOnDispatcher<W, SR, SD>,
             _Query._DistinctOnClauseSpec {
@@ -1387,7 +1387,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
 
         private boolean registered;
 
-        WithCteDistinctOnSimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
+        protected WithCteDistinctOnSimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
             super(withSpec, context);
         }
 
@@ -1600,7 +1600,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
 
         private boolean clauseEnd;
 
-        LockClauseBlock() {
+        protected LockClauseBlock() {
         }
 
         @Override

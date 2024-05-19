@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.BatchReturningUpdate;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.dialect.Returnings;
+import io.army.criteria.impl.CriteriaContext;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._PostgreUpdate;
 import io.army.criteria.standard.SQLs;
