@@ -18,8 +18,6 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParser;
-import io.army.dialect.DialectParserFactory;
 import io.army.util.ClassUtils;
 
 public abstract class _MySQLParserFactory extends DialectParserFactory {

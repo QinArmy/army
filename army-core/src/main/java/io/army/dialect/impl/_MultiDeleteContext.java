@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect.impl;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
-import io.army.dialect.PostgreDialect;
+/**
+ * @since 0.6.0
+ */
+public interface _MultiDeleteContext extends _DeleteContext, _MultiTableStmtContext {
 
-public abstract class _PostgreDialects extends DialectParserFactory {
-
-    private _PostgreDialects() {
-        throw new UnsupportedOperationException();
-    }
-
-
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
-    }
-
+    String parentAlias(String childAlias);
 
 }

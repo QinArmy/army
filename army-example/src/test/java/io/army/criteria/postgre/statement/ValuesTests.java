@@ -7,7 +7,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.postgre.PostgreValues;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect.postgre.PostgreDialect;
+import io.army.dialect.PostgreDialect;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.util.Decimals;
 import org.slf4j.Logger;

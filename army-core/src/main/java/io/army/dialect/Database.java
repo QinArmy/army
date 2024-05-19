@@ -20,7 +20,6 @@ package io.army.dialect;
 import io.army.dialect.h2.H2Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.oracle.OracleDialect;
-import io.army.dialect.postgre.PostgreDialect;
 import io.army.dialect.sqlite.SQLiteDialect;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
@@ -75,27 +74,14 @@ public enum Database {
     }
 
     public static Dialect from(final ServerMeta meta) {
-        final Dialect dialect;
-        switch (meta.serverDatabase()) {
-            case MySQL:
-                dialect = MySQLDialect.from(meta);
-                break;
-            case PostgreSQL:
-                dialect = PostgreDialect.from(meta);
-                break;
-            case SQLite:
-                dialect = SQLiteDialect.from(meta);
-                break;
-            case Oracle:
-                dialect = OracleDialect.from(meta);
-                break;
-            case H2:
-                dialect = H2Dialect.from(meta);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(meta.serverDatabase());
-        }
-        return dialect;
+        return switch (meta.serverDatabase()) {
+            case MySQL -> MySQLDialect.from(meta);
+            case PostgreSQL -> PostgreDialect.from(meta);
+            case SQLite -> SQLiteDialect.from(meta);
+            case Oracle -> OracleDialect.from(meta);
+            case H2 -> H2Dialect.from(meta);
+            default -> throw _Exceptions.unexpectedEnum(meta.serverDatabase());
+        };
     }
 
     public static Database mapToDatabase(final String productFamily, final @Nullable Function<String, Database> func) {

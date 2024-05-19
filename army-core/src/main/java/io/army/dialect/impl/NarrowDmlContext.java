@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
-
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
-import io.army.dialect.PostgreDialect;
-
-public abstract class _PostgreDialects extends DialectParserFactory {
-
-    private _PostgreDialects() {
-        throw new UnsupportedOperationException();
-    }
+package io.army.dialect.impl;
 
 
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
-    }
+/**
+ * <p>
+ * Packet interface,this interface is base interface of below:
+ * <ul>
+ *     <li>{@link _UpdateContext}</li>
+ *     <li>{@link _DeleteContext}</li>
+ * </ul>
+ *
+ * @since 0.6.0
+ */
+interface NarrowDmlContext extends _DmlContext, BatchSpecContext {
 
 
 }

@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
-
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
-import io.army.dialect.PostgreDialect;
-
-public abstract class _PostgreDialects extends DialectParserFactory {
-
-    private _PostgreDialects() {
-        throw new UnsupportedOperationException();
-    }
+package io.army.dialect.impl;
 
 
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
-    }
+import javax.annotation.Nullable;
+
+/**
+ * <p>
+ * This interface is base interface of below:
+ *     <ul>
+ *         <li>{@link _SingleUpdateContext}</li>
+ *         <li>{@link _MultiUpdateContext}</li>
+ *     </ul>
+*/
+public interface _UpdateContext extends _SqlContext, NarrowDmlContext, _DmlContext._ConditionFieldsSpec,
+        _SetClauseContext {
+
+    @Nullable
+    @Override
+    _UpdateContext parentContext();
 
 
 }

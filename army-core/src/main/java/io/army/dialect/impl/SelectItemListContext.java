@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect.impl;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
-import io.army.dialect.PostgreDialect;
+import io.army.criteria.impl.inner._SelectItem;
 
-public abstract class _PostgreDialects extends DialectParserFactory {
+import java.util.List;
 
-    private _PostgreDialects() {
-        throw new UnsupportedOperationException();
-    }
+/**
+ * <p>
+ * This interface is base interface(class) of below:
+ *     <ul>
+ *         <li>{@link _SimpleQueryContext}</li>
+ *         <li>{@link ParensSelectContext}</li>
+ *     </ul>
+ * * <p>
+ *     Package interface
+ * * @since 0.6.0
+ */
+interface SelectItemListContext extends _SqlContext {
 
-
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
-    }
-
+    List<? extends _SelectItem> selectItemList();
 
 }

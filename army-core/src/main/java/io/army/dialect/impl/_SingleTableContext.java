@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect.impl;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
-import io.army.dialect.PostgreDialect;
+import io.army.meta.TableMeta;
 
-public abstract class _PostgreDialects extends DialectParserFactory {
+interface _SingleTableContext extends _StmtContext {
 
-    private _PostgreDialects() {
-        throw new UnsupportedOperationException();
-    }
+    TableMeta<?> targetTable();
 
+    TableMeta<?> domainTable();
 
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
-    }
+    String targetTableAlias();
+
+    String safeTargetTableAlias();
 
 
 }

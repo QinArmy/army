@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect.impl;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
-import io.army.dialect.PostgreDialect;
+import io.army.criteria.SqlField;
+import io.army.meta.SingleTableMeta;
 
-public abstract class _PostgreDialects extends DialectParserFactory {
-
-    private _PostgreDialects() {
-        throw new UnsupportedOperationException();
-    }
+public interface _MultiUpdateContext extends _UpdateContext, _MultiTableStmtContext, _SetClauseContext {
 
 
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
-    }
+    /**
+     * <p>
+     *     <ul>
+     *         <li>dataField table is {@link  SingleTableMeta},return table alias</li>
+     *         <li>dataField table is {@link  io.army.meta.ChildTableMeta} return {@link  io.army.meta.ParentTableMeta} alias</li>
+     *     </ul>
+     *
+     */
+    String singleTableAliasOf(SqlField dataField);
 
 
 }
