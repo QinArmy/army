@@ -17,9 +17,9 @@
 package io.army.sync;
 
 import io.army.criteria.*;
+import io.army.record.CurrentRecord;
+import io.army.record.ResultStates;
 import io.army.session.*;
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;

@@ -16,8 +16,8 @@
 
 package io.army.sync;
 
+import io.army.executor.DriverSpiHolder;
 import io.army.session.*;
-import io.army.session.executor.DriverSpiHolder;
 import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.util._Collections;
 import io.army.util._Exceptions;

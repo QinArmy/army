@@ -59,7 +59,7 @@ abstract class SqlWords {
 
     }
 
-    enum KeyWordNotNull implements SQLs.NullOption, SQLs.ArmyKeyWord {
+    enum KeyWordNotNull implements SQLs.NullOption, ArmyKeyWord {
 
         NOT_NULL(" NOT NULL");
 
@@ -82,7 +82,7 @@ abstract class SqlWords {
     }//KeyWordNotNull
 
 
-    enum KeyWordIn implements SQLs.WordIn, SQLs.ArmyKeyWord {
+    enum KeyWordIn implements SQLs.WordIn, ArmyKeyWord {
 
         IN;
 
@@ -99,7 +99,7 @@ abstract class SqlWords {
 
     }//KeyWordIn
 
-    enum KeyWordSimilar implements SQLs.WordSimilar, SQLs.ArmyKeyWord {
+    enum KeyWordSimilar implements SQLs.WordSimilar, ArmyKeyWord {
 
         SIMILAR(" SIMILAR");
 
@@ -122,7 +122,7 @@ abstract class SqlWords {
 
     }//KeyWordSimilar
 
-    enum KeyWordFrom implements SQLs.WordFrom, SQLs.ArmyKeyWord {
+    enum KeyWordFrom implements SQLs.WordFrom, ArmyKeyWord {
 
         FROM;
 
@@ -139,7 +139,7 @@ abstract class SqlWords {
 
     }//KeyWordFrom
 
-    enum KeyWordFor implements SQLs.WordFor, SQLs.ArmyKeyWord {
+    enum KeyWordFor implements SQLs.WordFor, ArmyKeyWord {
 
         FOR(" FOR");
 
@@ -162,7 +162,7 @@ abstract class SqlWords {
 
     }//KeyWordFor
 
-    enum WordTrimPosition implements SQLs.TrimSpec, SQLs.ArmyKeyWord {
+    enum WordTrimPosition implements SQLs.TrimSpec, ArmyKeyWord {
 
         BOTH(" BOTH"),
         LEADING(" LEADING"),
@@ -188,7 +188,7 @@ abstract class SqlWords {
     } // WordTrimPosition
 
 
-    enum KeyWordPath implements SQLs.WordPath, SQLs.ArmyKeyWord {
+    enum KeyWordPath implements SQLs.WordPath, ArmyKeyWord {
 
         PATH;
 
@@ -204,7 +204,7 @@ abstract class SqlWords {
 
     }//KeyWordPath
 
-    enum KeyWordColumns implements SQLs.WordColumns, SQLs.ArmyKeyWord {
+    enum KeyWordColumns implements SQLs.WordColumns, ArmyKeyWord {
 
         COLUMNS;
 
@@ -221,7 +221,7 @@ abstract class SqlWords {
     }//KeyWordColumns
 
 
-    enum KeyWordNested implements SQLs.WordNested, SQLs.ArmyKeyWord {
+    enum KeyWordNested implements SQLs.WordNested, ArmyKeyWord {
 
         NESTED;
 
@@ -237,7 +237,7 @@ abstract class SqlWords {
 
     } // KeyWordNested
 
-    enum KeyWordExists implements SQLs.WordExists, SQLs.ArmyKeyWord {
+    enum KeyWordExists implements SQLs.WordExists, ArmyKeyWord {
 
         EXISTS;
 
@@ -253,7 +253,7 @@ abstract class SqlWords {
 
     }//KeyWordExists
 
-    enum KeyWordsForOrdinality implements SQLs.WordsForOrdinality, SQLs.ArmyKeyWord {
+    enum KeyWordsForOrdinality implements SQLs.WordsForOrdinality, ArmyKeyWord {
 
         FOR_ORDINALITY(" FOR ORDINALITY");
 
@@ -277,7 +277,7 @@ abstract class SqlWords {
     }//KeyWordsForOrdinality
 
 
-    enum KeyWordError implements SQLs.WordError, SQLs.ArmyKeyWord {
+    enum KeyWordError implements SQLs.WordError, ArmyKeyWord {
 
         ERROR;
 
@@ -295,7 +295,7 @@ abstract class SqlWords {
 
     } // KeyWordError
 
-    enum KeyWordDocument implements SQLs.WordDocument, SQLs.ArmyKeyWord {
+    enum KeyWordDocument implements SQLs.WordDocument, ArmyKeyWord {
 
         /**
          * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">xml IS DOCUMENT → boolean<br/>
@@ -322,7 +322,7 @@ abstract class SqlWords {
 
     }//KeyWordDocument
 
-    enum KeyWordContent implements SQLs.WordContent, SQLs.ArmyKeyWord {
+    enum KeyWordContent implements SQLs.WordContent, ArmyKeyWord {
 
         CONTENT(" CONTENT");
 
@@ -352,7 +352,7 @@ abstract class SqlWords {
      *
      * @since 0.6.0
      */
-    enum BooleanTestKeyWord implements SQLs.BooleanTestWord, SQLs.ArmyKeyWord {
+    enum BooleanTestKeyWord implements SQLs.BooleanTestWord, ArmyKeyWord {
 
         JSON(" JSON");
 
@@ -377,7 +377,7 @@ abstract class SqlWords {
 
     }
 
-    enum IsComparisonKeyWord implements SQLs.IsComparisonWord, SQLs.ArmyKeyWord {
+    enum IsComparisonKeyWord implements SQLs.IsComparisonWord, ArmyKeyWord {
 
         DISTINCT_FROM(" DISTINCT FROM");
 
@@ -402,7 +402,7 @@ abstract class SqlWords {
     }//IsComparisonKeyWord
 
 
-    enum KeyWordAll implements SQLWords, SQLs.WordAll, SQLs.ArmyKeyWord {
+    enum KeyWordAll implements SQLWords, SQLs.WordAll, ArmyKeyWord {
 
         ALL(" ALL");
 
@@ -425,7 +425,7 @@ abstract class SqlWords {
 
     }//KeyWordAll
 
-    enum KeyWordDistinct implements Functions.ArmyKeyWord, SQLs.WordDistinct {
+    enum KeyWordDistinct implements ArmyKeyWord, SQLs.WordDistinct {
 
         DISTINCT;
 
@@ -442,7 +442,7 @@ abstract class SqlWords {
 
     }//KeyWordDistinct
 
-    enum KeyWordInterval implements SQLs.WordInterval, Functions.ArmyKeyWord {
+    enum KeyWordInterval implements SQLs.WordInterval, ArmyKeyWord {
 
         INTERVAL;
 
@@ -480,7 +480,7 @@ abstract class SqlWords {
 
     }//KeyWordPercent
 
-    enum KeyWordUnknown implements SQLs.BooleanTestWord, SQLs.ArmyKeyWord {
+    enum KeyWordUnknown implements SQLs.BooleanTestWord, ArmyKeyWord {
 
         UNKNOWN(" UNKNOWN");
 
@@ -636,7 +636,7 @@ abstract class SqlWords {
 
     }//KeyWordRow
 
-    enum KeyWordRows implements SQLs.WordRows, Functions.ArmyKeyWord {
+    enum KeyWordRows implements SQLs.WordRows, ArmyKeyWord {
 
         ROWS;
 
@@ -653,7 +653,7 @@ abstract class SqlWords {
     } //KeyWordRows
 
 
-    enum KeyWordLines implements SQLs.WordLines, Functions.ArmyKeyWord {
+    enum KeyWordLines implements SQLs.WordLines, ArmyKeyWord {
 
         LINES;
 
@@ -707,7 +707,7 @@ abstract class SqlWords {
 
     }//KeyWordOny
 
-    enum KeyWordAs implements SQLs.WordAs, SQLs.ArmyKeyWord {
+    enum KeyWordAs implements SQLs.WordAs, ArmyKeyWord {
 
         AS;
 
@@ -723,7 +723,7 @@ abstract class SqlWords {
 
     } // KeyWordAs
 
-    enum KeyWordTo implements SQLs.WordTo, SQLs.ArmyKeyWord {
+    enum KeyWordTo implements SQLs.WordTo, ArmyKeyWord {
 
         TO;
 
@@ -739,7 +739,7 @@ abstract class SqlWords {
 
     } // KeyWordTo
 
-    enum KeyWordAnd implements SQLs.WordAnd, SQLs.ArmyKeyWord {
+    enum KeyWordAnd implements SQLs.WordAnd, ArmyKeyWord {
 
         AND(" AND");
 
@@ -761,7 +761,7 @@ abstract class SqlWords {
 
     }//KeyWordAnd
 
-    enum KeyWordSymmetric implements SQLs.BetweenModifier, SQLs.ArmyKeyWord {
+    enum KeyWordSymmetric implements SQLs.BetweenModifier, ArmyKeyWord {
 
         SYMMETRIC(" SYMMETRIC"),
         ASYMMETRIC(" ASYMMETRIC");
@@ -817,7 +817,7 @@ abstract class SqlWords {
 
     }//SQLSymbolStar
 
-    enum KeyWordEscape implements SQLs.WordEscape, SQLs.ArmyKeyWord {
+    enum KeyWordEscape implements SQLs.WordEscape, ArmyKeyWord {
 
         ESCAPE(" ESCAPE");
 
@@ -876,7 +876,7 @@ abstract class SqlWords {
     }//KeyWordOn
 
 
-    enum KeyWordsCharacterSet implements SQLs.WordsCharacterSet, SQLs.ArmyKeyWord {
+    enum KeyWordsCharacterSet implements SQLs.WordsCharacterSet, ArmyKeyWord {
 
         CHARACTER_SET(" CHARACTER SET");
 
@@ -900,7 +900,7 @@ abstract class SqlWords {
 
     }//KeyWordsCharacterSet
 
-    enum KeyWordsCollate implements SQLs.WordCollate, SQLs.ArmyKeyWord {
+    enum KeyWordsCollate implements SQLs.WordCollate, ArmyKeyWord {
 
         COLLATE(" COLLATE");
 
@@ -942,7 +942,7 @@ abstract class SqlWords {
 
     } //KeyWordUsing
 
-    enum FuncWord implements SQLs.ArmyKeyWord {
+    enum FuncWord implements ArmyKeyWord {
 
         INTERVAL(" INTERVAL"),
         COMMA(_Constant.SPACE_COMMA),
@@ -971,7 +971,7 @@ abstract class SqlWords {
     } // Word
 
 
-    enum KeyWordJoin implements SQLs.WordJoin, Functions.ArmyKeyWord {
+    enum KeyWordJoin implements SQLs.WordJoin, ArmyKeyWord {
 
         JOIN;
 
@@ -988,7 +988,7 @@ abstract class SqlWords {
 
     } //  KeyWordJoin
 
-    enum KeyWordsOrderBy implements SQLs.WordsOrderBy, Functions.ArmyKeyWord {
+    enum KeyWordsOrderBy implements SQLs.WordsOrderBy, ArmyKeyWord {
 
         ORDER_BY;
 
@@ -1004,7 +1004,7 @@ abstract class SqlWords {
 
     } //  KeyWordsOrderBy
 
-    enum KeyWordsGroupBy implements SQLs.WordsGroupBy, Functions.ArmyKeyWord {
+    enum KeyWordsGroupBy implements SQLs.WordsGroupBy, ArmyKeyWord {
 
         GROUP_BY;
 
@@ -1021,7 +1021,7 @@ abstract class SqlWords {
     } //  KeyWordsGroupBy
 
 
-    enum KeyWordsAtTimeZone implements SQLs.WordsAtTimeZone, Functions.ArmyKeyWord {
+    enum KeyWordsAtTimeZone implements SQLs.WordsAtTimeZone, ArmyKeyWord {
 
         AT_TIME_ZONE;
 
@@ -1080,4 +1080,11 @@ abstract class SqlWords {
 
 
     } // KeyWordMaterialized
+
+    /**
+     * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
+     */
+    interface ArmyKeyWord extends SQLWords {
+
+    }
 }

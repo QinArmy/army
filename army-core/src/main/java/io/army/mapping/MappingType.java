@@ -22,6 +22,7 @@ import io.army.criteria.TypeInfer;
 import io.army.criteria.TypeItem;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
+import io.army.executor.StmtExecutor;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -98,7 +99,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     /**
      * <p>Find compatible {@link MappingType} for targetType.
      *
-     * @param dataType   from {@link io.army.session.executor.StmtExecutor}, underlying api is one of following :
+     * @param dataType   from {@link StmtExecutor}, underlying api is one of following :
      *                   <ul>
      *                        <li>{@code  java.sql.ResultSetMetaData#getTableName(int)}</li>
      *                        <li>{@code io.jdbd.result.ResultRowMeta#getDataType(int)}</li>
@@ -529,7 +530,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     public abstract Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException;
 
     /**
-     * @param dataType from {@link  io.army.session.executor.StmtExecutor}
+     * @param dataType from {@link  StmtExecutor}
      * @param source   never null
      * @return non-null, the instance of {@link #javaType()}.
      */

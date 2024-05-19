@@ -24,7 +24,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
 import io.army.reactive.ReactiveLocalSession;
-import io.army.session.record.ResultStates;
+import io.army.record.ResultStates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Isolation;

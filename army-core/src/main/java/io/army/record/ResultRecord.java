@@ -14,5 +14,25 @@
  * limitations under the License.
  */
 
-@io.army.lang.NonNullApi
-package io.army.session.record;
+package io.army.record;
+
+import javax.annotation.Nullable;
+import java.util.function.Function;
+
+public interface ResultRecord extends DataRecord {
+
+
+    /**
+     * <p>This method is equivalent to following :
+     * <ol>
+     *     <li>{@link CurrentRecord#get(int)}</li>
+     *     <li>and convert column value to columnClass</li>
+     * </ol>
+     * @see io.army.session.FactoryBuilderSpec#columnConverterFunc(Function)
+     */
+    @Nullable
+    @Override
+    <T> T get(int indexBasedZero, Class<T> columnClass);
+
+
+}

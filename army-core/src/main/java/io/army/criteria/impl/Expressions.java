@@ -169,7 +169,7 @@ abstract class Expressions {
                                                    SQLs.IsComparisonWord operator, Expression right) {
         if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
-        } else if (!(operator instanceof SQLs.ArmyKeyWord)) {
+        } else if (!(operator instanceof SqlWords.ArmyKeyWord)) {
             throw CriteriaUtils.notArmyOperator(operator);
         }
         return new IsComparisonPredicate(left, not, operator, (ArmyExpression) right);

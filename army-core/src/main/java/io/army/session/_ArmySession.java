@@ -27,7 +27,7 @@ import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
-import io.army.session.record.ResultStates;
+import io.army.record.ResultStates;
 import io.army.stmt.Stmt;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;

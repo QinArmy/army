@@ -76,7 +76,7 @@ abstract class PostgreStringFunctions extends Functions {
     }
 
 
-    enum KeyWordNormalizeForm implements WordNormalizeForm, SQLs.ArmyKeyWord, SQLWords {
+    enum KeyWordNormalizeForm implements WordNormalizeForm, SqlWords.ArmyKeyWord, SQLWords {
 
         NFC(" NFC"),
         NFD(" NFD"),
@@ -102,7 +102,7 @@ abstract class PostgreStringFunctions extends Functions {
 
     }//KeyWordNormalizeForm
 
-    private enum KeyWordPlacing implements WordPlacing, SQLs.ArmyKeyWord, SQLWords {
+    private enum KeyWordPlacing implements WordPlacing, SqlWords.ArmyKeyWord, SQLWords {
 
         PLACING(" PLACING");
 

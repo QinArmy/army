@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.session.executor;
+package io.army.executor;
 
 import io.army.session.CloseableSpec;
 import io.army.session.Option;

@@ -90,33 +90,26 @@ abstract class Functions {
 
     }
 
-    interface _NullTreatmentClause<NR> {
+    interface _NullTreatmentClause<R> {
 
-        NR respectNulls();
+        R respectNulls();
 
-        NR ignoreNulls();
+        R ignoreNulls();
 
-        NR ifRespectNulls(BooleanSupplier predicate);
+        R ifRespectNulls(BooleanSupplier predicate);
 
-        NR ifIgnoreNulls(BooleanSupplier predicate);
-
-    }
-
-    public interface _FromFirstLastClause<FR> {
-        FR fromFirst();
-
-        FR fromLast();
-
-        FR ifFromFirst(BooleanSupplier predicate);
-
-        FR ifFromLast(BooleanSupplier predicate);
+        R ifIgnoreNulls(BooleanSupplier predicate);
 
     }
 
-    /**
-     * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
-     */
-    interface ArmyKeyWord extends SQLWords {
+    public interface _FromFirstLastClause<R> {
+        R fromFirst();
+
+        R fromLast();
+
+        R ifFromFirst(BooleanSupplier predicate);
+
+        R ifFromLast(BooleanSupplier predicate);
 
     }
 
@@ -147,8 +140,9 @@ abstract class Functions {
      *                  <li>{@link Expression} instance</li>
      *                  <li>literal</li>
      *             </ul>
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">ACOS(X)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">MySQL ACOS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">acos ( double precision ) → double precision</a>
+     * @see <a href="https://www.sqlite.org/lang_mathfunc.html#acos">SQLite ACOS(X)</a>
      */
     public static SimpleExpression acos(final Object expr) {
         return LiteralFunctions.oneArgFunc("ACOS", expr, DoubleType.INSTANCE);
@@ -164,6 +158,7 @@ abstract class Functions {
      *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_asin">ASIN(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">asin ( double precision ) → double precision</a>
+     * @see <a href="https://www.sqlite.org/lang_mathfunc.html#acos">SQLite asin(X)</a>
      */
     public static SimpleExpression asin(final Object expr) {
         return LiteralFunctions.oneArgFunc("ASIN", expr, DoubleType.INSTANCE);

@@ -16,9 +16,9 @@
 
 package io.army.reactive;
 
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultItem;
-import io.army.session.record.ResultStates;
+import io.army.record.CurrentRecord;
+import io.army.record.ResultItem;
+import io.army.record.ResultStates;
 import reactor.core.publisher.Flux;
 
 import java.util.Optional;

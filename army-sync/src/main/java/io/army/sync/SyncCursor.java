@@ -17,13 +17,13 @@
 package io.army.sync;
 
 import io.army.criteria.Selection;
+import io.army.record.CurrentRecord;
+import io.army.record.ResultItem;
+import io.army.record.ResultStates;
 import io.army.session.Cursor;
 import io.army.session.DataAccessException;
 import io.army.session.Direction;
 import io.army.session.Option;
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultItem;
-import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;

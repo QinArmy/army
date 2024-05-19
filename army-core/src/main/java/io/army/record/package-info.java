@@ -14,8 +14,5 @@
  * limitations under the License.
  */
 
-package io.army.bean;
-
-public interface FieldAccessBean {
-
-}
+@io.army.lang.NonNullApi
+package io.army.record;

@@ -1372,7 +1372,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         private NonOrderedSetAggregateFunction(String name, boolean buildIn, @Nullable SQLs.ArgDistinct modifier,
                                                final @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
             super(name, buildIn, returnType, orderByClause == null ? ContextStack.peek() : orderByClause.context);
-            if (!(modifier == null || modifier instanceof SQLs.ArmyKeyWord)) {
+            if (!(modifier == null || modifier instanceof SqlWords.ArmyKeyWord)) {
                 throw CriteriaUtils.funcArgError(name, modifier);
             }
             this.modifier = modifier;

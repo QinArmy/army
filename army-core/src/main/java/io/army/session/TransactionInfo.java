@@ -17,12 +17,14 @@
 package io.army.session;
 
 
+import io.army.executor.StmtExecutor;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
  * <p>This interface representing the transaction info of session.
- * <p>The developer of {@link io.army.session.executor.StmtExecutor} can create the instance of this interface by following :
+ * <p>The developer of {@link StmtExecutor} can create the instance of this interface by following :
  * <ul>
  *     <li>{@link #notInTransaction(Isolation, boolean)}</li>
  *     <li>{@link #builder(boolean, Isolation, boolean)}</li>

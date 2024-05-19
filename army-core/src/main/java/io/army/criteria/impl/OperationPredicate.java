@@ -1111,7 +1111,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * @see SQLs#FALSE
      */
     private static final class BooleanWord extends OperationSimplePredicate
-            implements SQLs.WordBooleans, SQLs.ArmyKeyWord {
+            implements SQLs.WordBooleans, SqlWords.ArmyKeyWord {
 
         private static final BooleanWord TRUE = new BooleanWord(true);
 

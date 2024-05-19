@@ -17,9 +17,9 @@
 package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
+import io.army.executor.ExecutorSupport;
 import io.army.mapping.BooleanType;
 import io.army.meta.TypeMeta;
-import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.util._TimeUtils;
 

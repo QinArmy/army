@@ -323,7 +323,7 @@ abstract class FuncExpUtils {
             } else if (value instanceof Expression) {
                 ((ArmyExpression) value).appendSql(sqlBuilder, context);
             } else if (value instanceof SQLWords) {
-                if (!(value instanceof SQLs.ArmyKeyWord)) {
+                if (!(value instanceof SqlWords.ArmyKeyWord)) {
                     throw new CriteriaException(String.format("SQL function[%s] illegal words %s", name, value));
                 }
                 sqlBuilder.append(((SQLWords) value).spaceRender());
@@ -367,7 +367,7 @@ abstract class FuncExpUtils {
             } else if (value instanceof Expression) {
                 builder.append(value);
             } else if (value instanceof SQLWords) {
-                if (!(value instanceof SQLs.ArmyKeyWord)) {
+                if (!(value instanceof SqlWords.ArmyKeyWord)) {
                     throw new CriteriaException(String.format("Illegal words %s", value));
                 }
                 builder.append(((SQLWords) value).spaceRender());

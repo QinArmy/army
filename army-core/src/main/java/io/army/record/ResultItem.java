@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.session.record;
+package io.army.record;
 
 import io.army.session.DataAccessException;
 

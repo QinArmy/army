@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 
-@io.army.lang.NonNullApi
-package io.army.session.executor;
+package io.army.struct;
+
+public interface FieldAccessBean {
+
+}

@@ -16,9 +16,9 @@
 
 package io.army.sync;
 
+import io.army.record.ResultStates;
 import io.army.session.MultiStmtMode;
 import io.army.session.StmtOption;
-import io.army.session.record.ResultStates;
 
 import java.util.function.Consumer;
 

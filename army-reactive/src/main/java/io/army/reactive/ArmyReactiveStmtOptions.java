@@ -16,11 +16,11 @@
 
 package io.army.reactive;
 
+import io.army.record.ResultStates;
 import io.army.session.MultiStmtMode;
 import io.army.session.Option;
 import io.army.session.TransactionInfo;
 import io.army.session._ArmyStmtOptions;
-import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;

@@ -22,8 +22,9 @@ import io.army.codec.XmlCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorEnv;
+import io.army.executor.ExecutorFactoryProvider;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.session.executor.ExecutorFactoryProvider;
+import io.army.record.ResultRecord;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -142,7 +143,7 @@ public interface FactoryBuilderSpec<B, R> {
 
     /**
      * <p>Optional.
-     * <p>See {@link io.army.session.record.ResultRecord#get(int, Class)} and {@link ExecutorEnv#converterFunc()}
+     * <p>See {@link ResultRecord#get(int, Class)} and {@link ExecutorEnv#converterFunc()}
      *
      * @return <strong>this</strong>
      */

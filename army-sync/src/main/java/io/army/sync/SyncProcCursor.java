@@ -17,9 +17,9 @@
 package io.army.sync;
 
 import io.army.criteria.Selection;
+import io.army.record.ResultStates;
 import io.army.session.Option;
 import io.army.session.ProcCursor;
-import io.army.session.record.ResultStates;
 
 
 /**

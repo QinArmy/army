@@ -16,7 +16,7 @@
 
 package io.army.example.bank.bean;
 
-import io.army.bean.FieldAccessBean;
+import io.army.struct.FieldAccessBean;
 
 public interface BankFieldAccessBean extends FieldAccessBean {
 

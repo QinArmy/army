@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.util._StringUtils;
 
-public enum MySQLTimeUnit implements Functions.ArmyKeyWord {
+public enum MySQLTimeUnit implements SqlWords.ArmyKeyWord {
 
     MICROSECOND(" MICROSECOND"),
     SECOND(" SECOND"),

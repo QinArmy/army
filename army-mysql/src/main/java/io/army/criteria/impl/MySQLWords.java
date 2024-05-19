@@ -69,7 +69,7 @@ abstract class MySQLWords {
 
     }//MySQLModifier
 
-    enum KeyWordDistinct implements Functions.ArmyKeyWord, MySQLs.WordDistinct {
+    enum KeyWordDistinct implements SqlWords.ArmyKeyWord, MySQLs.WordDistinct {
 
         DISTINCT;
 

@@ -17,9 +17,9 @@
 package io.army.example.dialect.mysql;
 
 import io.army.annotation.*;
-import io.army.bean.FieldAccessBean;
 import io.army.example.common.VersionDomain;
 import io.army.example.pill.struct.QinArmy;
+import io.army.struct.FieldAccessBean;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

@@ -879,7 +879,7 @@ abstract class FunctionUtils {
             } else if (o == SqlWords.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
-                if (!(o instanceof SQLs.ArmyKeyWord)) {
+                if (!(o instanceof SqlWords.ArmyKeyWord)) {
                     throw new CriteriaException(String.format("%s non-army words", o));
                 }
                 sqlBuilder.append(((SQLWords) o).spaceRender());

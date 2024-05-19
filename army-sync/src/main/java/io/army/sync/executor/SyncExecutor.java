@@ -17,10 +17,10 @@
 package io.army.sync.executor;
 
 
+import io.army.executor.StmtExecutor;
+import io.army.record.CurrentRecord;
+import io.army.record.ResultStates;
 import io.army.session.*;
-import io.army.session.executor.StmtExecutor;
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultStates;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;

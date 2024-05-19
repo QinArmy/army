@@ -14,14 +14,5 @@
  * limitations under the License.
  */
 
-package io.army.session.record;
-
-public enum FieldType {
-
-    FIELD,
-
-    EXPRESSION,
-
-    UNKNOWN
-
-}
+@io.army.lang.NonNullApi
+package io.army.executor;

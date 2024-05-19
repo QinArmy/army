@@ -18,9 +18,9 @@
 package io.army.jdbc;
 
 import io.army.dialect._Constant;
+import io.army.executor.ExecutorSupport;
 import io.army.mapping.MappingType;
 import io.army.session.*;
-import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
 import io.army.sync.executor.SyncLocalStmtExecutor;

@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-package io.army.session.record;
+package io.army.executor;
 
-public enum KeyType {
+public interface DriverSpiHolder {
 
-    PRIMARY_KEY,
-    UNIQUE_KEY,
+    boolean isDriverAssignableTo(Class<?> spiClass);
 
-    INDEX_KEY,
+    <T> T getDriverSpi(Class<T> spiClass);
 
-    FULL_TEXT_KEY,
 
-    SPATIAL_KEY,
-
-    NONE,
-
-    UNKNOWN;
-
-    public final boolean isUnique() {
-        return this == PRIMARY_KEY || this == UNIQUE_KEY;
-    }
 }

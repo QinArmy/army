@@ -17,9 +17,9 @@
 package io.army.sync.executor;
 
 
+import io.army.executor.ExecutorFactory;
 import io.army.session.DataAccessException;
 import io.army.session.Option;
-import io.army.session.executor.ExecutorFactory;
 
 import java.util.function.Function;
 

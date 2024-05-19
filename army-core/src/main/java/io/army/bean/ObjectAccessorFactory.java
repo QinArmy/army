@@ -18,6 +18,7 @@ package io.army.bean;
 
 
 import io.army.proxy.ArmyProxy;
+import io.army.struct.FieldAccessBean;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;

@@ -18,7 +18,7 @@ package io.army.session;
 
 
 import io.army.criteria.Selection;
-import io.army.session.record.ResultStates;
+import io.army.record.ResultStates;
 
 /**
  * <p>This interface representing the database cursor that is produced by store procedure,army don't know the {@link Selection} list.

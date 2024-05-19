@@ -16,6 +16,7 @@
 
 package io.army.sync;
 
+import io.army.executor.StmtExecutor;
 import io.army.session.*;
 
 import javax.annotation.Nullable;
@@ -24,7 +25,7 @@ import java.util.function.Function;
 /**
  * <p>This interface representing local {@link SyncSession} that support database local transaction.
  * <p>The instance of this interface is created by {@link SyncSessionFactory.LocalSessionBuilder}.
- * <p>This interface's directly underlying api is {@link io.army.session.executor.StmtExecutor}.
+ * <p>This interface's directly underlying api is {@link StmtExecutor}.
  * <p>This interface representing high-level database session. This interface's underlying database session is one of
  * <ul>
  *     <li>{@code java.sql.Connection}</li>

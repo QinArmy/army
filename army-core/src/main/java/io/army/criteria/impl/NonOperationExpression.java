@@ -494,7 +494,7 @@ abstract class NonOperationExpression implements ArmyExpression {
             implements SqlValueParam.SingleAnonymousValue,
             ArmySimpleExpression,
             SQLs.WordNull,
-            SQLs.ArmyKeyWord {
+            SqlWords.ArmyKeyWord {
 
         private static final NullWord INSTANCE = new NullWord();
 

@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package io.army.session.record;
+package io.army.executor;
 
-import javax.annotation.Nullable;
-import java.util.function.Function;
+import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
+import io.army.env.SqlLogMode;
 
-public interface ResultRecord extends DataRecord {
+public abstract class ExecutorFactorySupport {
 
+    public final ArmyEnvironment armyEnv;
 
-    /**
-     * <p>This method is equivalent to following :
-     * <ol>
-     *     <li>{@link CurrentRecord#get(int)}</li>
-     *     <li>and convert column value to columnClass</li>
-     * </ol>
-     * @see io.army.session.FactoryBuilderSpec#columnConverterFunc(Function)
-     */
-    @Nullable
-    @Override
-    <T> T get(int indexBasedZero, Class<T> columnClass);
+    final boolean sqlLogDynamic;
+
+    final SqlLogMode sqlLogMode;
+
+    protected ExecutorFactorySupport(ArmyEnvironment armyEnv) {
+        this.armyEnv = armyEnv;
+        this.sqlLogDynamic = armyEnv.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
+        this.sqlLogMode = armyEnv.getOrDefault(ArmyKey.SQL_LOG_MODE);
+    }
 
 
 }

@@ -1137,7 +1137,7 @@ public abstract class SQLs extends SQLSyntax {
      * @see SQLs#DEFAULT
      */
     private static final class DefaultWord extends NonOperationExpression
-            implements WordDefault, ArmyKeyWord {
+            implements WordDefault, SqlWords.ArmyKeyWord {
 
         private DefaultWord() {
         }
