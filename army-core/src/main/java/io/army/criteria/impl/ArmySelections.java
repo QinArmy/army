@@ -28,9 +28,9 @@ import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 
-abstract class ArmySelections implements _Selection {
+public abstract class ArmySelections implements _Selection {
 
-    static _Selection forExp(final Expression exp, final String alias) {
+    public static _Selection forExp(final Expression exp, final String alias) {
         final _Selection selection;
         if (exp instanceof FieldSelection) {
             if (((FieldSelection) exp).label().equals(alias)) {
@@ -46,7 +46,7 @@ abstract class ArmySelections implements _Selection {
         return selection;
     }
 
-    static Selection renameSelection(final Selection selection, final String alias) {
+    public static Selection renameSelection(final Selection selection, final String alias) {
         final Selection s;
         if (selection instanceof FieldSelection) {
             if (selection.label().equals(alias)) {
@@ -63,7 +63,7 @@ abstract class ArmySelections implements _Selection {
     }
 
 
-    static Selection forName(final @Nullable String alias, final @Nullable TypeMeta typeMeta) {
+    public static Selection forName(final @Nullable String alias, final @Nullable TypeMeta typeMeta) {
         if (alias == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (typeMeta == null) {
@@ -78,11 +78,11 @@ abstract class ArmySelections implements _Selection {
         return selection;
     }
 
-    static Selection forAnonymous(TypeMeta type) {
+    public static Selection forAnonymous(TypeMeta type) {
         return new AnonymousSelectionImpl(type);
     }
 
-    static Selection forColumnFunc(Functions._ColumnFunction func, String alias) {
+    public static Selection forColumnFunc(Functions._ColumnFunction func, String alias) {
         return new ColumnFuncSelection(func, alias);
     }
 
@@ -99,7 +99,7 @@ abstract class ArmySelections implements _Selection {
         return this.alias;
     }
 
-     static final class ExpressionSelection extends ArmySelections {
+    public static final class ExpressionSelection extends ArmySelections {
 
          final ArmyExpression expression;
 
@@ -148,7 +148,7 @@ abstract class ArmySelections implements _Selection {
     }//ExpressionSelection
 
 
-     static final class FieldSelectionImpl extends ArmySelections implements FieldSelection, _SelfDescribed {
+    public static final class FieldSelectionImpl extends ArmySelections implements FieldSelection, _SelfDescribed {
 
          final FieldSelection selection;
 
@@ -237,7 +237,7 @@ abstract class ArmySelections implements _Selection {
     }//FieldSelectionImpl
 
 
-    static final class RenameSelection extends ArmySelections {
+    public static final class RenameSelection extends ArmySelections {
 
         final Selection selection;
 

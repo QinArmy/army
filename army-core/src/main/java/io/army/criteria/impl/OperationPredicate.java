@@ -852,9 +852,9 @@ public abstract class OperationPredicate extends OperationExpression.PredicateEx
     }//SqlFunctionPredicate
 
 
-    static abstract class OperationCompoundPredicate extends OperationPredicate implements CompoundPredicate {
+    public static abstract class OperationCompoundPredicate extends OperationPredicate implements CompoundPredicate {
 
-        OperationCompoundPredicate() {
+        protected OperationCompoundPredicate() {
         }
 
 

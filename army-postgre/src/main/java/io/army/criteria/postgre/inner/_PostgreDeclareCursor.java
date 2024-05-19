@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
 
-import io.army.criteria.Values;
-import io.army.criteria.impl.inner._PrimaryRowSet;
+package io.army.criteria.postgre.inner;
 
-/**
- * <p>
- * This interface is package interface of {@link Values}
- *
- * @since 0.6.0
- */
-public interface ArmyValues extends Values, _PrimaryRowSet {
+import io.army.criteria.impl.inner._DeclareCursor;
+
+import javax.annotation.Nullable;
+
+public interface _PostgreDeclareCursor extends _DeclareCursor {
+
+
+    boolean isBinary();
+
+    @Nullable
+    Boolean sensitiveMode();
+
+    @Nullable
+    Boolean scrollMode();
+
+    @Nullable
+    Boolean holdMode();
+
 
 
 }

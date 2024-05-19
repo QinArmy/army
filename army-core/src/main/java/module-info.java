@@ -13,6 +13,7 @@ module army.core {
 
     exports io.army.criteria.standard;
     exports io.army.criteria.dialect;
+    exports io.army.criteria.impl to army.postgre;
     exports io.army.criteria.impl.inner to army.postgre;
 
     exports io.army.datasource;
@@ -45,7 +46,5 @@ module army.core {
     exports io.army.type;
 
     exports io.army.util;
-    exports io.army.criteria.impl;
-
 
 }

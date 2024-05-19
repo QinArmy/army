@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.postgre.inner;
 
-import io.army.criteria.Values;
-import io.army.criteria.impl.inner._PrimaryRowSet;
+import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._ValuesQuery;
 
-/**
- * <p>
- * This interface is package interface of {@link Values}
- *
- * @since 0.6.0
- */
-public interface ArmyValues extends Values, _PrimaryRowSet {
+public interface _PostgreValues extends _ValuesQuery, _Statement._SQL2008LimitClauseSpec {
 
 
 }

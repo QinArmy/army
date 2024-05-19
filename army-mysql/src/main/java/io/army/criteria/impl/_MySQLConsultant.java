@@ -90,10 +90,10 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     public static void assertUpdate(final UpdateStatement update) {
         if (update instanceof _SingleUpdate) {
             if (!(update instanceof MySQLSingleUpdates)) {
-                throw instanceNotMatch(update, MySQLSingleUpdates.class);
+                throw CriteriaUtils.instanceNotMatch(update, MySQLSingleUpdates.class);
             }
         } else if (!(update instanceof MySQLMultiUpdates)) {
-            throw instanceNotMatch(update, MySQLMultiUpdates.class);
+            throw CriteriaUtils.instanceNotMatch(update, MySQLMultiUpdates.class);
         }
 
     }
@@ -101,10 +101,10 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     public static void assertDelete(final DeleteStatement delete) {
         if (delete instanceof _SingleDelete) {
             if (!(delete instanceof MySQLSingleDeletes)) {
-                throw instanceNotMatch(delete, MySQLSingleDeletes.class);
+                throw CriteriaUtils.instanceNotMatch(delete, MySQLSingleDeletes.class);
             }
         } else if (!(delete instanceof MySQLMultiDeletes)) {
-            throw instanceNotMatch(delete, MySQLMultiDeletes.class);
+            throw CriteriaUtils.instanceNotMatch(delete, MySQLMultiDeletes.class);
         }
     }
 

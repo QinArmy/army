@@ -18,7 +18,10 @@ package io.army.criteria.standard;
 
 import io.army.criteria.Expression;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.*;
+import io.army.criteria.impl.ArmyExpression;
+import io.army.criteria.impl.FuncExpUtils;
+import io.army.criteria.impl.FunctionUtils;
+import io.army.criteria.impl.WindowFunctions;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -29,41 +32,41 @@ import io.army.util._Exceptions;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public abstract class StandardWindowFunctions {
+abstract class StandardWindowFunctions {
 
     private StandardWindowFunctions() {
         throw new UnsupportedOperationException();
     }
 
 
-    public static Windows._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
+    static Windows._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
         return new ZeroArgStandardWindowFunc(name, returnType);
     }
 
-    public static Windows._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
+    static Windows._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
         return new OneArgStandardWindowFunc(name, one, returnType);
     }
 
-    public static Windows._OverSpec twoArgWindowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
+    static Windows._OverSpec twoArgWindowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
         return new TwoArgStandardWindowFunc(name, one, two, returnType);
     }
 
-    public static Windows._OverSpec compositeWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+    static Windows._OverSpec compositeWindowFunc(String name, List<?> argList, TypeMeta returnType) {
         return new CompositeStandardWindowFunc(name, argList, returnType);
     }
 
 
     /*-------------------below Aggregate functions-------------------*/
 
-    public static Windows._WindowAggSpec oneArgWindowAggFunc(String name, Expression one, TypeMeta returnType) {
+    static Windows._WindowAggSpec oneArgWindowAggFunc(String name, Expression one, TypeMeta returnType) {
         return new OneArgStandardAggWidowFunc(name, one, returnType);
     }
 
-    public static Windows._WindowAggSpec twoArgAggWindow(String name, Expression one, Expression two, TypeMeta returnType) {
+    static Windows._WindowAggSpec twoArgAggWindow(String name, Expression one, Expression two, TypeMeta returnType) {
         return new TwoArgStandardAggWidowFunc(name, one, two, returnType);
     }
 
-    public static Windows._WindowAggSpec compositeWindowAggFunc(String name, List<?> argList, TypeMeta returnType) {
+    static Windows._WindowAggSpec compositeWindowAggFunc(String name, List<?> argList, TypeMeta returnType) {
         return new CompositeStandardWindowAggFunc(name, argList, returnType);
     }
 

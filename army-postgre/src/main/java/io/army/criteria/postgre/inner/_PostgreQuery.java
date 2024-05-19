@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.postgre.inner;
 
-import io.army.criteria.Values;
-import io.army.criteria.impl.inner._PrimaryRowSet;
+import io.army.criteria.impl.inner._DialectStatement;
+import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.standard.SQLs;
 
-/**
- * <p>
- * This interface is package interface of {@link Values}
- *
- * @since 0.6.0
- */
-public interface ArmyValues extends Values, _PrimaryRowSet {
+import javax.annotation.Nullable;
+import java.util.List;
+
+public interface _PostgreQuery extends _Query,
+        _DialectStatement,
+        _Statement._WithClauseSpec,
+        _Query._DistinctOnClauseSpec,
+        _Query._WindowClauseSpec,
+        _Statement._SQL2008LimitClauseSpec {
+
+    @Nullable
+    SQLs.Modifier groupByModifier();
+
+    List<_LockBlock> lockBlockList();
 
 
 }

@@ -25,7 +25,7 @@ import io.army.criteria.impl.inner._DerivedTable;
  *
  * @since 0.6.0
  */
-interface ArmySubValues extends SubValues, _DerivedTable {
+public interface ArmySubValues extends SubValues, _DerivedTable {
 
 
 }

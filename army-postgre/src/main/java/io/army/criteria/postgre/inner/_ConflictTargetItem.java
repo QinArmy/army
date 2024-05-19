@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.postgre.inner;
 
-import io.army.criteria.Values;
-import io.army.criteria.impl.inner._PrimaryRowSet;
+import io.army.criteria.impl.inner._SelfDescribed;
 
-/**
- * <p>
- * This interface is package interface of {@link Values}
- *
- * @since 0.6.0
- */
-public interface ArmyValues extends Values, _PrimaryRowSet {
-
+public interface _ConflictTargetItem extends _SelfDescribed {
 
 }

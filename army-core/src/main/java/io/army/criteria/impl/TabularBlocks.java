@@ -120,7 +120,7 @@ public abstract class TabularBlocks {
 
         final TabularItem table;
 
-        FromClauseBlock(_JoinType joinType, TabularItem table) {
+        protected FromClauseBlock(_JoinType joinType, TabularItem table) {
             assert joinType == _JoinType.NONE || joinType == _JoinType.CROSS_JOIN;
             this.joinType = joinType;
             this.table = table;
@@ -290,7 +290,7 @@ public abstract class TabularBlocks {
 
         private List<_Predicate> predicateList;
 
-        JoinClauseBlock(_JoinType joinType, R clause) {
+        protected JoinClauseBlock(_JoinType joinType, R clause) {
             // don't check joinType
             this.joinType = joinType;
             this.clause = clause;

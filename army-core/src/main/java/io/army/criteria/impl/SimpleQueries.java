@@ -1794,13 +1794,13 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     }//NamedWindowAsClause
 
 
-    static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR extends Item, SD>
+    public static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR extends Item, SD>
             implements Query._SelectDispatcher<W, SR, SD>,
             CriteriaContextSpec {
 
-        final CriteriaContext context;
+        protected final CriteriaContext context;
 
-        SelectClauseDispatcher(CriteriaContext dispatcherContext) {
+        protected SelectClauseDispatcher(CriteriaContext dispatcherContext) {
             this.context = dispatcherContext;
             ContextStack.push(this.context);
         }
@@ -1927,9 +1927,9 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
             return super.toString();
         }
 
-        abstract Query._SelectDispatcher<W, SR, SD> createSelectClause();
+        protected abstract Query._SelectDispatcher<W, SR, SD> createSelectClause();
 
-        final void endDispatcher() {
+        protected final void endDispatcher() {
             ContextStack.pop(this.context);
         }
 
@@ -1989,10 +1989,10 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
             return cteList;
         }
 
-        abstract B createCteBuilder(boolean recursive);
+        protected abstract B createCteBuilder(boolean recursive);
 
 
-        final WE endStaticWithClause(final boolean recursive) {
+        protected final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -2019,12 +2019,12 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
 
     }//WithBuilderSelectClauseDispatcher
 
-    static abstract class WithDistinctOnSelectClauseDispatcher<B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item>
+    public static abstract class WithDistinctOnSelectClauseDispatcher<B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item>
             extends WithBuilderSelectClauseDispatcher<B, WE, W, SR, SD>
             implements Query._DynamicDistinctOnExpClause<SR>,
             Query._DynamicDistinctOnAndSelectsClause<SD> {
 
-        WithDistinctOnSelectClauseDispatcher(CriteriaContext dispatcherContext) {
+        protected WithDistinctOnSelectClauseDispatcher(CriteriaContext dispatcherContext) {
             super(dispatcherContext);
         }
 
@@ -2093,7 +2093,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
         }
 
         @Override
-        abstract _SelectDistinctOnDispatcher<W, SR, SD> createSelectClause();
+        protected abstract _SelectDistinctOnDispatcher<W, SR, SD> createSelectClause();
 
 
     }//WithDistinctOnSelectClauseDispatcher

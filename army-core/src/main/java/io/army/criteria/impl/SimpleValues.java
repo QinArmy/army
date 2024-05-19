@@ -524,14 +524,14 @@ public abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> exten
         return this.onUnion(_UnionType.MINUS_DISTINCT);
     }
 
-    abstract String columnAlias(int columnIndex);
+    protected abstract String columnAlias(int columnIndex);
 
-    abstract I onAsValues();
+    protected abstract I onAsValues();
 
-    abstract SP createUnionValues(_UnionType unionType);
+    protected abstract SP createUnionValues(_UnionType unionType);
 
 
-    final void endStmtBeforeCommand() {
+    protected final void endStmtBeforeCommand() {
         this.endValuesStatement(true);
     }
 
@@ -592,7 +592,7 @@ public abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> exten
     }
 
     @SuppressWarnings("unchecked")
-    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE extends Item, OR, OD, LR, LO, LF, SP>
+    public static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE extends Item, OR, OD, LR, LO, LF, SP>
             extends SimpleValues<I, OR, OD, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>, ArmyStmtSpec {
 
@@ -600,7 +600,7 @@ public abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> exten
 
         private List<_Cte> cteList;
 
-        WithSimpleValues(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+        protected WithSimpleValues(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
             super(context);
             if (withSpec != null) {
                 this.recursive = withSpec.isRecursive();
@@ -646,10 +646,10 @@ public abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> exten
         }
 
 
-        abstract B createCteBuilder(boolean recursive);
+        protected abstract B createCteBuilder(boolean recursive);
 
 
-        final WE endStaticWithClause(final boolean recursive) {
+        protected final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -676,18 +676,18 @@ public abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> exten
     } // WithSimpleValues
 
 
-    static final class UnionSubValues extends UnionSubRowSet implements ArmySubValues {
+    public static final class UnionSubValues extends UnionSubRowSet implements ArmySubValues {
 
-        UnionSubValues(RowSet left, _UnionType unionType, RowSet right) {
+        public UnionSubValues(RowSet left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
 
     }//UnionSubValues
 
-    static final class UnionValues extends UnionRowSet implements ArmyValues {
+    public static final class UnionValues extends UnionRowSet implements ArmyValues {
 
-        UnionValues(Values left, _UnionType unionType, RowSet right) {
+        public UnionValues(Values left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 

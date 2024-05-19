@@ -19,8 +19,10 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Returnings;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.SQLs;
+import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.LongType;
@@ -1009,6 +1011,39 @@ public abstract class CriteriaUtils {
                                                                    TableMeta<?> groupTable) {
         String m = String.format("%s isn't insert table %s", groupTable, insertTable);
         return ContextStack.criteriaError(context, UnknownFieldGroupException::new, m);
+    }
+
+    public static CriteriaException instanceNotMatch(Statement statement, Class<?> statementClass) {
+        String m = String.format("%s isn't instance of %s"
+                , ClassUtils.safeClassName(statement), statementClass.getName());
+        throw new CriteriaException(m);
+    }
+
+    public static CriteriaException illegalNestedItems(@Nullable _NestedItems nestedItem, @Nullable Database database) {
+        String m = String.format("Illegal %s %s for %s",
+                _NestedItems.class.getName(),
+                ClassUtils.safeClassName(nestedItem),
+                database == null ? "standard" : database);
+        throw new CriteriaException(m);
+    }
+
+    public static CriteriaException illegalCteImpl(@Nullable _Cte cte) {
+        return new CriteriaException(String.format("Illegal Cte %s", cte));
+    }
+
+    public static CriteriaException nonArmyStatement(Statement statement) {
+        String m = String.format("%s isn't army implementation", ClassUtils.safeClassName(statement));
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException illegalWindow(@Nullable Window window) {
+        String m = String.format("Illegal window[%s]", ClassUtils.safeClassName(window));
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException illegalSqlElement(@Nullable SQLElement element) {
+        String m = String.format("Illegal SQLElement[%s]", ClassUtils.safeClassName(element));
+        return new CriteriaException(m);
     }
 
 
