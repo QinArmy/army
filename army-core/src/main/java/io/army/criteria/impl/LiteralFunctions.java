@@ -42,48 +42,48 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.*;
 
-abstract class LiteralFunctions {
+public abstract class LiteralFunctions {
 
-    LiteralFunctions() {
+    protected LiteralFunctions() {
         throw new UnsupportedOperationException();
     }
 
-    static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
+    public static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
         return new ZeroArgFunc(name, true, returnType);
     }
 
-    static SimpleExpression myZeroArgFunc(String name, TypeMeta returnType) {
+    public static SimpleExpression myZeroArgFunc(String name, TypeMeta returnType) {
         return new ZeroArgFunc(name, false, returnType);
     }
 
-    static SimpleExpression oneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
+    public static SimpleExpression oneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
         return new OneArgFunc(name, true, arg, returnType);
     }
 
-    static SimpleExpression myOneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
+    public static SimpleExpression myOneArgFunc(String name, @Nullable Object arg, TypeMeta returnType) {
         return new OneArgFunc(name, false, arg, returnType);
     }
 
-    static SimpleExpression twoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
+    public static SimpleExpression twoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
         return new TwoArgFunc(name, true, one, two, returnType);
     }
 
-    static SimpleExpression myTwoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
+    public static SimpleExpression myTwoArgFunc(String name, @Nullable Object one, @Nullable Object two, TypeMeta returnType) {
         return new TwoArgFunc(name, false, one, two, returnType);
     }
 
-    static SimpleExpression threeArgFunc(String name, @Nullable Object one, @Nullable Object two,
-                                         @Nullable Object three, TypeMeta returnType) {
+    public static SimpleExpression threeArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                                @Nullable Object three, TypeMeta returnType) {
         return new ThreeArgFunc(name, true, one, two, three, returnType);
     }
 
-    static SimpleExpression myThreeArgFunc(String name, @Nullable Object one, @Nullable Object two,
-                                           @Nullable Object three, TypeMeta returnType) {
+    public static SimpleExpression myThreeArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                                  @Nullable Object three, TypeMeta returnType) {
         return new ThreeArgFunc(name, false, one, two, three, returnType);
     }
 
-    static SimpleExpression fourArgFunc(String name, @Nullable Object one, @Nullable Object two,
-                                        @Nullable Object three, @Nullable Object four, TypeMeta returnType) {
+    public static SimpleExpression fourArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                               @Nullable Object three, @Nullable Object four, TypeMeta returnType) {
         final List<Object> argList = _Collections.arrayList(4);
 
         argList.add(one);
@@ -93,9 +93,9 @@ abstract class LiteralFunctions {
         return new MultiArgFunc(name, true, argList, returnType);
     }
 
-    static SimpleExpression fiveArgFunc(String name, @Nullable Object one, @Nullable Object two,
-                                        @Nullable Object three, @Nullable Object four, @Nullable Object five,
-                                        TypeMeta returnType) {
+    public static SimpleExpression fiveArgFunc(String name, @Nullable Object one, @Nullable Object two,
+                                               @Nullable Object three, @Nullable Object four, @Nullable Object five,
+                                               TypeMeta returnType) {
         final List<Object> argList = _Collections.arrayList(5);
 
         argList.add(one);
@@ -108,19 +108,19 @@ abstract class LiteralFunctions {
     }
 
 
-    static SimpleExpression multiArgFunc(String name, List<?> argList, TypeMeta returnType) {
+    public static SimpleExpression multiArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new MultiArgFunc(name, true, argList, returnType);
     }
 
-    static SimpleExpression myMultiArgFunc(String name, List<?> argList, TypeMeta returnType) {
+    public static SimpleExpression myMultiArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new MultiArgFunc(name, false, argList, returnType);
     }
 
-    static SimpleExpression compositeFunc(String name, List<?> argList, TypeMeta returnType) {
+    public static SimpleExpression compositeFunc(String name, List<?> argList, TypeMeta returnType) {
         return new CompositeFunc(name, argList, returnType);
     }
 
-    static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
+    public static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
         return new NoParensFunctionExpression(name, returnType);
     }
 
@@ -132,47 +132,47 @@ abstract class LiteralFunctions {
 
     /*-------------------below predicate function methods -------------------*/
 
-    static SimplePredicate zeroArgPredicate(String name) {
+    public static SimplePredicate zeroArgPredicate(String name) {
         return new ZeroArgPredicate(name, true);
     }
 
-    static SimplePredicate myZeroArgPredicate(String name) {
+    public static SimplePredicate myZeroArgPredicate(String name) {
         return new ZeroArgPredicate(name, false);
     }
 
-    static SimplePredicate oneArgPredicate(String name, @Nullable Object one) {
+    public static SimplePredicate oneArgPredicate(String name, @Nullable Object one) {
         return new OneArgPredicate(name, true, one);
     }
 
-    static SimplePredicate myOneArgPredicate(String name, @Nullable Object one) {
+    public static SimplePredicate myOneArgPredicate(String name, @Nullable Object one) {
         return new OneArgPredicate(name, false, one);
     }
 
-    static SimplePredicate twoArgPredicate(String name, @Nullable Object one, @Nullable Object two) {
+    public static SimplePredicate twoArgPredicate(String name, @Nullable Object one, @Nullable Object two) {
         return new TwoArgPredicate(name, true, one, two);
     }
 
-    static SimplePredicate myTwoArgPredicate(String name, @Nullable Object one, @Nullable Object two) {
+    public static SimplePredicate myTwoArgPredicate(String name, @Nullable Object one, @Nullable Object two) {
         return new TwoArgPredicate(name, false, one, two);
     }
 
-    static SimplePredicate threeArgPredicate(String name, @Nullable Object one, @Nullable Object two, @Nullable Object three) {
+    public static SimplePredicate threeArgPredicate(String name, @Nullable Object one, @Nullable Object two, @Nullable Object three) {
         return new ThreeArgPredicate(name, true, one, two, three);
     }
 
-    static SimplePredicate myThreeArgPredicate(String name, @Nullable Object one, @Nullable Object two, @Nullable Object three) {
+    public static SimplePredicate myThreeArgPredicate(String name, @Nullable Object one, @Nullable Object two, @Nullable Object three) {
         return new ThreeArgPredicate(name, false, one, two, three);
     }
 
-    static SimplePredicate multiArgPredicate(String name, List<?> argList) {
+    public static SimplePredicate multiArgPredicate(String name, List<?> argList) {
         return new MultiArgPredicate(name, true, argList);
     }
 
-    static SimplePredicate myMultiArgPredicate(String name, List<?> argList) {
+    public static SimplePredicate myMultiArgPredicate(String name, List<?> argList) {
         return new MultiArgPredicate(name, false, argList);
     }
 
-    static SQLFunction._CaseFuncWhenClause caseFunc(final @Nullable Object caseValue) {
+    public static SQLFunction._CaseFuncWhenClause caseFunc(final @Nullable Object caseValue) {
         return new CaseFunction(caseValue);
     }
 

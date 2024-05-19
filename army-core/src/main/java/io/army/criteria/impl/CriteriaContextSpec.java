@@ -21,7 +21,7 @@ package io.army.criteria.impl;
  * package interface and must be package interface
  * * @since 0.6.0
  */
-interface CriteriaContextSpec {
+public interface CriteriaContextSpec {
 
     CriteriaContext getContext();
 

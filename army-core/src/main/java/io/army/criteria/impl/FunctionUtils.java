@@ -38,19 +38,19 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-abstract class FunctionUtils {
+public abstract class FunctionUtils {
 
-    FunctionUtils() {
+    protected FunctionUtils() {
         throw new UnsupportedOperationException();
     }
 
 
-    interface ArmyFuncClause extends _SelfDescribed, Clause {
+    public interface ArmyFuncClause extends _SelfDescribed, Clause {
 
     }
 
 
-    interface FunctionOuterClause {
+    public interface FunctionOuterClause {
 
 
         void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context);
@@ -60,7 +60,7 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression oneArgFunc(String name, SQLExpression one, TypeMeta returnType) {
+    public static SimpleExpression oneArgFunc(String name, SQLExpression one, TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -68,8 +68,8 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression twoArgFunc(final String name, final SQLExpression one,
-                                       final SQLExpression two, TypeMeta returnType) {
+    public static SimpleExpression twoArgFunc(final String name, final SQLExpression one,
+                                              final SQLExpression two, TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -78,8 +78,8 @@ abstract class FunctionUtils {
         return new TwoArgFunction(name, one, two, returnType);
     }
 
-    static SimpleExpression threeArgFunc(final String name, final SQLExpression one, final SQLExpression two,
-                                         final SQLExpression three, TypeMeta returnType) {
+    public static SimpleExpression threeArgFunc(final String name, final SQLExpression one, final SQLExpression two,
+                                                final SQLExpression three, TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -90,9 +90,9 @@ abstract class FunctionUtils {
         return new ThreeArgFunction(name, one, two, three, returnType);
     }
 
-    static SimpleExpression fourArgFunc(final String name, final SQLExpression one, final SQLExpression two,
-                                        final SQLExpression three, final SQLExpression four,
-                                        final TypeMeta returnType) {
+    public static SimpleExpression fourArgFunc(final String name, final SQLExpression one, final SQLExpression two,
+                                               final SQLExpression three, final SQLExpression four,
+                                               final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -105,9 +105,9 @@ abstract class FunctionUtils {
         return new FourArgFunction(name, one, two, three, four, returnType);
     }
 
-    static SimpleExpression fiveArgFunc(final String name, final SQLExpression one, final SQLExpression two,
-                                        final SQLExpression three, final SQLExpression four,
-                                        final SQLExpression five, final TypeMeta returnType) {
+    public static SimpleExpression fiveArgFunc(final String name, final SQLExpression one, final SQLExpression two,
+                                               final SQLExpression three, final SQLExpression four,
+                                               final SQLExpression five, final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -122,10 +122,10 @@ abstract class FunctionUtils {
         return new FiveArgFunction(name, one, two, three, four, five, returnType);
     }
 
-    static SimpleExpression sixArgFunc(final String name, final SQLExpression one, final SQLExpression two,
-                                       final SQLExpression three, final SQLExpression four,
-                                       final SQLExpression five, final SQLExpression six,
-                                       final TypeMeta returnType) {
+    public static SimpleExpression sixArgFunc(final String name, final SQLExpression one, final SQLExpression two,
+                                              final SQLExpression three, final SQLExpression four,
+                                              final SQLExpression five, final SQLExpression six,
+                                              final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -142,10 +142,10 @@ abstract class FunctionUtils {
         return new SixArgFunction(name, one, two, three, four, five, six, returnType);
     }
 
-    static SimpleExpression sevenArgFunc(final String name, final SQLExpression one, final SQLExpression two,
-                                         final SQLExpression three, final SQLExpression four,
-                                         final SQLExpression five, final SQLExpression six,
-                                         final SQLExpression seven, final TypeMeta returnType) {
+    public static SimpleExpression sevenArgFunc(final String name, final SQLExpression one, final SQLExpression two,
+                                                final SQLExpression three, final SQLExpression four,
+                                                final SQLExpression five, final SQLExpression six,
+                                                final SQLExpression seven, final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -164,14 +164,14 @@ abstract class FunctionUtils {
         return new SevenArgFunction(name, one, two, three, four, five, six, seven, returnType);
     }
 
-    static SimpleExpression oneNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                            final TypeMeta returnType) {
+    public static SimpleExpression oneNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                                   final TypeMeta returnType) {
         assertNotation(name, null, validator, one);
         return oneArgFunc(name, one, returnType);
     }
 
-    static SimpleExpression twoNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                            final Expression two, final TypeMeta returnType) {
+    public static SimpleExpression twoNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                                   final Expression two, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -180,8 +180,8 @@ abstract class FunctionUtils {
         return twoArgFunc(name, one, two, returnType);
     }
 
-    static SimpleExpression threeNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                              final Expression two, final Expression three, final TypeMeta returnType) {
+    public static SimpleExpression threeNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                                     final Expression two, final Expression three, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -191,9 +191,9 @@ abstract class FunctionUtils {
         return threeArgFunc(name, one, two, three, returnType);
     }
 
-    static SimpleExpression fourNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                             final Expression two, final Expression three, final Expression four,
-                                             final TypeMeta returnType) {
+    public static SimpleExpression fourNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                                    final Expression two, final Expression three, final Expression four,
+                                                    final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -204,9 +204,9 @@ abstract class FunctionUtils {
         return fourArgFunc(name, one, two, three, four, returnType);
     }
 
-    static SimpleExpression fiveNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                             final Expression two, final Expression three, final Expression four,
-                                             final Expression five, final TypeMeta returnType) {
+    public static SimpleExpression fiveNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                                    final Expression two, final Expression three, final Expression four,
+                                                    final Expression five, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -219,9 +219,9 @@ abstract class FunctionUtils {
         return fiveArgFunc(name, one, two, three, four, five, returnType);
     }
 
-    static SimpleExpression sixNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                            final Expression two, final Expression three, final Expression four,
-                                            final Expression five, final Expression six, final TypeMeta returnType) {
+    public static SimpleExpression sixNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                                   final Expression two, final Expression three, final Expression four,
+                                                   final Expression five, final Expression six, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -235,10 +235,10 @@ abstract class FunctionUtils {
         return sixArgFunc(name, one, two, three, four, five, six, returnType);
     }
 
-    static SimpleExpression sevenNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                              final Expression two, final Expression three, final Expression four,
-                                              final Expression five, final Expression six, final Expression seven,
-                                              final TypeMeta returnType) {
+    public static SimpleExpression sevenNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                                     final Expression two, final Expression three, final Expression four,
+                                                     final Expression five, final Expression six, final Expression seven,
+                                                     final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -254,7 +254,7 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression namedNotation(final String name, final Expression argument) {
+    public static Expression namedNotation(final String name, final Expression argument) {
         if (!_DialectUtils.isSimpleIdentifier(name)) {
             String m = String.format("named notation[%s] isn't simple identifier.", name);
             throw ContextStack.clearStackAndCriteriaError(m);
@@ -269,7 +269,7 @@ abstract class FunctionUtils {
     }
 
 
-    static SimplePredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
+    public static SimplePredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -278,8 +278,8 @@ abstract class FunctionUtils {
         return new MultiArgFuncPredicate(name, true, null, twoExpList(name, one, two));
     }
 
-    static SimplePredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two,
-                                                 final Expression three) {
+    public static SimplePredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two,
+                                                        final Expression three) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -290,8 +290,8 @@ abstract class FunctionUtils {
         return new MultiArgFuncPredicate(name, true, null, threeExpList(name, one, two, three));
     }
 
-    static SimplePredicate fourArgPredicateFunc(final String name, final Expression one, final Expression two,
-                                                final Expression three, final Expression four) {
+    public static SimplePredicate fourArgPredicateFunc(final String name, final Expression one, final Expression two,
+                                                       final Expression three, final Expression four) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -311,18 +311,18 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
+    public static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
         return new ZeroArgFunction(name, true, returnType);
     }
 
-    static SimpleExpression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
+    public static SimpleExpression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
         if (!(exp instanceof FunctionArg)) {
             throw CriteriaUtils.funcArgError(name, exp);
         }
         return new OneArgFunction(name, exp, returnType);
     }
 
-    static SimpleExpression oneAndMulti(String name, Expression one, Expression multi, TypeMeta returnType) {
+    public static SimpleExpression oneAndMulti(String name, Expression one, Expression multi, TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(multi instanceof FunctionArg)) {
@@ -331,8 +331,8 @@ abstract class FunctionUtils {
         return new TwoArgFunction(name, one, multi, returnType);
     }
 
-    static SimpleExpression twoOrMultiArgFunc(final String name, final Expression one, final Expression two,
-                                              TypeMeta returnType) {
+    public static SimpleExpression twoOrMultiArgFunc(final String name, final Expression one, final Expression two,
+                                                     TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -341,8 +341,8 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
-    static SimpleExpression oneAndMultiArgFunc(final String name, final Expression exp, final List<Expression> expList,
-                                               final TypeMeta returnType) {
+    public static SimpleExpression oneAndMultiArgFunc(final String name, final Expression exp, final List<Expression> expList,
+                                                      final TypeMeta returnType) {
         if (exp instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, exp);
         }
@@ -358,7 +358,7 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
-    static SimpleExpression consumerAndFirstTypeFunc(final String name, final Consumer<Consumer<Expression>> consumer) {
+    public static SimpleExpression consumerAndFirstTypeFunc(final String name, final Consumer<Consumer<Expression>> consumer) {
         final List<ArmyExpression> argList = _Collections.arrayList();
         consumer.accept(exp -> {
             if (!(exp instanceof FunctionArg)) {
@@ -394,9 +394,9 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static SimpleExpression oneAndConsumer(final String name, final boolean required, final Expression one,
-                                           final Consumer<Consumer<Expression>> consumer,
-                                           TypeMeta returnType) {
+    public static SimpleExpression oneAndConsumer(final String name, final boolean required, final Expression one,
+                                                  final Consumer<Consumer<Expression>> consumer,
+                                                  TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -422,13 +422,13 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static SimpleExpression twoAndMultiArgFunc(final String name, final Expression exp1, Expression exp2,
-                                               final List<Expression> expList, final TypeMeta returnType) {
+    public static SimpleExpression twoAndMultiArgFunc(final String name, final Expression exp1, Expression exp2,
+                                                      final List<Expression> expList, final TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, twoAndMultiExpList(name, exp1, exp2, expList), returnType);
     }
 
-    static SimpleExpression multiArgFunc(final String name, final boolean required,
-                                         final List<? extends SQLExpression> argList, final TypeMeta returnType) {
+    public static SimpleExpression multiArgFunc(final String name, final boolean required,
+                                                final List<? extends SQLExpression> argList, final TypeMeta returnType) {
         final SimpleExpression func;
         if (argList.size() > 0) {
             final List<ArmySQLExpression> list = _Collections.arrayList(argList.size());
@@ -448,16 +448,16 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static SimpleExpression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
+    public static SimpleExpression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, expList(name, argList), returnType);
     }
 
 
-    static SimpleExpression staticStringObjectStringFunc(final String name, final boolean required,
-                                                         final BiFunction<MappingType, String[], Expression> funcRef,
-                                                         final MappingType paramType,
-                                                         final Consumer<Statement._StringObjectSpaceClause> consumer,
-                                                         final TypeMeta returnType) {
+    public static SimpleExpression staticStringObjectStringFunc(final String name, final boolean required,
+                                                                final BiFunction<MappingType, String[], Expression> funcRef,
+                                                                final MappingType paramType,
+                                                                final Consumer<Statement._StringObjectSpaceClause> consumer,
+                                                                final TypeMeta returnType) {
 
         final List<String> pairList = _Collections.arrayList();
         final CriteriaSupports.StringObjectSpaceClause clause;
@@ -479,12 +479,12 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static SimpleExpression dynamicStringObjectStringFunc(final String name, final SQLs.SymbolSpace space,
-                                                          final boolean required,
-                                                          final BiFunction<MappingType, String[], Expression> funcRef,
-                                                          final MappingType paramType,
-                                                          final Consumer<Statement._StringObjectConsumer> consumer,
-                                                          final TypeMeta returnType) {
+    public static SimpleExpression dynamicStringObjectStringFunc(final String name, final SQLs.SymbolSpace space,
+                                                                 final boolean required,
+                                                                 final BiFunction<MappingType, String[], Expression> funcRef,
+                                                                 final MappingType paramType,
+                                                                 final Consumer<Statement._StringObjectConsumer> consumer,
+                                                                 final TypeMeta returnType) {
         if (space != SQLs.SPACE) {
             throw CriteriaUtils.errorSymbol(space);
         }
@@ -510,7 +510,7 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression oneAndRestFunc(String name, TypeMeta returnType, Expression first, Expression... rest) {
+    public static SimpleExpression oneAndRestFunc(String name, TypeMeta returnType, Expression first, Expression... rest) {
         if (!(first instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, first);
         }
@@ -526,8 +526,8 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static SimpleExpression oneAndAtLeastFunc(String name, TypeMeta returnType, Expression one, Expression first,
-                                              Expression... rest) {
+    public static SimpleExpression oneAndAtLeastFunc(String name, TypeMeta returnType, Expression one, Expression first,
+                                                     Expression... rest) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, first);
         } else if (!(first instanceof FunctionArg)) {
@@ -541,7 +541,7 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression twoAndMaxRestForSingleExpFunc(String name, TypeMeta returnType
+    public static SimpleExpression twoAndMaxRestForSingleExpFunc(String name, TypeMeta returnType
             , Expression one, Expression two, final int maxRest, Expression... rest) {
         assert maxRest > 0;
         if (rest.length > maxRest) {
@@ -561,8 +561,8 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression multiArgFunc(final String name, final TypeMeta returnType, final Expression firstArg,
-                                         final Expression... exps) {
+    public static SimpleExpression multiArgFunc(final String name, final TypeMeta returnType, final Expression firstArg,
+                                                final Expression... exps) {
         final List<ArmyExpression> argList = new ArrayList<>(1 + exps.length);
         argList.add((ArmyExpression) firstArg);
         for (Expression exp : exps) {
@@ -574,8 +574,8 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
-    static SimpleExpression multiNotationFunc(final String name, final TypeMeta returnType, final Predicate<String> validator,
-                                              final Expression firstArg, final Expression... restExp) {
+    public static SimpleExpression multiNotationFunc(final String name, final TypeMeta returnType, final Predicate<String> validator,
+                                                     final Expression firstArg, final Expression... restExp) {
         String notation = null;
         if (firstArg instanceof NamedNotation) {
             notation = ((NamedNotation) firstArg).name;
@@ -597,36 +597,36 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
+    public static SimpleExpression jsonMapFunc(String name, Map<String, ?> map, TypeMeta returnType) {
         return new JsonMapFunc(name, map, returnType);
     }
 
-    static SimpleExpression simpleJsonObjectFunc(String name, List<?> argList, TypeMeta returnType) {
+    public static SimpleExpression simpleJsonObjectFunc(String name, List<?> argList, TypeMeta returnType) {
         return new SimpleJsonObjectFunc(name, argList, returnType);
     }
 
 
-    static SimpleExpression safeMultiArgFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
+    public static SimpleExpression safeMultiArgFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
-    static SimpleExpression clauseFunc(String name, ArmyFuncClause clause, TypeMeta returnType) {
+    public static SimpleExpression clauseFunc(String name, ArmyFuncClause clause, TypeMeta returnType) {
         return new ArmyFuncClauseFunction(name, clause, returnType);
     }
 
 
-    static SimplePredicate zeroArgFuncPredicate(final String name) {
+    public static SimplePredicate zeroArgFuncPredicate(final String name) {
         return new ZeroArgFuncPredicate(name, true);
     }
 
-    static SimplePredicate oneArgPredicateFunc(final String name, final Expression argument) {
+    public static SimplePredicate oneArgPredicateFunc(final String name, final Expression argument) {
         if (argument instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, argument);
         }
         return new OneArgFuncPredicate(name, true, argument);
     }
 
-    static SimplePredicate multiArgFuncPredicate(String name, List<Expression> expList) {
+    public static SimplePredicate multiArgFuncPredicate(String name, List<Expression> expList) {
         final int size = expList.size();
         final SimplePredicate function;
         switch (size) {
@@ -645,17 +645,17 @@ abstract class FunctionUtils {
     }
 
 
-    static SimplePredicate twoAndMultiArgFuncPredicate(final String name, final Expression exp1, Expression exp2
+    public static SimplePredicate twoAndMultiArgFuncPredicate(final String name, final Expression exp1, Expression exp2
             , final List<Expression> expList) {
         return new MultiArgFuncPredicate(name, true, null, twoAndMultiExpList(name, exp1, exp2, expList));
     }
 
 
-    static SimplePredicate complexArgPredicate(final String name, List<?> argList) {
+    public static SimplePredicate complexArgPredicate(final String name, List<?> argList) {
         return new ComplexArgFuncPredicate(name, true, argList);
     }
 
-    static SimplePredicate oneAndRestFuncPredicate(String name, Expression first, Expression... rest) {
+    public static SimplePredicate oneAndRestFuncPredicate(String name, Expression first, Expression... rest) {
         if (first instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, first);
         }
@@ -671,7 +671,7 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static SimplePredicate complexArgPredicateFrom(final String name, Object firstArg, @Nullable Object... args) {
+    public static SimplePredicate complexArgPredicateFrom(final String name, Object firstArg, @Nullable Object... args) {
         final List<Object> argList;
         if (args == null) {
             argList = Collections.singletonList(firstArg);
@@ -688,11 +688,11 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression complexArgFunc(String name, List<?> argList, TypeMeta returnType) {
+    public static SimpleExpression complexArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new ComplexArgFuncExpression(name, true, argList, returnType);
     }
 
-    static SimpleExpression complexArgFunc(String name, TypeMeta returnType, Object... args) {
+    public static SimpleExpression complexArgFunc(String name, TypeMeta returnType, Object... args) {
         final List<Object> argList;
         if (args.length == 1) {
             argList = _Collections.singletonList(args[0]);
@@ -703,18 +703,18 @@ abstract class FunctionUtils {
         return new ComplexArgFuncExpression(name, true, argList, returnType);
     }
 
-    static NamedExpression namedComplexArgFunc(String name, List<?> argList, TypeMeta returnType, String expAlias) {
+    public static NamedExpression namedComplexArgFunc(String name, List<?> argList, TypeMeta returnType, String expAlias) {
         return new NamedComplexArgFunc(name, true, argList, returnType, expAlias);
     }
 
-    static SimpleExpression oneArgRowElementFunc(String name, Object one, TypeMeta returnType) {
+    public static SimpleExpression oneArgRowElementFunc(String name, Object one, TypeMeta returnType) {
         if (one instanceof _SelectionGroup._TableFieldGroup || one instanceof SubQuery) {
             throw CriteriaUtils.funcArgError(name, one);
         }
         return new MultiArgRowElementFunc(name, true, _Collections.singletonList(one), returnType);
     }
 
-    static SimpleExpression twoArgRowElementFunc(String name, Object one, Object two, TypeMeta returnType) {
+    public static SimpleExpression twoArgRowElementFunc(String name, Object one, Object two, TypeMeta returnType) {
         if (one instanceof _SelectionGroup._TableFieldGroup || one instanceof SubQuery) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof _SelectionGroup._TableFieldGroup || two instanceof SubQuery) {
@@ -723,8 +723,8 @@ abstract class FunctionUtils {
         return new MultiArgRowElementFunc(name, true, ArrayUtils.of(one, two), returnType);
     }
 
-    static SimpleExpression threeAndRestRowElementFunc(final String name, final TypeMeta returnType, final Object one,
-                                                       final Object two, final Object three, final Object... rest) {
+    public static SimpleExpression threeAndRestRowElementFunc(final String name, final TypeMeta returnType, final Object one,
+                                                              final Object two, final Object three, final Object... rest) {
         if (one instanceof _SelectionGroup._TableFieldGroup || one instanceof SubQuery) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof _SelectionGroup._TableFieldGroup || two instanceof SubQuery) {
@@ -746,8 +746,8 @@ abstract class FunctionUtils {
         return new MultiArgRowElementFunc(name, true, argList, returnType);
     }
 
-    static SimpleExpression rowElementFunc(final String name, final boolean required,
-                                           final Consumer<Consumer<Object>> consumer, final TypeMeta returnType) {
+    public static SimpleExpression rowElementFunc(final String name, final boolean required,
+                                                  final Consumer<Consumer<Object>> consumer, final TypeMeta returnType) {
         final List<Object> argList = _Collections.arrayList();
         consumer.accept(e -> {
             if (e instanceof _SelectionGroup._TableFieldGroup || e instanceof SubQuery) {
@@ -761,9 +761,9 @@ abstract class FunctionUtils {
         return new MultiArgRowElementFunc(name, true, argList, returnType);
     }
 
-    static SimpleExpression objectElementFunc(final String name, final boolean required,
-                                              final Consumer<Clause._PairVariadicSpaceClause> consumer,
-                                              final TypeMeta returnType) {
+    public static SimpleExpression objectElementFunc(final String name, final boolean required,
+                                                     final Consumer<Clause._PairVariadicSpaceClause> consumer,
+                                                     final TypeMeta returnType) {
         final List<Object> argList = _Collections.arrayList();
         final CriteriaSupports.StaticObjectConsumer objectConsumer;
         objectConsumer = CriteriaSupports.staticObjectConsumer(required, e -> {
@@ -780,13 +780,13 @@ abstract class FunctionUtils {
 
     }
 
-    static SimpleExpression oneArgObjectElementFunc(String name, RowElement one, TypeMeta returnType) {
+    public static SimpleExpression oneArgObjectElementFunc(String name, RowElement one, TypeMeta returnType) {
         return new ObjectElementFunction(name, true, _Collections.singletonList(one), returnType);
     }
 
-    static SimpleExpression objectElementFunc(SQLs.SymbolSpace space, final String name, final boolean required,
-                                              final Consumer<Clause._PairVariadicConsumerClause> consumer,
-                                              final TypeMeta returnType) {
+    public static SimpleExpression objectElementFunc(SQLs.SymbolSpace space, final String name, final boolean required,
+                                                     final Consumer<Clause._PairVariadicConsumerClause> consumer,
+                                                     final TypeMeta returnType) {
         if (space != SQLs.SPACE) {
             throw CriteriaUtils.funcArgError(name, space);
         }
@@ -807,23 +807,23 @@ abstract class FunctionUtils {
     }
 
 
-    static OrderByOptionClause orderByOptionClause() {
+    public static OrderByOptionClause orderByOptionClause() {
         return new OrderByOptionClause();
     }
 
-    static OrderByOptionClause orderByOptionClause(CriteriaContext outerContext) {
+    public static OrderByOptionClause orderByOptionClause(CriteriaContext outerContext) {
         return new OrderByOptionClause(outerContext);
     }
 
 
     @Deprecated
-    static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
+    public static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
         throw new UnsupportedOperationException();
     }
 
 
-    static void appendArguments(final @Nullable SQLWords option, final List<? extends ArmySQLExpression> argList,
-                                final _SqlContext context) {
+    public static void appendArguments(final @Nullable SQLWords option, final List<? extends ArmySQLExpression> argList,
+                                       final _SqlContext context) {
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -846,7 +846,7 @@ abstract class FunctionUtils {
 
     }
 
-    static void argumentsToString(final @Nullable SQLWords option, final List<? extends ArmySQLExpression> argList
+    public static void argumentsToString(final @Nullable SQLWords option, final List<? extends ArmySQLExpression> argList
             , final StringBuilder builder) {
 
         if (option != null) {
@@ -867,7 +867,7 @@ abstract class FunctionUtils {
     }
 
 
-    static void appendComplexArg(final List<?> argumentList, final _SqlContext context) {
+    public static void appendComplexArg(final List<?> argumentList, final _SqlContext context) {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
         final DialectParser parser = context.parser();
@@ -904,7 +904,7 @@ abstract class FunctionUtils {
 
     }
 
-    static void complexArgToString(final List<?> argumentList, final StringBuilder builder) {
+    public static void complexArgToString(final List<?> argumentList, final StringBuilder builder) {
         for (Object o : argumentList) {
             if (o instanceof SQLExpression) {
                 builder.append(o);
@@ -932,7 +932,7 @@ abstract class FunctionUtils {
     }
 
 
-    static void addRestExp(final String name, final List<ArmyExpression> expList, final Expression... rest) {
+    public static void addRestExp(final String name, final List<ArmyExpression> expList, final Expression... rest) {
         for (Expression exp : rest) {
             if (!(exp instanceof FunctionArg)) {
                 throw CriteriaUtils.funcArgError(name, exp);
@@ -942,7 +942,7 @@ abstract class FunctionUtils {
     }
 
 
-    static List<ArmyExpression> twoExpList(final String name, Expression one, Expression two) {
+    public static List<ArmyExpression> twoExpList(final String name, Expression one, Expression two) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -951,7 +951,7 @@ abstract class FunctionUtils {
         return Arrays.asList((ArmyExpression) one, (ArmyExpression) two);
     }
 
-    static List<ArmyExpression> threeExpList(final String name, Expression one, Expression two, Expression three) {
+    public static List<ArmyExpression> threeExpList(final String name, Expression one, Expression two, Expression three) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -962,7 +962,7 @@ abstract class FunctionUtils {
         return Arrays.asList((ArmyExpression) one, (ArmyExpression) two, (ArmyExpression) three);
     }
 
-    static void appendExpList(final List<ArmyExpression> argList, final List<Expression> expList) {
+    public static void appendExpList(final List<ArmyExpression> argList, final List<Expression> expList) {
         for (Expression exp : expList) {
             argList.add((ArmyExpression) exp);
         }
@@ -971,7 +971,7 @@ abstract class FunctionUtils {
     /**
      * @see #twoAndMaxRestForSingleExpFunc(String, TypeMeta, Expression, Expression, int, Expression...)
      */
-    static void appendTwoSingleExp(List<ArmyExpression> argList, String name
+    public static void appendTwoSingleExp(List<ArmyExpression> argList, String name
             , Expression one, Expression two) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
@@ -983,7 +983,7 @@ abstract class FunctionUtils {
     }
 
 
-    static List<ArmyExpression> twoAndMultiExpList(final String name, final Expression exp1, Expression exp2
+    public static List<ArmyExpression> twoAndMultiExpList(final String name, final Expression exp1, Expression exp2
             , final List<Expression> expList) {
         final int size = expList.size();
         if (size == 0) {
@@ -997,7 +997,7 @@ abstract class FunctionUtils {
         return argList;
     }
 
-    static List<ArmyExpression> expList(final String name, final List<Expression> expList) {
+    public static List<ArmyExpression> expList(final String name, final List<Expression> expList) {
         final int size = expList.size();
         if (size == 0) {
             throw CriteriaUtils.funcArgListIsEmpty(name);
@@ -1010,8 +1010,8 @@ abstract class FunctionUtils {
     }
 
 
-    static Map<String, Selection> createSelectionMapFrom(final @Nullable CriteriaContext context,
-                                                         final List<? extends Selection> selectionList) {
+    public static Map<String, Selection> createSelectionMapFrom(final @Nullable CriteriaContext context,
+                                                                final List<? extends Selection> selectionList) {
         final Map<String, Selection> map = _Collections.hashMap((int) (selectionList.size() / 0.75F));
         for (Selection s : selectionList) {
             if (map.putIfAbsent(s.label(), s) == null) {
@@ -1065,21 +1065,21 @@ abstract class FunctionUtils {
     }
 
 
-    interface NoArgFunction {
+    public interface NoArgFunction {
 
     }
 
 
-    interface SimpleFunction {
+    public interface SimpleFunction {
 
     }
 
-    interface NoParensFunction extends SimpleFunction {
+    public interface NoParensFunction extends SimpleFunction {
 
     }
 
 
-    enum NullTreatment implements SQLWords {
+    public enum NullTreatment implements SQLWords {
 
         RESPECT_NULLS(" RESPECT NULLS"),
         IGNORE_NULLS(" IGNORE NULLS");
@@ -1101,9 +1101,9 @@ abstract class FunctionUtils {
         }
 
 
-    }//NullTreatment
+    } //NullTreatment
 
-    enum FromFirstLast implements SQLWords {
+    public enum FromFirstLast implements SQLWords {
 
         FROM_FIRST(" FROM FIRST"),
         FROM_LAST(" FROM LAST");
@@ -1124,10 +1124,10 @@ abstract class FunctionUtils {
             return CriteriaUtils.enumToString(this);
         }
 
-    }//FromFirstLast
+    } //FromFirstLast
 
 
-    static final class NamedNotation extends NonOperationExpression {
+    public static final class NamedNotation extends NonOperationExpression {
 
         final String name;
 
@@ -1810,7 +1810,7 @@ abstract class FunctionUtils {
     }//ArmyFuncClauseFunction
 
 
-    static final class OrderByOptionClause
+    public static final class OrderByOptionClause
             extends OrderByClause.OrderByClauseClause<Statement._SimpleOrderByCommaClause, Item>
             implements ArmyFuncClause,
             Statement._SimpleOrderByClause,

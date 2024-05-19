@@ -30,10 +30,10 @@ import io.army.util._Exceptions;
 import javax.annotation.Nullable;
 import java.util.Locale;
 
-abstract class TypeDefs implements TypeDef {
+public abstract class TypeDefs implements TypeDef {
 
 
-    static _TypeDefCharacterSetSpec precision(final DataType dataType, final boolean textType,
+    public static _TypeDefCharacterSetSpec precision(final DataType dataType, final boolean textType,
                                               final long precision, final long maxValue) {
         if (precision < 0L || precision > maxValue) {
             throw precisionError(dataType, precision);
@@ -42,7 +42,7 @@ abstract class TypeDefs implements TypeDef {
     }
 
 
-    static TypeDef precisionAndScale(final DataType dataType, final int precision, final int scale,
+    public static TypeDef precisionAndScale(final DataType dataType, final int precision, final int scale,
                                      final int maxPrecision, final int maxScale) {
         if (precision < 0 || precision > maxPrecision) {
             throw precisionError(dataType, precision);

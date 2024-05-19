@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 
-abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
+public abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
         implements _ValuesQuery,
         Values._ValuesDynamicColumnClause,
         Values._ValueStaticColumnSpaceClause,
@@ -58,7 +58,7 @@ abstract class SimpleValues<I extends Item, OR, OD, LR, LO, LF, SP> extends Limi
 
     private Boolean prepared;
 
-    SimpleValues(CriteriaContext context) {
+    protected SimpleValues(CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
     }

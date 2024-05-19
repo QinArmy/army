@@ -4599,7 +4599,7 @@ public abstract class CriteriaContexts {
     }//ImmutableOrdinalRefSelection
 
 
-    static final class RecursiveCte implements _Cte {
+    public static final class RecursiveCte implements _Cte {
 
         private final StatementContext topContextOfCte;
 

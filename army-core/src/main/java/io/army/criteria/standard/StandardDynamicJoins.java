@@ -111,7 +111,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
     @Override
-    final StandardStatement._DynamicJoinSpec onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
+    protected final StandardStatement._DynamicJoinSpec onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                          TableMeta<?> table, String alias) {
 
         final StandardDynamicBlock block;
@@ -121,7 +121,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    final Statement._AsClause<StandardStatement._DynamicJoinSpec> onFromDerived(
+    protected final Statement._AsClause<StandardStatement._DynamicJoinSpec> onFromDerived(
             _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
 
         return alias -> {
@@ -134,7 +134,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
     @Override
-    final Statement._OnClause<StandardStatement._DynamicJoinSpec> onJoinTable(
+    protected final Statement._OnClause<StandardStatement._DynamicJoinSpec> onJoinTable(
             _JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final StandardDynamicBlock block;
         block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
@@ -143,7 +143,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    final Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onJoinDerived(
+    protected final Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onJoinDerived(
             _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final StandardDynamicBlock block;
@@ -154,18 +154,18 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    final Void onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
+    protected final Void onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
     @Override
-    final Void onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
+    protected final Void onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+    protected final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
@@ -218,7 +218,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
         @Override
-        Statement._OnClause<StandardStatement._DynamicJoinSpec> onTable(
+        protected Statement._OnClause<StandardStatement._DynamicJoinSpec> onTable(
                 @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final StandardDynamicBlock block;
             block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, modifier, table, tableAlias);
@@ -227,7 +227,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onDerived(
+        protected Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onDerived(
                 @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardDynamicBlock block;
@@ -238,7 +238,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        Item onCte(_Cte cteItem, String alias) {
+        protected Item onCte(_Cte cteItem, String alias) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
@@ -251,7 +251,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
         @Override
-        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+        protected boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             return CriteriaUtils.isIllegalLateral(modifier);
         }
 
@@ -278,7 +278,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        StandardStatement._DynamicJoinSpec onTable(
+        protected StandardStatement._DynamicJoinSpec onTable(
                 @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final StandardDynamicBlock block;
             block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, modifier, table, tableAlias);
@@ -287,7 +287,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        Statement._AsClause<StandardStatement._DynamicJoinSpec> onDerived(
+        protected Statement._AsClause<StandardStatement._DynamicJoinSpec> onDerived(
                 @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardDynamicBlock block;
@@ -298,7 +298,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        Item onCte(_Cte cteItem, String alias) {
+        protected Item onCte(_Cte cteItem, String alias) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
@@ -310,7 +310,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+        protected boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             return CriteriaUtils.isIllegalLateral(modifier);
         }
 

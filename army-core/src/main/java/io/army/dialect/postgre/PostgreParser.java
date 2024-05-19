@@ -18,7 +18,7 @@ package io.army.dialect.postgre;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._LiteralExpression;
-import io.army.criteria.impl._SQLConsultant;
+import io.army.criteria.standard._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardStatement;

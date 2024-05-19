@@ -16,13 +16,12 @@
 
 package io.army.criteria.impl;
 
-import io.army.criteria.standard.StandardQueries;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 
 
 /**
- * package enum,This enum is designed for standard statement. For example : {@link StandardQueries}
+ * package enum,This enum is designed for standard statement. For example : {@code  StandardQueries}
  *
  * @since 0.6.0
  */

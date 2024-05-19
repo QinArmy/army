@@ -42,7 +42,7 @@ import java.util.function.Supplier;
  * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends SqlField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+public abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends SqlField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object, Object>
         implements _Update,
         DialectStatement._DynamicWithClause<B, WE>,
@@ -64,7 +64,7 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
 
     private Boolean prepared;
 
-    JoinableUpdate(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
+    protected JoinableUpdate(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
         super(context);
         if (spec != null) {
             this.recursive = spec.isRecursive();
@@ -341,21 +341,21 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     }
 
 
-    abstract I onAsUpdate();
+    protected abstract I onAsUpdate();
 
-    void onClear() {
+    protected void onClear() {
         //no-op
     }
 
-    void onBeforeContextEnd() {
+    protected void onBeforeContextEnd() {
         //no-op
     }
 
 
-    abstract B createCteBuilder(boolean recursive);
+    protected abstract B createCteBuilder(boolean recursive);
 
-    final SR onAddItemPair(final ItemPair pair) {
-        if (!(pair instanceof SQLs.ArmyItemPair)) {
+    protected final SR onAddItemPair(final ItemPair pair) {
+        if (!(pair instanceof Armies.ArmyItemPair)) {
             String m = String.format("unknown %s[%s]", ItemPair.class.getName(), ClassUtils.safeClassName(pair));
             throw ContextStack.criteriaError(this.context, m);
         }
@@ -369,14 +369,14 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
         return (SR) this;
     }
 
-    final WE endStaticWithClause(final boolean recursive) {
+    protected final WE endStaticWithClause(final boolean recursive) {
         this.recursive = recursive;
         this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
         return (WE) this;
     }
 
 
-    final void endUpdateStatement() {
+    protected final void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
 
         this.onBeforeContextEnd();

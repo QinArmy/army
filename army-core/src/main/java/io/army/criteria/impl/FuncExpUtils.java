@@ -36,13 +36,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-abstract class FuncExpUtils {
+public abstract class FuncExpUtils {
     private FuncExpUtils() {
         throw new UnsupportedOperationException();
     }
 
 
-    static Expression jsonPathExp(final Object path) {
+    public static Expression jsonPathExp(final Object path) {
         final Expression pathExp;
         if (path instanceof String) {
             pathExp = SQLs.literal(StringType.INSTANCE, path);
@@ -54,7 +54,7 @@ abstract class FuncExpUtils {
         return pathExp;
     }
 
-    static Expression jsonDocExp(final Object json) {
+    public static Expression jsonDocExp(final Object json) {
         final Expression jsonExp;
         if (json instanceof Expression) {
             jsonExp = (Expression) json;
@@ -65,7 +65,7 @@ abstract class FuncExpUtils {
     }
 
 
-    static Object localDateLiteralExp(final Object date) {
+    public static Object localDateLiteralExp(final Object date) {
         if (date instanceof Expression || date instanceof LocalDate) {
             return date;
         }
@@ -84,7 +84,7 @@ abstract class FuncExpUtils {
 
     }
 
-    static Object localTimeLiteralExp(final Object date) {
+    public static Object localTimeLiteralExp(final Object date) {
         if (date instanceof Expression || date instanceof LocalTime) {
             return date;
         }
@@ -103,7 +103,7 @@ abstract class FuncExpUtils {
 
     }
 
-    static Object localDateTimeLiteralExp(final Object date) {
+    public static Object localDateTimeLiteralExp(final Object date) {
         if (date instanceof Expression || date instanceof LocalDateTime) {
             return date;
         }
@@ -122,7 +122,7 @@ abstract class FuncExpUtils {
 
     }
 
-    static Object localOffsetDateTimeLiteralExp(final Object date) {
+    public static Object localOffsetDateTimeLiteralExp(final Object date) {
         if (date instanceof Expression
                 || date instanceof LocalDateTime
                 || date instanceof OffsetDateTime
@@ -157,49 +157,49 @@ abstract class FuncExpUtils {
     }
 
 
-    static void assertLiteralExp(final Object exp) {
+    public static void assertLiteralExp(final Object exp) {
         if (!(exp instanceof Expression || !(exp instanceof Item))) {
             throw CriteriaUtils.mustExpressionOrLiteral("argument");
         }
     }
 
-    static void assertPathExp(final Object path) {
+    public static void assertPathExp(final Object path) {
         if (!(path instanceof String || path instanceof Expression)) {
             throw CriteriaUtils.mustExpressionOrType("path", String.class);
         }
     }
 
-    static void assertTextExp(final @Nullable Object path) {
+    public static void assertTextExp(final @Nullable Object path) {
         if (!(path instanceof String || path instanceof Expression)) {
             throw CriteriaUtils.mustExpressionOrType("text", String.class);
         }
     }
 
-    static void assertIntExp(final Object intValue) {
+    public static void assertIntExp(final Object intValue) {
         if (!(intValue instanceof Integer || intValue instanceof Expression)) {
             throw CriteriaUtils.mustExpressionOrType("integer value", Integer.class);
         }
     }
 
-    static void assertWord(Object param, Object word) {
+    public static void assertWord(Object param, Object word) {
         if (param != word) {
             throw CriteriaUtils.unknownWords(param);
         }
     }
 
-    static void assertDistinct(SQLs.ArgDistinct distinct, SQLs.ArgDistinct dialect) {
+    public static void assertDistinct(SQLs.ArgDistinct distinct, SQLs.ArgDistinct dialect) {
         if (distinct != SQLs.DISTINCT && distinct != dialect) {
             throw CriteriaUtils.unknownWords(distinct);
         }
     }
 
-    static void assertTrimSpec(SQLs.TrimSpec position) {
+    public static void assertTrimSpec(SQLs.TrimSpec position) {
         if (!(position instanceof SqlWords.WordTrimPosition)) {
             throw CriteriaUtils.unknownWords(position);
         }
     }
 
-    static void assertIntOrLongExp(final Object value) {
+    public static void assertIntOrLongExp(final Object value) {
         if (!(value instanceof Integer || value instanceof Long || value instanceof Expression)) {
             String m = String.format("value must be %s or %s or %s", Expression.class.getName(),
                     Integer.class.getName(), Long.class.getName());
@@ -207,13 +207,13 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void assertNumberExp(final Object value) {
+    public static void assertNumberExp(final Object value) {
         if (!(value instanceof Number || value instanceof Expression)) {
             throw CriteriaUtils.mustExpressionOrType("number value", Number.class);
         }
     }
 
-    static void appendJsonDoc(final Object jsonDoc, final StringBuilder sqlBuilder, final _SqlContext context) {
+    public static void appendJsonDoc(final Object jsonDoc, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (jsonDoc instanceof Expression) {
             ((ArmyExpression) jsonDoc).appendSql(sqlBuilder, context);
         } else {
@@ -221,7 +221,7 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void appendPathExp(final Object pathExp, final StringBuilder sqlBuilder, final _SqlContext context) {
+    public static void appendPathExp(final Object pathExp, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (pathExp instanceof String) {
             context.appendLiteral(StringType.INSTANCE, pathExp, true);
         } else if (pathExp instanceof Expression) {
@@ -233,7 +233,7 @@ abstract class FuncExpUtils {
     }
 
 
-    static void appendIntExp(final Object intExp, final StringBuilder sqlBuilder, final _SqlContext context) {
+    public static void appendIntExp(final Object intExp, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (intExp instanceof Expression) {
             ((ArmyExpression) intExp).appendSql(sqlBuilder, context);
         } else {
@@ -241,7 +241,7 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void addTextExpList(final List<Object> argList, String argName, final List<?> expList) {
+    public static void addTextExpList(final List<Object> argList, String argName, final List<?> expList) {
         for (Object exp : expList) {
             if (exp instanceof String || exp instanceof Expression) {
                 argList.add(exp);
@@ -251,7 +251,7 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void addAllTextExp(final List<Object> argList, String argName, final Object[] expArray) {
+    public static void addAllTextExp(final List<Object> argList, String argName, final Object[] expArray) {
         for (Object exp : expArray) {
             if (exp instanceof String || exp instanceof Expression) {
                 argList.add(exp);
@@ -262,8 +262,8 @@ abstract class FuncExpUtils {
     }
 
 
-    static void appendLiteral(final String funcName, final @Nullable Object literal, final StringBuilder sqlBuilder,
-                              final _SqlContext context) {
+    public static void appendLiteral(final String funcName, final @Nullable Object literal, final StringBuilder sqlBuilder,
+                                     final _SqlContext context) {
         if (literal == null) {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (literal instanceof Expression) {
@@ -279,8 +279,8 @@ abstract class FuncExpUtils {
 
     }
 
-    static void appendLiteralList(final String funcName, final List<?> literalList, final StringBuilder sqlBuilder,
-                                  final _SqlContext context) {
+    public static void appendLiteralList(final String funcName, final List<?> literalList, final StringBuilder sqlBuilder,
+                                         final _SqlContext context) {
         final int size = literalList.size();
 
         for (int i = 0; i < size; i++) {
@@ -292,7 +292,7 @@ abstract class FuncExpUtils {
 
     }
 
-    static void literalListToString(final List<?> literalList, final StringBuilder builder) {
+    public static void literalListToString(final List<?> literalList, final StringBuilder builder) {
         final int size = literalList.size();
         for (int i = 0; i < size; i++) {
             if (i > 0) {
@@ -303,7 +303,7 @@ abstract class FuncExpUtils {
 
     }
 
-    static void literalToString(final @Nullable Object literal, final StringBuilder builder) {
+    public static void literalToString(final @Nullable Object literal, final StringBuilder builder) {
         if (literal == null) {
             builder.append(_Constant.SPACE_NULL);
         } else if (literal instanceof Expression) {
@@ -314,8 +314,8 @@ abstract class FuncExpUtils {
         }
     }
 
-    static void appendCompositeList(final String name, final List<?> argList, final StringBuilder sqlBuilder,
-                                    final _SqlContext context) {
+    public static void appendCompositeList(final String name, final List<?> argList, final StringBuilder sqlBuilder,
+                                           final _SqlContext context) {
 
         for (final Object value : argList) {
 
@@ -360,7 +360,7 @@ abstract class FuncExpUtils {
 
     }
 
-    static void compositeListToString(final List<?> argList, final StringBuilder builder) {
+    public static void compositeListToString(final List<?> argList, final StringBuilder builder) {
         for (final Object value : argList) {
 
             if (value == null) {
@@ -391,7 +391,7 @@ abstract class FuncExpUtils {
     }
 
 
-    static List<?> twoAndVariadic(Object arg1, Object arg2, Object... variadic) {
+    public static List<?> twoAndVariadic(Object arg1, Object arg2, Object... variadic) {
         final List<Object> argList = _Collections.arrayList(2 + variadic.length);
         argList.add(arg1);
         argList.add(arg2);
@@ -400,47 +400,47 @@ abstract class FuncExpUtils {
     }
 
 
-    static VariadicClause variadicClause(final boolean required, @Nullable SQLWords separator, ArrayList<Object> arrayList) {
+    public static VariadicClause variadicClause(final boolean required, @Nullable SQLWords separator, ArrayList<Object> arrayList) {
         return new VariadicClause(required, separator, arrayList, null, null);
     }
 
-    static List<?> variadicList(final boolean required, Consumer<? super VariadicClause> consumer) {
+    public static List<?> variadicList(final boolean required, Consumer<? super VariadicClause> consumer) {
         return variadicList(required, null, consumer);
     }
 
-    static List<?> pariVariadicList(final boolean required, Consumer<? super PairVariadicClause> consumer) {
+    public static List<?> pariVariadicList(final boolean required, Consumer<? super PairVariadicClause> consumer) {
         return pariVariadicList(required, null, consumer);
     }
 
-    static List<?> variadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super VariadicClause> consumer) {
+    public static List<?> variadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super VariadicClause> consumer) {
         final VariadicClause clause = new VariadicClause(required, null, null, null, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
 
-    static List<?> variadicList(final boolean required, ArrayList<Object> argList, @Nullable Class<?> literalClass,
-                                Consumer<? super VariadicClause> consumer) {
+    public static List<?> variadicList(final boolean required, ArrayList<Object> argList, @Nullable Class<?> literalClass,
+                                       Consumer<? super VariadicClause> consumer) {
         final VariadicClause clause = new VariadicClause(required, null, argList, null, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
 
 
-    static List<?> pariVariadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super PairVariadicClause> consumer) {
+    public static List<?> pariVariadicList(final boolean required, @Nullable Class<?> literalClass, Consumer<? super PairVariadicClause> consumer) {
         final PairVariadicClause clause = new PairVariadicClause(required, literalClass);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
 
-    static List<?> pariVariadicExpList(final boolean required, ArrayList<Object> argList, MappingType type,
-                                       Consumer<? super PairVariadicClause> consumer) {
+    public static List<?> pariVariadicExpList(final boolean required, ArrayList<Object> argList, MappingType type,
+                                              Consumer<? super PairVariadicClause> consumer) {
         final PairVariadicClause clause = new PairVariadicClause(required, argList, type);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return clause.endClause();
     }
 
 
-    static final class VariadicClause implements Clause._VariadicSpaceClause,
+    public static final class VariadicClause implements Clause._VariadicSpaceClause,
             Clause._VariadicCommaClause, Clause._VariadicConsumer {
 
         private final boolean required;
@@ -525,7 +525,7 @@ abstract class FuncExpUtils {
     } // VariadicClause
 
 
-    static final class PairVariadicClause implements Clause._PairVariadicSpaceClause,
+    public static final class PairVariadicClause implements Clause._PairVariadicSpaceClause,
             Clause._PairVariadicCommaClause, Clause._PairVariadicConsumerClause {
 
         private final boolean required;

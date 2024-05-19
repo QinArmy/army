@@ -191,7 +191,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
     }
 
 
-    private static abstract class MySQLWindowFunction extends WindowFunctions.WindowFunction<MySQLWindow._PartitionBySpec>
+    private static abstract class MySQLWindowFunction extends WindowFunctions<MySQLWindow._PartitionBySpec>
             implements MySQLWindowFunctions._OverSpec, MySQLFunction {
 
 

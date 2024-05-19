@@ -88,7 +88,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     private Boolean prepared;
 
 
-    public SimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
+    protected SimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
         if (withSpec != null) {
@@ -1104,8 +1104,8 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
         if (!((Selection) selectItem).label().equals(rowNumberAlias)) {
             m = String.format("first selection isn't selection[%s] in CTE[%s]", rowNumberAlias, thisCteName);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
-        } else if (!((expression = ((ArmySelections.ExpressionSelection) selectItem).expression) instanceof WindowFunctions.WindowFunction)
-                || ((WindowFunctions.WindowFunction<?>) expression).isNotGlobalRowNumber()) {
+        } else if (!((expression = ((ArmySelections.ExpressionSelection) selectItem).expression) instanceof WindowFunctions)
+                || ((WindowFunctions<?>) expression).isNotGlobalRowNumber()) {
             m = String.format("selection[%s] isn't global window function rowNumber() expression in CTE[%s]",
                     rowNumberAlias, thisCteName);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);

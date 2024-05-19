@@ -3,7 +3,7 @@ package io.army.session.sync.standard;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.impl.Windows;
+import io.army.criteria.standard.Windows;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.record.ResultStates;

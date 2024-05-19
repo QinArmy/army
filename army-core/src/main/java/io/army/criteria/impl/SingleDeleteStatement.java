@@ -45,7 +45,7 @@ public abstract class SingleDeleteStatement<I extends Item, B extends CteBuilder
 
     private Boolean prepared;
 
-    public SingleDeleteStatement(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+    protected SingleDeleteStatement(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
         if (withSpec != null) {

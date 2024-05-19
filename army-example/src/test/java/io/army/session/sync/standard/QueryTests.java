@@ -4,7 +4,7 @@ package io.army.session.sync.standard;
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.BatchSelect;
 import io.army.criteria.Select;
-import io.army.criteria.impl.Windows;
+import io.army.criteria.standard.Windows;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;

@@ -40,7 +40,7 @@ import java.util.function.*;
 
 public abstract class CriteriaUtils {
 
-    CriteriaUtils() {
+    protected CriteriaUtils() {
         throw new UnsupportedOperationException();
     }
 

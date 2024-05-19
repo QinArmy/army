@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.criteria.standard.SQLs;
+import io.army.criteria.standard.Windows;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
@@ -1338,13 +1339,13 @@ public abstract class Functions {
 
     /*-------------------below package method -------------------*/
 
-    static CriteriaException _customFuncNameError(String name) {
+    public static CriteriaException _customFuncNameError(String name) {
         String m = String.format("custom function name[%s] error.", name);
         return ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
-    static TypeMeta _returnType(final Expression left, final Expression right,
-                                final BinaryOperator<MappingType> function) {
+    public static TypeMeta _returnType(final Expression left, final Expression right,
+                                       final BinaryOperator<MappingType> function) {
         TypeMeta leftType, rightType;
         leftType = left.typeMeta();
         rightType = right.typeMeta();
@@ -1358,7 +1359,7 @@ public abstract class Functions {
         return function.apply((MappingType) leftType, (MappingType) rightType);
     }
 
-    static TypeMeta _returnType(final Expression exp, final UnaryOperator<MappingType> function) {
+    public static TypeMeta _returnType(final Expression exp, final UnaryOperator<MappingType> function) {
         TypeMeta expType;
         expType = exp.typeMeta();
         if (!(expType instanceof MappingType)) {
@@ -1369,7 +1370,7 @@ public abstract class Functions {
 
 
     @Deprecated
-    static List<Object> _createSimpleMultiArgList(final List<Expression> expList) {
+    public static List<Object> _createSimpleMultiArgList(final List<Expression> expList) {
         final int expSize = expList.size();
         assert expSize > 1;
         final List<Object> argList = new ArrayList<>((expSize << 1) - 1);
@@ -1390,8 +1391,8 @@ public abstract class Functions {
 
 
     @Deprecated
-    static SimpleExpression _simpleTowArgFunc(final String name, final Expression g1,
-                                              final Expression g2, final TypeMeta returnType) {
+    public static SimpleExpression _simpleTowArgFunc(final String name, final Expression g1,
+                                                     final Expression g2, final TypeMeta returnType) {
         if (g1 instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, g1);
         }
@@ -1406,7 +1407,7 @@ public abstract class Functions {
     }
 
     @Deprecated
-    static Expression _simpleThreeArgFunc(final String name, final Expression e1
+    public static Expression _simpleThreeArgFunc(final String name, final Expression e1
             , final Expression e2, final Expression e3, final TypeMeta returnType) {
         if (e1 instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, e1);
@@ -1429,7 +1430,7 @@ public abstract class Functions {
     }
 
     @Deprecated
-    static Expression _simpleMaxThreeArgFunc(final String name, final List<Expression> expList
+    public static Expression _simpleMaxThreeArgFunc(final String name, final List<Expression> expList
             , final TypeMeta returnType) {
         final Expression func;
         switch (expList.size()) {
@@ -1449,7 +1450,7 @@ public abstract class Functions {
     }
 
     @Deprecated
-    static Expression _simpleMaxTwoArgFunc(final String name, final List<Expression> expList
+    public static Expression _simpleMaxTwoArgFunc(final String name, final List<Expression> expList
             , final TypeMeta returnType) {
         final Expression func;
         switch (expList.size()) {
@@ -1466,7 +1467,7 @@ public abstract class Functions {
     }
 
     @Deprecated
-    static Expression _singleAndMultiArgFunc(final String name, final Expression single, final Expression multi
+    public static Expression _singleAndMultiArgFunc(final String name, final Expression single, final Expression multi
             , final TypeMeta returnType) {
         if (single instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, single);
@@ -1479,7 +1480,7 @@ public abstract class Functions {
     }
 
     @Deprecated
-    static Expression _singleAndListFunc(final String name, final Expression expr
+    public static Expression _singleAndListFunc(final String name, final Expression expr
             , final TypeMeta elementType, final Object exprList, final TypeMeta returnType) {
         if (expr instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, expr);
@@ -1516,12 +1517,12 @@ public abstract class Functions {
 
 
     @Deprecated
-    static TypeMeta _doubleOrNumeric(final Expression exp) {
+    public static TypeMeta _doubleOrNumeric(final Expression exp) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
-    static TypeMeta _numericOrDecimal(final Expression exp) {
+    public static TypeMeta _numericOrDecimal(final Expression exp) {
         throw new UnsupportedOperationException();
     }
 
@@ -1529,7 +1530,7 @@ public abstract class Functions {
     /**
      * @see #avg(Expression)
      */
-    static MappingType _avgType(final MappingType type) {
+    public static MappingType _avgType(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlIntegerType || type instanceof MappingType.SqlDecimalType) {
             returnType = BigDecimalType.INSTANCE;
@@ -1547,7 +1548,7 @@ public abstract class Functions {
     /**
      * @see #_doubleOrNumeric(Expression)
      */
-    static MappingType _doubleOrNumberType(final MappingType type) {
+    public static MappingType _doubleOrNumberType(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
@@ -1563,7 +1564,7 @@ public abstract class Functions {
     /**
      * @see #round(Object)
      */
-    static MappingType _numberOrDecimal(final MappingType type) {
+    public static MappingType _numberOrDecimal(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlNumberType) {
             returnType = type;
@@ -1573,7 +1574,7 @@ public abstract class Functions {
         return returnType;
     }
 
-    static MappingType _doubleOrDecimal(final MappingType type) {
+    public static MappingType _doubleOrDecimal(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
@@ -1583,7 +1584,7 @@ public abstract class Functions {
         return returnType;
     }
 
-    static MappingType _sqlStringType(final MappingType type) {
+    public static MappingType _sqlStringType(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlStringType) {
             returnType = type;
@@ -1603,7 +1604,7 @@ public abstract class Functions {
      * @see Windows#bitOr(Expression)
      * @see Windows#bitXor(Expression)
      */
-    static MappingType _bitwiseFuncType(final Expression expr) {
+    public static MappingType _bitwiseFuncType(final Expression expr) {
         final MappingType returnType;
 
         TypeMeta paramMeta = expr.typeMeta();
@@ -1640,27 +1641,17 @@ public abstract class Functions {
      *
      * @see #sum(Expression)
      */
-    static MappingType _sumType(final MappingType type) {
+    public static MappingType _sumType(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlIntegerType) {
             final MappingType.LengthType length;
             length = ((MappingType.SqlIntegerType) type).lengthType();
-            switch (length) {
-                case DEFAULT:
-                    returnType = LongType.INSTANCE;
-                    break;
-                case LONG:
-                case BIG_LONG:
-                    returnType = BigIntegerType.INSTANCE;
-                    break;
-                case TINY:
-                case SMALL:
-                case MEDIUM:
-                    returnType = IntegerType.INSTANCE;
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(length);
-            }
+            returnType = switch (length) {
+                case DEFAULT -> LongType.INSTANCE;
+                case LONG, BIG_LONG -> BigIntegerType.INSTANCE;
+                case TINY, SMALL, MEDIUM -> IntegerType.INSTANCE;
+                default -> throw _Exceptions.unexpectedEnum(length);
+            };
         } else if (type instanceof MappingType.SqlDecimalType) {
             returnType = BigDecimalType.INSTANCE;
         } else if (type instanceof MappingType.SqlFloatType) {
@@ -1692,12 +1683,12 @@ public abstract class Functions {
 
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             sqlBuilder.append(" *");
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(" *");
         }
 

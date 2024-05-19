@@ -35,29 +35,29 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-abstract class SelectionGroups {
+public abstract class SelectionGroups {
 
     private SelectionGroups() {
         throw new UnsupportedOperationException();
     }
 
-    static <T> _SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
+    public static <T> _SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
         return new TableFieldGroupImpl<>(table, tableAlias);
     }
 
-    static <T> _SelectionGroup groupWithoutId(ChildTableMeta<T> table, String tableAlias) {
+    public static <T> _SelectionGroup groupWithoutId(ChildTableMeta<T> table, String tableAlias) {
         return new TableFieldGroupImpl<>(tableAlias, table);
     }
 
     /**
      * for RETURNING clause
      */
-    static <T> _SelectionGroup insertTableGroup(TableMeta<T> insertTable) {
+    public static <T> _SelectionGroup insertTableGroup(TableMeta<T> insertTable) {
         return new InsertTableGroup<>(insertTable);
     }
 
 
-    static DerivedSelectionGroup derivedGroup(_SelectionMap table, String alias) {
+    public static DerivedSelectionGroup derivedGroup(_SelectionMap table, String alias) {
         return new DerivedSelectionGroup(table, alias);
     }
 
@@ -153,7 +153,7 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      *
      */
-    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, RowElementGroup,
+    public static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, RowElementGroup,
             ObjectElementGroup {
 
         private final String tableAlias;
@@ -320,7 +320,7 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      *
      */
-    static final class DerivedSelectionGroup implements _SelectionGroup, RowElementGroup, ObjectElementGroup {
+    public static final class DerivedSelectionGroup implements _SelectionGroup, RowElementGroup, ObjectElementGroup {
 
         private final String derivedAlias;
 
@@ -483,7 +483,6 @@ abstract class SelectionGroups {
 
 
     }//DerivedSelectionGroup
-
 
 
 }

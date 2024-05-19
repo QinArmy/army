@@ -27,6 +27,7 @@ import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLSet;
 import io.army.criteria.standard.StandardQueries;
+import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.Database;
 
 public abstract class _MySQLConsultant extends _SQLConsultant {

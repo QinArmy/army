@@ -43,7 +43,7 @@ import java.util.function.Supplier;
  */
 
 @SuppressWarnings("unchecked")
-abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
+public abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
         extends WhereClause<WR, WA, OR, OD, LR, LO, LF>
         implements UpdateStatement._StaticBatchSetClause<F, SR>,
         UpdateStatement._StaticBatchRowSetClause<F, SR>,
@@ -52,14 +52,14 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
 
     private List<_ItemPair> itemPairList = _Collections.arrayList();
 
-    final TableMeta<?> updateTable;
+    protected final TableMeta<?> updateTable;
 
-    final String tableAlias;
+    protected final String tableAlias;
 
     /**
      * @param tableAlias for {@link SingleUpdateStatement} non-null and  non-empty,for other non-null
      */
-    SetWhereClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+    protected SetWhereClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context);
         ContextStack.assertNonNull(updateTable);
         ContextStack.assertNonNull(tableAlias);
@@ -267,15 +267,15 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         return itemPairList;
     }
 
-    void onAddChildItemPair(SQLs.ArmyItemPair pair) {
+    protected void onAddChildItemPair(Armies.ArmyItemPair pair) {
         throw new UnsupportedOperationException();
     }
 
-    boolean isNoChildItemPair() {
+    protected boolean isNoChildItemPair() {
         throw new UnsupportedOperationException();
     }
 
-    final List<_ItemPair> endUpdateSetClause() {
+    protected final List<_ItemPair> endUpdateSetClause() {
         List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null || itemPairList.size() == 0) {
             if (!(this instanceof _DomainUpdate) || this.isNoChildItemPair()) {
@@ -294,20 +294,20 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
     }
 
 
-    final SR onAddItemPair(final ItemPair pair) {
+    protected final SR onAddItemPair(final ItemPair pair) {
         final List<_ItemPair> itemPairList = this.itemPairList;
         if (!(itemPairList instanceof ArrayList)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
-        final SQLs.FieldItemPair fieldPair;
+        final Armies.FieldItemPair fieldPair;
         final TableField field;
-        if (pair instanceof SQLs.RowItemPair) {
+        if (pair instanceof Armies.RowItemPair) {
             assert !(this instanceof _DomainUpdate);
-            itemPairList.add((SQLs.RowItemPair) pair);
-        } else if (!(pair instanceof SQLs.FieldItemPair)) {
+            itemPairList.add((Armies.RowItemPair) pair);
+        } else if (!(pair instanceof Armies.FieldItemPair)) {
             throw ContextStack.criteriaError(this.context, String.format("unknown %s", ItemPair.class.getName()));
-        } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof TableField)) {
+        } else if (!((fieldPair = (Armies.FieldItemPair) pair).field instanceof TableField)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         } else if ((field = (TableField) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
             throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
@@ -350,10 +350,6 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
             super(context, updateTable, tableAlias);
         }
 
-        @Override
-        final Dialect statementDialect() {
-            throw ContextStack.clearStackAndCastCriteriaApi();
-        }
 
     }//SetWhereClauseClause
 

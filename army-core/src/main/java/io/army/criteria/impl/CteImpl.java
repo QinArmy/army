@@ -12,11 +12,11 @@ import java.util.List;
 
 public final class CteImpl implements _Cte {
 
-    final String name;
+    public final String name;
 
-    final List<String> columnNameList;
+    public final List<String> columnNameList;
 
-    final SubStatement subStatement;
+    public final SubStatement subStatement;
 
     private final _SelectionMap selectionMap;
 

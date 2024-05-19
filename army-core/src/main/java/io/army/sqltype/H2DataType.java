@@ -18,7 +18,7 @@ package io.army.sqltype;
 
 import io.army.ArmyException;
 import io.army.criteria.TypeDef;
-import io.army.criteria.impl._SQLConsultant;
+import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.Database;
 import io.army.mapping.MappingType;
 

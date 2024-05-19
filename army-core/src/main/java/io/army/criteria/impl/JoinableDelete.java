@@ -36,7 +36,7 @@ import java.util.function.Consumer;
  * <p>
  * This class is base class of multi-table delete implementation.
 */
-abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+public abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object, Object>
         implements _Delete,
         _Statement._JoinableStatement,
@@ -139,18 +139,18 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
     }
 
 
-    abstract I onAsDelete();
+    protected abstract I onAsDelete();
 
-    abstract void onClear();
+    protected abstract void onClear();
 
-    void onEndStatement() {
+    protected void onEndStatement() {
         throw new UnsupportedOperationException();
     }
 
-    abstract B createCteBuilder(boolean recursive);
+    protected abstract B createCteBuilder(boolean recursive);
 
 
-    final void endDeleteStatement() {
+    protected final void endDeleteStatement() {
         _Assert.nonPrepared(this.prepared);
         this.endWhereClauseIfNeed();
         this.onEndStatement();
@@ -160,7 +160,7 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
 
 
     @SuppressWarnings("unchecked")
-    final WE endStaticWithClause(final boolean recursive) {
+    protected final WE endStaticWithClause(final boolean recursive) {
         if (this.cteList != null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }

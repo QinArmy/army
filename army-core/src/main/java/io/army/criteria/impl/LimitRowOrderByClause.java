@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 import java.util.function.*;
 
 @SuppressWarnings("unchecked")
-abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<OR, OD>
+public abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<OR, OD>
         implements Statement._LimitClause<LR>,
         Statement._QueryOffsetClause<LO>,
         Statement._FetchPercentClause<LF>,
@@ -51,7 +51,7 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
 
     private SQLWords fetchOnlyWithTies;
 
-    LimitRowOrderByClause(CriteriaContext context) {
+    protected LimitRowOrderByClause(CriteriaContext context) {
         super(context);
     }
 

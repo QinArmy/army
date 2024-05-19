@@ -46,7 +46,7 @@ import java.util.function.Supplier;
  * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>
+public abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>
         extends WhereClause<WR, WA, OR, OD, LR, LO, LF>
         implements Statement._JoinModifierClause<JT, JS>,
         Statement._JoinModifierUndoneFunctionClause<JF>,
@@ -780,7 +780,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
             Statement._NestedLeftParenModifierUndoneFunctionClause<LF>,
             DialectStatement._LeftParenCteClause<LC> {
 
-        final CriteriaContext context;
+        protected final CriteriaContext context;
 
         private final _JoinType joinType;
 
@@ -1084,15 +1084,15 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }//JoinableBlock
 
 
-    static abstract class NestedJoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
+    public static abstract class NestedJoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
             extends JoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR> {
 
-        NestedJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
+        protected NestedJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
                             @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
             super(context, blockConsumer, joinType, modifier, tabularItem, alias);
         }
 
-        NestedJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
+        protected NestedJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
                             TabularBlocks.BlockParams params) {
             super(context, blockConsumer, params);
         }
@@ -1100,16 +1100,16 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     }//NestedJoinClause
 
-    static abstract class DynamicJoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
+    public static abstract class DynamicJoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
             extends JoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR> {
 
 
-        DynamicJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
+        protected DynamicJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
                              @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
             super(context, blockConsumer, joinType, modifier, tabularItem, alias);
         }
 
-        DynamicJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
+        protected DynamicJoinableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
                              TabularBlocks.BlockParams params) {
             super(context, blockConsumer, params);
         }
@@ -1117,21 +1117,21 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     }//DynamicJoinableBlock
 
-    static abstract class DynamicBuilderSupport<FT, FS, FC extends Item, FF>
+    public static abstract class DynamicBuilderSupport<FT, FS, FC extends Item, FF>
             implements Statement._DynamicTabularModifierClause<FT, FS>,
             Statement._DynamicTabularModifierUndoneFunctionClause<FF>,
             Statement._DynamicTabularCteClause<FC>,
             Statement.JoinBuilder {
 
-        final CriteriaContext context;
+        protected final CriteriaContext context;
 
-        final _JoinType joinType;
+        protected final _JoinType joinType;
 
-        final Consumer<_TabularBlock> blockConsumer;
+        protected final Consumer<_TabularBlock> blockConsumer;
 
         private boolean started;
 
-        DynamicBuilderSupport(CriteriaContext context, _JoinType joinType, Consumer<_TabularBlock> blockConsumer) {
+        protected DynamicBuilderSupport(CriteriaContext context, _JoinType joinType, Consumer<_TabularBlock> blockConsumer) {
             this.context = context;
             this.joinType = joinType;
             this.blockConsumer = blockConsumer;
@@ -1214,36 +1214,36 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
 
-        final <T> T nonNull(final @Nullable T value) {
+        protected final <T> T nonNull(final @Nullable T value) {
             if (value == null) {
                 throw ContextStack.nullPointer(this.context);
             }
             return value;
         }
 
-        final void checkStart() {
+        protected final void checkStart() {
             if (this.started) {
                 throw CriteriaUtils.duplicateDynamicMethod(this.context);
             }
             this.started = true;
         }
 
-        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+        protected boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
-        boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
+        protected boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
 
-        abstract FT onTable(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias);
+        protected abstract FT onTable(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias);
 
-        abstract FS onDerived(@Nullable SQLs.DerivedModifier modifier, DerivedTable table);
+        protected abstract FS onDerived(@Nullable SQLs.DerivedModifier modifier, DerivedTable table);
 
-        abstract FC onCte(_Cte cteItem, String alias);
+        protected abstract FC onCte(_Cte cteItem, String alias);
 
-        FF onUndoneFunc(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
+        protected FF onUndoneFunc(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 

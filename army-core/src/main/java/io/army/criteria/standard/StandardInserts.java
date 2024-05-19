@@ -22,8 +22,6 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Statement;
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util._Collections;
@@ -49,9 +47,9 @@ abstract class StandardInserts extends InsertSupports {
     }
 
 
-    static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
-        return new PrimaryInsertInto10Clause<>(null, Armies::identity);
-    }
+//    static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
+//        return new PrimaryInsertInto10Clause<>(null, Armies::identity);
+//    }
 
     static StandardInsert._PrimaryOption20Spec<Insert> singleInsert20() {
         return new PrimaryInsertInto20Clause<>(null, Armies::identity);
@@ -65,20 +63,12 @@ abstract class StandardInserts extends InsertSupports {
         final Statement._DmlInsertClause<Insert> spec;
         final InsertMode mode;
         mode = clause.getInsertMode();
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimarySingleDomainInsertStatement(clause);
-                break;
-            case VALUES:
-                spec = new PrimarySingleValueInsertStatement(clause);
-                break;
-            case QUERY:
-                spec = new PrimarySingleQueryInsertStatement(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-
+        spec = switch (mode) {
+            case DOMAIN -> new PrimarySingleDomainInsertStatement(clause);
+            case VALUES -> new PrimarySingleValueInsertStatement(clause);
+            case QUERY -> new PrimarySingleQueryInsertStatement(clause);
+            default -> throw _Exceptions.unexpectedEnum(mode);
+        };
         return spec.asInsert();
     }
 
@@ -99,7 +89,7 @@ abstract class StandardInserts extends InsertSupports {
 
 
         @Override
-        final StandardCtes createCteBuilder(boolean recursive) {
+        protected final StandardCtes createCteBuilder(boolean recursive) {
             if (this instanceof PrimaryInsertInto10Clause) {
                 throw CriteriaUtils.standard10DontSupportWithClause();
             }
@@ -135,19 +125,12 @@ abstract class StandardInserts extends InsertSupports {
 
             final InsertMode mode;
             mode = clause.getInsertMode();
-            switch (mode) {
-                case DOMAIN:
-                    spec = new PrimaryParentDomainInsert10Statement<>(clause, this.function);
-                    break;
-                case VALUES:
-                    spec = new PrimaryParentValueInsert10Statement<>(clause, this.function);
-                    break;
-                case QUERY:
-                    spec = new PrimaryParentQueryInsert10Statement<>(clause, this.function);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
+            spec = switch (mode) {
+                case DOMAIN -> new PrimaryParentDomainInsert10Statement<>(clause, this.function);
+                case VALUES -> new PrimaryParentValueInsert10Statement<>(clause, this.function);
+                case QUERY -> new PrimaryParentQueryInsert10Statement<>(clause, this.function);
+                default -> throw _Exceptions.unexpectedEnum(mode);
+            };
 
             return spec.asInsert();
         }
@@ -195,19 +178,12 @@ abstract class StandardInserts extends InsertSupports {
 
             final InsertMode mode;
             mode = clause.getInsertMode();
-            switch (mode) {
-                case DOMAIN:
-                    spec = new PrimaryParentDomainInsert20Statement<>(clause, this.function);
-                    break;
-                case VALUES:
-                    spec = new PrimaryParentValueInsert20Statement<>(clause, this.function);
-                    break;
-                case QUERY:
-                    spec = new PrimaryParentQueryInsert20Statement<>(clause, this.function);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
+            spec = switch (mode) {
+                case DOMAIN -> new PrimaryParentDomainInsert20Statement<>(clause, this.function);
+                case VALUES -> new PrimaryParentValueInsert20Statement<>(clause, this.function);
+                case QUERY -> new PrimaryParentQueryInsert20Statement<>(clause, this.function);
+                default -> throw _Exceptions.unexpectedEnum(mode);
+            };
 
             return spec.asInsert();
         }
@@ -254,7 +230,7 @@ abstract class StandardInserts extends InsertSupports {
         }
 
         @Override
-        StandardCtes createCteBuilder(boolean recursive) {
+        protected StandardCtes createCteBuilder(boolean recursive) {
             if (this.context.dialect() == StandardDialect.STANDARD10) {
                 throw CriteriaUtils.standard10DontSupportWithClause();
             }
@@ -400,11 +376,6 @@ abstract class StandardInserts extends InsertSupports {
         @Override
         public final List<_Cte> cteList() {
             return this.cteList;
-        }
-
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL57;
         }
 
 
@@ -707,11 +678,6 @@ abstract class StandardInserts extends InsertSupports {
         @Override
         public final List<_Cte> cteList() {
             return this.cteList;
-        }
-
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL57;
         }
 
 

@@ -115,7 +115,7 @@ public abstract class CriteriaSupports {
 
         private List<_Cte> cteList;
 
-        WithClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
+        protected WithClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
             super(context);
             if (spec != null) {
                 this.recursive = spec.isRecursive();
@@ -169,14 +169,14 @@ public abstract class CriteriaSupports {
 
 
         @SuppressWarnings("unchecked")
-        final WE endStaticWithClause(final boolean recursive) {
+        protected final WE endStaticWithClause(final boolean recursive) {
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true); // static with syntax is required
             return (WE) this;
         }
 
 
-        abstract B createCteBuilder(boolean recursive);
+        protected abstract B createCteBuilder(boolean recursive);
 
 
         @SuppressWarnings("unchecked")
@@ -197,9 +197,9 @@ public abstract class CriteriaSupports {
 
     public static abstract class StatementMockSupport implements Statement.StatementMockSpec {
 
-        final CriteriaContext context;
+        public final CriteriaContext context;
 
-        StatementMockSupport(CriteriaContext context) {
+        protected StatementMockSupport(CriteriaContext context) {
             this.context = context;
         }
 
@@ -232,10 +232,6 @@ public abstract class CriteriaSupports {
             return s;
         }
 
-        @Deprecated
-        Dialect statementDialect() {
-            return this.context.dialect();
-        }
 
         private Stmt parseStatement(final DialectParser parser, final Visible visible) {
             if (!(this instanceof PrimaryStatement)) {

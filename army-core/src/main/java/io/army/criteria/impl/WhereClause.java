@@ -48,7 +48,7 @@ public abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOr
 
     private List<_Predicate> predicateList;
 
-    WhereClause(CriteriaContext context) {
+    protected WhereClause(CriteriaContext context) {
         super(context);
         this.context = context;
     }

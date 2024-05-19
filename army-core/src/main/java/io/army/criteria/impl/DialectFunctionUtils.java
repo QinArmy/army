@@ -42,33 +42,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
-abstract class DialectFunctionUtils extends FunctionUtils {
+public abstract class DialectFunctionUtils extends FunctionUtils {
 
-    DialectFunctionUtils() {
+    protected DialectFunctionUtils() {
     }
 
 
-    static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<? extends Selection> selectionList,
-                                                           Map<String, Selection> selectionMap) {
+    public static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<? extends Selection> selectionList,
+                                                                  Map<String, Selection> selectionMap) {
         return new CompositeTabularFunction(name, true, argList, selectionList, selectionMap);
     }
 
-    static Functions._TabularWithOrdinalityFunction zeroArgTabularFunc(final String name,
-                                                                       final List<Selection> funcFieldList) {
+    public static Functions._TabularWithOrdinalityFunction zeroArgTabularFunc(final String name,
+                                                                              final List<Selection> funcFieldList) {
         return new ZeroArgTabularFunction(name, true, funcFieldList);
     }
 
-    static Functions._TabularWithOrdinalityFunction oneArgTabularFunc(final String name, final Expression one,
-                                                                      final List<Selection> funcFieldList) {
+    public static Functions._TabularWithOrdinalityFunction oneArgTabularFunc(final String name, final Expression one,
+                                                                             final List<Selection> funcFieldList) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
         return new OneArgTabularFunction(name, true, one, funcFieldList);
     }
 
-    static Functions._TabularWithOrdinalityFunction twoArgTabularFunc(final String name, final Expression one,
-                                                                      final Expression two,
-                                                                      final List<Selection> funcFieldList) {
+    public static Functions._TabularWithOrdinalityFunction twoArgTabularFunc(final String name, final Expression one,
+                                                                             final Expression two,
+                                                                             final List<Selection> funcFieldList) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -77,9 +77,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         return new TwoArgTabularFunction(name, true, one, two, funcFieldList);
     }
 
-    static Functions._TabularWithOrdinalityFunction threeArgTabularFunc(final String name, final Expression one,
-                                                                        final Expression two, final Expression three,
-                                                                        final List<Selection> funcFieldList) {
+    public static Functions._TabularWithOrdinalityFunction threeArgTabularFunc(final String name, final Expression one,
+                                                                               final Expression two, final Expression three,
+                                                                               final List<Selection> funcFieldList) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -91,30 +91,30 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }
 
 
-    static Functions._TabularWithOrdinalityFunction multiArgTabularFunc(final String name,
-                                                                        final List<ArmyExpression> argList,
-                                                                        final List<Selection> funcFieldList) {
+    public static Functions._TabularWithOrdinalityFunction multiArgTabularFunc(final String name,
+                                                                               final List<ArmyExpression> argList,
+                                                                               final List<Selection> funcFieldList) {
         return new MultiArgTabularFunction(name, true, argList, funcFieldList);
     }
 
-    static Functions._ColumnWithOrdinalityFunction zeroArgColumnFunction(final String name,
-                                                                         final @Nullable String fieldName,
-                                                                         final TypeMeta returnType) {
+    public static Functions._ColumnWithOrdinalityFunction zeroArgColumnFunction(final String name,
+                                                                                final @Nullable String fieldName,
+                                                                                final TypeMeta returnType) {
 
         return new ZeroArgColumnFunction(name, true, fieldName, returnType);
     }
 
 
-    static Functions._ColumnWithOrdinalityFunction oneArgColumnFunction(final String name, final Expression one,
-                                                                        final @Nullable String fieldName,
-                                                                        final TypeMeta returnType) {
+    public static Functions._ColumnWithOrdinalityFunction oneArgColumnFunction(final String name, final Expression one,
+                                                                               final @Nullable String fieldName,
+                                                                               final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
         return new OneArgColumnFunction(name, true, fieldName, one, returnType);
     }
 
-    static Functions._ColumnWithOrdinalityFunction twoArgColumnFunction(
+    public static Functions._ColumnWithOrdinalityFunction twoArgColumnFunction(
             final String name, final Expression one, final Expression two, final @Nullable String fieldName,
             final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
@@ -125,7 +125,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         return new TwoArgColumnFunction(name, true, fieldName, one, two, returnType);
     }
 
-    static Functions._ColumnWithOrdinalityFunction threeArgColumnFunction(
+    public static Functions._ColumnWithOrdinalityFunction threeArgColumnFunction(
             final String name, final Expression one, final Expression two, final Expression three,
             final @Nullable String fieldName, final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
@@ -138,7 +138,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         return new ThreeArgColumnFunction(name, true, fieldName, one, two, three, returnType);
     }
 
-    static Functions._ColumnWithOrdinalityFunction fourArgColumnFunction(
+    public static Functions._ColumnWithOrdinalityFunction fourArgColumnFunction(
             final String name, final Expression one, final Expression two, final Expression three,
             final Expression four, final @Nullable String fieldName, final TypeMeta returnType) {
 
@@ -154,7 +154,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         return new FourArgColumnFunction(name, true, fieldName, one, two, three, four, returnType);
     }
 
-    static List<Selection> compositeFieldList(final String name, final Expression compositeExp) {
+    public static List<Selection> compositeFieldList(final String name, final Expression compositeExp) {
         final MappingType type;
         type = compositeExp.typeMeta().mappingType();
         if (!(type instanceof MappingType.SqlCompositeType)) {
@@ -179,7 +179,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
      * <p>
      * For {@link UndoneFunction}
      */
-    static _FunctionField funcField(final @Nullable String name, final @Nullable MappingType type) {
+    public static _FunctionField funcField(final @Nullable String name, final @Nullable MappingType type) {
         if (name == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (type == null) {
@@ -190,7 +190,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         return new NamedFunctionField(name, type);
     }
 
-    static UndoneFunction oneArgUndoneFunc(final String name, final Expression one) {
+    public static UndoneFunction oneArgUndoneFunc(final String name, final Expression one) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -261,7 +261,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//CompositeTabularFunction
 
 
-    static abstract class TabularSqlFunction implements ArmyTabularFunction {
+    public static abstract class TabularSqlFunction implements ArmyTabularFunction {
 
         static final String ORDINALITY = "ordinality";
 
@@ -516,7 +516,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//ZeroArgColumnFunction
 
 
-    static final class OneArgColumnFunction extends ColumnFunction {
+    public static final class OneArgColumnFunction extends ColumnFunction {
 
         private final ArmyExpression one;
 
@@ -542,7 +542,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     }//OneArgScalarTabularFunction
 
-    static final class TwoArgColumnFunction extends ColumnFunction {
+    public static final class TwoArgColumnFunction extends ColumnFunction {
 
         private final ArmyExpression one;
 
@@ -573,7 +573,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     }//TwoArgScalarTabularFunction
 
-    static final class ThreeArgColumnFunction extends ColumnFunction {
+    public static final class ThreeArgColumnFunction extends ColumnFunction {
 
         private final ArmyExpression one;
 
@@ -615,7 +615,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     }//ThreeArgScalarTabularFunction
 
-    static final class FourArgColumnFunction extends ColumnFunction {
+    public static final class FourArgColumnFunction extends ColumnFunction {
 
         private final ArmyExpression one;
 
@@ -1009,7 +1009,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//OneArgUndoneFunction
 
 
-    static abstract class FunctionField extends OperationDataField implements _FunctionField {
+    public static abstract class FunctionField extends OperationDataField implements _FunctionField {
 
         final String name;
 

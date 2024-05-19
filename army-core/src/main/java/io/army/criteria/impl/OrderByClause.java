@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
-abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSupport
+public abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSupport
         implements CriteriaContextSpec,
         Statement._StaticOrderByClause<OR>,
         Statement._OrderByCommaClause<OR>,
@@ -140,7 +140,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
         return orderByList;
     }
 
-    final List<ArmySortItem> endOrderByClauseIfNeed() {
+    protected final List<ArmySortItem> endOrderByClauseIfNeed() {
         List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList instanceof ArrayList) {
             orderByList = _Collections.unmodifiableList(orderByList);
@@ -153,12 +153,12 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
     }
 
 
-    final boolean hasOrderByClause() {
+    protected final boolean hasOrderByClause() {
         return this.orderByList != null;
     }
 
 
-    final void clearOrderByList() {
+    protected final void clearOrderByList() {
         this.orderByList = null;
     }
 
@@ -190,7 +190,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
     }
 
 
-    static abstract class UnionRowSet implements _UnionRowSet,
+    public static abstract class UnionRowSet implements _UnionRowSet,
             Statement,
             CriteriaContextSpec,
             Statement.StatementMockSpec {

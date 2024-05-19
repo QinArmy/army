@@ -744,7 +744,7 @@ public abstract class TabularBlocks {
     }//FromClauseNestedBlock
 
 
-    interface BlockParams {
+    public interface BlockParams {
 
         _JoinType joinType();
 
@@ -754,7 +754,7 @@ public abstract class TabularBlocks {
 
     }
 
-    interface DialectBlockParams extends BlockParams {
+    public interface DialectBlockParams extends BlockParams {
 
         @Nullable
         SQLWords modifier();

@@ -23,7 +23,7 @@ import io.army.util._Exceptions;
 /**
  * Interface representing sql dual operator.
  */
-enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
+public enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
 
 
     EQUAL(" ="),
@@ -68,19 +68,11 @@ enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
         if (this != NULL_SAFE_EQUAL) {
             return this.spaceOperator;
         }
-        final String operator;
-        switch (database) {
-            case MySQL:
-                operator = " <=>";
-                break;
-            case PostgreSQL:
-            case H2:
-                operator = " IS NOT DISTINCT FROM";
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(database);
-        }
-        return operator;
+        return switch (database) {
+            case MySQL -> " <=>";
+            case PostgreSQL, H2 -> " IS NOT DISTINCT FROM";
+            default -> throw _Exceptions.unexpectedEnum(database);
+        };
     }
 
 

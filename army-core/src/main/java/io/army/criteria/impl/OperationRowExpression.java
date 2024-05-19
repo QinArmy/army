@@ -28,13 +28,13 @@ import java.util.function.BiFunction;
  *
  * @since 0.6.0
  */
-abstract class OperationRowExpression extends OperationSQLExpression implements ArmyRowExpression {
+public abstract class OperationRowExpression extends OperationSQLExpression implements ArmyRowExpression {
 
 
     /**
      * package constructor
      */
-    OperationRowExpression() {
+    protected OperationRowExpression() {
     }
 
     @Override

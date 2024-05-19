@@ -23,7 +23,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 /**
  * package interface
  */
-interface ArmySortItem extends SortItem, _SelfDescribed, TypeInfer {
+public interface ArmySortItem extends SortItem, _SelfDescribed, TypeInfer {
 
     /**
      * @return always return this

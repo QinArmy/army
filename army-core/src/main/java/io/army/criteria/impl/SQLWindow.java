@@ -62,7 +62,7 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
         ArmyWindow {
 
 
-    static ArmyWindow namedGlobalWindow(final CriteriaContext context, final String windowName) {
+    public static ArmyWindow namedGlobalWindow(final CriteriaContext context, final String windowName) {
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         }
@@ -70,7 +70,7 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
         return new SimpleWindow(windowName);
     }
 
-    static ArmyWindow namedRefWindow(CriteriaContext context, String windowName, @Nullable String refWindowName) {
+    public static ArmyWindow namedRefWindow(CriteriaContext context, String windowName, @Nullable String refWindowName) {
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         }
@@ -88,7 +88,7 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
 
-    static boolean isSimpleWindow(final @Nullable Window window) {
+    public static boolean isSimpleWindow(final @Nullable Window window) {
         return window instanceof SQLWindow.SimpleWindow;
     }
 
@@ -770,12 +770,6 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
 
-    @Override
-    final Dialect statementDialect() {
-        throw ContextStack.clearStackAndCastCriteriaApi();
-    }
-
-
     private static CriteriaException refWindowNotExists(CriteriaContext context, String existingWindowName) {
         String m = String.format("reference window[%s] not exists.", existingWindowName);
         return ContextStack.clearStackAndCriteriaError(m);
@@ -859,7 +853,7 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     }//FrameExclusion
 
-    static abstract class SQLExcludeWindow<PR, OR, OD, FS, FB, BR, DC, R> extends SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
+    public static abstract class SQLExcludeWindow<PR, OR, OD, FS, FB, BR, DC, R> extends SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
             implements Window._FrameExclusionClause<R> {
 
         private FrameExclusion exclusion;
@@ -936,7 +930,7 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }//SQLExcludeWindow
 
 
-    static final class SimpleWindow implements ArmyWindow {
+    public static final class SimpleWindow implements ArmyWindow {
 
         private final String windowName;
 

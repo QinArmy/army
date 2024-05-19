@@ -35,9 +35,9 @@ import io.army.util._StringUtils;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-final class UserVarExpression extends OperationExpression.OperationDefiniteExpression implements VarExpression {
+public final class UserVarExpression extends OperationExpression.OperationDefiniteExpression implements VarExpression {
 
-    static VarExpression create(final String varName, final TypeInfer type) {
+    public static VarExpression create(final String varName, final TypeInfer type) {
         if (!_StringUtils.hasText(varName)) {
             throw ContextStack.clearStackAnd(_Exceptions::varNameNoText);
         }
@@ -55,7 +55,7 @@ final class UserVarExpression extends OperationExpression.OperationDefiniteExpre
         return new UserVarExpression(varName, (MappingType) typeMeta);
     }
 
-    static SimpleExpression assignmentVar(final String varName, final SQLs.SymbolColonEqual colonEqual,
+    public static SimpleExpression assignmentVar(final String varName, final SQLs.SymbolColonEqual colonEqual,
                                           final @Nullable Object value, final CriteriaContext context) {
         if (value == null) {
             throw ContextStack.clearStackAndNullPointer("Initial value of User-Defined Variables must non-null");

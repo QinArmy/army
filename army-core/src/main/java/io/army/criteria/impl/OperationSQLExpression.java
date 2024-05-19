@@ -32,12 +32,12 @@ import io.army.criteria.standard.SQLs;
  *
  * @since 0.6.0
  */
-abstract class OperationSQLExpression implements ArmySQLExpression {
+public abstract class OperationSQLExpression implements ArmySQLExpression {
 
     /**
      * package constructor
      */
-    OperationSQLExpression() {
+    protected OperationSQLExpression() {
     }
 
     @Override

@@ -882,16 +882,16 @@ public abstract class OperationExpression extends OperationSQLExpression
     static abstract class SqlFunctionExpression extends OperationSimpleExpression
             implements ArmySQLFunction {
 
-        final String name;
+        protected final String name;
 
-        final TypeMeta returnType;
+        protected final TypeMeta returnType;
 
         private final boolean buildIn;
 
         /**
          * package constructor
          */
-        SqlFunctionExpression(String name, TypeMeta returnType) {
+        protected SqlFunctionExpression(String name, TypeMeta returnType) {
             this.name = name;
             this.buildIn = true;
             this.returnType = returnType;
@@ -900,7 +900,7 @@ public abstract class OperationExpression extends OperationSQLExpression
         /**
          * package constructor
          */
-        SqlFunctionExpression(String name, boolean buildIn, TypeMeta returnType) {
+        protected SqlFunctionExpression(String name, boolean buildIn, TypeMeta returnType) {
             this.name = name;
             this.buildIn = buildIn;
             this.returnType = returnType;
@@ -975,10 +975,10 @@ public abstract class OperationExpression extends OperationSQLExpression
             return builder.toString();
         }
 
-        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
+        protected abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
 
 
-        abstract void argToString(StringBuilder builder);
+        protected abstract void argToString(StringBuilder builder);
 
 
     }//FunctionExpression

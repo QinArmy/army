@@ -1,18 +1,18 @@
 package io.army.criteria.impl;
 
-final class ObjectHolder<T> {
+public final class ObjectHolder<T> {
 
     private T data;
 
-    ObjectHolder() {
+    public ObjectHolder() {
     }
 
 
-    T get() {
+    public T get() {
         return data;
     }
 
-    void set(T data) {
+    public void set(T data) {
         this.data = data;
     }
 

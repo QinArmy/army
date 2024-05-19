@@ -19,8 +19,6 @@ package io.army.criteria.standard;
 import io.army.criteria.*;
 import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
@@ -82,11 +80,6 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         return this.cteList;
     }
 
-    @Override
-    final Dialect statementDialect() {
-        return MySQLDialect.MySQL57;
-    }
-
 
     private static abstract class SimpleSingleUpdate<I extends Item, F extends TableField>
             extends StandardUpdates<
@@ -120,7 +113,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
 
 
         @Override
-        Update onAsUpdate() {
+        protected Update onAsUpdate() {
             return this;
         }
 
@@ -158,7 +151,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
 
 
         @Override
-        _BatchUpdateParamSpec onAsUpdate() {
+        protected _BatchUpdateParamSpec onAsUpdate() {
             return this;
         }
 
@@ -183,21 +176,21 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        final I onAsUpdate() {
+        protected final I onAsUpdate() {
             this.childItemPairList = _Collections.safeUnmodifiableList(this.childItemPairList);
             return this.onAsDomainUpdate();
         }
 
-        abstract I onAsDomainUpdate();
+        protected abstract I onAsDomainUpdate();
 
 
         @Override
-        final void onClear() {
+        protected final void onClear() {
             this.childItemPairList = null;
         }
 
         @Override
-        final void onAddChildItemPair(final Armies.ArmyItemPair pair) {
+        protected final void onAddChildItemPair(final Armies.ArmyItemPair pair) {
             List<_ItemPair> childItemPairList = this.childItemPairList;
             if (childItemPairList == null) {
                 this.childItemPairList = childItemPairList = _Collections.arrayList();
@@ -208,7 +201,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        final boolean isNoChildItemPair() {
+        protected final boolean isNoChildItemPair() {
             final List<_ItemPair> childItemPairList = this.childItemPairList;
             return childItemPairList == null || childItemPairList.size() == 0;
         }
@@ -234,7 +227,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        Update onAsDomainUpdate() {
+        protected Update onAsDomainUpdate() {
             return this;
         }
 
@@ -270,7 +263,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        _BatchUpdateParamSpec onAsDomainUpdate() {
+        protected _BatchUpdateParamSpec onAsDomainUpdate() {
             return this;
         }
 
@@ -285,7 +278,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        final StandardCtes createCteBuilder(boolean recursive) {
+        protected final StandardCtes createCteBuilder(boolean recursive) {
             return StandardQueries.cteBuilder(recursive, this.context);
         }
 

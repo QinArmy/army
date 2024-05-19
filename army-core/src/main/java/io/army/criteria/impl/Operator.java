@@ -21,14 +21,13 @@ import io.army.dialect.Database;
 /**
  * Package interface
  */
-interface Operator {
+public interface Operator {
 
     String name();
 
     String spaceRender();
 
     String spaceRender(Database database);
-
 
     @Override
     String toString();

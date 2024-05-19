@@ -23,6 +23,7 @@ import io.army.criteria.impl.inner.postgre.*;
 import io.army.criteria.postgre.PostgreCursor;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.criteria.standard.SQLs;
+import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;

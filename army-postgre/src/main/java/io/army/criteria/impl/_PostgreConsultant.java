@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner.postgre._PostgreCommand;
 import io.army.criteria.postgre.PostgreCursor;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.criteria.standard.StandardQueries;
+import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.Database;
 
 import javax.annotation.Nullable;

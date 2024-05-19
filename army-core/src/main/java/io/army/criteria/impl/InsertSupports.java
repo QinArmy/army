@@ -42,14 +42,14 @@ import java.util.function.*;
  *
  * @since 0.6.0
  */
-abstract class InsertSupports {
+public abstract class InsertSupports {
 
-    InsertSupports() {
+    protected InsertSupports() {
         throw new UnsupportedOperationException();
     }
 
 
-    interface ParentSubInsert extends _Insert._ParentSubInsert {
+    protected interface ParentSubInsert extends _Insert._ParentSubInsert {
 
         void validateChild(ChildTableMeta<?> child);
 
@@ -57,7 +57,7 @@ abstract class InsertSupports {
 
     }
 
-    interface ParentDomainSubInsert extends ParentSubInsert {
+    protected interface ParentDomainSubInsert extends ParentSubInsert {
 
         void validateChild(ChildTableMeta<?> child, List<?> originalDomainList);
 
@@ -65,12 +65,12 @@ abstract class InsertSupports {
     }
 
 
-    interface InsertOptions extends CriteriaContextSpec, _Insert._InsertOption {
+    protected interface InsertOptions extends CriteriaContextSpec, _Insert._InsertOption {
 
 
     }
 
-    interface ValueSyntaxOptions extends InsertOptions {
+    protected interface ValueSyntaxOptions extends InsertOptions {
 
         boolean isIgnoreReturnIds();
 
@@ -79,38 +79,38 @@ abstract class InsertSupports {
 
     }
 
-    interface WithClauseOptions extends CriteriaContextSpec {
+    protected interface WithClauseOptions extends CriteriaContextSpec {
 
         boolean isRecursive();
 
         List<_Cte> cteList();
     }
 
-    interface WithValueSyntaxOptions extends ValueSyntaxOptions, WithClauseOptions {
+    protected interface WithValueSyntaxOptions extends ValueSyntaxOptions, WithClauseOptions {
 
 
     }
 
-    interface ParentQueryInsert extends _Insert._ParentQueryInsert {
+    protected interface ParentQueryInsert extends _Insert._ParentQueryInsert {
 
         void onValidateEnd(CodeEnum discriminatorValue);
     }
 
 
-    enum InsertMode {
+    protected enum InsertMode {
         DOMAIN,
         VALUES,
         QUERY,
         ASSIGNMENT
     }
 
-    interface ArmyInsert extends _Insert, InsertOptions {
+    protected interface ArmyInsert extends _Insert, InsertOptions {
 
         InsertMode getInsertMode();
     }
 
 
-    interface ColumnListClause extends CriteriaContextSpec {
+    protected interface ColumnListClause extends CriteriaContextSpec {
 
         /**
          * @param value if non-null and not {@link  FieldMeta#nullable()},then validate value isn't non-null expression
@@ -120,15 +120,15 @@ abstract class InsertSupports {
 
     }
 
-    static abstract class InsertOptionsImpl<R> implements InsertOptions {
+    protected static abstract class InsertOptionsImpl<R> implements InsertOptions {
 
-        final CriteriaContext context;
+        protected final CriteriaContext context;
 
         private boolean migration;
 
         private LiteralMode literalMode = LiteralMode.DEFAULT;
 
-        InsertOptionsImpl(CriteriaContext criteriaContext) {
+        protected InsertOptionsImpl(CriteriaContext criteriaContext) {
             this.context = criteriaContext;
         }
 
@@ -168,7 +168,7 @@ abstract class InsertSupports {
 
     }//InsertOptionsImpl
 
-    static abstract class NonQueryInsertOptionsImpl<R> extends InsertOptionsImpl<R>
+    protected static abstract class NonQueryInsertOptionsImpl<R> extends InsertOptionsImpl<R>
             implements ValueSyntaxOptions {
 
 
@@ -176,7 +176,7 @@ abstract class InsertSupports {
 
         private boolean ignoreReturnIds;
 
-        NonQueryInsertOptionsImpl(CriteriaContext context) {
+        protected NonQueryInsertOptionsImpl(CriteriaContext context) {
             super(context);
         }
 
@@ -212,7 +212,7 @@ abstract class InsertSupports {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class NonQueryWithCteOption<R, B extends CteBuilderSpec, WE extends Item>
+    protected static abstract class NonQueryWithCteOption<R, B extends CteBuilderSpec, WE extends Item>
             extends NonQueryInsertOptionsImpl<R>
             implements DialectStatement._DynamicWithClause<B, WE>,
             WithValueSyntaxOptions {
@@ -221,11 +221,11 @@ abstract class InsertSupports {
 
         private List<_Cte> cteList;
 
-        NonQueryWithCteOption(CriteriaContext context) {
+        protected NonQueryWithCteOption(CriteriaContext context) {
             super(context);
         }
 
-        NonQueryWithCteOption(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
+        protected NonQueryWithCteOption(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
             super(context);
             if (spec != null) {
                 this.recursive = spec.isRecursive();
@@ -273,14 +273,14 @@ abstract class InsertSupports {
 
 
         @SuppressWarnings("unchecked")
-        final WE endStaticWithClause(final boolean recursive) {
+        protected final WE endStaticWithClause(final boolean recursive) {
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true); // static with syntax is required
             return (WE) this;
         }
 
 
-        abstract B createCteBuilder(boolean recursive);
+        protected abstract B createCteBuilder(boolean recursive);
 
 
         @SuppressWarnings("unchecked")
@@ -301,9 +301,9 @@ abstract class InsertSupports {
     }//NonQueryWithCteOption
 
 
-    static abstract class ChildOptionClause implements ValueSyntaxOptions {
+    protected static abstract class ChildOptionClause implements ValueSyntaxOptions {
 
-        final CriteriaContext context;
+        protected final CriteriaContext context;
 
         private final boolean migration;
 
@@ -351,14 +351,14 @@ abstract class InsertSupports {
 
     }//ChildOptionClause
 
-    static abstract class ChildDynamicWithClause<B extends CteBuilderSpec, WE extends Item>
+    protected static abstract class ChildDynamicWithClause<B extends CteBuilderSpec, WE extends Item>
             extends ChildOptionClause
             implements DialectStatement._DynamicWithClause<B, WE>, WithValueSyntaxOptions {
         private boolean recursive;
 
         private List<_Cte> cteList;
 
-        ChildDynamicWithClause(ValueSyntaxOptions options, CriteriaContext childContext) {
+        protected ChildDynamicWithClause(ValueSyntaxOptions options, CriteriaContext childContext) {
             super(options, childContext);
         }
 
@@ -402,14 +402,14 @@ abstract class InsertSupports {
 
 
         @SuppressWarnings("unchecked")
-        final WE endStaticWithClause(final boolean recursive) {
+        protected final WE endStaticWithClause(final boolean recursive) {
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
             return (WE) this;
         }
 
 
-        abstract B createCteBuilder(boolean recursive);
+        protected abstract B createCteBuilder(boolean recursive);
 
 
         @SuppressWarnings("unchecked")
@@ -429,9 +429,9 @@ abstract class InsertSupports {
 
     } // DynamicWithClause
 
-    static abstract class SimpleValuesSyntaxOptions implements ValueSyntaxOptions {
+    protected static abstract class SimpleValuesSyntaxOptions implements ValueSyntaxOptions {
 
-        final CriteriaContext context;
+        protected final CriteriaContext context;
 
         private final NullMode nullHandleMode;
 
@@ -441,7 +441,7 @@ abstract class InsertSupports {
 
         private final boolean ignoreReturnIds;
 
-        SimpleValuesSyntaxOptions(ValueSyntaxOptions options, CriteriaContext context) {
+        protected SimpleValuesSyntaxOptions(ValueSyntaxOptions options, CriteriaContext context) {
             this.context = context;
             this.nullHandleMode = options.nullHandle();
             this.literalMode = options.literalMode();
@@ -478,20 +478,20 @@ abstract class InsertSupports {
     } // SimpleValuesSyntaxOptions
 
 
-    static abstract class ColumnsClause<T, R>
+    public static abstract class ColumnsClause<T, R>
             implements InsertStatement._ColumnListParensClause<T, R>,
             InsertStatement._StaticColumnSpaceClause<T>,
             InsertStatement._StaticColumnCommaQuadraClause<T>,
             _Insert._ColumnListInsert,
             ColumnListClause {
 
-        final CriteriaContext context;
+        public final CriteriaContext context;
 
-        final boolean migration;
+        public final boolean migration;
 
-        final boolean twoStmtMode;
+        public final boolean twoStmtMode;
 
-        final TableMeta<T> insertTable;
+        public final TableMeta<T> insertTable;
 
         private List<FieldMeta<?>> fieldList;
 
@@ -677,7 +677,7 @@ abstract class InsertSupports {
         /**
          * For RETURNING clause
          */
-        final List<? extends TableField> effictiveFieldList() {
+        protected final List<? extends TableField> effictiveFieldList() {
             return this.fieldList();
         }
 
@@ -1001,7 +1001,7 @@ abstract class InsertSupports {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ComplexInsertValuesClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR>
+    protected static abstract class ComplexInsertValuesClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR>
             extends ColumnDefaultClause<T, CR, DR>
             implements InsertStatement._DomainValuesClause<T, VR>,
             InsertStatement._DynamicValuesClause<T, VR>,
@@ -1019,7 +1019,7 @@ abstract class InsertSupports {
 
         private SubQuery subQuery;
 
-        ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table, boolean twoStmtMode) {
+        protected ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table, boolean twoStmtMode) {
             super(options, table, twoStmtMode);
         }
 
@@ -1116,30 +1116,19 @@ abstract class InsertSupports {
                 //no bug,never here
                 throw new IllegalStateException();
             }
-            final int rowCount;
-            switch (mode) {
-                case DOMAIN:
-                    rowCount = this.originalDomainList.size();
-                    break;
-                case VALUES:
-                    rowCount = this.rowPairList.size();
-                    break;
-                case ASSIGNMENT:
-                    rowCount = 1;
-                    break;
-                case QUERY:
-                    rowCount = -1;
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-            return rowCount;
+            return switch (mode) {
+                case DOMAIN -> this.originalDomainList.size();
+                case VALUES -> this.rowPairList.size();
+                case ASSIGNMENT -> 1;
+                case QUERY -> -1;
+                default -> throw _Exceptions.unexpectedEnum(mode);
+            };
         }
 
         /**
          * @param rowPairList a unmodified list,empty is allowed.
          */
-        final VR staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
+        public final VR staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
             if (this.insertMode != null || this.rowPairList != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -1150,7 +1139,7 @@ abstract class InsertSupports {
             return (VR) this;
         }
 
-        final VR spaceQueryEnd(final SubQuery subQuery) {
+        protected final VR spaceQueryEnd(final SubQuery subQuery) {
             final CriteriaContext subContext;
             if (this.insertMode != null || this.subQuery != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
@@ -1185,7 +1174,7 @@ abstract class InsertSupports {
         /**
          * @return a unmodified list,new instance each time.
          */
-        final List<?> domainListForSingle() {
+        public final List<?> domainListForSingle() {
             assert this.insertTable instanceof SingleTableMeta;
             final List<?> domainList = this.originalDomainList;
             if (this.insertMode != InsertMode.DOMAIN) {
@@ -1199,7 +1188,7 @@ abstract class InsertSupports {
         /**
          * @return a original list
          */
-        final List<?> originalDomainList() {
+        public final List<?> originalDomainList() {
             assert !(this.insertTable instanceof SimpleTableMeta);
             final List<?> domainList = this.originalDomainList;
             if (this.insertMode != InsertMode.DOMAIN) {
@@ -1213,7 +1202,7 @@ abstract class InsertSupports {
         /**
          * validate originalList for child insert statement
          */
-        final void domainListForChild(final List<?> originalList) {
+        public final void domainListForChild(final List<?> originalList) {
             assert this.insertTable instanceof ChildTableMeta;
 
             final List<?> domainList = this.originalDomainList;
@@ -1226,11 +1215,11 @@ abstract class InsertSupports {
         }
 
 
-        final CriteriaException queryInsetSupportOnlyMigration() {
+        protected final CriteriaException queryInsetSupportOnlyMigration() {
             return ContextStack.criteriaError(this.context, "query insert support only migration mode.");
         }
 
-        final CriteriaException insertModeNotMatch() {
+        protected final CriteriaException insertModeNotMatch() {
             final CriteriaException e;
             if (this.insertTable instanceof ChildTableMeta) {
                 String m = String.format("%s insert mode[%s] and %s not match.",
@@ -1242,8 +1231,8 @@ abstract class InsertSupports {
             return e;
         }
 
-        static void validateDomainList(final List<?> parentList, final List<?> childList,
-                                       final ChildTableMeta<?> child) {
+        protected static void validateDomainList(final List<?> parentList, final List<?> childList,
+                                                 final ChildTableMeta<?> child) {
             final int parentSize;
             if (parentList != childList
                     && !((parentSize = parentList.size()) == childList.size()
@@ -1390,7 +1379,7 @@ abstract class InsertSupports {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR, SR>
+    protected static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR, SR>
             extends ComplexInsertValuesClause<T, CR, DR, VR>
             implements InsertStatement._StaticAssignmentSetClause<T, SR>,
             InsertStatement._DynamicAssignmentSetClause<T, VR>,
@@ -1400,7 +1389,7 @@ abstract class InsertSupports {
 
         private Map<FieldMeta<?>, _Expression> assignmentMap;
 
-        ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table, boolean twoStmtMode) {
+        protected ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table, boolean twoStmtMode) {
             super(options, table, twoStmtMode);
         }
 
@@ -1547,7 +1536,7 @@ abstract class InsertSupports {
             return fieldMap;
         }
 
-        final void endStaticAssignmentClauseIfNeed() {
+        protected final void endStaticAssignmentClauseIfNeed() {
 
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.assignmentPairList;
             final Map<FieldMeta<?>, _Expression> fieldMap = this.assignmentMap;
@@ -1575,18 +1564,18 @@ abstract class InsertSupports {
     }//ComplexInsertValuesAssignmentClause
 
 
-    static abstract class ValuesParensClauseImpl<T, R extends Item>
+    protected static abstract class ValuesParensClauseImpl<T, R extends Item>
             implements InsertStatement._StaticValueSpaceClause<T>,
             InsertStatement._StaticColumnValueClause<T>,
             InsertStatement._ValuesParensClause<T, R>,
             Statement._EndFlag,
             CriteriaContextSpec {
 
-        final CriteriaContext context;
+        protected final CriteriaContext context;
 
-        final boolean migration;
+        protected final boolean migration;
 
-        final BiConsumer<FieldMeta<?>, ArmyExpression> validator;
+        protected final BiConsumer<FieldMeta<?>, ArmyExpression> validator;
 
         private List<Map<FieldMeta<?>, _Expression>> rowList;
 
@@ -1594,8 +1583,8 @@ abstract class InsertSupports {
 
         private Assignments<T> assignments;
 
-        ValuesParensClauseImpl(CriteriaContext context, boolean migration,
-                               BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
+        protected ValuesParensClauseImpl(CriteriaContext context, boolean migration,
+                                         BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
             this.context = context;
             this.migration = migration;
             this.validator = validator;
@@ -1778,7 +1767,7 @@ abstract class InsertSupports {
         }
 
 
-        final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
+        protected final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
             if (this.rowValuesMap != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -1848,15 +1837,15 @@ abstract class InsertSupports {
     }//ValuesConstructorImpl
 
 
-    static abstract class AssignmentSetClause<T, SR> extends DynamicAssignmentSetClause<T, SR>
+    protected static abstract class AssignmentSetClause<T, SR> extends DynamicAssignmentSetClause<T, SR>
             implements ColumnListClause, _Insert._AssignmentStatementSpec {
 
-        final TableMeta<T> insertTable;
+        protected final TableMeta<T> insertTable;
 
         private Map<FieldMeta<?>, _Expression> fieldPairMap;
         private List<_Pair<FieldMeta<?>, _Expression>> itemPairList;
 
-        AssignmentSetClause(CriteriaContext context, TableMeta<T> insertTable) {
+        protected AssignmentSetClause(CriteriaContext context, TableMeta<T> insertTable) {
             super(context);
             this.insertTable = insertTable;
         }
@@ -1894,7 +1883,7 @@ abstract class InsertSupports {
         }
 
 
-        final void onAddPair(final FieldMeta<T> field, final @Nullable Expression value) {
+        protected final void onAddPair(final FieldMeta<T> field, final @Nullable Expression value) {
             if (value == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (!(value instanceof ArmyExpression)) {
@@ -1917,7 +1906,7 @@ abstract class InsertSupports {
         }
 
 
-        final void endAssignmentSetClause() {
+        protected final void endAssignmentSetClause() {
             List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
             Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
 
@@ -2082,7 +2071,7 @@ abstract class InsertSupports {
     }//AbstractInsertStatement
 
 
-    static abstract class ArmyValueSyntaxStatement<I extends Statement, Q extends Statement>
+    protected static abstract class ArmyValueSyntaxStatement<I extends Statement, Q extends Statement>
             extends ArmyInsertStatement<I, Q>
             implements _Insert._ValuesSyntaxInsert {
 
@@ -2100,7 +2089,7 @@ abstract class InsertSupports {
 
         private final Map<FieldMeta<?>, _Expression> defaultExpMap;
 
-        ArmyValueSyntaxStatement(_ValuesSyntaxInsert clause) {
+        protected ArmyValueSyntaxStatement(_ValuesSyntaxInsert clause) {
             super(clause);
 
             this.migration = clause.isMigration();
@@ -2154,11 +2143,11 @@ abstract class InsertSupports {
     }//AbstractValueSyntaxStatement
 
 
-    static abstract class ValueSyntaxInsertStatement<I extends Statement>
+    protected static abstract class ValueSyntaxInsertStatement<I extends Statement>
             extends ArmyValueSyntaxStatement<I, Statement>
             implements ValueSyntaxOptions {
 
-        ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
+        protected ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
             super(clause);
 
         }
@@ -2221,7 +2210,7 @@ abstract class InsertSupports {
 
     }//AbstractAssignmentInsertStatement
 
-    static abstract class AssignmentInsertStatement<I extends Statement>
+    protected static abstract class AssignmentInsertStatement<I extends Statement>
             extends AssignmentSyntaxInsertStatement<I, Statement>
             implements InsertStatement {
 
@@ -2232,17 +2221,17 @@ abstract class InsertSupports {
     }//AssignmentInsertStatement
 
 
-    static abstract class ArmyQuerySyntaxInsertStatement<I extends Statement, Q extends Statement>
+    protected static abstract class ArmyQuerySyntaxInsertStatement<I extends Statement, Q extends Statement>
             extends ArmyInsertStatement<I, Q>
             implements _Insert._QueryInsert, ValueSyntaxOptions {
 
-        final List<FieldMeta<?>> fieldList;
+        protected final List<FieldMeta<?>> fieldList;
 
         private final Map<FieldMeta<?>, Boolean> fieldMap;
 
-        final SubQuery query;
+        protected final SubQuery query;
 
-        ArmyQuerySyntaxInsertStatement(_QueryInsert clause) {
+        protected ArmyQuerySyntaxInsertStatement(_QueryInsert clause) {
             super(clause);
             this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();
@@ -2293,12 +2282,12 @@ abstract class InsertSupports {
     }//AbstractQuerySyntaxInsertStatement
 
 
-    static abstract class QuerySyntaxInsertStatement<I extends Statement>
+    protected static abstract class QuerySyntaxInsertStatement<I extends Statement>
             extends ArmyQuerySyntaxInsertStatement<I, Statement>
             implements InsertStatement {
 
 
-        QuerySyntaxInsertStatement(_QueryInsert clause) {
+        protected QuerySyntaxInsertStatement(_QueryInsert clause) {
             super(clause);
 
         }
@@ -2307,19 +2296,19 @@ abstract class InsertSupports {
     }//QueryInsertStatement
 
 
-    static CriteriaException notContainField(CriteriaContext criteriaContext, FieldMeta<?> field) {
+    protected static CriteriaException notContainField(CriteriaContext criteriaContext, FieldMeta<?> field) {
         String m = String.format("insert field list don't contain %s", field);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException duplicationValuePair(CriteriaContext criteriaContext, FieldMeta<?> field) {
+    protected static CriteriaException duplicationValuePair(CriteriaContext criteriaContext, FieldMeta<?> field) {
         String m = String.format("duplication value of %s at same row.", field);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
     @SuppressWarnings("all")
-    static void handleParentUnknownDomain(final List<_Cte> cteList) {
+    protected static void handleParentUnknownDomain(final List<_Cte> cteList) {
         final int cteSize = cteList.size();
         SubStatement subStatement;
         for (int i = 0; i < cteSize; i++) {
@@ -2340,8 +2329,8 @@ abstract class InsertSupports {
      *
      * @param childStmt must be {@link SubStatement}
      */
-    static ParentSubInsert parentSubInsertOfChildSubInsert(final ArmyInsert childStmt, final int rowCount,
-                                                           final List<_Cte> cteListOfChild) {
+    protected static ParentSubInsert parentSubInsertOfChildSubInsert(final ArmyInsert childStmt, final int rowCount,
+                                                                     final List<_Cte> cteListOfChild) {
 
         if (cteListOfChild.size() > 0) {
             final ParentSubInsert parentSubInsert;
@@ -2366,7 +2355,7 @@ abstract class InsertSupports {
      *
      * @param childStmt {@link PrimaryStatement} or {@link SubStatement}
      */
-    static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final int rowCount, final List<_Cte> cteList) {
+    protected static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final int rowCount, final List<_Cte> cteList) {
         final ParentSubInsert parentSubInsert;
         parentSubInsert = tryParentSubInsert0(childStmt, rowCount, cteList, true);
         if (parentSubInsert == null) {
@@ -2376,8 +2365,8 @@ abstract class InsertSupports {
         return parentSubInsert;
     }
 
-    static void validateParentQueryDiscriminator(final TableMeta<?> domainTable, final List<?> fieldList,
-                                                 final SubQuery query) {
+    protected static void validateParentQueryDiscriminator(final TableMeta<?> domainTable, final List<?> fieldList,
+                                                           final SubQuery query) {
 //        final FieldMeta<?> discField = domainTable.discriminator();
 //        assert discField != null;
 //        CodeEnum codeEnum;
@@ -2496,17 +2485,11 @@ abstract class InsertSupports {
                                                            final ChildTableMeta<?> child) {
 
         final Expression idScalarExp;
-        switch (childMode) {
-            case DOMAIN:
-            case VALUES:
-                idScalarExp = ((_Insert._ValuesSyntaxInsert) childStmt).defaultValueMap().get(child.id());
-                break;
-            case ASSIGNMENT:
-                idScalarExp = ((_Insert._AssignmentInsert) childStmt).assignmentMap().get(child.id());
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(childMode);
-        }
+        idScalarExp = switch (childMode) {
+            case DOMAIN, VALUES -> ((_Insert._ValuesSyntaxInsert) childStmt).defaultValueMap().get(child.id());
+            case ASSIGNMENT -> ((_Insert._AssignmentInsert) childStmt).assignmentMap().get(child.id());
+            default -> throw _Exceptions.unexpectedEnum(childMode);
+        };
 
         if (!(idScalarExp instanceof Expressions.ScalarExpression)) {
             final Database database;
@@ -2588,19 +2571,12 @@ abstract class InsertSupports {
 
 
     private static boolean isArmyManageField(final TableMeta<?> insertTable, final FieldMeta<?> field) {
-        final boolean match;
-        switch (field.fieldName()) {
-            case _MetaBridge.CREATE_TIME:
-            case _MetaBridge.UPDATE_TIME:
-            case _MetaBridge.VERSION:
+        return switch (field.fieldName()) {
+            case _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION ->
                 // here,don't contain  id or visible field
-                match = true;
-                break;
-            default:
-                match = field == insertTable.discriminator() || field.generatorType() != null;
-
-        }
-        return match;
+                    true;
+            default -> field == insertTable.discriminator() || field.generatorType() != null;
+        };
     }
 
 

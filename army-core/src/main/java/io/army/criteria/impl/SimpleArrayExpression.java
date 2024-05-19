@@ -19,7 +19,7 @@ package io.army.criteria.impl;
 /**
  * package interface
  */
-interface SimpleArrayExpression extends ArmyArrayExpression {
+public interface SimpleArrayExpression extends ArmyArrayExpression {
 
 
 }

@@ -25,7 +25,7 @@ import io.army.meta.TableMeta;
 import io.army.util._Assert;
 
 
-abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
+public abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
         extends SetWhereClause<F, SR, WR, WA, OR, OD, LR, LO, LF>
         implements Statement,
         Statement._DmlUpdateSpec<I>,
@@ -35,7 +35,7 @@ abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, W
 
     private Boolean prepared;
 
-    SingleUpdateStatement(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+    protected SingleUpdateStatement(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context, updateTable, tableAlias);
         context.singleDmlTable(updateTable, tableAlias);
     }
@@ -73,15 +73,15 @@ abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, W
     }
 
 
-    void onClear() {
+    protected void onClear() {
         //no-op
     }
 
 
-    abstract I onAsUpdate();
+    protected abstract I onAsUpdate();
 
 
-    final void endUpdateStatement() {
+    protected final void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
         this.endUpdateSetClause();
         this.endWhereClauseIfNeed();
