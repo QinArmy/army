@@ -168,7 +168,7 @@ public abstract class TabularBlocks {
         /**
          * @see #fromTableBlock(_JoinType, SQLWords, TableMeta, String)
          */
-        FromClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+        protected FromClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
                                      String alias) {
             super(joinType, table, alias);
             this.modifier = modifier;
@@ -358,7 +358,7 @@ public abstract class TabularBlocks {
             return list;
         }
 
-        final CriteriaContext getContext() {
+        protected final CriteriaContext getContext() {
             return ((CriteriaContextSpec) this.clause).getContext();
         }
 
@@ -405,7 +405,7 @@ public abstract class TabularBlocks {
 
         private final SQLWords modifier;
 
-        JoinClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+        protected JoinClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
                                      String alias, R clause) {
             super(joinType, table, alias, clause);
             this.modifier = modifier;

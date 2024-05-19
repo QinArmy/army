@@ -41,103 +41,6 @@ abstract class PostgreStringFunctions extends Functions {
     PostgreStringFunctions() {
     }
 
-    public interface WordNormalizeForm {
-
-    }
-
-    public interface WordPlacing {
-
-    }
-
-    public interface XmlAttributes extends Item {
-
-    }
-
-    public interface WordVersion extends SQLWords {
-
-    }
-
-    public interface WordStandalone extends SQLWords {
-
-    }
-
-    public interface StandaloneOption extends SQLWords {
-
-    }
-
-    public interface WordsNoValue extends StandaloneOption {
-
-    }
-
-    public interface WordPassing extends SQLWords {
-
-    }
-
-    public interface PassingOption extends SQLWords {
-
-    }
-
-
-    enum KeyWordNormalizeForm implements WordNormalizeForm, SqlWords.ArmyKeyWord, SQLWords {
-
-        NFC(" NFC"),
-        NFD(" NFD"),
-        NFKC(" NFKC"),
-        NFKD(" NFKD");
-
-        private final String spaceWords;
-
-        KeyWordNormalizeForm(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return PostgreSyntax.keyWordToString(this);
-        }
-
-    }//KeyWordNormalizeForm
-
-    private enum KeyWordPlacing implements WordPlacing, SqlWords.ArmyKeyWord, SQLWords {
-
-        PLACING(" PLACING");
-
-        private final String spaceWord;
-
-        KeyWordPlacing(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return PostgreSyntax.keyWordToString(this);
-        }
-
-
-    }//KeyWordPlacing
-
-
-    public static final WordNormalizeForm NFC = KeyWordNormalizeForm.NFC;
-
-    public static final WordNormalizeForm NFD = KeyWordNormalizeForm.NFD;
-
-    public static final WordNormalizeForm NFKC = KeyWordNormalizeForm.NFKC;
-
-    public static final WordNormalizeForm NFKD = KeyWordNormalizeForm.NFKD;
-
-    public static final WordPlacing PLACING = KeyWordPlacing.PLACING;
-
 
     /*-------------------below SQL String Functions and Operators-------------------*/
 
@@ -198,12 +101,12 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">normalize ( text [, form ] ) → text</a>
      */
-    public static SimpleExpression normalize(final Expression exp, final WordNormalizeForm form) {
+    public static SimpleExpression normalize(final Expression exp, final Postgres.WordNormalizeForm form) {
         final String name = "NORMALIZE";
         final SimpleExpression func;
         if (exp instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, exp);
-        } else if (!(form instanceof KeyWordNormalizeForm)) {
+        } else if (!(form instanceof PostgreWords.KeyWordNormalizeForm)) {
             throw CriteriaUtils.funcArgError(name, form);
         } else {
             func = FunctionUtils.complexArgFunc(name, exp.typeMeta(), exp, SqlWords.FuncWord.COMMA, form);
@@ -230,12 +133,12 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      *
      *
-     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
+     * @see #overlay(Expression, Postgres.WordPlacing, Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">overlay ( bits bit PLACING newsubstring bit FROM start integer [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">overlay ( bytes bytea PLACING newsubstring bytea FROM start integer [ FOR count integer ] ) → bytea</a>
      */
-    public static SimpleExpression overlay(Expression string, WordPlacing placing, Expression newSubstring,
+    public static SimpleExpression overlay(Expression string, Postgres.WordPlacing placing, Expression newSubstring,
                                            SQLs.WordFrom from, Expression start) {
         return _overlay(string, placing, newSubstring, from, start, SQLs.FOR, null);
     }
@@ -245,12 +148,12 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      *
      *
-     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression)
+     * @see #overlay(Expression, Postgres.WordPlacing, Expression, SQLs.WordFrom, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">overlay ( bits bit PLACING newsubstring bit FROM start integer [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">overlay ( bytes bytea PLACING newsubstring bytea FROM start integer [ FOR count integer ] ) → bytea</a>
      */
-    public static SimpleExpression overlay(Expression string, WordPlacing placing, Expression newSubstring,
+    public static SimpleExpression overlay(Expression string, Postgres.WordPlacing placing, Expression newSubstring,
                                            SQLs.WordFrom from, Expression start, SQLs.WordFor wordFor,
                                            Expression count) {
         ContextStack.assertNonNull(count);
@@ -1628,10 +1531,10 @@ abstract class PostgreStringFunctions extends Functions {
 
 
     /**
-     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression)
-     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
+     * @see #overlay(Expression, Postgres.WordPlacing, Expression, SQLs.WordFrom, Expression)
+     * @see #overlay(Expression, Postgres.WordPlacing, Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      */
-    private static SimpleExpression _overlay(Expression string, WordPlacing placing, Expression newSubstring,
+    private static SimpleExpression _overlay(Expression string, Postgres.WordPlacing placing, Expression newSubstring,
                                              SQLs.WordFrom from, Expression start, @Nullable SQLs.WordFor wordFor,
                                              @Nullable Expression count) {
         final String name = "OVERLAY";
@@ -1644,7 +1547,7 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, start);
         } else if (count instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, count);
-        } else if (placing != PLACING) {
+        } else if (placing != Postgres.PLACING) {
             throw CriteriaUtils.funcArgError(name, placing);
         } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);

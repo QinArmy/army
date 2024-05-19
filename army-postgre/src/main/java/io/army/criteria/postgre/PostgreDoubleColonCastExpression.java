@@ -18,6 +18,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.LiteralExpression;
+import io.army.criteria.impl.OperationExpression;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;

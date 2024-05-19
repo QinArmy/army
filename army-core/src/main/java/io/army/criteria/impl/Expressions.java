@@ -73,7 +73,7 @@ public abstract class Expressions {
         return dialectDualExp(left, operator, right, inferFunc);
     }
 
-    static SimpleResultExpression collateExp(final Expression exp, final @Nullable String collation) {
+    public static SimpleResultExpression collateExp(final Expression exp, final @Nullable String collation) {
         if (!(exp instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(exp);
         } else if (collation == null) {
@@ -84,8 +84,8 @@ public abstract class Expressions {
         return new CollateExpression(exp, collation);
     }
 
-    static CompoundExpression dialectDualExp(final Expression left, final DualExpOperator operator,
-                                             final Expression right, final BinaryOperator<MappingType> inferFunc) {
+    public static CompoundExpression dialectDualExp(final Expression left, final DualExpOperator operator,
+                                                    final Expression right, final BinaryOperator<MappingType> inferFunc) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
         } else if (!(right instanceof OperationExpression)) {
@@ -120,7 +120,7 @@ public abstract class Expressions {
     }
 
     public static CompoundPredicate inPredicate(final SQLExpression left, final boolean not,
-                                         final @Nullable SQLColumnSet right) {
+                                                final @Nullable SQLColumnSet right) {
         if (right == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (left instanceof RowExpression) {
@@ -143,7 +143,7 @@ public abstract class Expressions {
 
 
     public static CompoundPredicate booleanTestPredicate(final OperationExpression expression,
-                                                  boolean not, SQLs.BooleanTestWord operand) {
+                                                         boolean not, SQLs.BooleanTestWord operand) {
         if (!(operand == SQLs.NULL
                 || operand == SQLs.TRUE
                 || operand == SQLs.FALSE
@@ -156,7 +156,7 @@ public abstract class Expressions {
     }
 
     public static CompoundPredicate isComparisonPredicate(final OperationExpression left, boolean not,
-                                                   SQLs.IsComparisonWord operator, Expression right) {
+                                                          SQLs.IsComparisonWord operator, Expression right) {
         if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
         } else if (!(operator instanceof SqlWords.ArmyKeyWord)) {
@@ -167,7 +167,7 @@ public abstract class Expressions {
 
 
     public static CompoundPredicate dualPredicate(final OperationSQLExpression left, final DualBooleanOperator operator,
-                                           final @Nullable RightOperand right) {
+                                                  final @Nullable RightOperand right) {
         if (right == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!(right instanceof ArmyRightOperand)) {
@@ -180,8 +180,8 @@ public abstract class Expressions {
     }
 
     public static CompoundPredicate likePredicate(final Expression left, final DualBooleanOperator operator,
-                                           final @Nullable Expression right, SQLs.WordEscape escape,
-                                           @Nullable final Expression escapeChar) {
+                                                  final @Nullable Expression right, SQLs.WordEscape escape,
+                                                  @Nullable final Expression escapeChar) {
         switch (operator) {
             case LIKE:
             case NOT_LIKE:
@@ -204,8 +204,8 @@ public abstract class Expressions {
 
 
     public static CompoundPredicate betweenPredicate(OperationExpression left, boolean not,
-                                              @Nullable SQLs.BetweenModifier modifier,
-                                              Expression center, Expression right) {
+                                                     @Nullable SQLs.BetweenModifier modifier,
+                                                     Expression center, Expression right) {
         if (!(center instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(center);
         } else if (!(right instanceof OperationExpression)) {
@@ -216,7 +216,7 @@ public abstract class Expressions {
     }
 
     public static CompoundPredicate compareQueryPredicate(final SQLExpression left, final DualBooleanOperator operator,
-                                                   final SQLs.QuantifiedWord queryOperator, final RightOperand right) {
+                                                          final SQLs.QuantifiedWord queryOperator, final RightOperand right) {
         if (!(left instanceof OperationSQLExpression)) {
             throw ContextStack.clearStackAndNonArmyItem(left);
         }
@@ -283,7 +283,7 @@ public abstract class Expressions {
     }
 
     public static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index1, Expression index2,
-                                            Expression index3, Expression[] restIndex) {
+                                                   Expression index3, Expression[] restIndex) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
@@ -329,7 +329,7 @@ public abstract class Expressions {
     }
 
     public static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index1, ArraySubscript index2,
-                                                ArraySubscript index3, ArraySubscript[] restIndex) {
+                                                       ArraySubscript index3, ArraySubscript[] restIndex) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
@@ -400,7 +400,7 @@ public abstract class Expressions {
 
 
     public static SQLs._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
-                                            List<Object> elementList) {
+                                                   List<Object> elementList) {
         final TypeMeta type;
         if (elementList.size() == 0) {
             elementList = Collections.emptyList();
@@ -411,8 +411,8 @@ public abstract class Expressions {
         return new SimpleArrayConstructor(elementList, type);
     }
 
-    static SQLs._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
-                                            final Consumer<Consumer<Object>> consumer) {
+    public static SQLs._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
+                                                   final Consumer<Consumer<Object>> consumer) {
         List<Object> elementList = _Collections.arrayList();
         consumer.accept(elementList::add);
         final TypeMeta type;
@@ -425,17 +425,17 @@ public abstract class Expressions {
         return new SimpleArrayConstructor(elementList, type);
     }
 
-    static SQLs._ArrayConstructorSpec array(final SubQuery subQuery) {
+    public static SQLs._ArrayConstructorSpec array(final SubQuery subQuery) {
         return new SubQueryArrayConstructor(subQuery, validateScalarSubQuery(subQuery));
     }
 
 
-    static GroupByItem.ExpressionGroup emptyParens() {
+    public static GroupByItem.ExpressionGroup emptyParens() {
         return EmptyParensGroupByItem.INSTANCE;
     }
 
 
-    static GroupByItem parens(final @Nullable GroupingModifier modifier, final @Nullable GroupByItem exp) {
+    public static GroupByItem parens(final @Nullable GroupingModifier modifier, final @Nullable GroupByItem exp) {
         if (!(exp instanceof ArmyGroupByItem)) {
             throw ContextStack.clearStackAndNonArmyItem(exp);
         }
@@ -450,8 +450,8 @@ public abstract class Expressions {
         return item;
     }
 
-    static GroupByItem parens(final @Nullable GroupingModifier modifier, final GroupByItem exp1,
-                              final GroupByItem exp2) {
+    public static GroupByItem parens(final @Nullable GroupingModifier modifier, final GroupByItem exp1,
+                                     final GroupByItem exp2) {
         if (!(exp1 instanceof ArmyGroupByItem)) {
             throw ContextStack.clearStackAndNonArmyItem(exp1);
         } else if (!(exp2 instanceof ArmyGroupByItem)) {
@@ -469,8 +469,8 @@ public abstract class Expressions {
         return item;
     }
 
-    static GroupByItem parens(final @Nullable GroupingModifier modifier, final GroupByItem exp1,
-                              final GroupByItem exp2, final GroupByItem exp3, GroupByItem... rest) {
+    public static GroupByItem parens(final @Nullable GroupingModifier modifier, final GroupByItem exp1,
+                                     final GroupByItem exp2, final GroupByItem exp3, GroupByItem... rest) {
         if (!(exp1 instanceof ArmyGroupByItem)) {
             throw ContextStack.clearStackAndNonArmyItem(exp1);
         } else if (!(exp2 instanceof ArmyGroupByItem)) {
@@ -499,8 +499,8 @@ public abstract class Expressions {
         return item;
     }
 
-    static <T extends GroupByItem> GroupByItem parens(final @Nullable GroupingModifier modifier,
-                                                      final Consumer<Consumer<T>> consumer) {
+    public static <T extends GroupByItem> GroupByItem parens(final @Nullable GroupingModifier modifier,
+                                                             final Consumer<Consumer<T>> consumer) {
         final List<ArmyGroupByItem> list = _Collections.arrayList();
         consumer.accept(e -> {
             if (!(e instanceof ArmyGroupByItem)) {
@@ -523,16 +523,16 @@ public abstract class Expressions {
     }
 
 
-    static MappingType identityType(MappingType type) {
+    public static MappingType identityType(MappingType type) {
         return type;
     }
 
 
-    static MappingType doubleType(MappingType type) {
+    public static MappingType doubleType(MappingType type) {
         return DoubleType.INSTANCE;
     }
 
-    static MappingType divideType(final MappingType left, final MappingType right) {
+    public static MappingType divideType(final MappingType left, final MappingType right) {
         final MappingType type;
         if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
             type = BigDecimalType.INSTANCE;
@@ -542,7 +542,7 @@ public abstract class Expressions {
         return type;
     }
 
-    static MappingType plusMinusType(final MappingType left, final MappingType right) {
+    public static MappingType plusMinusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
             returnType = left;
@@ -581,7 +581,7 @@ public abstract class Expressions {
     }
 
 
-    static MappingType timesDivideType(final MappingType left, final MappingType right) {
+    public static MappingType timesDivideType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
             returnType = left;
@@ -608,7 +608,7 @@ public abstract class Expressions {
     }
 
 
-    static MappingType modeType(final MappingType left, final MappingType right) {
+    public static MappingType modeType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
             returnType = left;
@@ -634,7 +634,7 @@ public abstract class Expressions {
         return returnType;
     }
 
-    static MappingType bitwiseType(final MappingType left, final MappingType right) {
+    public static MappingType bitwiseType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (left.getClass() == right.getClass()) {
             returnType = left;
@@ -653,7 +653,7 @@ public abstract class Expressions {
         return returnType;
     }
 
-    static void validateSubQueryContext(final @Nullable SubQuery subQuery) {
+    public static void validateSubQueryContext(final @Nullable SubQuery subQuery) {
         if (subQuery == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -906,7 +906,7 @@ public abstract class Expressions {
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link UnaryExpOperator}.
      */
-    static class UnaryExpression extends OperationExpression.OperationSimpleExpression {
+    public static class UnaryExpression extends OperationExpression.OperationSimpleExpression {
 
         private final Operator.SqlUnaryExpOperator operator;
 
@@ -919,8 +919,8 @@ public abstract class Expressions {
         /**
          * @see #unaryExp(UnaryExpOperator, Expression)
          */
-        UnaryExpression(Operator.SqlUnaryExpOperator operator, Expression operand,
-                        UnaryOperator<MappingType> inferFunc) {
+        protected UnaryExpression(Operator.SqlUnaryExpOperator operator, Expression operand,
+                                  UnaryOperator<MappingType> inferFunc) {
             this.operator = operator;
             this.operand = (ArmyExpression) operand;
             this.inferFunc = inferFunc;
@@ -1034,7 +1034,7 @@ public abstract class Expressions {
     }//StandardUnaryExpression
 
 
-    static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
+    public static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
 
         private final SubQuery subQuery;
 
@@ -1135,17 +1135,17 @@ public abstract class Expressions {
     }//UnaryPredicate
 
 
-    static abstract class DualPredicate extends OperationPredicate.OperationCompoundPredicate {
+    public static abstract class DualPredicate extends OperationPredicate.OperationCompoundPredicate {
 
 
-        final ArmySQLExpression left;
+        public final ArmySQLExpression left;
 
-        final Operator.SqlDualBooleanOperator operator;
+        public final Operator.SqlDualBooleanOperator operator;
 
-        final ArmyRightOperand right;
+        public final ArmyRightOperand right;
 
 
-        DualPredicate(OperationSQLExpression left, Operator.SqlDualBooleanOperator operator, RightOperand right) {
+        protected DualPredicate(OperationSQLExpression left, Operator.SqlDualBooleanOperator operator, RightOperand right) {
             this.left = left;
             this.operator = operator;
             this.right = (ArmyRightOperand) right;
@@ -1714,7 +1714,7 @@ public abstract class Expressions {
     }//IsComparisonPredicates
 
 
-    static final class InOperationPredicate extends OperationPredicate.OperationCompoundPredicate {
+    public static final class InOperationPredicate extends OperationPredicate.OperationCompoundPredicate {
 
         final ArmySQLExpression left;
 
@@ -2074,7 +2074,7 @@ public abstract class Expressions {
 
     }//ThreeDimensionArrayElementArrayExpression
 
-    static MappingType jsonIdentityType(final MappingType type) {
+    public static MappingType jsonIdentityType(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlJsonType) {
             returnType = JsonType.TEXT;
@@ -2619,7 +2619,7 @@ public abstract class Expressions {
 
     }//EmptyParensGroupByItem
 
-    enum GroupingModifier {
+    public enum GroupingModifier {
         ROLLUP(" ROLLUP"),
         CUBE(" CUBE"),
         GROUPING_SETS(" GROUPING SETS");

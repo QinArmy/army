@@ -17,15 +17,16 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
 import io.army.mapping.postgre.PostgreInetType;
 import io.army.mapping.postgre.PostgreTsQueryType;
-import io.army.mapping.postgre.spatial.postgre.PostgreBoxType;
-import io.army.mapping.postgre.spatial.postgre.PostgreGeometricType;
-import io.army.mapping.postgre.spatial.postgre.PostgrePointType;
+import io.army.mapping.postgre.spatial.PostgreBoxType;
+import io.army.mapping.postgre.spatial.PostgreGeometricType;
+import io.army.mapping.postgre.spatial.PostgrePointType;
 import io.army.type.Interval;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;

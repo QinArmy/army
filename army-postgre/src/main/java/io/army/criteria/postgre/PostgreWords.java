@@ -16,6 +16,10 @@
 
 package io.army.criteria.postgre;
 
+import io.army.criteria.SQLWords;
+import io.army.criteria.impl.FunctionArg;
+import io.army.criteria.impl.NonOperationExpression;
+import io.army.criteria.impl.SqlWords;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -29,7 +33,7 @@ abstract class PostgreWords {
     }
 
 
-    enum WordExtractTimeField implements PostgreDateTimeFunctions.ExtractTimeField, SqlWords.ArmyKeyWord {
+    enum WordExtractTimeField implements Postgres.ExtractTimeField, SqlWords.ArmyKeyWord {
 
         CENTURY(" CENTURY"),
         DAY(" DAY"),
@@ -101,7 +105,7 @@ abstract class PostgreWords {
 
     }
 
-    enum KeyWordVersion implements PostgreStringFunctions.WordVersion, SqlWords.ArmyKeyWord {
+    enum KeyWordVersion implements Postgres.WordVersion, SqlWords.ArmyKeyWord {
 
         VERSION(" VERSION");
 
@@ -123,7 +127,7 @@ abstract class PostgreWords {
 
     }//KeyWordVersion
 
-    enum KeyWordStandalone implements PostgreStringFunctions.WordStandalone, SqlWords.ArmyKeyWord {
+    enum KeyWordStandalone implements Postgres.WordStandalone, SqlWords.ArmyKeyWord {
 
         STANDALONE(" STANDALONE");
 
@@ -145,7 +149,7 @@ abstract class PostgreWords {
 
     }//KeyWordStandalone
 
-    enum KeyWordStandaloneOption implements PostgreStringFunctions.StandaloneOption, SqlWords.ArmyKeyWord {
+    enum KeyWordStandaloneOption implements Postgres.StandaloneOption, SqlWords.ArmyKeyWord {
 
         YES(" YES"),
         NO(" NO");
@@ -168,7 +172,7 @@ abstract class PostgreWords {
 
     }//KeyWordStandaloneOption
 
-    enum KeyWordsNoValue implements PostgreStringFunctions.WordsNoValue, SqlWords.ArmyKeyWord {
+    enum KeyWordsNoValue implements Postgres.WordsNoValue, SqlWords.ArmyKeyWord {
 
         NO_VALUE(" NO VALUE");
 
@@ -190,7 +194,7 @@ abstract class PostgreWords {
 
     }// KeyWordsNoValue
 
-    enum KeyWordPassing implements PostgreStringFunctions.WordPassing, SqlWords.ArmyKeyWord {
+    enum KeyWordPassing implements Postgres.WordPassing, SqlWords.ArmyKeyWord {
 
         PASSING(" PASSING");
 
@@ -212,7 +216,7 @@ abstract class PostgreWords {
 
     }// KeyWordPassing
 
-    enum WordPassingOption implements PostgreStringFunctions.PassingOption, SqlWords.ArmyKeyWord {
+    enum WordPassingOption implements Postgres.PassingOption, SqlWords.ArmyKeyWord {
         BY_REF(" BY REF"),
         BY_VALUE(" BY VALUE");
 
@@ -305,8 +309,57 @@ abstract class PostgreWords {
 
     }//FromNormalizedWord
 
+    enum KeyWordNormalizeForm implements Postgres.WordNormalizeForm, SqlWords.ArmyKeyWord, SQLWords {
+
+        NFC(" NFC"),
+        NFD(" NFD"),
+        NFKC(" NFKC"),
+        NFKD(" NFKD");
+
+        private final String spaceWords;
+
+        KeyWordNormalizeForm(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return PostgreSyntax.keyWordToString(this);
+        }
+
+    }//KeyWordNormalizeForm
+
+    enum KeyWordPlacing implements Postgres.WordPlacing, SqlWords.ArmyKeyWord, SQLWords {
+
+        PLACING(" PLACING");
+
+        private final String spaceWord;
+
+        KeyWordPlacing(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return PostgreSyntax.keyWordToString(this);
+        }
+
+
+    }//KeyWordPlacing
+
     static final class NullTreatModeExpression extends NonOperationExpression
-            implements PostgreDocumentFunctions.NullTreatMode,
+            implements Postgres.NullTreatMode,
             FunctionArg.SingleFunctionArg {
 
         static final NullTreatModeExpression RAISE_EXCEPTION = new NullTreatModeExpression(" 'raise_exception'");

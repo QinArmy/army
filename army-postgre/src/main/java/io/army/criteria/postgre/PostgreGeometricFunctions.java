@@ -21,12 +21,13 @@ import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.SimplePredicate;
 import io.army.criteria.TypeInfer;
+import io.army.criteria.impl.FunctionUtils;
 import io.army.criteria.standard.SQLs;
 import io.army.mapping.BooleanType;
 import io.army.mapping.DoubleType;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
-import io.army.mapping.postgre.spatial.postgre.*;
+import io.army.mapping.postgre.spatial.*;
 
 import java.util.function.BiFunction;
 

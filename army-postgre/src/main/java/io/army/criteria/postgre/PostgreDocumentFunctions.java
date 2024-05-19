@@ -50,14 +50,6 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     PostgreDocumentFunctions() {
     }
 
-    public interface XmlNameSpaces extends Item {
-
-    }
-
-    public interface NullTreatMode extends Expression {
-
-    }
-
 
     /**
      * <p>
@@ -1106,14 +1098,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * <strong>Note:</strong>This function cannot exist independently,see {@link #xmlElement(Postgres.WordName, String, XmlAttributes, Expression...)}
+     * <strong>Note:</strong>This function cannot exist independently,see {@link #xmlElement(Postgres.WordName, String, Postgres.XmlAttributes, Expression...)}
      * *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static XmlAttributes xmlAttributes(Consumer<Postgres._XmlNamedElementFieldClause> consumer) {
+    public static Postgres.XmlAttributes xmlAttributes(Consumer<Postgres._XmlNamedElementFieldClause> consumer) {
         final PostgreFunctionUtils.XmlNamedElementPart<PostgreFunctionUtils.XmlAttributes> part;
         part = PostgreFunctionUtils.xmlAttributes();
         consumer.accept(part);
@@ -1128,7 +1120,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
+    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, Postgres.XmlAttributes attributes,
                                               Expression... contents) {
         ContextStack.assertNonNull(attributes);
         ContextStack.assertNonNull(contents);
@@ -1165,7 +1157,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
+    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, Postgres.XmlAttributes attributes,
                                               List<Expression> contentList) {
         ContextStack.assertNonNull(attributes);
         return _xmlElement(wordName, name, attributes, c -> {
@@ -1242,13 +1234,13 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * *
      *
-     * @see #xmlRoot(Expression, WordVersion, Expression)
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue, WordStandalone, StandaloneOption)
-     * @see #xmlRoot(Expression, WordVersion, Expression, WordStandalone, StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue, Postgres.WordStandalone, Postgres.StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression, Postgres.WordStandalone, Postgres.StandaloneOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, WordsNoValue noValue) {
+    public static SimpleExpression xmlRoot(Expression xml, Postgres.WordVersion version, Postgres.WordsNoValue noValue) {
         return _xmlRoot(xml, version, noValue, Postgres.STANDALONE, null);
     }
 
@@ -1257,13 +1249,13 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * *
      *
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue, WordStandalone, StandaloneOption)
-     * @see #xmlRoot(Expression, WordVersion, Expression, WordStandalone, StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue, Postgres.WordStandalone, Postgres.StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression, Postgres.WordStandalone, Postgres.StandaloneOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, Expression text) {
+    public static SimpleExpression xmlRoot(Expression xml, Postgres.WordVersion version, Expression text) {
         return _xmlRoot(xml, version, text, Postgres.STANDALONE, null);
     }
 
@@ -1272,14 +1264,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * *
      *
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
-     * @see #xmlRoot(Expression, WordVersion, Expression)
-     * @see #xmlRoot(Expression, WordVersion, Expression, WordStandalone, StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression, Postgres.WordStandalone, Postgres.StandaloneOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, WordsNoValue noValue,
-                                           WordStandalone standalone, StandaloneOption option) {
+    public static SimpleExpression xmlRoot(Expression xml, Postgres.WordVersion version, Postgres.WordsNoValue noValue,
+                                           Postgres.WordStandalone standalone, Postgres.StandaloneOption option) {
         ContextStack.assertNonNull(option);
         return _xmlRoot(xml, version, noValue, standalone, option);
     }
@@ -1289,14 +1281,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * *
      *
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
-     * @see #xmlRoot(Expression, WordVersion, Expression)
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue, WordStandalone, StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue, Postgres.WordStandalone, Postgres.StandaloneOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlRoot(Expression xml, WordVersion version, Expression text,
-                                           WordStandalone standalone, StandaloneOption option) {
+    public static SimpleExpression xmlRoot(Expression xml, Postgres.WordVersion version, Expression text,
+                                           Postgres.WordStandalone standalone, Postgres.StandaloneOption option) {
         ContextStack.assertNonNull(option);
         return _xmlRoot(xml, version, text, standalone, option);
     }
@@ -1342,13 +1334,13 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link Boolean}
      * *
      *
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression)
-     * @see #xmlExists(Expression, WordPassing, Expression, PassingOption)
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression, PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">XMLEXISTS ( text PASSING [BY {REF|VALUE}] xml [BY {REF|VALUE}] ) → boolean<br/>
      * </a>
      */
-    public static SimplePredicate xmlExists(Expression text, WordPassing passing, Expression xml) {
+    public static SimplePredicate xmlExists(Expression text, Postgres.WordPassing passing, Expression xml) {
         return _xmlExists(text, passing, null, xml, null);
     }
 
@@ -1357,14 +1349,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link Boolean}
      * *
      *
-     * @see #xmlExists(Expression, WordPassing, Expression)
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression)
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression, PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">XMLEXISTS ( text PASSING [BY {REF|VALUE}] xml [BY {REF|VALUE}] ) → boolean<br/>
      * </a>
      */
-    public static SimplePredicate xmlExists(Expression text, WordPassing passing, Expression xml,
-                                            PassingOption xmlOption) {
+    public static SimplePredicate xmlExists(Expression text, Postgres.WordPassing passing, Expression xml,
+                                            Postgres.PassingOption xmlOption) {
         ContextStack.assertNonNull(xmlOption);
         return _xmlExists(text, passing, null, xml, xmlOption);
     }
@@ -1374,13 +1366,13 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link Boolean}
      * *
      *
-     * @see #xmlExists(Expression, WordPassing, Expression)
-     * @see #xmlExists(Expression, WordPassing, Expression, PassingOption)
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression, PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">XMLEXISTS ( text PASSING [BY {REF|VALUE}] xml [BY {REF|VALUE}] ) → boolean<br/>
      * </a>
      */
-    public static SimplePredicate xmlExists(Expression text, WordPassing passing, PassingOption textOption,
+    public static SimplePredicate xmlExists(Expression text, Postgres.WordPassing passing, Postgres.PassingOption textOption,
                                             Expression xml) {
         ContextStack.assertNonNull(textOption);
         return _xmlExists(text, passing, textOption, xml, null);
@@ -1391,14 +1383,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link Boolean}
      * *
      *
-     * @see #xmlExists(Expression, WordPassing, Expression)
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression)
-     * @see #xmlExists(Expression, WordPassing, Expression, PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">XMLEXISTS ( text PASSING [BY {REF|VALUE}] xml [BY {REF|VALUE}] ) → boolean<br/>
      * </a>
      */
-    public static SimplePredicate xmlExists(Expression text, WordPassing passing, PassingOption textOption,
-                                            Expression xml, PassingOption xmlOption) {
+    public static SimplePredicate xmlExists(Expression text, Postgres.WordPassing passing, Postgres.PassingOption textOption,
+                                            Expression xml, Postgres.PassingOption xmlOption) {
         ContextStack.assertNonNull(textOption);
         ContextStack.assertNonNull(xmlOption);
         return _xmlExists(text, passing, textOption, xml, xmlOption);
@@ -1514,7 +1506,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLNAMESPACES ( namespace_uri AS namespace_name [, ...] )<br/>
      * </a>
      */
-    public static XmlNameSpaces xmlNamespaces(BiFunction<MappingType, String, Expression> funcRef, String namespaceUri, SQLs.WordAs as, String namespaceName) {
+    public static Postgres.XmlNameSpaces xmlNamespaces(BiFunction<MappingType, String, Expression> funcRef, String namespaceUri, SQLs.WordAs as, String namespaceName) {
         return xmlNamespaces(funcRef.apply(TextType.INSTANCE, namespaceUri), as, namespaceName);
     }
 
@@ -1528,8 +1520,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLNAMESPACES ( namespace_uri AS namespace_name [, ...] )<br/>
      * </a>
      */
-    public static XmlNameSpaces xmlNamespaces(Expression namespaceUri, SQLs.WordAs as, String namespaceName) {
-        final PostgreFunctionUtils.XmlNamedElementPart<XmlNameSpaces> clause;
+    public static Postgres.XmlNameSpaces xmlNamespaces(Expression namespaceUri, SQLs.WordAs as, String namespaceName) {
+        final PostgreFunctionUtils.XmlNamedElementPart<Postgres.XmlNameSpaces> clause;
         clause = PostgreFunctionUtils.xmlNamespaces();
         clause.accept(namespaceUri, as, namespaceName);
         return clause.endNamedPart();
@@ -1542,8 +1534,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLNAMESPACES ( namespace_uri AS namespace_name [, ...] )<br/>
      * </a>
      */
-    public static XmlNameSpaces xmlNamespaces(Consumer<Postgres._XmlNamedElementClause> consumer) {
-        final PostgreFunctionUtils.XmlNamedElementPart<XmlNameSpaces> clause;
+    public static Postgres.XmlNameSpaces xmlNamespaces(Consumer<Postgres._XmlNamedElementClause> consumer) {
+        final PostgreFunctionUtils.XmlNamedElementPart<Postgres.XmlNameSpaces> clause;
         clause = PostgreFunctionUtils.xmlNamespaces();
         consumer.accept(clause);
         return clause.endNamedPart();
@@ -1560,16 +1552,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, Expression docExp,
+    public static _TabularFunction xmlTable(Expression rowExp, Postgres.WordPassing passing, Expression docExp,
                                             Consumer<Postgres._XmlTableColumnsClause> consumer) {
         return _xmlTable(null, rowExp, passing, null, docExp, null, consumer);
     }
@@ -1585,16 +1577,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
+    public static _TabularFunction xmlTable(Postgres.XmlNameSpaces nameSpaces, Expression rowExp, Postgres.WordPassing passing,
                                             Expression docExp, Consumer<Postgres._XmlTableColumnsClause> consumer) {
         ContextStack.assertNonNull(nameSpaces);
         return _xmlTable(nameSpaces, rowExp, passing, null, docExp, null, consumer);
@@ -1611,16 +1603,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, PassingOption rowOption,
+    public static _TabularFunction xmlTable(Expression rowExp, Postgres.WordPassing passing, Postgres.PassingOption rowOption,
                                             Expression docExp, Consumer<Postgres._XmlTableColumnsClause> consumer) {
         ContextStack.assertNonNull(rowOption);
         return _xmlTable(null, rowExp, passing, rowOption, docExp, null, consumer);
@@ -1637,17 +1629,17 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, Expression docExp,
-                                            PassingOption docOption,
+    public static _TabularFunction xmlTable(Expression rowExp, Postgres.WordPassing passing, Expression docExp,
+                                            Postgres.PassingOption docOption,
                                             Consumer<Postgres._XmlTableColumnsClause> consumer) {
         ContextStack.assertNonNull(docOption);
         return _xmlTable(null, rowExp, passing, null, docExp, docOption, consumer);
@@ -1664,17 +1656,17 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
-                                            PassingOption rowOption, Expression docExp,
+    public static _TabularFunction xmlTable(Postgres.XmlNameSpaces nameSpaces, Expression rowExp, Postgres.WordPassing passing,
+                                            Postgres.PassingOption rowOption, Expression docExp,
                                             Consumer<Postgres._XmlTableColumnsClause> consumer) {
         ContextStack.assertNonNull(nameSpaces);
         ContextStack.assertNonNull(rowOption);
@@ -1692,17 +1684,17 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
-                                            Expression docExp, PassingOption docOption,
+    public static _TabularFunction xmlTable(Postgres.XmlNameSpaces nameSpaces, Expression rowExp, Postgres.WordPassing passing,
+                                            Expression docExp, Postgres.PassingOption docOption,
                                             Consumer<Postgres._XmlTableColumnsClause> consumer) {
         ContextStack.assertNonNull(nameSpaces);
         ContextStack.assertNonNull(docOption);
@@ -1720,17 +1712,17 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, PassingOption rowOption,
-                                            Expression docExp, PassingOption docOption,
+    public static _TabularFunction xmlTable(Expression rowExp, Postgres.WordPassing passing, Postgres.PassingOption rowOption,
+                                            Expression docExp, Postgres.PassingOption docOption,
                                             Consumer<Postgres._XmlTableColumnsClause> consumer) {
         ContextStack.assertNonNull(rowOption);
         ContextStack.assertNonNull(docOption);
@@ -1748,17 +1740,17 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
-                                            PassingOption rowOption, Expression docExp, PassingOption docOption,
+    public static _TabularFunction xmlTable(Postgres.XmlNameSpaces nameSpaces, Expression rowExp, Postgres.WordPassing passing,
+                                            Postgres.PassingOption rowOption, Expression docExp, Postgres.PassingOption docOption,
                                             Consumer<Postgres._XmlTableColumnsClause> consumer) {
         ContextStack.assertNonNull(nameSpaces);
         ContextStack.assertNonNull(rowOption);
@@ -4476,7 +4468,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static <T, U> Expression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
                                                       T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
-                                                      U newValue, Expression createIfMissing, NullTreatMode nullTreatMode) {
+                                                U newValue, Expression createIfMissing, Postgres.NullTreatMode nullTreatMode) {
         return jsonbSetLax(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue), createIfMissing,
                 nullTreatMode
@@ -7112,13 +7104,13 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     /*-------------------below private method -------------------*/
 
     /**
-     * @see #xmlElement(Postgres.WordName, String, XmlAttributes, Expression...)
+     * @see #xmlElement(Postgres.WordName, String, Postgres.XmlAttributes, Expression...)
      * @see #xmlElement(Postgres.WordName, String, Expression...)
      * @see #xmlElement(Postgres.WordName, String, List)
-     * @see #xmlElement(Postgres.WordName, String, XmlAttributes, List)
+     * @see #xmlElement(Postgres.WordName, String, Postgres.XmlAttributes, List)
      */
     private static SimpleExpression _xmlElement(final Postgres.WordName nameWord, final @Nullable String name,
-                                                final @Nullable XmlAttributes attributes,
+                                                final @Nullable Postgres.XmlAttributes attributes,
                                                 Consumer<Consumer<Object>> consumer) {
         final String funcName = "XMLELEMENT";
         if (nameWord != Postgres.NAME) {
@@ -7170,16 +7162,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * *
      *
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
-     * @see #xmlRoot(Expression, WordVersion, Expression)
-     * @see #xmlRoot(Expression, WordVersion, WordsNoValue, WordStandalone, StandaloneOption)
-     * @see #xmlRoot(Expression, WordVersion, Expression, WordStandalone, StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Postgres.WordsNoValue, Postgres.WordStandalone, Postgres.StandaloneOption)
+     * @see #xmlRoot(Expression, Postgres.WordVersion, Expression, Postgres.WordStandalone, Postgres.StandaloneOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlroot ( xml, VERSION {text|NO VALUE} [, STANDALONE {YES|NO|NO VALUE} ] ) → xml<br/>
      * </a>
      */
-    private static SimpleExpression _xmlRoot(final Expression xml, final WordVersion version,
-                                             final Object textOrNoValue, final WordStandalone standalone,
-                                             final @Nullable StandaloneOption option) {
+    private static SimpleExpression _xmlRoot(final Expression xml, final Postgres.WordVersion version,
+                                             final Object textOrNoValue, final Postgres.WordStandalone standalone,
+                                             final @Nullable Postgres.StandaloneOption option) {
         final String name = "XMLROOT";
         if (!(xml instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, xml);
@@ -7208,16 +7200,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link Boolean}
      * *
      *
-     * @see #xmlExists(Expression, WordPassing, Expression)
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression)
-     * @see #xmlExists(Expression, WordPassing, Expression, PassingOption)
-     * @see #xmlExists(Expression, WordPassing, PassingOption, Expression, PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption)
+     * @see #xmlExists(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">XMLEXISTS ( text PASSING [BY {REF|VALUE}] xml [BY {REF|VALUE}] ) → boolean<br/>
      * </a>
      */
-    private static SimplePredicate _xmlExists(final Expression text, final WordPassing passing,
-                                              final @Nullable PassingOption textOption,
-                                              final Expression xml, final @Nullable PassingOption xmlOption) {
+    private static SimplePredicate _xmlExists(final Expression text, final Postgres.WordPassing passing,
+                                              final @Nullable Postgres.PassingOption textOption,
+                                              final Expression xml, final @Nullable Postgres.PassingOption xmlOption) {
 
         final String name = "XMLEXISTS";
         if (!(text instanceof FunctionArg.SingleFunctionArg)) {
@@ -7256,18 +7248,18 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * ) → setof record
      * </pre>
      *
-     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
-     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Expression, Postgres.WordPassing, Expression, Postgres.PassingOption, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Consumer)
+     * @see #xmlTable(Postgres.XmlNameSpaces, Expression, Postgres.WordPassing, Postgres.PassingOption, Expression, Postgres.PassingOption, Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
      */
-    private static _TabularFunction _xmlTable(final @Nullable XmlNameSpaces nameSpaces, final Expression rowExp,
-                                              final WordPassing passing, final @Nullable PassingOption rowOption,
-                                              final Expression docExp, final @Nullable PassingOption docOption,
+    private static _TabularFunction _xmlTable(final @Nullable Postgres.XmlNameSpaces nameSpaces, final Expression rowExp,
+                                              final Postgres.WordPassing passing, final @Nullable Postgres.PassingOption rowOption,
+                                              final Expression docExp, final @Nullable Postgres.PassingOption docOption,
                                               final @Nullable Consumer<Postgres._XmlTableColumnsClause> consumer) {
 
         final String name = PostgreFunctionUtils.XmlTableColumnsClause.XMLTABLE;

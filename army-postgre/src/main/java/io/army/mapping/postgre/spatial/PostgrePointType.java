@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.mapping.postgre.spatial.postgre;
+package io.army.mapping.postgre.spatial;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
@@ -27,23 +27,23 @@ import io.army.sqltype.DataType;
 
 /**
  * <p>
- * This class representing Postgre polygon type {@link MappingType}
- * * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">polygon</a>
+ * This class representing Postgre point type {@link MappingType}
+ * * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">point</a>
  */
-public final class PostgrePolygonType extends PostgreGeometricType {
+public final class PostgrePointType extends PostgreGeometricType implements MappingType.SqlPointType {
 
 
-    public static final PostgrePolygonType INSTANCE = new PostgrePolygonType();
+    public static final PostgrePointType INSTANCE = new PostgrePointType();
 
-    public static PostgrePolygonType from(final Class<?> javaType) {
+    public static PostgrePointType from(final Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(PostgrePolygonType.class, javaType);
+            throw errorJavaType(PostgrePointType.class, javaType);
         }
         return INSTANCE;
     }
 
 
-    private PostgrePolygonType() {
+    private PostgrePointType() {
     }
 
     @Override
@@ -74,5 +74,6 @@ public final class PostgrePolygonType extends PostgreGeometricType {
         //TODO
         throw new UnsupportedOperationException();
     }
+
 
 }

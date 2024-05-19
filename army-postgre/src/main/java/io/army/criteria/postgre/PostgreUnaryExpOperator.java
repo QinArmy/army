@@ -16,6 +16,8 @@
 
 package io.army.criteria.postgre;
 
+import io.army.criteria.impl.CriteriaUtils;
+import io.army.criteria.impl.Operator;
 import io.army.dialect.Database;
 import io.army.util._Exceptions;
 

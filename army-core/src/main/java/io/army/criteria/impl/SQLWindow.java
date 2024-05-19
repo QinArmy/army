@@ -23,7 +23,6 @@ import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -858,11 +857,11 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
         private FrameExclusion exclusion;
 
-        SQLExcludeWindow(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
+        protected SQLExcludeWindow(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
             super(windowName, context, existingWindowName);
         }
 
-        SQLExcludeWindow(CriteriaContext context, @Nullable String existingWindowName) {
+        protected SQLExcludeWindow(CriteriaContext context, @Nullable String existingWindowName) {
             super(context, existingWindowName);
         }
 

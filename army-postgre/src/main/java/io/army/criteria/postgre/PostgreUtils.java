@@ -17,6 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._PostgreCte;
 import io.army.criteria.postgre.inner._PostgreUpdate;

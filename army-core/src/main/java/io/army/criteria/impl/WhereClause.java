@@ -657,7 +657,7 @@ public abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOr
         this.predicateList = null;
     }
 
-    final List<_Predicate> endWhereClauseIfNeed() {
+    public final List<_Predicate> endWhereClauseIfNeed() {
         List<_Predicate> list = this.predicateList;
         if (list instanceof ArrayList) {
             list = _Collections.unmodifiableList(list);
@@ -688,11 +688,11 @@ public abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOr
     }//WhereClauseClause
 
 
-    static final class SimpleWhereClause extends WhereClauseClause<Item, Statement._SimpleWhereAndClause>
+    public static final class SimpleWhereClause extends WhereClauseClause<Item, Statement._SimpleWhereAndClause>
             implements Statement._SimpleWhereAndClause,
             Statement._SimpleWhereClause {
 
-        SimpleWhereClause(CriteriaContext context) {
+        public SimpleWhereClause(CriteriaContext context) {
             super(context);
         }
 

@@ -21,6 +21,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.DqlCommand;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.ReturningUpdate;
+import io.army.criteria.impl.*;
 import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 
@@ -33,8 +34,15 @@ import java.util.function.Consumer;
  *
  * @since 0.6.0
  */
+@SuppressWarnings("unused")
 public abstract class Postgres extends PostgreSyntax {
 
+
+    public static final WordNormalizeForm NFC = PostgreWords.KeyWordNormalizeForm.NFC;
+    public static final WordNormalizeForm NFD = PostgreWords.KeyWordNormalizeForm.NFD;
+    public static final WordNormalizeForm NFKC = PostgreWords.KeyWordNormalizeForm.NFKC;
+    public static final WordNormalizeForm NFKD = PostgreWords.KeyWordNormalizeForm.NFKD;
+    public static final WordPlacing PLACING = PostgreWords.KeyWordPlacing.PLACING;
 
     /**
      * private constructor
@@ -543,6 +551,54 @@ public abstract class Postgres extends PostgreSyntax {
 
         IPredicate overlaps(TypeInfer type, BiFunction<TypeInfer, Object, Expression> valueOperator, Object start, Object endOrLength);
 
+
+    }
+
+    public interface WordNormalizeForm {
+
+    }
+
+    public interface WordPlacing {
+
+    }
+
+    public interface XmlAttributes extends Item {
+
+    }
+
+    public interface WordVersion extends SQLWords {
+
+    }
+
+    public interface WordStandalone extends SQLWords {
+
+    }
+
+    public interface StandaloneOption extends SQLWords {
+
+    }
+
+    public interface WordsNoValue extends StandaloneOption {
+
+    }
+
+    public interface WordPassing extends SQLWords {
+
+    }
+
+    public interface PassingOption extends SQLWords {
+
+    }
+
+    public interface XmlNameSpaces extends Item {
+
+    }
+
+    public interface NullTreatMode extends Expression {
+
+    }
+
+    public interface ExtractTimeField {
 
     }
 }

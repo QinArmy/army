@@ -18,6 +18,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.DmlCommand;
+import io.army.criteria.impl.*;
 import io.army.criteria.postgre.inner._PostgreCommand;
 import io.army.criteria.standard.SQLs;
 import io.army.util.ArrayUtils;

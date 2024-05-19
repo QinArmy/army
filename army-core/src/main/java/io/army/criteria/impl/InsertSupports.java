@@ -70,7 +70,7 @@ public abstract class InsertSupports {
 
     }
 
-    protected interface ValueSyntaxOptions extends InsertOptions {
+    public interface ValueSyntaxOptions extends InsertOptions {
 
         boolean isIgnoreReturnIds();
 
@@ -97,7 +97,7 @@ public abstract class InsertSupports {
     }
 
 
-    protected enum InsertMode {
+    public enum InsertMode {
         DOMAIN,
         VALUES,
         QUERY,
@@ -1001,7 +1001,7 @@ public abstract class InsertSupports {
 
 
     @SuppressWarnings("unchecked")
-    protected static abstract class ComplexInsertValuesClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR>
+    public static abstract class ComplexInsertValuesClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR>
             extends ColumnDefaultClause<T, CR, DR>
             implements InsertStatement._DomainValuesClause<T, VR>,
             InsertStatement._DynamicValuesClause<T, VR>,
@@ -1231,7 +1231,7 @@ public abstract class InsertSupports {
             return e;
         }
 
-        protected static void validateDomainList(final List<?> parentList, final List<?> childList,
+        public static void validateDomainList(final List<?> parentList, final List<?> childList,
                                                  final ChildTableMeta<?> child) {
             final int parentSize;
             if (parentList != childList
@@ -1564,7 +1564,7 @@ public abstract class InsertSupports {
     }//ComplexInsertValuesAssignmentClause
 
 
-    protected static abstract class ValuesParensClauseImpl<T, R extends Item>
+    public static abstract class ValuesParensClauseImpl<T, R extends Item>
             implements InsertStatement._StaticValueSpaceClause<T>,
             InsertStatement._StaticColumnValueClause<T>,
             InsertStatement._ValuesParensClause<T, R>,
@@ -1767,7 +1767,7 @@ public abstract class InsertSupports {
         }
 
 
-        protected final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
+        public final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
             if (this.rowValuesMap != null) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -1944,10 +1944,10 @@ public abstract class InsertSupports {
             Statement._DmlInsertClause<I>,
             Statement._DqlInsertClause<Q> {
 
-        final TableMeta<?> insertTable;
+        protected final TableMeta<?> insertTable;
 
 
-        final String tableAlias;
+        protected final String tableAlias;
 
         private Boolean prepared;
 
@@ -2071,7 +2071,7 @@ public abstract class InsertSupports {
     }//AbstractInsertStatement
 
 
-    protected static abstract class ArmyValueSyntaxStatement<I extends Statement, Q extends Statement>
+    public static abstract class ArmyValueSyntaxStatement<I extends Statement, Q extends Statement>
             extends ArmyInsertStatement<I, Q>
             implements _Insert._ValuesSyntaxInsert {
 

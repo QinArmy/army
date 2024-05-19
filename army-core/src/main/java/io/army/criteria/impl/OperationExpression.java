@@ -582,10 +582,10 @@ public abstract class OperationExpression extends OperationSQLExpression
 
     } // OperationSimpleExpression
 
-    static abstract class OperationDefiniteExpression extends OperationSimpleExpression implements DefiniteExpression {
+    public static abstract class OperationDefiniteExpression extends OperationSimpleExpression implements DefiniteExpression {
 
 
-        OperationDefiniteExpression() {
+        protected OperationDefiniteExpression() {
         }
 
 
@@ -879,7 +879,7 @@ public abstract class OperationExpression extends OperationSQLExpression
     } // OperationDefiniteExpression
 
 
-    static abstract class SqlFunctionExpression extends OperationSimpleExpression
+    public static abstract class SqlFunctionExpression extends OperationSimpleExpression
             implements ArmySQLFunction {
 
         protected final String name;

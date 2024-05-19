@@ -20,9 +20,7 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.Returnings;
-import io.army.criteria.impl.ArmyStmtSpec;
-import io.army.criteria.impl.CriteriaContext;
-import io.army.criteria.impl.InsertSupports;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._ConflictTargetItem;
 import io.army.criteria.postgre.inner._PostgreInsert;
@@ -106,19 +104,12 @@ abstract class PostgreInserts extends InsertSupports {
         final Statement._DmlInsertClause<PostgreInsert._ParentInsert<P>> spec;
         final InsertSupports.InsertMode mode;
         mode = clause.getInsertMode();
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimaryParentDomainInsertStatement<>(clause);
-                break;
-            case VALUES:
-                spec = new PrimaryParentValueInsertStatement<>(clause);
-                break;
-            case QUERY:
-                spec = new PrimaryParentQueryInsertStatement<>(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
+        spec = switch (mode) {
+            case DOMAIN -> new PrimaryParentDomainInsertStatement<>(clause);
+            case VALUES -> new PrimaryParentValueInsertStatement<>(clause);
+            case QUERY -> new PrimaryParentQueryInsertStatement<>(clause);
+            default -> throw _Exceptions.unexpectedEnum(mode);
+        };
         handleParentUnknownDomain(clause.cteList);
         return insertIdentity(spec.asInsert());
     }
@@ -127,19 +118,12 @@ abstract class PostgreInserts extends InsertSupports {
         final Statement._DqlInsertClause<PostgreInsert._ParentReturnInsert<P>> spec;
         final InsertMode mode;
         mode = clause.getInsertMode();
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimaryParentDomainReturningInsertStatement<>(clause);
-                break;
-            case VALUES:
-                spec = new PrimaryParentValueReturningInsertStatement<>(clause);
-                break;
-            case QUERY:
-                spec = new PrimaryParentQueryReturningInsertStatement<>(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
+        spec = switch (mode) {
+            case DOMAIN -> new PrimaryParentDomainReturningInsertStatement<>(clause);
+            case VALUES -> new PrimaryParentValueReturningInsertStatement<>(clause);
+            case QUERY -> new PrimaryParentQueryReturningInsertStatement<>(clause);
+            default -> throw _Exceptions.unexpectedEnum(mode);
+        };
         handleParentUnknownDomain(clause.cteList);
         return insertIdentity(spec.asReturningInsert());
     }
@@ -352,7 +336,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
         @Override
-        PostgreCtes createCteBuilder(final boolean recursive) {
+        protected PostgreCtes createCteBuilder(final boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
@@ -396,7 +380,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        PostgreCtes createCteBuilder(boolean recursive) {
+        protected PostgreCtes createCteBuilder(boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
@@ -438,7 +422,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        PostgreCtes createCteBuilder(boolean recursive) {
+        protected PostgreCtes createCteBuilder(boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
@@ -482,7 +466,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
         @Override
-        PostgreCtes createCteBuilder(boolean recursive) {
+        protected PostgreCtes createCteBuilder(boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
@@ -510,7 +494,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        PostgreCtes createCteBuilder(boolean recursive) {
+        protected PostgreCtes createCteBuilder(boolean recursive) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 

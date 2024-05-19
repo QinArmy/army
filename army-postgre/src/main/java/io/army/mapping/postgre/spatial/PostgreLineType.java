@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.mapping.postgre.spatial.postgre;
+package io.army.mapping.postgre.spatial;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;

@@ -17,10 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.CriteriaContext;
-import io.army.criteria.impl.CriteriaUtils;
-import io.army.criteria.impl.JoinableClause;
-import io.army.criteria.impl._JoinType;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._PostgreTableBlock;
 import io.army.criteria.standard.SQLs;
@@ -226,17 +223,17 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
 
         @Override
-        boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
+        protected boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
             return CriteriaUtils.isIllegalOnly(modifier);
         }
 
         @Override
-        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+        protected boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             return CriteriaUtils.isIllegalLateral(modifier);
         }
 
         @Override
-        final PostgreStatement._NestedTableSampleCrossSpec<I> onFromTable(_JoinType joinType,
+        protected final PostgreStatement._NestedTableSampleCrossSpec<I> onFromTable(_JoinType joinType,
                                                                           @Nullable SQLs.TableModifier modifier,
                                                                           TableMeta<?> table, String alias) {
             final NestedTableCrossBlock<I> block;
@@ -247,7 +244,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final Statement._AsClause<PostgreStatement._NestedParensCrossSpec<I>> onFromDerived(
+        protected final Statement._AsClause<PostgreStatement._NestedParensCrossSpec<I>> onFromDerived(
                 _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final NestedDerivedCrossBlock<I> block;
@@ -259,7 +256,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedJoinSpec<I>> onFromUndoneFunc(
+        protected final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedJoinSpec<I>> onFromUndoneFunc(
                 final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
                 final UndoneFunction func) {
             return alias -> {
@@ -276,7 +273,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final PostgreStatement._NestedJoinSpec<I> onFromCte(_JoinType joinType,
+        protected final PostgreStatement._NestedJoinSpec<I> onFromCte(_JoinType joinType,
                                                             @Nullable SQLs.DerivedModifier modifier,
                                                             _Cte cteItem, String alias) {
             final PostgreNestedBlock<I> block;
@@ -287,7 +284,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final PostgreStatement._NestedTableSampleOnSpec<I> onJoinTable(_JoinType joinType,
+        protected final PostgreStatement._NestedTableSampleOnSpec<I> onJoinTable(_JoinType joinType,
                                                                        @Nullable SQLs.TableModifier modifier,
                                                                        TableMeta<?> table, String alias) {
             final NestedTableOnBlock<I> block;
@@ -298,7 +295,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final Statement._AsClause<PostgreStatement._NestedParensOnSpec<I>> onJoinDerived(
+        protected final Statement._AsClause<PostgreStatement._NestedParensOnSpec<I>> onJoinDerived(
                 _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final NestedDerivedOnBlock<I> block;
@@ -310,7 +307,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final PostgreStatement._NestedOnSpec<I> onJoinCte(_JoinType joinType,
+        protected final PostgreStatement._NestedOnSpec<I> onJoinCte(_JoinType joinType,
                                                           @Nullable SQLs.DerivedModifier modifier,
                                                           _Cte cteItem, String alias) {
             final PostgreNestedBlock<I> block;
@@ -321,7 +318,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedOnSpec<I>> onJoinUndoneFunc(
+        protected final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedOnSpec<I>> onJoinUndoneFunc(
                 final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
                 final UndoneFunction func) {
             return alias -> {

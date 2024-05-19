@@ -471,7 +471,7 @@ public abstract class NonOperationExpression implements ArmyExpression {
         return ContextStack.clearStackAndCriteriaError(expression.operationErrorMessage());
     }
 
-    static RuntimeException nonOperationExpression(final @Nullable Expression expression) {
+    public static RuntimeException nonOperationExpression(final @Nullable Expression expression) {
         final RuntimeException e;
         if (expression == null) {
             e = ContextStack.clearStackAndNullPointer();

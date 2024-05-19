@@ -17,6 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.postgre.inner._TableNameElement;
@@ -51,7 +52,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return new XmlNamedElementPart<>(true, XmlAttributes::new);
     }
 
-    static XmlNamedElementPart<PostgreDocumentFunctions.XmlNameSpaces> xmlNamespaces() {
+    static XmlNamedElementPart<Postgres.XmlNameSpaces> xmlNamespaces() {
         return new XmlNamedElementPart<>(false, XmlNameSpaces::new);
     }
 
@@ -477,7 +478,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }//XmlNamedElementPartConsumer
 
     static final class XmlAttributes extends XmlNamedElementPartConsumer
-            implements PostgreStringFunctions.XmlAttributes {
+            implements Postgres.XmlAttributes {
 
         private XmlAttributes(ArmyFuncClause clause) {
             super("XMLATTRIBUTES", clause);
@@ -487,7 +488,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }//XmlAttributes
 
     static final class XmlNameSpaces extends XmlNamedElementPartConsumer
-            implements PostgreDocumentFunctions.XmlNameSpaces {
+            implements Postgres.XmlNameSpaces {
 
         private XmlNameSpaces(ArmyFuncClause clause) {
             super("XMLNAMESPACES", clause);
@@ -981,7 +982,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        final boolean isDontSupportWindow(Dialect dialect) {
+        protected final boolean isDontSupportWindow(Dialect dialect) {
             if (!(dialect instanceof PostgreDialect)) {
                 throw dialectError(dialect);
             }
@@ -989,7 +990,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        final PostgreWindow._PartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
+        protected final PostgreWindow._PartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
             return PostgreSupports.anonymousWindow(this.outerContext, existingWindowName);
         }
 
@@ -1004,12 +1005,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no-op
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             //no-op
         }
 
@@ -1025,12 +1026,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(this.one);
         }
 
@@ -1049,14 +1050,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.COMMA);
             this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.COMMA)
                     .append(this.two);
@@ -1080,7 +1081,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.COMMA);
             this.two.appendSql(sqlBuilder, context);
@@ -1089,7 +1090,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.COMMA)
                     .append(this.two)
@@ -1194,7 +1195,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         @Override
-        final void appendClauseBeforeOver(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected final void appendClauseBeforeOver(final StringBuilder sqlBuilder, final _SqlContext context) {
             final AggFuncFilterClause clause = this.filterClause;
             if (clause != null) {
                 clause.appendOuterClause(sqlBuilder, context);
@@ -1202,7 +1203,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        final void outerClauseToString(final StringBuilder builder) {
+        protected final void outerClauseToString(final StringBuilder builder) {
             final AggFuncFilterClause clause = this.filterClause;
             if (clause != null) {
                 clause.outerClauseToString(builder);
@@ -1242,12 +1243,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(this.one);
         }
 
@@ -1270,14 +1271,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
             this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two);
@@ -1380,7 +1381,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         @Override
-        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final SQLs.ArgDistinct modifier = this.modifier;
             if (modifier != null) {
                 sqlBuilder.append(modifier.spaceRender());
@@ -1395,7 +1396,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        final void argToString(final StringBuilder builder) {
+        protected final void argToString(final StringBuilder builder) {
             final SQLs.ArgDistinct modifier = this.modifier;
             if (modifier != null) {
                 builder.append(modifier.spaceRender());
@@ -1561,12 +1562,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no-op
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             //no-op
         }
 
@@ -1587,12 +1588,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(this.one);
         }
 
@@ -1610,12 +1611,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FunctionUtils.appendArguments(null, this.argList, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             FunctionUtils.argumentsToString(null, this.argList, builder);
         }
 

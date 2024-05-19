@@ -140,7 +140,7 @@ public abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMo
         return orderByList;
     }
 
-    protected final List<ArmySortItem> endOrderByClauseIfNeed() {
+    public final List<ArmySortItem> endOrderByClauseIfNeed() {
         List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList instanceof ArrayList) {
             orderByList = _Collections.unmodifiableList(orderByList);

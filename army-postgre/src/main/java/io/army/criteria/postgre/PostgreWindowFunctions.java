@@ -19,6 +19,10 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
+import io.army.criteria.impl.ContextStack;
+import io.army.criteria.impl.Expressions;
+import io.army.criteria.impl.FunctionUtils;
+import io.army.criteria.impl.Functions;
 import io.army.criteria.standard.SQLFunction;
 import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;

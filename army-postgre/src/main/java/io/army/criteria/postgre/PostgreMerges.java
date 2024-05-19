@@ -18,6 +18,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.DmlCommand;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._PostgreInsert;
 import io.army.criteria.postgre.inner._PostgreMerge;
@@ -93,7 +94,7 @@ abstract class PostgreMerges {
         }
 
         @Override
-        PostgreCtes createCteBuilder(boolean recursive) {
+        protected PostgreCtes createCteBuilder(boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 

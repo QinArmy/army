@@ -21,8 +21,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.standard.SQLs;
-import io.army.dialect.Dialect;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;
@@ -275,7 +273,7 @@ public abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, L
         throw new UnsupportedOperationException();
     }
 
-    protected final List<_ItemPair> endUpdateSetClause() {
+    public final List<_ItemPair> endUpdateSetClause() {
         List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null || itemPairList.size() == 0) {
             if (!(this instanceof _DomainUpdate) || this.isNoChildItemPair()) {
@@ -343,10 +341,10 @@ public abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, L
         return this.onAddItemPair(pair);
     }
 
-    static abstract class SetWhereClauseClause<F extends TableField, SR, WR, WA>
+    public static abstract class SetWhereClauseClause<F extends TableField, SR, WR, WA>
             extends SetWhereClause<F, SR, WR, WA, Object, Object, Object, Object, Object> {
 
-        SetWhereClauseClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+        protected SetWhereClauseClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
             super(context, updateTable, tableAlias);
         }
 

@@ -263,9 +263,9 @@ public abstract class DialectFunctionUtils extends FunctionUtils {
 
     public static abstract class TabularSqlFunction implements ArmyTabularFunction {
 
-        static final String ORDINALITY = "ordinality";
+        public static final String ORDINALITY = "ordinality";
 
-        static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
+        public static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
 
         private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
 
@@ -1122,7 +1122,7 @@ public abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final String tableAlias;
             tableAlias = this.group.tableAlias();
 
@@ -1146,7 +1146,7 @@ public abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             final String tableAlias;
             tableAlias = this.group.tableAlias();
 

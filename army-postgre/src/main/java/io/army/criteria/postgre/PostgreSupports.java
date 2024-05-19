@@ -713,7 +713,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         private final DynamicQueryParensClause asClause;
 
         private DynamicCteSearchSpec(DynamicQueryParensClause asClause, SubQuery subQuery) {
-            super(asClause.columnAliasList, subQuery);
+            super(asClause.getColumnAliasList(), subQuery);
             this.asClause = asClause;
         }
 

@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 public final class _Pair<F, S> {
 
-    static <F, S> _Pair<F, S> create(F first, S second) {
+    public static <F, S> _Pair<F, S> create(F first, S second) {
         return new _Pair<>(first, second);
     }
 

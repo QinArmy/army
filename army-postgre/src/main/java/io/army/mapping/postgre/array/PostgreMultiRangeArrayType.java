@@ -342,7 +342,7 @@ public class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType implements
                     UnaryGenericsMapping.ListMapping.ListMapping.class);
             throw handler.apply(type, dataType, text, new IllegalArgumentException(m));
         } else {
-            elementFunc = PostgreMultiRangeType.multiRangeParseFunc(text, rangeFunc, parseFunc, dataType, type, handler);
+            elementFunc = multiRangeParseFunc(text, rangeFunc, parseFunc, dataType, type, handler);
         }
         final Object array;
         array = PostgreArrays.parseArray(text, true, elementFunc, _Constant.COMMA, dataType, type, handler);

@@ -432,6 +432,10 @@ public abstract class CriteriaSupports {
         }
 
 
+        public final List<String> getColumnAliasList() {
+            return this.columnAliasList;
+        }
+
     }//CteParensClause
 
 
