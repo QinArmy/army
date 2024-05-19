@@ -66,7 +66,7 @@ public abstract class CriteriaUtils {
 
 
     public static void appendSelfDescribedList(final List<? extends _SelfDescribed> list, final StringBuilder sqlBuilder,
-                                        final _SqlContext context) {
+                                               final _SqlContext context) {
         final int fieldSize = list.size();
         for (int i = 0; i < fieldSize; i++) {
             if (i > 0) {
@@ -103,7 +103,7 @@ public abstract class CriteriaUtils {
     }
 
     public static List<String> stringList(final @Nullable CriteriaContext ctx, final boolean required,
-                                   final Consumer<Consumer<String>> consumer) {
+                                          final Consumer<Consumer<String>> consumer) {
         List<String> list = _Collections.arrayList();
         consumer.accept(list::add);
         if (list.size() > 0) {
@@ -192,8 +192,8 @@ public abstract class CriteriaUtils {
     }
 
     public static void refSelectionList(final List<String> columnNameList,
-                                 final @Nullable List<String> columnAliasList,
-                                 final _SelectionMap selectionMap, Consumer<Selection> consumer) {
+                                        final @Nullable List<String> columnAliasList,
+                                        final _SelectionMap selectionMap, Consumer<Selection> consumer) {
         final int columnAliasSize;
         if (columnAliasList == null) {
             columnAliasSize = 0;
@@ -246,7 +246,7 @@ public abstract class CriteriaUtils {
     }
 
     public static List<_Expression> expressionList(final @Nullable CriteriaContext ctx, final boolean required,
-                                            final Consumer<Consumer<Expression>> consumer) {
+                                                   final Consumer<Consumer<Expression>> consumer) {
         final List<_Expression> list = _Collections.arrayList();
         consumer.accept(e -> list.add((ArmyExpression) e));
         final List<_Expression> expressionList;
@@ -282,7 +282,7 @@ public abstract class CriteriaUtils {
     }
 
     public static List<_SelectItem> returningAll(final TableMeta<?> targetTable, final String tableAlias,
-                                          final List<_TabularBlock> blockList) {
+                                                 final List<_TabularBlock> blockList) {
 
         List<_SelectItem> groupList;
         final int blockSize;
@@ -314,21 +314,19 @@ public abstract class CriteriaUtils {
         context.onAddCte(cte);
     }
 
-
-    static CriteriaContext getCriteriaContext(final Object statement) {
+    public static CriteriaContext getCriteriaContext(final Object statement) {
         return ((CriteriaContextSpec) statement).getContext();
     }
 
-    static boolean isIllegalLateral(@Nullable SQLs.DerivedModifier modifier) {
+    public static boolean isIllegalLateral(@Nullable SQLs.DerivedModifier modifier) {
         return modifier != null && modifier != SQLs.LATERAL;
     }
 
-    static boolean isIllegalOnly(@Nullable SQLs.TableModifier modifier) {
+    public static boolean isIllegalOnly(@Nullable SQLs.TableModifier modifier) {
         return modifier != null && modifier != SQLs.ONLY;
     }
 
-
-    static List<_Predicate> asPredicateList(CriteriaContext context, final List<IPredicate> list) {
+    public static List<_Predicate> asPredicateList(CriteriaContext context, final List<IPredicate> list) {
         final List<_Predicate> predicateList;
         final int size = list.size();
         switch (size) {
@@ -354,7 +352,7 @@ public abstract class CriteriaUtils {
      *
      * @return a unmodifiable map
      */
-    static Map<String, Selection> createSelectionMap(final List<? extends SelectItem> selectItemList) {
+    public static Map<String, Selection> createSelectionMap(final List<? extends SelectItem> selectItemList) {
 
         final int selectItemSize = selectItemList.size();
 
@@ -382,8 +380,7 @@ public abstract class CriteriaUtils {
         return selectionMap;
     }
 
-
-    static void limitPair(final CriteriaContext context, final BiFunction<MappingType, Number, Expression> operator
+    public static void limitPair(final CriteriaContext context, final BiFunction<MappingType, Number, Expression> operator
             , final @Nullable Object offsetValue, final @Nullable Object rowCountValue
             , final BiConsumer<Expression, Expression> consumer) {
 
@@ -417,7 +414,7 @@ public abstract class CriteriaUtils {
         consumer.accept(operator.apply(LongType.INSTANCE, offset), operator.apply(LongType.INSTANCE, rowCount));
     }
 
-    static void ifLimitPair(final BiFunction<MappingType, Number, Expression> operator
+    public static void ifLimitPair(final BiFunction<MappingType, Number, Expression> operator
             , final @Nullable Object offsetValue, final @Nullable Object rowCountValue
             , final BiConsumer<Expression, Expression> consumer) {
 
@@ -448,8 +445,7 @@ public abstract class CriteriaUtils {
 
     }
 
-
-    static long asLimitParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
+    public static long asLimitParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
         final long rowCount;
         if (value instanceof Long) {
             rowCount = (Long) value;
@@ -466,7 +462,7 @@ public abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static long asIfLimitParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
+    public static long asIfLimitParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
         final long rowCount;
         if (value == null) {
             rowCount = -1L;
@@ -488,30 +484,28 @@ public abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static int standardModifier(final SQLs.Modifier distinct) {
+    public static int standardModifier(final SQLs.Modifier distinct) {
         return (distinct == SQLs.DISTINCT || distinct == SQLs.ALL) ? 1 : -1;
     }
 
-
-    static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
+    public static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
         String m = String.format("limit clause only support [%s,%s,%s,%s] and non-negative,but input %s"
                 , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException dontSupportMultiParam(CriteriaContext context) {
+    public static CriteriaException dontSupportMultiParam(CriteriaContext context) {
         return ContextStack.criteriaError(context, "don't support multi-parameter(literal)");
     }
 
 
     @Deprecated
-    static List<Object> paramList(final CriteriaContext context, final @Nullable List<?> paramList) {
+    public static List<Object> paramList(final CriteriaContext context, final @Nullable List<?> paramList) {
         throw new UnsupportedOperationException();
     }
 
 
-    static List<Object> paramList(final @Nullable List<?> paramList) {
+    public static List<Object> paramList(final @Nullable List<?> paramList) {
         if (paramList == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -530,7 +524,7 @@ public abstract class CriteriaUtils {
     }
 
 
-    static <T extends Query.SelectModifier> List<T> asModifierList(final CriteriaContext context
+    public static <T extends Query.SelectModifier> List<T> asModifierList(final CriteriaContext context
             , final @Nullable List<T> list, final Function<T, Integer> function) {
         if (list == null) {
             throw ContextStack.criteriaError(context, "modifier list must non-null");
@@ -580,7 +574,7 @@ public abstract class CriteriaUtils {
         return modifierList;
     }
 
-    static <H extends Hint> List<H> asHintList(final CriteriaContext context, final @Nullable List<Hint> hintList
+    public static <H extends Hint> List<H> asHintList(final CriteriaContext context, final @Nullable List<Hint> hintList
             , final Function<Hint, H> function) {
         if (hintList == null) {
             return Collections.emptyList();
@@ -618,14 +612,14 @@ public abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException illegalHint(@Nullable Hint hint) {
+    public static CriteriaException illegalHint(@Nullable Hint hint) {
         String m = String.format("Hint %s is illegal."
                 , ClassUtils.safeClassName(hint));
         return new CriteriaException(m);
     }
 
 
-    static String enumToString(Enum<?> type) {
+    public static String enumToString(Enum<?> type) {
         return _StringUtils.builder()
                 .append(type.getClass().getSimpleName())
                 .append(_Constant.PERIOD)
@@ -633,9 +627,9 @@ public abstract class CriteriaUtils {
                 .toString();
     }
 
-    static _SelectionMap createAliasSelectionMap(final List<String> columnAliasList,
-                                                 final List<? extends Selection> refSelectionList,
-                                                 final String cteOrDerivedAlias) {
+    public static _SelectionMap createAliasSelectionMap(final List<String> columnAliasList,
+                                                        final List<? extends Selection> refSelectionList,
+                                                        final String cteOrDerivedAlias) {
 
         final int selectionSize;
         selectionSize = refSelectionList.size();
@@ -675,7 +669,7 @@ public abstract class CriteriaUtils {
     }
 
 
-    static _SelectionMap createDerivedSelectionMap(final List<? extends _SelectItem> selectItemList) {
+    public static _SelectionMap createDerivedSelectionMap(final List<? extends _SelectItem> selectItemList) {
         final int itemSize = selectItemList.size();
         assert itemSize > 0;
 
@@ -725,7 +719,7 @@ public abstract class CriteriaUtils {
     }
 
 
-    static MappingType arrayUnderlyingType(final TypeMeta typeMeta) {
+    public static MappingType arrayUnderlyingType(final TypeMeta typeMeta) {
         MappingType type;
         if (typeMeta instanceof MappingType) {
             type = (MappingType) typeMeta;
@@ -738,13 +732,12 @@ public abstract class CriteriaUtils {
         return type;
     }
 
-
-    static CriteriaException subDmlNoReturningClause(String cteName) {
+    public static CriteriaException subDmlNoReturningClause(String cteName) {
         String m = String.format("cte[%s] no RETURNING clause,couldn't exists alias clause.", cteName);
         throw ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException unknownSelection(String selectionLabel) {
+    public static CriteriaException unknownSelection(String selectionLabel) {
         String m = String.format("unknown %s[label: %s]", Selection.class.getName(), selectionLabel);
         return ContextStack.clearStackAndCriteriaError(m);
     }
@@ -752,14 +745,13 @@ public abstract class CriteriaUtils {
     /**
      * @param selectionOrdinal based 1
      */
-    static CriteriaException unknownSelection(int selectionOrdinal) {
+    public static CriteriaException unknownSelection(int selectionOrdinal) {
         String m = String.format("unknown %s[ordinal:%s]", Selection.class.getName(), selectionOrdinal);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException derivedColumnAliasSizeNotMatch(String tableAlias, int selectionSize,
-                                                            int aliasSize) {
+    public static CriteriaException derivedColumnAliasSizeNotMatch(String tableAlias, int selectionSize,
+                                                                   int aliasSize) {
 
         String m;
         m = String.format("cte/derived[%s] column alias list size[%s] and selection list size[%s] not match.",
@@ -767,82 +759,79 @@ public abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException notArmyOperator(final Object operator) {
+    public static CriteriaException notArmyOperator(final Object operator) {
         String m = String.format("%s is not army operator", operator);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException cteHaveNoReturningClause(String name) {
+    public static CriteriaException cteHaveNoReturningClause(String name) {
         String m = String.format("cte[%s] have no RETURNING clause,couldn't reference.", name);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static NullPointerException consumerIsNull() {
+    public static NullPointerException consumerIsNull() {
         return ContextStack.clearStackAndNullPointer("java.util.function.Consumer is null,couldn't be invoked");
     }
 
-    static CriteriaException dontAddAnyItem() {
+    public static CriteriaException dontAddAnyItem() {
         return ContextStack.clearStackAndCriteriaError("You don't add any item.");
     }
 
-    static CriteriaException clearStackAndNonDefaultType(Object value) {
+    public static CriteriaException clearStackAndNonDefaultType(Object value) {
         return ContextStack.clearStackAndCriteriaError(_Exceptions::notFoundMappingType, value);
     }
 
-    static CriteriaException mustExpressionOrType(String exp, Class<?> typeClass) {
+    public static CriteriaException mustExpressionOrType(String exp, Class<?> typeClass) {
         String m = String.format("%s must be %s or %s", exp, Expression.class.getName(), typeClass.getName());
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException rejectMultiDimensionArray() {
+    public static CriteriaException rejectMultiDimensionArray() {
         return ContextStack.clearStackAndCriteriaError("reject multi dimension array");
     }
 
-    static CriteriaException errorSymbol(@Nullable Object symbol) {
+    public static CriteriaException errorSymbol(@Nullable Object symbol) {
         return ContextStack.clearStackAndCriteriaError(String.format("error symbol %s", symbol));
     }
 
-    static CriteriaException childParentDomainListNotMatch(CriteriaContext context, ChildTableMeta<?> child) {
+    public static CriteriaException childParentDomainListNotMatch(CriteriaContext context, ChildTableMeta<?> child) {
         String m = String.format("%s insert domain list and parent insert statement domain list not match"
                 , child);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException childParentRowNotMatch(_Insert._ValuesInsert child, _Insert._ValuesInsert parent) {
+    public static CriteriaException childParentRowNotMatch(_Insert._ValuesInsert child, _Insert._ValuesInsert parent) {
         String m = String.format("%s row number[%s] and parent row number[%s] not match.",
                 child.table(), child.rowPairList().size(), parent.rowPairList().size());
 
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException mustExpressionOrLiteral(String msg) {
+    public static CriteriaException mustExpressionOrLiteral(String msg) {
         String m = String.format("%s must be Expression or literal", msg);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException duplicateDynamicMethod(CriteriaContext context) {
+    public static CriteriaException duplicateDynamicMethod(CriteriaContext context) {
         return ContextStack.criteriaError(context, "duplicate invoking dynamic method");
     }
 
-
-    static CriteriaException funcColumnDuplicate(CriteriaContext context, String funcName, String columnName) {
+    public static CriteriaException funcColumnDuplicate(CriteriaContext context, String funcName, String columnName) {
         String m = String.format("tabular function[%s] column[%s] duplication.", funcName, columnName);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException funcColumnNameIsNotSimpleIdentifier(CriteriaContext context, String funcName,
-                                                                 String columnName) {
+    public static CriteriaException funcColumnNameIsNotSimpleIdentifier(CriteriaContext context, String funcName,
+                                                                        String columnName) {
         String m = String.format("tabular function[%s] column[%s] isn't simple identifier.", funcName, columnName);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException funcArgExpError() {
+    public static CriteriaException funcArgExpError() {
         return ContextStack.clearStackAndCriteriaError("expr error");
     }
 
-    static RuntimeException funcArgError(String funcName, @Nullable Object errorArg) {
+    public static RuntimeException funcArgError(String funcName, @Nullable Object errorArg) {
         if (errorArg == null) {
             return ContextStack.clearStackAndNullPointer();
         }
@@ -850,72 +839,68 @@ public abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException notCompositeType(String funcName, Expression exp) {
+    public static CriteriaException notCompositeType(String funcName, Expression exp) {
         String m = String.format("%s isn't composite type expression,function[%s] don't support"
                 , ClassUtils.safeClassName(exp), funcName);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException funcArgListIsEmpty(String name) {
+    public static CriteriaException funcArgListIsEmpty(String name) {
         String m = String.format("function %s argument list must non-empty.", name);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException errorCustomReturnType(String name, MappingType returnType) {
+    public static CriteriaException errorCustomReturnType(String name, MappingType returnType) {
         String m = String.format("You specify error return type[%s] for function[%s]",
                 ClassUtils.safeClassName(returnType), name);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException funcFieldNameNoText() {
+    public static CriteriaException funcFieldNameNoText() {
         return ContextStack.clearStackAndCriteriaError("function field name must have text.");
     }
 
-    static CriteriaException funcFieldDuplication(String name) {
+    public static CriteriaException funcFieldDuplication(String name) {
         String m = String.format("function field name[%s] duplication.", name);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException errorModifier(CriteriaContext context, @Nullable Object modifier) {
+    public static CriteriaException errorModifier(CriteriaContext context, @Nullable Object modifier) {
         String m = String.format("error modifier[%s]", modifier);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException errorModifier(@Nullable SQLWords modifier) {
+    public static CriteriaException errorModifier(@Nullable SQLWords modifier) {
         String m = String.format("error modifier[%s]", modifier);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException conflictClauseIsEmpty(CriteriaContext context) {
+    public static CriteriaException conflictClauseIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "You don't add conflict pair.");
     }
 
-    static CriteriaException unknownWords(CriteriaContext context, @Nullable Object word) {
+    public static CriteriaException unknownWords(CriteriaContext context, @Nullable Object word) {
         return ContextStack.criteriaError(context, String.format("unknown word[%s]", word));
     }
 
-    static CriteriaException unknownWords(@Nullable Object word) {
+    public static CriteriaException unknownWords(@Nullable Object word) {
         return ContextStack.clearStackAndCriteriaError(String.format("unknown word[%s]", word));
     }
 
-    static CriteriaException spaceMethodNotFirst() {
+    public static CriteriaException spaceMethodNotFirst() {
         return ContextStack.clearStackAndCriteriaError("space method can invoke ony at first time.");
     }
 
-    static CriteriaException returningListIsEmpty(CriteriaContext context) {
+    public static CriteriaException returningListIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "RETURNING list is empty");
     }
 
-    static CriteriaException illegalItemPair(CriteriaContext context, @Nullable ItemPair pair) {
+    public static CriteriaException illegalItemPair(CriteriaContext context, @Nullable ItemPair pair) {
         String m = String.format("ItemPair %s is illegal.", ClassUtils.safeClassName(pair));
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static CriteriaException illegalAssignmentItem(@Nullable CriteriaContext context, @Nullable AssignmentItem item) {
+    public static CriteriaException illegalAssignmentItem(@Nullable CriteriaContext context, @Nullable AssignmentItem item) {
         String m = String.format("%s is illegal %s", ClassUtils.safeClassName(item), AssignmentItem.class.getName());
         final CriteriaException e;
         if (context == null) {
@@ -928,39 +913,39 @@ public abstract class CriteriaUtils {
 
 
     @Deprecated
-    static CriteriaException duplicateColumnAlias(CriteriaContext context, String columnAlias) {
+    public static CriteriaException duplicateColumnAlias(CriteriaContext context, String columnAlias) {
         String m = String.format("column alias[%s] duplication.", columnAlias);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException duplicateColumnAlias(String columnAlias) {
+    public static CriteriaException duplicateColumnAlias(String columnAlias) {
         String m = String.format("column alias[%s] duplication.", columnAlias);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
     @Deprecated
-    static CriteriaException standard10DontSupportWithClause(CriteriaContext context) {
+    public static CriteriaException standard10DontSupportWithClause(CriteriaContext context) {
         return ContextStack.criteriaError(context, "standard 1.0 api don't support WITH syntax.");
     }
 
-    static CriteriaException standard10DontSupportWithClause() {
+    public static CriteriaException standard10DontSupportWithClause() {
         return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support WITH clause.");
     }
 
     @Deprecated
-    static CriteriaException standard10DontSupportWindow(CriteriaContext context) {
+    public static CriteriaException standard10DontSupportWindow(CriteriaContext context) {
         return ContextStack.criteriaError(context, "standard 1.0 api don't support WINDOW syntax.");
     }
 
-    static CriteriaException standard10DontSupportWindowClause() {
+    public static CriteriaException standard10DontSupportWindowClause() {
         return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support WINDOW clause.");
     }
 
-    static CriteriaException standard10DontSupportWindowFunc() {
+    public static CriteriaException standard10DontSupportWindowFunc() {
         return ContextStack.clearStackAndCriteriaError("standard 1.0 api don't support window function.");
     }
 
-    static CriteriaException unknownTypeDef() {
+    public static CriteriaException unknownTypeDef() {
         return ContextStack.clearStackAndCriteriaError("unknown TypeDef");
     }
 
@@ -987,16 +972,14 @@ public abstract class CriteriaUtils {
         }
     }
 
-
-    static CriteriaException childParentNotMatch(CriteriaContext context, ParentTableMeta<?> parent,
-                                                 ChildTableMeta<?> child) {
+    public static CriteriaException childParentNotMatch(CriteriaContext context, ParentTableMeta<?> parent,
+                                                        ChildTableMeta<?> child) {
         String m = String.format("%s isn't child of %s", child, parent);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
-                                                               String groupAlias) {
+    public static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
+                                                                      String groupAlias) {
         final String m = String.format("unknown derived field group[%s]. please check whether or not use static SELECT clause.", groupAlias);
         final UnknownFieldGroupException e;
         if (currentContext == null) {
@@ -1007,9 +990,8 @@ public abstract class CriteriaUtils {
         return e;
     }
 
-
-    static UnknownFieldGroupException unknownTableFieldGroup(final @Nullable CriteriaContext currentContext,
-                                                             final _SelectionGroup._TableFieldGroup group) {
+    public static UnknownFieldGroupException unknownTableFieldGroup(final @Nullable CriteriaContext currentContext,
+                                                                    final _SelectionGroup._TableFieldGroup group) {
 
         final TableMeta<?> table;
         table = ((TableField) group.selectionList().get(0)).tableMeta();
@@ -1023,8 +1005,8 @@ public abstract class CriteriaUtils {
         return e;
     }
 
-    static UnknownFieldGroupException errorInsertTableGroup(CriteriaContext context, TableMeta<?> insertTable,
-                                                            TableMeta<?> groupTable) {
+    public static UnknownFieldGroupException errorInsertTableGroup(CriteriaContext context, TableMeta<?> insertTable,
+                                                                   TableMeta<?> groupTable) {
         String m = String.format("%s isn't insert table %s", groupTable, insertTable);
         return ContextStack.criteriaError(context, UnknownFieldGroupException::new, m);
     }

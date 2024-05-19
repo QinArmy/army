@@ -14,15 +14,16 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class ClauseUtils {
+public abstract class ClauseUtils {
 
     private ClauseUtils() {
         throw new UnsupportedOperationException();
     }
 
 
-    static <T> void invokingDynamicConsumer(final boolean required, final List<T> list, final boolean nonNull,
-                                            @Nullable Consumer<Consumer<T>> consumer) {
+    @SuppressWarnings("unchecked")
+    public static <T, U extends T> void invokingDynamicConsumer(final boolean required, final List<U> list, final boolean nonNull,
+                                                                @Nullable Consumer<Consumer<T>> consumer) {
         if (consumer == null) {
             throw CriteriaUtils.consumerIsNull();
         }
@@ -35,7 +36,7 @@ abstract class ClauseUtils {
                 if (item == null && nonNull) {
                     throw ContextStack.clearStackAndNullPointer();
                 }
-                list.add(item);
+                list.add((U) item);
             });
 
             if (required && list.size() == startSize) {
@@ -54,13 +55,13 @@ abstract class ClauseUtils {
     /**
      * @return a unmodified list
      */
-    static <T> List<T> invokingDynamicConsumer(boolean required, boolean nonNull, Consumer<Consumer<T>> consumer) {
+    public static <T> List<T> invokingDynamicConsumer(boolean required, boolean nonNull, Consumer<Consumer<T>> consumer) {
         final List<T> list = _Collections.arrayList();
         invokingDynamicConsumer(required, list, nonNull, consumer);
         return _Collections.unmodifiableList(list);
     }
 
-    static <T, C extends ArmyAcceptClause<T>> List<T> invokeClauseConsumer(final C clause, final @Nullable Consumer<? super C> consumer) {
+    public static <T, C extends ArmyAcceptClause<T>> List<T> invokeClauseConsumer(final C clause, final @Nullable Consumer<? super C> consumer) {
         if (consumer == null) {
             throw CriteriaUtils.consumerIsNull();
         }
@@ -76,8 +77,7 @@ abstract class ClauseUtils {
         }
     }
 
-
-    static <T> void invokeConsumer(final T data, final @Nullable Consumer<? super T> consumer) {
+    public static <T> void invokeConsumer(final T data, final @Nullable Consumer<? super T> consumer) {
         if (consumer == null) {
             throw CriteriaUtils.consumerIsNull();
         }
@@ -93,9 +93,8 @@ abstract class ClauseUtils {
         }
     }
 
-
-    static List<_Expression> invokeDynamicExpressionClause(final boolean required, final boolean nonNull,
-                                                           final @Nullable Consumer<Consumer<Expression>> consumer) {
+    public static List<_Expression> invokeDynamicExpressionClause(final boolean required, final boolean nonNull,
+                                                                  final @Nullable Consumer<Consumer<Expression>> consumer) {
         if (consumer == null) {
             throw CriteriaUtils.consumerIsNull();
         }
@@ -121,8 +120,7 @@ abstract class ClauseUtils {
         return _Collections.unmodifiableList(list);
     }
 
-
-    static List<String> staticStringClause(final boolean required, @Nullable Consumer<Clause._StaticStringSpaceClause> consumer) {
+    public static List<String> staticStringClause(final boolean required, @Nullable Consumer<Clause._StaticStringSpaceClause> consumer) {
         final StaticStringClause clause;
         clause = new StaticStringClause(required);
         return invokeClauseConsumer(clause, consumer);
@@ -130,19 +128,18 @@ abstract class ClauseUtils {
 
 
     @SuppressWarnings("unchecked")
-    static List<_Expression> invokeStaticExpressionClause(boolean required, Consumer<Clause._VariadicExprSpaceClause> consumer) {
+    public static List<_Expression> invokeStaticExpressionClause(boolean required, Consumer<Clause._VariadicExprSpaceClause> consumer) {
         final VariadicExpressionClause clause = new VariadicExpressionClause(required, null, null);
         CriteriaUtils.invokeConsumer(clause, consumer);
         return (List<_Expression>) clause.endClause();
     }
 
-    static VariadicExpressionClause variadicExpressionClause(boolean required, @Nullable SQLWords separator, ArrayList<Object> expList) {
+    public static VariadicExpressionClause variadicExpressionClause(boolean required, @Nullable SQLWords separator, ArrayList<Object> expList) {
         return new VariadicExpressionClause(required, separator, expList);
     }
 
-
-    static List<?> endSingleClause(final boolean required, final int startLength, @Nullable List<Object> expList,
-                                   final Consumer<List<Object>> setter) {
+    public static List<?> endSingleClause(final boolean required, final int startLength, @Nullable List<Object> expList,
+                                          final Consumer<List<Object>> setter) {
         if (expList == null) {
             if (required) {
                 throw CriteriaUtils.dontAddAnyItem();
@@ -160,7 +157,7 @@ abstract class ClauseUtils {
         return expList;
     }
 
-    static <T> T invokeSupplier(final @Nullable Supplier<T> supplier) {
+    public static <T> T invokeSupplier(final @Nullable Supplier<T> supplier) {
         if (supplier == null) {
             throw ContextStack.clearStackAndNullPointer("Supplier is null");
         }
@@ -181,7 +178,7 @@ abstract class ClauseUtils {
         }
     }
 
-    static boolean invokeBooleanSupplier(final @Nullable BooleanSupplier supplier) {
+    public static boolean invokeBooleanSupplier(final @Nullable BooleanSupplier supplier) {
         if (supplier == null) {
             throw ContextStack.clearStackAndNullPointer("Supplier is null");
         }
@@ -196,7 +193,7 @@ abstract class ClauseUtils {
         }
     }
 
-    static <T, R> R invokeFunction(final @Nullable Function<T, R> function, final T data) {
+    public static <T, R> R invokeFunction(final @Nullable Function<T, R> function, final T data) {
         try {
             if (function == null) {
                 throw new NullPointerException("java.util.function.Function is null,couldn't be invoked");
@@ -312,8 +309,7 @@ abstract class ClauseUtils {
 
     } // StaticStringClause
 
-
-    static final class VariadicExpressionClause implements Clause._VariadicExprSpaceClause,
+    public static final class VariadicExpressionClause implements Clause._VariadicExprSpaceClause,
             Clause._VariadicExprCommaClause {
 
         private final boolean required;

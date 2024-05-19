@@ -284,14 +284,14 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final List<Hint> asHintList(@Nullable List<Hint> hints) {
+    protected final List<Hint> asHintList(@Nullable List<Hint> hints) {
         //standard statement don't hints
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
     @Override
-    final List<SQLs.Modifier> asModifierList(final @Nullable List<SQLs.Modifier> modifiers) {
+    protected final List<SQLs.Modifier> asModifierList(final @Nullable List<SQLs.Modifier> modifiers) {
         if (modifiers == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -299,36 +299,36 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final boolean isErrorModifier(SQLs.Modifier modifier) {
+    protected final boolean isErrorModifier(SQLs.Modifier modifier) {
         return CriteriaUtils.standardModifier(modifier) < 0;
     }
 
     @Override
-    final SQLs.Modifier allModifier() {
+    protected final SQLs.Modifier allModifier() {
         return SQLs.ALL;
     }
 
     @Override
-    final SQLs.Modifier distinctModifier() {
+    protected final SQLs.Modifier distinctModifier() {
         return SQLs.DISTINCT;
     }
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+    protected final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
 
     @Override
-    final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
-                                   String alias) {
+    protected final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
+                                             String alias) {
         this.blockConsumer.accept(TabularBlocks.fromTableBlock(joinType, modifier, table, alias));
         return this;
     }
 
     @Override
-    final _AsClause<_JoinSpec<I>> onFromDerived(final _JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
-                                                final DerivedTable table) {
+    protected final _AsClause<_JoinSpec<I>> onFromDerived(final _JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
+                                                          final DerivedTable table) {
         return alias -> {
             this.blockConsumer.accept(TabularBlocks.fromDerivedBlock(joinType, modifier, table, alias));
             return this;
@@ -336,15 +336,15 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
+    protected final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         this.blockConsumer.accept(TabularBlocks.fromCteBlock(joinType, cteItem, alias));
         return this;
     }
 
 
     @Override
-    final _OnClause<_JoinSpec<I>> onJoinTable(final _JoinType joinType, @Nullable SQLs.TableModifier modifier,
-                                              final TableMeta<?> table, final String alias) {
+    protected final _OnClause<_JoinSpec<I>> onJoinTable(final _JoinType joinType, @Nullable SQLs.TableModifier modifier,
+                                                        final TableMeta<?> table, final String alias) {
         final TabularBlocks.JoinClauseTableBlock<_JoinSpec<I>> block;
         block = TabularBlocks.joinTableBlock(joinType, modifier, table, alias, this);
         this.blockConsumer.accept(block);
@@ -352,8 +352,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _AsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(final _JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
-                                                           final DerivedTable table) {
+    protected final _AsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(final _JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
+                                                                     final DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseDerivedBlock<_JoinSpec<I>> block;
             block = TabularBlocks.joinDerivedBlock(joinType, modifier, table, alias, this);
@@ -363,7 +363,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
+    protected final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final TabularBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
         this.blockConsumer.accept(block);
@@ -371,12 +371,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final StandardCtes createCteBuilder(boolean recursive) {
+    protected final StandardCtes createCteBuilder(boolean recursive) {
         return new StandardCteBuilder(recursive, this.context);
     }
 
     @Override
-    final void onEndQuery() {
+    protected final void onEndQuery() {
         final boolean standard10;
         standard10 = this.context.dialect() == StandardDialect.STANDARD10;
         if (standard10 && this.cteList().size() > 0) {
@@ -393,7 +393,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final void onClear() {
+    protected final void onClear() {
         this.windowList = null;
     }
 
@@ -522,12 +522,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
         @Override
-        I onAsQuery() {
+        protected I onAsQuery() {
             return this.function.apply(this);
         }
 
         @Override
-        SelectSpec<I> createQueryUnion(final _UnionType unionType) {
+        protected SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
@@ -565,12 +565,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        I onAsQuery() {
+        protected I onAsQuery() {
             return this.function.apply(this);
         }
 
         @Override
-        SelectSpec<I> createQueryUnion(final _UnionType unionType) {
+        protected SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class), null,
@@ -596,11 +596,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         private StandardQueryUnionClause(@Nullable Runnable firstQueryEnd) {
             super(firstQueryEnd);
-        }
-
-        @Override
-        SelectSpec<I> createQuery(_UnionType unionType) {
-            return null;
         }
 
 
@@ -641,12 +636,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        I onAsQuery() {
+        protected I onAsQuery() {
             return this.function.apply(this);
         }
 
         @Override
-        SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
+        protected SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
@@ -682,12 +677,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        I onAsQuery() {
+        protected I onAsQuery() {
             return this.function.apply(this);
         }
 
         @Override
-        SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
+        protected SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class), null,

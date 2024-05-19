@@ -23,7 +23,7 @@ import io.army.criteria.impl.inner._Window;
  * Package interface
  * * @since 0.6.0
  */
-interface ArmyWindow extends _Window {
+public interface ArmyWindow extends _Window {
 
     /**
      * @return the name of named window

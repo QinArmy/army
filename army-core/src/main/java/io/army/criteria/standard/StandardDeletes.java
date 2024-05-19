@@ -20,8 +20,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._DomainDelete;
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
@@ -105,17 +103,12 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
     }
 
     @Override
-    final void onClear() {
+    protected final void onClear() {
         //no-op
     }
 
     @Override
-    final Dialect statementDialect() {
-        return MySQLDialect.MySQL57;
-    }
-
-    @Override
-    final StandardCtes createCteBuilder(boolean recursive) {
+    protected final StandardCtes createCteBuilder(boolean recursive) {
         return StandardQueries.cteBuilder(recursive, this.context);
     }
 
@@ -163,7 +156,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
         }
 
         @Override
-        Delete onAsDelete() {
+        protected Delete onAsDelete() {
             return this;
         }
 
@@ -198,7 +191,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
         }
 
         @Override
-        _BatchDeleteParamSpec onAsDelete() {
+        protected _BatchDeleteParamSpec onAsDelete() {
             return this;
         }
 
@@ -241,7 +234,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
         }
 
         @Override
-        Delete onAsDelete() {
+        protected Delete onAsDelete() {
             return this;
         }
 
@@ -276,7 +269,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR>
         }
 
         @Override
-        _BatchDeleteParamSpec onAsDelete() {
+        protected _BatchDeleteParamSpec onAsDelete() {
             return this;
         }
 

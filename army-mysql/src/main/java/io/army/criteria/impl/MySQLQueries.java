@@ -662,12 +662,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final MySQLCtes createCteBuilder(boolean recursive) {
+    protected final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
     }
 
     @Override
-    final void onEndQuery() {
+    protected final void onEndQuery() {
         this.windowList = _Collections.safeUnmodifiableList(this.windowList);
         if (this.intoVarList == null) {
             this.intoVarList = Collections.emptyList();
@@ -676,45 +676,45 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final void onClear() {
+    protected final void onClear() {
         this.windowList = null;
         this.lockBlock = null;
         this.intoVarList = null;
     }
 
     @Override
-    final List<MySQLs.Modifier> asModifierList(@Nullable List<MySQLs.Modifier> modifiers) {
+    protected final List<MySQLs.Modifier> asModifierList(@Nullable List<MySQLs.Modifier> modifiers) {
         return CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::selectModifier);
     }
 
     @Override
-    final boolean isErrorModifier(MySQLs.Modifier modifier) {
+    protected final boolean isErrorModifier(MySQLs.Modifier modifier) {
         return MySQLUtils.selectModifier(modifier) < 0;
     }
 
     @Override
-    final MySQLs.Modifier allModifier() {
+    protected final MySQLs.Modifier allModifier() {
         return MySQLs.ALL;
     }
 
     @Override
-    final MySQLs.Modifier distinctModifier() {
+    protected final MySQLs.Modifier distinctModifier() {
         return MySQLs.DISTINCT;
     }
 
     @Override
-    final List<Hint> asHintList(@Nullable List<Hint> hints) {
+    protected final List<Hint> asHintList(@Nullable List<Hint> hints) {
         return MySQLUtils.asHintList(this.context, hints, MySQLHints::castHint);
     }
 
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+    protected final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
-    final _IndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
+    protected final _IndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
                                             String alias) {
         final MySQLSupports.MySQLFromClauseTableBlock block;
         block = new MySQLSupports.MySQLFromClauseTableBlock(joinType, table, alias);
@@ -724,7 +724,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
+    protected final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
             final TabularBlocks.FromClauseAliasDerivedBlock block;
@@ -737,7 +737,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
+    protected final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
                                  String alias) {
         final _TabularBlock block;
         block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
@@ -747,7 +747,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _IndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
+    protected final _IndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
                                           String alias) {
         final JoinClauseTableBlock<I> block;
         block = new JoinClauseTableBlock<>(joinType, table, alias, this);
@@ -756,7 +756,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
+    protected final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                         DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseAliasDerivedBlock<_JoinSpec<I>> block;
@@ -767,7 +767,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
+    protected final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
                                             String alias) {
         final TabularBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
@@ -1055,12 +1055,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        I onAsQuery() {
+        protected I onAsQuery() {
             return this.function.apply(this);
         }
 
         @Override
-        _QueryValuesComplexSpec<I> createQueryUnion(final _UnionType unionType) {
+        protected _QueryValuesComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSelect(this, unionType, rowSet));
             return new SelectDispatcher<>(this.context, unionFunc);
@@ -1094,12 +1094,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        I onAsQuery() {
+        protected I onAsQuery() {
             return this.function.apply(this);
         }
 
         @Override
-        _QueryValuesComplexSpec<I> createQueryUnion(final _UnionType unionType) {
+        protected _QueryValuesComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubQuery(this, unionType, rowSet));
             return new SubQueryDispatcher<>(this.context, unionFunc);

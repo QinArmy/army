@@ -197,8 +197,7 @@ public abstract class ArmyRowParamExpression extends OperationRowExpression
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof AnonymousMultiParam) {
-                final AnonymousMultiParam o = (AnonymousMultiParam) obj;
+            } else if (obj instanceof AnonymousMultiParam o) {
                 match = o.type.equals(this.type)
                         && o.valueList.equals(this.valueList);
             } else {

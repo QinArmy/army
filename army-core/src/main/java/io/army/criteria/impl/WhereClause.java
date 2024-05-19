@@ -20,7 +20,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect.Dialect;
 import io.army.function.*;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -38,13 +37,13 @@ import java.util.function.*;
  * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
-abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
+public abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
         implements Statement._WhereClause<WR, WA>
         , Statement._WhereAndClause<WA>
         , UpdateStatement._UpdateWhereAndClause<WA>
         , _Statement._WherePredicateListSpec {
 
-    final CriteriaContext context;
+    public final CriteriaContext context;
 
 
     private List<_Predicate> predicateList;
@@ -679,17 +678,12 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     }
 
 
-    static abstract class WhereClauseClause<WR, WA> extends WhereClause<WR, WA, Object, Object, Object, Object, Object> {
+    public static abstract class WhereClauseClause<WR, WA> extends WhereClause<WR, WA, Object, Object, Object, Object, Object> {
 
-        WhereClauseClause(CriteriaContext context) {
+        protected WhereClauseClause(CriteriaContext context) {
             super(context);
         }
 
-
-        @Override
-        final Dialect statementDialect() {
-            throw ContextStack.clearStackAndCastCriteriaApi();
-        }
 
     }//WhereClauseClause
 

@@ -37,7 +37,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
         Statement._DynamicOrderByClause<OD>,
         _Statement._OrderByListSpec {
 
-    final CriteriaContext context;
+    public final CriteriaContext context;
 
     private List<ArmySortItem> orderByList;
 

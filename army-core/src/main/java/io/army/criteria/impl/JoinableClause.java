@@ -65,7 +65,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         DialectStatement._StraightJoinModifierUndoneFunctionClause<JF> {
 
 
-    final Consumer<_TabularBlock> blockConsumer;
+    protected final Consumer<_TabularBlock> blockConsumer;
 
     /**
      * <p>
@@ -722,7 +722,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }
 
 
-    final String cteAlias(final String alias) {
+    protected final String cteAlias(final String alias) {
         if (!_StringUtils.hasText(alias)) {
             throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
         }
@@ -730,51 +730,51 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }
 
 
-    boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+    protected boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
-    boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
+    protected boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
-    abstract FT onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
+    protected abstract FT onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table,
                             String alias);
 
     /**
      * @see #crossJoin(Supplier)
      * @see #crossJoin(SQLs.DerivedModifier, Supplier)
      */
-    abstract FS onFromDerived(final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
+    protected abstract FS onFromDerived(final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
                               final DerivedTable table);
 
-    abstract FC onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias);
+    protected abstract FC onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias);
 
-    abstract JT onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias);
+    protected abstract JT onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias);
 
-    abstract JS onJoinDerived(final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
+    protected abstract JS onJoinDerived(final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier,
                               final DerivedTable table);
 
-    abstract JC onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
+    protected abstract JC onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem,
                           String alias);
 
-    FF onFromUndoneFunc(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
+    protected FF onFromUndoneFunc(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
-    JF onJoinUndoneFunc(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
+    protected JF onJoinUndoneFunc(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
         throw ContextStack.clearStackAndCastCriteriaApi();
     }
 
 
-    interface UsingClauseListener {
+    public interface UsingClauseListener {
 
         void onUsing();
     }
 
 
-    static abstract class NestedLeftParenClause<I extends Item, LT, LS, LC, LF>
+    public static abstract class NestedLeftParenClause<I extends Item, LT, LS, LC, LF>
             implements _NestedItems,
             Statement._NestedLeftParenModifierClause<LT, LS>,
             Statement._NestedLeftParenModifierUndoneFunctionClause<LF>,
@@ -788,7 +788,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         private List<_TabularBlock> blockList = _Collections.arrayList();
 
-        NestedLeftParenClause(CriteriaContext context, _JoinType joinType,
+        public NestedLeftParenClause(CriteriaContext context, _JoinType joinType,
                               BiFunction<_JoinType, _NestedItems, I> function) {
             this.context = context;
             this.joinType = joinType;
@@ -871,7 +871,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
             return blockList;
         }
 
-        final void onAddTabularBlock(final _TabularBlock block) {
+        protected final void onAddTabularBlock(final _TabularBlock block) {
             final List<_TabularBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
@@ -884,7 +884,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         }
 
-        final <T> T nonNull(final @Nullable T value) {
+        protected final <T> T nonNull(final @Nullable T value) {
             if (value == null) {
                 throw ContextStack.nullPointer(this.context);
             }
@@ -892,27 +892,27 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
 
-        boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+        protected boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
-        boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
+        protected boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
 
-        abstract LT onLeftTable(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias);
+        protected abstract LT onLeftTable(@Nullable SQLs.TableModifier modifier, TableMeta<?> table, String tableAlias);
 
-        abstract LS onLeftDerived(@Nullable SQLs.DerivedModifier modifier, DerivedTable table);
+        protected abstract LS onLeftDerived(@Nullable SQLs.DerivedModifier modifier, DerivedTable table);
 
-        abstract LC onLeftCte(_Cte cteItem, String alias);
+        protected abstract LC onLeftCte(_Cte cteItem, String alias);
 
-        LF onLeftUndoneFunc(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
+        protected LF onLeftUndoneFunc(@Nullable SQLs.DerivedModifier modifier, UndoneFunction func) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Deprecated
-        final void onAddFirstBlock(final _TabularBlock block) {
+        protected final void onAddFirstBlock(final _TabularBlock block) {
             final List<_TabularBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList && blockList.size() == 0)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
@@ -921,7 +921,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
 
-        final I thisNestedJoinEnd() {
+        protected final I thisNestedJoinEnd() {
             final List<_TabularBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList && blockList.size() > 0)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();

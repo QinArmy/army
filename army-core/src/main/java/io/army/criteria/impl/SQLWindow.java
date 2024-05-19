@@ -119,7 +119,7 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
      * <p>
      * Constructor for named {@link  Window}
      *     */
-    SQLWindow(final String windowName, final CriteriaContext context, final @Nullable String existingWindowName) {
+    public SQLWindow(final String windowName, final CriteriaContext context, final @Nullable String existingWindowName) {
         super(context);
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
@@ -140,7 +140,7 @@ public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
      * <p>
      * Constructor for anonymous {@link  Window}
      *     */
-    SQLWindow(final CriteriaContext context, final @Nullable String existingWindowName) {
+    public SQLWindow(final CriteriaContext context, final @Nullable String existingWindowName) {
         super(context);
         if (existingWindowName != null) {
             if (!_StringUtils.hasText(existingWindowName)) {

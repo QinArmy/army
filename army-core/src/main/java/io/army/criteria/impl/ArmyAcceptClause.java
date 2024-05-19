@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * package interface
  */
-interface ArmyAcceptClause<T> extends Clause {
+public interface ArmyAcceptClause<T> extends Clause {
 
 
     List<T> endClause();

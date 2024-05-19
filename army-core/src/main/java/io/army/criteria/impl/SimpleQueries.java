@@ -88,7 +88,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     private Boolean prepared;
 
 
-    SimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
+    public SimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
         if (withSpec != null) {
@@ -1133,30 +1133,30 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     }
 
 
-    abstract SP createQueryUnion(_UnionType unionType);
+    protected abstract SP createQueryUnion(_UnionType unionType);
 
-    abstract void onEndQuery();
+    protected abstract void onEndQuery();
 
-    abstract Q onAsQuery();
+    protected abstract Q onAsQuery();
 
-    abstract void onClear();
+    protected abstract void onClear();
 
-    abstract List<W> asModifierList(@Nullable List<W> modifiers);
+    protected abstract List<W> asModifierList(@Nullable List<W> modifiers);
 
-    abstract List<Hint> asHintList(@Nullable List<Hint> hints);
-
-
-    abstract boolean isErrorModifier(W modifier);
-
-    abstract W allModifier();
-
-    abstract W distinctModifier();
+    protected abstract List<Hint> asHintList(@Nullable List<Hint> hints);
 
 
-    abstract B createCteBuilder(boolean recursive);
+    protected abstract boolean isErrorModifier(W modifier);
+
+    protected abstract W allModifier();
+
+    protected abstract W distinctModifier();
 
 
-    final WE endStaticWithClause(final boolean recursive) {
+    protected abstract B createCteBuilder(boolean recursive);
+
+
+    protected final WE endStaticWithClause(final boolean recursive) {
         if (this.cteList != null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
@@ -1166,11 +1166,11 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     }
 
 
-    final void endStmtBeforeCommand() {
+    protected final void endStmtBeforeCommand() {
         this.endQueryStatement(true);
     }
 
-    final boolean hasGroupByClause() {
+    protected final boolean hasGroupByClause() {
         final List<ArmyGroupByItem> itemList = this.groupByList;
         return itemList != null && itemList.size() > 0;
     }
@@ -1293,12 +1293,12 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
 
     }
 
-    static abstract class QueryUnionClause<I extends Item> implements _StaticUnionClause<I>, _StaticIntersectClause<I>,
+    protected static abstract class QueryUnionClause<I extends Item> implements _StaticUnionClause<I>, _StaticIntersectClause<I>,
             _StaticExceptClause<I>, _StaticMinusClause<I> {
 
         private Runnable firstQueryEnd;
 
-        QueryUnionClause(@Nullable Runnable firstQueryEnd) {
+        public QueryUnionClause(@Nullable Runnable firstQueryEnd) {
             this.firstQueryEnd = firstQueryEnd;
         }
 
@@ -1587,7 +1587,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
 
     }//LockWaitOption
 
-    static abstract class LockClauseBlock<LT, LW> implements Query._LockOfTableAliasClause<LT>,
+    protected static abstract class LockClauseBlock<LT, LW> implements Query._LockOfTableAliasClause<LT>,
             Query._MinLockWaitOptionClause<LW>,
             CriteriaContextSpec,
             _Query._LockBlock,
@@ -1726,7 +1726,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
             return this.lockWaitOption;
         }
 
-        final _LockBlock endLockClause() {
+        public final _LockBlock endLockClause() {
             if (this.clauseEnd) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -1738,7 +1738,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     }//LockClauseBlock
 
 
-    static final class NamedWindowAsClause<T extends Item, R extends Item>
+    protected static final class NamedWindowAsClause<T extends Item, R extends Item>
             implements Window._WindowAsClause<T, R> {
 
         private final CriteriaContext context;
@@ -1759,7 +1759,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
          *                      <li>third : nullable existingWindowName </li>
          *                    </ul>
          */
-        NamedWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function,
+        public NamedWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function,
                             TeFunction<String, CriteriaContext, String, T> constructor) {
             this.context = context;
             this.name = name;
@@ -2099,9 +2099,9 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     }//WithDistinctOnSelectClauseDispatcher
 
 
-    static final class UnionSubQuery extends UnionSubRowSet implements ArmySubQuery {
+    public static final class UnionSubQuery extends UnionSubRowSet implements ArmySubQuery {
 
-        UnionSubQuery(SubQuery left, _UnionType unionType, RowSet right) {
+        public UnionSubQuery(SubQuery left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
@@ -2117,22 +2117,22 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
 
     }//UnionSubQuery
 
-    static final class UnionSelect extends UnionRowSet implements ArmySelect {
+    public static final class UnionSelect extends UnionRowSet implements ArmySelect {
 
 
-        UnionSelect(Select left, _UnionType unionType, RowSet right) {
+        public UnionSelect(Select left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
 
-        UnionBatchSelect wrapToBatchSelect(List<?> paramList) {
+        public UnionBatchSelect wrapToBatchSelect(List<?> paramList) {
             return new UnionBatchSelect(this, CriteriaUtils.paramList(paramList));
         }
 
     }//UnionSelect
 
 
-    static final class UnionBatchSelect extends UnionRowSet implements ArmyBatchSelect {
+    public static final class UnionBatchSelect extends UnionRowSet implements ArmyBatchSelect {
 
         private final List<?> paramList;
 
@@ -2457,7 +2457,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
 
     }//SelectionsImpl
 
-    static abstract class ArmyBatchSimpleSelect extends CriteriaSupports.StatementMockSupport implements Query,
+    public static abstract class ArmyBatchSimpleSelect extends CriteriaSupports.StatementMockSupport implements Query,
             _Query, _Statement._WithClauseSpec, ArmyBatchSelect {
 
         private final boolean recursive;
@@ -2491,7 +2491,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
         private boolean prepared = true;
 
 
-        ArmyBatchSimpleSelect(final _Query query, final List<?> paramList) {
+        public ArmyBatchSimpleSelect(final _Query query, final List<?> paramList) {
             super(((CriteriaContextSpec) query).getContext());
             this.recursive = query.isRecursive();
             this.cteList = query.cteList();

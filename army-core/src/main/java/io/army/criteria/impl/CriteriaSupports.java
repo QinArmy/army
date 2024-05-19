@@ -20,7 +20,6 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.standard.SQLs;
 import io.army.dialect.*;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.MappingType;
@@ -42,66 +41,60 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class CriteriaSupports {
+public abstract class CriteriaSupports {
 
-    CriteriaSupports() {
+    protected CriteriaSupports() {
         throw new UnsupportedOperationException();
     }
 
-
-    static <RR> Statement._LeftParenStringQuadraOptionalSpec<RR> stringQuadra(CriteriaContext context
+    public static <RR> Statement._LeftParenStringQuadraOptionalSpec<RR> stringQuadra(CriteriaContext context
             , Function<List<String>, RR> function) {
         return new ParenStringConsumerClause<>(context, function);
     }
 
-
-    static StringObjectSpaceClause stringObjectSpace(boolean required, Consumer<String> consumer) {
+    public static StringObjectSpaceClause stringObjectSpace(boolean required, Consumer<String> consumer) {
         return new StringObjectSpaceClause(required, consumer);
     }
 
-    static StringObjectConsumer stringObjectConsumer(boolean required, Consumer<String> consumer) {
+    public static StringObjectConsumer stringObjectConsumer(boolean required, Consumer<String> consumer) {
         return new StringObjectConsumer(required, consumer);
     }
 
-
-    static StaticObjectConsumer staticObjectConsumer(boolean required, Consumer<Object> consumer) {
+    public static StaticObjectConsumer staticObjectConsumer(boolean required, Consumer<Object> consumer) {
         return new StaticObjectConsumer(required, consumer);
     }
 
-    static DynamicObjectConsumer dynamicObjectConsumer(boolean required, Consumer<Object> consumer) {
+    public static DynamicObjectConsumer dynamicObjectConsumer(boolean required, Consumer<Object> consumer) {
         return new DynamicObjectConsumer(required, consumer);
     }
 
-
-    static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
+    public static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
         return new ReturningBuilderImpl(consumer);
     }
 
-
-    static <F extends SqlField> UpdateStatement._ItemPairs<F> itemPairs(Consumer<ItemPair> consumer) {
+    public static <F extends SqlField> UpdateStatement._ItemPairs<F> itemPairs(Consumer<ItemPair> consumer) {
         return new ItemPairsImpl<>(consumer);
     }
 
-    static <F extends SqlField> UpdateStatement._BatchItemPairs<F> batchItemPairs(Consumer<ItemPair> consumer) {
+    public static <F extends SqlField> UpdateStatement._BatchItemPairs<F> batchItemPairs(Consumer<ItemPair> consumer) {
         return new BatchItemPairsImpl<>(consumer);
     }
 
-    static <F extends SqlField> UpdateStatement._RowPairs<F> rowPairs(Consumer<ItemPair> consumer) {
+    public static <F extends SqlField> UpdateStatement._RowPairs<F> rowPairs(Consumer<ItemPair> consumer) {
         return new RowItemPairsImpl<>(consumer);
     }
 
-    static <F extends SqlField> UpdateStatement._BatchRowPairs<F> batchRowPairs(Consumer<ItemPair> consumer) {
+    public static <F extends SqlField> UpdateStatement._BatchRowPairs<F> batchRowPairs(Consumer<ItemPair> consumer) {
         return new BatchRowItemPairsImpl<>(consumer);
     }
 
-    static <F extends SqlField> UpdateStatement._ItemPairs<F> simpleFieldItemPairs(CriteriaContext context
+    public static <F extends SqlField> UpdateStatement._ItemPairs<F> simpleFieldItemPairs(CriteriaContext context
             , @Nullable TableMeta<?> updateTable, Consumer<_ItemPair> consumer) {
         assert updateTable != null;
         return new SimpleFieldItemPairs<>(context, updateTable, consumer);
     }
 
-
-    static ObjectVariadic objectVariadicClause() {
+    public static ObjectVariadic objectVariadicClause() {
         return new ObjectVariadic();
     }
 
@@ -109,13 +102,12 @@ abstract class CriteriaSupports {
     /**
      * This interface is base interface of All implementation of {@link CteBuilderSpec}
      */
-    interface CteBuilder extends CteBuilderSpec {
+    public interface CteBuilder extends CteBuilderSpec {
 
         void endLastCte();
     }
 
-
-    static abstract class WithClause<B extends CteBuilderSpec, WE extends Item> extends StatementMockSupport
+    public static abstract class WithClause<B extends CteBuilderSpec, WE extends Item> extends StatementMockSupport
             implements DialectStatement._DynamicWithClause<B, WE>,
             _Statement._WithClauseSpec, CriteriaContextSpec {
 
@@ -203,7 +195,7 @@ abstract class CriteriaSupports {
 
     }//WithClause
 
-    static abstract class StatementMockSupport implements Statement.StatementMockSpec {
+    public static abstract class StatementMockSupport implements Statement.StatementMockSpec {
 
         final CriteriaContext context;
 
@@ -272,8 +264,7 @@ abstract class CriteriaSupports {
 
     }//StatementMockSupport
 
-
-    static class ParenStringConsumerClause<RR>
+    public static class ParenStringConsumerClause<RR>
             implements Statement._LeftParenStringQuadraOptionalSpec<RR>
             , Statement._LeftParenStringDualOptionalSpec<RR>
             , Statement._CommaStringDualSpec<RR>
@@ -410,15 +401,15 @@ abstract class CriteriaSupports {
     }//ParenStringConsumerClause
 
     @SuppressWarnings("unchecked")
-    static abstract class CteParensClause<R> implements Statement._OptionalParensStringClause<R> {
+    public static abstract class CteParensClause<R> implements Statement._OptionalParensStringClause<R> {
 
-        final String name;
+        public final String name;
 
-        final CriteriaContext context;
+        public final CriteriaContext context;
 
-        List<String> columnAliasList;
+        protected List<String> columnAliasList;
 
-        CteParensClause(String name, CriteriaContext context) {
+        public CteParensClause(String name, CriteriaContext context) {
             context.onStartCte(name);
             this.name = name;
             this.context = context;
@@ -714,12 +705,12 @@ abstract class CriteriaSupports {
 
         @Override
         void onAddSimpleField(final ItemPair pair) {
-            final SQLs.FieldItemPair fieldPair;
+            final Armies.FieldItemPair fieldPair;
             final TableField field;
-            if (!(pair instanceof SQLs.FieldItemPair)) {
+            if (!(pair instanceof Armies.FieldItemPair)) {
                 //here, support only simple filed
                 throw ContextStack.clearStackAndCastCriteriaApi();
-            } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof TableField)) {
+            } else if (!((fieldPair = (Armies.FieldItemPair) pair).field instanceof TableField)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             } else if ((field = (TableField) fieldPair.field).tableMeta() != this.updateTable) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
@@ -848,8 +839,7 @@ abstract class CriteriaSupports {
 
     }//ReturningBuilderImpl
 
-
-    static final class RowExpressionImpl extends OperationRowExpression implements ArmyRowExpression, FunctionArg.SingleFunctionArg {
+    public static final class RowExpressionImpl extends OperationRowExpression implements ArmyRowExpression, FunctionArg.SingleFunctionArg {
 
         private final List<ArmySQLExpression> columnList;
 
@@ -904,8 +894,7 @@ abstract class CriteriaSupports {
 
     }//RowExpressionImpl
 
-
-    static final class StringObjectSpaceClause implements Statement._StringObjectSpaceClause,
+    public static final class StringObjectSpaceClause implements Statement._StringObjectSpaceClause,
             Statement._StringObjectCommaClause {
 
         private final boolean required;
@@ -950,7 +939,7 @@ abstract class CriteriaSupports {
 
     }//StringObjectSpaceClause
 
-    static final class StringObjectConsumer implements Statement._StringObjectConsumer {
+    public static final class StringObjectConsumer implements Statement._StringObjectConsumer {
 
         private final boolean required;
 
@@ -991,7 +980,7 @@ abstract class CriteriaSupports {
 
     }//StringObjectConsumer
 
-    static final class StaticObjectConsumer implements Clause._PairVariadicSpaceClause
+    public static final class StaticObjectConsumer implements Clause._PairVariadicSpaceClause
             , Clause._PairVariadicCommaClause {
 
         private final boolean required;
@@ -1006,7 +995,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Clause._PairVariadicCommaClause space(String keyName, Object value) {
+        public Clause._PairVariadicCommaClause space(String keyName, @Nullable Object value) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1015,7 +1004,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Clause._PairVariadicCommaClause space(Expression key, Object value) {
+        public Clause._PairVariadicCommaClause space(Expression key, @Nullable Object value) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1024,12 +1013,12 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Clause._PairVariadicCommaClause comma(String keyName, Object value) {
+        public Clause._PairVariadicCommaClause comma(String keyName, @Nullable Object value) {
             return this.onAddPair(keyName, value);
         }
 
         @Override
-        public Clause._PairVariadicCommaClause comma(Expression key, Object value) {
+        public Clause._PairVariadicCommaClause comma(Expression key, @Nullable Object value) {
             return this.onAddPair(key, value);
         }
 
@@ -1055,7 +1044,7 @@ abstract class CriteriaSupports {
 
     }//StaticObjectConsumer
 
-    static final class DynamicObjectConsumer implements Clause._PairVariadicConsumerClause {
+    public static final class DynamicObjectConsumer implements Clause._PairVariadicConsumerClause {
 
         private final boolean required;
 
@@ -1104,8 +1093,7 @@ abstract class CriteriaSupports {
 
     }//DynamicObjectConsumer
 
-
-    static final class ObjectVariadic implements Clause._VariadicSpaceClause, Clause._VariadicCommaClause {
+    public static final class ObjectVariadic implements Clause._VariadicSpaceClause, Clause._VariadicCommaClause {
 
         private List<ArmyExpression> list;
 

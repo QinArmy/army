@@ -127,19 +127,14 @@ public abstract class OperationPredicate extends OperationExpression.PredicateEx
 
     @Override
     public final SimplePredicate or(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = _Collections.arrayList();
-        consumer.accept(list::add);
-        final SimplePredicate predicate;
-        switch (list.size()) {
-            case 0:
-                throw CriteriaUtils.dontAddAnyItem();
-            case 1:
-                predicate = orPredicate(this, list.get(0));
-                break;
-            default:
-                predicate = orPredicate(this, list);
-        }
-        return predicate;
+        final List<OperationPredicate> list = new ArrayList<>();
+        ClauseUtils.invokingDynamicConsumer(true, list, true, consumer);
+
+        return switch (list.size()) {
+            case 0 -> throw CriteriaUtils.dontAddAnyItem();
+            case 1 -> orPredicate(this, list.get(0));
+            default -> orPredicates(this, list);
+        };
     }
 
     @Override
@@ -281,20 +276,13 @@ public abstract class OperationPredicate extends OperationExpression.PredicateEx
 
     @Override
     public final IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = _Collections.arrayList();
-        consumer.accept(list::add);
-        final IPredicate predicate;
-        switch (list.size()) {
-            case 0:
-                predicate = this;
-                break;
-            case 1:
-                predicate = orPredicate(this, list.get(0));
-                break;
-            default:
-                predicate = orPredicate(this, list);
-        }
-        return predicate;
+        final List<OperationPredicate> list = _Collections.arrayList();
+        ClauseUtils.invokingDynamicConsumer(false, list, true, consumer);
+        return switch (list.size()) {
+            case 0 -> this;
+            case 1 -> orPredicate(this, list.get(0));
+            default -> orPredicates(this, list);
+        };
     }
 
     @Override
@@ -630,17 +618,13 @@ public abstract class OperationPredicate extends OperationExpression.PredicateEx
 
     @Override
     public final _Predicate getIdPredicate() {
-        final _Predicate predicate;
-        if (this instanceof Expressions.DualPredicate) {
-            predicate = getIdPredicateFromDual((Expressions.DualPredicate) this);
-        } else if (this instanceof Expressions.InOperationPredicate) {
-            predicate = getIdPredicateFromInPredicate((Expressions.InOperationPredicate) this);
-        } else if (this instanceof AndPredicate) {
-            predicate = getIdPredicateFromAndPredicate((AndPredicate) this);
-        } else {
-            predicate = null;
-        }
-        return predicate;
+        return switch (this) {
+            case Expressions.DualPredicate dualPredicate -> getIdPredicateFromDual(dualPredicate);
+            case Expressions.InOperationPredicate inOperationPredicate ->
+                    getIdPredicateFromInPredicate(inOperationPredicate);
+            case AndPredicate andPredicate -> getIdPredicateFromAndPredicate(andPredicate);
+            default -> null;
+        };
     }
 
 
@@ -689,27 +673,22 @@ public abstract class OperationPredicate extends OperationExpression.PredicateEx
         return result;
     }
 
-    static OperationSimplePredicate orPredicate(OperationPredicate left, IPredicate right) {
+    public static OperationSimplePredicate orPredicate(OperationPredicate left, IPredicate right) {
         return new OrPredicate(left, Collections.singletonList((OperationPredicate) right));
     }
 
-    static OperationSimplePredicate orPredicate(OperationPredicate left, List<IPredicate> rightList) {
-        final int size = rightList.size();
-        assert size > 0;
-        final List<OperationPredicate> list = new ArrayList<>(size);
-        for (IPredicate right : rightList) {
-            list.add((OperationPredicate) right);
-        }
-        return new OrPredicate(left, Collections.unmodifiableList(list));
+    public static OperationSimplePredicate orPredicates(OperationPredicate left, List<OperationPredicate> rightList) {
+        assert rightList.size() > 0;
+        return new OrPredicate(left, Collections.unmodifiableList(rightList));
     }
 
 
-    static AndPredicate andPredicate(OperationPredicate left, @Nullable IPredicate right) {
+    public static AndPredicate andPredicate(OperationPredicate left, @Nullable IPredicate right) {
         assert right != null;
         return new AndPredicate(left, (OperationPredicate) right);
     }
 
-    static OperationPredicate notPredicate(final IPredicate predicate) {
+    public static OperationPredicate notPredicate(final IPredicate predicate) {
         return new NotPredicate((OperationPredicate) predicate);
     }
 
@@ -985,7 +964,7 @@ public abstract class OperationPredicate extends OperationExpression.PredicateEx
 
     }//OrPredicate
 
-    private static final class AndPredicate extends OperationCompoundPredicate {
+    public static final class AndPredicate extends OperationCompoundPredicate {
 
         final OperationPredicate left;
 

@@ -25,6 +25,6 @@ import io.army.criteria.impl.inner._Statement;
  * This interface is package interface of {@link SubQuery}
  * * @since 0.6.0
  */
-interface ArmySubQuery extends SubQuery, _DerivedTable, ArmyRightOperand, _Statement._WithClauseSpec {
+public interface ArmySubQuery extends SubQuery, _DerivedTable, ArmyRightOperand, _Statement._WithClauseSpec {
 
 }

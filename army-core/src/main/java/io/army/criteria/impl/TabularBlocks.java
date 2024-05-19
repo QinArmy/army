@@ -30,14 +30,14 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-abstract class TabularBlocks {
+public abstract class TabularBlocks {
 
     private TabularBlocks() {
         throw new UnsupportedOperationException();
     }
 
-    static FromClauseTableBlock fromTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
-                                               String alias) {
+    public static FromClauseTableBlock fromTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+                                                      String alias) {
         final FromClauseTableBlock bock;
         if (modifier == null) {
             bock = new FromClauseSimpleTableBlock(joinType, table, alias);
@@ -47,9 +47,8 @@ abstract class TabularBlocks {
         return bock;
     }
 
-
-    static FromClauseDerivedBlock fromDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
-                                                   String alias) {
+    public static FromClauseDerivedBlock fromDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
+                                                          String alias) {
         final FromClauseDerivedBlock bock;
         if (modifier == null) {
             bock = new FromClauseSimpleDerivedBlock(joinType, table, alias);
@@ -59,8 +58,8 @@ abstract class TabularBlocks {
         return bock;
     }
 
-    static FromClauseAliasDerivedBlock fromAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
-                                                             DerivedTable table, String alias) {
+    public static FromClauseAliasDerivedBlock fromAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                                                    DerivedTable table, String alias) {
         final FromClauseAliasDerivedBlock bock;
         if (modifier == null) {
             bock = new FromClauseAliasDerivedBlock(joinType, table, alias);
@@ -70,18 +69,16 @@ abstract class TabularBlocks {
         return bock;
     }
 
-
-    static _TabularBlock fromNestedBlock(_JoinType joinType, _NestedItems tableItems) {
+    public static _TabularBlock fromNestedBlock(_JoinType joinType, _NestedItems tableItems) {
         return new FromClauseNestedBlock(joinType, tableItems);
     }
 
-    static FromClauseCteBlock fromCteBlock(_JoinType joinType, _Cte cte, String alias) {
+    public static FromClauseCteBlock fromCteBlock(_JoinType joinType, _Cte cte, String alias) {
         return new FromClauseCteBlock(joinType, cte, alias);
     }
 
-
-    static <R extends Item> JoinClauseTableBlock<R> joinTableBlock(_JoinType joinType, @Nullable SQLWords modifier,
-                                                                   TableMeta<?> table, String alias, R clause) {
+    public static <R extends Item> JoinClauseTableBlock<R> joinTableBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                                                          TableMeta<?> table, String alias, R clause) {
         final JoinClauseTableBlock<R> block;
         if (modifier == null) {
             block = new JoinClauseSimpleTableBlock<>(joinType, table, alias, clause);
@@ -91,8 +88,8 @@ abstract class TabularBlocks {
         return block;
     }
 
-    static <R extends Item> JoinClauseDerivedBlock<R> joinDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
-                                                                       DerivedTable table, String alias, R clause) {
+    public static <R extends Item> JoinClauseDerivedBlock<R> joinDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                                                              DerivedTable table, String alias, R clause) {
         final JoinClauseDerivedBlock<R> block;
         if (modifier == null) {
             block = new JoinClauseSimpleDerivedBlock<>(joinType, table, alias, clause);
@@ -102,23 +99,22 @@ abstract class TabularBlocks {
         return block;
     }
 
-    static <R extends Item> JoinClauseSimpleModifierAliasDerivedBlock<R> joinAliasDerivedBlock(
+    public static <R extends Item> JoinClauseSimpleModifierAliasDerivedBlock<R> joinAliasDerivedBlock(
             _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table, String alias, R clause) {
         return new JoinClauseSimpleModifierAliasDerivedBlock<>(joinType, modifier, table, alias, clause);
     }
 
-    static <R extends Item> JoinClauseCteBlock<R> joinCteBlock(_JoinType joinType, _Cte table,
-                                                               String alias, R clause) {
+    public static <R extends Item> JoinClauseCteBlock<R> joinCteBlock(_JoinType joinType, _Cte table,
+                                                                      String alias, R clause) {
         return new JoinClauseCteBlock<>(joinType, table, alias, clause);
     }
 
-    static <R extends Item> JoinClauseNestedBlock<R> joinNestedBlock(_JoinType joinType, _NestedItems nestedItems,
-                                                                     R clause) {
+    public static <R extends Item> JoinClauseNestedBlock<R> joinNestedBlock(_JoinType joinType, _NestedItems nestedItems,
+                                                                            R clause) {
         return new JoinClauseNestedBlock<>(joinType, nestedItems, clause);
     }
 
-
-    static abstract class FromClauseBlock implements _TabularBlock {
+    public static abstract class FromClauseBlock implements _TabularBlock {
 
         private final _JoinType joinType;
 
@@ -148,8 +144,7 @@ abstract class TabularBlocks {
 
     }//FromClauseBlock
 
-
-    static abstract class FromClauseTableBlock extends FromClauseBlock {
+    public static abstract class FromClauseTableBlock extends FromClauseBlock {
 
         private final String alias;
 
@@ -166,8 +161,7 @@ abstract class TabularBlocks {
 
     }//FromClauseTableBlock
 
-
-    static class FromClauseModifierTableBlock extends FromClauseTableBlock implements _ModifierTabularBlock {
+    public static class FromClauseModifierTableBlock extends FromClauseTableBlock implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
 
@@ -188,8 +182,7 @@ abstract class TabularBlocks {
 
     }//FromClauseModifierTableBlock
 
-
-    static abstract class FromClauseDerivedBlock extends FromClauseBlock {
+    public static abstract class FromClauseDerivedBlock extends FromClauseBlock {
 
         final String alias;
 
@@ -206,8 +199,7 @@ abstract class TabularBlocks {
 
     }//FromClauseDerivedBock
 
-
-    static class FromClauseAliasDerivedBlock extends FromClauseDerivedBlock
+    public static class FromClauseAliasDerivedBlock extends FromClauseDerivedBlock
             implements _AliasDerivedBlock {
 
         private List<String> columnAliasList;
@@ -273,8 +265,7 @@ abstract class TabularBlocks {
 
     }//FromClauseAliasDerivedBock
 
-
-    static class FromClauseCteBlock extends FromClauseBlock {
+    public static class FromClauseCteBlock extends FromClauseBlock {
 
         private final String alias;
 
@@ -291,8 +282,7 @@ abstract class TabularBlocks {
 
     }//FromClauseCteBlock
 
-
-    static abstract class JoinClauseBlock<R extends Item> implements _TabularBlock, Statement._OnClause<R> {
+    public static abstract class JoinClauseBlock<R extends Item> implements _TabularBlock, Statement._OnClause<R> {
 
         private final _JoinType joinType;
 
@@ -386,7 +376,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseBlock
 
-    static abstract class JoinClauseTableBlock<R extends Item> extends JoinClauseBlock<R> {
+    public static abstract class JoinClauseTableBlock<R extends Item> extends JoinClauseBlock<R> {
 
         private final TableMeta<?> table;
 
@@ -410,7 +400,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseTableBlock
 
-    static abstract class JoinClauseModifierTableBlock<R extends Item> extends JoinClauseTableBlock<R>
+    public static abstract class JoinClauseModifierTableBlock<R extends Item> extends JoinClauseTableBlock<R>
             implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
@@ -429,8 +419,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseModifierTableBlock
 
-
-    static abstract class JoinClauseDerivedBlock<R extends Item> extends JoinClauseBlock<R> {
+    public static abstract class JoinClauseDerivedBlock<R extends Item> extends JoinClauseBlock<R> {
 
         final DerivedTable table;
 
@@ -455,7 +444,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseDerivedBlock
 
-    static abstract class JoinClauseModifierDerivedBlock<R extends Item> extends JoinClauseDerivedBlock<R>
+    public static abstract class JoinClauseModifierDerivedBlock<R extends Item> extends JoinClauseDerivedBlock<R>
             implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
@@ -475,7 +464,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseModifierDerivedBlock
 
-    static abstract class JoinClauseAliasDerivedBlock<R extends Item>
+    public static abstract class JoinClauseAliasDerivedBlock<R extends Item>
             extends JoinClauseModifierDerivedBlock<R>
             implements _AliasDerivedBlock,
             Statement._ParensOnSpec<R> {
@@ -545,8 +534,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseModifierAliasDerivedBlock
 
-
-    static final class JoinClauseCteBlock<R extends Item> extends JoinClauseBlock<R> {
+    public static final class JoinClauseCteBlock<R extends Item> extends JoinClauseBlock<R> {
 
         private final _Cte cte;
 
@@ -576,7 +564,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseCteBlock
 
-    static final class JoinClauseNestedBlock<R extends Item> extends JoinClauseBlock<R> {
+    public static final class JoinClauseNestedBlock<R extends Item> extends JoinClauseBlock<R> {
 
         private final _NestedItems items;
 
@@ -628,7 +616,7 @@ abstract class TabularBlocks {
 
     }//FromClauseSimpleDerivedBlock
 
-    static class FromClauseModifierDerivedBlock extends FromClauseDerivedBlock implements _ModifierTabularBlock {
+    public static class FromClauseModifierDerivedBlock extends FromClauseDerivedBlock implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
 
@@ -701,7 +689,7 @@ abstract class TabularBlocks {
 
     }//JoinClauseSimpleModifierDerivedBlock
 
-    private static final class JoinClauseSimpleModifierAliasDerivedBlock<R extends Item>
+    public static final class JoinClauseSimpleModifierAliasDerivedBlock<R extends Item>
             extends JoinClauseAliasDerivedBlock<R> {
 
         /**

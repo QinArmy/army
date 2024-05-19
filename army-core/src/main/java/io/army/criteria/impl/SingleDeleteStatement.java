@@ -131,15 +131,15 @@ public abstract class SingleDeleteStatement<I extends Item, B extends CteBuilder
     }
 
 
-    void onClear() {
+    protected void onClear() {
 
     }
 
-    abstract I onAsDelete();
+    protected abstract I onAsDelete();
 
 
     @SuppressWarnings("unchecked")
-    final WE endStaticWithClause(final boolean recursive) {
+    protected final WE endStaticWithClause(final boolean recursive) {
         if (this.cteList != null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
@@ -149,7 +149,7 @@ public abstract class SingleDeleteStatement<I extends Item, B extends CteBuilder
     }
 
 
-    abstract B createCteBuilder(boolean recursive);
+    protected abstract B createCteBuilder(boolean recursive);
 
 
     @SuppressWarnings("unchecked")

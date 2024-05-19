@@ -24,7 +24,6 @@ import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect.Dialect;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -197,7 +196,7 @@ abstract class MySQLSingleDeletes<I extends Item>
 
 
     @Override
-    final I onAsDelete() {
+    protected final I onAsDelete() {
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
         }
@@ -214,23 +213,18 @@ abstract class MySQLSingleDeletes<I extends Item>
     }
 
 
-    abstract I onAsMySQLDelete();
+    protected abstract I onAsMySQLDelete();
 
     @Override
-    final void onClear() {
+    protected final void onClear() {
         this.hintList = null;
         this.modifierList = null;
         this.partitionList = null;
     }
 
     @Override
-    final MySQLCtes createCteBuilder(boolean recursive) {
+    protected final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
-    }
-
-    @Override
-    final Dialect statementDialect() {
-        return MySQLUtils.DIALECT;
     }
 
 
@@ -242,7 +236,7 @@ abstract class MySQLSingleDeletes<I extends Item>
         }
 
         @Override
-        Delete onAsMySQLDelete() {
+        protected Delete onAsMySQLDelete() {
             return this;
         }
 
@@ -277,7 +271,7 @@ abstract class MySQLSingleDeletes<I extends Item>
         }
 
         @Override
-        _BatchDeleteParamSpec onAsMySQLDelete() {
+        protected _BatchDeleteParamSpec onAsMySQLDelete() {
             return this;
         }
 

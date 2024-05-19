@@ -23,7 +23,7 @@ import io.army.util._Assert;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
-abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
+public abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
         extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
         implements _ParensRowSet,
         RowSet._StaticUnionClause<SP>,
@@ -46,7 +46,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
 
     private Boolean prepared;
 
-    BracketRowSet(ArmyStmtSpec spec) {
+    public BracketRowSet(ArmyStmtSpec spec) {
         super(CriteriaContexts.bracketContext(spec)); //must migrate WITH clause and context when create bracket.
         this.recursive = spec.isRecursive();
         this.cteList = spec.cteList();
@@ -152,7 +152,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
         if (rowSet == null || !(this instanceof _PrimaryRowSet)) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
-        return ((_PrimaryRowSet) rowSet).selectItemList();
+        return rowSet.selectItemList();
     }
 
     @Override
@@ -202,7 +202,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
         return prepared != null && prepared;
     }
 
-    final RR parensEnd(final RowSet parenRowSet) {
+    public final RR parensEnd(final RowSet parenRowSet) {
         if (this.innerRowSet != null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
@@ -212,15 +212,15 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     }
 
 
-    void onEndQuery() {
+    protected void onEndQuery() {
         //no-op
     }
 
 
-    abstract I onAsQuery();
+    protected abstract I onAsQuery();
 
 
-    abstract SP createUnionRowSet(_UnionType unionType);
+    protected abstract SP createUnionRowSet(_UnionType unionType);
 
 
     private SP unionQuery(final _UnionType unionType) {
@@ -241,7 +241,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     }
 
 
-    static abstract class ArmyBatchBracketSelect extends CriteriaSupports.StatementMockSupport
+    public static abstract class ArmyBatchBracketSelect extends CriteriaSupports.StatementMockSupport
             implements ArmyBatchSelect, _ParensRowSet {
 
         private final boolean recursive;
@@ -260,7 +260,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
 
         private boolean prepared = true;
 
-        ArmyBatchBracketSelect(BracketRowSet<?, ?, ?, ?, ?, ?, ?, ?> rowSet, List<?> paramList) {
+        protected ArmyBatchBracketSelect(BracketRowSet<?, ?, ?, ?, ?, ?, ?, ?> rowSet, List<?> paramList) {
             super(rowSet.context);
 
             this.recursive = rowSet.recursive;
