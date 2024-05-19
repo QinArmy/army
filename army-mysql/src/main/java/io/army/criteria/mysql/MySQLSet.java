@@ -20,7 +20,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.Item;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;

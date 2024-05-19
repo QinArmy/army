@@ -17,49 +17,59 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLWords;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
+import io.army.util._StringUtils;
 
-abstract class SqlWords {
+public abstract class SqlWords {
 
     private SqlWords() {
         throw new UnsupportedOperationException();
     }
 
+    public static String keyWordsToString(Enum<?> wordEnum) {
+        return _StringUtils.builder(20)
+                .append(SQLs.class.getSimpleName())
+                .append(_Constant.PERIOD)
+                .append(wordEnum.name())
+                .toString();
+    }
 
-    enum SymbolSpaceEnum implements SQLs.SymbolSpace {
+
+    public enum SymbolSpaceEnum implements SQLs.SymbolSpace {
 
         SPACE;
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
-    }//SymbolSpaceEnum
+    } // SymbolSpaceEnum
 
 
-    enum SymbolEqualEnum implements SQLs.SymbolEqual {
+    public enum SymbolEqualEnum implements SQLs.SymbolEqual {
 
         EQUAL;
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
     }
 
-    enum SymbolColonEqualEnum implements SQLs.SymbolColonEqual {
+    public enum SymbolColonEqualEnum implements SQLs.SymbolColonEqual {
 
         COLON_EQUAL;
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }
 
-    enum KeyWordNotNull implements SQLs.NullOption, ArmyKeyWord {
+    public enum KeyWordNotNull implements SQLs.NullOption, ArmyKeyWord {
 
         NOT_NULL(" NOT NULL");
 
@@ -82,7 +92,7 @@ abstract class SqlWords {
     }//KeyWordNotNull
 
 
-    enum KeyWordIn implements SQLs.WordIn, ArmyKeyWord {
+    public enum KeyWordIn implements SQLs.WordIn, ArmyKeyWord {
 
         IN;
 
@@ -99,7 +109,7 @@ abstract class SqlWords {
 
     }//KeyWordIn
 
-    enum KeyWordSimilar implements SQLs.WordSimilar, ArmyKeyWord {
+    public enum KeyWordSimilar implements SQLs.WordSimilar, ArmyKeyWord {
 
         SIMILAR(" SIMILAR");
 
@@ -117,12 +127,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordSimilar
 
-    enum KeyWordFrom implements SQLs.WordFrom, ArmyKeyWord {
+    public enum KeyWordFrom implements SQLs.WordFrom, ArmyKeyWord {
 
         FROM;
 
@@ -133,13 +143,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     }//KeyWordFrom
 
-    enum KeyWordFor implements SQLs.WordFor, ArmyKeyWord {
+    public enum KeyWordFor implements SQLs.WordFor, ArmyKeyWord {
 
         FOR(" FOR");
 
@@ -156,13 +166,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     }//KeyWordFor
 
-    enum WordTrimPosition implements SQLs.TrimSpec, ArmyKeyWord {
+    public enum WordTrimPosition implements SQLs.TrimSpec, ArmyKeyWord {
 
         BOTH(" BOTH"),
         LEADING(" LEADING"),
@@ -181,14 +191,14 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     } // WordTrimPosition
 
 
-    enum KeyWordPath implements SQLs.WordPath, ArmyKeyWord {
+    public enum KeyWordPath implements SQLs.WordPath, ArmyKeyWord {
 
         PATH;
 
@@ -204,7 +214,7 @@ abstract class SqlWords {
 
     }//KeyWordPath
 
-    enum KeyWordColumns implements SQLs.WordColumns, ArmyKeyWord {
+    public enum KeyWordColumns implements SQLs.WordColumns, ArmyKeyWord {
 
         COLUMNS;
 
@@ -221,7 +231,7 @@ abstract class SqlWords {
     }//KeyWordColumns
 
 
-    enum KeyWordNested implements SQLs.WordNested, ArmyKeyWord {
+    public enum KeyWordNested implements SQLs.WordNested, ArmyKeyWord {
 
         NESTED;
 
@@ -237,7 +247,7 @@ abstract class SqlWords {
 
     } // KeyWordNested
 
-    enum KeyWordExists implements SQLs.WordExists, ArmyKeyWord {
+    public enum KeyWordExists implements SQLs.WordExists, ArmyKeyWord {
 
         EXISTS;
 
@@ -253,7 +263,7 @@ abstract class SqlWords {
 
     }//KeyWordExists
 
-    enum KeyWordsForOrdinality implements SQLs.WordsForOrdinality, ArmyKeyWord {
+    public enum KeyWordsForOrdinality implements SQLs.WordsForOrdinality, ArmyKeyWord {
 
         FOR_ORDINALITY(" FOR ORDINALITY");
 
@@ -277,7 +287,7 @@ abstract class SqlWords {
     }//KeyWordsForOrdinality
 
 
-    enum KeyWordError implements SQLs.WordError, ArmyKeyWord {
+    public enum KeyWordError implements SQLs.WordError, ArmyKeyWord {
 
         ERROR;
 
@@ -295,7 +305,7 @@ abstract class SqlWords {
 
     } // KeyWordError
 
-    enum KeyWordDocument implements SQLs.WordDocument, ArmyKeyWord {
+    public enum KeyWordDocument implements SQLs.WordDocument, ArmyKeyWord {
 
         /**
          * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">xml IS DOCUMENT → boolean<br/>
@@ -322,7 +332,7 @@ abstract class SqlWords {
 
     }//KeyWordDocument
 
-    enum KeyWordContent implements SQLs.WordContent, ArmyKeyWord {
+    public enum KeyWordContent implements SQLs.WordContent, ArmyKeyWord {
 
         CONTENT(" CONTENT");
 
@@ -352,7 +362,7 @@ abstract class SqlWords {
      *
      * @since 0.6.0
      */
-    enum BooleanTestKeyWord implements SQLs.BooleanTestWord, ArmyKeyWord {
+    public enum BooleanTestKeyWord implements SQLs.BooleanTestWord, ArmyKeyWord {
 
         JSON(" JSON");
 
@@ -377,7 +387,7 @@ abstract class SqlWords {
 
     }
 
-    enum IsComparisonKeyWord implements SQLs.IsComparisonWord, ArmyKeyWord {
+    public enum IsComparisonKeyWord implements SQLs.IsComparisonWord, ArmyKeyWord {
 
         DISTINCT_FROM(" DISTINCT FROM");
 
@@ -402,7 +412,7 @@ abstract class SqlWords {
     }//IsComparisonKeyWord
 
 
-    enum KeyWordAll implements SQLWords, SQLs.WordAll, ArmyKeyWord {
+    public enum KeyWordAll implements SQLWords, SQLs.WordAll, ArmyKeyWord {
 
         ALL(" ALL");
 
@@ -419,13 +429,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     }//KeyWordAll
 
-    enum KeyWordDistinct implements ArmyKeyWord, SQLs.WordDistinct {
+    public enum KeyWordDistinct implements ArmyKeyWord, SQLs.WordDistinct {
 
         DISTINCT;
 
@@ -436,13 +446,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     }//KeyWordDistinct
 
-    enum KeyWordInterval implements SQLs.WordInterval, ArmyKeyWord {
+    public enum KeyWordInterval implements SQLs.WordInterval, ArmyKeyWord {
 
         INTERVAL;
 
@@ -453,12 +463,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordInterval
 
-    enum KeyWordPercent implements SQLs.WordPercent, SQLWords {
+    public enum KeyWordPercent implements SQLs.WordPercent, SQLWords {
 
         PERCENT(" PERCENT");
 
@@ -475,12 +485,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordPercent
 
-    enum KeyWordUnknown implements SQLs.BooleanTestWord, ArmyKeyWord {
+    public enum KeyWordUnknown implements SQLs.BooleanTestWord, ArmyKeyWord {
 
         UNKNOWN(" UNKNOWN");
 
@@ -497,12 +507,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } //KeyWordUnknown
 
-    enum KeyWordAscDesc implements SQLs.AscDesc, SQLWords {
+    public enum KeyWordAscDesc implements SQLs.AscDesc, SQLWords {
 
         ASC(" ASC"),
         DESC(" DESC");
@@ -520,12 +530,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordAscDesc
 
-    enum KeyWordLateral implements SQLs.WordLateral {
+    public enum KeyWordLateral implements SQLs.WordLateral {
 
         LATERAL(" LATERAL");
 
@@ -542,12 +552,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordLateral
 
-    enum KeyWordFirst implements SQLs.WordFirst, SQLWords {
+    public enum KeyWordFirst implements SQLs.WordFirst, SQLWords {
 
         FIRST(" FIRST");
 
@@ -564,12 +574,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordFirst
 
-    enum KeyWordNext implements SQLs.WordNext, SQLWords {
+    public enum KeyWordNext implements SQLs.WordNext, SQLWords {
 
         NEXT(" NEXT");
 
@@ -586,12 +596,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordNext
 
-    enum KeyWordsNullsFirstLast implements SQLs.NullsFirstLast, SQLWords {
+    public enum KeyWordsNullsFirstLast implements SQLs.NullsFirstLast, SQLWords {
 
         NULLS_FIRST(" NULLS FIRST"),
         NULLS_LAST(" NULLS LAST");
@@ -609,12 +619,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordsNullsFirstLast
 
-    enum KeyWordRow implements SQLs.WordRow, SQLWords {
+    public enum KeyWordRow implements SQLs.WordRow, SQLWords {
 
         ROW(" ROW");
 
@@ -631,12 +641,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordRow
 
-    enum KeyWordRows implements SQLs.WordRows, ArmyKeyWord {
+    public enum KeyWordRows implements SQLs.WordRows, ArmyKeyWord {
 
         ROWS;
 
@@ -647,13 +657,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } //KeyWordRows
 
 
-    enum KeyWordLines implements SQLs.WordLines, ArmyKeyWord {
+    public enum KeyWordLines implements SQLs.WordLines, ArmyKeyWord {
 
         LINES;
 
@@ -664,12 +674,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } //KeyWordLines
 
-    enum KeyWordWithTies implements SQLs.WordsWithTies, SQLWords {
+    public enum KeyWordWithTies implements SQLs.WordsWithTies, SQLWords {
 
         WITH_TIES(" WITH TIES");
 
@@ -686,12 +696,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordNext
 
-    enum KeyWordOny implements SQLs.WordOnly, SQLWords {
+    public enum KeyWordOny implements SQLs.WordOnly, SQLWords {
 
         ONLY;
 
@@ -702,12 +712,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordOny
 
-    enum KeyWordAs implements SQLs.WordAs, ArmyKeyWord {
+    public enum KeyWordAs implements SQLs.WordAs, ArmyKeyWord {
 
         AS;
 
@@ -718,12 +728,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } // KeyWordAs
 
-    enum KeyWordTo implements SQLs.WordTo, ArmyKeyWord {
+    public enum KeyWordTo implements SQLs.WordTo, ArmyKeyWord {
 
         TO;
 
@@ -734,12 +744,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } // KeyWordTo
 
-    enum KeyWordAnd implements SQLs.WordAnd, ArmyKeyWord {
+    public enum KeyWordAnd implements SQLs.WordAnd, ArmyKeyWord {
 
         AND(" AND");
 
@@ -756,12 +766,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordAnd
 
-    enum KeyWordSymmetric implements SQLs.BetweenModifier, ArmyKeyWord {
+    public enum KeyWordSymmetric implements SQLs.BetweenModifier, ArmyKeyWord {
 
         SYMMETRIC(" SYMMETRIC"),
         ASYMMETRIC(" ASYMMETRIC");
@@ -779,23 +789,23 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordSymmetric
 
-    enum SQLSymbolPeriod implements SQLs.SymbolPeriod {
+    public enum SQLSymbolPeriod implements SQLs.SymbolPeriod {
 
         PERIOD;
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//SQLSymbolPoint
 
-    enum SQLSymbolAsterisk implements SQLs.SymbolAsterisk, SQLWords {
+    public enum SQLSymbolAsterisk implements SQLs.SymbolAsterisk, SQLWords {
 
         ASTERISK(" *");
 
@@ -812,12 +822,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//SQLSymbolStar
 
-    enum KeyWordEscape implements SQLs.WordEscape, ArmyKeyWord {
+    public enum KeyWordEscape implements SQLs.WordEscape, ArmyKeyWord {
 
         ESCAPE(" ESCAPE");
 
@@ -835,7 +845,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordEscape
@@ -843,7 +853,7 @@ abstract class SqlWords {
     /**
      * @see SQLs#ALL
      */
-    enum QueryOperator implements SQLs.QuantifiedWord {
+    public enum QueryOperator implements SQLs.QuantifiedWord {
 
         ANY(" ANY"),
         SOME(" SOME");
@@ -856,19 +866,19 @@ abstract class SqlWords {
 
 
         @Override
-        public String spaceRender() {
-            return null;
+        public final String spaceRender() {
+            return this.spaceWord;
         }
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     }
 
-    enum KeyWordOn implements SQLs.WordOn {
+    public enum KeyWordOn implements SQLs.WordOn {
 
         ON;
 
@@ -876,7 +886,7 @@ abstract class SqlWords {
     }//KeyWordOn
 
 
-    enum KeyWordsCharacterSet implements SQLs.WordsCharacterSet, ArmyKeyWord {
+    public enum KeyWordsCharacterSet implements SQLs.WordsCharacterSet, ArmyKeyWord {
 
         CHARACTER_SET(" CHARACTER SET");
 
@@ -895,12 +905,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     }//KeyWordsCharacterSet
 
-    enum KeyWordsCollate implements SQLs.WordCollate, ArmyKeyWord {
+    public enum KeyWordsCollate implements SQLs.WordCollate, ArmyKeyWord {
 
         COLLATE(" COLLATE");
 
@@ -919,13 +929,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } // KeyWordsCollate
 
 
-    enum KeyWordUsing implements SQLs.WordUsing {
+    public enum KeyWordUsing implements SQLs.WordUsing {
 
         USING;
 
@@ -936,13 +946,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     } //KeyWordUsing
 
-    enum FuncWord implements ArmyKeyWord {
+    public enum FuncWord implements ArmyKeyWord {
 
         INTERVAL(" INTERVAL"),
         COMMA(_Constant.SPACE_COMMA),
@@ -971,7 +981,7 @@ abstract class SqlWords {
     } // Word
 
 
-    enum KeyWordJoin implements SQLs.WordJoin, ArmyKeyWord {
+    public enum KeyWordJoin implements SQLs.WordJoin, ArmyKeyWord {
 
         JOIN;
 
@@ -982,13 +992,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     } //  KeyWordJoin
 
-    enum KeyWordsOrderBy implements SQLs.WordsOrderBy, ArmyKeyWord {
+    public enum KeyWordsOrderBy implements SQLs.WordsOrderBy, ArmyKeyWord {
 
         ORDER_BY;
 
@@ -999,12 +1009,12 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } //  KeyWordsOrderBy
 
-    enum KeyWordsGroupBy implements SQLs.WordsGroupBy, ArmyKeyWord {
+    public enum KeyWordsGroupBy implements SQLs.WordsGroupBy, ArmyKeyWord {
 
         GROUP_BY;
 
@@ -1015,13 +1025,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
     } //  KeyWordsGroupBy
 
 
-    enum KeyWordsAtTimeZone implements SQLs.WordsAtTimeZone, ArmyKeyWord {
+    public enum KeyWordsAtTimeZone implements SQLs.WordsAtTimeZone, ArmyKeyWord {
 
         AT_TIME_ZONE;
 
@@ -1032,13 +1042,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     } // KeyWordsAtTimeZone
 
-    enum KeyWordVarScope implements SQLs.VarScope {
+    public enum KeyWordVarScope implements SQLs.VarScope {
 
         AT,
 
@@ -1050,13 +1060,13 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
     } // KeyWordVariableType
 
-    enum KeyWordMaterialized implements SQLs.WordMaterialized {
+    public enum KeyWordMaterialized implements SQLs.WordMaterialized {
 
         MATERIALIZED(" MATERIALIZED"),
         NOT_MATERIALIZED(" NOT MATERIALIZED");
@@ -1075,7 +1085,7 @@ abstract class SqlWords {
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return keyWordsToString(this);
         }
 
 
@@ -1084,7 +1094,9 @@ abstract class SqlWords {
     /**
      * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
      */
-    interface ArmyKeyWord extends SQLWords {
+    public interface ArmyKeyWord extends SQLWords {
 
     }
+
+
 }

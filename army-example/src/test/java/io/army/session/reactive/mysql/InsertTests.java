@@ -20,8 +20,8 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.reactive.ReactiveLocalSession;
 import io.army.record.ResultStates;
@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.standard.SQLs.AS;
+import static io.army.criteria.standard.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
 public class InsertTests extends SessionTestsSupport {

@@ -20,6 +20,7 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.*;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.MappingType;
@@ -483,7 +484,7 @@ abstract class CriteriaSupports {
 
         @Override
         public final SR set(F field, Expression value) {
-            this.consumer.accept(SQLs._itemPair(field, null, value));
+            this.consumer.accept(Armies._itemPair(field, null, value));
             return (SR) this;
         }
 
@@ -582,7 +583,7 @@ abstract class CriteriaSupports {
 
         @Override
         public final SR setSpace(F field, BiFunction<F, String, Expression> valueOperator) {
-            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
+            this.consumer.accept(Armies._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
             return (SR) this;
         }
 
@@ -597,7 +598,7 @@ abstract class CriteriaSupports {
         public final SR setRow(F field1, F field2, Supplier<SubQuery> supplier) {
             final List<F> fieldList;
             fieldList = Arrays.asList(field1, field2);
-            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            this.consumer.accept(Armies._itemPair(fieldList, supplier.get()));
             return (SR) this;
         }
 
@@ -605,7 +606,7 @@ abstract class CriteriaSupports {
         public final SR setRow(F field1, F field2, F field3, Supplier<SubQuery> supplier) {
             final List<F> fieldList;
             fieldList = Arrays.asList(field1, field2, field3);
-            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            this.consumer.accept(Armies._itemPair(fieldList, supplier.get()));
             return (SR) this;
         }
 
@@ -613,7 +614,7 @@ abstract class CriteriaSupports {
         public final SR setRow(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier) {
             final List<F> fieldList;
             fieldList = Arrays.asList(field1, field2, field3, field4);
-            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            this.consumer.accept(Armies._itemPair(fieldList, supplier.get()));
             return (SR) this;
         }
 
@@ -621,7 +622,7 @@ abstract class CriteriaSupports {
         public final SR setRow(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier) {
             final List<F> fieldList = _Collections.arrayList();
             consumer.accept(fieldList::add);
-            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            this.consumer.accept(Armies._itemPair(fieldList, supplier.get()));
             return (SR) this;
         }
 
@@ -631,7 +632,7 @@ abstract class CriteriaSupports {
             if ((query = supplier.get()) != null) {
                 final List<F> fieldList;
                 fieldList = Arrays.asList(field1, field2);
-                this.consumer.accept(SQLs._itemPair(fieldList, query));
+                this.consumer.accept(Armies._itemPair(fieldList, query));
             }
             return (SR) this;
         }
@@ -642,7 +643,7 @@ abstract class CriteriaSupports {
             if ((query = supplier.get()) != null) {
                 final List<F> fieldList;
                 fieldList = Arrays.asList(field1, field2, field3);
-                this.consumer.accept(SQLs._itemPair(fieldList, query));
+                this.consumer.accept(Armies._itemPair(fieldList, query));
             }
             return (SR) this;
         }
@@ -653,7 +654,7 @@ abstract class CriteriaSupports {
             if ((query = supplier.get()) != null) {
                 final List<F> fieldList;
                 fieldList = Arrays.asList(field1, field2, field3, field4);
-                this.consumer.accept(SQLs._itemPair(fieldList, query));
+                this.consumer.accept(Armies._itemPair(fieldList, query));
             }
             return (SR) this;
         }
@@ -664,7 +665,7 @@ abstract class CriteriaSupports {
             consumer.accept(fieldList::add);
             final SubQuery query;
             if (fieldList.size() > 0 && (query = supplier.get()) != null) {
-                this.consumer.accept(SQLs._itemPair(fieldList, query));
+                this.consumer.accept(Armies._itemPair(fieldList, query));
             }
             return (SR) this;
         }
@@ -679,7 +680,7 @@ abstract class CriteriaSupports {
             if (item == null) {
                 throw ContextStack.clearStackAndNullPointer();
             } else if (item instanceof Expression) {
-                pair = SQLs._itemPair(field, null, (Expression) item);
+                pair = Armies._itemPair(field, null, (Expression) item);
             } else if (item instanceof ItemPair) {
                 pair = (ItemPair) item;
             } else {
@@ -1119,7 +1120,7 @@ abstract class CriteriaSupports {
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
-            list.add((ArmyExpression) SQLs._nullableExp(exp));
+            list.add((ArmyExpression) Armies._nullableExp(exp));
             return this;
         }
 

@@ -4,7 +4,7 @@ package io.army.session.reactive.standard;
 import io.army.criteria.BatchUpdate;
 import io.army.criteria.Expression;
 import io.army.criteria.Update;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion;
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class DomainUpdateTests extends SessionSupport {

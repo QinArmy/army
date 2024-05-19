@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.standard;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.mapping.optional.NoCastBigDecimalType;
@@ -740,23 +741,23 @@ abstract class SQLSyntax extends Functions {
     }
 
     public static ItemPair plusEqual(final SqlField field, final Expression value) {
-        return SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, value);
+        return Armies._itemPair(field, AssignOperator.PLUS_EQUAL, value);
     }
 
     public static ItemPair minusEqual(final SqlField field, final Expression value) {
-        return SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, value);
+        return Armies._itemPair(field, AssignOperator.MINUS_EQUAL, value);
     }
 
     public static ItemPair timesEqual(final SqlField field, final Expression value) {
-        return SQLs._itemPair(field, AssignOperator.TIMES_EQUAL, value);
+        return Armies._itemPair(field, AssignOperator.TIMES_EQUAL, value);
     }
 
     public static ItemPair divideEqual(final SqlField field, final Expression value) {
-        return SQLs._itemPair(field, AssignOperator.DIVIDE_EQUAL, value);
+        return Armies._itemPair(field, AssignOperator.DIVIDE_EQUAL, value);
     }
 
     public static ItemPair modeEqual(final SqlField field, final Expression value) {
-        return SQLs._itemPair(field, AssignOperator.MODE_EQUAL, value);
+        return Armies._itemPair(field, AssignOperator.MODE_EQUAL, value);
     }
 
 

@@ -22,7 +22,7 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.UpdateStatement;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.SimpleTableMeta;
 import io.army.meta.TableMeta;

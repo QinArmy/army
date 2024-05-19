@@ -18,7 +18,7 @@ package io.army.criteria.standard.unit;
 
 import io.army.criteria.NonLateralException;
 import io.army.criteria.Select;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
@@ -34,7 +34,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class StandardQueryUnitTests extends StandardUnitTests {
 

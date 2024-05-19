@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sync.SyncLocalSession;
@@ -18,8 +18,8 @@ import java.util.Map;
 
 import static io.army.criteria.impl.MySQLs.atAtGlobal;
 import static io.army.criteria.impl.MySQLs.atAtSession;
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.standard.SQLs.AS;
+import static io.army.criteria.standard.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
 public class VariableTests extends SessionTestSupport {

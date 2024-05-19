@@ -16,9 +16,9 @@
 
 package io.army.criteria.impl.inner.mysql;
 
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._Triple;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.standard.SQLs;
 
 import java.util.List;
 

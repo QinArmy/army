@@ -21,6 +21,7 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
+import io.army.criteria.standard.*;
 import io.army.dialect.Database;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLType;
@@ -65,7 +66,7 @@ public abstract class _SQLConsultant {
         if (cte instanceof CriteriaContexts.RecursiveCte) {
             return;
         }
-        if (!(cte instanceof SQLs.CteImpl)) {
+        if (!(cte instanceof CteImpl)) {
             throw illegalCteImpl(cte);
         }
     }

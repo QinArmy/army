@@ -16,6 +16,7 @@
 
 package io.army.criteria.impl;
 
+import io.army.criteria.standard.StandardQueries;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 
@@ -25,7 +26,7 @@ import io.army.dialect.Dialect;
  *
  * @since 0.6.0
  */
-enum StandardDialect implements Dialect {
+public enum StandardDialect implements Dialect {
 
     STANDARD10(10),
     STANDARD20(20);

@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.standard;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._DomainDelete;
-import io.army.criteria.standard.StandardCtes;
-import io.army.criteria.standard.StandardDelete;
-import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.ChildTableMeta;

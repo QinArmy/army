@@ -5,6 +5,7 @@ import io.army.criteria.SimpleExpression;
 import io.army.criteria.Support;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.standard.SQLFunction;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
 
@@ -273,7 +274,7 @@ public abstract class Windows {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _WindowAggSpec countAsterisk() {
-        return count(SQLs._ASTERISK_EXP);
+        return count(Expressions._ASTERISK_EXP);
     }
 
     /**

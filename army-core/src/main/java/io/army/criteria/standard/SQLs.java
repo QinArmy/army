@@ -14,30 +14,17 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.standard;
 
-import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner.*;
-import io.army.criteria.standard.StandardDelete;
-import io.army.criteria.standard.StandardInsert;
-import io.army.criteria.standard.StandardQuery;
-import io.army.criteria.standard.StandardUpdate;
+import io.army.criteria.impl.*;
 import io.army.dialect._Constant;
-import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
-import io.army.modelgen._MetaBridge;
-import io.army.util._Collections;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -92,14 +79,10 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordMaterialized NOT_MATERIALIZED = SqlWords.KeyWordMaterialized.NOT_MATERIALIZED;
 
-    /**
-     * package field
-     */
-    static final AscDesc ASC = SqlWords.KeyWordAscDesc.ASC;
-    /**
-     * package field
-     */
-    static final AscDesc DESC = SqlWords.KeyWordAscDesc.DESC;
+
+    public static final AscDesc ASC = SqlWords.KeyWordAscDesc.ASC;
+
+    public static final AscDesc DESC = SqlWords.KeyWordAscDesc.DESC;
 
 
     public static final WordAs AS = SqlWords.KeyWordAs.AS;
@@ -293,20 +276,15 @@ public abstract class SQLs extends SQLSyntax {
     }
 
 
-    /**
-     * package field
-     */
-    static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
+    static final UnaryOperator<Select> SELECT_IDENTITY = Armies::identity;
 
-    static final UnaryOperator<Select> SELECT_IDENTITY = SQLs::identity;
-
-    static final UnaryOperator<SubQuery> SUB_QUERY_IDENTITY = SQLs::identity;
+    static final UnaryOperator<SubQuery> SUB_QUERY_IDENTITY = Armies::identity;
 
     static final Function<SubQuery, Expression> SCALAR_SUB_QUERY = Expressions::scalarExpression;
 
-    static final UnaryOperator<Insert> INSERT_IDENTITY = SQLs::identity;
+    static final UnaryOperator<Insert> INSERT_IDENTITY = Armies::identity;
 
-    static final UnaryOperator<Insert> UPDATE_IDENTITY = SQLs::identity;
+    static final UnaryOperator<Insert> UPDATE_IDENTITY = Armies::identity;
 
 
     public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert() {
@@ -425,165 +403,6 @@ public abstract class SQLs extends SQLSyntax {
 
 
     /*-------------------below package method-------------------*/
-
-    static AssignmentItem _assignmentItem(final SqlField field, final @Nullable Object value) {
-        final AssignmentItem item;
-        if (value instanceof AssignmentItem) {
-            item = (AssignmentItem) value;
-        } else {
-            item = SQLs.param(field, value);
-        }
-        return item;
-    }
-
-    static Expression _nonNullExp(final @Nullable Object value) {
-        if (value == null) {
-            throw ContextStack.clearStackAndCriteriaError("appropriate operator don't allow that operand is null");
-        }
-        if (value instanceof Expression) {
-            return (Expression) value;
-        }
-
-        if (value instanceof RightOperand) {
-            String m = String.format("appropriate operator don't allow that operand is %s",
-                    value.getClass().getName());
-            throw new CriteriaException(m);
-        }
-        return SQLs.paramValue(value);
-    }
-
-    static Expression _nullableExp(final @Nullable Object value) {
-        final Expression exp;
-        if (value == null) {
-            exp = SQLs.NULL;
-        } else if (value instanceof Expression) {
-            exp = (Expression) value;
-        } else if (value instanceof RightOperand) {
-            String m = String.format("appropriate operator don't allow that operand is %s",
-                    value.getClass().getName());
-            throw new CriteriaException(m);
-        } else {
-            exp = SQLs.paramValue(value);
-        }
-        return exp;
-    }
-
-    static Expression _nonNullLiteral(final @Nullable Object value) {
-        if (value == null) {
-            throw ContextStack.clearStackAndCriteriaError("appropriate operator don't allow that operand is null");
-        }
-        if (value instanceof Expression) {
-            return (Expression) value;
-        }
-        return SQLs.literalValue(value);
-    }
-
-    static Expression _nullableLiteral(final @Nullable Object value) {
-        final Expression expression;
-        if (value == null) {
-            expression = SQLs.NULL;
-        } else if (value instanceof Expression) {
-            expression = (Expression) value;
-        } else {
-            expression = SQLs.literalValue(value);
-        }
-        return expression;
-    }
-
-
-    /**
-     * <p>
-     * package method that is used by army developer.
-     * *
-     *
-     * @param value {@link Expression} or parameter.
-     * @see #plusEqual(SqlField, Expression)
-     */
-    static SQLs.ArmyItemPair _itemPair(final @Nullable SqlField field, final @Nullable AssignOperator operator,
-                                       final @Nullable Expression value) {
-        if (field == null || value == null) {
-            throw ContextStack.clearStackAndNullPointer();
-        }
-        //TODO right operand non-null validate
-        final SQLs.ArmyItemPair itemPair;
-        if (operator == null) {
-            itemPair = new SQLs.FieldItemPair(field, (ArmyExpression) value);
-        } else {
-            itemPair = new SQLs.OperatorItemPair(field, operator, (ArmyExpression) value);
-        }
-        return itemPair;
-    }
-
-    /**
-     * <p>
-     * package method that is used by army developer.
-     */
-    static _ItemPair _itemExpPair(final SqlField field, @Nullable Expression value) {
-        assert value != null;
-        return SQLs._itemPair(field, null, value);
-    }
-
-    static ItemPair _itemPair(List<? extends SqlField> fieldList, SubQuery subQuery) {
-        return new SQLs.RowItemPair(fieldList, subQuery);
-    }
-
-
-    /**
-     * <p>
-     * This method is similar to {@link Function#identity()}, except that use method reference.
-     * *
-     *
-     * @see Function#identity()
-     */
-    static <T extends Item> T identity(T t) {
-        return t;
-    }
-
-
-    static Item castCriteria(Item stmt) {
-        throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-    }
-
-
-    @Deprecated
-    static BatchUpdate _batchUpdateIdentity(UpdateStatement update) {
-        return (BatchUpdate) update;
-    }
-
-    static BatchDelete _batchDeleteIdentity(DeleteStatement delete) {
-        return (BatchDelete) delete;
-    }
-
-
-    static <I extends Item> Function<TypeInfer, I> _toSelection(final Function<Selection, I> function) {
-        return t -> {
-            if (!(t instanceof Selection)) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            return function.apply((Selection) t);
-        };
-    }
-
-    static <I extends Item> Function<TypeInfer, I> _ToExp(final Function<Expression, I> function) {
-        return t -> {
-            if (!(t instanceof Expression)) {
-                throw ContextStack.clearStackAndCastCriteriaApi();
-            }
-            return function.apply((Expression) t);
-        };
-    }
-
-
-
-
-
-    static String keyWordsToString(Enum<?> wordEnum) {
-        return _StringUtils.builder(20)
-                .append(SQLs.class.getSimpleName())
-                .append(_Constant.PERIOD)
-                .append(wordEnum.name())
-                .toString();
-    }
 
 
     public interface Modifier extends Query.SelectModifier {
@@ -879,256 +698,6 @@ public abstract class SQLs extends SQLSyntax {
     /*-------------------below package method-------------------*/
 
 
-    static abstract class ArmyItemPair implements _ItemPair {
-
-        final RightOperand right;
-
-        private ArmyItemPair(RightOperand right) {
-            this.right = right;
-        }
-    }//ArmyItemPair
-
-    /**
-     * @see #_itemPair(SqlField, AssignOperator, Expression)
-     */
-    static class FieldItemPair extends ArmyItemPair implements _ItemPair._FieldItemPair {
-
-        final SqlField field;
-
-        private FieldItemPair(SqlField field, ArmyExpression value) {
-            super(value);
-            this.field = field;
-        }
-
-        @Override
-        public final void appendItemPair(final StringBuilder sqlBuilder, final _SetClauseContext context) {
-            final SqlField field = this.field;
-            final _Expression right = (_Expression) this.right;
-
-            if (right == SQLs.UPDATE_TIME_PARAM_PLACEHOLDER) {
-                if (this instanceof OperatorItemPair) {
-                    throw placeholderError("UPDATE_TIME_PARAM_PLACEHOLDER");
-                }
-                context.appendSetLeftItem(field, right); //  append left item
-            } else if (right == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
-                if (this instanceof OperatorItemPair) {
-                    throw placeholderError("UPDATE_TIME_LITERAL_PLACEHOLDER");
-                }
-                context.appendSetLeftItem(field, right); //  append left item
-            } else {
-                context.appendSetLeftItem(field, null); //  append left item
-                //2. append operator
-                if (this instanceof OperatorItemPair) {
-                    ((OperatorItemPair) this).operator
-                            .appendOperator(field, sqlBuilder, context);
-                } else {
-                    sqlBuilder.append(_Constant.SPACE_EQUAL);
-                }
-                //3. append right item
-                ((_Expression) this.right).appendSql(sqlBuilder, context);
-            }
-
-
-        }
-
-
-        @Override
-        public final SqlField field() {
-            return this.field;
-        }
-
-        @Override
-        public final _Expression value() {
-            return (_Expression) this.right;
-        }
-
-        @Override
-        public final String toString() {
-            final StringBuilder builder = new StringBuilder();
-            builder.append(this.field);
-            if (this instanceof OperatorItemPair) {
-                builder.append(((OperatorItemPair) this).operator);
-            } else {
-                builder.append(_Constant.SPACE_EQUAL);
-            }
-            builder.append(this.right);
-            return builder.toString();
-        }
-
-        private CriteriaException placeholderError(final String name) {
-            String m = String.format("SQLs.%s don't support %s", name, ((OperatorItemPair) this).operator.name());
-            throw new CriteriaException(m);
-        }
-
-    }//FieldItemPair
-
-    private static final class OperatorItemPair extends FieldItemPair {
-
-        final AssignOperator operator;
-
-        private OperatorItemPair(SqlField field, AssignOperator operator, ArmyExpression value) {
-            super(field, value);
-            this.operator = operator;
-        }
-
-
-    }//OperatorItemPair
-
-    static final class RowItemPair extends ArmyItemPair implements _ItemPair._RowItemPair {
-
-        final List<SqlField> fieldList;
-
-        private RowItemPair(List<? extends SqlField> fieldList, SubQuery subQuery) {
-            super(subQuery);
-            final int selectionCount;
-            selectionCount = ((_RowSet) subQuery).selectionSize();
-            if (fieldList.size() != selectionCount) {
-                String m = String.format("Row column count[%s] and selection count[%s] of SubQuery not match."
-                        , fieldList.size(), selectionCount);
-                throw new CriteriaException(m);
-            }
-            final List<SqlField> tempList = _Collections.arrayList(fieldList.size());
-            for (SqlField field : fieldList) {
-                if (!(field instanceof TableField)) {
-                    tempList.add(field);
-                    continue;
-                }
-                if (((TableField) field).updateMode() == UpdateMode.IMMUTABLE) {
-                    throw _Exceptions.immutableField(field);
-                }
-                final String fieldName = field.fieldName();
-                if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
-                    throw _Exceptions.armyManageField((TableField) field);
-                }
-                tempList.add(field);
-            }
-            this.fieldList = Collections.unmodifiableList(tempList);
-        }
-
-        @Override
-        public void appendItemPair(final StringBuilder sqlBuilder, final _SetClauseContext context) {
-            final List<? extends SqlField> fieldList = this.fieldList;
-            final int fieldSize = fieldList.size();
-            //1. append left paren
-            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-            //2. append field list
-            for (int i = 0; i < fieldSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                context.appendSetLeftItem(fieldList.get(i), null);
-            }
-            //3. append right paren
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
-            //4. append '='
-            sqlBuilder.append(_Constant.SPACE_EQUAL);
-
-            //5. append sub query
-            context.appendSubQuery((SubQuery) this.right);
-
-        }
-
-        @Override
-        public List<? extends SqlField> rowFieldList() {
-            return this.fieldList;
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder builder = new StringBuilder();
-
-            //1. append left paren
-            builder.append(_Constant.SPACE_LEFT_PAREN);
-            final List<? extends SqlField> fieldList = this.fieldList;
-            final int fieldSize = fieldList.size();
-            //2. append field list
-            for (int i = 0; i < fieldSize; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                builder.append(fieldList.get(i));
-            }
-            //3. append right paren
-            builder.append(_Constant.SPACE_RIGHT_PAREN);
-
-            //4. append '='
-            builder.append(_Constant.SPACE_EQUAL);
-
-            //5. append sub query
-            builder.append(this.right);
-            return builder.toString();
-        }
-
-    }//RowItemPair
-
-
-    static final class CteImpl implements _Cte {
-
-        final String name;
-
-        final List<String> columnNameList;
-
-        final SubStatement subStatement;
-
-        private final _SelectionMap selectionMap;
-
-        CteImpl(String name, SubStatement subStatement) {
-            this(name, Collections.emptyList(), subStatement);
-        }
-
-        /**
-         * @param columnNameList unmodified list
-         */
-        CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
-            this.name = name;
-            this.columnNameList = columnNameList;
-            this.subStatement = subStatement;
-
-            if (!(subStatement instanceof DerivedTable)) {
-                throw CriteriaUtils.subDmlNoReturningClause(name);
-            } else if (this.columnNameList.size() == 0) {
-                this.selectionMap = (_DerivedTable) subStatement;
-            } else {
-                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnNameList,
-                        ((_DerivedTable) subStatement).refAllSelection(), name);
-            }
-
-        }
-
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-
-        @Override
-        public List<String> columnAliasList() {
-            return this.columnNameList;
-        }
-
-        @Override
-        public SubStatement subStatement() {
-            return this.subStatement;
-        }
-
-        @Override
-        public List<? extends Selection> refAllSelection() {
-            return this.selectionMap.refAllSelection();
-        }
-
-
-        @Override
-        public Selection refSelection(final String name) {
-            return this.selectionMap.refSelection(name);
-        }
-
-
-    }//CteImpl
-
-
-
-
     /**
      * <p>
      * This class representing sql {@code DEFAULT} key word.
@@ -1163,34 +732,7 @@ public abstract class SQLs extends SQLSyntax {
         }
 
 
-    }// DefaultWord
-
-    /**
-     * @see SQLs#_ASTERISK_EXP
-     */
-    private static final class LiteralSymbolAsterisk extends NonOperationExpression
-            implements FunctionArg.SingleFunctionArg {
-
-        private LiteralSymbolAsterisk() {
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
-            sqlBuilder.append(" *");
-        }
-
-        @Override
-        public String toString() {
-            return " *";
-        }
-
-
-    }//LiteralSymbolAsterisk
+    } // DefaultWord
 
 
 }

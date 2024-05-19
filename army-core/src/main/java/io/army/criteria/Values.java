@@ -16,7 +16,7 @@
 
 package io.army.criteria;
 
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -37,7 +37,7 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp nullable, one of following :
          *            <ul>
          *              <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *              <li>literal</li>
          *            </ul>
          * @throws CriteriaException throw when exp error.
@@ -48,13 +48,13 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -71,19 +71,19 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp3 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -94,25 +94,25 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp3 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp4 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -149,7 +149,7 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp nullable, one of following :
          *            <ul>
          *              <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *              <li>literal</li>
          *            </ul>
          * @throws CriteriaException throw when exp error.
@@ -160,13 +160,13 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -177,19 +177,19 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp3 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -200,25 +200,25 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp3 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp4 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -250,7 +250,7 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp nullable, one of following :
          *            <ul>
          *              <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *              <li>literal</li>
          *            </ul>
          * @throws CriteriaException throw when exp error.
@@ -261,13 +261,13 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -278,19 +278,19 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp3 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.
@@ -301,25 +301,25 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
          * @param exp1 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp2 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp3 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @param exp4 nullable, one of following :
          *             <ul>
          *               <li>null</li>
-         *              <li>{@link Expression} instance,but {@link io.army.criteria.impl.SQLs#DEFAULT}</li>
+         *              <li>{@link Expression} instance,but {@link SQLs#DEFAULT}</li>
          *               <li>literal</li>
          *             </ul>
          * @throws CriteriaException throw when exp error.

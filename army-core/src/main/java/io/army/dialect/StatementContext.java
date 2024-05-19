@@ -17,7 +17,7 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;

@@ -21,7 +21,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
 import io.army.criteria.UpdateStatement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util.ClassUtils;

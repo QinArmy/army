@@ -18,7 +18,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
 import io.army.criteria.UpdateStatement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 

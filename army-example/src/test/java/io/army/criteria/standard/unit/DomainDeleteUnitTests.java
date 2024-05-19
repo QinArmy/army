@@ -17,7 +17,7 @@
 package io.army.criteria.standard.unit;
 
 import io.army.criteria.DeleteStatement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.util._Collections;
@@ -27,8 +27,8 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLs.AND;
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AND;
+import static io.army.criteria.standard.SQLs.AS;
 
 
 public class DomainDeleteUnitTests extends StandardUnitTests {

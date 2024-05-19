@@ -21,6 +21,7 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLValues;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 
 import javax.annotation.Nullable;

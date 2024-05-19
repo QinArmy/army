@@ -19,7 +19,7 @@ package io.army.criteria.impl;
 import io.army.dialect.Database;
 import io.army.util._Exceptions;
 
-enum DualExpOperator implements Operator.SqlDualExpressionOperator {
+public enum DualExpOperator implements Operator.SqlDualExpressionOperator {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>

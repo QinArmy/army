@@ -44,17 +44,17 @@ import java.util.function.Supplier;
  *
  * @since 0.6.0
  */
-abstract class RowExpressions {
+public abstract class RowExpressions {
 
     private RowExpressions() {
         throw new UnsupportedOperationException();
     }
 
-    static RowExpression emptyRow() {
+    public static RowExpression emptyRow() {
         return new ImmutableRowConstructor(_Collections.emptyList(), 0);
     }
 
-    static RowExpression row(final @Nullable SubQuery query) {
+    public static RowExpression row(final @Nullable SubQuery query) {
         if (query == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -63,7 +63,7 @@ abstract class RowExpressions {
         );
     }
 
-    static RowExpression row(final Object element) {
+    public static RowExpression row(final Object element) {
         final Object actualElement;
         if (element instanceof Supplier) {
             actualElement = ((Supplier<?>) element).get();
@@ -75,13 +75,13 @@ abstract class RowExpressions {
         );
     }
 
-    static RowExpression row(final Object element1, final Object element2) {
+    public static RowExpression row(final Object element1, final Object element2) {
         final int columnSize;
         columnSize = rowElementColumnSize(element1) + rowElementColumnSize(element2);
         return new ImmutableRowConstructor(ArrayUtils.of(element1, element2), columnSize);
     }
 
-    static RowExpression row(final Object element1, final Object element2, final Object element3, final Object... rest) {
+    public static RowExpression row(final Object element1, final Object element2, final Object element3, final Object... rest) {
 
         int columnSize = 0;
 
@@ -99,7 +99,7 @@ abstract class RowExpressions {
         return new ImmutableRowConstructor(elementList, columnSize);
     }
 
-    static RowExpression row(Consumer<Consumer<Object>> consumer) {
+    public static RowExpression row(Consumer<Consumer<Object>> consumer) {
         final List<Object> elementList = _Collections.arrayList();
         final int[] columnSizeHolder = new int[]{0};
         consumer.accept(e -> {
@@ -112,7 +112,7 @@ abstract class RowExpressions {
     }
 
 
-    static void validateColumnSize(final SQLColumnSet left, final SQLColumnSet right) {
+    public static void validateColumnSize(final SQLColumnSet left, final SQLColumnSet right) {
         if (right instanceof SubQuery) {
             Expressions.validateSubQueryContext((SubQuery) right);
         }

@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
@@ -41,13 +42,13 @@ import java.util.Objects;
  * @see ArmyRowLiteralExpression
  * @since 0.6.0
  */
-abstract class ArmyParamExpression extends OperationExpression.OperationDefiniteExpression
+public abstract class ArmyParamExpression extends OperationExpression.OperationDefiniteExpression
         implements ParamExpression {
 
     /**
      * @see SQLs#paramValue(Object)
      */
-    static ArmyParamExpression from(final @Nullable Object value) {
+    public static ArmyParamExpression from(final @Nullable Object value) {
         if (value == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -64,7 +65,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
      * @throws CriteriaException throw when infer return codec {@link TableField}.
      * @see SQLs#param(TypeInfer, Object)
      */
-    static ArmyParamExpression single(final @Nullable TypeInfer infer, final @Nullable Object value) {
+    public static ArmyParamExpression single(final @Nullable TypeInfer infer, final @Nullable Object value) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -82,7 +83,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
      *                           </ul>
      * @see SQLs#namedParam(TypeInfer, String)
      */
-    static ArmyParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name) {
+    public static ArmyParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -102,7 +103,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
      *                           </ul>
      * @see SQLs#namedNullableParam(TypeInfer, String)
      */
-    static ArmyParamExpression namedNullable(@Nullable TypeInfer infer, @Nullable String name) {
+    public static ArmyParamExpression namedNullable(@Nullable TypeInfer infer, @Nullable String name) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -119,7 +120,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
      * @throws CriteriaException throw when infer isn't codec {@link TableField}.
      * @see SQLs#encodingParam(TypeInfer, Object)
      */
-    static ArmyParamExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value) {
+    public static ArmyParamExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
@@ -136,7 +137,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
      *                           </ul>
      * @see SQLs#encodingNamedParam(TypeInfer, String)
      */
-    static ArmyParamExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name) {
+    public static ArmyParamExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -154,7 +155,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
      *                           </ul>
      * @see SQLs#encodingNamedNullableParam(TypeInfer, String)
      */
-    static ArmyParamExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
+    public static ArmyParamExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -166,13 +167,13 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
     }
 
 
-    static CriteriaException typeInferReturnCodecField(String methodName) {
+    public static CriteriaException typeInferReturnCodecField(String methodName) {
         String m = String.format("infer return codec field,you should invoke %s.%s(TypeInfer,Object)",
                 SQLs.class.getName(), methodName);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException typeInferIsNotCodecField(String methodName) {
+    public static CriteriaException typeInferIsNotCodecField(String methodName) {
         String m = String.format("infer isn't codec field,you should invoke %s.%s(TypeInfer,Object)",
                 SQLs.class.getName(), methodName);
         return ContextStack.clearStackAndCriteriaError(m);
@@ -246,8 +247,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof AnonymousParam) {
-                final AnonymousParam o = (AnonymousParam) obj;
+            } else if (obj instanceof AnonymousParam o) {
                 match = o.type.equals(this.type)
                         && Objects.equals(o.value, this.value);
             } else {
@@ -306,8 +306,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof ImmutableNamedParam) {
-                final ImmutableNamedParam o = (ImmutableNamedParam) obj;
+            } else if (obj instanceof ImmutableNamedParam o) {
                 match = (o instanceof ImmutableNamedNonNullParam == this instanceof ImmutableNamedNonNullParam)
                         && o.name.equals(this.name)
                         && o.type.equals(this.type);

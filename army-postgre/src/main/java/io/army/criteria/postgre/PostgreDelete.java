@@ -17,7 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.TableMeta;
 
 import javax.annotation.Nullable;

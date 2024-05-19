@@ -17,7 +17,6 @@
 package io.army.criteria.standard;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;

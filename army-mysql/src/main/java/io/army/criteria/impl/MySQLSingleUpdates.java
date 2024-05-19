@@ -25,6 +25,7 @@ import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;

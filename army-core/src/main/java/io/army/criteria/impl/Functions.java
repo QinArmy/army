@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
@@ -43,13 +44,13 @@ import java.util.function.UnaryOperator;
  * @see SQLs
  */
 @SuppressWarnings("unused")
-abstract class Functions {
+public abstract class Functions {
 
 
     /**
      * package constructor,forbid application developer directly extend this util class.
      */
-    Functions() {
+    protected Functions() {
         throw new UnsupportedOperationException();
     }
 
@@ -216,7 +217,7 @@ abstract class Functions {
      */
     public static SimpleExpression ceil(final Object exp) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(exp);
+        expression = Armies._nonNullLiteral(exp);
         return LiteralFunctions.oneArgFunc("CEIL", expression, _returnType(expression, Functions::_numberOrDecimal));
     }
 
@@ -243,7 +244,7 @@ abstract class Functions {
      */
     public static SimpleExpression conv(final Object expr, final Object fromBase, final Object toBase) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(expr);
+        expression = Armies._nonNullLiteral(expr);
         return LiteralFunctions.threeArgFunc("CONV", expression, fromBase, toBase, expression.typeMeta());
     }
 
@@ -324,7 +325,7 @@ abstract class Functions {
      */
     public static SimpleExpression exp(final Object expr) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(expr);
+        expression = Armies._nonNullLiteral(expr);
         return LiteralFunctions.oneArgFunc("EXP", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
@@ -379,7 +380,7 @@ abstract class Functions {
      */
     public static SimpleExpression ln(final Object x) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(x);
+        expression = Armies._nonNullLiteral(x);
         return LiteralFunctions.oneArgFunc("LN", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
@@ -400,7 +401,7 @@ abstract class Functions {
      */
     public static SimpleExpression log(final Object x) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(x);
+        expression = Armies._nonNullLiteral(x);
         return LiteralFunctions.oneArgFunc("LOG", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
@@ -441,7 +442,7 @@ abstract class Functions {
      */
     public static SimpleExpression log10(final Object x) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(x);
+        expression = Armies._nonNullLiteral(x);
         return LiteralFunctions.oneArgFunc("LOG10", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
@@ -474,7 +475,7 @@ abstract class Functions {
      */
     public static SimpleExpression pow(final Object x, final Object y) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(x);
+        expression = Armies._nonNullLiteral(x);
         return LiteralFunctions.twoArgFunc("POW", expression, y, expression.typeMeta());
     }
 
@@ -638,7 +639,7 @@ abstract class Functions {
      */
     public static SimpleExpression mod(final Object n, final Object m) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(n);
+        expression = Armies._nonNullLiteral(n);
         return LiteralFunctions.twoArgFunc("MOD", expression, m, expression.typeMeta());
     }
 
@@ -656,7 +657,7 @@ abstract class Functions {
      */
     public static SimpleExpression abs(final Object expr) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(expr);
+        expression = Armies._nonNullLiteral(expr);
         return LiteralFunctions.oneArgFunc("ABS", expression, expression.typeMeta());
     }
 
@@ -678,7 +679,7 @@ abstract class Functions {
      */
     public static SimpleExpression sqrt(final Object x) {
         final Expression expression;
-        expression = SQLs._nonNullLiteral(x);
+        expression = Armies._nonNullLiteral(x);
         return LiteralFunctions.oneArgFunc("SQRT", expression, _returnType(expression, Functions::_doubleOrDecimal));
     }
 
@@ -705,7 +706,7 @@ abstract class Functions {
         FuncExpUtils.assertLiteralExp(expr2);
 
         final Expression expression1;
-        expression1 = SQLs._nonNullLiteral(expr1);
+        expression1 = Armies._nonNullLiteral(expr1);
 
         return LiteralFunctions.twoArgFunc("NULLIF", expression1, expr2, expression1.typeMeta());
     }

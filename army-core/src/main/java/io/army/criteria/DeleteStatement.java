@@ -16,7 +16,7 @@
 
 package io.army.criteria;
 
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SingleTableMeta;

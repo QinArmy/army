@@ -19,7 +19,7 @@ package io.army.criteria.postgre;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.MappingType;
 
 import javax.annotation.Nullable;

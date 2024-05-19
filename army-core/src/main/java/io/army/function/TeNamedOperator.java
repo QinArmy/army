@@ -19,7 +19,7 @@ package io.army.function;
 import io.army.criteria.Expression;
 import io.army.criteria.RowExpression;
 import io.army.criteria.TypeInfer;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 
 /**
  * <ul>

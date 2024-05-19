@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 
-abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, WE extends Item, WR, WA, OR, OD, LR, LO, LF>
+public abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, WE extends Item, WR, WA, OR, OD, LR, LO, LF>
         extends WhereClause<WR, WA, OR, OD, LR, LO, LF>
         implements _SingleDelete,
         Statement,
@@ -45,7 +45,7 @@ abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, W
 
     private Boolean prepared;
 
-    SingleDeleteStatement(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+    public SingleDeleteStatement(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
         if (withSpec != null) {

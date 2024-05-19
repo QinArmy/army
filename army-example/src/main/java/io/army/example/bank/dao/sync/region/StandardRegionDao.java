@@ -19,7 +19,7 @@ package io.army.example.bank.dao.sync.region;
 import io.army.criteria.Expression;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
 import io.army.example.bank.domain.user.*;
 import io.army.example.common.BaseService;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AS;
 
 @Repository("bankSyncStandardRegionDao")
 @Profile({BaseService.SYNC, BeanUtils.STANDARD})

@@ -27,7 +27,7 @@ package io.army.criteria.impl;
  *
  * @since 0.6.0
  */
-interface FunctionArg extends ArmySQLExpression {
+public interface FunctionArg extends ArmySQLExpression {
 
     /**
      * <p>
@@ -35,7 +35,7 @@ interface FunctionArg extends ArmySQLExpression {
      * This interface is base interface of below:
      *     <ul>
      *         <li>{@link OperationExpression}</li>
-     *         <li>{@link SQLs#_ASTERISK_EXP}</li>
+     *         <li>{@link Expressions#_ASTERISK_EXP}</li>
      *         <li>{@link ArmyRowExpression}</li>
      *     </ul>
      *

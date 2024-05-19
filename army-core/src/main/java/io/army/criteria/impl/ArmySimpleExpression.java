@@ -16,6 +16,8 @@
 
 package io.army.criteria.impl;
 
+import io.army.criteria.standard.SQLs;
+
 /**
  * <p>
  * Package interface. This interface is base interface of below:

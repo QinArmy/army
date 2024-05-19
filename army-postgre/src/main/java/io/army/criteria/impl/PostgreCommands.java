@@ -4,6 +4,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.dialect.DqlCommand;
 import io.army.criteria.impl.inner.postgre._PostgreCommand;
 import io.army.criteria.postgre.PostgreStatement;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;

@@ -25,7 +25,7 @@ import io.army.criteria.impl.inner._Statement;
  *
  * @since 0.6.0
  */
-interface ArmyStmtSpec extends _Statement._WithClauseSpec, CriteriaContextSpec {
+public interface ArmyStmtSpec extends _Statement._WithClauseSpec, CriteriaContextSpec {
 
 
 }

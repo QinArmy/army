@@ -20,10 +20,10 @@ import io.army.criteria.Expression;
 import io.army.criteria.RowElement;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.postgre.mapping.MyRowType;
 import io.army.criteria.postgre.mapping.MySubRowType;
 import io.army.criteria.postgre.mapping.TwoIntType;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.IntegerType;
 import io.army.mapping.JsonType;
@@ -43,9 +43,9 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import static io.army.criteria.impl.Postgres.*;
-import static io.army.criteria.impl.SQLs.row;
-import static io.army.criteria.impl.SQLs.space;
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.row;
+import static io.army.criteria.standard.SQLs.space;
+import static io.army.criteria.standard.SQLs.*;
 
 public class JsonFuncUnitTests extends PostgreUnitTests {
 

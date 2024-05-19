@@ -20,7 +20,7 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.BatchUpdate;
 import io.army.criteria.Expression;
 import io.army.criteria.Update;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.pill.domain.PillPerson_;
@@ -35,7 +35,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 
 public class DomainUpdateUnitTests extends StandardUnitTests {

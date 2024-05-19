@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.standard.SQLFunction;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.*;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;

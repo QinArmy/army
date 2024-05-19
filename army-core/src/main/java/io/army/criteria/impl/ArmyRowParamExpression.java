@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
@@ -44,7 +45,7 @@ import java.util.Objects;
  * @see ArmyRowLiteralExpression
  * @since 0.6.0
  */
-abstract class ArmyRowParamExpression extends OperationRowExpression
+public abstract class ArmyRowParamExpression extends OperationRowExpression
         implements RowParamExpression, ArmySimpleSQLExpression {
 
     /**
@@ -54,7 +55,7 @@ abstract class ArmyRowParamExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#rowParam(TypeInfer, Collection)
      */
-    static ArmyRowParamExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    public static ArmyRowParamExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -76,7 +77,7 @@ abstract class ArmyRowParamExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#namedRowParam(TypeInfer, String, int)
      */
-    static ArmyRowParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+    public static ArmyRowParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -97,7 +98,7 @@ abstract class ArmyRowParamExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#encodingRowParam(TypeInfer, Collection)
      */
-    static ArmyRowParamExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    public static ArmyRowParamExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
@@ -118,7 +119,7 @@ abstract class ArmyRowParamExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#encodingNamedRowParam(TypeInfer, String, int)
      */
-    static ArmyRowParamExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+    public static ArmyRowParamExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {

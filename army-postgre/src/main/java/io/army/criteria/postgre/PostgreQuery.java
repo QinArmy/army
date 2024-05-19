@@ -22,7 +22,7 @@ import io.army.criteria.LiteralExpression;
 import io.army.criteria.Query;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 
 import javax.annotation.Nullable;
 import java.util.function.BiConsumer;

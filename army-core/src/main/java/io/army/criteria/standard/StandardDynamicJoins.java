@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.standard;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
-import io.army.criteria.standard.StandardCrosses;
-import io.army.criteria.standard.StandardJoins;
-import io.army.criteria.standard.StandardStatement;
 import io.army.meta.TableMeta;
 
 import javax.annotation.Nullable;

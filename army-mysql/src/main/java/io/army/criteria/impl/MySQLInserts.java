@@ -23,6 +23,7 @@ import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
@@ -272,17 +273,17 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, Expression value) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, value));
+            return this.onAddItemPair(Armies._itemPair(field, null, value));
         }
 
         @Override
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, Supplier<Expression> supplier) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, supplier.get()));
+            return this.onAddItemPair(Armies._itemPair(field, null, supplier.get()));
         }
 
         @Override
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, function.apply(field)));
+            return this.onAddItemPair(Armies._itemPair(field, null, function.apply(field)));
         }
 
 
@@ -351,19 +352,19 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, Expression value) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, value));
+            return this.onAddItemPair(Armies._itemPair(field, null, value));
         }
 
         @Override
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field,
                                                                         Supplier<Expression> supplier) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, supplier.get()));
+            return this.onAddItemPair(Armies._itemPair(field, null, supplier.get()));
         }
 
         @Override
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field,
                                                                         Function<FieldMeta<T>, Expression> function) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, function.apply(field)));
+            return this.onAddItemPair(Armies._itemPair(field, null, function.apply(field)));
         }
 
         @Override
@@ -396,7 +397,7 @@ abstract class MySQLInserts extends InsertSupports {
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, Supplier<Expression> supplier) {
             final Expression value;
             if ((value = supplier.get()) != null) {
-                this.onAddItemPair(SQLs._itemPair(field, null, value));
+                this.onAddItemPair(Armies._itemPair(field, null, value));
             }
             return this;
         }
@@ -406,7 +407,7 @@ abstract class MySQLInserts extends InsertSupports {
                                                                           Function<FieldMeta<T>, Expression> function) {
             final Expression value;
             if ((value = function.apply(field)) != null) {
-                this.onAddItemPair(SQLs._itemPair(field, null, value));
+                this.onAddItemPair(Armies._itemPair(field, null, value));
             }
             return this;
         }
@@ -493,7 +494,7 @@ abstract class MySQLInserts extends InsertSupports {
             if (item == null) {
                 throw ContextStack.nullPointer(this.clause.context);
             } else if (item instanceof Expression) {
-                pair = SQLs._itemPair(field, null, (Expression) item);
+                pair = Armies._itemPair(field, null, (Expression) item);
             } else if (item instanceof ItemPair) {
                 pair = (ItemPair) item;
             } else {

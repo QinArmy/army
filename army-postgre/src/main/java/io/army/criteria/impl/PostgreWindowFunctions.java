@@ -21,6 +21,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.SQLFunction;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 import io.army.mapping.array.DoubleArrayType;
 import io.army.mapping.array.IntervalArrayType;
@@ -940,7 +941,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see #countAsterisk()
      */
     public static _AggWindowFunc countAsterisk() {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("count", SQLs._ASTERISK_EXP, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgAggWindowFunc("count", Expressions._ASTERISK_EXP, LongType.INSTANCE);
     }
 
     /**

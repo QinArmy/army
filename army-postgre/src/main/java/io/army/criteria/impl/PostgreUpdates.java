@@ -23,6 +23,7 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreUpdate;
 import io.army.criteria.postgre.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.dialect._DialectUtils;
 import io.army.mapping.MappingType;

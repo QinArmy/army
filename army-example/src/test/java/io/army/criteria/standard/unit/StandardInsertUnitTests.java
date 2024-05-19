@@ -19,7 +19,7 @@ package io.army.criteria.standard.unit;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.util._Collections;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AS;
 
 public class StandardInsertUnitTests extends StandardUnitTests {
 

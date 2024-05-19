@@ -20,7 +20,6 @@ import io.army.criteria.Item;
 import io.army.criteria.Query;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.SQLs;
 
 import java.util.function.Function;
 

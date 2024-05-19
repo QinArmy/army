@@ -5,7 +5,7 @@ import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.AND;
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AND;
+import static io.army.criteria.standard.SQLs.AS;
 
 
 /**

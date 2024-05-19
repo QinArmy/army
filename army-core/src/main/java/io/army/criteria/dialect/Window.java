@@ -20,7 +20,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.Statement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.IntegerType;
 import io.army.mapping.LongType;
 

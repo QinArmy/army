@@ -17,6 +17,7 @@
 package io.army.criteria;
 
 
+import io.army.criteria.standard.SQLs;
 import io.army.function.ExpressionOperator;
 
 import javax.annotation.Nullable;
@@ -171,10 +172,10 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
         /**
          * @param numberOperand see <ul>
-         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_DECIMAL_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_DECIMAL_0}</li>
+         *                      <li>{@link SQLs#LITERAL_0}</li>
+         *                      <li>{@link SQLs#LITERAL_DECIMAL_0}</li>
+         *                      <li>{@link SQLs#PARAM_0}</li>
+         *                      <li>{@link SQLs#PARAM_DECIMAL_0}</li>
          *                      </ul>
          */
         <T> WA and(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
@@ -183,10 +184,10 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
         /**
          * @param numberOperand see <ul>
-         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_DECIMAL_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_DECIMAL_0}</li>
+         *                      <li>{@link SQLs#LITERAL_0}</li>
+         *                      <li>{@link SQLs#LITERAL_DECIMAL_0}</li>
+         *                      <li>{@link SQLs#PARAM_0}</li>
+         *                      <li>{@link SQLs#PARAM_DECIMAL_0}</li>
          *                      </ul>
          */
         <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
@@ -195,10 +196,10 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
         /**
          * @param numberOperand see <ul>
-         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#LITERAL_DECIMAL_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_0}</li>
-         *                      <li>{@link io.army.criteria.impl.SQLs#PARAM_DECIMAL_0}</li>
+         *                      <li>{@link SQLs#LITERAL_0}</li>
+         *                      <li>{@link SQLs#LITERAL_DECIMAL_0}</li>
+         *                      <li>{@link SQLs#PARAM_0}</li>
+         *                      <li>{@link SQLs#PARAM_DECIMAL_0}</li>
          *                      </ul>
          */
         WA and(Function<BiFunction<SqlField, String, Expression>, Expression> fieldOperator,

@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static io.army.criteria.impl.SQLs.UNBOUNDED_FOLLOWING;
+import static io.army.criteria.standard.SQLs.UNBOUNDED_FOLLOWING;
 
 public class MySQLWindowFuncUnitTests {
 

@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.*;
@@ -35,7 +36,7 @@ import java.util.function.*;
 /**
  * This class is base class of all {@link IPredicate} implementation .
  */
-abstract class OperationPredicate extends OperationExpression.PredicateExpression {
+public abstract class OperationPredicate extends OperationExpression.PredicateExpression {
 
     /**
      * <p>
@@ -678,7 +679,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         return parentId;
     }
 
-    static OperationSimplePredicate bracketPredicate(final IPredicate predicate) {
+    public static OperationSimplePredicate bracketPredicate(final IPredicate predicate) {
         final OperationSimplePredicate result;
         if (predicate instanceof BracketPredicate) {
             result = (BracketPredicate) predicate;
@@ -717,7 +718,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * @see SQLs#TRUE
      * @see SQLs#FALSE
      */
-    static SQLs.WordBooleans booleanWord(final boolean value) {
+    public static SQLs.WordBooleans booleanWord(final boolean value) {
         return value ? BooleanWord.TRUE : BooleanWord.FALSE;
     }
 
@@ -782,7 +783,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * <li>{@link SqlFunctionPredicate}</li>
      * <li>{@link OrPredicate},because OR/XOR operator always have outer parentheses。</li>
      */
-    static abstract class OperationSimplePredicate extends OperationPredicate
+    public static abstract class OperationSimplePredicate extends OperationPredicate
             implements SimplePredicate, ArmySimpleExpression {
 
         /**

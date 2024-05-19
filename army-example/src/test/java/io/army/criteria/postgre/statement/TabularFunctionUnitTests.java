@@ -20,7 +20,7 @@ import io.army.criteria.ArrayExpression;
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.postgre.PostgreTsVectorType;
@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
 
 import static io.army.criteria.impl.Postgres.array;
 import static io.army.criteria.impl.Postgres.unnest;
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class TabularFunctionUnitTests extends PostgreUnitTests {
 

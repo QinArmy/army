@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.SQLs;
 import io.army.function.DialectBooleanOperator;
 import io.army.function.ExpressionOperator;
 import io.army.function.TeFunction;
@@ -45,7 +46,7 @@ import java.util.function.*;
  * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
+public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>
         implements DialectStatement._DynamicWithClause<B, WE>,
         ArmyStmtSpec,

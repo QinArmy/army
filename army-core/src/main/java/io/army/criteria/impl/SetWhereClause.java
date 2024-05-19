@@ -21,6 +21,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -70,7 +71,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
 
     @Override
     public final SR set(F field, Expression value) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, value));
+        return this.onAddItemPair(Armies._itemPair(field, null, value));
     }
 
     @Override
@@ -171,7 +172,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
 
     @Override
     public final SR setSpace(F field, BiFunction<F, String, Expression> valueOperator) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
+        return this.onAddItemPair(Armies._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
     }
 
     @Override
@@ -184,28 +185,28 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
     public final SR setRow(F field1, F field2, Supplier<SubQuery> supplier) {
         final List<F> fieldList;
         fieldList = Arrays.asList(field1, field2);
-        return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
+        return this.onAddItemPair(Armies._itemPair(fieldList, supplier.get()));
     }
 
     @Override
     public final SR setRow(F field1, F field2, F field3, Supplier<SubQuery> supplier) {
         final List<F> fieldList;
         fieldList = Arrays.asList(field1, field2, field3);
-        return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
+        return this.onAddItemPair(Armies._itemPair(fieldList, supplier.get()));
     }
 
     @Override
     public final SR setRow(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier) {
         final List<F> fieldList;
         fieldList = Arrays.asList(field1, field2, field3, field4);
-        return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
+        return this.onAddItemPair(Armies._itemPair(fieldList, supplier.get()));
     }
 
     @Override
     public final SR setRow(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier) {
         final List<F> fieldList = _Collections.arrayList();
         consumer.accept(fieldList::add);
-        return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
+        return this.onAddItemPair(Armies._itemPair(fieldList, supplier.get()));
     }
 
     @Override
@@ -214,7 +215,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         if ((query = supplier.get()) != null) {
             final List<F> fieldList;
             fieldList = Arrays.asList(field1, field2);
-            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+            this.onAddItemPair(Armies._itemPair(fieldList, query));
         }
         return (SR) this;
     }
@@ -225,7 +226,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         if ((query = supplier.get()) != null) {
             final List<F> fieldList;
             fieldList = Arrays.asList(field1, field2, field3);
-            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+            this.onAddItemPair(Armies._itemPair(fieldList, query));
         }
         return (SR) this;
     }
@@ -236,7 +237,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         if ((query = supplier.get()) != null) {
             final List<F> fieldList;
             fieldList = Arrays.asList(field1, field2, field3, field4);
-            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+            this.onAddItemPair(Armies._itemPair(fieldList, query));
         }
         return (SR) this;
     }
@@ -247,7 +248,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         consumer.accept(fieldList::add);
         final SubQuery query;
         if (fieldList.size() > 0 && (query = supplier.get()) != null) {
-            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+            this.onAddItemPair(Armies._itemPair(fieldList, query));
         }
         return (SR) this;
     }
@@ -333,7 +334,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         if (item == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (item instanceof Expression) {
-            pair = SQLs._itemPair(field, null, (Expression) item);
+            pair = Armies._itemPair(field, null, (Expression) item);
         } else if (item instanceof ItemPair) {
             pair = (ItemPair) item;
         } else {

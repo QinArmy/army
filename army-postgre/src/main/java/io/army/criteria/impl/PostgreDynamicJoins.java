@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.PostgreCrosses;
 import io.army.criteria.postgre.PostgreJoins;
 import io.army.criteria.postgre.PostgreStatement;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;

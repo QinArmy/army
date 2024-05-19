@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Select;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.Session;

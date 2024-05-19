@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.mysql.HintStrategy;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 

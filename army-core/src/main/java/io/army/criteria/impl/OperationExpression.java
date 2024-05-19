@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
@@ -44,7 +45,7 @@ import java.util.function.Function;
  *
  * @since 0.6.0
  */
-abstract class OperationExpression extends OperationSQLExpression
+public abstract class OperationExpression extends OperationSQLExpression
         implements FunctionArg.SingleFunctionArg, ArmyExpression {
 
 
@@ -78,7 +79,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
     @Override
     public final CompoundPredicate nullSafeEqual(Expression operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.NULL_SAFE_EQUAL, SQLs._nonNullExp(operand));
+        return Expressions.dualPredicate(this, DualBooleanOperator.NULL_SAFE_EQUAL, Armies._nonNullExp(operand));
     }
 
     @Override
@@ -386,7 +387,7 @@ abstract class OperationExpression extends OperationSQLExpression
         return false;
     }
 
-    static OperationExpression bracketExp(final @Nullable Expression expression) {
+    public static OperationExpression bracketExp(final @Nullable Expression expression) {
         final OperationExpression bracket;
         if (!(expression instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(expression);
@@ -1064,8 +1065,6 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
     }//BracketsExpression
-
-
 
 
 }

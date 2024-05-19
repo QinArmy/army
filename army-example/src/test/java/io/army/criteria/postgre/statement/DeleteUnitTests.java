@@ -23,7 +23,7 @@ import io.army.criteria.Select;
 import io.army.criteria.dialect.BatchReturningDelete;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.HistoryChinaRegion_;
@@ -38,7 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class DeleteUnitTests extends PostgreUnitTests {
 

@@ -21,7 +21,7 @@ import io.army.criteria.BatchUpdate;
 import io.army.criteria.Expression;
 import io.army.criteria.Update;
 import io.army.criteria.UpdateStatement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -37,7 +37,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class StandardUpdateUnitTests extends StandardUnitTests {
 

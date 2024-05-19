@@ -21,6 +21,7 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelectionMap;
 import io.army.criteria.impl.inner._ValuesQuery;
+import io.army.criteria.standard.SQLs;
 import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;

@@ -24,7 +24,7 @@ import io.army.criteria.dialect.BatchReturningUpdate;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.util._Collections;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class UpdateUnitTests extends PostgreUnitTests {
 

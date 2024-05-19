@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
@@ -43,7 +44,7 @@ import java.util.Objects;
  * @since 0.6.0
  */
 
-abstract class ArmyRowLiteralExpression extends OperationRowExpression implements
+public abstract class ArmyRowLiteralExpression extends OperationRowExpression implements
         RowLiteralExpression, ArmySimpleSQLExpression {
 
     /**
@@ -53,7 +54,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
      *                           </ul>
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    static ArmyRowLiteralExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    public static ArmyRowLiteralExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -69,7 +70,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
 
 
     @Deprecated
-    static ArmyRowLiteralExpression unsafeMulti(final @Nullable TypeInfer infer, final @Nullable List<?> values) {
+    public static ArmyRowLiteralExpression unsafeMulti(final @Nullable TypeInfer infer, final @Nullable List<?> values) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -92,7 +93,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
      * @see SQLs#namedRowLiteral(TypeInfer, String, int)
      */
 
-    static ArmyRowLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+    public static ArmyRowLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -113,7 +114,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
      *                           </ul>
      * @see SQLs#encodingRowLiteral(TypeInfer, Collection)
      */
-    static ArmyRowLiteralExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    public static ArmyRowLiteralExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
@@ -134,7 +135,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
      *                           </ul>
      * @see SQLs#encodingNamedRowLiteral(TypeInfer, String, int)
      */
-    static ArmyRowLiteralExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+    public static ArmyRowLiteralExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -260,8 +261,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof AnonymousMultiLiteral) {
-                final AnonymousMultiLiteral o = (AnonymousMultiLiteral) obj;
+            } else if (obj instanceof AnonymousMultiLiteral o) {
                 match = o.type.equals(this.type)
                         && o.valueList.equals(this.valueList);
             } else {
@@ -354,8 +354,7 @@ abstract class ArmyRowLiteralExpression extends OperationRowExpression implement
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof NamedMultiLiteral) {
-                final NamedMultiLiteral o = (NamedMultiLiteral) obj;
+            } else if (obj instanceof NamedMultiLiteral o) {
                 match = o.type.equals(this.type)
                         && o.name.equals(this.name)
                         && o.valueSize == this.valueSize;

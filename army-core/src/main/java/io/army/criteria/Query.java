@@ -18,7 +18,7 @@ package io.army.criteria;
 
 
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.function.DialectBooleanOperator;
 import io.army.function.ExpressionOperator;
 import io.army.meta.ComplexTableMeta;

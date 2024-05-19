@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.standard;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.standard.StandardCtes;
-import io.army.criteria.standard.StandardQuery;
-import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.ChildTableMeta;
@@ -199,7 +197,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        final void onAddChildItemPair(final SQLs.ArmyItemPair pair) {
+        final void onAddChildItemPair(final Armies.ArmyItemPair pair) {
             List<_ItemPair> childItemPairList = this.childItemPairList;
             if (childItemPairList == null) {
                 this.childItemPairList = childItemPairList = _Collections.arrayList();

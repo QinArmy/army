@@ -19,7 +19,7 @@ package io.army.example.common;
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.SimpleExpression;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.criteria.standard.StandardQuery;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ComplexTableMeta;
@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.standard.SQLs.AS;
+import static io.army.criteria.standard.SQLs.PERIOD;
 
 
 public abstract class ArmySyncBaseDao implements SyncBaseDao {

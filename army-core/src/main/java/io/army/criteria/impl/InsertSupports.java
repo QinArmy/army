@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect._DialectUtils;
 import io.army.mapping.CodeEnumType;

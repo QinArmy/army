@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.standard;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.standard.StandardCtes;
-import io.army.criteria.standard.StandardInsert;
-import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
@@ -52,11 +50,11 @@ abstract class StandardInserts extends InsertSupports {
 
 
     static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
-        return new PrimaryInsertInto10Clause<>(null, SQLs::identity);
+        return new PrimaryInsertInto10Clause<>(null, Armies::identity);
     }
 
     static StandardInsert._PrimaryOption20Spec<Insert> singleInsert20() {
-        return new PrimaryInsertInto20Clause<>(null, SQLs::identity);
+        return new PrimaryInsertInto20Clause<>(null, Armies::identity);
     }
 
 

@@ -39,7 +39,7 @@ import java.util.function.Supplier;
  *
  * @since 0.6.0
  */
-abstract class ContextStack {
+public abstract class ContextStack {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContextStack.class);
 
@@ -50,7 +50,7 @@ abstract class ContextStack {
     private static final ThreadLocal<Stack> HOLDER = new ThreadLocal<>();
 
 
-    static CriteriaContext peek() {
+    public static CriteriaContext peek() {
         final Stack stack = HOLDER.get();
         if (stack == null) {
             throw noContextStack();
@@ -60,7 +60,7 @@ abstract class ContextStack {
     }
 
 
-    static List<_TabularBlock> pop(final CriteriaContext context) {
+    public static List<_TabularBlock> pop(final CriteriaContext context) {
         final Stack stack = HOLDER.get();
         if (stack == null) {
             throw noContextStack();
@@ -95,7 +95,7 @@ abstract class ContextStack {
         return blockList;
     }
 
-    static void push(final CriteriaContext context) {
+    public static void push(final CriteriaContext context) {
         final CriteriaContext outerContext;
         outerContext = context.getOuterContext();
         final Stack stack;
@@ -123,7 +123,7 @@ abstract class ContextStack {
 
     }
 
-    static CriteriaContext root() {
+    public static CriteriaContext root() {
         final Stack stack = HOLDER.get();
         if (stack == null) {
             throw noContextStack();
@@ -132,18 +132,18 @@ abstract class ContextStack {
     }
 
 
-    static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
+    public static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
         clearStackOnError(criteriaContext);
         return supplier.get();
     }
 
     @Deprecated
-    static CriteriaException criteriaError(Supplier<CriteriaException> supplier) {
+    public static CriteriaException criteriaError(Supplier<CriteriaException> supplier) {
         return supplier.get();
     }
 
 
-    static void assertNonNull(@Nullable Object obj) {
+    public static void assertNonNull(@Nullable Object obj) {
         if (obj == null) {
             HOLDER.remove();
             throw new NullPointerException();
@@ -151,63 +151,63 @@ abstract class ContextStack {
     }
 
 
-    static CriteriaException castCriteriaApi(CriteriaContext criteriaContext) {
+    public static CriteriaException castCriteriaApi(CriteriaContext criteriaContext) {
         clearStackOnError(criteriaContext);
         return _Exceptions.castCriteriaApi();
     }
 
-    static CriteriaException nonArmyExp(CriteriaContext criteriaContext) {
+    public static CriteriaException nonArmyExp(CriteriaContext criteriaContext) {
         clearStackOnError(criteriaContext);
         return new CriteriaException(String.format("%s must be army expression", Expression.class.getName()));
     }
 
-    static NullPointerException nullPointer(CriteriaContext criteriaContext) {
+    public static NullPointerException nullPointer(CriteriaContext criteriaContext) {
         clearStackOnError(criteriaContext);
         return new NullPointerException();
     }
 
-    static CriteriaException clearStackAnd(Supplier<CriteriaException> supplier) {
+    public static CriteriaException clearStackAnd(Supplier<CriteriaException> supplier) {
         HOLDER.remove();
         return supplier.get();
     }
 
-    static CriteriaException clearStackAndCastCriteriaApi() {
+    public static CriteriaException clearStackAndCastCriteriaApi() {
         HOLDER.remove();
         return _Exceptions.castCriteriaApi();
     }
 
-    static <T, E extends ArmyException> E clearStackAnd(Function<T, E> function, @Nullable T input) {
+    public static <T, E extends ArmyException> E clearStackAnd(Function<T, E> function, @Nullable T input) {
         HOLDER.remove();
         return function.apply(input);
     }
 
-    static Error clearStackAndError(final Error cause) {
+    public static Error clearStackAndError(final Error cause) {
         HOLDER.remove();
         return cause;
     }
 
-    static <T, U, E extends ArmyException> E clearStackAnd(BiFunction<T, U, E> function, @Nullable T input1,
+    public static <T, U, E extends ArmyException> E clearStackAnd(BiFunction<T, U, E> function, @Nullable T input1,
                                                            @Nullable U input2) {
         HOLDER.remove();
         return function.apply(input1, input2);
     }
 
-    static NullPointerException clearStackAndNullPointer() {
+    public static NullPointerException clearStackAndNullPointer() {
         HOLDER.remove();
         return new NullPointerException();
     }
 
-    static NullPointerException clearStackAndNullPointer(String msg) {
+    public static NullPointerException clearStackAndNullPointer(String msg) {
         HOLDER.remove();
         return new NullPointerException(msg);
     }
 
-    static CriteriaException clearStackAndCriteriaError(String msg) {
+    public static CriteriaException clearStackAndCriteriaError(String msg) {
         HOLDER.remove();
         return new CriteriaException(msg);
     }
 
-    static CriteriaException clearStackAndCause(Exception cause, String msg) {
+    public static CriteriaException clearStackAndCause(Exception cause, String msg) {
         HOLDER.remove();
         if (cause instanceof CriteriaException) {
             return (CriteriaException) cause;
@@ -216,7 +216,7 @@ abstract class ContextStack {
     }
 
 
-    static RuntimeException clearStackAndNonArmyItem(final @Nullable Item exp) {
+    public static RuntimeException clearStackAndNonArmyItem(final @Nullable Item exp) {
         HOLDER.remove();
         final RuntimeException e;
         if (exp == null) {
@@ -228,7 +228,7 @@ abstract class ContextStack {
     }
 
 
-    static <T> CriteriaException clearStackAndCriteriaError(Function<T, CriteriaException> function, T input) {
+    public static <T> CriteriaException clearStackAndCriteriaError(Function<T, CriteriaException> function, T input) {
         final Stack stack = HOLDER.get();
         if (stack != null) {
             HOLDER.remove();
@@ -236,13 +236,13 @@ abstract class ContextStack {
         return function.apply(input);
     }
 
-    static <T, E extends CriteriaException> E criteriaError(final CriteriaContext criteriaContext,
+    public static <T, E extends CriteriaException> E criteriaError(final CriteriaContext criteriaContext,
                                                             Function<T, E> function, @Nullable T input) {
         clearStackOnError(criteriaContext);
         return function.apply(input);
     }
 
-    static <T, U> CriteriaException criteriaError(CriteriaContext criteriaContext,
+    public static <T, U> CriteriaException criteriaError(CriteriaContext criteriaContext,
                                                   BiFunction<T, U, CriteriaException> function,
                                                   @Nullable T input, @Nullable U input2) {
         clearStackOnError(criteriaContext);
@@ -250,13 +250,13 @@ abstract class ContextStack {
     }
 
 
-    static CriteriaException criteriaError(CriteriaContext criteriaContext, String message) {
+    public static CriteriaException criteriaError(CriteriaContext criteriaContext, String message) {
         clearStackOnError(criteriaContext);
         return new CriteriaException(message);
     }
 
     @Deprecated
-    static CriteriaException criteriaError(String message) {
+    public static CriteriaException criteriaError(String message) {
         return new CriteriaException(message);
     }
 

@@ -3,8 +3,8 @@ package io.army.session.sync.standard;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.Windows;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.record.ResultStates;
 import io.army.sync.SyncLocalSession;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class InsertTests extends SessionSupport {

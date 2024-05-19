@@ -19,8 +19,8 @@ package io.army.criteria.mysql;
 import io.army.criteria.Clause;
 import io.army.criteria.Statement;
 import io.army.criteria.TypeItem;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.standard.SQLFunction;
+import io.army.criteria.standard.SQLs;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

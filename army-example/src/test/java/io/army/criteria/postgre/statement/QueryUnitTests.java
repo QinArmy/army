@@ -20,7 +20,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.UnknownDerivedFieldException;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.pill.domain.PillUser_;
 import io.army.mapping.JsonbType;
 import io.army.mapping.optional.JsonPathType;
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import static io.army.criteria.impl.Postgres.jsonbPathQueryTz;
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class QueryUnitTests extends PostgreUnitTests {
 

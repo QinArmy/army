@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -27,7 +28,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-interface CriteriaContext {
+public interface CriteriaContext {
 
     Dialect dialect();
 

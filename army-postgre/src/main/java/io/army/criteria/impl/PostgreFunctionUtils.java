@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableNameElement;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreWindow;
+import io.army.criteria.standard.SQLs;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;

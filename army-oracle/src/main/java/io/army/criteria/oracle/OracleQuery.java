@@ -22,7 +22,7 @@ import io.army.criteria.Query;
 import io.army.criteria.TableField;
 import io.army.criteria.dialect.SortNullItems;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

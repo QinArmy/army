@@ -22,7 +22,7 @@ import io.army.criteria.Insert;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

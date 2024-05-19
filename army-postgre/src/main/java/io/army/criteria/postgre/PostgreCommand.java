@@ -17,7 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.dialect.DmlCommand;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 
 import java.util.function.Consumer;
 

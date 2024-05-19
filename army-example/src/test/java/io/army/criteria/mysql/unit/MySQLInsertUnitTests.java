@@ -20,7 +20,7 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.util._Collections;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AS;
 
 public class MySQLInsertUnitTests extends MySQLUnitTests {
 

@@ -7,7 +7,7 @@ import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
 import io.army.criteria.annotaion.VisibleMode;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.record.ResultStates;
 import io.army.sync.SyncLocalSession;
@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.standard.SQLs.AS;
+import static io.army.criteria.standard.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
 public class InsertTests extends SessionTestSupport {

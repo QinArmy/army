@@ -22,6 +22,7 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.mysql.MySQLWindow;
 import io.army.criteria.standard.SQLFunction;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 import io.army.util._Collections;
 
@@ -123,7 +124,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc countAsterisk() {
-        return count(SQLs._ASTERISK_EXP);
+        return count(Expressions._ASTERISK_EXP);
     }
 
     /**

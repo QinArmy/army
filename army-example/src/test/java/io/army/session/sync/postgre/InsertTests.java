@@ -22,8 +22,8 @@ import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.record.ResultStates;
 import io.army.session.Option;
@@ -43,7 +43,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class InsertTests extends SessionTestSupport {

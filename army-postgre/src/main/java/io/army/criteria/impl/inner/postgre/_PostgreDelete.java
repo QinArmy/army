@@ -16,11 +16,11 @@
 
 package io.army.criteria.impl.inner.postgre;
 
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._JoinableDelete;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.standard.SQLs;
 
 import javax.annotation.Nullable;
 

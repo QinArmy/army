@@ -22,7 +22,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
 
-enum AssignOperator {
+public enum AssignOperator {
 
     PLUS_EQUAL(" +="),
     MINUS_EQUAL(" -="),
@@ -39,7 +39,7 @@ enum AssignOperator {
     }
 
 
-    final void appendAppropriateExpressionOperator(final StringBuilder sqlBuilder) {
+    public final void appendAppropriateExpressionOperator(final StringBuilder sqlBuilder) {
         switch (this) {
             case PLUS_EQUAL:
                 sqlBuilder.append(DualExpOperator.PLUS.spaceOperator);
@@ -62,7 +62,7 @@ enum AssignOperator {
     }
 
 
-    final void appendOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
+    public final void appendOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
         switch (context.database()) {
             case MySQL:
             case PostgreSQL:

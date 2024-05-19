@@ -2,7 +2,7 @@ package io.army.session.sync.postgre;
 
 import io.army.criteria.Delete;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AS;
 
 
 @Test(dataProvider = "localSessionProvider")

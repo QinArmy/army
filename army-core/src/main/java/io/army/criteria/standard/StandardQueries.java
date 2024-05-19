@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package io.army.criteria.impl;
+package io.army.criteria.standard;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.standard.StandardCrosses;
-import io.army.criteria.standard.StandardCtes;
-import io.army.criteria.standard.StandardJoins;
-import io.army.criteria.standard.StandardQuery;
 import io.army.dialect._Constant;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;

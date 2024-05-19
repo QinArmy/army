@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -44,13 +45,13 @@ import java.util.function.Function;
  * This class representing non-operation expression.
  * This class is base class of following : <ul>
  * <li>{@link SQLs#DEFAULT}</li>
- * <li>{@link SQLs#_ASTERISK_EXP}</li>
+ * <li>{@link Expressions#_ASTERISK_EXP}</li>
  * </ul>
  */
-abstract class NonOperationExpression implements ArmyExpression {
+public abstract class NonOperationExpression implements ArmyExpression {
 
 
-    NonOperationExpression() {
+    protected NonOperationExpression() {
     }
 
 
@@ -453,20 +454,20 @@ abstract class NonOperationExpression implements ArmyExpression {
     /**
      * @see SQLs#NULL
      */
-    static SQLs.WordNull nullWord() {
+    public static SQLs.WordNull nullWord() {
         return NullWord.INSTANCE;
     }
 
-    static Expression updateTimeParamPlaceHolder() {
+    public static Expression updateTimeParamPlaceHolder() {
         return UpdateTimePlaceHolderExpression.PARAM_PLACEHOLDER;
     }
 
-    static Expression updateTimeLiteralPlaceHolder() {
+    public static Expression updateTimeLiteralPlaceHolder() {
         return UpdateTimePlaceHolderExpression.LITERAL_PLACEHOLDER;
     }
 
 
-    static CriteriaException unsupportedOperation(NonOperationExpression expression) {
+    public static CriteriaException unsupportedOperation(NonOperationExpression expression) {
         return ContextStack.clearStackAndCriteriaError(expression.operationErrorMessage());
     }
 

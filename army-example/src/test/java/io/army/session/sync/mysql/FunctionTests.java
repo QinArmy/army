@@ -19,8 +19,8 @@ package io.army.session.sync.mysql;
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.mysql.MySQLCastType;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sqltype.MySQLType;
 import io.army.sync.SyncLocalSession;
@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static io.army.criteria.impl.MySQLs.*;
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class FunctionTests extends SessionTestSupport {

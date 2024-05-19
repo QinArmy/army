@@ -19,13 +19,13 @@ package io.army.criteria.postgre.statement;
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AS;
 
 public class OperatorUnitTests extends PostgreUnitTests {
 

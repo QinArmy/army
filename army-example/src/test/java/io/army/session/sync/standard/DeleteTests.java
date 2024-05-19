@@ -3,7 +3,7 @@ package io.army.session.sync.standard;
 
 import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
@@ -15,8 +15,8 @@ import org.testng.annotations.Test;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static io.army.criteria.impl.SQLs.AND;
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.standard.SQLs.AND;
+import static io.army.criteria.standard.SQLs.AS;
 
 @Test(dataProvider = "localSessionProvider")
 public class DeleteTests extends SessionSupport {

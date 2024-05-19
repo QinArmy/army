@@ -23,6 +23,7 @@ import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreStatement;
 import io.army.criteria.postgre.PostgreValues;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.dialect.postgre.PostgreDialect;
 
@@ -62,7 +63,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues<
      * create primary VALUES statement.
      */
     static ValuesSpec<Values> simpleValues() {
-        return new SimplePrimaryValues<>(null, null, SQLs::identity, null);
+        return new SimplePrimaryValues<>(null, null, Armies::identity, null);
     }
 
     /**

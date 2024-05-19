@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.mysql.*;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.LocalDateType;
 import io.army.mapping.LocalTimeType;
@@ -175,7 +176,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery.WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::identity);
+        return MySQLQueries.subQuery(ContextStack.peek(), Armies::identity);
     }
 
 
@@ -188,7 +189,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
      */
     public static MySQLValues.ValuesSpec<Values> valuesStmt() {
-        return MySQLSimpleValues.simpleValues(SQLs::identity);
+        return MySQLSimpleValues.simpleValues(Armies::identity);
     }
 
 
@@ -196,7 +197,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/values.html">VALUES Statement</a>
      */
     public static MySQLValues.ValuesSpec<SubValues> subValues() {
-        return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
+        return MySQLSimpleValues.subValues(ContextStack.peek(), Armies::identity);
     }
 
 
@@ -330,7 +331,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_local_infile_request.html">LOCAL INFILE Request</a>
      */
     public static MySQLLoadData._LoadDataClause<DmlCommand> loadDataStmt() {
-        return MySQLLoads.loadDataCommand(SQLs::identity);
+        return MySQLLoads.loadDataCommand(Armies::identity);
     }
 
 

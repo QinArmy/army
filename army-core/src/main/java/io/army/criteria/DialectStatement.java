@@ -17,7 +17,7 @@
 package io.army.criteria;
 
 import io.army.criteria.dialect.Returnings;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;

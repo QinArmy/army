@@ -20,6 +20,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CompoundPredicate;
 import io.army.criteria.SQLColumnSet;
 import io.army.criteria.SubQuery;
+import io.army.criteria.standard.SQLs;
 
 /**
  * <p>

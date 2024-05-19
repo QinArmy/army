@@ -22,7 +22,7 @@ import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.BankUser_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.util._Collections;

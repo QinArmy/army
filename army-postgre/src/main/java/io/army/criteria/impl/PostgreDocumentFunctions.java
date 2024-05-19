@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._DialectUtils;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;

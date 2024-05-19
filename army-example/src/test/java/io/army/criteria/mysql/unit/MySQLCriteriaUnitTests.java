@@ -19,7 +19,7 @@ package io.army.criteria.mysql.unit;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.common.Criteria;
@@ -35,7 +35,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class MySQLCriteriaUnitTests extends MySQLUnitTests {
 

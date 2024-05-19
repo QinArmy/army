@@ -22,6 +22,7 @@ import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
@@ -47,7 +48,7 @@ import java.util.function.Consumer;
  * * @since 0.6.0
  */
 @SuppressWarnings("unchecked")
-abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
+public abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
         extends OrderByClause<OR, OD>
         implements Window._PartitionByExpClause<PR>,
         Window._PartitionByCommaClause<PR>,
@@ -801,7 +802,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     }
 
-    enum WindowRowModifier implements Window.RowModifier, FrameBound {
+    public enum WindowRowModifier implements Window.RowModifier, FrameBound {
 
         UNBOUNDED_PRECEDING(" UNBOUNDED PRECEDING"),
         CURRENT_ROW(" CURRENT ROW"),
@@ -817,13 +818,13 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return SqlWords.keyWordsToString(this);
         }
 
     }//WindowRowModifier
 
 
-    enum WindowExpModifier implements ExpModifier, FrameBound {
+    public enum WindowExpModifier implements ExpModifier, FrameBound {
 
         PRECEDING(" PRECEDING"),
 
@@ -837,7 +838,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
         @Override
         public final String toString() {
-            return SQLs.keyWordsToString(this);
+            return SqlWords.keyWordsToString(this);
         }
 
     }//WindowExpModifier

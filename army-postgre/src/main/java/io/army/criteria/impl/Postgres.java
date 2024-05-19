@@ -22,6 +22,7 @@ import io.army.criteria.dialect.DqlCommand;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.postgre.*;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 
 import java.util.function.BiFunction;
@@ -207,7 +208,7 @@ public abstract class Postgres extends PostgreSyntax {
      * @see <a href="https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-CYCLE">Cycle Detection</a>
      */
     public static PostgreQuery.WithSpec<SubQuery> subQuery() {
-        return PostgreQueries.subQuery(ContextStack.peek(), SQLs::identity);
+        return PostgreQueries.subQuery(ContextStack.peek(), Armies::identity);
     }
 
     /**
@@ -256,7 +257,7 @@ public abstract class Postgres extends PostgreSyntax {
     }
 
     public static PostgreValues.ValuesSpec<SubValues> subValues() {
-        return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
+        return PostgreSimpleValues.subValues(ContextStack.peek(), Armies::identity);
     }
 
 

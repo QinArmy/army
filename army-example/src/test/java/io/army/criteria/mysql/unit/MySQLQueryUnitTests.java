@@ -19,7 +19,7 @@ package io.army.criteria.mysql.unit;
 import io.army.criteria.NotExistsNonRecursiveException;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.example.pill.domain.PillUser;
@@ -34,7 +34,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static io.army.criteria.impl.MySQLs.cases;
 import static io.army.criteria.impl.MySQLs.lag;
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class MySQLQueryUnitTests extends MySQLUnitTests {
 

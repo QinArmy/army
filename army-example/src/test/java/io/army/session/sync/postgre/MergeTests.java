@@ -4,8 +4,8 @@ package io.army.session.sync.postgre;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.postgre.PostgreMerge;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.sync.SyncLocalSession;
 import org.testng.annotations.Test;
@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.standard.SQLs.AS;
+import static io.army.criteria.standard.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
 public class MergeTests extends SessionTestSupport {

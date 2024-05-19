@@ -17,9 +17,9 @@
 package io.army.criteria.impl.inner.postgre;
 
 import io.army.criteria.Selection;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.standard.SQLs;
 
 import javax.annotation.Nullable;
 

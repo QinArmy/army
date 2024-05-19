@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
@@ -46,7 +47,7 @@ import java.util.function.Function;
  *
  * @since 0.6.0
  */
-abstract class CriteriaContexts {
+public abstract class CriteriaContexts {
 
 
     private CriteriaContexts() {
@@ -59,7 +60,7 @@ abstract class CriteriaContexts {
      * @param outerBracketContext if non-null,then spec and leftContext both must be null.
      * @param leftContext         if non-null,then spec and outerBracketContext both must be null.
      */
-    static CriteriaContext primaryQueryContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
+    public static CriteriaContext primaryQueryContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
                                                final @Nullable CriteriaContext outerBracketContext,
                                                final @Nullable CriteriaContext leftContext) {
         final PrimaryQueryContext context;
@@ -83,7 +84,7 @@ abstract class CriteriaContexts {
      * @param outerContext if non-null,then spec must be null.
      * @param leftContext  if non-null,then outerContext must be non-null spec must be null.
      */
-    static CriteriaContext subQueryContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
+    public static CriteriaContext subQueryContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
                                            final @Nullable CriteriaContext outerContext,
                                            final @Nullable CriteriaContext leftContext) {
         final SubQueryContext context;
@@ -104,7 +105,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext bracketContext(final ArmyStmtSpec spec) {
+    public static CriteriaContext bracketContext(final ArmyStmtSpec spec) {
         final StatementContext ctx;
         ctx = (StatementContext) spec.getContext();
 
@@ -119,7 +120,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryInsertContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+    public static CriteriaContext primaryInsertContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryDispatcherContext multiStmtContext;
         if (spec == null) {
             multiStmtContext = null;
@@ -141,7 +142,7 @@ abstract class CriteriaContexts {
      * @param spec         if non-null,then outerContext must be null.
      * @param outerContext if non-null,then spec must be null.
      */
-    static CriteriaContext subInsertContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
+    public static CriteriaContext subInsertContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
                                             @Nullable CriteriaContext outerContext) {
         final StatementContext context;
         if (spec == null) {
@@ -161,7 +162,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primarySingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+    public static CriteriaContext primarySingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryDispatcherContext ctx;
         if (spec == null) {
             ctx = null;
@@ -179,7 +180,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryMultiDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+    public static CriteriaContext primaryMultiDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryMultiDmlContext context;
         context = new PrimaryMultiDmlContext(dialect);
 
@@ -197,7 +198,7 @@ abstract class CriteriaContexts {
     /**
      * <p>For Example , Postgre update/delete criteria context
      */
-    static CriteriaContext primaryJoinableSingleDeleteContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+    public static CriteriaContext primaryJoinableSingleDeleteContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryJoinableSingleDeleteContext context;
         context = new PrimaryJoinableSingleDeleteContext(dialect);
         if (spec != null) {
@@ -212,7 +213,7 @@ abstract class CriteriaContexts {
     /**
      * <p>For Example , Postgre update criteria context
      */
-    static CriteriaContext primaryJoinableSingleUpdateContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+    public static CriteriaContext primaryJoinableSingleUpdateContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryJoinableSingleUpdateContext context;
         context = new PrimaryJoinableSingleUpdateContext(dialect);
         if (spec != null) {
@@ -228,18 +229,18 @@ abstract class CriteriaContexts {
     /**
      * <p>For Example ,Postgre update/delete criteria context
      */
-    static CriteriaContext subJoinableSingleUpdateContext(final Dialect dialect, final CriteriaContext outerContext) {
+    public static CriteriaContext subJoinableSingleUpdateContext(final Dialect dialect, final CriteriaContext outerContext) {
         return new SubJoinableSingleUpdateContext(dialect, outerContext);
     }
 
     /**
      * <p>For Example ,Postgre update/delete criteria context
      */
-    static CriteriaContext subJoinableSingleDeleteContext(final Dialect dialect, final CriteriaContext outerContext) {
+    public static CriteriaContext subJoinableSingleDeleteContext(final Dialect dialect, final CriteriaContext outerContext) {
         return new SubJoinableSingleDeleteContext(dialect, outerContext);
     }
 
-    static CriteriaContext subSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
+    public static CriteriaContext subSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
         return new SubSingleDmlContext(dialect, outerContext);
     }
 
@@ -252,7 +253,7 @@ abstract class CriteriaContexts {
      *             </ul>,
      *              if non-nul,then outerBracketContext and leftContext both are null.
      */
-    static CriteriaContext primaryValuesContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
+    public static CriteriaContext primaryValuesContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
                                                 final @Nullable CriteriaContext outerBracketContext,
                                                 final @Nullable CriteriaContext leftContext) {
         final PrimaryValuesContext context;
@@ -280,7 +281,7 @@ abstract class CriteriaContexts {
      *                     <li>If non-null,then spec null.</li>
      *                     </ul>
      */
-    static CriteriaContext subValuesContext(final Dialect dialect, @Nullable ArmyStmtSpec spec,
+    public static CriteriaContext subValuesContext(final Dialect dialect, @Nullable ArmyStmtSpec spec,
                                             @Nullable CriteriaContext outerContext,
                                             @Nullable CriteriaContext leftContext) {
         final SubValuesContext context;
@@ -299,29 +300,29 @@ abstract class CriteriaContexts {
         return context;
     }
 
-    static CriteriaContext otherPrimaryContext(Dialect dialect) {
+    public static CriteriaContext otherPrimaryContext(Dialect dialect) {
         return new OtherPrimaryContext(dialect);
     }
 
     /**
      * currently ,just for postgre merge statement
      */
-    static CriteriaContext primaryJoinableMergeContext(Dialect dialect) {
+    public static CriteriaContext primaryJoinableMergeContext(Dialect dialect) {
         return new PrimaryJoinableMergeContext(dialect);
     }
 
-    static CriteriaContext primaryDispatcherContext(final Dialect dialect, @Nullable final CriteriaContext outerContext,
+    public static CriteriaContext primaryDispatcherContext(final Dialect dialect, @Nullable final CriteriaContext outerContext,
                                                     final @Nullable CriteriaContext leftContext) {
         assert outerContext != null || leftContext != null;
         return new PrimaryDispatcherContext(dialect, outerContext, leftContext);
     }
 
-    static CriteriaContext subDispatcherContext(final CriteriaContext outerContext,
+    public static CriteriaContext subDispatcherContext(final CriteriaContext outerContext,
                                                 final @Nullable CriteriaContext leftContext) {
         return new SubDispatcherContext(outerContext, leftContext);
     }
 
-    static UnknownQualifiedFieldException unknownQualifiedField(String tableAlias, FieldMeta<?> field) {
+    public static UnknownQualifiedFieldException unknownQualifiedField(String tableAlias, FieldMeta<?> field) {
         final String m = String.format("unknown %s tableAlias[%s] %s", QualifiedField.class.getSimpleName(), tableAlias, field);
         return ContextStack.clearStackAnd(UnknownQualifiedFieldException::new, m);
     }

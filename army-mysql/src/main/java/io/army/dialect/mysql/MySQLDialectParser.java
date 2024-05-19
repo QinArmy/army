@@ -24,6 +24,7 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLSet;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.*;
 import io.army.env.EscapeMode;
 import io.army.meta.*;

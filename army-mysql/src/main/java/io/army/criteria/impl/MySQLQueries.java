@@ -23,6 +23,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -85,7 +86,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         OrderByClause.OrderByEventListener {
 
     static WithSpec<Select> simpleQuery() {
-        return new SimpleSelect<>(null, null, SQLs::identity);
+        return new SimpleSelect<>(null, null, Armies::identity);
     }
 
     static WithSpec<_BatchSelectParamSpec> batchQuery() {

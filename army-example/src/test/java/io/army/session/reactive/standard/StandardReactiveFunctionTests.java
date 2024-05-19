@@ -17,12 +17,12 @@
 package io.army.session.reactive.standard;
 
 import io.army.criteria.Select;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.reactive.ReactiveLocalSession;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import static io.army.criteria.impl.SQLs.cases;
+import static io.army.criteria.standard.SQLs.cases;
 
 @Test(dataProvider = "localSessionProvider")
 public class StandardReactiveFunctionTests extends SessionSupport {

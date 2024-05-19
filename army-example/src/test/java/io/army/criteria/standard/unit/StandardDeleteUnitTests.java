@@ -18,7 +18,7 @@ package io.army.criteria.standard.unit;
 
 import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.util._Collections;
 import org.slf4j.Logger;

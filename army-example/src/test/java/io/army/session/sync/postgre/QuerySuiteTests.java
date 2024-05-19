@@ -18,7 +18,7 @@ package io.army.session.sync.postgre;
 
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sync.SyncLocalSession;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class QuerySuiteTests extends SessionTestSupport {

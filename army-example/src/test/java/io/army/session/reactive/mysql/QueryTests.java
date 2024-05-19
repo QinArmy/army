@@ -19,13 +19,13 @@ package io.army.session.reactive.mysql;
 
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.reactive.ReactiveLocalSession;
 import org.testng.annotations.Test;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.standard.SQLs.AS;
+import static io.army.criteria.standard.SQLs.PERIOD;
 
 @Test(dataProvider = "localSessionProvider")
 public class QueryTests extends SessionTestsSupport {

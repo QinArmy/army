@@ -20,6 +20,7 @@ import io.army.criteria.Statement;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.inner.postgre._PostgreCommand;
 import io.army.criteria.postgre.PostgreCommand;
+import io.army.criteria.standard.SQLs;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;

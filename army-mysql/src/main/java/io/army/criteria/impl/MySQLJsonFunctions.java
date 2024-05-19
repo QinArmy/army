@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLFunction;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 import io.army.util._Collections;
 

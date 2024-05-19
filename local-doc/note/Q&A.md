@@ -185,7 +185,7 @@
     * 因为 io.army.meta.TypeMeta.DelayTypeMeta 会导致 来自于 子查询的 codec field 无法解码
 
 40. 为什么 删除了 io.army.criteria.TypeInfer.DelayTypeInfer ?
-    * 因为 所有 delay 根源都是 io.army.criteria.impl.SQLs.refThis() 和 io.army.criteria.impl.SQLs.refOut(),
+    * 因为 所有 delay 根源都是 io.army.criteria.standard.SQLs.refThis() 和 io.army.criteria.standard.SQLs.refOut(),
       选择用 select clause 异步调用来解决执行顺序问题是更好的选择.
     * 这是一个重要经验,从根源上解决总是也是一种 mapping real word.
 

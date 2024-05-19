@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._DerivedTable;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
@@ -50,36 +51,25 @@ import java.util.function.UnaryOperator;
  *
  * @since 0.6.0
  */
-abstract class Expressions {
+public abstract class Expressions {
 
-    Expressions() {
+
+    private Expressions() {
         throw new UnsupportedOperationException();
     }
 
-    static CompoundExpression dualExp(final Expression left, final DualExpOperator operator, final Expression right) {
+
+    public static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
+
+    public static CompoundExpression dualExp(final Expression left, final DualExpOperator operator, final Expression right) {
         final BinaryOperator<MappingType> inferFunc;
-        switch (operator) {
-            case PLUS:
-            case MINUS:
-                inferFunc = Expressions::plusMinusType;
-                break;
-            case TIMES:
-            case DIVIDE:
-                inferFunc = Expressions::timesDivideType;
-                break;
-            case MOD:
-                inferFunc = Expressions::modeType;
-                break;
-            case BITWISE_AND:
-            case BITWISE_OR:
-            case BITWISE_XOR:
-            case RIGHT_SHIFT:
-            case LEFT_SHIFT:
-                inferFunc = Expressions::bitwiseType;
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
-        }
+        inferFunc = switch (operator) {
+            case PLUS, MINUS -> Expressions::plusMinusType;
+            case TIMES, DIVIDE -> Expressions::timesDivideType;
+            case MOD -> Expressions::modeType;
+            case BITWISE_AND, BITWISE_OR, BITWISE_XOR, RIGHT_SHIFT, LEFT_SHIFT -> Expressions::bitwiseType;
+            default -> throw _Exceptions.unexpectedEnum(operator);
+        };
         return dialectDualExp(left, operator, right, inferFunc);
     }
 
@@ -105,7 +95,7 @@ abstract class Expressions {
     }
 
 
-    static SimpleExpression unaryExp(final UnaryExpOperator operator, final Expression operand) {
+    public static SimpleExpression unaryExp(final UnaryExpOperator operator, final Expression operand) {
         if (!(operand instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(operand);
         }
@@ -113,15 +103,15 @@ abstract class Expressions {
     }
 
 
-    static OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
+    public static OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
         return new CastExpression(expression, typeMeta);
     }
 
-    static Expression scalarExpression(final SubQuery subQuery) {
+    public static Expression scalarExpression(final SubQuery subQuery) {
         return new ScalarExpression(validateScalarSubQuery(subQuery), subQuery);
     }
 
-    static OperationPredicate existsPredicate(final boolean not, final @Nullable SubQuery operand) {
+    public static OperationPredicate existsPredicate(final boolean not, final @Nullable SubQuery operand) {
         if (operand == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -129,7 +119,7 @@ abstract class Expressions {
         return new ExistsPredicate(not, operand);
     }
 
-    static CompoundPredicate inPredicate(final SQLExpression left, final boolean not,
+    public static CompoundPredicate inPredicate(final SQLExpression left, final boolean not,
                                          final @Nullable SQLColumnSet right) {
         if (right == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -152,7 +142,7 @@ abstract class Expressions {
     }
 
 
-    static CompoundPredicate booleanTestPredicate(final OperationExpression expression,
+    public static CompoundPredicate booleanTestPredicate(final OperationExpression expression,
                                                   boolean not, SQLs.BooleanTestWord operand) {
         if (!(operand == SQLs.NULL
                 || operand == SQLs.TRUE
@@ -165,7 +155,7 @@ abstract class Expressions {
         return new BooleanTestPredicate(expression, not, operand);
     }
 
-    static CompoundPredicate isComparisonPredicate(final OperationExpression left, boolean not,
+    public static CompoundPredicate isComparisonPredicate(final OperationExpression left, boolean not,
                                                    SQLs.IsComparisonWord operator, Expression right) {
         if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
@@ -176,7 +166,7 @@ abstract class Expressions {
     }
 
 
-    static CompoundPredicate dualPredicate(final OperationSQLExpression left, final DualBooleanOperator operator,
+    public static CompoundPredicate dualPredicate(final OperationSQLExpression left, final DualBooleanOperator operator,
                                            final @Nullable RightOperand right) {
         if (right == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -189,7 +179,7 @@ abstract class Expressions {
         return new StandardDualPredicate(left, operator, right);
     }
 
-    static CompoundPredicate likePredicate(final Expression left, final DualBooleanOperator operator,
+    public static CompoundPredicate likePredicate(final Expression left, final DualBooleanOperator operator,
                                            final @Nullable Expression right, SQLs.WordEscape escape,
                                            @Nullable final Expression escapeChar) {
         switch (operator) {
@@ -213,7 +203,7 @@ abstract class Expressions {
     }
 
 
-    static CompoundPredicate betweenPredicate(OperationExpression left, boolean not,
+    public static CompoundPredicate betweenPredicate(OperationExpression left, boolean not,
                                               @Nullable SQLs.BetweenModifier modifier,
                                               Expression center, Expression right) {
         if (!(center instanceof OperationExpression)) {
@@ -225,7 +215,7 @@ abstract class Expressions {
         return new BetweenPredicate(left, not, modifier, center, right);
     }
 
-    static CompoundPredicate compareQueryPredicate(final SQLExpression left, final DualBooleanOperator operator,
+    public static CompoundPredicate compareQueryPredicate(final SQLExpression left, final DualBooleanOperator operator,
                                                    final SQLs.QuantifiedWord queryOperator, final RightOperand right) {
         if (!(left instanceof OperationSQLExpression)) {
             throw ContextStack.clearStackAndNonArmyItem(left);
@@ -257,42 +247,42 @@ abstract class Expressions {
     }
 
 
-    static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index) {
+    public static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new OneDimensionArrayElementExpression(arrayExp, index);
     }
 
-    static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index1, int index2) {
+    public static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index1, int index2) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new TwoDimensionArrayElementExpression(arrayExp, index1, index2);
     }
 
-    static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index1, int index2, int index3, int[] restIndex) {
+    public static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index1, int index2, int index3, int[] restIndex) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new ThreeDimensionIndexArrayElementExpression(arrayExp, index1, index2, index3, restIndex);
     }
 
-    static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index) {
+    public static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new OneDimensionArrayElementExpression(arrayExp, index);
     }
 
-    static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index1, Expression index2) {
+    public static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index1, Expression index2) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new TwoDimensionArrayElementExpression(arrayExp, index1, index2);
     }
 
-    static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index1, Expression index2,
+    public static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index1, Expression index2,
                                             Expression index3, Expression[] restIndex) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -303,42 +293,42 @@ abstract class Expressions {
     /*-------------------below array element array expression -------------------*/
 
 
-    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index) {
+    public static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new OneDimensionArrayElementArrayExpression(arrayExp, index);
     }
 
-    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index1, int index2) {
+    public static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index1, int index2) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new TwoDimensionArrayElementArrayExpression(arrayExp, index1, index2);
     }
 
-    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index1, int index2, int index3, int[] restIndex) {
+    public static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index1, int index2, int index3, int[] restIndex) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new ThreeDimensionIndexArrayElementArrayExpression(arrayExp, index1, index2, index3, restIndex);
     }
 
-    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index) {
+    public static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new OneDimensionArrayElementArrayExpression(arrayExp, index);
     }
 
-    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index1, ArraySubscript index2) {
+    public static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index1, ArraySubscript index2) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new TwoDimensionArrayElementArrayExpression(arrayExp, index1, index2);
     }
 
-    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index1, ArraySubscript index2,
+    public static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index1, ArraySubscript index2,
                                                 ArraySubscript index3, ArraySubscript[] restIndex) {
         if (!(arrayExp instanceof ArmyArrayExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -346,28 +336,28 @@ abstract class Expressions {
         return new ThreeDimensionArrayElementArrayExpression(arrayExp, index1, index2, index3, restIndex);
     }
 
-    static JsonExpression jsonArrayElement(OperationExpression json, int index) {
+    public static JsonExpression jsonArrayElement(OperationExpression json, int index) {
         if (!(json instanceof JsonExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new JsonArrayElementExpression(json, index);
     }
 
-    static JsonExpression jsonObjectAttr(OperationExpression json, String keyName) {
+    public static JsonExpression jsonObjectAttr(OperationExpression json, String keyName) {
         if (!(json instanceof JsonExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new JsonObjectAttrExpression(json, keyName);
     }
 
-    static JsonExpression jsonPathExtract(OperationExpression json, String jsonPath) {
+    public static JsonExpression jsonPathExtract(OperationExpression json, String jsonPath) {
         if (!(json instanceof JsonExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
         return new JsonPathExtractExpression(json, jsonPath);
     }
 
-    static JsonExpression jsonPathExtract(OperationExpression json, Expression jsonPath) {
+    public static JsonExpression jsonPathExtract(OperationExpression json, Expression jsonPath) {
         if (!(json instanceof JsonExpression)) {
             throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
         }
@@ -375,7 +365,7 @@ abstract class Expressions {
     }
 
 
-    static TypeMeta nonNullFirstArrayType(final List<Object> elementList) {
+    public static TypeMeta nonNullFirstArrayType(final List<Object> elementList) {
         assert elementList.size() > 0;
         TypeMeta type = null;
         for (Object element : elementList) {
@@ -404,12 +394,12 @@ abstract class Expressions {
     }
 
 
-    static SQLs._ArrayConstructorSpec array() {
+    public static SQLs._ArrayConstructorSpec array() {
         return new SimpleArrayConstructor(Collections.emptyList(), TextArrayType.LINEAR);
     }
 
 
-    static SQLs._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
+    public static SQLs._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
                                             List<Object> elementList) {
         final TypeMeta type;
         if (elementList.size() == 0) {
@@ -2699,4 +2689,30 @@ abstract class Expressions {
     }//ParensGroupByItemGroup
 
 
+    /**
+     * @see Expressions#_ASTERISK_EXP
+     */
+    public static final class LiteralSymbolAsterisk extends NonOperationExpression
+            implements FunctionArg.SingleFunctionArg {
+
+        private LiteralSymbolAsterisk() {
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            throw unsupportedOperation(this);
+        }
+
+        @Override
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(" *");
+        }
+
+        @Override
+        public String toString() {
+            return " *";
+        }
+
+
+    } // LiteralSymbolAsterisk
 }

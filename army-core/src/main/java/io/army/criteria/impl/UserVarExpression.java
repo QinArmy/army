@@ -21,6 +21,7 @@ import io.army.criteria.SimpleExpression;
 import io.army.criteria.TableField;
 import io.army.criteria.TypeInfer;
 import io.army.criteria.dialect.VarExpression;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;

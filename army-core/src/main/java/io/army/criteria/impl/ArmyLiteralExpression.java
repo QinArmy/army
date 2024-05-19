@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
@@ -42,13 +43,13 @@ import java.util.Objects;
  * @see ArmyRowParamExpression
  * @since 0.6.0
  */
-abstract class ArmyLiteralExpression extends OperationExpression.OperationDefiniteExpression
+public abstract class ArmyLiteralExpression extends OperationExpression.OperationDefiniteExpression
         implements _LiteralExpression {
 
     /**
      * @see SQLs#literalValue(Object)
      */
-    static ArmyLiteralExpression from(final @Nullable Object value, final boolean typeName) {
+    public static ArmyLiteralExpression from(final @Nullable Object value, final boolean typeName) {
         if (value == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -65,7 +66,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      * @throws CriteriaException throw when infer return codec {@link TableField}.
      * @see SQLs#literal(TypeInfer, Object)
      */
-    static ArmyLiteralExpression single(final @Nullable TypeInfer infer, final @Nullable Object value, final boolean typeName) {
+    public static ArmyLiteralExpression single(final @Nullable TypeInfer infer, final @Nullable Object value, final boolean typeName) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -82,7 +83,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#namedLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final boolean typeName) {
+    public static ArmyLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final boolean typeName) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -101,7 +102,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#namedNullableLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression namedNullable(final @Nullable TypeInfer infer, final @Nullable String name, final boolean typeName) {
+    public static ArmyLiteralExpression namedNullable(final @Nullable TypeInfer infer, final @Nullable String name, final boolean typeName) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -118,7 +119,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      * @throws CriteriaException throw when infer isn't codec {@link TableField}.
      * @see SQLs#encodingLiteral(TypeInfer, Object)
      */
-    static ArmyLiteralExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value, final boolean typeName) {
+    public static ArmyLiteralExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value, final boolean typeName) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
@@ -134,7 +135,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#encodingNamedLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name, final boolean typeName) {
+    public static ArmyLiteralExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name, final boolean typeName) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -152,7 +153,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
      *                           </ul>
      * @see SQLs#encodingNamedNullableLiteral(TypeInfer, String)
      */
-    static ArmyLiteralExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name, boolean typeName) {
+    public static ArmyLiteralExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name, boolean typeName) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -163,7 +164,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationDefini
         return new NamedLiteral(name, (TableField) infer, typeName);
     }
 
-    static CriteriaException nameHaveNoText() {
+    public static CriteriaException nameHaveNoText() {
         return ContextStack.clearStackAndCriteriaError("name must have text for single-literal.");
     }
 

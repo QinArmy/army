@@ -20,7 +20,7 @@ import io.army.criteria.Clause;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.meta.TableMeta;
 
 import java.util.function.Consumer;

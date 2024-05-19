@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.LongType;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.*;
 
-abstract class CriteriaUtils {
+public abstract class CriteriaUtils {
 
     CriteriaUtils() {
         throw new UnsupportedOperationException();
@@ -46,17 +47,17 @@ abstract class CriteriaUtils {
     /**
      * EMPTY_STRING_LIST couldn't be equals {@link  Collections#EMPTY_LIST}
      */
-    static final List<String> EMPTY_STRING_LIST = Collections.unmodifiableList(new ArrayList<>(0));
+    public static final List<String> EMPTY_STRING_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 
 
-    static _SelectionMap createSingletonSelectionMap(final Selection selection) {
+    public static _SelectionMap createSingletonSelectionMap(final Selection selection) {
         return new SelectionMap(
                 Collections.singletonList(selection),
                 Collections.singletonMap(selection.label(), selection)
         );
     }
 
-    static _SelectionMap createSelectionMap(List<Selection> selectionList, Map<String, Selection> selectionMap) {
+    public static _SelectionMap createSelectionMap(List<Selection> selectionList, Map<String, Selection> selectionMap) {
         return new SelectionMap(
                 _Collections.unmodifiableList(selectionList),
                 Collections.unmodifiableMap(selectionMap)
@@ -64,7 +65,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static void appendSelfDescribedList(final List<? extends _SelfDescribed> list, final StringBuilder sqlBuilder,
+    public static void appendSelfDescribedList(final List<? extends _SelfDescribed> list, final StringBuilder sqlBuilder,
                                         final _SqlContext context) {
         final int fieldSize = list.size();
         for (int i = 0; i < fieldSize; i++) {
@@ -76,7 +77,7 @@ abstract class CriteriaUtils {
 
     }
 
-    static void selfDescribedListToString(final List<? extends _SelfDescribed> list, final StringBuilder builder) {
+    public static void selfDescribedListToString(final List<? extends _SelfDescribed> list, final StringBuilder builder) {
         final int fieldSize = list.size();
         for (int i = 0; i < fieldSize; i++) {
             if (i > 0) {
@@ -88,7 +89,7 @@ abstract class CriteriaUtils {
     }
 
     @Deprecated
-    static List<String> columnAliasList(final boolean required, Consumer<Consumer<String>> consumer) {
+    public static List<String> columnAliasList(final boolean required, Consumer<Consumer<String>> consumer) {
         List<String> list = _Collections.arrayList();
         consumer.accept(list::add);
         if (list.size() > 0) {
@@ -101,7 +102,7 @@ abstract class CriteriaUtils {
         return list;
     }
 
-    static List<String> stringList(final @Nullable CriteriaContext ctx, final boolean required,
+    public static List<String> stringList(final @Nullable CriteriaContext ctx, final boolean required,
                                    final Consumer<Consumer<String>> consumer) {
         List<String> list = _Collections.arrayList();
         consumer.accept(list::add);
@@ -119,7 +120,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static void addAllField(final List<_ItemPair> itemPairList, final Consumer<FieldMeta<?>> consumer) {
+    public static void addAllField(final List<_ItemPair> itemPairList, final Consumer<FieldMeta<?>> consumer) {
         SqlField sqlField;
         for (_ItemPair itemPair : itemPairList) {
             if (itemPair instanceof _ItemPair._FieldItemPair) {
@@ -153,7 +154,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static <T> T invokeConsumer(final T data, final @Nullable Consumer<? super T> consumer) {
+    public static <T> T invokeConsumer(final T data, final @Nullable Consumer<? super T> consumer) {
         if (consumer == null) {
             throw consumerIsNull();
         }
@@ -175,7 +176,7 @@ abstract class CriteriaUtils {
     }
 
     @Nullable
-    static <T> T invokeIfSupplier(final @Nullable Supplier<T> supplier) {
+    public static <T> T invokeIfSupplier(final @Nullable Supplier<T> supplier) {
         if (supplier == null) {
             throw ContextStack.clearStackAndNullPointer("Supplier is null");
         }
@@ -190,7 +191,7 @@ abstract class CriteriaUtils {
         }
     }
 
-    static void refSelectionList(final List<String> columnNameList,
+    public static void refSelectionList(final List<String> columnNameList,
                                  final @Nullable List<String> columnAliasList,
                                  final _SelectionMap selectionMap, Consumer<Selection> consumer) {
         final int columnAliasSize;
@@ -244,7 +245,7 @@ abstract class CriteriaUtils {
 
     }
 
-    static List<_Expression> expressionList(final @Nullable CriteriaContext ctx, final boolean required,
+    public static List<_Expression> expressionList(final @Nullable CriteriaContext ctx, final boolean required,
                                             final Consumer<Consumer<Expression>> consumer) {
         final List<_Expression> list = _Collections.arrayList();
         consumer.accept(e -> list.add((ArmyExpression) e));
@@ -271,7 +272,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static List<_SelectItem> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
+    public static List<_SelectItem> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
         final List<_SelectItem> list = _Collections.arrayList();
         consumer.accept(CriteriaSupports.returningBuilder(list::add));
         if (list.size() == 0) {
@@ -280,7 +281,7 @@ abstract class CriteriaUtils {
         return list;
     }
 
-    static List<_SelectItem> returningAll(final TableMeta<?> targetTable, final String tableAlias,
+    public static List<_SelectItem> returningAll(final TableMeta<?> targetTable, final String tableAlias,
                                           final List<_TabularBlock> blockList) {
 
         List<_SelectItem> groupList;
@@ -298,17 +299,17 @@ abstract class CriteriaUtils {
     }
 
 
-    static void createAndAddCte(final CriteriaContext context, final @Nullable String name
+    public static void createAndAddCte(final CriteriaContext context, final @Nullable String name
             , final @Nullable List<String> columnAliasList, final SubStatement subStatement) {
         if (name == null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
         assert ((CriteriaContextSpec) subStatement).getContext().getNonNullOuterContext() == context;
-        final SQLs.CteImpl cte;
+        final CteImpl cte;
         if (columnAliasList == null) {
-            cte = new SQLs.CteImpl(name, subStatement);
+            cte = new CteImpl(name, subStatement);
         } else {
-            cte = new SQLs.CteImpl(name, columnAliasList, subStatement);
+            cte = new CteImpl(name, columnAliasList, subStatement);
         }
         context.onAddCte(cte);
     }

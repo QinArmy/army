@@ -19,7 +19,7 @@ package io.army.criteria.postgre.statement;
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.postgre.PostgreSingleRangeType;
 import io.army.sqltype.PostgreType;
 import org.slf4j.Logger;

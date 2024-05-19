@@ -21,8 +21,8 @@ import io.army.criteria.Values;
 import io.army.criteria.ValuesQuery;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.mysql.MySQLValues;
+import io.army.criteria.standard.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.util.Decimals;
@@ -35,7 +35,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.*;
+import static io.army.criteria.standard.SQLs.*;
 
 public class MySQLValuesUnitTests extends MySQLUnitTests {
 

@@ -19,6 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
+import io.army.criteria.standard.SQLs;
 import io.army.mapping.*;
 import io.army.util._Exceptions;
 
@@ -358,8 +359,8 @@ abstract class MySQLOtherFunctions extends MySQLMiscellaneousFunctions {
      */
     public static SimpleExpression ifFunc(final Expression predicate, final @Nullable Object expr1, final @Nullable Object expr2) {
         final Expression expression1, expression2;
-        expression1 = SQLs._nullableLiteral(expr1);
-        expression2 = SQLs._nullableLiteral(expr2);
+        expression1 = Armies._nullableLiteral(expr1);
+        expression2 = Armies._nullableLiteral(expr2);
 
 
         return LiteralFunctions.threeArgFunc("IF", predicate, expression1, expression2, expression1.typeMeta());

@@ -16,7 +16,7 @@
 
 package io.army.criteria;
 
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.SQLs;
 import io.army.function.*;
 import io.army.mapping.BooleanType;
 
