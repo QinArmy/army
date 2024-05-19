@@ -20,6 +20,9 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.Returnings;
+import io.army.criteria.impl.ArmyStmtSpec;
+import io.army.criteria.impl.CriteriaContext;
+import io.army.criteria.impl.InsertSupports;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._ConflictTargetItem;
 import io.army.criteria.postgre.inner._PostgreInsert;
@@ -101,7 +104,7 @@ abstract class PostgreInserts extends InsertSupports {
 
     private static <P> PostgreInsert._ParentInsert<P> parentInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
         final Statement._DmlInsertClause<PostgreInsert._ParentInsert<P>> spec;
-        final InsertMode mode;
+        final InsertSupports.InsertMode mode;
         mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:

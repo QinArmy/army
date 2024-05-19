@@ -958,7 +958,7 @@ public abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR,
 
 
     @SuppressWarnings("unchecked")
-    static abstract class JoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
+    public static abstract class JoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
             extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, Object, Object, Object, Object, Object, Object, Object>
             implements Statement._OnClause<OR>, _TabularBlock, _TabularBlock._ModifierTableBlockSpec {
 
@@ -966,9 +966,9 @@ public abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR,
 
         private final SQLWords modifier;
 
-        final TabularItem tabularItem;
+        protected final TabularItem tabularItem;
 
-        final String alias;
+        protected final String alias;
 
         private List<_Predicate> onPredicateList;
 

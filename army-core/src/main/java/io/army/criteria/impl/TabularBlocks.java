@@ -238,17 +238,17 @@ public abstract class TabularBlocks {
             return list;
         }
 
-        final void parens(String first, String... rest) {
+        public final void parens(String first, String... rest) {
             this.onColumnAlias(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
 
-        final void parens(CriteriaContext context, Consumer<Consumer<String>> consumer) {
+        public final void parens(CriteriaContext context, Consumer<Consumer<String>> consumer) {
             this.onColumnAlias(CriteriaUtils.stringList(context, true, consumer));
         }
 
 
-        final void ifParens(CriteriaContext context, Consumer<Consumer<String>> consumer) {
+        public final void ifParens(CriteriaContext context, Consumer<Consumer<String>> consumer) {
             this.onColumnAlias(CriteriaUtils.stringList(context, false, consumer));
         }
 

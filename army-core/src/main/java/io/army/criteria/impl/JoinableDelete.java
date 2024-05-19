@@ -54,7 +54,7 @@ public abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, W
     private List<_TabularBlock> tableBlockList;
 
 
-    JoinableDelete(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
+    protected JoinableDelete(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
         if (spec != null) {

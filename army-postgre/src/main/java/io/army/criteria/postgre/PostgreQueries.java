@@ -1242,7 +1242,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        PostgreQueries<I> createSelectClause() {
+        protected PostgreQueries<I> createSelectClause() {
             endDispatcher();
             return PostgreQueries.fromSubDispatcher(this, this.function);
         }
@@ -1475,13 +1475,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        final PostgreCtes createCteBuilder(boolean recursive) {
+        protected final PostgreCtes createCteBuilder(boolean recursive) {
             // static WITH clause don't support this
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
 
         @Override
-        final PostgreQueries<I> createSelectClause() {
+        protected final PostgreQueries<I> createSelectClause() {
             this.endDispatcher();
 
             return PostgreQueries.fromSubDispatcher(this, this.queryFunction);

@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.BatchReturningDelete;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.Returnings;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._PostgreDelete;
 import io.army.criteria.standard.SQLs;
@@ -580,13 +581,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
 
     @Override
-    final PostgreCtes createCteBuilder(boolean recursive) {
+    protected final PostgreCtes createCteBuilder(boolean recursive) {
         return PostgreSupports.postgreCteBuilder(recursive, this.context);
     }
 
 
     @Override
-    final _TableSampleJoinSpec<I, Q> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
+    protected final _TableSampleJoinSpec<I, Q> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final PostgreSupports.FromClauseTableBlock block;
         block = new PostgreSupports.FromClauseTableBlock(joinType, modifier, table, alias);
         this.blockConsumer.accept(block);
@@ -595,7 +596,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }
 
     @Override
-    final _AsClause<_ParensJoinSpec<I, Q>> onFromDerived(
+    protected final _AsClause<_ParensJoinSpec<I, Q>> onFromDerived(
             _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final TabularBlocks.FromClauseAliasDerivedBlock block;
@@ -607,7 +608,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }
 
     @Override
-    final _SingleJoinSpec<I, Q> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
+    protected final _SingleJoinSpec<I, Q> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final _TabularBlock block;
         block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -616,14 +617,14 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }
 
     @Override
-    final _FuncColumnDefinitionAsClause<_SingleJoinSpec<I, Q>> onFromUndoneFunc(
+    protected final _FuncColumnDefinitionAsClause<_SingleJoinSpec<I, Q>> onFromUndoneFunc(
             final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier, final UndoneFunction func) {
         return alias -> PostgreBlocks.fromUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
     }
 
 
     @Override
-    final _TableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
+    protected final _TableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                TableMeta<?> table, String alias) {
         final SimpleJoinClauseTableBlock<I, Q> block;
         block = new SimpleJoinClauseTableBlock<>(joinType, modifier, table, alias, this);
@@ -632,7 +633,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }
 
     @Override
-    final _AsParensOnClause<_SingleJoinSpec<I, Q>> onJoinDerived(
+    protected final _AsParensOnClause<_SingleJoinSpec<I, Q>> onJoinDerived(
             _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseAliasDerivedBlock<_SingleJoinSpec<I, Q>> block;
@@ -643,13 +644,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }
 
     @Override
-    final _FuncColumnDefinitionAsClause<_OnClause<_SingleJoinSpec<I, Q>>> onJoinUndoneFunc(
+    protected final _FuncColumnDefinitionAsClause<_OnClause<_SingleJoinSpec<I, Q>>> onJoinUndoneFunc(
             final _JoinType joinType, final @Nullable SQLs.DerivedModifier modifier, final UndoneFunction func) {
         return alias -> PostgreBlocks.joinUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
     }
 
     @Override
-    final _OnClause<_SingleJoinSpec<I, Q>> onJoinCte(
+    protected final _OnClause<_SingleJoinSpec<I, Q>> onJoinCte(
             _JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final TabularBlocks.JoinClauseCteBlock<_SingleJoinSpec<I, Q>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
@@ -672,23 +673,23 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
 
     @Override
-    final boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
+    protected final boolean isIllegalTableModifier(@Nullable SQLs.TableModifier modifier) {
         return CriteriaUtils.isIllegalOnly(modifier);
     }
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+    protected final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
-    final void onEndStatement() {
+    protected final void onEndStatement() {
         this.fromCrossBlock = null;
 
     }
 
     @Override
-    final void onClear() {
+    protected final void onClear() {
         this.returningList = null;
         if (this instanceof BatchPrimarySimpleDelete) {
             ((BatchPrimarySimpleDelete) this).paramList = null;
@@ -720,7 +721,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
 
 
     @Override
-    final I onAsDelete() {
+    protected final I onAsDelete() {
         if (this.returningList != null) {
             throw ContextStack.clearStackAndCastCriteriaApi();
         }
