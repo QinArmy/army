@@ -31,11 +31,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 public class ArmyKey<T> {
-
-    private static final ConcurrentMap<String, ArmyKey<?>> INSTANCE_MAP = _Collections.concurrentHashMap();
 
     public static final ArmyKey<Boolean> READ_ONLY = new ArmyKey<>("readonly", Boolean.class, Boolean.FALSE);
 
@@ -108,10 +105,14 @@ public class ArmyKey<T> {
 
     public final T defaultValue;
 
-    ArmyKey(String name, Class<T> javaType, @Nullable T defaultValue) {
-        if (INSTANCE_MAP.putIfAbsent(name, this) != null) {
-            String m = String.format("name[%s] duplication.", name);
-            throw new IllegalArgumentException(m);
+    protected ArmyKey(String name, Class<T> javaType, @Nullable T defaultValue) {
+        switch (getClass().getName()) {
+            case "io.army.env.ArmyKey.ArmyKey":
+            case "io.army.sync.SyncKey":
+            case "io.army.reactive.ReactiveKey":
+                break;
+            default:
+                throw new UnsupportedOperationException();
         }
         this.name = name;
         this.javaType = javaType;
@@ -177,11 +178,11 @@ public class ArmyKey<T> {
 
         static {
             final Class<?> syncKeyClass, reactiveKeyClass;
-            syncKeyClass = ClassUtils.tryLoadClass("io.army.env.SyncKey", ArmyKey.class.getClassLoader());
-            reactiveKeyClass = ClassUtils.tryLoadClass("io.army.env.ReactiveKey", ArmyKey.class.getClassLoader());
+            syncKeyClass = ClassUtils.tryLoadClass("io.army.sync.SyncKey", ArmyKey.class.getClassLoader());
+            reactiveKeyClass = ClassUtils.tryLoadClass("io.army.reactive.ReactiveKey", ArmyKey.class.getClassLoader());
 
 
-            final List<ArmyKey<?>> list = _Collections.arrayList(ArmyKey.INSTANCE_MAP.size());
+            final List<ArmyKey<?>> list = _Collections.arrayList();
 
             try {
                 addAllKey(ArmyKey.class, list);
@@ -194,7 +195,7 @@ public class ArmyKey<T> {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
-            ARMY_KEY_LIST = _Collections.unmodifiableList(list);
+            ARMY_KEY_LIST = _Collections.unmodifiableList(_Collections.arrayList(list));
         }
 
 

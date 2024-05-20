@@ -3,4 +3,5 @@ module army.sqlite {
     requires transitive army.core;
 
     exports io.army.criteria.sqlite;
+    exports io.army.mapping.sqlite;
 }

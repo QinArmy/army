@@ -20,7 +20,6 @@ import io.army.advice.FactoryAdvice;
 import io.army.dialect.DialectParser;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
-import io.army.env.SyncKey;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.schema.SchemaComparer;

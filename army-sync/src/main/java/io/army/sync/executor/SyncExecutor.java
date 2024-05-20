@@ -26,6 +26,7 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
 import io.army.stmt.TwoStmtQueryStmt;
 import io.army.sync.StreamOption;
+import io.army.sync.SyncKey;
 import io.army.sync.SyncStmtOption;
 
 import javax.annotation.Nullable;
@@ -65,7 +66,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
      *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
      * <br/>
      *
-     * @return {@link io.army.env.SyncKey#SESSION_IDENTIFIER_ENABLE} : <ul>
+     * @return {@link SyncKey#SESSION_IDENTIFIER_ENABLE} : <ul>
      * <li>true :  session identifier </li>
      * <li>false (default) : always 0 , because JDBC spi don't support get server process id (or server thread id)</li>
      * </ul>

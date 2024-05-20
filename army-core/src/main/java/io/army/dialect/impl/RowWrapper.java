@@ -33,10 +33,10 @@ interface RowWrapper {
 
     /**
      * <p>
-     * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)}
+     * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, RowWrapper)}
      *
      *
-     * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
+     * @see FieldValueGenerator#generate(TableMeta, RowWrapper)
      */
     void set(FieldMeta<?> field, @Nullable Object value);
 
@@ -53,10 +53,10 @@ interface RowWrapper {
 
     /**
      * <p>
-     * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)}
+     * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, RowWrapper)}
      *
      *
-     * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
+     * @see FieldValueGenerator#generate(TableMeta, RowWrapper)
      */
     ReadWrapper readonlyWrapper();
 

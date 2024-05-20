@@ -58,7 +58,7 @@ public interface SyncSession extends Session, Closeable {
      * </ul>
      * <strong>NOTE</strong>: identifier will probably be updated if reconnect.
      *
-     * @return {@link io.army.env.SyncKey#SESSION_IDENTIFIER_ENABLE} : <ul>
+     * @return {@link SyncKey#SESSION_IDENTIFIER_ENABLE} : <ul>
      * <li>true :  session identifier </li>
      * <li>false (default) : always 0 , because JDBC spi don't support get server process id (or server thread id)</li>
      * </ul>

@@ -20,7 +20,6 @@ import io.army.advice.FactoryAdvice;
 import io.army.dialect.DialectParser;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
-import io.army.env.ReactiveKey;
 import io.army.meta.TableMeta;
 import io.army.reactive.executor.ReactiveExecutorFactory;
 import io.army.reactive.executor.ReactiveExecutorFactoryProvider;
