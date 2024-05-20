@@ -18,7 +18,6 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.DqlStatement;
 import io.army.criteria.Expression;
-import io.army.criteria.impl.MySQLs;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 

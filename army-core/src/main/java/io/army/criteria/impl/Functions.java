@@ -20,7 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.criteria.standard.SQLs;
 import io.army.criteria.standard.Windows;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._SqlContext;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
 import io.army.meta.TypeMeta;
@@ -92,7 +92,7 @@ public abstract class Functions {
 
     }
 
-    interface _NullTreatmentClause<R> {
+    public interface _NullTreatmentClause<R> {
 
         R respectNulls();
 

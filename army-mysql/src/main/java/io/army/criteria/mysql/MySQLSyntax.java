@@ -19,8 +19,10 @@ package io.army.criteria.mysql;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.VarExpression;
+import io.army.criteria.impl.ContextStack;
+import io.army.criteria.impl.UserVarExpression;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;

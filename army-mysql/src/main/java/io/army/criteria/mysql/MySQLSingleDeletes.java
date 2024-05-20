@@ -18,6 +18,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.mysql.inner._MySQLSingleDelete;
 import io.army.criteria.standard.SQLs;

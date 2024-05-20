@@ -273,7 +273,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }
 
 
-    private static SimpleExpression onXmlForestEnd(ArmyFuncClause clause) {
+    private static SimpleExpression onXmlForestEnd(ArmyMyFuncClause clause) {
         assert clause instanceof XmlNamedElementPart;
         return FunctionUtils.clauseFunc("XMLFOREST", clause, XmlType.TEXT);
     }
@@ -328,18 +328,18 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }//TableNameExpression
 
 
-    static final class XmlNamedElementPart<R extends Item> implements ArmyFuncClause,
+    static final class XmlNamedElementPart<R extends Item> implements ArmyMyFuncClause,
             Postgres._XmlNamedElementFieldClause {
 
         private final boolean supportField;
 
-        private final Function<ArmyFuncClause, R> function;
+        private final Function<ArmyMyFuncClause, R> function;
 
         private final CriteriaContext outerContext;
 
         private List<Object> attValueList;
 
-        private XmlNamedElementPart(boolean supportField, Function<ArmyFuncClause, R> function) {
+        private XmlNamedElementPart(boolean supportField, Function<ArmyMyFuncClause, R> function) {
             this.supportField = supportField;
             this.function = function;
             this.outerContext = ContextStack.peek();
@@ -453,13 +453,13 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     }//XmlAttributesFunc
 
-    private static abstract class XmlNamedElementPartConsumer implements ArmyFuncClause {
+    private static abstract class XmlNamedElementPartConsumer implements ArmyMyFuncClause {
 
         private final String name;
 
-        private final ArmyFuncClause clause;
+        private final ArmyMyFuncClause clause;
 
-        private XmlNamedElementPartConsumer(String name, ArmyFuncClause clause) {
+        private XmlNamedElementPartConsumer(String name, ArmyMyFuncClause clause) {
             assert clause instanceof XmlNamedElementPart;
             this.name = name;
             this.clause = clause;
@@ -481,7 +481,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     static final class XmlAttributes extends XmlNamedElementPartConsumer
             implements Postgres.XmlAttributes {
 
-        private XmlAttributes(ArmyFuncClause clause) {
+        private XmlAttributes(ArmyMyFuncClause clause) {
             super("XMLATTRIBUTES", clause);
         }
 
@@ -491,7 +491,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     static final class XmlNameSpaces extends XmlNamedElementPartConsumer
             implements Postgres.XmlNameSpaces {
 
-        private XmlNameSpaces(ArmyFuncClause clause) {
+        private XmlNameSpaces(ArmyMyFuncClause clause) {
             super("XMLNAMESPACES", clause);
         }
 
@@ -514,7 +514,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     static final class XmlTableColumnsClause implements Postgres._XmlTableColumnsClause,
             Postgres.XmlTableCommaClause,
-            ArmyFuncClause {
+            ArmyMyFuncClause {
 
         static final String XMLTABLE = "XMLTABLE";
 

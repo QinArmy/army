@@ -20,7 +20,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-import io.army.criteria.mysql.inner._TabularBlock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -18,11 +18,14 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelectionGroup;
-import io.army.criteria.mysql.inner._SelfDescribed;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.standard.SQLFunction;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.DialectParser;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._DialectUtils;
+import io.army.dialect.impl._SqlContext;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
@@ -46,7 +49,7 @@ public abstract class FunctionUtils {
     }
 
 
-    public interface ArmyFuncClause extends _SelfDescribed, Clause {
+    public interface ArmyMyFuncClause extends _SelfDescribed, Clause {
 
     }
 
@@ -611,7 +614,7 @@ public abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
-    public static SimpleExpression clauseFunc(String name, ArmyFuncClause clause, TypeMeta returnType) {
+    public static SimpleExpression clauseFunc(String name, ArmyMyFuncClause clause, TypeMeta returnType) {
         return new ArmyFuncClauseFunction(name, clause, returnType);
     }
 
@@ -891,8 +894,8 @@ public abstract class FunctionUtils {
             } else if (o instanceof SQLIdentifier) { // sql identifier
                 sqlBuilder.append(_Constant.SPACE);
                 parser.identifier(((SQLIdentifier) o).render(), sqlBuilder);
-            } else if (o instanceof ArmyFuncClause) {
-                ((ArmyFuncClause) o).appendSql(sqlBuilder, context);
+            } else if (o instanceof ArmyMyFuncClause) {
+                ((ArmyMyFuncClause) o).appendSql(sqlBuilder, context);
             } else if (o instanceof MappingType) {
                 sqlBuilder.append(_Constant.SPACE);
                 parser.typeName((MappingType) o, sqlBuilder);
@@ -919,7 +922,7 @@ public abstract class FunctionUtils {
             } else if (o instanceof String) {
                 builder.append(_Constant.SPACE)
                         .append(o);
-            } else if (o instanceof ArmyFuncClause) {
+            } else if (o instanceof ArmyMyFuncClause) {
                 builder.append(o);
             } else if (o instanceof MappingType) {
                 builder.append(_Constant.SPACE)
@@ -1220,12 +1223,12 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no-op
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             //no-op
         }
 
@@ -1243,12 +1246,12 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, final _SqlContext context) {
             this.argument.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.argument);
         }
 
@@ -1272,14 +1275,14 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
             this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two);
@@ -1310,7 +1313,7 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1322,7 +1325,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two)
@@ -1358,7 +1361,7 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1374,7 +1377,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two)
@@ -1415,7 +1418,7 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1434,7 +1437,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two)
@@ -1483,7 +1486,7 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1505,7 +1508,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two)
@@ -1559,7 +1562,7 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1584,7 +1587,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two)
@@ -1616,12 +1619,12 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FunctionUtils.appendArguments(null, this.argList, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             FunctionUtils.argumentsToString(null, this.argList, builder);
         }
 
@@ -1637,12 +1640,12 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no-op
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             //no-op
         }
 
@@ -1662,12 +1665,12 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(this.one);
         }
 
@@ -1692,12 +1695,12 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FunctionUtils.appendArguments(this.option, this.argList, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             FunctionUtils.argumentsToString(this.option, this.argList, builder);
         }
 
@@ -1723,12 +1726,12 @@ public abstract class FunctionUtils {
 
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FunctionUtils.appendComplexArg(this.argumentList, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             FunctionUtils.complexArgToString(this.argumentList, builder);
         }
 
@@ -1753,12 +1756,12 @@ public abstract class FunctionUtils {
 
 
         @Override
-        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FunctionUtils.appendComplexArg(this.argList, context);
         }
 
         @Override
-        final void argToString(StringBuilder builder) {
+        protected final void argToString(StringBuilder builder) {
             FunctionUtils.complexArgToString(this.argList, builder);
         }
 
@@ -1787,23 +1790,23 @@ public abstract class FunctionUtils {
 
     private static final class ArmyFuncClauseFunction extends OperationExpression.SqlFunctionExpression {
 
-        private final ArmyFuncClause clause;
+        private final ArmyMyFuncClause clause;
 
         /**
-         * @see #clauseFunc(String, ArmyFuncClause, TypeMeta)
+         * @see #clauseFunc(String, ArmyMyFuncClause, TypeMeta)
          */
-        private ArmyFuncClauseFunction(String name, ArmyFuncClause clause, TypeMeta returnType) {
+        private ArmyFuncClauseFunction(String name, ArmyMyFuncClause clause, TypeMeta returnType) {
             super(name, returnType);
             this.clause = clause;
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.clause.appendSql(sqlBuilder, context);
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             builder.append(this.clause);
         }
 
@@ -1813,7 +1816,7 @@ public abstract class FunctionUtils {
 
     public static final class OrderByOptionClause
             extends OrderByClause.OrderByClauseClause<Statement._SimpleOrderByCommaClause, Item>
-            implements ArmyFuncClause,
+            implements ArmyMyFuncClause,
             Statement._SimpleOrderByClause,
             Statement._SimpleOrderByCommaClause {
 
@@ -1863,7 +1866,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<Object> argList = this.argList;
             final int argSize;
             argSize = argList.size();
@@ -1904,7 +1907,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             final List<Object> argList = this.argList;
             final int argSize;
             argSize = argList.size();
@@ -1948,7 +1951,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<Object> argList = this.argList;
             final int argSize;
             argSize = argList.size();
@@ -1985,7 +1988,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             final List<Object> argList = this.argList;
             final int argSize;
             argSize = argList.size();
@@ -2032,7 +2035,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             String key;
             Object value;
             int count = 0;
@@ -2064,7 +2067,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             String key;
             Object value;
             int count = 0;
@@ -2118,7 +2121,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             int index = 0;
             for (final Object arg : this.argList) {
 
@@ -2153,7 +2156,7 @@ public abstract class FunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             int index = 0;
             for (final Object arg : this.argList) {
 

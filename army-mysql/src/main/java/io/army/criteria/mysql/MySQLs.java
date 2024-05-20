@@ -18,6 +18,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.DmlCommand;
+import io.army.criteria.impl.*;
 import io.army.criteria.standard.SQLs;
 import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.LocalDateType;
@@ -34,22 +35,22 @@ public abstract class MySQLs extends MySQLSyntax {
     private MySQLs() {
     }
 
-    public static final Modifier ALL = _MySQLWords.MySQLModifier.ALL;
-    public static final WordDistinct DISTINCT = _MySQLWords.KeyWordDistinct.DISTINCT;
-    public static final Modifier DISTINCTROW = _MySQLWords.MySQLModifier.DISTINCTROW;
-    public static final Modifier HIGH_PRIORITY = _MySQLWords.MySQLModifier.HIGH_PRIORITY;
-    public static final Modifier STRAIGHT_JOIN = _MySQLWords.MySQLModifier.STRAIGHT_JOIN;
-    public static final Modifier SQL_SMALL_RESULT = _MySQLWords.MySQLModifier.SQL_SMALL_RESULT;
-    public static final Modifier SQL_BIG_RESULT = _MySQLWords.MySQLModifier.SQL_BIG_RESULT;
-    public static final Modifier SQL_BUFFER_RESULT = _MySQLWords.MySQLModifier.SQL_BUFFER_RESULT;
-    public static final Modifier SQL_NO_CACHE = _MySQLWords.MySQLModifier.SQL_NO_CACHE;
-    public static final Modifier SQL_CALC_FOUND_ROWS = _MySQLWords.MySQLModifier.SQL_CALC_FOUND_ROWS;
-    public static final Modifier LOW_PRIORITY = _MySQLWords.MySQLModifier.LOW_PRIORITY;
-    public static final Modifier DELAYED = _MySQLWords.MySQLModifier.DELAYED;
-    public static final Modifier QUICK = _MySQLWords.MySQLModifier.QUICK;
-    public static final Modifier IGNORE = _MySQLWords.MySQLModifier.IGNORE;
-    public static final Modifier CONCURRENT = _MySQLWords.MySQLModifier.CONCURRENT;
-    public static final Modifier LOCAL = _MySQLWords.MySQLModifier.LOCAL;
+    public static final Modifier ALL = MySQLWords.MySQLModifier.ALL;
+    public static final WordDistinct DISTINCT = MySQLWords.KeyWordDistinct.DISTINCT;
+    public static final Modifier DISTINCTROW = MySQLWords.MySQLModifier.DISTINCTROW;
+    public static final Modifier HIGH_PRIORITY = MySQLWords.MySQLModifier.HIGH_PRIORITY;
+    public static final Modifier STRAIGHT_JOIN = MySQLWords.MySQLModifier.STRAIGHT_JOIN;
+    public static final Modifier SQL_SMALL_RESULT = MySQLWords.MySQLModifier.SQL_SMALL_RESULT;
+    public static final Modifier SQL_BIG_RESULT = MySQLWords.MySQLModifier.SQL_BIG_RESULT;
+    public static final Modifier SQL_BUFFER_RESULT = MySQLWords.MySQLModifier.SQL_BUFFER_RESULT;
+    public static final Modifier SQL_NO_CACHE = MySQLWords.MySQLModifier.SQL_NO_CACHE;
+    public static final Modifier SQL_CALC_FOUND_ROWS = MySQLWords.MySQLModifier.SQL_CALC_FOUND_ROWS;
+    public static final Modifier LOW_PRIORITY = MySQLWords.MySQLModifier.LOW_PRIORITY;
+    public static final Modifier DELAYED = MySQLWords.MySQLModifier.DELAYED;
+    public static final Modifier QUICK = MySQLWords.MySQLModifier.QUICK;
+    public static final Modifier IGNORE = MySQLWords.MySQLModifier.IGNORE;
+    public static final Modifier CONCURRENT = MySQLWords.MySQLModifier.CONCURRENT;
+    public static final Modifier LOCAL = MySQLWords.MySQLModifier.LOCAL;
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.3/en/set-variable.html">MySQL SET Syntax for Variable Assignment</a>

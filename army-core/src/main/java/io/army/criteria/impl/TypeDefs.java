@@ -18,10 +18,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeDef;
-import io.army.criteria.mysql.inner._SelfDescribed;
-import io.army.dialect._Constant;
-import io.army.dialect._DialectUtils;
-import io.army.dialect._SqlContext;
+import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._DialectUtils;
+import io.army.dialect.impl._SqlContext;
 import io.army.meta.MetaException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLType;
@@ -57,7 +57,7 @@ public abstract class TypeDefs implements TypeDef {
         return ContextStack.clearStackAndCriteriaError(String.format("%s precision[%s] error", type, precision));
     }
 
-    final DataType dataType;
+    public final DataType dataType;
 
     private TypeDefs(DataType dataType) {
         this.dataType = dataType;
@@ -68,7 +68,7 @@ public abstract class TypeDefs implements TypeDef {
         return this.dataType.typeName();
     }
 
-    static final class TypeDefLength extends TypeDefs implements _TypeDefCharacterSetSpec, _SelfDescribed {
+    public static final class TypeDefLength extends TypeDefs implements _TypeDefCharacterSetSpec, _SelfDescribed {
 
         private final boolean textType;
 

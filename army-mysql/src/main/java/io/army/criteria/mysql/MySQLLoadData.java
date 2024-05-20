@@ -21,7 +21,6 @@ import io.army.criteria.Expression;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.dialect.DmlCommand;
-import io.army.criteria.impl.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;

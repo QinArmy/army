@@ -20,7 +20,7 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
-import io.army.criteria.mysql.inner._Statement;
+import io.army.criteria.impl.inner._Statement;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;

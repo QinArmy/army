@@ -18,9 +18,9 @@ package io.army.criteria.mysql.inner;
 
 import io.army.criteria.DialectStatement;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.mysql.MySQLs;
 
 import java.util.List;
 

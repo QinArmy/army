@@ -18,7 +18,6 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.MySQLs;
 import io.army.meta.*;
 
 import javax.annotation.Nullable;

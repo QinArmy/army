@@ -24,6 +24,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.inner._IndexHint;
 import io.army.criteria.mysql.inner._MySQLQuery;
 import io.army.criteria.standard.SQLs;
+import io.army.dialect.impl._Constant;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;

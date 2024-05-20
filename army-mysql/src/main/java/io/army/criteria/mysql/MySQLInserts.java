@@ -18,12 +18,10 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.mysql.inner._MySQLInsert;
-import io.army.criteria.standard.SQLs;
-import io.army.dialect.Dialect;
-import io.army.dialect.MySQLDialect;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
@@ -77,22 +75,13 @@ abstract class MySQLInserts extends InsertSupports {
         final InsertMode mode;
         mode = clause.getInsertMode();
         final Statement._DmlInsertClause<Insert> spec;
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimarySingleDomainInsertStatement(clause);
-                break;
-            case VALUES:
-                spec = new PrimarySimpleValueInsertStatement(clause);
-                break;
-            case ASSIGNMENT:
-                spec = new PrimarySimpleAssignmentInsertStatement(clause);
-                break;
-            case QUERY:
-                spec = new PrimarySimpleQueryInsertStatement(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
+        spec = switch (mode) {
+            case DOMAIN -> new PrimarySingleDomainInsertStatement(clause);
+            case VALUES -> new PrimarySimpleValueInsertStatement(clause);
+            case ASSIGNMENT -> new PrimarySimpleAssignmentInsertStatement(clause);
+            case QUERY -> new PrimarySimpleQueryInsertStatement(clause);
+            default -> throw _Exceptions.unexpectedEnum(mode);
+        };
         return spec.asInsert();
     }
 
@@ -101,22 +90,13 @@ abstract class MySQLInserts extends InsertSupports {
         final InsertMode mode;
         mode = clause.getInsertMode();
         final Statement._DmlInsertClause<InsertStatement._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>> spec;
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimaryParentDomainInsertStatement<>(clause);
-                break;
-            case VALUES:
-                spec = new PrimaryParentValueInsertStatement<>(clause);
-                break;
-            case ASSIGNMENT:
-                spec = new PrimaryParentAssignmentInsertStatement<>(clause);
-                break;
-            case QUERY:
-                spec = new PrimaryParentQueryInsertStatement<>(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
+        spec = switch (mode) {
+            case DOMAIN -> new PrimaryParentDomainInsertStatement<>(clause);
+            case VALUES -> new PrimaryParentValueInsertStatement<>(clause);
+            case ASSIGNMENT -> new PrimaryParentAssignmentInsertStatement<>(clause);
+            case QUERY -> new PrimaryParentQueryInsertStatement<>(clause);
+            default -> throw _Exceptions.unexpectedEnum(mode);
+        };
         return spec.asInsert();
     }
 
@@ -473,7 +453,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         private MySQLInsert._StaticConflictUpdateCommaClause<I, T> onAddItemPair(final ItemPair pair) {
-            if (!(pair instanceof SQLs.FieldItemPair)) {
+            if (!(pair instanceof Armies.FieldItemPair)) {
                 throw CriteriaUtils.illegalItemPair(this.clause.context, pair);
             }
             List<_ItemPair> pairList = this.itemPairList;
@@ -483,7 +463,7 @@ abstract class MySQLInserts extends InsertSupports {
             } else if (!(pairList instanceof ArrayList)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
-            pairList.add((SQLs.FieldItemPair) pair);
+            pairList.add((Armies.FieldItemPair) pair);
             return this;
         }
 
@@ -777,10 +757,6 @@ abstract class MySQLInserts extends InsertSupports {
             return false;
         }
 
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
-        }
 
 
     }//MySQLValueSyntaxStatement
@@ -1034,10 +1010,6 @@ abstract class MySQLInserts extends InsertSupports {
             return false;
         }
 
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
-        }
 
 
     }//PrimaryAssignmentStatement
@@ -1168,11 +1140,6 @@ abstract class MySQLInserts extends InsertSupports {
         public final boolean isDoNothing() {
             //false,MySQL don't support
             return false;
-        }
-
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
         }
 
 

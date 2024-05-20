@@ -18,12 +18,12 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.mysql.inner._IndexHint;
 import io.army.criteria.mysql.inner._MySQLSingleUpdate;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect.Dialect;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
@@ -359,7 +359,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
 
 
     @Override
-    final I onAsUpdate() {
+    protected final I onAsUpdate() {
         this.indexHintList = _Collections.safeUnmodifiableList(this.indexHintList);
         return this.onAsMySQLUpdate();
     }
@@ -368,14 +368,9 @@ abstract class MySQLSingleUpdates<I extends Item, T>
     abstract I onAsMySQLUpdate();
 
     @Override
-    final void onClear() {
+    protected final void onClear() {
         this.indexHintList = null;
 
-    }
-
-    @Override
-    final Dialect statementDialect() {
-        return MySQLUtils.DIALECT;
     }
 
 
@@ -534,7 +529,7 @@ abstract class MySQLSingleUpdates<I extends Item, T>
         }
 
         @Override
-        final MySQLCtes createCteBuilder(boolean recursive) {
+        protected final MySQLCtes createCteBuilder(boolean recursive) {
             return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
         }
 

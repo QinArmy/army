@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 public final class _Triple<F, S, T> {
 
 
-    static <F, S, T> _Triple<F, S, T> create(F first, S second, T third) {
+    public static <F, S, T> _Triple<F, S, T> create(F first, S second, T third) {
         return new _Triple<>(first, second, third);
     }
 

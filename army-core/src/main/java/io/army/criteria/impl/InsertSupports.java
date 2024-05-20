@@ -313,7 +313,7 @@ public abstract class InsertSupports {
 
         private final boolean ignoreReturnIds;
 
-        ChildOptionClause(ValueSyntaxOptions options, CriteriaContext context) {
+        protected ChildOptionClause(ValueSyntaxOptions options, CriteriaContext context) {
             this.context = context;
             this.migration = options.isMigration();
             this.nullHandleMode = options.nullHandle();
@@ -1260,7 +1260,7 @@ public abstract class InsertSupports {
     private static abstract class DynamicAssignmentSetClause<T, R>
             implements InsertStatement._StaticAssignmentSetClause<T, R> {
 
-        final CriteriaContext context;
+        public final CriteriaContext context;
 
         private final BiConsumer<FieldMeta<T>, Expression> consumer;
 
@@ -1837,10 +1837,10 @@ public abstract class InsertSupports {
     }//ValuesConstructorImpl
 
 
-    protected static abstract class AssignmentSetClause<T, SR> extends DynamicAssignmentSetClause<T, SR>
+    public static abstract class AssignmentSetClause<T, SR> extends DynamicAssignmentSetClause<T, SR>
             implements ColumnListClause, _Insert._AssignmentStatementSpec {
 
-        protected final TableMeta<T> insertTable;
+        public final TableMeta<T> insertTable;
 
         private Map<FieldMeta<?>, _Expression> fieldPairMap;
         private List<_Pair<FieldMeta<?>, _Expression>> itemPairList;

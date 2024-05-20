@@ -18,10 +18,13 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.ContextStack;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect.MySQLDialect;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 

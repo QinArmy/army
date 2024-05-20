@@ -20,7 +20,6 @@ import io.army.criteria.Item;
 import io.army.criteria.RowSet;
 import io.army.criteria.Statement;
 import io.army.criteria.Values;
-import io.army.criteria.impl.MySQLs;
 
 /**
  * <p>This interface representing MySQL Values statement,this interface is base interface of below:

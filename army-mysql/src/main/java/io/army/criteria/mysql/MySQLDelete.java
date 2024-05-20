@@ -21,7 +21,6 @@ import io.army.criteria.Item;
 import io.army.criteria.Query;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.MySQLs;
 
 import java.util.List;
 import java.util.function.Consumer;

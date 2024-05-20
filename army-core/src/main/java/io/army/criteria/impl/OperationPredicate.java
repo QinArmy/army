@@ -19,8 +19,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.function.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -843,10 +843,10 @@ public abstract class OperationPredicate extends OperationExpression.PredicateEx
             return builder.toString();
         }
 
-        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
+        protected abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
 
 
-        abstract void argToString(StringBuilder builder);
+        protected abstract void argToString(StringBuilder builder);
 
 
     }//SqlFunctionPredicate

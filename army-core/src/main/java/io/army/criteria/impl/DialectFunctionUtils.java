@@ -20,10 +20,10 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._SelectionGroup;
-import io.army.criteria.mysql.inner._SelfDescribed;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.optional.CompositeTypeField;
@@ -1011,12 +1011,12 @@ public abstract class DialectFunctionUtils extends FunctionUtils {
 
     public static abstract class FunctionField extends OperationDataField implements _FunctionField {
 
-        final String name;
+        protected final String name;
 
-        final MappingType type;
+        protected final MappingType type;
 
 
-        FunctionField(String name, MappingType type) {
+        protected FunctionField(String name, MappingType type) {
             this.name = name;
             this.type = type;
         }

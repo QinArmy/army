@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._Constant;
-import io.army.dialect._SetClauseContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SetClauseContext;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -178,7 +178,7 @@ public abstract class Armies {
     /**
      * @see #_itemPair(SqlField, AssignOperator, Expression)
      */
-    static class FieldItemPair extends ArmyItemPair implements _ItemPair._FieldItemPair {
+    public static class FieldItemPair extends ArmyItemPair implements _ItemPair._FieldItemPair {
 
         final SqlField field;
 

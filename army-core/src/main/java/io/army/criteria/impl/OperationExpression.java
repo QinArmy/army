@@ -20,8 +20,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
 import io.army.function.TeNamedOperator;
@@ -400,7 +400,7 @@ public abstract class OperationExpression extends OperationSQLExpression
     }
 
 
-    static abstract class OperationSimpleExpression extends OperationExpression
+    public static abstract class OperationSimpleExpression extends OperationExpression
             implements SimpleExpression,
             ArmySimpleExpression,
             Statement._ArrayExpOperator,
@@ -409,7 +409,7 @@ public abstract class OperationExpression extends OperationSQLExpression
         /**
          * package constructor
          */
-        OperationSimpleExpression() {
+        protected OperationSimpleExpression() {
 
         }
 

@@ -17,12 +17,13 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
 import io.army.dialect.MySQLDialect;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.ChildTableMeta;
@@ -198,7 +199,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
 
         @Override
-        final boolean isDontSupportWindow(final Dialect dialect) {
+        protected final boolean isDontSupportWindow(final Dialect dialect) {
             if (!(dialect instanceof MySQLDialect)) {
                 throw dialectError(dialect);
             }
@@ -206,7 +207,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final MySQLWindow._PartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
+        protected final MySQLWindow._PartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
             return MySQLSupports.anonymousWindow(this.outerContext, existingWindowName);
         }
 
@@ -219,12 +220,12 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no argument,no-op
         }
 
         @Override
-        final void argToString(StringBuilder builder) {
+        protected final void argToString(StringBuilder builder) {
             //no argument,no-op
         }
 
@@ -241,12 +242,12 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.argument, sqlBuilder, context);
         }
 
         @Override
-        final void argToString(final StringBuilder builder) {
+        protected final void argToString(final StringBuilder builder) {
             FuncExpUtils.literalToString(this.argument, builder);
         }
 
@@ -269,7 +270,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final SQLWords option = this.option;
             if (option != null) {
                 sqlBuilder.append(option.spaceRender());
@@ -278,7 +279,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final void argToString(final StringBuilder builder) {
+        protected final void argToString(final StringBuilder builder) {
             final SQLWords option = this.option;
             if (option != null) {
                 builder.append(_Constant.SPACE)
@@ -307,12 +308,12 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FunctionUtils.appendArguments(this.option, this.argList, context);
         }
 
         @Override
-        final void argToString(final StringBuilder builder) {
+        protected final void argToString(final StringBuilder builder) {
             FunctionUtils.argumentsToString(this.option, this.argList, builder);
         }
 
@@ -330,12 +331,12 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override
-        final void argToString(StringBuilder builder) {
+        protected final void argToString(StringBuilder builder) {
             FuncExpUtils.literalListToString(this.argList, builder);
         }
 
@@ -406,7 +407,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        void appendClauseBeforeOver(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendClauseBeforeOver(final StringBuilder sqlBuilder, final _SqlContext context) {
             final FromFirstLast fromFirstLast = this.fromFirstLast;
             final NullTreatment nullTreatment = this.nullTreatment;
 
@@ -421,7 +422,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        void outerClauseToString(final StringBuilder builder) {
+        protected void outerClauseToString(final StringBuilder builder) {
             final FromFirstLast fromFirstLast = this.fromFirstLast;
             final NullTreatment nullTreatment = this.nullTreatment;
 
@@ -493,12 +494,12 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendCompositeList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override
-        final void argToString(StringBuilder builder) {
+        protected final void argToString(StringBuilder builder) {
             FuncExpUtils.compositeListToString(this.argList, builder);
         }
 
@@ -524,7 +525,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
      */
     private static final class GroupConcatInnerClause
             extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause, MySQLFunction._GroupConcatSeparatorClause>
-            implements MySQLFunction._GroupConcatOrderBySpec, io.army.criteria.impl.ArmyFuncClause {
+            implements MySQLFunction._GroupConcatOrderBySpec, ArmyFuncClause {
 
 
         private String stringValue;
@@ -609,7 +610,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final PrimaryStatement statement = this.statement;
 
             final Stmt stmt;
@@ -645,7 +646,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             //TODO
         }
 
@@ -1151,7 +1152,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             FuncExpUtils.appendJsonDoc(this.jsonDoc, sqlBuilder, context);
 
@@ -1164,7 +1165,7 @@ abstract class MySQLFunctions extends DialectFunctionUtils {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.jsonDoc)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.path)

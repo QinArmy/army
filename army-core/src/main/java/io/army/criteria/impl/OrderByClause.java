@@ -17,12 +17,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._DerivedTable;
-import io.army.criteria.impl.inner._RowSet;
-import io.army.criteria.impl.inner._SelectItem;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
-import io.army.dialect._MockDialects;
+import io.army.dialect.impl._MockDialects;
 import io.army.stmt.Stmt;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -339,9 +337,9 @@ public abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMo
     }//UnionSubRowSet
 
 
-    static abstract class OrderByClauseClause<OR, OD> extends OrderByClause<OR, OD> {
+    public static abstract class OrderByClauseClause<OR, OD> extends OrderByClause<OR, OD> {
 
-        OrderByClauseClause(CriteriaContext context) {
+        protected OrderByClauseClause(CriteriaContext context) {
             super(context);
         }
 

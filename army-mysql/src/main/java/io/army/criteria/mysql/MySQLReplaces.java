@@ -21,6 +21,8 @@ import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.SubQuery;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.ArmyStmtSpec;
+import io.army.criteria.impl.InsertSupports;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.mysql.inner._MySQLInsert;
@@ -83,22 +85,13 @@ abstract class MySQLReplaces extends InsertSupports {
         final InsertMode mode;
         mode = clause.getInsertMode();
         final Statement._DmlInsertClause<Insert> spec;
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimarySimpleDomainReplaceStatement(clause);
-                break;
-            case VALUES:
-                spec = new PrimarySimpleValueReplaceStatement(clause);
-                break;
-            case ASSIGNMENT:
-                spec = new PrimarySimpleAssignmentReplaceStatement(clause);
-                break;
-            case QUERY:
-                spec = new PrimarySimpleQueryReplaceStatement(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
+        spec = switch (mode) {
+            case DOMAIN -> new PrimarySimpleDomainReplaceStatement(clause);
+            case VALUES -> new PrimarySimpleValueReplaceStatement(clause);
+            case ASSIGNMENT -> new PrimarySimpleAssignmentReplaceStatement(clause);
+            case QUERY -> new PrimarySimpleQueryReplaceStatement(clause);
+            default -> throw _Exceptions.unexpectedEnum(mode);
+        };
         return spec.asInsert();
     }
 
@@ -106,22 +99,13 @@ abstract class MySQLReplaces extends InsertSupports {
         final InsertMode mode;
         mode = clause.getInsertMode();
         final Statement._DmlInsertClause<MySQLReplace._ParentReplace<P>> spec;
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimaryParentDomainReplaceStatement<>(clause);
-                break;
-            case VALUES:
-                spec = new PrimaryParentValueReplaceStatement<>(clause);
-                break;
-            case ASSIGNMENT:
-                spec = new PrimaryParentAssignmentReplaceStatement<>(clause);
-                break;
-            case QUERY:
-                spec = new PrimaryParentQueryReplaceStatement<>(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
+        spec = switch (mode) {
+            case DOMAIN -> new PrimaryParentDomainReplaceStatement<>(clause);
+            case VALUES -> new PrimaryParentValueReplaceStatement<>(clause);
+            case ASSIGNMENT -> new PrimaryParentAssignmentReplaceStatement<>(clause);
+            case QUERY -> new PrimaryParentQueryReplaceStatement<>(clause);
+            default -> throw _Exceptions.unexpectedEnum(mode);
+        };
         return spec.asInsert();
     }
 

@@ -17,11 +17,11 @@
 package io.army.criteria.mysql.inner;
 
 import io.army.criteria.SQLWords;
-import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.mysql.MySQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 

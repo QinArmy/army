@@ -18,6 +18,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
@@ -560,7 +561,7 @@ abstract class MySQLMultiUpdates<I extends Item>
 
 
     @Override
-    final I onAsUpdate() {
+    protected final I onAsUpdate() {
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
         }
@@ -571,27 +572,27 @@ abstract class MySQLMultiUpdates<I extends Item>
     }
 
 
-    abstract I onAsMySQLUpdate();
+    protected abstract I onAsMySQLUpdate();
 
     @Override
-    final void onClear() {
+    protected final void onClear() {
         this.hintList = null;
         this.modifierList = null;
     }
 
     @Override
-    final MySQLCtes createCteBuilder(boolean recursive) {
+    protected final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
     }
 
     @Override
-    final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
+    protected final boolean isIllegalDerivedModifier(@Nullable SQLs.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
     }
 
 
     @Override
-    final _MultiIndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
+    protected final _MultiIndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier, TableMeta<?> table, String alias) {
         final MySQLSupports.MySQLFromClauseTableBlock block;
         block = new MySQLSupports.MySQLFromClauseTableBlock(joinType, table, alias);
         this.blockConsumer.accept(block);
@@ -600,7 +601,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     }
 
     @Override
-    final MySQLUpdate._MultiJoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
+    protected final MySQLUpdate._MultiJoinSpec<I> onFromCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, _Cte cteItem, String alias) {
         final _TabularBlock block;
         block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -610,7 +611,7 @@ abstract class MySQLMultiUpdates<I extends Item>
 
 
     @Override
-    final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
+    protected final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
             final TabularBlocks.FromClauseAliasDerivedBlock block;
@@ -623,7 +624,7 @@ abstract class MySQLMultiUpdates<I extends Item>
 
 
     @Override
-    final _MultiIndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
+    protected final _MultiIndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable SQLs.TableModifier modifier,
                                                TableMeta<?> table, String alias) {
         final SimpleJoinClauseTableBlock<I> block;
         block = new SimpleJoinClauseTableBlock<>(joinType, table, alias, this);
@@ -633,7 +634,7 @@ abstract class MySQLMultiUpdates<I extends Item>
 
 
     @Override
-    final _AsParensOnClause<_MultiJoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
+    protected final _AsParensOnClause<_MultiJoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final TabularBlocks.JoinClauseAliasDerivedBlock<_MultiJoinSpec<I>> block;
             block = TabularBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
@@ -643,7 +644,7 @@ abstract class MySQLMultiUpdates<I extends Item>
     }
 
     @Override
-    final _OnClause<_MultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
+    protected final _OnClause<_MultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable SQLs.DerivedModifier modifier,
                                                  _Cte cteItem, String alias) {
         final TabularBlocks.JoinClauseCteBlock<_MultiJoinSpec<I>> block;
         block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
@@ -703,7 +704,7 @@ abstract class MySQLMultiUpdates<I extends Item>
         }
 
         @Override
-        Update onAsMySQLUpdate() {
+        protected Update onAsMySQLUpdate() {
             return this;
         }
 
@@ -738,7 +739,7 @@ abstract class MySQLMultiUpdates<I extends Item>
         }
 
         @Override
-        _BatchUpdateParamSpec onAsMySQLUpdate() {
+        protected _BatchUpdateParamSpec onAsMySQLUpdate() {
             return this;
         }
 

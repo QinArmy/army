@@ -21,6 +21,8 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SimpleExpression;
+import io.army.criteria.impl.CriteriaUtils;
+import io.army.criteria.impl.FunctionUtils;
 import io.army.mapping.*;
 
 import java.util.List;
@@ -921,17 +923,11 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      */
     public static SimpleExpression stDistanceSphere(final List<Expression> expList) {
         final String name = "ST_Distance_Sphere";
-        final SimpleExpression func;
-        switch (expList.size()) {
-            case 2:
-            case 3:
-                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList)
-                        , DoubleType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+        return switch (expList.size()) {
+            case 2, 3 -> FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList)
+                    , DoubleType.INSTANCE);
+            default -> throw CriteriaUtils.funcArgError(name, expList);
+        };
     }
 
     /**
