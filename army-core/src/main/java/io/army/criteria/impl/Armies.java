@@ -11,10 +11,12 @@ import io.army.dialect._SetClauseContext;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 public abstract class Armies {
@@ -348,4 +350,45 @@ public abstract class Armies {
     }//RowItemPair
 
 
+    public static final class SQLIdentifierImpl implements SQLIdentifier {
+
+        private final String identifier;
+
+        public SQLIdentifierImpl(String identifier) {
+            if (!_StringUtils.hasText(identifier)) {
+                throw ContextStack.clearStackAndCriteriaError("identifier must have text");
+            }
+            this.identifier = identifier;
+        }
+
+        @Override
+        public String render() {
+            return this.identifier;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.identifier);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof SQLIdentifierImpl) {
+                match = ((SQLIdentifierImpl) obj).identifier.equals(this.identifier);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return this.identifier;
+        }
+
+
+    }//SQLIdentifierImpl
 }

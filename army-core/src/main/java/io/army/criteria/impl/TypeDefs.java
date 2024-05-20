@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeDef;
-import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.mysql.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;

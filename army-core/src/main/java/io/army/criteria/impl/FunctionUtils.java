@@ -18,10 +18,11 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelectionGroup;
-import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.mysql.inner._SelfDescribed;
 import io.army.criteria.standard.SQLFunction;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect.*;
+import io.army.dialect.Database;
+import io.army.dialect.DialectParser;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;

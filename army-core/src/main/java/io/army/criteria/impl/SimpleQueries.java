@@ -1937,7 +1937,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
     }//SelectClauseDispatcher
 
 
-    static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD>
+    public static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD>
             extends SelectClauseDispatcher<W, SR, SD>
             implements DialectStatement._DynamicWithClause<B, WE>,
             ArmyStmtSpec {
@@ -1947,7 +1947,7 @@ public abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE
         private List<_Cte> cteList;
 
 
-        WithBuilderSelectClauseDispatcher(CriteriaContext dispatcherContext) {
+        protected WithBuilderSelectClauseDispatcher(CriteriaContext dispatcherContext) {
             super(dispatcherContext);
         }
 

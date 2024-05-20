@@ -148,7 +148,7 @@ public abstract class TabularBlocks {
 
         private final String alias;
 
-        FromClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias) {
+        protected FromClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias) {
             super(joinType, table);
             this.alias = alias;
         }
@@ -382,7 +382,7 @@ public abstract class TabularBlocks {
 
         private final String alias;
 
-        JoinClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
+        protected JoinClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
             super(joinType, clause);
             this.table = table;
             this.alias = alias;

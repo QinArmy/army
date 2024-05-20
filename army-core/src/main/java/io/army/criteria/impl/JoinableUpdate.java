@@ -17,8 +17,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
-import io.army.criteria.standard.SQLs;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.util.ClassUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;

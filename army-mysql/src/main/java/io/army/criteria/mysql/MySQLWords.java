@@ -16,38 +16,78 @@
 
 package io.army.criteria.mysql;
 
-import io.army.criteria.SQLWords;
+import io.army.criteria.impl.SqlWords;
 
-@Deprecated
-public enum MySQLWords implements SQLWords {
+abstract class MySQLWords {
 
-    TIME(" TIME"),
-    DATE(" DATE"),
-    DATETIME(" DATETIME"),
-
-    BOTH(" BOTH"),
-    LEADING(" LEADING"),
-    TRAILING(" TRAILING"),
-
-    CHAR(" CHAR"),
-    BINARY(" BINARY");
-
-    private final String words;
-
-    MySQLWords(String words) {
-        this.words = words;
-    }
-
-    @Override
-    public final String spaceRender() {
-        return this.words;
+    private MySQLWords() {
+        throw new UnsupportedOperationException();
     }
 
 
-    @Override
-    public final String toString() {
-        return String.format("%s.%s", MySQLWords.class.getName(), this.name());
-    }
+    enum MySQLModifier implements MySQLs.Modifier {
+
+
+        ALL(" ALL"),
+        DISTINCTROW(" DISTINCTROW"),
+
+        HIGH_PRIORITY(" HIGH_PRIORITY"),
+
+        STRAIGHT_JOIN(" STRAIGHT_JOIN"),
+
+        SQL_SMALL_RESULT(" SQL_SMALL_RESULT"),
+        SQL_BIG_RESULT(" SQL_BIG_RESULT"),
+        SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT"),
+
+        SQL_NO_CACHE(" SQL_NO_CACHE"),
+        SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS"),
+
+        LOW_PRIORITY(" LOW_PRIORITY"),
+        DELAYED(" DELAYED"),
+
+        QUICK(" QUICK"),
+        IGNORE(" IGNORE"),
+
+        CONCURRENT(" CONCURRENT"),
+        LOCAL(" LOCAL");
+
+        private final String spaceWords;
+
+        MySQLModifier(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return MySQLSyntax.keyWordsToString(this);
+        }
+
+
+    }//MySQLModifier
+
+    enum KeyWordDistinct implements SqlWords.ArmyKeyWord, MySQLs.WordDistinct {
+
+        DISTINCT;
+
+        @Override
+        public final String spaceRender() {
+            return " DISTINCT";
+        }
+
+
+        @Override
+        public final String toString() {
+            return MySQLSyntax.keyWordsToString(this);
+        }
+
+
+    }//WordDistinct
 
 
 }

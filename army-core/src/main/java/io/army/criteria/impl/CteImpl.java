@@ -5,7 +5,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._DerivedTable;
-import io.army.criteria.impl.inner._SelectionMap;
+import io.army.criteria.mysql.inner._SelectionMap;
 
 import java.util.Collections;
 import java.util.List;

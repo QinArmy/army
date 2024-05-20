@@ -19,7 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._Window;
+import io.army.criteria.mysql.inner._Window;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;

@@ -19,7 +19,7 @@ package io.army.criteria.impl;
 import io.army.criteria.RowElement;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.inner._SelectionGroup;
-import io.army.criteria.impl.inner._SelectionMap;
+import io.army.criteria.mysql.inner._SelectionMap;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;

@@ -3,4 +3,5 @@ module army.mysql {
     requires transitive army.core;
 
     exports io.army.criteria.mysql;
+    exports io.army.mapping.mysql;
 }

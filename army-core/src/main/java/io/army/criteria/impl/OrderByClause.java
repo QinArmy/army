@@ -17,7 +17,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._DerivedTable;
+import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._SelectItem;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
@@ -183,7 +185,7 @@ public abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMo
         return this;
     }
 
-    interface OrderByEventListener {
+    public interface OrderByEventListener {
 
         void onOrderByEvent();
 

@@ -22,8 +22,8 @@ import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Delete;
-import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._TabularBlock;
+import io.army.criteria.mysql.inner._Statement;
+import io.army.criteria.mysql.inner._TabularBlock;
 import io.army.util._Assert;
 
 import javax.annotation.Nullable;

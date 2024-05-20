@@ -20,7 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._SelectionGroup;
-import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.mysql.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;

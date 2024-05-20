@@ -2210,11 +2210,11 @@ public abstract class InsertSupports {
 
     }//AbstractAssignmentInsertStatement
 
-    protected static abstract class AssignmentInsertStatement<I extends Statement>
+    public static abstract class AssignmentInsertStatement<I extends Statement>
             extends AssignmentSyntaxInsertStatement<I, Statement>
             implements InsertStatement {
 
-        AssignmentInsertStatement(_AssignmentInsert clause) {
+        protected AssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
         }
 
@@ -2282,7 +2282,7 @@ public abstract class InsertSupports {
     }//AbstractQuerySyntaxInsertStatement
 
 
-    protected static abstract class QuerySyntaxInsertStatement<I extends Statement>
+    public static abstract class QuerySyntaxInsertStatement<I extends Statement>
             extends ArmyQuerySyntaxInsertStatement<I, Statement>
             implements InsertStatement {
 
