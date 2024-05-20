@@ -16,9 +16,7 @@
 
 package io.army.dialect.mysql;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.util.ClassUtils;
+import io.army.dialect.*;
 
 public abstract class MySQLDialectParserFactory extends DialectParserFactory {
 
@@ -27,14 +25,9 @@ public abstract class MySQLDialectParserFactory extends DialectParserFactory {
     }
 
     public static DialectParser dialectParser(final DialectEnv environment) {
-        final String className = "io.army.dialect.mysql._MySQLParsers";
-        final DialectParser _dialect;
-        if (ClassUtils.isPresent(className, MySQLParser.class.getClassLoader())) {
-            _dialect = DialectParserFactory.invokeFactoryMethod(MySQLParser.class, className, environment);
-        } else {
-            _dialect = MySQLParser.standard(environment, (MySQLDialect) targetDialect(environment, Database.MySQL));
-        }
-        return _dialect;
+        final MySQLDialect dialect;
+        dialect = (MySQLDialect) targetDialect(environment, Database.MySQL);
+        return MySQLDialectParser.create(environment, dialect);
     }
 
 

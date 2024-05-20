@@ -29,6 +29,7 @@ import io.army.criteria.postgre.inner.*;
 import io.army.criteria.standard.SQLs;
 import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.DialectEnv;
+import io.army.dialect.DialectParser;
 import io.army.dialect.PostgreDialect;
 import io.army.dialect.impl.*;
 import io.army.mapping.MappingType;

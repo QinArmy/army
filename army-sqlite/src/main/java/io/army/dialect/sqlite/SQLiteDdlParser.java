@@ -16,8 +16,8 @@
 
 package io.army.dialect.sqlite;
 
-import io.army.dialect._Constant;
-import io.army.dialect._DdlParser;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._DdlParser;
 import io.army.meta.*;
 import io.army.schema._FieldResult;
 import io.army.sqltype.DataType;

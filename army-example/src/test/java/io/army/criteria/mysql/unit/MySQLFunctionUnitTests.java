@@ -21,7 +21,7 @@ import io.army.criteria.Select;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.MySQLDialect;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.PillUserType;
 import org.slf4j.Logger;

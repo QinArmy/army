@@ -17,6 +17,7 @@
 package io.army.dialect.sqlite;
 
 import io.army.dialect.DialectEnv;
+import io.army.dialect.SQLiteDialect;
 
 final class SQLiteDialectParser extends SQLiteParser {
 

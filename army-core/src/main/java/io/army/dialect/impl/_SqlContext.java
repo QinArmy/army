@@ -22,6 +22,7 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.dialect.DialectParser;
 import io.army.meta.TypeMeta;
 import io.army.session.SessionSpec;
 

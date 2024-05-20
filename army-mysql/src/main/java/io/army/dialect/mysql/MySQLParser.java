@@ -21,6 +21,8 @@ import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.DialectEnv;
+import io.army.dialect.MySQLDialect;
+import io.army.dialect.impl.*;
 import io.army.env.EscapeMode;
 import io.army.executor.ExecutorSupport;
 import io.army.mapping.MappingType;
@@ -40,11 +42,6 @@ import java.util.List;
 import java.util.Set;
 
 abstract class MySQLParser extends _ArmyDialectParser {
-
-    static MySQLParser standard(DialectEnv environment, MySQLDialect dialect) {
-        return new Standard(environment, dialect);
-    }
-
 
     static final char BACKTICK = '`';
 

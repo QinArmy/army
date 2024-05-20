@@ -13,12 +13,12 @@ module army.core {
 
     exports io.army.criteria.standard;
     exports io.army.criteria.dialect;
-    exports io.army.criteria.impl to army.postgre;
-    exports io.army.criteria.impl.inner to army.postgre;
+    exports io.army.criteria.impl to army.mysql, army.postgre, army.sqlite;
+    exports io.army.criteria.impl.inner to army.mysql, army.postgre, army.sqlite;
 
     exports io.army.datasource;
     exports io.army.dialect;
-    exports io.army.dialect.impl to army.postgre;
+    exports io.army.dialect.impl to army.mysql, army.postgre, army.sqlite;
     exports io.army.env;
 
     exports io.army.executor;
@@ -28,11 +28,8 @@ module army.core {
 
     exports io.army.mapping;
     exports io.army.mapping.array;
-    exports io.army.mapping.mysql;
     exports io.army.mapping.optional;
-
     exports io.army.mapping.spatial;
-    exports io.army.mapping.sqlite;
     exports io.army.meta;
 
     exports io.army.proxy;

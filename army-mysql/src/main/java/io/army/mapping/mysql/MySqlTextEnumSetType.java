@@ -18,41 +18,37 @@ package io.army.mapping.mysql;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
 import io.army.mapping.MultiGenericsMappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
+import io.army.struct.TextEnum;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+public final class MySqlTextEnumSetType extends MappingType implements MultiGenericsMappingType {
 
-public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implements MultiGenericsMappingType {
+    private static final ConcurrentMap<Class<?>, MySqlTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<Class<?>, MySqlNameEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
-
-    public static MySqlNameEnumSetType forElements(Class<?> fieldType, Class<?>[] elementTypes) {
-        if (fieldType != Set.class) {
-            throw errorJavaType(MySqlNameEnumSetType.class, fieldType);
-        } else if (elementTypes.length != 1 || !elementTypes[0].isEnum()) {
-            throw errorJavaType(MySqlNameEnumSetType.class, elementTypes[0]);
-        }
-        return INSTANCE_MAP.computeIfAbsent(elementTypes[0], MySqlNameEnumSetType::new);
+    public static MySqlTextEnumSetType fromSet(final Class<?> fieldType, final Class<?> elementTypes) {
+        throw new UnsupportedOperationException();
     }
-
 
     private final List<Class<?>> elementTypes;
 
-    private MySqlNameEnumSetType(Class<?> elementJavaType) {
+    private final Map<String, ? extends TextEnum> textEnumMap;
+
+    private MySqlTextEnumSetType(Class<?> elementJavaType) {
         this.elementTypes = Collections.singletonList(elementJavaType);
+        this.textEnumMap = TextEnum.getTextToEnumMap(elementJavaType);
     }
+
 
     @Override
     public Class<?> javaType() {
@@ -70,6 +66,11 @@ public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implemen
             throw noMappingError(meta);
         }
         return MySQLType.SET;
+    }
+
+    @Override
+    public <Z> MappingType compatibleFor(final DataType dataType, final Class<Z> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override
@@ -92,7 +93,7 @@ public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implemen
             if (index > 0) {
                 builder.append(_Constant.COMMA);
             }
-            builder.append(((Enum<?>) e).name());
+            builder.append(((TextEnum) e).text());
             index++;
         }
         return builder.toString();
@@ -103,20 +104,17 @@ public final class MySqlNameEnumSetType extends _ArmyNoInjectionMapping implemen
         if (!(source instanceof String)) {
             throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, null);
         }
-        try {
-            return parseToSet(this.elementTypes.get(0), (String) source);
-        } catch (IllegalArgumentException e) {
-            throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, e);
-        }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public static <E extends Enum<E>> Set<E> parseToSet(Class<?> javaType, String values) {
-        final String[] array = values.split(",");
-        final Set<E> set = new HashSet<>((int) (array.length / 0.75F));
-        for (String e : array) {
-            set.add(Enum.valueOf((Class<E>) javaType, e));
+        final String[] array = ((String) source).split(",");
+        final Set<TextEnum> set = new HashSet<>((int) (array.length / 0.75F));
+        TextEnum textEnum;
+        final Map<String, ? extends TextEnum> textEnumMap = this.textEnumMap;
+        for (String text : array) {
+            textEnum = textEnumMap.get(text);
+            if (textEnum == null) {
+                String m = String.format("%s unknown text[%s] instance.", elementTypes.get(0).getName(), text);
+                throw ACCESS_ERROR_HANDLER.apply(this, dataType, source, new IllegalArgumentException(m));
+            }
+            set.add(textEnum);
         }
         return set;
     }

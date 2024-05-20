@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package io.army.dialect.impl;
+package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.dialect.Dialect;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;

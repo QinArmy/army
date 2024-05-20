@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package io.army.dialect.mysql;
+package io.army.dialect;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParser;
-import io.army.dialect.DialectParserFactory;
+import io.army.ArmyException;
 
-@SuppressWarnings("unused")
-public abstract class _MySQLParsers extends DialectParserFactory {
+public final class UnsupportedDialectException extends ArmyException {
 
-    private _MySQLParsers() {
-        throw new UnsupportedOperationException();
-    }
-
-    public static DialectParser create(final DialectEnv env) {
-        return MySQLDialectParser.create(env, (MySQLDialect) targetDialect(env, Database.MySQL));
+    public UnsupportedDialectException(String message) {
+        super(message);
     }
 
 

@@ -16,11 +16,7 @@
 
 package io.army.dialect.postgre;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
-import io.army.dialect.PostgreDialect;
-import io.army.dialect.impl.DialectParser;
+import io.army.dialect.*;
 
 public abstract class PostgreDialectParserFactory extends DialectParserFactory {
 

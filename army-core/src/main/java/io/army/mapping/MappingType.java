@@ -21,7 +21,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
 import io.army.criteria.TypeItem;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.executor.StmtExecutor;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;

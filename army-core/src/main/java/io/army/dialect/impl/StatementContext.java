@@ -20,6 +20,7 @@ import io.army.criteria.*;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.dialect.DialectParser;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;

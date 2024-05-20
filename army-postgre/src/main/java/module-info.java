@@ -3,5 +3,5 @@ module army.postgre {
     requires transitive army.core;
 
     exports io.army.criteria.postgre;
-    exports io.army.dialect.postgre;
+
 }

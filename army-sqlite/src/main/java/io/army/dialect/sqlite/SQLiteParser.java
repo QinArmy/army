@@ -24,6 +24,8 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardStatement;
 import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.DialectEnv;
+import io.army.dialect.SQLiteDialect;
+import io.army.dialect.impl.*;
 import io.army.env.EscapeMode;
 import io.army.executor.ExecutorSupport;
 import io.army.mapping.MappingType;
@@ -46,10 +48,6 @@ import java.util.List;
 import java.util.Set;
 
 abstract class SQLiteParser extends _ArmyDialectParser {
-
-    static SQLiteParser standard(DialectEnv dialectEnv, SQLiteDialect dialect) {
-        return new Standard(dialectEnv, dialect);
-    }
 
 
     SQLiteParser(DialectEnv dialectEnv, SQLiteDialect dialect) {

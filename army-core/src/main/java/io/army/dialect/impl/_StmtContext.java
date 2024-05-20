@@ -17,6 +17,7 @@
 package io.army.dialect.impl;
 
 import io.army.criteria.SQLParam;
+import io.army.dialect.DialectParser;
 import io.army.stmt.Stmt;
 
 /**

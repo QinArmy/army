@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package io.army.dialect.sqlite;
+package io.army.dialect;
 
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.meta.ServerMeta;
 import io.army.util._StringUtils;
 

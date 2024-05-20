@@ -26,6 +26,7 @@ import io.army.criteria.standard.*;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectEnv;
+import io.army.dialect.DialectParser;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;

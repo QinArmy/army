@@ -16,7 +16,6 @@
 
 package io.army.dialect;
 
-import io.army.dialect.impl.DialectParser;
 import io.army.meta.ServerMeta;
 import io.army.util.ClassUtils;
 import io.army.util._Exceptions;

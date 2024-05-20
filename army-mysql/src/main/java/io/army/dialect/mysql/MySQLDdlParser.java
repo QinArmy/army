@@ -16,8 +16,8 @@
 
 package io.army.dialect.mysql;
 
-import io.army.dialect._Constant;
-import io.army.dialect._DdlParser;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._DdlParser;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;

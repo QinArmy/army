@@ -16,8 +16,8 @@
 
 package io.army.dialect.mysql;
 
-import io.army.dialect._Constant;
-import io.army.dialect._Literals;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._Literals;
 import io.army.env.EscapeMode;
 import io.army.util.HexUtils;
 
@@ -36,17 +36,13 @@ abstract class MySQLLiterals extends _Literals {
         valueLength = literal.length();
 
         final boolean backSlashEscape;
-        switch (mode) {
-            case DEFAULT:
-                backSlashEscape = false;
-                break;
-            case BACK_SLASH:
-                backSlashEscape = true;
-                break;
-            default:
+        backSlashEscape = switch (mode) {
+            case DEFAULT -> false;
+            case BACK_SLASH -> true;
+            default ->
                 // no bug ,never here
-                throw new IllegalArgumentException();
-        }
+                    throw new IllegalArgumentException();
+        };
 
         // left quote
         sqlBuilder.append(_Constant.QUOTE);
