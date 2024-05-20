@@ -17,7 +17,7 @@
 package io.army.criteria.mysql.unit;
 
 import io.army.criteria.Update;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;

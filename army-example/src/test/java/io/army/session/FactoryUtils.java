@@ -19,7 +19,7 @@ package io.army.session;
 import io.army.dialect.Database;
 import io.army.dialect.MySQLDialect;
 import io.army.dialect.PostgreDialect;
-import io.army.dialect.sqlite.SQLiteDialect;
+import io.army.dialect.SQLiteDialect;
 import io.army.env.*;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.util.FastJsonCodec;

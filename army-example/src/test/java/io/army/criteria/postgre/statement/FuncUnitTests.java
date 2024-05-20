@@ -19,7 +19,7 @@ package io.army.criteria.postgre.statement;
 import io.army.criteria.Expression;
 import io.army.criteria.NoColumnFuncFieldAliasException;
 import io.army.criteria.Select;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.mapping.JsonbType;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
 
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.Postgres.*;
+import static io.army.criteria.postgre.Postgres.*;
 import static io.army.criteria.standard.SQLs.ASTERISK;
 import static io.army.criteria.standard.SQLs.PERIOD;
 

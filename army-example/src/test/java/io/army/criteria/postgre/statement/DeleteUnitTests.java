@@ -22,7 +22,7 @@ import io.army.criteria.IllegalOneStmtModeException;
 import io.army.criteria.Select;
 import io.army.criteria.dialect.BatchReturningDelete;
 import io.army.criteria.dialect.ReturningDelete;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;

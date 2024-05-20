@@ -18,7 +18,7 @@ package io.army.criteria.mysql.unit;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;

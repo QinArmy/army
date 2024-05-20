@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.army.criteria.impl;
+
+package io.army.criteria.sqlite;
 
 
-/**
- * @see <a href="https://www.sqlite.org/lang.html">SQLite syntax</a>
- */
-public abstract class SQLites extends SQLiteSyntax {
+import io.army.criteria.impl.Functions;
 
-    /**
-     * private constructor
-     */
-    private SQLites() {
+abstract class SQLiteFunctions extends Functions {
+
+
+    SQLiteFunctions() {
     }
-
-
 }

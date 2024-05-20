@@ -14,12 +14,12 @@ module army.core {
 
     exports io.army.criteria.standard;
     exports io.army.criteria.dialect;
-    exports io.army.criteria.impl to army.mysql, army.postgre, army.oracle, army.sqlite;
-    exports io.army.criteria.impl.inner to army.mysql, army.postgre, army.oracle, army.sqlite, army.sync, army.reactive;
+    exports io.army.criteria.impl to army.sync, army.reactive, army.mysql, army.postgre, army.oracle, army.sqlite;
+    exports io.army.criteria.impl.inner to army.sync, army.reactive, army.mysql, army.postgre, army.oracle, army.sqlite;
 
     exports io.army.datasource;
     exports io.army.dialect;
-    exports io.army.dialect.impl to army.mysql, army.postgre, army.oracle, army.sqlite, army.jdbc, army.jdbd, army.sync, army.reactive;
+    exports io.army.dialect.impl to army.sync, army.reactive, army.jdbc, army.jdbd, army.mysql, army.postgre, army.oracle, army.sqlite;
     exports io.army.env;
 
     exports io.army.executor;

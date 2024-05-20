@@ -3,8 +3,8 @@ package io.army.session.sync.postgre;
 
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.DmlCommand;
-import io.army.criteria.impl.Postgres;
 import io.army.criteria.postgre.PostgreMerge;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.sync.SyncLocalSession;

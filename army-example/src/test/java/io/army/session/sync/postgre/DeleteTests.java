@@ -1,7 +1,7 @@
 package io.army.session.sync.postgre;
 
 import io.army.criteria.Delete;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;

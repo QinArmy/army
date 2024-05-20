@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.army.criteria.impl;
+package io.army.criteria.sqlite;
 
+abstract class SQLiteSyntax extends SQLiteFunctions {
 
-abstract class SQLiteFunctions extends Functions {
-
-
-    SQLiteFunctions() {
+    SQLiteSyntax() {
     }
+
+
 }

@@ -2,7 +2,7 @@ package io.army.session.reactive.mysql;
 
 
 import io.army.criteria.dialect.DmlCommand;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;

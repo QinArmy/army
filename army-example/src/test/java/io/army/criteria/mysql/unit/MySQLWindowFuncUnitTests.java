@@ -17,7 +17,7 @@
 package io.army.criteria.mysql.unit;
 
 import io.army.criteria.Select;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.example.pill.domain.PillUser_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

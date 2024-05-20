@@ -17,6 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.*;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.impl._DialectUtils;
 import io.army.mapping.*;

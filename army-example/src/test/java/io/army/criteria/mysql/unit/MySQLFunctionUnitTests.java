@@ -19,7 +19,7 @@ package io.army.criteria.mysql.unit;
 import io.army.criteria.PrimaryStatement;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.MySQLDialect;
 import io.army.example.pill.domain.PillUser_;

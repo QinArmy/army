@@ -2,7 +2,7 @@ package io.army.session.sync.mysql;
 
 import io.army.criteria.Select;
 import io.army.criteria.Values;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;

@@ -4,7 +4,7 @@ package io.army.session.sync.mysql;
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
 import io.army.criteria.dialect.DmlCommand;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -16,8 +16,8 @@ import org.testng.annotations.Test;
 import java.util.List;
 import java.util.Map;
 
-import static io.army.criteria.impl.MySQLs.atAtGlobal;
-import static io.army.criteria.impl.MySQLs.atAtSession;
+import static io.army.criteria.mysql.MySQLs.atAtGlobal;
+import static io.army.criteria.mysql.MySQLs.atAtSession;
 import static io.army.criteria.standard.SQLs.AS;
 import static io.army.criteria.standard.SQLs.PERIOD;
 

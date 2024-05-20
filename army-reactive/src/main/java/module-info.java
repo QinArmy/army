@@ -8,5 +8,6 @@ module army.reactive {
     requires transitive army.core;
 
     exports io.army.reactive;
+    exports io.army.reactive.type;
     exports io.army.reactive.executor;
 }

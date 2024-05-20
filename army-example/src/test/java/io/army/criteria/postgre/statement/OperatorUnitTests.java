@@ -18,7 +18,7 @@ package io.army.criteria.postgre.statement;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;

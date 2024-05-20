@@ -19,7 +19,7 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect.MySQLDialect;
-import io.army.dialect._MockDialects;
+import io.army.dialect.impl._MockDialects;
 import io.army.example.pill.domain.PillUser_;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;

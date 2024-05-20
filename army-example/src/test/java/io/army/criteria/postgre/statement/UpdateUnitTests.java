@@ -23,7 +23,7 @@ import io.army.criteria.Update;
 import io.army.criteria.dialect.BatchReturningUpdate;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.ReturningUpdate;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.*;
 import io.army.util._Collections;

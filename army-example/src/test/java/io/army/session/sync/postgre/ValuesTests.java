@@ -3,7 +3,7 @@ package io.army.session.sync.postgre;
 
 import io.army.criteria.Select;
 import io.army.criteria.Values;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;

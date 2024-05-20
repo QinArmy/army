@@ -4,7 +4,7 @@ package io.army.session.sync.postgre;
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.SimpleDmlStatement;
 import io.army.criteria.dialect.DmlCommand;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;

@@ -4,7 +4,7 @@ package io.army.session.sync.mysql;
 import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;

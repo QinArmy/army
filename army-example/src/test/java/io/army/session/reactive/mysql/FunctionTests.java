@@ -20,8 +20,8 @@ package io.army.session.reactive.mysql;
 import com.alibaba.fastjson2.JSON;
 import io.army.criteria.Select;
 import io.army.criteria.TypeDef;
-import io.army.criteria.impl.MySQLTimeUnit;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLTimeUnit;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.reactive.ReactiveLocalSession;
 import io.army.sqltype.MySQLType;
@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.MySQLs.format;
-import static io.army.criteria.impl.MySQLs.*;
+import static io.army.criteria.mysql.MySQLs.format;
+import static io.army.criteria.mysql.MySQLs.*;
 import static io.army.criteria.standard.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")

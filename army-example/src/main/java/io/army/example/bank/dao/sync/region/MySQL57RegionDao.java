@@ -20,7 +20,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Select;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.mysql.MySQLs;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
 import io.army.example.bank.domain.user.*;

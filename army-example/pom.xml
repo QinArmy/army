@@ -13,11 +13,6 @@
 
     <url>https://github.com/QinArmy/army</url>
 
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.qinarmy</groupId>
@@ -39,7 +34,10 @@
             <groupId>io.qinarmy</groupId>
             <artifactId>army-postgre</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>io.qinarmy</groupId>
+            <artifactId>army-sqlite</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
@@ -69,7 +67,7 @@
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>alibabacloud-polardb20170801</artifactId>
-            <version>1.0.5</version>
+            <version>4.0.10</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>

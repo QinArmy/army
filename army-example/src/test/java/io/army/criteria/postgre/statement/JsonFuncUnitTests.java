@@ -19,7 +19,7 @@ package io.army.criteria.postgre.statement;
 import io.army.criteria.Expression;
 import io.army.criteria.RowElement;
 import io.army.criteria.Select;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.postgre.mapping.MyRowType;
 import io.army.criteria.postgre.mapping.MySubRowType;
 import io.army.criteria.postgre.mapping.TwoIntType;
@@ -42,7 +42,7 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.Postgres.*;
+import static io.army.criteria.postgre.Postgres.*;
 import static io.army.criteria.standard.SQLs.row;
 import static io.army.criteria.standard.SQLs.space;
 import static io.army.criteria.standard.SQLs.*;

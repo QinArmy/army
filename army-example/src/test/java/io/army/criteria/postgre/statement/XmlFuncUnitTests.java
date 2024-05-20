@@ -19,7 +19,7 @@ package io.army.criteria.postgre.statement;
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.Postgres;
+import io.army.criteria.postgre.Postgres;
 import io.army.criteria.standard.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.*;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.Postgres.*;
+import static io.army.criteria.postgre.Postgres.*;
 import static io.army.criteria.standard.SQLs.*;
 
 public class XmlFuncUnitTests extends PostgreUnitTests {
