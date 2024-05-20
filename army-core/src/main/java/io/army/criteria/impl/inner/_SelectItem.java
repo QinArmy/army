@@ -17,7 +17,7 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.SelectItem;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._SqlContext;
 
 public interface _SelectItem extends SelectItem {
 

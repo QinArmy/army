@@ -18,8 +18,8 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.ItemPair;
 import io.army.criteria.SqlField;
-import io.army.dialect._SetClauseContext;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._SetClauseContext;
+import io.army.dialect.impl._SqlContext;
 
 import java.util.List;
 

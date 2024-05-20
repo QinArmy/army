@@ -17,8 +17,8 @@
 package io.army.dialect.postgre;
 
 import io.army.annotation.GeneratorType;
-import io.army.dialect._Constant;
-import io.army.dialect._DdlParser;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._DdlParser;
 import io.army.mapping.TextType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
@@ -47,7 +47,6 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     public void modifyTableComment(TableMeta<?> table, List<String> sqlList) {
 
     }
-
 
 
     @Override

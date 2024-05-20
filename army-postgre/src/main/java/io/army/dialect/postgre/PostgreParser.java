@@ -24,8 +24,7 @@ import io.army.criteria.standard.StandardStatement;
 import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.DialectEnv;
 import io.army.dialect.PostgreDialect;
-import io.army.dialect.impl._ArmyDialectParser;
-import io.army.dialect.impl._SqlContext;
+import io.army.dialect.impl.*;
 import io.army.executor.ExecutorSupport;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -43,10 +42,6 @@ import java.util.List;
 import java.util.Set;
 
 abstract class PostgreParser extends _ArmyDialectParser {
-
-    static PostgreParser standard(DialectEnv environment, PostgreDialect dialect) {
-        return new Standard(environment, dialect);
-    }
 
     PostgreParser(DialectEnv environment, PostgreDialect dialect) {
         super(environment, dialect);

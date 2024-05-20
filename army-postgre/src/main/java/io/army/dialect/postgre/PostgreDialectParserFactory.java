@@ -20,17 +20,18 @@ import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParserFactory;
 import io.army.dialect.PostgreDialect;
+import io.army.dialect.impl.DialectParser;
 
-public abstract class _PostgreDialects extends DialectParserFactory {
+public abstract class PostgreDialectParserFactory extends DialectParserFactory {
 
-    private _PostgreDialects() {
+    private PostgreDialectParserFactory() {
         throw new UnsupportedOperationException();
     }
 
-
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
+    public static DialectParser dialectParser(final DialectEnv environment) {
+        final PostgreDialect parser;
+        parser = (PostgreDialect) targetDialect(environment, Database.PostgreSQL);
+        return PostgreDialectParser.create(environment, parser);
     }
-
 
 }

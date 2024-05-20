@@ -22,7 +22,10 @@ import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
-import io.army.dialect.*;
+import io.army.dialect.Database;
+import io.army.dialect.Dialect;
+import io.army.dialect.DialectEnv;
+import io.army.dialect.DialectParserFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
@@ -251,7 +254,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
                 .build();
 
         final DialectParser dialectParser;
-        this.dialectParser = dialectParser = DialectParserFactory.createDialect(dialectEnv);
+        this.dialectParser = dialectParser = DialectParserFactory.createDialectParser(dialectEnv);
         return dialectParser;
     }
 

@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-
-package io.army.dialect.sqlite;
+package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParser;
-import io.army.dialect.DialectParserFactory;
 import io.army.util.ClassUtils;
 
-public class _SQLiteParserFactory extends DialectParserFactory {
+public abstract class MySQLDialectParserFactory extends DialectParserFactory {
 
-    private _SQLiteParserFactory() {
+    private MySQLDialectParserFactory() {
+        throw new UnsupportedOperationException();
     }
 
-
-    public static DialectParser sqliteDialectParser(final DialectEnv environment) {
-        final String className = "io.army.dialect.sqlite._SQLiteParsers";
-        final DialectParser parser;
-        if (ClassUtils.isPresent(className, SQLiteParser.class.getClassLoader())) {
-            parser = DialectParserFactory.invokeFactoryMethod(SQLiteParser.class, className, environment);
+    public static DialectParser dialectParser(final DialectEnv environment) {
+        final String className = "io.army.dialect.mysql._MySQLParsers";
+        final DialectParser _dialect;
+        if (ClassUtils.isPresent(className, MySQLParser.class.getClassLoader())) {
+            _dialect = DialectParserFactory.invokeFactoryMethod(MySQLParser.class, className, environment);
         } else {
-            parser = SQLiteParser.standard(environment, (SQLiteDialect) targetDialect(environment, Database.SQLite));
+            _dialect = MySQLParser.standard(environment, (MySQLDialect) targetDialect(environment, Database.MySQL));
         }
-        return parser;
+        return _dialect;
     }
 
 

@@ -16,7 +16,8 @@
 
 package io.army.criteria.impl.inner;
 
-import io.army.dialect._SqlContext;
+
+import io.army.dialect.impl._SqlContext;
 
 public interface _SelfDescribed {
 
