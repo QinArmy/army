@@ -16,7 +16,7 @@
 
 package io.army.mapping.postgre;
 
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.util._TimeUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;

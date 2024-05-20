@@ -16,7 +16,7 @@
 
 package io.army.mapping.array;
 
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

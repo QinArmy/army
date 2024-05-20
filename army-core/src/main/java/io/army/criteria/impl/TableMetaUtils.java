@@ -17,7 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.*;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.generator.FieldGenerator;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;

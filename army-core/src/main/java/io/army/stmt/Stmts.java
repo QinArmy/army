@@ -20,7 +20,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._DialectUtils;
+import io.army.dialect.impl._DialectUtils;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;

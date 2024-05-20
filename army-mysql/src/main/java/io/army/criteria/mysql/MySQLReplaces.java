@@ -21,13 +21,10 @@ import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.SubQuery;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.ArmyStmtSpec;
-import io.army.criteria.impl.InsertSupports;
+import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.mysql.inner._MySQLInsert;
-import io.army.dialect.Dialect;
-import io.army.dialect.MySQLDialect;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
@@ -420,10 +417,6 @@ abstract class MySQLReplaces extends InsertSupports {
             return false;
         }
 
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
-        }
 
 
     }//MySQLValueSyntaxStatement
@@ -660,10 +653,6 @@ abstract class MySQLReplaces extends InsertSupports {
             return false;
         }
 
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
-        }
 
     }//PrimaryAssignmentReplaceStatement
 
@@ -786,10 +775,6 @@ abstract class MySQLReplaces extends InsertSupports {
             return false;
         }
 
-        @Override
-        final Dialect statementDialect() {
-            return MySQLDialect.MySQL80;
-        }
 
 
     }//PrimaryQueryReplaceStatement

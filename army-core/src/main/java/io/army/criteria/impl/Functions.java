@@ -1359,7 +1359,7 @@ public abstract class Functions {
         return function.apply((MappingType) leftType, (MappingType) rightType);
     }
 
-    protected static TypeMeta _returnType(final Expression exp, final UnaryOperator<MappingType> function) {
+    public static TypeMeta _returnType(final Expression exp, final UnaryOperator<MappingType> function) {
         TypeMeta expType;
         expType = exp.typeMeta();
         if (!(expType instanceof MappingType)) {

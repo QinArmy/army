@@ -23,9 +23,9 @@ import io.army.criteria.impl.FuncExpUtils;
 import io.army.criteria.impl.FunctionUtils;
 import io.army.criteria.impl.WindowFunctions;
 import io.army.dialect.Dialect;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.MySQLDialect;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 

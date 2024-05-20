@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SortItem;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._SqlContext;
 import io.army.meta.TypeMeta;
 
 import javax.annotation.Nullable;

@@ -21,7 +21,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;

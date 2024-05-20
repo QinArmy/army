@@ -21,8 +21,8 @@ import io.army.criteria.impl.FunctionArg;
 import io.army.criteria.impl.NonOperationExpression;
 import io.army.criteria.impl.SqlWords;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.mapping.StringType;
 import io.army.meta.TypeMeta;
 

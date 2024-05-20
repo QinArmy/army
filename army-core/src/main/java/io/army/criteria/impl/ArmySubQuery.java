@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._DerivedTable;
-import io.army.criteria.mysql.inner._Statement;
+import io.army.criteria.impl.inner._Statement;
 
 /**
  * <p>

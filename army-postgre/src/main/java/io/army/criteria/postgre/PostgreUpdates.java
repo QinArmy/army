@@ -25,7 +25,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.postgre.inner._PostgreUpdate;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.Dialect;
-import io.army.dialect._DialectUtils;
+import io.army.dialect.impl._DialectUtils;
 import io.army.mapping.MappingType;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;

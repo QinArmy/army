@@ -18,8 +18,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;

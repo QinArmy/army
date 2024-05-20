@@ -17,7 +17,7 @@
 package io.army.jdbc;
 
 import io.army.dialect.Database;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.mapping.MappingType;
 import io.army.record.DataRecord;
 import io.army.session.*;

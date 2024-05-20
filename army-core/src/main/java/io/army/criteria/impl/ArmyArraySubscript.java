@@ -17,7 +17,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ArraySubscript;
-import io.army.criteria.mysql.inner._SelfDescribed;
+import io.army.criteria.impl.inner._SelfDescribed;
 
 
 /**

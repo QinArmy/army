@@ -17,8 +17,8 @@
 package io.army.dialect.postgre;
 
 import io.army.dialect.PostgreDialect;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
+import io.army.dialect.impl._DialectUtils;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.BankPerson_;
 import io.army.mapping.PostgreFullType;

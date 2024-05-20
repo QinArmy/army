@@ -16,7 +16,7 @@
 
 package io.army.mapping.postgre;
 
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.mapping.*;
 import io.army.meta.MetaException;
 import io.army.sqltype.PostgreType;

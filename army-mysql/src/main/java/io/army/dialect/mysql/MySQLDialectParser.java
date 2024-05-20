@@ -18,12 +18,12 @@ package io.army.dialect.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.*;
+import io.army.criteria.impl._JoinType;
+import io.army.criteria.impl._Pair;
+import io.army.criteria.impl._Triple;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.impl.inner.mysql.*;
-import io.army.criteria.mysql.MySQLLoadData;
-import io.army.criteria.mysql.MySQLReplace;
-import io.army.criteria.mysql.MySQLSet;
+import io.army.criteria.mysql.*;
+import io.army.criteria.mysql.inner.*;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;

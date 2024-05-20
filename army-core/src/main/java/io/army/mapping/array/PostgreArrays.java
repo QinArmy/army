@@ -16,7 +16,7 @@
 
 package io.army.mapping.array;
 
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;

@@ -17,7 +17,7 @@
 package io.army.util;
 
 
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.modelgen._MetaBridge;
 
 import javax.annotation.Nullable;

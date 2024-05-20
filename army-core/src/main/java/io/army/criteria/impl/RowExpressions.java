@@ -19,8 +19,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.dialect.Database;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;

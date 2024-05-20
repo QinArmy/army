@@ -19,8 +19,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._Constant;
+import io.army.dialect.impl._SqlContext;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
@@ -185,12 +185,12 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             // no-op
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             // no-op
         }
 
@@ -213,12 +213,12 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.arg, sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.arg);
         }
 
@@ -239,14 +239,14 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
             FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two);
@@ -273,7 +273,7 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -284,7 +284,7 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two)
@@ -305,12 +305,12 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FuncExpUtils.appendLiteralList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             FuncExpUtils.literalListToString(this.argList, builder);
 
         }
@@ -329,12 +329,12 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FuncExpUtils.appendCompositeList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             FuncExpUtils.compositeListToString(this.argList, builder);
         }
 
@@ -355,12 +355,12 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             //no-op
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             //no-op
         }
 
@@ -379,12 +379,12 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one);
         }
 
@@ -405,14 +405,14 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
             FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two);
@@ -440,7 +440,7 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -451,7 +451,7 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two)
@@ -473,12 +473,12 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FuncExpUtils.appendLiteralList(this.name, this.argList, sqlBuilder, context);
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             FuncExpUtils.literalListToString(this.argList, builder);
 
         }
@@ -503,7 +503,7 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             int count = 0;
             for (Map.Entry<String, ?> entry : this.map.entrySet()) {
                 if (count > 0) {
@@ -519,7 +519,7 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
             int count = 0;
             for (Map.Entry<String, ?> entry : this.map.entrySet()) {
                 if (count > 0) {
@@ -955,12 +955,12 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+        protected void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no-op
         }
 
         @Override
-        void argToString(StringBuilder builder) {
+        protected void argToString(StringBuilder builder) {
             //no-op
         }
 
@@ -981,7 +981,7 @@ public abstract class LiteralFunctions {
 
 
         @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+        protected void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             FuncExpUtils.appendLiteral(this.name, this.expression, sqlBuilder, context);
 
@@ -1004,7 +1004,7 @@ public abstract class LiteralFunctions {
         }
 
         @Override
-        void argToString(final StringBuilder builder) {
+        protected void argToString(final StringBuilder builder) {
 
         }
 

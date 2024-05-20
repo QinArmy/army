@@ -18,7 +18,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLs;
-import io.army.dialect._DialectUtils;
+import io.army.dialect.impl._DialectUtils;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.array.XmlArrayType;

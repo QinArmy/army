@@ -29,7 +29,7 @@ import java.util.Set;
  * Main annotation processor.
  */
 @SupportedAnnotationTypes("io.army.annotation.Table")
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
     private static final boolean ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS = false;

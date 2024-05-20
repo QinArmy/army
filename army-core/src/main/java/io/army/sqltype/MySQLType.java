@@ -21,7 +21,6 @@ import io.army.criteria.TypeDef;
 import io.army.criteria.standard._SQLConsultant;
 import io.army.dialect.Database;
 import io.army.mapping.*;
-import io.army.mapping.mysql.MySqlBitType;
 import io.army.mapping.spatial.*;
 import io.army.type.BlobPath;
 import io.army.type.TextPath;
@@ -336,9 +335,8 @@ public enum MySQLType implements SQLType {
                 type = JsonType.TEXT;
                 break;
             case BIT:
-                type = MySqlBitType.INSTANCE;
-                break;
-
+                //  type = MySqlBitType.INSTANCE; // TODO 加
+                throw new UnsupportedOperationException();
             case BINARY:
                 type = BinaryType.INSTANCE;
                 break;

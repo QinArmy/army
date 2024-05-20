@@ -19,7 +19,7 @@ package io.army.mapping.postgre;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;

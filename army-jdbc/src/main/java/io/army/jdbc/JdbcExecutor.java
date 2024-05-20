@@ -22,7 +22,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.executor.ExecutorSupport;
 import io.army.executor.StmtExecutor;
 import io.army.mapping.MappingEnv;

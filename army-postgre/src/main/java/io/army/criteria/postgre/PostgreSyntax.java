@@ -21,7 +21,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.*;
 import io.army.criteria.standard.SQLs;
 import io.army.dialect.PostgreDialect;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.NoCastTextType;

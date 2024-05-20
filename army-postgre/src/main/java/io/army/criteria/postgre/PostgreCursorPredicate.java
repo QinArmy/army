@@ -17,7 +17,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.impl.OperationPredicate;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._SqlContext;
 import io.army.util._StringUtils;
 
 final class PostgreCursorPredicate extends OperationPredicate.OperationCompoundPredicate {

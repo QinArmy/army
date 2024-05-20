@@ -18,7 +18,7 @@ package io.army.mapping.postgre.array;
 
 import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
-import io.army.dialect._Constant;
+import io.army.dialect.impl._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.*;
 import io.army.mapping.array.PostgreArrays;

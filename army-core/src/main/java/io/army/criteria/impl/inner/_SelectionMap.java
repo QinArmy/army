@@ -17,7 +17,7 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.Selection;
-import io.army.dialect._SqlContext;
+import io.army.dialect.impl._SqlContext;
 
 import javax.annotation.Nullable;
 import java.util.List;
