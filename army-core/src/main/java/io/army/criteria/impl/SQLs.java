@@ -242,6 +242,8 @@ public abstract class SQLs extends SQLSyntax {
      */
     public static final LiteralExpression LITERAL_EMPTY_STRING = SQLs.literal(StringType.INSTANCE, "");
 
+    public static final LiteralExpression LITERAL_SPACE = SQLs.literal(StringType.INSTANCE, " ");
+
     /**
      * @see #BATCH_NO_PARAM
      */
@@ -279,6 +281,8 @@ public abstract class SQLs extends SQLSyntax {
      * @see #LITERAL_EMPTY_STRING
      */
     public static final ParamExpression PARAM_EMPTY_STRING = SQLs.param(StringType.INSTANCE, "");
+
+    public static final ParamExpression PARAM_SPACE = SQLs.param(StringType.INSTANCE, " ");
 
     /**
      * @see #BATCH_NO_LITERAL
