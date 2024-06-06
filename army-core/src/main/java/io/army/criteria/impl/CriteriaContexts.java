@@ -496,10 +496,11 @@ abstract class CriteriaContexts {
         return ContextStack.clearStackAnd(UnknownDerivedFieldException::new, m);
     }
 
-    private static CriteriaException nonDeferCommandClause(final Dialect dialect, String commandName) {
+    private static CriteriaException nonDeferCommandClause(final Dialect dialect, String commandName,
+                                                           String derivedAlias, String selectionAlias) {
         String m;
-        m = String.format("%s.refField(String derivedAlias,String fieldName) isn't allowed in static %s clause for %s",
-                SQLs.class.getName(), commandName, dialect);
+        m = String.format("%s.refField(\"%s\",\"%s\") isn't allowed in static %s clause for %s",
+                SQLs.class.getName(), derivedAlias, selectionAlias, commandName, dialect);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
@@ -1458,10 +1459,10 @@ abstract class CriteriaContexts {
                 throw unknownDerivedField(derivedAlias, fieldName);
             } else if ((noFromClause = this.aliasToBlock == null) && (this instanceof SimpleQueryContext
                     && ((SimpleQueryContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause(this.dialect, "SELECT");
+                throw nonDeferCommandClause(this.dialect, "SELECT", derivedAlias, fieldName);
             } else if (noFromClause && (this instanceof JoinableSingleDmlContext
                     && ((JoinableSingleDmlContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause(this.dialect, "SET");
+                throw nonDeferCommandClause(this.dialect, "SET", derivedAlias, fieldName);
             } else if (this instanceof PrimaryContext) {
                 throw unknownDerivedField(derivedAlias, fieldName);
             } else {
@@ -1616,12 +1617,23 @@ abstract class CriteriaContexts {
                 field = tempField;
             } else if (getDerived(derivedAlias) != null) { // here getDerived() trigger buffer derived table in current context
                 field = createDerivedField(derivedAlias, fieldName);
+            } else if (isInWithClause()) {
+                if (this instanceof SubContext) {
+                    final StatementContext outerContext = this.outerContext;
+                    assert outerContext != null;
+                    field = outerContext.refOuterOrMoreOuterField(derivedAlias, fieldName);
+                    if (field != null) {
+                        addOuterRef(derivedAlias);
+                    }
+                } else {
+                    field = null;
+                }
             } else if ((noFromClause = this.aliasToBlock == null) && (this instanceof SimpleQueryContext
                     && ((SimpleQueryContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause(this.dialect, "SELECT");
+                throw nonDeferCommandClause(this.dialect, "SELECT", derivedAlias, fieldName);
             } else if (noFromClause && (this instanceof JoinableSingleDmlContext
                     && ((JoinableSingleDmlContext) this).deferCommandClause == null)) {
-                throw nonDeferCommandClause(this.dialect, "SET");
+                throw nonDeferCommandClause(this.dialect, "SET", derivedAlias, fieldName);
             } else if (this instanceof PrimaryContext) {
                 field = null;
             } else {
@@ -4250,7 +4262,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
             // this is  DispatcherContext , so in static SELECT clause
-            throw nonDeferCommandClause(this.dialect, "SELECT");
+            throw nonDeferCommandClause(this.dialect, "SELECT", derivedAlias, fieldName);
         }
 
         @Override
