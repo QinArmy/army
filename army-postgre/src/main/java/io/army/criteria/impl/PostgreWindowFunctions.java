@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * Package class,This class hold window function and Aggregate function method.
-*
+ *
  * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions tutorial</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function synatx</a>
  * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions list</a>
@@ -58,7 +58,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * This interface representing postgre over clause.
-     *
      */
     public interface _OverSpec extends Window._OverWindowClause<PostgreWindow._PartitionBySpec> {
 
@@ -68,7 +67,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * This interface representing postgre aggregate function over clause.
-     *
      */
     public interface _PgAggWindowFuncSpec extends _OverSpec,
             SQLFunction._OuterClauseBeforeOver,
@@ -80,7 +78,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * This interface representing postgre aggregate function filter clause.
-     *
      */
     interface _PgAggFuncFilterClause<R extends Item> {
 
@@ -92,7 +89,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * This interface representing postgre aggregate function.
-     *
      */
     public interface _PostgreAggregateFunction<R extends Expression> extends SimpleExpression,
             _PgAggFuncFilterClause<R>,
@@ -104,7 +100,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * This interface is base interface of postgre window aggregate function.
-     *
      */
     public interface _AggWindowFunc extends _PostgreAggregateFunction<_PgAggWindowFuncSpec>, _PgAggWindowFuncSpec {
 
@@ -114,7 +109,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * This interface is base interface of postgre non-window aggregate function.
-     *
      */
     public interface _PgAggFunc extends _PostgreAggregateFunction<SimpleExpression> {
 
@@ -123,7 +117,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * This interface representing postgre  ordered-set aggregate function. This interface couldn't extends {@link  _PgAggFunc}
-     *
      */
     public interface _AggWithGroupClause {
 
@@ -138,7 +131,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">row_number () → bigint<br/>
      * Returns the number of the current row within its partition, counting from 1.
      * </a>
@@ -152,7 +144,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">rank () → bigint<br/>
      * Returns the rank of the current row, with gaps; that is, the row_number of the first row in its peer group.
      * </a>
@@ -165,7 +156,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">dense_rank () → bigint<br/>
      * Returns the rank of the current row, without gaps; this function effectively counts peer groups.
      * </a>
@@ -177,7 +167,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">percent_rank () → double precision<br/>
      * Returns the relative rank of the current row, that is (rank - 1) / (total partition rows - 1). The value thus ranges from 0 to 1 inclusive.
@@ -192,7 +181,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  DoubleType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">cume_dist () → double precision<br/>
      * Returns the cumulative distribution, that is (number of partition rows preceding or peers with current row) / (total partition rows). The value thus ranges from 1/N to 1.
      * </a>
@@ -204,7 +192,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType#INSTANCE}
-     *
      *
      * @param func  the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *              <ul>
@@ -229,7 +216,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">ntile ( num_buckets integer ) → integer<br/>
      * Returns an integer ranging from 1 to the argument value, dividing the partition as equally as possible.
      * </a>
@@ -241,7 +227,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">lag ( value anycompatible [, offset integer [, default anycompatible ]] ) → anycompatible<br/>
      * Returns value evaluated at the row that is offset rows before the current row within the partition; if there is no such row,<br/>
@@ -257,7 +242,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">lag ( value anycompatible [, offset integer [, default anycompatible ]] ) → anycompatible<br/>
      * Returns value evaluated at the row that is offset rows before the current row within the partition; if there is no such row,<br/>
      * instead returns default (which must be of a type compatible with value).<br/>
@@ -271,7 +255,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">lag ( value anycompatible [, offset integer [, default anycompatible ]] ) → anycompatible<br/>
      * Returns value evaluated at the row that is offset rows before the current row within the partition; if there is no such row,<br/>
@@ -289,7 +272,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">lead ( value anycompatible [, offset integer [, default anycompatible ]] ) → anycompatible<br/>
      * Returns value evaluated at the row that is offset rows after the current row within the partition;<br/>
      * if there is no such row, instead returns default (which must be of a type compatible with value).<br/>
@@ -304,7 +286,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">lead ( value anycompatible [, offset integer [, default anycompatible ]] ) → anycompatible<br/>
      * Returns value evaluated at the row that is offset rows after the current row within the partition;<br/>
      * if there is no such row, instead returns default (which must be of a type compatible with value).<br/>
@@ -318,7 +299,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">lead ( value anycompatible [, offset integer [, default anycompatible ]] ) → anycompatible<br/>
      * Returns value evaluated at the row that is offset rows after the current row within the partition;<br/>
@@ -336,7 +316,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">first_value ( value anyelement ) → anyelement<br/>
      * Returns value evaluated at the row that is the first row of the window frame.
      * </a>
@@ -349,7 +328,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">last_value ( value anyelement ) → anyelement<br/>
      * Returns value evaluated at the row that is the last row of the window frame.
      * </a>
@@ -361,7 +339,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
-     *
      *
      * @param func the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *             <ul>
@@ -386,7 +363,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of value
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">nth_value ( value anyelement, n integer ) → anyelement<br/>
      * Returns value evaluated at the row that is the n'th row of the window frame (counting from 1); returns NULL if there is no such row.
      * </a>
@@ -402,7 +378,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the array {@link  MappingType} of any
      *
-     *
      * @param modifier see {@link SQLs#DISTINCT} or {@link Postgres#DISTINCT}
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
      * Collects all the input values, including nulls, into an array.
@@ -415,7 +390,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the array {@link  MappingType} of any
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
      * Collects all the input values, including nulls, into an array.
@@ -431,7 +405,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the array {@link  MappingType} of any
      *
-     *
      * @param modifier see {@link SQLs#DISTINCT} or {@link Postgres#DISTINCT}
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
      * Collects all the input values, including nulls, into an array.
@@ -446,7 +419,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the array {@link  MappingType} of any
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
      * Collects all the input values, including nulls, into an array.
@@ -468,7 +440,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>exp is interval type  → {@link IntervalType#TEXT}</li>
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">avg ( smallint ) → numeric<br/>
      * avg ( integer ) → numeric<br/>
@@ -492,7 +463,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>exp is interval type  → {@link IntervalType#TEXT}</li>
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">avg ( smallint ) → numeric<br/>
      * avg ( integer ) → numeric<br/>
@@ -518,7 +488,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>exp is interval type  → {@link IntervalType#TEXT}</li>
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">avg ( smallint ) → numeric<br/>
      * avg ( integer ) → numeric<br/>
@@ -546,7 +515,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">avg ( smallint ) → numeric<br/>
      * avg ( integer ) → numeric<br/>
      * avg ( bigint ) → numeric<br/>
@@ -569,7 +537,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_and ( smallint ) → smallint<br/>
      * bit_and ( integer ) → integer<br/>
      * bit_and ( bigint ) → bigint<br/>
@@ -588,7 +555,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>exp is bit type  → the {@link MappingType} of exp</li>
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_and ( smallint ) → smallint<br/>
      * bit_and ( integer ) → integer<br/>
@@ -611,7 +577,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_and ( smallint ) → smallint<br/>
      * bit_and ( integer ) → integer<br/>
      * bit_and ( bigint ) → bigint<br/>
@@ -633,7 +598,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_and ( smallint ) → smallint<br/>
      * bit_and ( integer ) → integer<br/>
      * bit_and ( bigint ) → bigint<br/>
@@ -653,7 +617,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
      * bit_or ( integer ) → integer<br/>
      * bit_or ( bigint ) → bigint<br/>
@@ -672,7 +635,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>exp is bit type  → the {@link MappingType} of exp</li>
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
      * bit_or ( integer ) → integer<br/>
@@ -694,7 +656,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>exp is bit type  → the {@link MappingType} of exp</li>
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
      * bit_or ( integer ) → integer<br/>
@@ -718,7 +679,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
      * bit_or ( integer ) → integer<br/>
      * bit_or ( bigint ) → bigint<br/>
@@ -738,7 +698,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
      * bit_xor ( integer ) → integer<br/>
      * bit_xor ( bigint ) → bigint<br/>
@@ -757,7 +716,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>exp is bit type  → the {@link MappingType} of exp</li>
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
      * bit_xor ( integer ) → integer<br/>
@@ -780,7 +738,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
      * bit_xor ( integer ) → integer<br/>
      * bit_xor ( bigint ) → bigint<br/>
@@ -802,7 +759,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>else → {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
      * bit_xor ( integer ) → integer<br/>
      * bit_xor ( bigint ) → bigint<br/>
@@ -818,7 +774,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_and ( boolean ) → boolean<br/>
      * Returns true if all non-null input values are true, otherwise false.
      * </a>
@@ -830,7 +785,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_and ( boolean ) → boolean<br/>
      * Returns true if all non-null input values are true, otherwise false.
@@ -845,7 +799,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_and ( boolean ) → boolean<br/>
      * Returns true if all non-null input values are true, otherwise false.
@@ -862,7 +815,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_and ( boolean ) → boolean<br/>
      * Returns true if all non-null input values are true, otherwise false.
      * </a>
@@ -876,7 +828,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_or ( boolean ) → boolean<br/>
      * Returns true if any non-null input value is true, otherwise false.
      * </a>
@@ -888,7 +839,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_or ( boolean ) → boolean<br/>
      * Returns true if any non-null input value is true, otherwise false.
@@ -904,7 +854,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_or ( boolean ) → boolean<br/>
      * Returns true if any non-null input value is true, otherwise false.
      * </a>
@@ -919,7 +868,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_or ( boolean ) → boolean<br/>
      * Returns true if any non-null input value is true, otherwise false.
      * </a>
@@ -932,7 +880,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( * ) → bigint<br/>
      * Computes the number of input rows.
@@ -947,7 +894,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
      * </a>
@@ -960,7 +906,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
@@ -977,7 +922,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
      * </a>
@@ -993,7 +937,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
      * </a>
@@ -1007,7 +950,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">every ( boolean ) → boolean<br/>
      * This is the SQL standard's equivalent to bool_and.
      * </a>
@@ -1020,7 +962,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">every ( boolean ) → boolean<br/>
      * This is the SQL standard's equivalent to bool_and.
@@ -1037,7 +978,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">every ( boolean ) → boolean<br/>
      * This is the SQL standard's equivalent to bool_and.
      * </a>
@@ -1053,7 +993,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">every ( boolean ) → boolean<br/>
      * This is the SQL standard's equivalent to bool_and.
      * </a>
@@ -1067,7 +1006,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_agg ( anyelement ) → json<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
@@ -1079,7 +1017,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_agg ( anyelement ) → json<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
@@ -1095,7 +1032,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_agg ( anyelement ) → json<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
@@ -1110,7 +1046,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_agg ( anyelement ) → json<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
@@ -1123,7 +1058,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_agg ( anyelement ) → jsonb_agg<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
@@ -1135,7 +1069,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_agg ( anyelement ) → jsonb_agg<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
@@ -1151,7 +1084,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_agg ( anyelement ) → jsonb_agg<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
@@ -1166,7 +1098,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_agg ( anyelement ) → jsonb_agg<br/>
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
@@ -1179,7 +1110,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
@@ -1191,7 +1121,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
@@ -1207,7 +1136,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
@@ -1222,7 +1150,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
-     *
      *
      * @param keyFunc   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
@@ -1258,7 +1185,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
@@ -1272,7 +1198,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
@@ -1284,7 +1209,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
@@ -1300,7 +1224,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
@@ -1315,7 +1238,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
-     *
      *
      * @param keyFunc   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
@@ -1351,7 +1273,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_object_agg ( key "any", value "any" ) → json<br/>
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
@@ -1363,7 +1284,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">max ( see text ) → same as input type<br/>
      * Computes the maximum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
@@ -1377,7 +1297,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">max ( see text ) → same as input type<br/>
      * Computes the maximum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
      * </a>
@@ -1389,7 +1308,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">min ( see text ) → same as input type<br/>
      * Computes the minimum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
@@ -1403,7 +1321,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">min ( see text ) → same as input type<br/>
      * Computes the minimum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
      * </a>
@@ -1416,7 +1333,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
      * range_agg ( value anymultirange ) → anymultirange
@@ -1432,7 +1348,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
      * range_agg ( value anymultirange ) → anymultirange
@@ -1450,7 +1365,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
      * range_agg ( value anymultirange ) → anymultirange
@@ -1470,7 +1384,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
      * range_agg ( value anymultirange ) → anymultirange
      * Computes the union of the non-null input values.
@@ -1483,7 +1396,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
      * range_intersect_agg ( value anymultirange ) → anymultirange
@@ -1499,7 +1411,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
      * range_intersect_agg ( value anymultirange ) → anymultirange
@@ -1517,7 +1428,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
      * range_intersect_agg ( value anymultirange ) → anymultirange
@@ -1537,7 +1447,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
      * range_intersect_agg ( value anymultirange ) → anymultirange
      * Computes the intersection of the non-null input values.
@@ -1551,7 +1460,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
      * string_agg ( value bytea, delimiter bytea ) → bytea
@@ -1567,7 +1475,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
      * string_agg ( value bytea, delimiter bytea ) → bytea
@@ -1586,7 +1493,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
      * string_agg ( value bytea, delimiter bytea ) → bytea
      * Concatenates the non-null input values into a string. Each value after the first is preceded by the corresponding delimiter (if it's not null).
@@ -1603,7 +1509,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
      * string_agg ( value bytea, delimiter bytea ) → bytea
@@ -1627,7 +1532,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      *     <li>Else if exp is sql float type,then {@link DoubleType}</li>
      *     <li>Else he {@link MappingType} of exp</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">sum ( smallint ) → bigint<br/>
      * sum ( integer ) → bigint<br/>
@@ -1659,7 +1563,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      *     <li>Else he {@link MappingType} of exp</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">sum ( smallint ) → bigint<br/>
      * sum ( integer ) → bigint<br/>
      * sum ( bigint ) → numeric<br/>
@@ -1680,7 +1583,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
      * Concatenates the non-null XML input values
      * </a>
@@ -1692,7 +1594,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
      * Concatenates the non-null XML input values
@@ -1708,7 +1609,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
      * Concatenates the non-null XML input values
      * </a>
@@ -1722,7 +1622,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
      * Concatenates the non-null XML input values
@@ -1739,7 +1638,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
      * Computes the correlation coefficient.
      * </a>
@@ -1751,7 +1649,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
      * Computes the correlation coefficient.
@@ -1767,7 +1664,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
      * Computes the correlation coefficient.
      * </a>
@@ -1782,7 +1678,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
      * Computes the correlation coefficient.
      * </a>
@@ -1795,7 +1690,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
      * Computes the population covariance.
      * </a>
@@ -1807,7 +1701,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
      * Computes the population covariance.
@@ -1823,7 +1716,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
      * Computes the population covariance.
      * </a>
@@ -1838,7 +1730,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
      * Computes the population covariance.
      * </a>
@@ -1852,7 +1743,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
      * Computes the sample covariance.
      * </a>
@@ -1864,7 +1754,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
      * Computes the sample covariance.
@@ -1880,7 +1769,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
      * Computes the sample covariance.
      * </a>
@@ -1895,7 +1783,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
      * Computes the sample covariance.
      * </a>
@@ -1909,7 +1796,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the independent variable, sum(X)/N.
      * </a>
@@ -1921,7 +1807,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the independent variable, sum(X)/N.
@@ -1937,7 +1822,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the independent variable, sum(X)/N.
      * </a>
@@ -1952,7 +1836,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the independent variable, sum(X)/N.
      * </a>
@@ -1966,7 +1849,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the dependent variable, sum(Y)/N.
      * </a>
@@ -1978,7 +1860,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the dependent variable, sum(Y)/N.
@@ -1994,7 +1875,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the dependent variable, sum(Y)/N.
      * </a>
@@ -2009,7 +1889,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the average of the dependent variable, sum(Y)/N.
      * </a>
@@ -2023,7 +1902,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
      * Computes the number of rows in which both inputs are non-null.
      * </a>
@@ -2035,7 +1913,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
      * Computes the number of rows in which both inputs are non-null.
@@ -2051,7 +1928,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
      * Computes the number of rows in which both inputs are non-null.
      * </a>
@@ -2066,7 +1942,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
      * Computes the number of rows in which both inputs are non-null.
      * </a>
@@ -2080,7 +1955,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
      * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
      * </a>
@@ -2092,7 +1966,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
      * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
@@ -2107,7 +1980,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
      * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
@@ -2124,7 +1996,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
      * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
      * </a>
@@ -2138,7 +2009,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
      * Computes the square of the correlation coefficient.
      * </a>
@@ -2150,7 +2020,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
      * Computes the square of the correlation coefficient.
@@ -2165,7 +2034,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
      * Computes the square of the correlation coefficient.
@@ -2182,7 +2050,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
      * Computes the square of the correlation coefficient.
      * </a>
@@ -2196,7 +2063,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
      * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
      * </a>
@@ -2209,7 +2075,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
      * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
@@ -2225,7 +2090,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
      * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
      * </a>
@@ -2240,7 +2104,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
      * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
      * </a>
@@ -2254,7 +2117,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
      * </a>
@@ -2266,7 +2128,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
@@ -2281,7 +2142,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
@@ -2298,7 +2158,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
      * </a>
@@ -2312,7 +2171,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
      * </a>
@@ -2324,7 +2182,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
@@ -2340,7 +2197,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
      * </a>
@@ -2355,7 +2211,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
      * </a>
@@ -2369,7 +2224,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
      * </a>
@@ -2381,7 +2235,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
@@ -2397,7 +2250,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
      * </a>
@@ -2412,7 +2264,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
      * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
      * </a>
@@ -2426,7 +2277,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for stddev_samp.
      * </a>
@@ -2438,7 +2288,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for stddev_samp.
@@ -2454,7 +2303,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for stddev_samp.
      * </a>
@@ -2469,7 +2317,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for stddev_samp.
      * </a>
@@ -2483,7 +2330,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population standard deviation of the input values.
      * </a>
@@ -2495,7 +2341,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population standard deviation of the input values.
@@ -2511,7 +2356,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population standard deviation of the input values.
      * </a>
@@ -2526,7 +2370,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population standard deviation of the input values.
      * </a>
@@ -2540,7 +2383,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample standard deviation of the input values.
      * </a>
@@ -2552,7 +2394,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample standard deviation of the input values.
@@ -2568,7 +2409,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample standard deviation of the input values.
      * </a>
@@ -2583,7 +2423,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample standard deviation of the input values.
      * </a>
@@ -2597,7 +2436,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for var_samp.
      * </a>
@@ -2609,7 +2447,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for var_samp.
@@ -2625,7 +2462,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for var_samp.
      * </a>
@@ -2640,7 +2476,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * This is a historical alias for var_samp.
      * </a>
@@ -2654,7 +2489,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population variance of the input values (square of the population standard deviation).
      * </a>
@@ -2667,7 +2501,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population variance of the input values (square of the population standard deviation).
@@ -2683,7 +2516,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population variance of the input values (square of the population standard deviation).
      * </a>
@@ -2698,7 +2530,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the population variance of the input values (square of the population standard deviation).
      * </a>
@@ -2712,7 +2543,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample variance of the input values (square of the sample standard deviation).
      * </a>
@@ -2724,7 +2554,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample variance of the input values (square of the sample standard deviation).
@@ -2740,7 +2569,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample variance of the input values (square of the sample standard deviation).
      * </a>
@@ -2755,7 +2583,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
      * Computes the sample variance of the input values (square of the sample standard deviation).
@@ -2773,7 +2600,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type:  the {@link MappingType} of order by clause first item.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE">mode () WITHIN GROUP ( ORDER BY anyelement ) → anyelement<br/>
      * Computes the mode, the most frequent value of the aggregated argument (arbitrarily choosing the first one if there are multiple equally-frequent values). The aggregated argument must be of a sortable type.
@@ -2795,13 +2621,15 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>Else {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
+     * @param fraction non-null literal or {@link Expression}
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE">percentile_cont ( fraction double precision ) WITHIN GROUP ( ORDER BY double precision ) → double precision<br/>
      * </a>
      */
-    public static _AggWithGroupClause percentileCont(final Expression fraction) {
-        return PostgreFunctionUtils.oneArgWithGroupAggFunc("percentile_cont", fraction,
-                PostgreFunctionUtils.biOrderedSetType(fraction, PostgreWindowFunctions::_percentileType)
+    public static _AggWithGroupClause percentileCont(final Object fraction) {
+        final Expression fractionExp;
+        fractionExp = SQLs._nonNullLiteral(fraction);
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("percentile_cont", fractionExp,
+                PostgreFunctionUtils.biOrderedSetType(fractionExp, PostgreWindowFunctions::_percentileType)
         );
     }
 
@@ -2813,14 +2641,16 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <li>Else {@link TextType#INSTANCE}</li>
      * </ul>
      *
-     *
+     * @param fraction non-null literal or {@link Expression}
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE">percentile_disc ( fraction double precision ) WITHIN GROUP ( ORDER BY anyelement ) → anyelement<br/>
      * percentile_disc ( fractions double precision[] ) WITHIN GROUP ( ORDER BY anyelement ) → anyarray
      * </a>
      */
-    public static _AggWithGroupClause percentileDisc(final Expression fraction) {
-        return PostgreFunctionUtils.oneArgWithGroupAggFunc("percentile_disc", fraction,
-                PostgreFunctionUtils.biOrderedSetType(fraction, PostgreWindowFunctions::_percentileType)
+    public static _AggWithGroupClause percentileDisc(final Object fraction) {
+        final Expression fractionExp;
+        fractionExp = SQLs._nonNullLiteral(fraction);
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("percentile_disc", fractionExp,
+                PostgreFunctionUtils.biOrderedSetType(fractionExp, PostgreWindowFunctions::_percentileType)
         );
     }
 
@@ -2830,7 +2660,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link LongType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → bigint<br/>
      * </a>
@@ -2843,7 +2672,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link LongType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">dense_rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → bigint<br/>
      * </a>
      */
@@ -2855,7 +2683,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">percent_rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → double precision<br/>
      * </a>
      */
@@ -2866,7 +2693,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link DoubleType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">cume_dist ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → double precision<br/>
      * </a>
@@ -2915,7 +2741,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     }
 
 
-
     /**
      * @see #bitAnd(Expression)
      * @see #bitOr(Expression)
@@ -2931,7 +2756,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     }
 
     /**
-     * @see #percentileCont(Expression)
+     * @see #percentileCont(Object)
      */
     private static MappingType _percentileType(final MappingType fractionType, final MappingType type) {
         final MappingType returnType;
