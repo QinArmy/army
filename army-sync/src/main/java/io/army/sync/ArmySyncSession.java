@@ -239,6 +239,26 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     }
 
     @Override
+    public final <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor) {
+        final R row;
+        row = queryOneObject(statement, constructor, ArmySyncStmtOptions.DEFAULT);
+        if (row == null) {
+            throw _Exceptions.noAnyRow();
+        }
+        return row;
+    }
+
+    @Override
+    public final <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+        final R row;
+        row = queryOneObject(statement, constructor, option);
+        if (row == null) {
+            throw _Exceptions.noAnyRow();
+        }
+        return row;
+    }
+
+    @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
         return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));
     }
@@ -246,6 +266,28 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
         return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayListWithCapacity1, option));
+    }
+
+
+    @Override
+    public final <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
+        final R row;
+        row = queryOneRecord(statement, function, ArmySyncStmtOptions.DEFAULT);
+        if (row == null) {
+            throw _Exceptions.noAnyRow();
+        }
+        return row;
+    }
+
+
+    @Override
+    public final <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+        final R row;
+        row = queryOneRecord(statement, function, option);
+        if (row == null) {
+            throw _Exceptions.noAnyRow();
+        }
+        return row;
     }
 
     @Override

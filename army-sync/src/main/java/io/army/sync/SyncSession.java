@@ -308,18 +308,28 @@ public interface SyncSession extends Session, Closeable {
     <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
 
-
     @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
     @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
+
+    <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor);
+
+    <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
+
     @Nullable
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
 
     @Nullable
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
+
+
+    <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
+
+
+    <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
 
     /**
      * @param <R> representing select result Java Type.
