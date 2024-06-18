@@ -1399,7 +1399,6 @@ abstract class CriteriaContexts {
             final TableMeta<?> targetTable;
 
             QualifiedField<?> qualifiedField;
-
             if (aliasFieldMap != null && (fieldMap = aliasFieldMap.get(tableAlias)) != null) {
                 qualifiedField = fieldMap.get(field);
                 if (qualifiedField == null) {
@@ -1577,13 +1576,18 @@ abstract class CriteriaContexts {
                 if (targetTable != field.tableMeta()) {
                     throw qualifiedFieldTableNotMatch(tableAlias, targetTable, field);
                 }
-                if (aliasFieldMap == null) {
-                    this.aliasFieldMap = aliasFieldMap = _Collections.hashMap();
-                }
-                qualifiedField = aliasFieldMap.computeIfAbsent(tableAlias, _Collections::hashMapIgnoreKey)
-                        .computeIfAbsent(field, f -> QualifiedFieldImpl.create(tableAlias, field));
+                qualifiedField = getOrCreateField(tableAlias, field);
             } else if (isInWithClause()) {
-                qualifiedField = null;
+                if (this instanceof SubContext) {
+                    final StatementContext outerContext = this.outerContext;
+                    assert outerContext != null;
+                    qualifiedField = outerContext.outerOrMoreOuterField(tableAlias, field);
+                    if (qualifiedField != null) {
+                        addOuterRef(tableAlias);
+                    }
+                } else {
+                    qualifiedField = null;
+                }
             } else if (this instanceof PrimaryContext) {
                 qualifiedField = null;
             } else {
