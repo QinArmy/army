@@ -1694,7 +1694,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public void onOrderByEnd(final TypeInfer inputType) {
             if (this.inputInfer != null) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+                throw ContextStack.clearStackAndCastCriteriaApi();
             }
             this.inputInfer = inputType;
             this.mappingType();
@@ -1715,7 +1715,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
             if (argInfer instanceof MappingType) {
                 argType = (MappingType) argInfer;
-            } else if (inputInfer instanceof TableField) {
+            } else if (argInfer instanceof TableField) {
                 argType = ((TableField) argInfer).mappingType();
             } else {
                 argType = argInfer.typeMeta().mappingType();
@@ -1729,8 +1729,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 inputType = inputInfer.typeMeta().mappingType();
             }
 
-            type = this.function.apply(argType, inputType);
-            this.type = type;
+            this.type = type = this.function.apply(argType, inputType);
             return type;
         }
 
