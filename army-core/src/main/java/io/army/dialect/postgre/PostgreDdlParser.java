@@ -49,7 +49,6 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
 
-
     @Override
     protected void doModifyColumn(final _FieldResult result, final StringBuilder builder) {
         appendSpaceIfNeed(builder);
@@ -114,7 +113,9 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     @Override
     protected void dataType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
-        switch ((PostgreType) dataType) {
+        if (!(dataType instanceof PostgreType)) {
+            this.parser.typeName(field.mappingType(), builder);
+        } else switch ((PostgreType) dataType) {
             case UNKNOWN:
                 throw _Exceptions.unexpectedEnum((Enum<?>) dataType);
             case DECIMAL:

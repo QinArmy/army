@@ -18,7 +18,6 @@ package io.army.util;
 
 
 import io.army.dialect._Constant;
-import io.army.modelgen._MetaBridge;
 
 import javax.annotation.Nullable;
 import java.util.BitSet;
@@ -53,13 +52,10 @@ public abstract class _StringUtils {
         return text == null ? null : text.toUpperCase(Locale.ROOT);
     }
 
-    public static String camelToUpperCase(String camel) {
-        return _MetaBridge.camelToUpperCase(camel);
-    }
 
-
-    public static String camelToLowerCase(String camel) {
-        return _MetaBridge.camelToLowerCase(camel);
+    public static boolean isCamelCase(final @Nullable String text) {
+        return text != null
+                && !text.toUpperCase(Locale.ROOT).toLowerCase(Locale.ROOT).equals(text.toLowerCase(Locale.ROOT));
     }
 
     public static boolean isWhitespace(final String text, final int offset, final int end) {

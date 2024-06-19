@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * <p>
  * This class representing the mapping from {@link TextEnum} to {@link SQLType}.
-*
+ *
  * @see TextEnum
  * @see NameEnumType
  * @see CodeEnumType
@@ -42,34 +42,30 @@ import java.util.concurrent.ConcurrentMap;
 public final class TextEnumType extends MappingType {
 
     public static TextEnumType from(final Class<?> enumType) {
-        if (!Enum.class.isAssignableFrom(enumType)
-                || !TextEnum.class.isAssignableFrom(enumType)
-                || CodeEnum.class.isAssignableFrom(enumType)) {
-            throw errorJavaType(TextEnumType.class, enumType);
-        }
         final Class<?> actualType;
-        if (enumType.isAnonymousClass()) {
-            actualType = enumType.getSuperclass();
-        } else {
-            actualType = enumType;
-        }
-        return INSTANCE_MAP.computeIfAbsent(actualType, k -> new TextEnumType(actualType, null));
+        actualType = checkEnumClass(enumType);
+        return INSTANCE_MAP.computeIfAbsent(actualType, k -> new TextEnumType(actualType, NameEnumType.obtainEnumName(actualType)));
     }
 
     public static TextEnumType fromParam(final Class<?> enumType, final String enumName) {
-        if (!Enum.class.isAssignableFrom(enumType)
-                || !TextEnum.class.isAssignableFrom(enumType)
-                || CodeEnum.class.isAssignableFrom(enumType)) {
-            throw errorJavaType(TextEnumType.class, enumType);
-        } else if (!_StringUtils.hasText(enumName)) {
+        final Class<?> actualEnumType;
+        actualEnumType = checkEnumClass(enumType);
+        if (!_StringUtils.hasText(enumName)) {
             throw new IllegalArgumentException("no text");
         }
-        final Class<?> actualEnumType;
-        actualEnumType = ClassUtils.enumClass(enumType);
 
         final String key;
         key = actualEnumType.getName() + '#' + enumName;
         return INSTANCE_MAP.computeIfAbsent(key, k -> new TextEnumType(actualEnumType, enumName));
+    }
+
+    private static Class<?> checkEnumClass(final Class<?> javaType) {
+        if (!Enum.class.isAssignableFrom(javaType)
+                || !TextEnum.class.isAssignableFrom(javaType)
+                || CodeEnum.class.isAssignableFrom(javaType)) {
+            throw errorJavaType(TextEnumType.class, javaType);
+        }
+        return ClassUtils.enumClass(javaType);
     }
 
     private static final ConcurrentMap<Object, TextEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();

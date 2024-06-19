@@ -18,9 +18,11 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.mapping.array.NameEnumArrayType;
+import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 import io.army.struct.CodeEnum;
+import io.army.struct.EnumName;
 import io.army.struct.TextEnum;
 import io.army.util.ClassUtils;
 import io.army.util._Collections;
@@ -31,6 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * @see io.army.struct.EnumName
  * @see Enum
  * @see TextEnumType
  */
@@ -39,7 +42,9 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     public static NameEnumType from(final Class<?> enumType) {
         final Class<?> actualEnumType;
         actualEnumType = checkEnumClass(enumType);
-        return INSTANCE_MAP.computeIfAbsent(actualEnumType, k -> new NameEnumType(actualEnumType, null));
+
+
+        return INSTANCE_MAP.computeIfAbsent(actualEnumType, k -> new NameEnumType(actualEnumType, obtainEnumName(actualEnumType)));
     }
 
     public static NameEnumType fromParam(final Class<?> enumType, final String enumName) {
@@ -53,6 +58,23 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
         key = actualEnumType.getName() + '#' + enumName;
         return INSTANCE_MAP.computeIfAbsent(key, k -> new NameEnumType(actualEnumType, enumName));
     }
+
+    @Nullable
+    static String obtainEnumName(Class<?> actualEnumType) {
+        final EnumName enumName;
+        enumName = actualEnumType.getAnnotation(EnumName.class);
+        final String databaseEnumName;
+        if (enumName == null) {
+            databaseEnumName = null;
+        } else {
+            databaseEnumName = enumName.value();
+            if (_StringUtils.isCamelCase(databaseEnumName)) {
+                throw new MetaException(String.format("%s don't support CamelCase", EnumName.class.getName()));
+            }
+        }
+        return databaseEnumName;
+    }
+
 
     private static Class<?> checkEnumClass(final Class<?> javaType) {
         if (!Enum.class.isAssignableFrom(javaType)) {

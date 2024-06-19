@@ -955,7 +955,9 @@ abstract class ArmyParser implements DialectParser {
         final String typeName;
         typeName = dataType.typeName();
 
-        if (!this.keyWordMap.containsKey(typeName.toUpperCase(Locale.ROOT))
+        if (_StringUtils.isCamelCase(typeName)) {
+            throw new MetaException(String.format("DataType[%s] is CamelCase", typeName));
+        } else if (!this.keyWordMap.containsKey(typeName.toUpperCase(Locale.ROOT))
                 && _DialectUtils.isSimpleIdentifier(typeName)) {
             sqlBuilder.append(typeName);
         } else if (!dataType.isArray()) {
