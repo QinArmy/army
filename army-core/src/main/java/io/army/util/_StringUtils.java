@@ -55,7 +55,8 @@ public abstract class _StringUtils {
 
     public static boolean isCamelCase(final @Nullable String text) {
         return text != null
-                && !text.toUpperCase(Locale.ROOT).toLowerCase(Locale.ROOT).equals(text.toLowerCase(Locale.ROOT));
+                && !text.equals(text.toLowerCase(Locale.ROOT))
+                && !text.equals(text.toUpperCase(Locale.ROOT));
     }
 
     public static boolean isWhitespace(final String text, final int offset, final int end) {

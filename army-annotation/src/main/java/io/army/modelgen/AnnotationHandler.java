@@ -353,22 +353,23 @@ final class AnnotationHandler {
      * @return lower case column
      */
     private String getColumnName(final String className, final String fieldName, final Column column) {
-        final String customColumnName, columnName;
+        final String customColumnName, lowerCaseColumnName;
         customColumnName = column.name();
         if (customColumnName.isEmpty()) {
-            columnName = _MetaBridge.camelToLowerCase(fieldName);
+            lowerCaseColumnName = _MetaBridge.camelToLowerCase(fieldName);
         } else {
-            columnName = customColumnName.toLowerCase(Locale.ROOT);
-            if (!(columnName.equals(customColumnName) || columnName.toUpperCase(Locale.ROOT).equals(customColumnName))) { // army don't allow camel
+            lowerCaseColumnName = customColumnName.toLowerCase(Locale.ROOT);
+            if (!customColumnName.equals(lowerCaseColumnName)
+                    && !customColumnName.equals(customColumnName.toUpperCase(Locale.ROOT))) { // army don't allow camel
                 String m = String.format("Field %s.%s column name[%s] is camel.", className, fieldName, customColumnName);
                 this.errorMsgList.add(m);
             }
-            if (!columnName.trim().equals(columnName)) {
+            if (!lowerCaseColumnName.trim().equals(lowerCaseColumnName)) {
                 String m = String.format("please trim Field %s.%s column name[%s].", className, fieldName, customColumnName);
                 this.errorMsgList.add(m);
             }
         }
-        return columnName;
+        return lowerCaseColumnName;
     }
 
 
