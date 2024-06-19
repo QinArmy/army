@@ -49,7 +49,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link  StringType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">get_current_ts_config ( ) → regconfig</a>
      */
     public static SimpleExpression getCurrentTsConfig() {
@@ -59,7 +58,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  IntegerType}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">numnode ( tsquery ) → integer</a>
      */
@@ -79,7 +77,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>lexemes {@link TextArrayType#LINEAR}</li>
      * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </ol>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_debug ( [ config regconfig, ] document text ) → setof record ( alias text, description text, token text, dictionaries regdictionary[], dictionary regdictionary, lexemes text[] )<br/>
      * Extracts and normalizes tokens from the document according to the specified or default text search configuration, and returns information about how each token was processed.  <br/>
@@ -102,7 +99,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </ol>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_debug ( [ config regconfig, ] document text ) → setof record ( alias text, description text, token text, dictionaries regdictionary[], dictionary regdictionary, lexemes text[] )<br/>
      * Extracts and normalizes tokens from the document according to the specified or default text search configuration, and returns information about how each token was processed.  <br/>
      * ts_debug('english', 'The Brightest supernovaes') → (asciiword,"Word, all ASCII",The,{english_stem},english_stem,{})
@@ -115,7 +111,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  TextArrayType#LINEAR}.
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_lexize ( dict regdictionary, token text ) → text[]</a>
      */
@@ -130,7 +125,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>token {@link TextType}</li>
      * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </ol>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_parse ( parser_name text, document text ) → setof record ( tokid integer, token text )<br/>
      * Extracts tokens from the document using the named parser.  <br/>
@@ -157,7 +151,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>description {@link TextType}</li>
      * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </ol>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_token_type ( parser_name text ) → setof record ( tokid integer, alias text, description text )<br/>
      * Returns a table that describes each type of token the named parser can recognize.<br/>
@@ -187,7 +180,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </ol>
      *
-     *
      * @see #tsStat(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_stat ( sqlquery text [, weights text ] ) → setof record ( word text, ndoc integer, nentry integer )<br/>
      * Executes the sqlquery, which must return a single tsvector column, and returns statistics about each distinct lexeme contained in the data.<br/>
@@ -207,7 +199,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </ol>
      *
-     *
      * @see #tsStat(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_stat ( sqlquery text [, weights text ] ) → setof record ( word text, ndoc integer, nentry integer )<br/>
      * Executes the sqlquery, which must return a single tsvector column, and returns statistics about each distinct lexeme contained in the data.<br/>
@@ -222,7 +213,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link  UUIDType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-uuid.html">UUID Functions</a>
      */
     public static SimpleExpression genRandomUuid() {
@@ -234,7 +224,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">nextval ( regclass ) → bigint</a>
      */
@@ -257,7 +246,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType}
      *
-     *
      * @param isCalled in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see #setVal(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">setval ( regclass, bigint [, boolean ] ) → bigint</a>
@@ -271,7 +259,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">currval ( regclass ) → bigint</a>
      */
     public static SimpleExpression currVal(Expression exp) {
@@ -281,7 +268,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">lastval ( regclass ) → bigint</a>
      */
@@ -295,7 +281,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of firstValue
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -314,7 +299,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of fist argument
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -327,7 +311,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of firstValue
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -346,7 +329,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of fist argument
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -359,7 +341,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of firstValue
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -377,7 +358,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of fist argument
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -421,7 +401,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>The {@link MappingType} of function return type: {@link TextType#INSTANCE}
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -450,7 +429,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_fill ( anyelement, integer[] [, integer[] ] ) → anyarray</a>
      */
     public static <T> Expression arrayFill(Expression anyElement, BiFunction<MappingType, T, Expression> funcRefForDimension,
-                                                 T dimensions) {
+                                           T dimensions) {
         return _arrayFill(anyElement, funcRefForDimension.apply(IntegerArrayType.LINEAR, dimensions), null);
     }
 
@@ -469,7 +448,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the array type of {@link MappingType} of anyElement.
-     *
      *
      * @param funcRefForDimension the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                            <ul>
@@ -497,7 +475,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_fill ( anyelement, integer[] [, integer[] ] ) → anyarray</a>
      */
     public static <T, U> Expression arrayFill(Expression anyElement, BiFunction<MappingType, T, Expression> funcRefForDimension,
-                                                    T dimensions, BiFunction<MappingType, U, Expression> funcRefForBound, U bounds) {
+                                              T dimensions, BiFunction<MappingType, U, Expression> funcRefForBound, U bounds) {
         return _arrayFill(anyElement, funcRefForDimension.apply(IntegerArrayType.LINEAR, dimensions),
                 funcRefForBound.apply(IntegerArrayType.LINEAR, bounds)
         );
@@ -519,7 +497,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
      *
-     *
      * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
      *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
@@ -537,14 +514,13 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_length ( anyarray, integer ) → integer</a>
      */
     public static <T> Expression arrayLength(Expression anyArray, BiFunction<MappingType, T, Expression> funcRef,
-                                                   T dimension) {
+                                             T dimension) {
         return arrayLength(anyArray, funcRef.apply(IntegerType.INSTANCE, dimension));
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -558,7 +534,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -574,7 +549,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -587,7 +561,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -602,7 +575,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
-     *
      *
      * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
@@ -627,14 +599,13 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_position ( anycompatiblearray, anycompatible [, integer ] ) → integer</a>
      */
     public static <T> Expression arrayPosition(Expression anyCompatibleArray, Expression anyCompatible,
-                                                     BiFunction<MappingType, T, Expression> funcRef, T subscript) {
+                                               BiFunction<MappingType, T, Expression> funcRef, T subscript) {
         return arrayPosition(anyCompatibleArray, anyCompatible, funcRef.apply(IntegerType.INSTANCE, subscript));
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -652,7 +623,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerArrayType#LINEAR}
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -666,7 +636,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of anyCompatibleArray.
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -683,7 +652,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of anyCompatibleArray.
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -698,7 +666,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of anyCompatibleArray.
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -716,7 +683,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link TextType#INSTANCE}.
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -729,7 +695,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}.
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -745,7 +710,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}.
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -760,7 +724,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of array.
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -811,7 +774,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *  baz
      *  quux
      *     </pre>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">unnest ( tsvector ) → setof record ( lexeme text, positions smallint[], weights text ) <br/>
      * Expands a tsvector into a set of rows, one per lexeme
@@ -871,7 +833,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *  quux
      *     </pre>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray ) → setof anyelement<br/>
      * Expands an array into a set of rows. The array's elements are read out in storage order.
      * </a>
@@ -895,7 +856,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *    | baz
      *
      *     </pre>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray, anyarray [, ... ] ) → setof anyelement, anyelement [, ... ]<br/>
      * Expands multiple arrays (possibly of different data types) into a set of rows. If the arrays are not all the same length then the shorter ones are padded with NULLs. This form is only allowed in a query's FROM clause;
@@ -922,7 +882,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *    | baz
      *
      *     </pre>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray, anyarray [, ... ] ) → setof anyelement, anyelement [, ... ]<br/>
      * Expands multiple arrays (possibly of different data types) into a set of rows. If the arrays are not all the same length then the shorter ones are padded with NULLs. This form is only allowed in a query's FROM clause;
@@ -970,7 +929,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *
      *     </pre>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray, anyarray [, ... ] ) → setof anyelement, anyelement [, ... ]<br/>
      * Expands multiple arrays (possibly of different data types) into a set of rows. If the arrays are not all the same length then the shorter ones are padded with NULLs. This form is only allowed in a query's FROM clause;
      * </a>
@@ -996,7 +954,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -1012,7 +969,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -1030,7 +986,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -1046,7 +1001,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -1064,7 +1018,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
      *
-     *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
      *                           </ul>
@@ -1080,7 +1033,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of range1.
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -1100,7 +1052,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>If anyRange is {@link PostgreRangeType.SingleRangeType} ,then the multi range of the {@link MappingType} of anyRange.</li>
      * <li>Else {@link TextType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}</li>
@@ -1127,38 +1078,39 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /*-------------------below Series Generating Functions-------------------*/
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of start
-     *
-     *
+     * <p>The {@link MappingType} of function return type: the {@link MappingType} of start
+     * @param start literal or {@link Expression}
+     * @param stop literal or {@link Expression}
      * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html">Set Returning Functions<br/>
      * </a>
      */
-    public static _ColumnWithOrdinalityFunction generateSeries(Expression start, Expression stop) {
-        return DialectFunctionUtils.twoArgColumnFunction("generate_series", start, stop, null,
-                _returnType(start, Expressions::identityType)
+    public static _ColumnWithOrdinalityFunction generateSeries(Object start, Object stop) {
+        final Expression startExp;
+        startExp = SQLs._nonNullLiteral(start);
+        return DialectFunctionUtils.twoArgColumnFunction("generate_series", startExp, stop, null,
+                _returnType(startExp, Expressions::identityType)
         );
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of start
+     * <p>The {@link MappingType} of function return type: the {@link MappingType} of start
      *
-     *
+     * @param start literal or {@link Expression}
+     * @param stop literal or {@link Expression}
+     * @param step literal or {@link Expression}
      * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html">Set Returning Functions<br/>
      * </a>
      */
-    public static _ColumnWithOrdinalityFunction generateSeries(Expression start, Expression stop, Expression step) {
-        return DialectFunctionUtils.threeArgColumnFunction("generate_series", start, stop, step, null,
-                _returnType(start, Expressions::identityType)
+    public static _ColumnWithOrdinalityFunction generateSeries(Object start, Object stop, Object step) {
+        final Expression startExp;
+        startExp = SQLs._nonNullLiteral(start);
+        return DialectFunctionUtils.threeArgColumnFunction("generate_series", startExp, stop, step, null,
+                _returnType(startExp, Expressions::identityType)
         );
     }
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE} rt
-     *
-     *
+     * <p>The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE} rt
      * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS">Subscript Generating Functions<br/>
      * </a>
      */
@@ -1171,7 +1123,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
-     *
      *
      * @param reverse in mose case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS">Subscript Generating Functions<br/>
@@ -1189,7 +1140,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_database () → name<br/>
      * </a>
      */
@@ -1200,7 +1150,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_query () → text<br/>
      * </a>
@@ -1214,7 +1163,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">currentSchema () → name<br/>
      * </a>
      */
@@ -1226,7 +1174,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextArrayType#LINEAR}
-     *
      *
      * @param includeImplicit in mose case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_schemas ( include_implicit boolean ) → name[]<br/>
@@ -1241,7 +1188,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link PostgreInetType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_client_addr () → inet<br/>
      * </a>
      */
@@ -1254,7 +1200,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_client_port () → integer<br/>
      * </a>
      */
@@ -1265,7 +1210,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link PostgreInetType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_server_addr () → inet<br/>
      * </a>
@@ -1278,7 +1222,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_server_port () → integer<br/>
      * </a>
      */
@@ -1289,7 +1232,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_backend_pid () → integer<br/>
      * </a>
@@ -1303,7 +1245,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerArrayType#PRIMITIVE_LINEAR}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_blocking_pids ( integer ) → integer[]<br/>
      * </a>
      */
@@ -1314,7 +1255,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link OffsetDateTimeType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_conf_load_time () → timestamp with time zone<br/>
      * </a>
@@ -1328,7 +1268,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_current_logfile ( [ text ] ) → text<br/>
      * </a>
      */
@@ -1340,7 +1279,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_current_logfile ( [ text ] ) → text<br/>
      * </a>
      */
@@ -1351,7 +1289,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_my_temp_schema () → oid<br/>
      * </a>
@@ -1365,7 +1302,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_is_other_temp_schema ( oid ) → boolean<br/>
      * </a>
      */
@@ -1376,7 +1312,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_jit_available () → boolean<br/>
      * </a>
@@ -1389,7 +1324,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_listening_channels () → setof text<br/>
      * </a>
      */
@@ -1400,7 +1334,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_notification_queue_usage () → double precision<br/>
      * </a>
@@ -1413,7 +1346,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link OffsetDateTimeType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_postmaster_start_time () → timestamp with time zone<br/>
      * </a>
      */
@@ -1424,7 +1356,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerArrayType#PRIMITIVE_LINEAR}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_safe_snapshot_blocking_pids ( integer ) → integer[]<br/>
      * </a>
@@ -1437,7 +1368,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_trigger_depth () → integer<br/>
      * </a>
      */
@@ -1448,7 +1378,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">version () → text<br/>
      * </a>
@@ -1464,7 +1393,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_any_column_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1476,7 +1404,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_any_column_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1487,7 +1414,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_column_privilege ( [ user name or oid, ] table text or oid, column text or smallint, privilege text ) → boolean<br/>
      * </a>
@@ -1501,7 +1427,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_column_privilege ( [ user name or oid, ] table text or oid, column text or smallint, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1513,7 +1438,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_database_privilege ( [ user name or oid, ] database text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1524,7 +1448,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_database_privilege ( [ user name or oid, ] database text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1538,7 +1461,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_foreign_data_wrapper_privilege ( [ user name or oid, ] fdw text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1549,7 +1471,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_foreign_data_wrapper_privilege ( [ user name or oid, ] fdw text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1563,7 +1484,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_function_privilege ( [ user name or oid, ] function text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1574,7 +1494,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_function_privilege ( [ user name or oid, ] function text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1587,7 +1506,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_language_privilege ( [ user name or oid, ] language text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1598,7 +1516,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_language_privilege ( [ user name or oid, ] language text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1611,7 +1528,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_parameter_privilege ( [ user name or oid, ] parameter text, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1622,7 +1538,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_parameter_privilege ( [ user name or oid, ] parameter text, privilege text ) → boolean<br/>
      * </a>
@@ -1635,7 +1550,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_schema_privilege ( [ user name or oid, ] schema text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1646,7 +1560,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_schema_privilege ( [ user name or oid, ] schema text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1659,7 +1572,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_sequence_privilege ( [ user name or oid, ] sequence text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1670,7 +1582,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_sequence_privilege ( [ user name or oid, ] sequence text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1683,7 +1594,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_server_privilege ( [ user name or oid, ] server text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1694,7 +1604,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_server_privilege ( [ user name or oid, ] server text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1707,7 +1616,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_table_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1718,7 +1626,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_table_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1731,7 +1638,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_tablespace_privilege ( [ user name or oid, ] tablespace text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1742,7 +1648,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_tablespace_privilege ( [ user name or oid, ] tablespace text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1755,7 +1660,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_type_privilege ( [ user name or oid, ] type text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1766,7 +1670,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_type_privilege ( [ user name or oid, ] type text or oid, privilege text ) → boolean<br/>
      * </a>
@@ -1779,7 +1682,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">pg_has_role ( [ user name or oid, ] role text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1791,7 +1693,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">pg_has_role ( [ user name or oid, ] role text or oid, privilege text ) → boolean<br/>
      * </a>
      */
@@ -1802,7 +1703,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">row_security_active ( table text or oid ) → boolean<br/>
      * </a>
@@ -1816,7 +1716,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link PostgreAclItemArrayType#LINEAR}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-ACLITEM-FN-TABLE">acldefault ( type "char", ownerId oid ) → aclitem[]<br/>
      * </a>
@@ -1833,7 +1732,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>privilege_type : {@link TextType#INSTANCE}</li>
      * <li>is_grantable : {@link BooleanType#INSTANCE}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-ACLITEM-FN-TABLE">aclexplode ( aclitem[] ) → setof record ( grantor oid, grantee oid, privilege_type text, is_grantable boolean )<br/>
      * </a>
@@ -1853,7 +1751,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link PostgreAclItemType#TEXT}
      *
-     *
      * @param isGrantable in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-ACLITEM-FN-TABLE">makeaclitem ( grantee oid, grantor oid, privileges text, is_grantable boolean ) → aclitem<br/>
      * </a>
@@ -1869,7 +1766,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_collation_is_visible ( collation oid ) → boolean<br/>
      * </a>
      */
@@ -1882,7 +1778,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_conversion_is_visible ( conversion oid ) → boolean<br/>
      * </a>
      */
@@ -1893,7 +1788,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_function_is_visible ( function oid ) → boolean<br/>
      * </a>
@@ -1907,7 +1801,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_opclass_is_visible ( opclass oid ) → boolean<br/>
      * </a>
      */
@@ -1919,7 +1812,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_operator_is_visible ( operator oid ) → boolean<br/>
      * </a>
@@ -1933,7 +1825,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_opfamily_is_visible ( opclass oid ) → boolean<br/>
      * </a>
      */
@@ -1944,7 +1835,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_statistics_obj_is_visible ( stat oid ) → boolean<br/>
      * </a>
@@ -1958,7 +1848,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_table_is_visible ( table oid ) → boolean<br/>
      * </a>
      */
@@ -1969,7 +1858,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_config_is_visible ( config oid ) → boolean<br/>
      * </a>
@@ -1982,7 +1870,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_dict_is_visible ( dict oid ) → boolean<br/>
      * </a>
      */
@@ -1993,7 +1880,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_parser_is_visible ( parser oid ) → boolean<br/>
      * </a>
@@ -2006,7 +1892,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_template_is_visible ( template oid ) → boolean<br/>
      * </a>
      */
@@ -2017,7 +1902,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_type_is_visible ( type oid ) → boolean<br/>
      * </a>
@@ -2033,7 +1917,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">format_type ( type oid, typemod integer ) → text<br/>
      * </a>
      */
@@ -2044,7 +1927,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_char_to_encoding ( encoding name ) → integer<br/>
      * </a>
@@ -2057,7 +1939,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_encoding_to_char ( encoding integer ) → name<br/>
      * </a>
@@ -2077,7 +1958,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>is_opt : {@link BooleanType#INSTANCE}</li>
      * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_catalog_foreign_keys () → setof record ( fktable regclass, fkcols text[], pktable regclass, pkcols text[], is_array boolean, is_opt boolean )<br/>
      * </a>
@@ -2099,7 +1979,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_constraintdef ( constraint oid [, pretty boolean ] ) → text<br/>
      * </a>
      */
@@ -2111,7 +1990,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_constraintdef ( constraint oid [, pretty boolean ] ) → text<br/>
@@ -2126,7 +2004,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_expr ( expr pg_node_tree, relation oid [, pretty boolean ] ) → text<br/>
      * </a>
@@ -2140,7 +2017,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_functiondef ( func oid ) → text<br/>
      * </a>
      */
@@ -2151,7 +2027,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_function_arguments ( func oid ) → text<br/>
      * </a>
@@ -2165,7 +2040,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_function_identity_arguments ( func oid ) → text<br/>
      * </a>
      */
@@ -2178,7 +2052,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_function_result ( func oid ) → text<br/>
      * </a>
      */
@@ -2190,7 +2063,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_indexdef ( index oid [, column integer, pretty boolean ] ) → text<br/>
      * </a>
      */
@@ -2201,7 +2073,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_indexdef ( index oid [, column integer, pretty boolean ] ) → text<br/>
@@ -2222,7 +2093,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_keywords () → setof record ( word text, catcode "char", barelabel boolean, catdesc text, baredesc text )<br/>
      * </a>
      */
@@ -2242,7 +2112,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_ruledef ( rule oid [, pretty boolean ] ) → text<br/>
      * </a>
      */
@@ -2254,7 +2123,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_ruledef ( rule oid [, pretty boolean ] ) → text<br/>
@@ -2269,7 +2137,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_serial_sequence ( table text, column text ) → text<br/>
      * </a>
      */
@@ -2282,7 +2149,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_statisticsobjdef ( statobj oid ) → text<br/>
      * </a>
      */
@@ -2294,7 +2160,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_triggerdef ( trigger oid [, pretty boolean ] ) → text<br/>
      * </a>
      */
@@ -2305,7 +2170,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_triggerdef ( trigger oid [, pretty boolean ] ) → text<br/>
@@ -2319,7 +2183,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_userbyid ( role oid ) → name<br/>
      * </a>
      */
@@ -2330,7 +2193,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_viewdef ( view oid [, pretty boolean ] ) → text<br/>
      * pg_get_viewdef ( view oid, wrap_column integer ) → text<br/>
@@ -2345,7 +2207,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_viewdef ( view oid [, pretty boolean ] ) → text<br/>
      * pg_get_viewdef ( view oid, wrap_column integer ) → text<br/>
      * pg_get_viewdef ( view text [, pretty boolean ] ) → text<br/>
@@ -2359,7 +2220,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_index_column_has_property ( index regclass, column integer, property text ) → boolean<br/>
      * </a>
      */
@@ -2372,7 +2232,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_index_has_property ( index regclass, property text ) → boolean<br/>
      * </a>
      */
@@ -2384,7 +2243,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_indexam_has_property ( am oid, property text ) → boolean<br/>
      * </a>
@@ -2402,7 +2260,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_options_to_table ( options_array text[] ) → setof record ( option_name text, option_value text )<br/>
      * </a>
      */
@@ -2419,7 +2276,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextArrayType#LINEAR}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_settings_get_flags ( guc text ) → text[]<br/>
      * </a>
      */
@@ -2435,7 +2291,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_tablespace_databases ( tablespace oid ) → setof oid<br/>
      * </a>
      */
@@ -2446,7 +2301,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_tablespace_location ( tablespace oid ) → text<br/>
      * </a>
@@ -2460,7 +2314,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_typeof ( "any" ) → regtype<br/>
      * </a>
      */
@@ -2471,7 +2324,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">COLLATION FOR ( "any" ) → text<br/>
      * </a>
@@ -2485,7 +2337,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regclass ( text ) → regclass<br/>
      * </a>
      */
@@ -2497,7 +2348,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regcollation ( text ) → regcollation<br/>
      * </a>
      */
@@ -2508,7 +2358,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regnamespace ( text ) → regnamespace<br/>
      * </a>
@@ -2522,7 +2371,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">o_regoper ( text ) → regoper<br/>
      * </a>
      */
@@ -2533,7 +2381,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regoperator ( text ) → regoperator<br/>
      * </a>
@@ -2546,7 +2393,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regproc ( text ) → regproc<br/>
      * </a>
      */
@@ -2557,7 +2403,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regprocedure ( text ) → regprocedure<br/>
      * </a>
@@ -2570,7 +2415,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regrole ( text ) → regrole<br/>
      * </a>
      */
@@ -2581,7 +2425,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regtype ( text ) → regtype<br/>
      * </a>
@@ -2595,7 +2438,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_describe_object ( classid oid, objid oid, objsubid integer ) → text<br/>
      * </a>
@@ -2614,7 +2456,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *     <li>identity : {@link TextType#INSTANCE}</li>
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_identify_object ( classid oid, objid oid, objsubid integer ) → record ( type text, schema text, name text, identity text )<br/>
      * </a>
@@ -2640,7 +2481,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      *
-     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_identify_object_as_address ( classid oid, objid oid, objsubid integer ) → record ( type text, object_names text[], object_args text[] )<br/>
      * </a>
      */
@@ -2664,7 +2504,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *     <li>objsubid : {@link IntegerType#INSTANCE}</li>
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
-     *
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_get_object_address ( type text, object_names text[], object_args text[] ) → record ( classid oid, objid oid, objsubid integer )<br/>
      * </a>
@@ -2718,7 +2557,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * <li>nentry {@link IntegerType}</li>
      * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </ol>
-     *
      *
      * @see #tsStat(Expression)
      * @see #tsStat(Expression, Expression)

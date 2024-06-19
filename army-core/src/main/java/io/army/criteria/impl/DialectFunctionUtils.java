@@ -115,26 +115,14 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }
 
     static Functions._ColumnWithOrdinalityFunction twoArgColumnFunction(
-            final String name, final Expression one, final Expression two, final @Nullable String fieldName,
+            final String name, final Object one, final Object two, final @Nullable String fieldName,
             final TypeMeta returnType) {
-        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, two);
-        }
         return new TwoArgColumnFunction(name, true, fieldName, one, two, returnType);
     }
 
     static Functions._ColumnWithOrdinalityFunction threeArgColumnFunction(
-            final String name, final Expression one, final Expression two, final Expression three,
+            final String name, final Object one, final Object two, final Object three,
             final @Nullable String fieldName, final TypeMeta returnType) {
-        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, two);
-        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, three);
-        }
         return new ThreeArgColumnFunction(name, true, fieldName, one, two, three, returnType);
     }
 
@@ -544,30 +532,30 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     static final class TwoArgColumnFunction extends ColumnFunction {
 
-        private final ArmyExpression one;
+        private final Object one;
 
-        private final ArmyExpression two;
+        private final Object two;
 
-        private TwoArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Expression one, Expression two,
+        private TwoArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Object one, Object two,
                                      TypeMeta returnType) {
             super(name, buildIn, fieldName, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
+            this.one = one;
+            this.two = two;
         }
 
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.two.appendSql(sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
         }
 
         @Override
         void argToString(final StringBuilder builder) {
-            builder.append(this.one)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.two);
+            FuncExpUtils.literalToString(this.one, builder);
+            builder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.literalToString(this.two, builder);
         }
 
 
@@ -575,45 +563,45 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     static final class ThreeArgColumnFunction extends ColumnFunction {
 
-        private final ArmyExpression one;
+        private final Object one;
 
-        private final ArmyExpression two;
+        private final Object two;
 
-        private final ArmyExpression three;
+        private final Object three;
 
-        private ThreeArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Expression one, Expression two,
-                                       Expression three, TypeMeta returnType) {
+        private ThreeArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Object one, Object two,
+                                       Object three, TypeMeta returnType) {
             super(name, buildIn, fieldName, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
+            this.one = one;
+            this.two = two;
+            this.three = three;
         }
 
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.one, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.two, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(sqlBuilder, context);
+            FuncExpUtils.appendLiteral(this.name, this.three, sqlBuilder, context);
 
         }
 
         @Override
         void argToString(final StringBuilder builder) {
-            builder.append(this.one)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.two)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.three);
+            FuncExpUtils.literalToString(this.one, builder);
+            builder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.literalToString(this.two, builder);
+            builder.append(_Constant.SPACE_COMMA);
+            FuncExpUtils.literalToString(this.three, builder);
         }
 
 
-    }//ThreeArgScalarTabularFunction
+    } //ThreeArgScalarTabularFunction
 
     static final class FourArgColumnFunction extends ColumnFunction {
 
