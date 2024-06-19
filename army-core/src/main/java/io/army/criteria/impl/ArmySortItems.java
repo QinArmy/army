@@ -28,12 +28,12 @@ class ArmySortItems implements ArmySortItem {
                                final @Nullable SQLs.NullsFirstLast firstLast) {
         if (ascDesc != SQLs.DESC && ascDesc != SQLs.ASC) {
             throw CriteriaUtils.unknownWords(ascDesc);
-        } else if (firstLast != null && firstLast != SQLs.NULLS_LAST && firstLast != SQLs.NULLS_FIRST) {
-            throw CriteriaUtils.unknownWords(firstLast);
         }
         final ArmySortItem sortItem;
         if (firstLast == null) {
             sortItem = new ArmySortItems(exp, ascDesc);
+        } else if (firstLast != SQLs.NULLS_LAST && firstLast != SQLs.NULLS_FIRST) {
+            throw CriteriaUtils.unknownWords(firstLast);
         } else {
             sortItem = new SortItemWithNullsOption(exp, ascDesc, firstLast);
         }
@@ -68,7 +68,7 @@ class ArmySortItems implements ArmySortItem {
         sqlBuilder.append(this.ascDesc.spaceRender());
 
         if (this instanceof SortItemWithNullsOption) {
-            sqlBuilder.append(((SortItemWithNullsOption) this).nullOption);
+            sqlBuilder.append(((SortItemWithNullsOption) this).nullOption.spaceRender());
         }
     }
 
