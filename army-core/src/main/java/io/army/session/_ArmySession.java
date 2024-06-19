@@ -388,7 +388,9 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
     }
 
     protected final Function<Option<?>, ?> declareCursorOptionFunc() {
-        return Collections.singletonMap(Option.ARMY_SESSION, this)::get;
+        final Map<Option<?>, Object> map;
+        map = Collections.singletonMap(Option.ARMY_SESSION, this);
+        return map::get;
     }
 
     /*-------------------below private methods -------------------*/
@@ -401,7 +403,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
                 .append(this.name)
                 .append(" , hash : ")
                 .append(System.identityHashCode(this))
-                .append("]\n");
+                .append("]\n\n");
 
         this.factory.dialectParser.printStmt(stmt, mode.beautify, builder::append);
 
@@ -452,7 +454,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
                 .append(this.name)
                 .append(" , hash : ")
                 .append(System.identityHashCode(this))
-                .append("]\n");
+                .append("]\n\n");
 
         this.factory.dialectParser.printStmt(stmt, sqlLogMode.beautify, builder::append);
 
