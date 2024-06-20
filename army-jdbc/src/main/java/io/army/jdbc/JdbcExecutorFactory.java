@@ -29,10 +29,10 @@ import io.army.session.DataAccessException;
 import io.army.session.DriverException;
 import io.army.session.Option;
 import io.army.session.executor.ExecutorFactorySupport;
-import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.SyncExecutorFactory;
-import io.army.sync.executor.SyncLocalStmtExecutor;
-import io.army.sync.executor.SyncRmStmtExecutor;
+import io.army.sync.executor.SyncLocalExecutor;
+import io.army.sync.executor.SyncMetaExecutor;
+import io.army.sync.executor.SyncRmExecutor;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -181,7 +181,7 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
     }
 
     @Override
-    public MetaExecutor metaExecutor(Function<Option<?>, ?> optionFunc) throws DataAccessException {
+    public SyncMetaExecutor metaExecutor(Function<Option<?>, ?> optionFunc) throws DataAccessException {
         assertFactoryOpen();
 
         try {
@@ -203,8 +203,8 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
     }
 
     @Override
-    public SyncLocalStmtExecutor localExecutor(final @Nullable String sessionName, final boolean readOnly,
-                                               final Function<Option<?>, ?> optionFunc)
+    public SyncLocalExecutor localExecutor(final @Nullable String sessionName, final boolean readOnly,
+                                           final Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         assertFactoryOpen();
 
@@ -240,8 +240,8 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
     }
 
     @Override
-    public SyncRmStmtExecutor rmExecutor(final @Nullable String sessionName, final boolean readOnly,
-                                         final Function<Option<?>, ?> optionFunc)
+    public SyncRmExecutor rmExecutor(final @Nullable String sessionName, final boolean readOnly,
+                                     final Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         assertFactoryOpen();
 
@@ -379,13 +379,13 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
 
     @FunctionalInterface
     private interface LocalExecutorFunction {
-        SyncLocalStmtExecutor apply(JdbcExecutorFactory factory, Connection conn, String sessionName);
+        SyncLocalExecutor apply(JdbcExecutorFactory factory, Connection conn, String sessionName);
 
     }
 
     @FunctionalInterface
     private interface RmExecutorFunction {
-        SyncRmStmtExecutor apply(JdbcExecutorFactory factory, Object conn, String sessionName);
+        SyncRmExecutor apply(JdbcExecutorFactory factory, Object conn, String sessionName);
     }
 
 

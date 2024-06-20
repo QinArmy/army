@@ -19,7 +19,7 @@ package io.army.sync;
 import io.army.dialect.Database;
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
-import io.army.sync.executor.SyncLocalStmtExecutor;
+import io.army.sync.executor.SyncLocalExecutor;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +61,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
      */
     private ArmySyncLocalSession(final ArmySyncSessionFactory.LocalBuilder builder) {
         super(builder);
-        assert this.executor instanceof SyncLocalStmtExecutor;
+        assert this.executor instanceof SyncLocalExecutor;
     }
 
 
@@ -145,7 +145,7 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         if (startPseudo) {
             info = TransactionInfo.pseudoLocal(option);
         } else {
-            info = ((SyncLocalStmtExecutor) this.executor).startTransaction(option, mode);
+            info = ((SyncLocalExecutor) this.executor).startTransaction(option, mode);
             assertTransactionInfo(info, option);
         }
 
@@ -289,9 +289,9 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
         final TransactionInfo newInfo;
         if (commit) {
-            newInfo = ((SyncLocalStmtExecutor) this.executor).commit(optionFunc);
+            newInfo = ((SyncLocalExecutor) this.executor).commit(optionFunc);
         } else {
-            newInfo = ((SyncLocalStmtExecutor) this.executor).rollback(optionFunc);
+            newInfo = ((SyncLocalExecutor) this.executor).rollback(optionFunc);
         }
 
         switch (database) {

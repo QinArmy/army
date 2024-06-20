@@ -29,9 +29,9 @@ import io.army.schema.SchemaResult;
 import io.army.session.DdlMode;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmyFactoryBuilder;
-import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.SyncExecutorFactory;
-import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
+import io.army.sync.executor.SyncExecutorFactoryProvider;
+import io.army.sync.executor.SyncMetaExecutor;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,8 +73,8 @@ final class ArmySyncFactoryBuilder
         try {
 
             // 1. create ExecutorProvider
-            final SyncStmtExecutorFactoryProvider executorProvider;
-            executorProvider = createExecutorProvider(name, env, dataSource, SyncStmtExecutorFactoryProvider.class,
+            final SyncExecutorFactoryProvider executorProvider;
+            executorProvider = createExecutorProvider(name, env, dataSource, SyncExecutorFactoryProvider.class,
                     SyncKey.EXECUTOR_PROVIDER, SyncKey.EXECUTOR_PROVIDER_MD5);
 
             // 2. create ServerMeta
@@ -177,11 +177,11 @@ final class ArmySyncFactoryBuilder
         final SyncExecutorFactory executorFactory;
         executorFactory = sessionFactory.executorFactory;
 
-        try (MetaExecutor metaExecutor = executorFactory.metaExecutor(dataSourceFunc())) {
+        try (SyncMetaExecutor syncMetaExecutor = executorFactory.metaExecutor(dataSourceFunc())) {
 
             //1.extract schema info.
             final SchemaInfo schemaInfo;
-            schemaInfo = metaExecutor.extractInfo();
+            schemaInfo = syncMetaExecutor.extractInfo();
 
             //2.compare schema meta and schema info.
             final SchemaResult schemaResult;
@@ -227,7 +227,7 @@ final class ArmySyncFactoryBuilder
                     }
 
                     LOG.info("{}:\n\n{}", sessionFactory, ddlToSqlLog(ddlList));
-                    metaExecutor.executeDdl(ddlList);
+                    syncMetaExecutor.executeDdl(ddlList);
                 }
                 break;
                 default:

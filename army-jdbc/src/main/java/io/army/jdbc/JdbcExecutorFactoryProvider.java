@@ -26,7 +26,7 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncExecutorFactory;
-import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
+import io.army.sync.executor.SyncExecutorFactoryProvider;
 import io.army.util.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ import java.sql.*;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
-public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactoryProvider {
+public final class JdbcExecutorFactoryProvider implements SyncExecutorFactoryProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcExecutorFactoryProvider.class);
 

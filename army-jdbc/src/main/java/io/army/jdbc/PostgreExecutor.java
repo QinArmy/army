@@ -26,8 +26,8 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLType;
 import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncExecutor;
-import io.army.sync.executor.SyncLocalStmtExecutor;
-import io.army.sync.executor.SyncRmStmtExecutor;
+import io.army.sync.executor.SyncLocalExecutor;
+import io.army.sync.executor.SyncRmExecutor;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.postgresql.util.PGobject;
@@ -58,12 +58,12 @@ import java.util.stream.Stream;
  */
 abstract class PostgreExecutor extends JdbcExecutor {
 
-    static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+    static SyncLocalExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         return new LocalExecutor(factory, conn, sessionName);
     }
 
-    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
-        final SyncRmStmtExecutor executor;
+    static SyncRmExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
+        final SyncRmExecutor executor;
         if (connObj instanceof Connection) {
             executor = new RmExecutor(factory, (Connection) connObj, sessionName);
         } else if (connObj instanceof XAConnection) {
@@ -677,7 +677,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
     }
 
 
-    private static final class LocalExecutor extends PostgreExecutor implements SyncLocalStmtExecutor {
+    private static final class LocalExecutor extends PostgreExecutor implements SyncLocalExecutor {
 
         private TransactionInfo transactionInfo;
 
@@ -804,7 +804,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
     } // LocalExecutor
 
 
-    private static class RmExecutor extends PostgreExecutor implements SyncRmStmtExecutor {
+    private static class RmExecutor extends PostgreExecutor implements SyncRmExecutor {
 
         private TransactionInfo transactionInfo;
 

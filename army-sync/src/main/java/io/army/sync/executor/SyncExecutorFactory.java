@@ -32,13 +32,13 @@ public interface SyncExecutorFactory extends ExecutorFactory, AutoCloseable {
 
 
     @Override
-    MetaExecutor metaExecutor(Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    SyncMetaExecutor metaExecutor(Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
     @Override
-    SyncLocalStmtExecutor localExecutor(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    SyncLocalExecutor localExecutor(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
     @Override
-    SyncRmStmtExecutor rmExecutor(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    SyncRmExecutor rmExecutor(String sessionName, boolean readOnly, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
     /**
      * <p>

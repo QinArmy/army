@@ -23,8 +23,8 @@ import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
-import io.army.sync.executor.SyncLocalStmtExecutor;
-import io.army.sync.executor.SyncRmStmtExecutor;
+import io.army.sync.executor.SyncLocalExecutor;
+import io.army.sync.executor.SyncRmExecutor;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 import org.slf4j.Logger;
@@ -38,16 +38,16 @@ import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.function.Function;
 
-final class SQLiteExecutor extends JdbcExecutor implements SyncLocalStmtExecutor {
+final class SQLiteExecutor extends JdbcExecutor implements SyncLocalExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(SQLiteExecutor.class);
 
 
-    static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+    static SyncLocalExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         return new SQLiteExecutor(factory, conn, sessionName);
     }
 
-    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
+    static SyncRmExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
         throw new DataAccessException("SQLite don't support XA transaction");
     }
 

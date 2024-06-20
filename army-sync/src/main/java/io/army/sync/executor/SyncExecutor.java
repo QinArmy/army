@@ -41,8 +41,8 @@ import java.util.stream.Stream;
  * <p>This interface representing blocking {@link StmtExecutor}
  * <p>This interface is base interface of following:
  * <ul>
- *     <li>{@link SyncLocalStmtExecutor}</li>
- *     <li>{@link SyncRmStmtExecutor}</li>
+ *     <li>{@link SyncLocalExecutor}</li>
+ *     <li>{@link SyncRmExecutor}</li>
  * </ul>
  * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
  * so all implementation of methods of this interface don't check underlying database session whether closed or not,<br/>

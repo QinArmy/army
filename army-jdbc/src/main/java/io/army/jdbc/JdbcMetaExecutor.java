@@ -18,7 +18,7 @@ package io.army.jdbc;
 
 import io.army.schema.*;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.MetaExecutor;
+import io.army.sync.executor.SyncMetaExecutor;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;
@@ -27,7 +27,7 @@ import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
-class JdbcMetaExecutor implements MetaExecutor {
+class JdbcMetaExecutor implements SyncMetaExecutor {
 
     static JdbcMetaExecutor from(JdbcExecutorFactory factory, Connection conn) {
         return new JdbcMetaExecutor(factory, conn);

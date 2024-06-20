@@ -21,6 +21,6 @@ import io.army.session.DataAccessException;
 @Deprecated
 public interface SyncLocalExecutorFactory extends SyncExecutorFactory {
 
-    SyncLocalStmtExecutor createLocalStmtExecutor() throws DataAccessException;
+    SyncLocalExecutor createLocalStmtExecutor() throws DataAccessException;
 
 }

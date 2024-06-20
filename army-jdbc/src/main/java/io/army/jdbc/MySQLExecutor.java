@@ -26,8 +26,8 @@ import io.army.session.record.DataRecord;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sync.StreamOption;
-import io.army.sync.executor.SyncLocalStmtExecutor;
-import io.army.sync.executor.SyncRmStmtExecutor;
+import io.army.sync.executor.SyncLocalExecutor;
+import io.army.sync.executor.SyncRmExecutor;
 import io.army.util.HexUtils;
 import io.army.util.NumberUtils;
 import io.army.util._Exceptions;
@@ -48,12 +48,12 @@ import java.util.stream.Stream;
 
 abstract class MySQLExecutor extends JdbcExecutor {
 
-    static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+    static SyncLocalExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         return new LocalExecutor(factory, conn, sessionName);
     }
 
-    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
-        final SyncRmStmtExecutor executor;
+    static SyncRmExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
+        final SyncRmExecutor executor;
 
         if (connObj instanceof Connection) {
             executor = new RmExecutor(factory, (Connection) connObj, sessionName);
@@ -343,7 +343,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     /*-------------------below private static  -------------------*/
 
 
-    private static final class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
+    private static final class LocalExecutor extends MySQLExecutor implements SyncLocalExecutor {
 
         private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
 
@@ -504,7 +504,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     } // LocalExecutor
 
 
-    private static class RmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
+    private static class RmExecutor extends MySQLExecutor implements SyncRmExecutor {
 
         private TransactionInfo transactionInfo;
 

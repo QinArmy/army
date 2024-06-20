@@ -29,7 +29,7 @@ import java.util.function.Function;
 /**
  * <p>This interface representing provider of blocking executor.
  */
-public interface SyncStmtExecutorFactoryProvider extends ExecutorFactoryProvider {
+public interface SyncExecutorFactoryProvider extends ExecutorFactoryProvider {
 
     @Override
     ServerMeta createServerMeta(@Nullable Function<String, Database> func) throws DataAccessException;

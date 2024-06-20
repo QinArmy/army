@@ -22,7 +22,7 @@ import io.army.session.DataAccessException;
 
 import java.util.List;
 
-public interface MetaExecutor extends AutoCloseable {
+public interface SyncMetaExecutor extends AutoCloseable {
 
 
     SchemaInfo extractInfo() throws DataAccessException;
