@@ -294,7 +294,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
             return r;
         } catch (Exception e) {
-            throw wrapError(e);
+            throw wrapException(e);
         }
     }
 
@@ -341,7 +341,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
             return r;
         } catch (Exception e) {
-            throw wrapError(e);
+            throw wrapException(e);
         }
 
     }
@@ -1851,21 +1851,39 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-
-
     /*################################## blow static method ##################################*/
 
 
-    static ArmyException wrapError(final Throwable error) {
+    static ArmyException wrapError(final Throwable cause) {
         final ArmyException e;
-        if (error instanceof SQLException) {
-            e = new DataAccessException(error);
-        } else if (error instanceof ArmyException) {
-            e = (ArmyException) error;
+        if (cause instanceof ArmyException) {
+            e = (ArmyException) cause;
+        } else if (cause instanceof SQLException) {
+            final SQLException se = (SQLException) cause;
+            // TODO convert to  ServerException
+            final String message = String.format("SqlState : %s ,errorCode : %s\n%s",
+                    se.getSQLState(), se.getErrorCode(), se.getMessage());
+            e = new DriverException(message, cause, se.getSQLState(), se.getErrorCode());
         } else {
-            e = _Exceptions.unknownError(error);
+            e = _Exceptions.unknownError(cause);
         }
         return e;
+    }
+
+    static ArmyException wrapException(final Exception cause) {
+        final ArmyException error;
+        if (cause instanceof ArmyException) {
+            error = (ArmyException) cause;
+        } else if (cause instanceof SQLException) {
+            final SQLException se = (SQLException) cause;
+            // TODO convert to  ServerException
+            final String message = String.format("SqlState : %s ,errorCode : %s\n%s",
+                    se.getSQLState(), se.getErrorCode(), se.getMessage());
+            error = new DriverException(message, cause, se.getSQLState(), se.getErrorCode());
+        } else {
+            error = new DataAccessException(cause);
+        }
+        return error;
     }
 
     /*-------------------below private static methods -------------------*/

@@ -334,8 +334,11 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
         if (cause instanceof ArmyException) {
             error = (ArmyException) cause;
         } else if (cause instanceof SQLException) {
+            final SQLException e = (SQLException) cause;
             // TODO convert to  ServerException
-            error = new DriverException(cause, ((SQLException) cause).getSQLState(), ((SQLException) cause).getErrorCode());
+            final String message = String.format("SqlState : %s ,errorCode : %s\n%s",
+                    e.getSQLState(), e.getErrorCode(), e.getMessage());
+            error = new DriverException(message, cause, e.getSQLState(), e.getErrorCode());
         } else {
             error = new DataAccessException(cause);
         }
