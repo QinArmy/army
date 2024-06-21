@@ -1870,10 +1870,11 @@ abstract class ArmyParser implements DialectParser {
     protected final void visiblePredicate(final SingleTableMeta<?> table, final @Nullable String safeTableAlias,
                                           final _SqlContext context, final boolean firstPredicate) {
 
-        final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
+        final FieldMeta<?> field = table.tryGetField(_MetaBridge.VISIBLE);
+
         final Boolean visibleValue;
         visibleValue = context.visible().value;
-        if (visibleValue == null) {
+        if (field == null || visibleValue == null) {
             return;
         }
 
