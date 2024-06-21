@@ -53,7 +53,7 @@ final class PostgreComparer extends ArmySchemaComparer {
         final String typeName;
         typeName = columnInfo.typeName().toLowerCase(Locale.ROOT);
         if (!(dataType instanceof PostgreType)) {
-            return !typeName.equals(dataType.typeName());
+            return !typeName.equals(dataType.typeName().toLowerCase(Locale.ROOT));
         }
         final boolean notMatch;
         switch ((PostgreType) dataType) {
