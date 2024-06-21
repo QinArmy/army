@@ -239,7 +239,7 @@ public abstract class Postgres extends PostgreSyntax {
      * <p>
      * create simple(non-batch) single-table DELETE statement that is primary statement.
      */
-    public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
+    public static PgSingleDeleteSpec<Delete, ReturningDelete> singleDelete() {
         return PostgreDeletes.simpleDelete();
     }
 
@@ -247,7 +247,7 @@ public abstract class Postgres extends PostgreSyntax {
      * <p>
      * create batch single-table DELETE statement that is primary statement.
      */
-    public static PostgreDelete._SingleWithSpec<Statement._BatchDeleteParamSpec, Statement._BatchReturningDeleteParamSpec> batchSingleDelete() {
+    public static PgSingleDeleteSpec<Statement._BatchDeleteParamSpec, Statement._BatchReturningDeleteParamSpec> batchSingleDelete() {
         return PostgreDeletes.batchDelete();
     }
 

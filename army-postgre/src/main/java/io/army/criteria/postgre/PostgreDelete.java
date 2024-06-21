@@ -17,10 +17,6 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
-import io.army.criteria.impl.SQLs;
-import io.army.meta.TableMeta;
-
-import javax.annotation.Nullable;
 
 /**
  * <p>This interface representing Postgre DELETE syntax.
@@ -113,26 +109,8 @@ public interface PostgreDelete extends PostgreStatement {
     }
 
 
-    interface _PostgreDeleteClause<I extends Item, Q extends Item> extends Item {
-
-        _SingleUsingSpec<I, Q> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
-
-        _SingleUsingSpec<I, Q> deleteFrom(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias);
-
-        _SingleUsingSpec<I, Q> deleteFrom(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
-
-    }
-
-
-    interface _SingleWithSpec<I extends Item, Q extends Item> extends _PostgreDeleteClause<I, Q>,
-            _PostgreDynamicWithClause<_PostgreDeleteClause<I, Q>>,
-            PostgreQuery._PostgreStaticWithClause<_PostgreDeleteClause<I, Q>> {
-
-    }
-
-
     interface _DeleteDynamicCteAsClause
-            extends _PostgreDynamicCteAsClause<_SingleWithSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>,
+            extends _PostgreDynamicCteAsClause<PgSingleDeleteSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>,
             _CommaClause<PostgreCtes>> {
 
 

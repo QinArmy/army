@@ -1050,13 +1050,13 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreDelete._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(Function<PgSingleDeleteSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             return this.as(null, function);
         }
 
         @Override
         public DialectStatement._CommaClause<PostgreCtes> as(@Nullable SQLs.WordMaterialized modifier,
-                                                             Function<PostgreDelete._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
+                                                             Function<PgSingleDeleteSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreDeletes.subSimpleDelete(this.context, this::subDeleteEnd));
         }

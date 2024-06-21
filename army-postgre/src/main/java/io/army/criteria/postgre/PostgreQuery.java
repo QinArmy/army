@@ -421,7 +421,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
             PostgreValues._PostgreValuesClause<_CteComma<I>>,
             PostgreInsert._StaticSubOptionSpec<_CteComma<I>>,
             PostgreUpdate._SingleUpdateClause<_CteComma<I>, _CteComma<I>>,
-            PostgreDelete._PostgreDeleteClause<_CteComma<I>, _CteComma<I>> {
+            PgSingleDeleteClause<_CteComma<I>, _CteComma<I>> {
 
     }
 

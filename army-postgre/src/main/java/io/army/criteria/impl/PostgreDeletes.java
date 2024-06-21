@@ -51,7 +51,7 @@ import java.util.function.Supplier;
 abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDelete<
         I,
         PostgreCtes,
-        PostgreDelete._PostgreDeleteClause<I, Q>,
+        PgSingleDeleteClause<I, Q>,
         PostgreDelete._TableSampleJoinSpec<I, Q>,
         Statement._AsClause<PostgreDelete._ParensJoinSpec<I, Q>>,
         PostgreDelete._SingleJoinSpec<I, Q>,
@@ -65,7 +65,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
         implements PostgreDelete,
         _PostgreDelete,
         PostgreDelete._RepeatableJoinClause<I, Q>,
-        PostgreDelete._SingleWithSpec<I, Q>,
+        PgSingleDeleteSpec<I, Q>,
         PostgreDelete._SingleUsingSpec<I, Q>,
         PostgreDelete._TableSampleJoinSpec<I, Q>,
         PostgreDelete._ParensJoinSpec<I, Q>,
@@ -73,18 +73,18 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
         PostgreDelete._StaticReturningCommaSpec<Q> {
 
 
-    static _SingleWithSpec<Delete, ReturningDelete> simpleDelete() {
+    static PgSingleDeleteSpec<Delete, ReturningDelete> simpleDelete() {
         return new PrimarySimpleDelete();
     }
 
 
-    static _SingleWithSpec<_BatchDeleteParamSpec, _BatchReturningDeleteParamSpec> batchDelete() {
+    static PgSingleDeleteSpec<_BatchDeleteParamSpec, _BatchReturningDeleteParamSpec> batchDelete() {
         return new BatchPrimarySimpleDelete();
     }
 
 
-    static <I extends Item> _SingleWithSpec<I, I> subSimpleDelete(CriteriaContext outerContext,
-                                                                  Function<SubStatement, I> function) {
+    static <I extends Item> PgSingleDeleteSpec<I, I> subSimpleDelete(CriteriaContext outerContext,
+                                                                     Function<SubStatement, I> function) {
         return new SubSimpleDelete<>(outerContext, function);
     }
 
@@ -106,13 +106,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
     }
 
     @Override
-    public final PostgreQuery._StaticCteParensSpec<_PostgreDeleteClause<I, Q>> with(String name) {
+    public final PostgreQuery._StaticCteParensSpec<PgSingleDeleteClause<I, Q>> with(String name) {
         return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
                 .comma(name);
     }
 
     @Override
-    public final PostgreQuery._StaticCteParensSpec<_PostgreDeleteClause<I, Q>> withRecursive(String name) {
+    public final PostgreQuery._StaticCteParensSpec<PgSingleDeleteClause<I, Q>> withRecursive(String name) {
         return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
                 .comma(name);
     }
