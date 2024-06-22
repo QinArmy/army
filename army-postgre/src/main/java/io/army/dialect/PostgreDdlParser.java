@@ -17,11 +17,9 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.mapping.StringType;
 import io.army.mapping.TextType;
-import io.army.meta.DatabaseObject;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.schema._FieldResult;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
@@ -39,6 +37,122 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     private PostgreDdlParser(PostgreParser dialect) {
         super(dialect);
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-createtable.html">CREATE TABLE— define a new table</a>
+     */
+    @Override
+    public <T> void createTable(final TableMeta<T> table, final List<String> sqlList) {
+        final StringBuilder builder;
+        builder = createTableCommandBuilder(table);
+
+        final List<FieldMeta<T>> fieldList = table.fieldList();
+        final int fieldSize = fieldList.size();
+
+        FieldMeta<T> field;
+        DataType dataType;
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                builder.append(COMMA_LINE_SEPARATOR_TAB);
+            }
+            field = fieldList.get(i);
+
+            columnName(field, builder);
+            dataType = field.mappingType().map(this.serverMeta);
+            if (field instanceof PrimaryFieldMeta && field.generatorType() == GeneratorType.POST) {
+                postDataType(field, dataType, builder);
+            } else {
+                dataType(field, dataType, builder);
+            }
+            columnNullConstraint(field, builder);
+            columnDefault(field, builder);
+        }
+
+        for (IndexMeta<T> index : table.indexList()) {
+            if (!index.isUnique()) {
+                continue;
+            }
+            builder.append(COMMA_LINE_SEPARATOR_TAB);
+            if (index.isPrimaryKey()) {
+                builder.append("PRIMARY")
+                        .append(_Constant.SPACE)
+                        .append("KEY");
+            } else {
+                builder.append("UNIQUE");
+            }
+            justIndexFiledNameList(index, builder);
+        }
+
+
+        builder.append('\n')
+                .append(_Constant.SPACE_RIGHT_PAREN);
+
+
+        sqlList.add(builder.toString());
+
+
+        // outer of table index definition
+        for (IndexMeta<T> index : table.indexList()) {
+            if (index.isUnique()) {
+                continue;
+            }
+            builder.setLength(0); // clear
+            appendIndexOutTableDef(index, builder);
+            sqlList.add(builder.toString());
+        }
+
+        // table comment
+        builder.setLength(0); // clear
+        tableOuterComment(table, builder);
+        sqlList.add(builder.toString());
+
+        // column comment
+        for (int i = 0; i < fieldSize; i++) {
+            builder.setLength(0); // clear
+            columnOuterComment(fieldList.get(i), builder);
+            sqlList.add(builder.toString());
+        }
+
+
+    }
+
+
+    @Override
+    public void dropTable(List<TableMeta<?>> tableList, List<String> sqlList) {
+        super.dropTable(tableList, sqlList);
+    }
+
+
+    @Override
+    public void addColumn(List<FieldMeta<?>> fieldList, List<String> sqlList) {
+        super.addColumn(fieldList, sqlList);
+    }
+
+    @Override
+    public void modifyColumn(List<_FieldResult> resultList, List<String> sqlList) {
+        super.modifyColumn(resultList, sqlList);
+    }
+
+    @Override
+    public <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+        super.createIndex(table, indexNameList, sqlList);
+    }
+
+    @Override
+    public <T> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+        super.changeIndex(table, indexNameList, sqlList);
+    }
+
+    @Override
+    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+        super.dropIndex(table, indexNameList, sqlList);
+    }
+
+    @Override
+    protected void checkEnclosing(String text) {
+        super.checkEnclosing(text);
     }
 
     @Override
@@ -111,6 +225,8 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     @Override
     protected void dataType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
+        builder.append(_Constant.SPACE);
+
         if (!(dataType instanceof PostgreType)) {
             this.parser.typeName(field.mappingType(), builder);
         } else switch ((PostgreType) dataType) {
@@ -141,6 +257,8 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     @Override
     protected void postDataType(FieldMeta<?> field, DataType dataType, StringBuilder builder) {
+        builder.append(_Constant.SPACE);
+
         switch ((PostgreType) dataType) {
             case SMALLINT:
                 builder.append("SMALLSERIAL");
@@ -273,6 +391,48 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
             this.parser.arrayTypeName(safeTypeName, ArrayUtils.dimensionOfType(field.mappingType()), builder);
         }
 
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-comment.html">COMMENT — define or change the comment of an object</a>
+     */
+    @Override
+    void tableOuterComment(final TableMeta<?> table, final StringBuilder builder) {
+        builder.append("COMMENT")
+                .append(_Constant.SPACE_ON_SPACE)
+                .append("TABLE")
+                .append(_Constant.SPACE);
+
+        this.parser.safeObjectName(table, builder);
+
+        builder.append(_Constant.SPACE)
+                .append("IS")
+                .append(_Constant.SPACE);
+
+        this.parser.literal(StringType.INSTANCE, table.comment(), false, builder);
+
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-comment.html">COMMENT — define or change the comment of an object</a>
+     */
+    @Override
+    void columnOuterComment(final FieldMeta<?> field, final StringBuilder builder) {
+        builder.append("COMMENT")
+                .append(_Constant.SPACE_ON_SPACE)
+                .append("COLUMN")
+                .append(_Constant.SPACE);
+
+        this.parser.safeObjectName(field.tableMeta(), builder);
+        builder.append(_Constant.PERIOD);
+        this.parser.safeObjectName(field, builder);
+
+        builder.append(_Constant.SPACE)
+                .append("IS")
+                .append(_Constant.SPACE);
+
+        this.parser.literal(StringType.INSTANCE, field.comment(), false, builder);
     }
 
 

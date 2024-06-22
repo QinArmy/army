@@ -72,6 +72,8 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
      */
     protected final String SPACE_SET_DEFAULT_SPACE = " SET DEFAULT ";
 
+    static final String COMMA_LINE_SEPARATOR_TAB = " ,\n\t";
+
 
     protected final List<String> errorMsgList = _Collections.arrayList();
 
@@ -90,7 +92,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
     @Override
-    public final void dropTable(List<TableMeta<?>> tableList, final List<String> sqlList) {
+    public void dropTable(List<TableMeta<?>> tableList, final List<String> sqlList) {
         final int size = tableList.size();
         if (size == 0) {
             return;
@@ -107,8 +109,9 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
     }
 
+
     @Override
-    public final <T> void createTable(final TableMeta<T> table, final List<String> sqlList) {
+    public <T> void createTable(final TableMeta<T> table, final List<String> sqlList) {
         final StringBuilder builder = new StringBuilder(128)
                 .append("CREATE TABLE IF NOT EXISTS ");
 
@@ -154,7 +157,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
 
     @Override
-    public final void addColumn(final List<FieldMeta<?>> fieldList, final List<String> sqlList) {
+    public void addColumn(final List<FieldMeta<?>> fieldList, final List<String> sqlList) {
         final int fieldSize = fieldList.size();
         if (fieldSize == 0) {
             return;
@@ -200,7 +203,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
 
     @Override
-    public final void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+    public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
         final int size = resultList.size();
         if (size == 0) {
             return;
@@ -275,7 +278,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
 
     @Override
-    public final <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+    public <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
         final int indexNameSize = indexNameList.size();
         if (indexNameSize == 0) {
             return;
@@ -316,14 +319,14 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
     @Override
-    public final <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
+    public <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
         dropIndex(table, indexNameList, sqlList);
         createIndex(table, indexNameList, sqlList);
     }
 
     @Override
-    public final <T> void dropIndex(final TableMeta<T> table, final List<String> indexNameList,
-                                    final List<String> sqlList) {
+    public <T> void dropIndex(final TableMeta<T> table, final List<String> indexNameList,
+                              final List<String> sqlList) {
         final int indexNameSize = indexNameList.size();
         if (indexNameSize == 0) {
             return;
@@ -758,6 +761,72 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         }
 
         return complete;
+    }
+
+    final StringBuilder createTableCommandBuilder(TableMeta<?> table) {
+        final StringBuilder builder = new StringBuilder(128);
+        builder.append("CREATE")
+                .append(_Constant.SPACE)
+                .append("TABLE")
+                .append(_Constant.SPACE)
+                .append("IF")
+                .append(_Constant.SPACE_NOT)
+                .append(_Constant.SPACE_EXISTS)
+                .append(_Constant.SPACE);
+
+        this.parser.safeObjectName(table, builder)
+                .append(_Constant.SPACE_LEFT_PAREN)
+                .append("\n\t");
+        return builder;
+    }
+
+
+    final void columnName(final FieldMeta<?> field, final StringBuilder builder) {
+        builder.append(_Constant.SPACE);
+        this.parser.safeObjectName(field, builder);
+    }
+
+
+    final void columnNullConstraint(final FieldMeta<?> field, final StringBuilder builder) {
+        if (!field.nullable()) {
+            builder.append(_Constant.SPACE_NOT);
+        }
+        builder.append(_Constant.SPACE_NULL);
+    }
+
+    final void columnDefault(final FieldMeta<?> field, final StringBuilder builder) {
+        final String defaultValue = field.defaultValue();
+        if (_StringUtils.hasText(defaultValue) && checkDefaultComplete(field, defaultValue)) {
+            builder.append(_Constant.SPACE_DEFAULT)
+                    .append(_Constant.SPACE)
+                    .append(defaultValue);
+        }
+    }
+
+    final <T> void justIndexFiledNameList(final IndexMeta<T> index, final StringBuilder builder) {
+        final List<IndexFieldMeta<T>> fieldList = index.fieldList();
+        final int fieldSize = fieldList.size();
+
+        builder.append(_Constant.SPACE_LEFT_PAREN);
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.SPACE_COMMA_SPACE);
+            } else {
+                builder.append(_Constant.SPACE);
+            }
+            this.parser.safeObjectName(fieldList.get(i), builder);
+        }
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
+
+    }
+
+
+    void tableOuterComment(TableMeta<?> table, StringBuilder builder) {
+        throw new UnsupportedOperationException();
+    }
+
+    void columnOuterComment(FieldMeta<?> field, StringBuilder builder) {
+        throw new UnsupportedOperationException();
     }
 
 
