@@ -251,7 +251,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
                 .build();
 
         final DialectParser dialectParser;
-        this.dialectParser = dialectParser = DialectParserFactory.createDialect(dialectEnv);
+        this.dialectParser = dialectParser = DialectParserFactory.createDialectParser(dialectEnv);
         return dialectParser;
     }
 

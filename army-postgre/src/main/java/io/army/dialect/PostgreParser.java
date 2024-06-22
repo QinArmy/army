@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._LiteralExpression;
@@ -22,7 +22,6 @@ import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardStatement;
-import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;

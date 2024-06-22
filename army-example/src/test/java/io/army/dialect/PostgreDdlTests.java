@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect;
 
-import io.army.dialect._DialectUtils;
-import io.army.dialect._MockDialects;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.BankPerson_;
 import io.army.mapping.PostgreFullType;

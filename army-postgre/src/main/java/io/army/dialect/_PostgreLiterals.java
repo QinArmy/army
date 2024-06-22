@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect._Constant;
-import io.army.dialect._Literals;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.DataType;

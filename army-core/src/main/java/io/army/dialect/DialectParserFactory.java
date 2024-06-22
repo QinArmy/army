@@ -16,10 +16,8 @@
 
 package io.army.dialect;
 
-import io.army.dialect.mysql._MySQLParserFactory;
-import io.army.dialect.postgre._PostgreDialectFactory;
-import io.army.dialect.sqlite._SQLiteParserFactory;
 import io.army.meta.ServerMeta;
+import io.army.util.ReflectionUtils;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.InvocationTargetException;
@@ -32,30 +30,33 @@ public abstract class DialectParserFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static DialectParser createDialect(DialectEnv environment) {
+    public static DialectParser createDialectParser(final DialectEnv environment) {
         final Database database;
         database = environment.serverMeta().serverDatabase();
-        final DialectParser parser;
+        final String className;
         switch (database) {
             case MySQL:
-                parser = _MySQLParserFactory.mysqlDialectParser(environment);
+                className = "io.army.dialect.mysql.MySQLDialectParserFactory";
                 break;
             case PostgreSQL:
-                parser = _PostgreDialectFactory.postgreDialectParser(environment);
+                className = "io.army.dialect._PostgreDialectFactory";
                 break;
             case SQLite:
-                parser = _SQLiteParserFactory.sqliteDialectParser(environment);
+                className = "io.army.dialect.sqlite.SQLiteParserFactory";
                 break;
-            case Oracle:
             default:
                 throw _Exceptions.unexpectedEnum(database);
         }
-        return parser;
+
+        final Method method;
+        method = ReflectionUtils.getStaticFactoryMethod(className, DialectParser.class, "dialectParser", DialectEnv.class);
+        return (DialectParser) ReflectionUtils.invokeStaticFactoryMethod(method, environment);
     }
 
     /**
      * <p>Inner method
      */
+    @Deprecated
     protected static DialectParser invokeFactoryMethod(Class<?> dialectType, String className, DialectEnv environment) {
         final Class<?> clazz;
         try {

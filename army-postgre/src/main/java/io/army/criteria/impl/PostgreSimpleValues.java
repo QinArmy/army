@@ -24,7 +24,7 @@ import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreStatement;
 import io.army.criteria.postgre.PostgreValues;
 import io.army.dialect.Dialect;
-import io.army.dialect.postgre.PostgreDialect;
+import io.army.dialect.PostgreDialect;
 
 import javax.annotation.Nullable;
 import java.util.Collections;

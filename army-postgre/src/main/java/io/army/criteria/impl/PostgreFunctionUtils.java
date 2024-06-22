@@ -24,7 +24,6 @@ import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
-import io.army.dialect.postgre.PostgreDialect;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.TextType;

@@ -21,7 +21,6 @@ import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
 import io.army.criteria.Visible;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
 import io.army.generator.FieldGenerator;
@@ -185,7 +184,7 @@ public abstract class _MockDialects implements DialectEnv {
             default:
                 throw _Exceptions.unexpectedEnum(dialect.database());
         }
-        return DialectParserFactory.createDialect(new MockDialectEnv(meta));
+        return DialectParserFactory.createDialectParser(new MockDialectEnv(meta));
     }
 
 

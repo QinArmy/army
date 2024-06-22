@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.*;
@@ -22,7 +22,6 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre.*;
 import io.army.criteria.postgre.PostgreCursor;
 import io.army.criteria.postgre.PostgreMerge;
-import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.SingleTableMeta;

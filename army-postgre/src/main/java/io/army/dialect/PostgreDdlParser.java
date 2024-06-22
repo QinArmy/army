@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.dialect._Constant;
-import io.army.dialect._DdlParser;
 import io.army.mapping.TextType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;

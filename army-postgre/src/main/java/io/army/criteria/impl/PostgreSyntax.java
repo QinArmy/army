@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.dialect.PostgreDialect;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
@@ -234,7 +235,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * @throws CriteriaException throw when <ul>
      *                           <li>literal error,here is delay , throw when parsing</li>
      *                           <li>typeName error,here is delay , throw when parsing</li>
-     *                           <li>dialect isn't {@link io.army.dialect.postgre.PostgreDialect},here is delay , throw when parsing</li>
+     *                           <li>dialect isn't {@link PostgreDialect},here is delay , throw when parsing</li>
      *                           </ul>
      */
     public static LiteralExpression space(String literal, Postgres.DoubleColon doubleColon, String typeName) {

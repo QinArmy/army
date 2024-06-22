@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParserFactory;
 
-public abstract class _PostgreDialects extends DialectParserFactory {
+/**
+ * <p>This class is used by {@link DialectParserFactory#createDialectParser(DialectEnv)} by reflection.
+ */
+@SuppressWarnings("unused")
+public abstract class _PostgreDialectFactory {
 
-    private _PostgreDialects() {
+    private _PostgreDialectFactory() {
         throw new UnsupportedOperationException();
     }
 
-
-    public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
+    public static DialectParser dialectParser(final DialectEnv environment) {
+        final PostgreDialect dialect;
+        dialect = (PostgreDialect) DialectParserFactory.targetDialect(environment, Database.PostgreSQL);
+        return PostgreDialectParser.create(environment, dialect);
     }
-
 
 }

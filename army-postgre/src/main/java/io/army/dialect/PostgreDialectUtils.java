@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.dialect.postgre;
+package io.army.dialect;
 
 import java.util.HashSet;
 import java.util.Set;
