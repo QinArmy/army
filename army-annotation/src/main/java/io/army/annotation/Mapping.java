@@ -24,13 +24,18 @@ import java.lang.annotation.*;
 public @interface Mapping {
 
     /**
-     * <p>
-     * Required
-     * *
+     * <p>(Optional) ,You must choose one of the two methods (this method and {@link #type()})
+     * <p> This method priority is lower than {@link #type()}.
      *
      * @return the qualified class name of the implementation of {@code io.army.mapping.MappingType}.
      */
-    String value();
+    String value() default "";
+
+    /**
+     * <p>(Optional) ,You must choose one of the two methods (this method and {@link #value()})
+     * <p> This method priority is higher than {@link #value()}.
+     */
+    Class<?> type() default void.class;
 
     /**
      * <ul>
@@ -46,7 +51,7 @@ public @interface Mapping {
      * If {@link #value()} is the class name
      * of the implementation of {@code io.army.mapping.TextMappingType} and representing binary then required,
      * else ignore.
-     *     * <p>
+     * * <p>
      * example:
      * <pre>
      *         <br/><code>
@@ -59,7 +64,8 @@ public @interface Mapping {
      *              private InputStream userInfo;
      *         </code>
      *     </pre>
-     *     *
+     * *
+     *
      * @return the name of {@link java.nio.charset.Charset}.
      */
     String charset() default "";
@@ -69,7 +75,7 @@ public @interface Mapping {
      * If {@link #value()} is the class name
      * of the implementation of {@code io.army.mapping.ElementMappingType} then required,
      * else ignore.
-     *     * <p>
+     * * <p>
      * example:
      * <pre>
      *         <br/><code>
@@ -82,7 +88,8 @@ public @interface Mapping {
      *              private reactor.core.publisher.Flux&lt;byte[]> image;
      *         </code>
      *     </pre>
-     *     *
+     * *
+     *
      * @return the name of {@link java.nio.charset.Charset}.
      */
     Class<?>[] elements() default {};

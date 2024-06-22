@@ -45,6 +45,11 @@ public @interface Table {
     String name();
 
     /**
+     * (Required) The comment of the tableMeta.
+     */
+    String comment();
+
+    /**
      * (Optional) The catalog of the table.
      * <p> Defaults to the default catalog.
      */
@@ -64,10 +69,6 @@ public @interface Table {
      */
     Index[] indexes() default {};
 
-    /**
-     * (Required) The comment of the tableMeta.
-     */
-    String comment();
 
     /**
      * Specifies the tableMeta immutable,if true,singleUpdate dml of the tableMeta is allowed by army.
@@ -75,9 +76,6 @@ public @interface Table {
      */
     boolean immutable() default false;
 
-
-    @Deprecated
-    boolean defaultNullable() default true;
 
     /**
      * (Optional) The option clause of create table
