@@ -157,7 +157,9 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     @Override
     public void modifyTableComment(TableMeta<?> table, List<String> sqlList) {
-
+        final StringBuilder builder = new StringBuilder();
+        tableOuterComment(table, builder);
+        sqlList.add(builder.toString());
     }
 
 
