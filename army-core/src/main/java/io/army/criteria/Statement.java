@@ -1071,54 +1071,7 @@ public interface Statement extends Item {
     }
 
 
-    interface _StaticOrderByCommaClause<OR> {
 
-
-        OR comma(Expression exp, SQLs.AscDesc ascDesc);
-
-        OR comma(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2);
-
-        OR comma(Expression exp1, Expression exp2, SQLs.AscDesc ascDesc2);
-
-        OR comma(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2, SQLs.AscDesc ascDesc2);
-
-    }
-
-    interface _StaticOrderByNullsCommaClause<OR> extends _StaticOrderByCommaClause<OR> {
-
-        OR comma(Expression exp, SQLs.NullsFirstLast nullOption);
-
-        OR comma(Expression exp, SQLs.AscDesc ascDesc, SQLs.NullsFirstLast nullOption);
-
-    }
-
-    /**
-     * <p>
-     * This interface representing ORDER BY clause.
-     * * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * *
-     *
-     * @since 0.6.0
-     */
-    @Deprecated
-    interface _StaticOrderByClause0<OR> extends Item {
-
-        OR orderBy(Expression exp);
-
-        OR orderBy(Expression exp, SQLs.AscDesc ascDesc);
-
-        OR orderBy(Expression exp1, Expression exp2);
-
-        OR orderBy(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2);
-
-        OR orderBy(Expression exp1, Expression exp2, SQLs.AscDesc ascDesc2);
-
-        OR orderBy(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2, SQLs.AscDesc ascDesc2);
-
-    }
 
     interface _OrderByCommaClause<R> {
 

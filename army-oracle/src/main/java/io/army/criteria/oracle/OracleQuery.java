@@ -22,7 +22,6 @@ import io.army.criteria.Query;
 import io.army.criteria.TableField;
 import io.army.criteria.dialect.SortNullItems;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.SQLs;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -70,7 +69,7 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
 
-    interface _OracleStaticOrderByClause<OR> extends _StaticOrderByClause0<OR> {
+    interface _OracleStaticOrderByClause<OR> {
 
         OR orderSiblingsBy(Expression exp1);
 
@@ -78,11 +77,11 @@ public interface OracleQuery extends Query, OracleStatement {
 
         OR orderSiblingsBy(Expression exp1, Expression exp2, Expression exp3);
 
-        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc);
-
-        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc, SQLs.NullsFirstLast nullOption);
-
-        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2, SQLs.AscDesc ascDesc2);
+//        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc);
+//
+//        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc, SQLs.NullsFirstLast nullOption);
+//
+//        OR orderSiblingsBy(Expression exp1, SQLs.AscDesc ascDesc1, Expression exp2, SQLs.AscDesc ascDesc2);
 
     }
 
@@ -134,7 +133,7 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
     interface _UnionOrderByCommaSpec<I extends Item>
-            extends _StaticOrderByNullsCommaClause<_UnionOrderByCommaSpec<I>>
+            extends _OrderByCommaClause<_UnionOrderByCommaSpec<I>>
             , _UnionOffsetSpec<I> {
 
     }
@@ -187,7 +186,7 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
     interface _OrderByCommaSpec<I extends Item>
-            extends _StaticOrderByNullsCommaClause<_OrderByCommaSpec<I>>
+            extends _OrderByCommaClause<_OrderByCommaSpec<I>>
             , _OffsetSpec<I> {
 
     }

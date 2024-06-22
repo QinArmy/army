@@ -16,6 +16,7 @@
 
 package io.army.criteria.impl;
 
+import io.army.annotation.SortOrder;
 import io.army.criteria.*;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
@@ -419,7 +420,7 @@ abstract class NonOperationExpression implements ArmyExpression {
         if (!(this instanceof CriteriaContexts.SelectionReference)) {
             throw unsupportedOperation(this);
         }
-        return ArmySortItems.create(this, SQLs.ASC, null);
+        return ArmySortItems.create(this, SortOrder.ASC, null);
     }
 
     @Override
@@ -427,7 +428,7 @@ abstract class NonOperationExpression implements ArmyExpression {
         if (!(this instanceof CriteriaContexts.SelectionReference)) {
             throw unsupportedOperation(this);
         }
-        return ArmySortItems.create(this, SQLs.DESC, null);
+        return ArmySortItems.create(this, SortOrder.DESC, null);
     }
 
     @Override
@@ -435,7 +436,7 @@ abstract class NonOperationExpression implements ArmyExpression {
         if (!(this instanceof CriteriaContexts.SelectionReference)) {
             throw unsupportedOperation(this);
         }
-        return ArmySortItems.create(this, SQLs.ASC, firstLast);
+        return ArmySortItems.create(this, SortOrder.ASC, firstLast);
     }
 
     @Override
@@ -443,7 +444,7 @@ abstract class NonOperationExpression implements ArmyExpression {
         if (!(this instanceof CriteriaContexts.SelectionReference)) {
             throw unsupportedOperation(this);
         }
-        return ArmySortItems.create(this, SQLs.DESC, firstLast);
+        return ArmySortItems.create(this, SortOrder.DESC, firstLast);
     }
 
     String operationErrorMessage() {

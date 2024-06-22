@@ -92,15 +92,6 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final WordMaterialized NOT_MATERIALIZED = SqlWords.KeyWordMaterialized.NOT_MATERIALIZED;
 
-    /**
-     * package field
-     */
-    static final AscDesc ASC = SqlWords.KeyWordAscDesc.ASC;
-    /**
-     * package field
-     */
-    static final AscDesc DESC = SqlWords.KeyWordAscDesc.DESC;
-
 
     public static final WordAs AS = SqlWords.KeyWordAs.AS;
 
@@ -854,10 +845,6 @@ public abstract class SQLs extends SQLSyntax {
     }
 
     public interface FetchOnlyWithTies extends FetchOnly, FetchWithTies {
-
-    }
-
-    public interface AscDesc extends SQLWords {
 
     }
 

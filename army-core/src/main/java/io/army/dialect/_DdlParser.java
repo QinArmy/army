@@ -602,11 +602,11 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         final int fieldSize = indexFieldList.size();
         IndexFieldMeta<T> field;
         Boolean asc;
-        builder.append(_Constant.SPACE_LEFT_PAREN);// index left bracket
+        builder.append(_Constant.LEFT_PAREN);// index left bracket
 
         for (int i = 0; i < fieldSize; i++) {
             if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA_SPACE);
+                builder.append(_Constant.COMMA);
             } else {
                 builder.append(_Constant.SPACE);
             }
@@ -775,7 +775,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
                 .append(_Constant.SPACE);
 
         this.parser.safeObjectName(table, builder)
-                .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_Constant.LEFT_PAREN)
                 .append("\n\t");
         return builder;
     }
@@ -807,10 +807,10 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         final List<IndexFieldMeta<T>> fieldList = index.fieldList();
         final int fieldSize = fieldList.size();
 
-        builder.append(_Constant.SPACE_LEFT_PAREN);
+        builder.append(_Constant.LEFT_PAREN);
         for (int i = 0; i < fieldSize; i++) {
             if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA_SPACE);
+                builder.append(_Constant.COMMA);
             } else {
                 builder.append(_Constant.SPACE);
             }

@@ -34,10 +34,16 @@ public @interface Index {
     String name();
 
     /**
-     * (Required) The names of the columnMap to be included in the indexMap,
+     * (Optional) The names of the columnMap to be included in the indexMap,
      * in asSort.
      */
-    String[] fieldList();
+    String[] fieldList() default {};
+
+    /**
+     * (Optional) The names of the columnMap to be included in the indexMap,
+     * in asSort.
+     */
+    IndexField[] fields() default {};
 
     /**
      * (Optional) Whether the indexMap is unique.

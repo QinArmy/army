@@ -16,7 +16,9 @@
 
 package io.army.criteria.impl;
 
+import io.army.annotation.SortOrder;
 import io.army.criteria.SortItem;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.TypeMeta;
 
@@ -24,18 +26,15 @@ import javax.annotation.Nullable;
 
 class ArmySortItems implements ArmySortItem {
 
-    static ArmySortItem create(final ArmyExpression exp, final SQLs.AscDesc ascDesc,
+    static ArmySortItem create(final ArmyExpression exp, final SortOrder order,
                                final @Nullable SQLs.NullsFirstLast firstLast) {
-        if (ascDesc != SQLs.DESC && ascDesc != SQLs.ASC) {
-            throw CriteriaUtils.unknownWords(ascDesc);
-        }
         final ArmySortItem sortItem;
         if (firstLast == null) {
-            sortItem = new ArmySortItems(exp, ascDesc);
+            sortItem = new ArmySortItems(exp, order);
         } else if (firstLast != SQLs.NULLS_LAST && firstLast != SQLs.NULLS_FIRST) {
             throw CriteriaUtils.unknownWords(firstLast);
         } else {
-            sortItem = new SortItemWithNullsOption(exp, ascDesc, firstLast);
+            sortItem = new SortItemWithNullsOption(exp, order, firstLast);
         }
         return sortItem;
     }
@@ -43,11 +42,11 @@ class ArmySortItems implements ArmySortItem {
 
     final ArmyExpression sortItem;
 
-    private final SQLs.AscDesc ascDesc;
+    private final SortOrder order;
 
-    private ArmySortItems(ArmyExpression sortItem, SQLs.AscDesc ascDesc) {
+    private ArmySortItems(ArmyExpression sortItem, SortOrder order) {
         this.sortItem = sortItem;
-        this.ascDesc = ascDesc;
+        this.order = order;
     }
 
     @Override
@@ -65,8 +64,10 @@ class ArmySortItems implements ArmySortItem {
     public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
         this.sortItem.appendSql(sqlBuilder, context);
 
-        sqlBuilder.append(this.ascDesc.spaceRender());
-
+        if (this.order != SortOrder.DEFAULT) {
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(this.order.name());
+        }
         if (this instanceof SortItemWithNullsOption) {
             sqlBuilder.append(((SortItemWithNullsOption) this).nullOption.spaceRender());
         }
@@ -76,8 +77,12 @@ class ArmySortItems implements ArmySortItem {
     public final String toString() {
         final StringBuilder builder;
         builder = new StringBuilder()
-                .append(this.sortItem)
-                .append(this.ascDesc.spaceRender());
+                .append(this.sortItem);
+
+        if (this.order != SortOrder.DEFAULT) {
+            builder.append(_Constant.SPACE)
+                    .append(this.order.name());
+        }
 
         if (this instanceof SortItemWithNullsOption) {
             builder.append(((SortItemWithNullsOption) this).nullOption.spaceRender());
@@ -90,9 +95,9 @@ class ArmySortItems implements ArmySortItem {
 
         private final SQLs.NullsFirstLast nullOption;
 
-        private SortItemWithNullsOption(ArmyExpression sortItem, SQLs.AscDesc aesWord,
+        private SortItemWithNullsOption(ArmyExpression sortItem, SortOrder order,
                                         SQLs.NullsFirstLast nullOption) {
-            super(sortItem, aesWord);
+            super(sortItem, order);
             this.nullOption = nullOption;
         }
 

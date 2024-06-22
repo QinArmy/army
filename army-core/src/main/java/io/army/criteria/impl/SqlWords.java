@@ -502,28 +502,6 @@ abstract class SqlWords {
 
     } //KeyWordUnknown
 
-    enum KeyWordAscDesc implements SQLs.AscDesc, SQLWords {
-
-        ASC(" ASC"),
-        DESC(" DESC");
-
-        final String spaceWord;
-
-        KeyWordAscDesc(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return SQLs.keyWordsToString(this);
-        }
-
-    }//KeyWordAscDesc
 
     enum KeyWordLateral implements SQLs.WordLateral {
 

@@ -87,7 +87,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
         builder.append('\n')
-                .append(_Constant.SPACE_RIGHT_PAREN);
+                .append(_Constant.RIGHT_PAREN);
 
 
         sqlList.add(builder.toString());
@@ -317,16 +317,32 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         assert builder.length() == 0;
 
         if (index.isPrimaryKey()) {
-            builder.append("ALTER TABLE IF EXISTS ");
+            builder.append("ALTER")
+                    .append(_Constant.SPACE)
+                    .append("TABLE")
+                    .append(_Constant.SPACE)
+                    .append("IF")
+                    .append(_Constant.SPACE_EXISTS)
+                    .append(_Constant.SPACE);
+
             this.parser.safeObjectName(index.tableMeta(), builder);
-            builder.append(" ADD PRIMARY KEY");
+
+            builder.append(_Constant.SPACE)
+                    .append("ADD")
+                    .append(_Constant.SPACE)
+                    .append("PRIMARY")
+                    .append(_Constant.SPACE)
+                    .append("KEY");
         } else {
             builder.append("CREATE");
             if (index.isUnique()) {
-                builder.append(" UNIQUE");
+                builder.append(_Constant.SPACE)
+                        .append("UNIQUE");
             }
+            builder.append(_Constant.SPACE)
+                    .append("INDEX")
+                    .append(_Constant.SPACE);
 
-            builder.append(" INDEX ");
             this.parser.identifier(index.name(), builder);
             builder.append(_Constant.SPACE_ON_SPACE);
             this.parser.safeObjectName(index.tableMeta(), builder);

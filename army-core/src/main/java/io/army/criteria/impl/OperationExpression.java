@@ -17,6 +17,7 @@
 package io.army.criteria.impl;
 
 
+import io.army.annotation.SortOrder;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect._Constant;
@@ -361,22 +362,22 @@ abstract class OperationExpression extends OperationSQLExpression
 
     @Override
     public final SortItem asc() {
-        return ArmySortItems.create(this, SQLs.ASC, null);
+        return ArmySortItems.create(this, SortOrder.ASC, null);
     }
 
     @Override
     public final SortItem desc() {
-        return ArmySortItems.create(this, SQLs.DESC, null);
+        return ArmySortItems.create(this, SortOrder.DESC, null);
     }
 
     @Override
     public final SortItem ascSpace(@Nullable SQLs.NullsFirstLast firstLast) {
-        return ArmySortItems.create(this, SQLs.ASC, firstLast);
+        return ArmySortItems.create(this, SortOrder.ASC, firstLast);
     }
 
     @Override
     public final SortItem descSpace(@Nullable SQLs.NullsFirstLast firstLast) {
-        return ArmySortItems.create(this, SQLs.DESC, firstLast);
+        return ArmySortItems.create(this, SortOrder.DESC, firstLast);
     }
 
 
