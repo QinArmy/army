@@ -34,7 +34,7 @@ public interface SchemaResult {
 
     List<TableMeta<?>> newTableList();
 
-    List<_TableResult> changeTableList();
+    List<TableResult> changeTableList();
 
     static SchemaResult dropCreate(@Nullable String catalog, @Nullable String schema, Collection<TableMeta<?>> tables) {
         return new DropCreateSchemaResult(catalog, schema, tables);

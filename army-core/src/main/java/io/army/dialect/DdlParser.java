@@ -38,6 +38,8 @@ interface DdlParser {
      */
     List<String> errorMsgList();
 
+    List<String> userDefinedTypeStmts();
+
     void dropTable(List<TableMeta<?>> tableList, List<String> sqlList);
 
     <T> void createTable(TableMeta<T> table, List<String> sqlList);

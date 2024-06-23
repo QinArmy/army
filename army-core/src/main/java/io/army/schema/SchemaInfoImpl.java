@@ -20,13 +20,15 @@ import io.army.util._Collections;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-final class _SchemaInfoImpl implements SchemaInfo {
+final class SchemaInfoImpl implements SchemaInfo {
 
-    static _SchemaInfoImpl create(@Nullable String catalog, @Nullable String schema
-            , Map<String, TableInfo.Builder> builderMap) {
+    static SchemaInfoImpl create(@Nullable String catalog, @Nullable String schema,
+                                 Map<String, TableInfo.Builder> builderMap,
+                                 List<Map<String, Object>> userDefinedTypeList) {
 
         final Map<String, TableInfo> tableMap = _Collections.hashMap(builderMap.size());
         for (TableInfo.Builder builder : builderMap.values()) {
@@ -35,7 +37,7 @@ final class _SchemaInfoImpl implements SchemaInfo {
                 throw new IllegalArgumentException("builderMap error.");
             }
         }
-        return new _SchemaInfoImpl(catalog, schema, tableMap);
+        return new SchemaInfoImpl(catalog, schema, tableMap, userDefinedTypeList);
     }
 
 
@@ -46,10 +48,15 @@ final class _SchemaInfoImpl implements SchemaInfo {
     private final Map<String, TableInfo> builderMap;
 
 
-    private _SchemaInfoImpl(@Nullable String catalog, @Nullable String schema, Map<String, TableInfo> tableMap) {
+    private final List<Map<String, Object>> userDefinedTypeList;
+
+
+    private SchemaInfoImpl(@Nullable String catalog, @Nullable String schema, Map<String, TableInfo> tableMap,
+                           List<Map<String, Object>> userDefinedTypeList) {
         this.catalog = catalog;
         this.schema = schema;
         this.builderMap = Collections.unmodifiableMap(tableMap);
+        this.userDefinedTypeList = _Collections.asUnmodifiableList(userDefinedTypeList);
     }
 
 
@@ -66,6 +73,11 @@ final class _SchemaInfoImpl implements SchemaInfo {
     @Override
     public Map<String, TableInfo> tableMap() {
         return this.builderMap;
+    }
+
+    @Override
+    public List<Map<String, Object>> userDefinedTypeList() {
+        return this.userDefinedTypeList;
     }
 
 

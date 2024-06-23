@@ -31,8 +31,8 @@ import io.army.generator.FieldGeneratorFactory;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.schema.SchemaResult;
+import io.army.schema.TableResult;
 import io.army.schema._FieldResult;
-import io.army.schema._TableResult;
 import io.army.session.executor.ExecutorFactoryProvider;
 import io.army.util.HexUtils;
 import io.army.util._Collections;
@@ -389,6 +389,10 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         return builder.toString();
     }
 
+    protected static DialectParser dialectParser(_ArmySessionFactory factory) {
+        return factory.dialectParser;
+    }
+
     @Nullable
     protected static FactoryAdvice createFactoryAdviceComposite(Collection<FactoryAdvice> factoryAdvices) {
         if (_Collections.isEmpty(factoryAdvices)) {
@@ -492,10 +496,10 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
             builder.append('\n');
         }
 
-        final List<_TableResult> tableResultList;
+        final List<TableResult> tableResultList;
         tableResultList = schemaResult.changeTableList();
         if (tableResultList.size() > 0) {
-            for (_TableResult tableResult : tableResultList) {
+            for (TableResult tableResult : tableResultList) {
                 builder.append('\n')
                         .append(tableResult.table())
                         .append(" not match:");

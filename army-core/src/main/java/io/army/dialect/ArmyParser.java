@@ -39,8 +39,8 @@ import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema.SchemaResult;
+import io.army.schema.TableResult;
 import io.army.schema._FieldResult;
-import io.army.schema._TableResult;
 import io.army.session.SessionSpec;
 import io.army.sqltype.DataType;
 import io.army.stmt.*;
@@ -353,7 +353,7 @@ abstract class ArmyParser implements DialectParser {
         List<FieldMeta<?>> newFieldList;
         List<_FieldResult> fieldResultList;
         List<String> indexList;
-        for (_TableResult tableResult : schemaResult.changeTableList()) {
+        for (TableResult tableResult : schemaResult.changeTableList()) {
             TableMeta<?> table = tableResult.table();
             if (tableResult.comment()) {
                 ddlDialect.modifyTableComment(table, ddlList);

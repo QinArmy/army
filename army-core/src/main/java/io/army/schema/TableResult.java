@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * @see SchemaResult
  */
-public interface _TableResult {
+public interface TableResult {
 
     TableMeta<?> table();
 
@@ -59,7 +59,7 @@ public interface _TableResult {
         void appendChangeIndex(String indexName);
 
 
-        _TableResult buildAndClear();
+        TableResult buildAndClear();
 
     }
 

@@ -90,6 +90,11 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
+    public final MetaStmtGenerator metaStmtGenerator() {
+        return PostgreMetaStmtGenerator.create();
+    }
+
+    @Override
     protected final void parseWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
         final List<_Cte> cteList;
         cteList = spec.cteList();

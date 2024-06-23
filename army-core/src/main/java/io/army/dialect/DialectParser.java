@@ -79,6 +79,9 @@ public interface DialectParser {
         throw new UnsupportedOperationException();
     }
 
+    default MetaStmtGenerator metaStmtGenerator() {
+        throw new UnsupportedOperationException();
+    }
 
     default List<String> schemaDdl(SchemaResult schemaResult) {
         throw new UnsupportedOperationException();

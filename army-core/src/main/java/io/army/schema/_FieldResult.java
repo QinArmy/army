@@ -19,7 +19,7 @@ package io.army.schema;
 import io.army.meta.FieldMeta;
 
 /**
- * @see _TableResult
+ * @see TableResult
  */
 public interface _FieldResult {
 

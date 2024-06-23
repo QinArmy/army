@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-package io.army.sync.executor;
+package io.army.dialect;
 
 
-import io.army.dialect.MetaStmtGenerator;
-import io.army.schema.SchemaInfo;
-import io.army.session.DataAccessException;
-
-import java.util.List;
-import java.util.function.Supplier;
-
-public interface SyncMetaExecutor extends AutoCloseable {
+public interface MetaStmtGenerator {
 
 
-    SchemaInfo extractInfo(Supplier<MetaStmtGenerator> supplier) throws DataAccessException;
+    String queryUserDefinedTypeStmts();
 
-    void executeDdl(List<String> ddlList) throws DataAccessException;
-
-    @Override
-    void close() throws DataAccessException;
 
 }

@@ -177,11 +177,11 @@ final class ArmySyncFactoryBuilder
         final SyncExecutorFactory executorFactory;
         executorFactory = sessionFactory.executorFactory;
 
-        try (SyncMetaExecutor syncMetaExecutor = executorFactory.metaExecutor(dataSourceFunc())) {
+        try (SyncMetaExecutor executor = executorFactory.metaExecutor(dataSourceFunc())) {
 
             //1.extract schema info.
             final SchemaInfo schemaInfo;
-            schemaInfo = syncMetaExecutor.extractInfo();
+            schemaInfo = executor.extractInfo(dialectParser(sessionFactory)::metaStmtGenerator);
 
             //2.compare schema meta and schema info.
             final SchemaResult schemaResult;
@@ -227,7 +227,7 @@ final class ArmySyncFactoryBuilder
                     }
 
                     LOG.info("{}:\n\n{}", sessionFactory, ddlToSqlLog(ddlList));
-                    syncMetaExecutor.executeDdl(ddlList);
+                    executor.executeDdl(ddlList);
                 }
                 break;
                 default:

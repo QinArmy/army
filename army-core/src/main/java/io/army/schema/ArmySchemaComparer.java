@@ -49,9 +49,9 @@ abstract class ArmySchemaComparer implements SchemaComparer {
 
         final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
 
-        final _TableResult.Builder builder = _TableResult.builder();
+        final TableResult.Builder builder = TableResult.builder();
         final List<TableMeta<?>> newTableList = _Collections.arrayList();
-        final List<_TableResult> tableResultList = _Collections.arrayList();
+        final List<TableResult> tableResultList = _Collections.arrayList();
         final boolean supportTableComment = this.supportTableComment();
 
         TableInfo tableInfo;
@@ -98,7 +98,7 @@ abstract class ArmySchemaComparer implements SchemaComparer {
     abstract String primaryKeyName(TableMeta<?> table);
 
 
-    private void compareColumns(TableInfo tableInfo, TableMeta<?> table, _TableResult.Builder tableBuilder) {
+    private void compareColumns(TableInfo tableInfo, TableMeta<?> table, TableResult.Builder tableBuilder) {
 
         final Map<String, ColumnInfo> columnMap = tableInfo.columnMap();
         final _FieldResult.Builder builder = _FieldResult.builder();
@@ -136,7 +136,7 @@ abstract class ArmySchemaComparer implements SchemaComparer {
     }
 
     private <T> void compareIndex(final TableInfo tableInfo, final TableMeta<T> table,
-                                  final _TableResult.Builder tableBuilder) {
+                                  final TableResult.Builder tableBuilder) {
 
         final Map<String, IndexInfo> indexMap = tableInfo.indexMap();
         IndexInfo indexInfo;
@@ -198,10 +198,10 @@ abstract class ArmySchemaComparer implements SchemaComparer {
 
         private final List<TableMeta<?>> newTableList;
 
-        private final List<_TableResult> tableResultList;
+        private final List<TableResult> tableResultList;
 
         private SchemaResult(@Nullable String catalog, @Nullable String schema
-                , List<TableMeta<?>> newTableList, List<_TableResult> tableResultList) {
+                , List<TableMeta<?>> newTableList, List<TableResult> tableResultList) {
             this.catalog = catalog;
             this.schema = schema;
             this.newTableList = _Collections.unmodifiableList(newTableList);
@@ -229,7 +229,7 @@ abstract class ArmySchemaComparer implements SchemaComparer {
         }
 
         @Override
-        public List<_TableResult> changeTableList() {
+        public List<TableResult> changeTableList() {
             return this.tableResultList;
         }
 

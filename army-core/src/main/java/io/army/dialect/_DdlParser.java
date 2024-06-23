@@ -89,6 +89,12 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         return this.errorMsgList;
     }
 
+
+    @Override
+    public List<String> userDefinedTypeStmts() {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public void dropTable(List<TableMeta<?>> tableList, final List<String> sqlList) {
         final int size = tableList.size();

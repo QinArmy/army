@@ -60,7 +60,7 @@ final class DropCreateSchemaResult implements SchemaResult {
     }
 
     @Override
-    public List<_TableResult> changeTableList() {
+    public List<TableResult> changeTableList() {
         return Collections.emptyList();
     }
 

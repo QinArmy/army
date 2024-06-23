@@ -40,6 +40,11 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
 
+    @Override
+    public List<String> userDefinedTypeStmts() {
+        return super.userDefinedTypeStmts();
+    }
+
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-createtable.html">CREATE TABLE— define a new table</a>
      */

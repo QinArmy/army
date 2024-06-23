@@ -23,7 +23,7 @@ import io.army.util._Collections;
 import java.util.Collections;
 import java.util.List;
 
-final class TableResultImpl implements _TableResult {
+final class TableResultImpl implements TableResult {
 
     static TableResultBuilder createBuilder() {
         return new TableResultBuilder();
@@ -105,7 +105,7 @@ final class TableResultImpl implements _TableResult {
     }
 
 
-    private static final class TableResultBuilder implements _TableResult.Builder {
+    private static final class TableResultBuilder implements TableResult.Builder {
 
         private TableMeta<?> table;
 
@@ -170,8 +170,8 @@ final class TableResultImpl implements _TableResult {
         }
 
         @Override
-        public _TableResult buildAndClear() {
-            final _TableResult tableResult;
+        public TableResult buildAndClear() {
+            final TableResult tableResult;
             tableResult = new TableResultImpl(this);
 
             this.table = null;
