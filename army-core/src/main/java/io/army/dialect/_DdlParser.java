@@ -72,8 +72,6 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
      */
     protected final String SPACE_SET_DEFAULT_SPACE = " SET DEFAULT ";
 
-    static final String COMMA_LINE_SEPARATOR_TAB = " ,\n\t";
-
 
     protected final List<String> errorMsgList = _Collections.arrayList();
 
@@ -381,7 +379,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
 
-    protected final void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
+    protected void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
         final int length;
         if ((length = builder.length()) > 0 && !Character.isWhitespace(builder.charAt(length - 1))) {
             builder.append(_Constant.SPACE);
@@ -763,21 +761,65 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         return complete;
     }
 
+
     final StringBuilder createTableCommandBuilder(TableMeta<?> table) {
         final StringBuilder builder = new StringBuilder(128);
+
+        createTableIfNotExists(builder);
+        tableName(table, builder);
+        return builder.append(_Constant.LEFT_PAREN);
+    }
+
+    final void createTableIfNotExists(final StringBuilder builder) {
         builder.append("CREATE")
                 .append(_Constant.SPACE)
                 .append("TABLE")
                 .append(_Constant.SPACE)
                 .append("IF")
                 .append(_Constant.SPACE_NOT)
-                .append(_Constant.SPACE_EXISTS)
-                .append(_Constant.SPACE);
+                .append(_Constant.SPACE_EXISTS);
+    }
 
-        this.parser.safeObjectName(table, builder)
-                .append(_Constant.LEFT_PAREN)
-                .append("\n\t");
-        return builder;
+
+    final void dropTableIfExists(final StringBuilder builder) {
+        builder.append("DROP")
+                .append(_Constant.SPACE)
+                .append("TABLE")
+                .append(_Constant.SPACE)
+                .append("IF")
+                .append(_Constant.SPACE_EXISTS);
+
+    }
+
+    final void alterTable(final boolean ifExists, final StringBuilder builder) {
+        builder.append("ALTER")
+                .append(_Constant.SPACE)
+                .append("TABLE");
+        if (ifExists) {
+            builder.append(_Constant.SPACE)
+                    .append("IF")
+                    .append(_Constant.SPACE_EXISTS);
+        }
+
+    }
+
+
+    final void tableName(final TableMeta<?> table, final StringBuilder builder) {
+        builder.append(_Constant.SPACE);
+        this.parser.safeObjectName(table, builder);
+    }
+
+    final void tableNameList(final List<TableMeta<?>> tableList, final StringBuilder builder) {
+        builder.append(_Constant.SPACE);
+
+        final int listSize = tableList.size();
+        for (int i = 0; i < listSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            }
+            builder.append("\n\t");
+            this.parser.safeObjectName(tableList.get(i), builder);
+        }
     }
 
 
@@ -803,6 +845,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         }
     }
 
+
     final <T> void justIndexFiledNameList(final IndexMeta<T> index, final StringBuilder builder) {
         final List<IndexFieldMeta<T>> fieldList = index.fieldList();
         final int fieldSize = fieldList.size();
@@ -818,6 +861,21 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         }
         builder.append(_Constant.SPACE_RIGHT_PAREN);
 
+    }
+
+
+    final <T> void columnDefinitionList(final TableMeta<T> table, final StringBuilder builder) {
+        final List<FieldMeta<T>> fieldList = table.fieldList();
+        final int fieldSize = fieldList.size();
+
+        // column definitions
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            }
+            builder.append("\n\t");
+            columnDefinition(fieldList.get(i), builder);
+        }
     }
 
 

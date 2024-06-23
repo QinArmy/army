@@ -48,33 +48,16 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         final StringBuilder builder;
         builder = createTableCommandBuilder(table);
 
-        final List<FieldMeta<T>> fieldList = table.fieldList();
-        final int fieldSize = fieldList.size();
+        // column definitions
+        columnDefinitionList(table, builder);
 
-        FieldMeta<T> field;
-        DataType dataType;
-        for (int i = 0; i < fieldSize; i++) {
-            if (i > 0) {
-                builder.append(COMMA_LINE_SEPARATOR_TAB);
-            }
-            field = fieldList.get(i);
-
-            columnName(field, builder);
-            dataType = field.mappingType().map(this.serverMeta);
-            if (field instanceof PrimaryFieldMeta && field.generatorType() == GeneratorType.POST) {
-                postDataType(field, dataType, builder);
-            } else {
-                dataType(field, dataType, builder);
-            }
-            columnNullConstraint(field, builder);
-            columnDefault(field, builder);
-        }
-
+        // table constraint
         for (IndexMeta<T> index : table.indexList()) {
             if (!index.isUnique()) {
                 continue;
             }
-            builder.append(COMMA_LINE_SEPARATOR_TAB);
+            builder.append(_Constant.SPACE)
+                    .append("\n\t");
             if (index.isPrimaryKey()) {
                 builder.append("PRIMARY")
                         .append(_Constant.SPACE)
@@ -86,6 +69,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         }
 
 
+        // right paren
         builder.append('\n')
                 .append(_Constant.RIGHT_PAREN);
 
@@ -109,30 +93,170 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         sqlList.add(builder.toString());
 
         // column comment
-        for (int i = 0; i < fieldSize; i++) {
+        for (FieldMeta<T> field : table.fieldList()) {
             builder.setLength(0); // clear
-            columnOuterComment(fieldList.get(i), builder);
+            columnOuterComment(field, builder);
             sqlList.add(builder.toString());
         }
 
+    }
 
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-droptable.html">DROP TABLE — remove a table</a>
+     */
+    @Override
+    public void dropTable(final List<TableMeta<?>> tableList, final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder();
+        dropTableIfExists(builder);
+        tableNameList(tableList, builder);
+        sqlList.add(builder.toString());
+    }
+
+    @Override
+    public void modifyTableComment(TableMeta<?> table, List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder();
+        tableOuterComment(table, builder);
+        sqlList.add(builder.toString());
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-altertable.html">ALTER TABLE — change the definition of a table</a>
+     */
+    @Override
+    public void addColumn(final List<FieldMeta<?>> fieldList, final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder();
+        alterTable(true, builder);
+
+        final int listSize = fieldList.size();
+        FieldMeta<?> field;
+        TableMeta<?> table;
+        for (int i = 0; i < listSize; i++) {
+            field = fieldList.get(i);
+
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            } else {
+                table = field.tableMeta();
+                tableName(table, builder);
+            }
+            builder.append("\n\t")
+                    .append("ADD")
+                    .append(_Constant.SPACE)
+                    .append("COLUMN")
+                    .append(_Constant.SPACE)
+                    .append("IF")
+                    .append(_Constant.SPACE_NOT)
+                    .append(_Constant.SPACE_EXISTS)
+                    .append(_Constant.SPACE);
+
+            columnDefinition(field, builder);
+
+        }
+        sqlList.add(builder.toString());
     }
 
 
     @Override
-    public void dropTable(List<TableMeta<?>> tableList, List<String> sqlList) {
-        super.dropTable(tableList, sqlList);
-    }
+    public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder();
+        alterTable(true, builder);
+
+        final int listSize = resultList.size();
+        _FieldResult result;
+        FieldMeta<?> field;
+        TableMeta<?> table = null;
+        String safeColumnName;
+        for (int i = 0, effectiveCount, totalEffectiveCount = 0, offset, end; i < listSize; i++) {
+            result = resultList.get(i);
+            field = result.field();
+            if (i == 0) {
+                table = field.tableMeta();
+                tableName(table, builder);
+            } else if (field.tableMeta() != table) {
+                // no bug,never here
+                throw new IllegalArgumentException();
+            } else if (totalEffectiveCount > 0) {
+                builder.append(_Constant.COMMA);
+            }
+
+            safeColumnName = this.parser.safeObjectName(field);
+
+            offset = builder.length();
+
+            builder.append("\n\t")
+                    .append("ALTER")
+                    .append(_Constant.SPACE)
+                    .append("COLUMN")
+                    .append(_Constant.SPACE)
+                    .append(safeColumnName)
+                    .append(_Constant.SPACE);
+
+            end = builder.length();
+
+            effectiveCount = 0; // reset
+
+            if (result.containSqlType()) {
+                builder.append("TYPE");
+                fieldDataType(field, builder);
+                effectiveCount++;
+            }
+
+            if (result.containNullable()) {
+                if (effectiveCount > 0) {
+                    builder.append(_Constant.COMMA)
+                            .append(builder, offset, end);
+                }
+                if (field.nullable()) {
+                    builder.append("DROP");
+                } else {
+                    builder.append("SET");
+                }
+                builder.append(_Constant.SPACE_NOT_NULL);
+                effectiveCount++;
+            }
+
+            if (result.containDefault()) {
+                if (effectiveCount > 0) {
+                    builder.append(_Constant.COMMA)
+                            .append(builder, offset, end);
+                }
+                if (_StringUtils.hasText(field.defaultValue())) {
+                    builder.append("SET");
+                    columnDefault(field, builder);
+                } else {
+                    builder.append("DROP")
+                            .append(_Constant.SPACE_DEFAULT);
+
+                }
+                effectiveCount++;
+            }
+
+            if (effectiveCount == 0) {
+                builder.setLength(offset);
+            } else {
+                totalEffectiveCount += effectiveCount;
+            }
 
 
-    @Override
-    public void addColumn(List<FieldMeta<?>> fieldList, List<String> sqlList) {
-        super.addColumn(fieldList, sqlList);
-    }
+        } // result loop
 
-    @Override
-    public void modifyColumn(List<_FieldResult> resultList, List<String> sqlList) {
-        super.modifyColumn(resultList, sqlList);
+        sqlList.add(builder.toString());
+
+
+        // column comment
+        for (int i = 0; i < listSize; i++) {
+            result = resultList.get(i);
+            if (result.containComment()) {
+                field = result.field();
+                builder.setLength(0);
+                columnOuterComment(field, builder);
+                sqlList.add(builder.toString());
+            }
+        }
+
+
     }
 
     @Override
@@ -153,13 +277,6 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     @Override
     protected void checkEnclosing(String text) {
         super.checkEnclosing(text);
-    }
-
-    @Override
-    public void modifyTableComment(TableMeta<?> table, List<String> sqlList) {
-        final StringBuilder builder = new StringBuilder();
-        tableOuterComment(table, builder);
-        sqlList.add(builder.toString());
     }
 
 
@@ -413,6 +530,21 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     /**
+     * @see #createTable(TableMeta, List)
+     * @see #addColumn(List, List)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-createtable.html">CREATE TABLE— define a new table</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-altertable.html">ALTER TABLE — change the definition of a table</a>
+     */
+    @Override
+    protected void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
+        columnName(field, builder);
+        fieldDataType(field, builder);
+        columnNullConstraint(field, builder);
+        columnDefault(field, builder);
+    }
+
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-comment.html">COMMENT — define or change the comment of an object</a>
      */
     @Override
@@ -451,6 +583,24 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                 .append(_Constant.SPACE);
 
         this.parser.literal(StringType.INSTANCE, field.comment(), false, builder);
+    }
+
+
+    /*-------------------below private methods-------------------*/
+
+
+    /**
+     * @see #columnDefinition(FieldMeta, StringBuilder)
+     * @see #modifyColumn(List, List)
+     */
+    private void fieldDataType(final FieldMeta<?> field, final StringBuilder builder) {
+        final DataType dataType;
+        dataType = field.mappingType().map(this.parser.serverMeta);
+        if (field instanceof PrimaryFieldMeta && field.generatorType() == GeneratorType.POST) {
+            postDataType(field, dataType, builder);
+        } else {
+            dataType(field, dataType, builder);
+        }
     }
 
 

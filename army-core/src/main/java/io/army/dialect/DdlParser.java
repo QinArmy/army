@@ -42,9 +42,9 @@ interface DdlParser {
 
     <T> void createTable(TableMeta<T> table, List<String> sqlList);
 
-    void addColumn(List<FieldMeta<?>> fieldList, List<String> sqlList);
-
     void modifyTableComment(TableMeta<?> table, List<String> sqlList);
+
+    void addColumn(List<FieldMeta<?>> fieldList, List<String> sqlList);
 
     void modifyColumn(List<_FieldResult> resultList, List<String> sqlList);
 
