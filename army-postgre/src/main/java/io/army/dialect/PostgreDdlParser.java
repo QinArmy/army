@@ -156,8 +156,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                     .append(_Constant.SPACE)
                     .append("IF")
                     .append(_Constant.SPACE_NOT)
-                    .append(_Constant.SPACE_EXISTS)
-                    .append(_Constant.SPACE);
+                    .append(_Constant.SPACE_EXISTS);
 
             columnDefinition(field, builder);
 
