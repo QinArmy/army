@@ -317,7 +317,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
     @Override
-    public <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
+    public final <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
         dropIndex(table, indexNameList, sqlList);
         createIndex(table, indexNameList, sqlList);
     }

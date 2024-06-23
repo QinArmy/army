@@ -161,6 +161,9 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-altertable.html">ALTER TABLE — change the definition of a table</a>
+     */
     @Override
     public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
         final StringBuilder builder = new StringBuilder();
@@ -262,19 +265,59 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-createindex.html">CREATE INDEX — define a new index</a>
+     */
     @Override
-    public <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
-        super.createIndex(table, indexNameList, sqlList);
+    public <T> void createIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder();
+
+        final int nameListSize = indexNameList.size();
+
+        String name;
+        for (IndexMeta<T> index : table.indexList()) {
+            name = index.name();
+
+            for (int nameIndex = 0; nameIndex < nameListSize; nameIndex++) {
+                if (name.equalsIgnoreCase(indexNameList.get(nameIndex))) {
+                    builder.setLength(0);
+                    appendIndexOutTableDef(index, builder);
+                    sqlList.add(builder.toString());
+                    break;
+                }
+
+            } // inner loop
+
+        } // index loop
+
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-dropindex.html">DROP INDEX — remove an index</a>
+     */
     @Override
-    public <T> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
-        super.changeIndex(table, indexNameList, sqlList);
-    }
+    public <T> void dropIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("DROP")
+                .append(_Constant.SPACE)
+                .append("INDEX")
+                .append(_Constant.SPACE)
+                .append("IF")
+                .append(_Constant.SPACE_EXISTS);
 
-    @Override
-    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
-        super.dropIndex(table, indexNameList, sqlList);
+        final int nameListSize = indexNameList.size();
+        for (int i = 0; i < nameListSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            }
+            builder.append("\n\t");
+            this.parser.identifier(indexNameList.get(i), builder);
+
+        } //  loop
+
+
+        sqlList.add(builder.toString());
+
     }
 
     @Override
