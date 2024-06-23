@@ -599,9 +599,12 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/identifiers.html"> Schema Object Names</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html">Identifier Case Sensitivity</a>
      */
     @Override
     protected final IdentifierMode identifierMode(final String identifier) {
+        // 1. 列别名,虽然 MySQL 列别名是大小写不敏感的,但MySQL原样返回了列别名,所以没问题
+        // 2. 表别名 ,虽然 MySQL 的表别名的规则最蠢,但无论是否区分,由于只是引用,而无需返回,所以没问题
         final int length = identifier.length();
         if (length == 0) {
             return IdentifierMode.ERROR;
