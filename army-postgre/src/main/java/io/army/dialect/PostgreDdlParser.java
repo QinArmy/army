@@ -131,15 +131,18 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
         final int listSize = fieldList.size();
         FieldMeta<?> field;
-        TableMeta<?> table;
+        TableMeta<?> table = null;
         for (int i = 0; i < listSize; i++) {
             field = fieldList.get(i);
 
-            if (i > 0) {
-                builder.append(_Constant.COMMA);
-            } else {
+            if (i == 0) {
                 table = field.tableMeta();
                 tableName(table, builder);
+            } else if (field.tableMeta() == table) {
+                builder.append(_Constant.COMMA);
+            } else {
+                // no bug,never here
+                throw new IllegalArgumentException();
             }
             builder.append("\n\t")
                     .append("ADD")
