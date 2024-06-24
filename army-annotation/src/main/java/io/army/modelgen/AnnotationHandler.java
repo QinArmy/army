@@ -57,7 +57,7 @@ final class AnnotationHandler {
         List<TypeElement> mappedList;
         Map<String, IndexMode> indexModeMap;
         MappingMode mode;
-        String customeTableName, tableName;
+        String customeTableName, lowerTableName;
         for (Element element : domainElementSet) {
             domain = (TypeElement) element;
             if (domain.getNestingKind() != NestingKind.TOP_LEVEL) {
@@ -80,12 +80,12 @@ final class AnnotationHandler {
             mode = validateMode(domain, parentDomain);
             // validate table name
             customeTableName = domain.getAnnotation(Table.class).name();
-            tableName = customeTableName.toLowerCase(Locale.ROOT);
-            if (!(tableName.equals(customeTableName) || tableName.toUpperCase(Locale.ROOT).equals(customeTableName))) {  // army don't allow camel
-                String m = String.format("%s table name is camel.", MetaUtils.getClassName(domain));
+            lowerTableName = customeTableName.toLowerCase(Locale.ROOT);
+            if (!customeTableName.equals(lowerTableName) && !customeTableName.equals(customeTableName.toUpperCase(Locale.ROOT))) {  // army don't allow camel
+                String m = String.format("%s table name is CamelCase.", MetaUtils.getClassName(domain));
                 this.errorMsgList.add(m);
             }
-            if (!tableName.trim().equals(tableName)) {
+            if (!lowerTableName.trim().equals(lowerTableName)) {
                 String m = String.format("please trim %s table name .", MetaUtils.getClassName(domain));
                 this.errorMsgList.add(m);
             }
