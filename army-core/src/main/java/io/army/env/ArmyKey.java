@@ -30,12 +30,12 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
 public class ArmyKey<T> {
 
-    private static final ConcurrentMap<String, ArmyKey<?>> INSTANCE_MAP = _Collections.concurrentHashMap();
 
     public static final ArmyKey<Boolean> READ_ONLY = new ArmyKey<>("readonly", Boolean.class, Boolean.FALSE);
 
@@ -109,10 +109,6 @@ public class ArmyKey<T> {
     public final T defaultValue;
 
     ArmyKey(String name, Class<T> javaType, @Nullable T defaultValue) {
-        if (INSTANCE_MAP.putIfAbsent(name, this) != null) {
-            String m = String.format("name[%s] duplication.", name);
-            throw new IllegalArgumentException(m);
-        }
         this.name = name;
         this.javaType = javaType;
         this.defaultValue = defaultValue;
@@ -156,16 +152,23 @@ public class ArmyKey<T> {
     }
 
 
-    private static void addAllKey(final Class<?> keyClass, final List<ArmyKey<?>> list)
+    private static void addAllKey(final Class<?> keyClass, final List<ArmyKey<?>> list, final Map<String, Boolean> keyMap)
             throws IllegalAccessException {
         int modifier;
+        ArmyKey<?> armyKey;
         for (Field field : keyClass.getDeclaredFields()) {
             modifier = field.getModifiers();
             if (ArmyKey.class.isAssignableFrom(field.getType())
                     && Modifier.isPublic(modifier)
                     && Modifier.isStatic(modifier)
                     && Modifier.isFinal(modifier)) {
-                list.add((ArmyKey<?>) field.get(null));
+
+                armyKey = (ArmyKey<?>) field.get(null);
+                if (keyMap.put(armyKey.name, Boolean.TRUE) != null) {
+                    String m = String.format("name[%s] duplication.", armyKey.name);
+                    throw new IllegalArgumentException(m);
+                }
+                list.add(armyKey);
             }
 
         }
@@ -180,21 +183,21 @@ public class ArmyKey<T> {
             syncKeyClass = ClassUtils.tryLoadClass("io.army.env.SyncKey", ArmyKey.class.getClassLoader());
             reactiveKeyClass = ClassUtils.tryLoadClass("io.army.env.ReactiveKey", ArmyKey.class.getClassLoader());
 
-
-            final List<ArmyKey<?>> list = _Collections.arrayList(ArmyKey.INSTANCE_MAP.size());
-
             try {
-                addAllKey(ArmyKey.class, list);
+                final List<ArmyKey<?>> list = _Collections.arrayList();
+                final Map<String, Boolean> keyMap = _Collections.hashMap();
+                addAllKey(ArmyKey.class, list, keyMap);
                 if (syncKeyClass != null) {
-                    addAllKey(syncKeyClass, list);
+                    addAllKey(syncKeyClass, list, keyMap);
                 }
                 if (reactiveKeyClass != null) {
-                    addAllKey(reactiveKeyClass, list);
+                    addAllKey(reactiveKeyClass, list, keyMap);
                 }
+                ARMY_KEY_LIST = Collections.unmodifiableList(_Collections.arrayList(list));
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
-            ARMY_KEY_LIST = _Collections.unmodifiableList(list);
+
         }
 
 
