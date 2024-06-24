@@ -113,25 +113,46 @@ abstract class StatementContext implements _StmtContext, StmtParams {
 
     @Override
     public final void appendFuncName(final boolean buildIn, final String name) {
-        if (!buildIn && (this.parser.isKeyWords(name) || !_DialectUtils.isSimpleIdentifier(name))) {
-            String m = String.format("user defined function name[%s] for %s", name, this.parser.dialect);
+        final String lowerCaseName, upperCaseName;
+        if (buildIn) {
+            lowerCaseName = upperCaseName = null;
+        } else if (this.parser.keyWordMap.containsKey(upperCaseName = name.toUpperCase(Locale.ROOT))) {
+            String m = String.format("User defined function name[%s] is key word for %s", name, this.parser.dialect);
+            throw new CriteriaException(m);
+        } else if (!name.equals(lowerCaseName = name.toLowerCase(Locale.ROOT)) && !name.equals(upperCaseName)) {
+            String m = String.format("User defined function name[%s] is CamelCase", name);
+            throw new CriteriaException(m);
+        } else if (!_DialectUtils.isSimpleIdentifier(name)) {
+            String m = String.format("User defined function name[%s] isn't simple identifier", name);
             throw new CriteriaException(m);
         }
+
         final StringBuilder sqlBuilder = this.sqlBuilder;
         sqlBuilder.append(_Constant.SPACE);
         switch (this.parser.funcNameMode) {
             case DEFAULT:
                 sqlBuilder.append(name);
                 break;
-            case LOWER_CASE:
-                sqlBuilder.append(name.toLowerCase(Locale.ROOT));
-                break;
-            case UPPER_CASE:
-                sqlBuilder.append(name.toUpperCase(Locale.ROOT));
-                break;
+            case LOWER_CASE: {
+                if (lowerCaseName == null) {
+                    sqlBuilder.append(name.toLowerCase(Locale.ROOT));
+                } else {
+                    sqlBuilder.append(lowerCaseName);
+                }
+            }
+            break;
+            case UPPER_CASE: {
+                if (upperCaseName == null) {
+                    sqlBuilder.append(name.toUpperCase(Locale.ROOT));
+                } else {
+                    sqlBuilder.append(upperCaseName);
+                }
+            }
+            break;
             default:
                 throw _Exceptions.unexpectedEnum(this.parser.funcNameMode);
         }
+
 
     }
 
