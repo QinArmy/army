@@ -21,6 +21,8 @@ import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncMetaExecutor;
 import io.army.util._Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;
@@ -54,7 +56,7 @@ class JdbcMetaExecutor implements SyncMetaExecutor {
     }
 
 
-    //  private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
 
     private final JdbcExecutorFactory factory;
 
@@ -114,6 +116,7 @@ class JdbcMetaExecutor implements SyncMetaExecutor {
 
             final String sql;
             sql = supplier.get().queryUserDefinedTypeStmts();
+            LOG.info("execute query User-Defined data type sql : \n{}", sql);
             try (ResultSet resultSet = statement.executeQuery(sql)) {
 
                 final ResultSetMetaData metaData;

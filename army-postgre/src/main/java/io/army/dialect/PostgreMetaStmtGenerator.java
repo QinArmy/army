@@ -31,7 +31,8 @@ final class PostgreMetaStmtGenerator implements MetaStmtGenerator {
     public String queryUserDefinedTypeStmts() {
         // 1. 确定 自定义 composite 的方法 : pg_type.typcategory is 'C' 且 pg_class.relkind is 'c'
         // 2. 确定 domain 的方法 pg_type.typbasetype > 0
-        return "FROM pg_namespace AS n\n" +
+        return "SELECT t.typname AS \"typeName\", t.typcategory AS \"type\", et.\"enumLabelArray\", at.*\n" +
+                "FROM pg_namespace AS n\n" +
                 "         JOIN pg_type AS t ON t.typnamespace = n.oid\n" +
                 "         LEFT JOIN LATERAL (\n" +
                 "    SELECT e.enumtypid, array_agg(e.enumlabel) AS \"enumLabelArray\"\n" +
@@ -52,8 +53,7 @@ final class PostgreMetaStmtGenerator implements MetaStmtGenerator {
                 "    ) AS at ON at.attrelid = c.oid\n" +
                 "\n" +
                 "WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')\n" +
-                "  AND (t.typcategory IN ('E', 'U', 'C', 'R') OR t.typbasetype > 0)\n" +
-                "  AND (c.relkind IS NULL OR c.relkind = 'c')";
+                "  AND (t.typcategory IN ('E', 'U', 'R') OR t.typbasetype > 0 OR (t.typcategory = 'C' AND c.relkind = 'c'))";
     }
 
 
