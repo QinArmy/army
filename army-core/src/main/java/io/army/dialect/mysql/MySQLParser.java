@@ -603,8 +603,10 @@ abstract class MySQLParser extends _ArmyDialectParser {
      */
     @Override
     protected final IdentifierMode identifierMode(final String identifier) {
-        // 1. 列别名,虽然 MySQL 列别名是大小写不敏感的,但MySQL原样返回了列别名,所以没问题
-        // 2. 表别名 ,虽然 MySQL 的表别名的规则最蠢,但无论是否区分,由于只是引用,而无需返回,所以没问题
+        // 1. 列名   : MySQL列名不区分大小写,即使使用引用也不区分,故此算法正确
+        // 2. 列别名 : 虽然MySQL列别名不区分大小写,但MySQL原样返回了列别名,故此算法正确
+        // 3. 表名   : MySQL 的表名的大小写规则依赖服务器的操作系统,若必要,开发者可通过 ArmyKey.TABLE_NAME_MODE 控制大小写
+        // 4. 表别名 : MySQL 的表别名的大小写规则依赖服务器的操作系统,但由于表别名只是语句内引用,并不返回客户端,故此算法正确
         final int length = identifier.length();
         if (length == 0) {
             return IdentifierMode.ERROR;
