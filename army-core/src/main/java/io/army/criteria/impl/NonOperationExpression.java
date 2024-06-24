@@ -568,7 +568,8 @@ abstract class NonOperationExpression implements ArmyExpression {
 
         @Override
         public <Z> MappingType compatibleFor(DataType dataType, Class<Z> targetType) throws NoMatchMappingException {
-            throw new UnsupportedOperationException("bug,never here");
+            // always return this
+            return this;
         }
 
         @Override
