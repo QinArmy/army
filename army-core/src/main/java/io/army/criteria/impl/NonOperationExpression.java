@@ -25,7 +25,7 @@ import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -543,7 +543,7 @@ abstract class NonOperationExpression implements ArmyExpression {
      *
      * @see NullWord
      */
-    private static final class NullType extends _ArmyNoInjectionMapping {
+    private static final class NullType extends MappingType {
 
 
         private final static NullType INSTANCE = new NullType();
@@ -564,6 +564,11 @@ abstract class NonOperationExpression implements ArmyExpression {
         @Override
         public boolean isSameType(MappingType type) {
             return type instanceof NullType;
+        }
+
+        @Override
+        public <Z> MappingType compatibleFor(DataType dataType, Class<Z> targetType) throws NoMatchMappingException {
+            throw new UnsupportedOperationException("bug,never here");
         }
 
         @Override
