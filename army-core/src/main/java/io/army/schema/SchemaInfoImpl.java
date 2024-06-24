@@ -20,15 +20,13 @@ import io.army.util._Collections;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 final class SchemaInfoImpl implements SchemaInfo {
 
     static SchemaInfoImpl create(@Nullable String catalog, @Nullable String schema,
-                                 Map<String, TableInfo.Builder> builderMap,
-                                 List<Map<String, Object>> userDefinedTypeList) {
+                                 Map<String, TableInfo.Builder> builderMap) {
 
         final Map<String, TableInfo> tableMap = _Collections.hashMap(builderMap.size());
         for (TableInfo.Builder builder : builderMap.values()) {
@@ -37,7 +35,7 @@ final class SchemaInfoImpl implements SchemaInfo {
                 throw new IllegalArgumentException("builderMap error.");
             }
         }
-        return new SchemaInfoImpl(catalog, schema, tableMap, userDefinedTypeList);
+        return new SchemaInfoImpl(catalog, schema, tableMap);
     }
 
 
@@ -48,15 +46,10 @@ final class SchemaInfoImpl implements SchemaInfo {
     private final Map<String, TableInfo> builderMap;
 
 
-    private final List<Map<String, Object>> userDefinedTypeList;
-
-
-    private SchemaInfoImpl(@Nullable String catalog, @Nullable String schema, Map<String, TableInfo> tableMap,
-                           List<Map<String, Object>> userDefinedTypeList) {
+    private SchemaInfoImpl(@Nullable String catalog, @Nullable String schema, Map<String, TableInfo> tableMap) {
         this.catalog = catalog;
         this.schema = schema;
         this.builderMap = Collections.unmodifiableMap(tableMap);
-        this.userDefinedTypeList = _Collections.asUnmodifiableList(userDefinedTypeList);
     }
 
 
@@ -73,11 +66,6 @@ final class SchemaInfoImpl implements SchemaInfo {
     @Override
     public Map<String, TableInfo> tableMap() {
         return this.builderMap;
-    }
-
-    @Override
-    public List<Map<String, Object>> userDefinedTypeList() {
-        return this.userDefinedTypeList;
     }
 
 

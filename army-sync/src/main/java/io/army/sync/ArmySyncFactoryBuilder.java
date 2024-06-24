@@ -181,7 +181,7 @@ final class ArmySyncFactoryBuilder
 
             //1.extract schema info.
             final SchemaInfo schemaInfo;
-            schemaInfo = executor.extractInfo(dialectParser(sessionFactory)::metaStmtGenerator);
+            schemaInfo = executor.extractInfo();
 
             //2.compare schema meta and schema info.
             final SchemaResult schemaResult;

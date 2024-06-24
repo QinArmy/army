@@ -16,21 +16,16 @@
 
 package io.army.jdbc;
 
-import io.army.dialect.MetaStmtGenerator;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncMetaExecutor;
 import io.army.util._Collections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;
 import java.sql.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 class JdbcMetaExecutor implements SyncMetaExecutor {
 
@@ -56,7 +51,7 @@ class JdbcMetaExecutor implements SyncMetaExecutor {
     }
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
+    // private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
 
     private final JdbcExecutorFactory factory;
 
@@ -73,7 +68,7 @@ class JdbcMetaExecutor implements SyncMetaExecutor {
 
 
     @Override
-    public final SchemaInfo extractInfo(final Supplier<MetaStmtGenerator> supplier) throws DataAccessException {
+    public final SchemaInfo extractInfo() throws DataAccessException {
         final Connection conn = this.conn;
 
         try {
@@ -93,47 +88,9 @@ class JdbcMetaExecutor implements SyncMetaExecutor {
                 appendIndex(catalog, schema, metaData, false, tableBuilder, indexBuilder);
             }
 
-            final List<Map<String, Object>> userDefinedTypeList;
-            switch (this.factory.serverDatabase) {
-                case PostgreSQL:
-                    userDefinedTypeList = extractUserDefinedTypeList(supplier);
-                    break;
-                case MySQL:
-                case H2:
-                default:
-                    userDefinedTypeList = Collections.emptyList();
-            }
-            return SchemaInfo.create(catalog, schema, tableBuilderMap, userDefinedTypeList);
+            return SchemaInfo.create(catalog, schema, tableBuilderMap);
         } catch (SQLException e) {
             throw JdbcExecutor.wrapException(e);
-        }
-    }
-
-
-    private List<Map<String, Object>> extractUserDefinedTypeList(final Supplier<MetaStmtGenerator> supplier)
-            throws SQLException {
-        try (Statement statement = this.conn.createStatement()) {
-
-            final String sql;
-            sql = supplier.get().queryUserDefinedTypeStmts();
-            LOG.info("execute query User-Defined data type sql : \n{}", sql);
-            try (ResultSet resultSet = statement.executeQuery(sql)) {
-
-                final ResultSetMetaData metaData;
-                metaData = resultSet.getMetaData();
-                final int columnCount = metaData.getColumnCount();
-                final List<Map<String, Object>> rowList = _Collections.arrayList();
-
-                Map<String, Object> row;
-                while (resultSet.next()) {
-                    row = _Collections.hashMap();
-                    for (int i = 1; i <= columnCount; i++) {
-                        row.put(metaData.getColumnLabel(i), resultSet.getObject(i));
-                    }
-                }
-
-                return rowList;
-            }
         }
     }
 

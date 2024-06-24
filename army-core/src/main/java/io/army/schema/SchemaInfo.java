@@ -17,7 +17,6 @@
 package io.army.schema;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 
 public interface SchemaInfo {
@@ -31,11 +30,10 @@ public interface SchemaInfo {
     Map<String, TableInfo> tableMap();
 
 
-    List<Map<String, Object>> userDefinedTypeList();
 
     static SchemaInfo create(@Nullable String catalog, @Nullable String schema,
-                             Map<String, TableInfo.Builder> builderMap, List<Map<String, Object>> userDefinedTypeList) {
-        return SchemaInfoImpl.create(catalog, schema, builderMap, userDefinedTypeList);
+                             Map<String, TableInfo.Builder> builderMap) {
+        return SchemaInfoImpl.create(catalog, schema, builderMap);
     }
 
 }

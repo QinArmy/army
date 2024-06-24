@@ -17,17 +17,15 @@
 package io.army.sync.executor;
 
 
-import io.army.dialect.MetaStmtGenerator;
 import io.army.schema.SchemaInfo;
 import io.army.session.DataAccessException;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 public interface SyncMetaExecutor extends AutoCloseable {
 
 
-    SchemaInfo extractInfo(Supplier<MetaStmtGenerator> supplier) throws DataAccessException;
+    SchemaInfo extractInfo() throws DataAccessException;
 
     void executeDdl(List<String> ddlList) throws DataAccessException;
 

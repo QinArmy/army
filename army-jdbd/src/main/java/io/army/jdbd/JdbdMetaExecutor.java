@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -255,7 +254,7 @@ final class JdbdMetaExecutor extends ExecutorSupport implements ReactiveMetaExec
             catalog = schemaMeta.catalog();
             schema = schemaMeta.schema();
         }
-        return SchemaInfo.create(catalog, schema, builderMap, Collections.emptyList()); // TODO Jdbd 应该提供一个 查询自定义类型的方法
+        return SchemaInfo.create(catalog, schema, builderMap); // TODO Jdbd 应该提供一个 查询自定义类型的方法
     }
 
 

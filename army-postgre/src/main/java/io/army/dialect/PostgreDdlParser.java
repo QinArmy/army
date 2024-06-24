@@ -112,6 +112,9 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
      */
     @Override
     public void dropTable(final List<TableMeta<?>> tableList, final List<String> sqlList) {
+        if (tableList.isEmpty()) {
+            return;
+        }
         final StringBuilder builder = new StringBuilder();
         dropTableIfExists(builder);
         tableNameList(tableList, builder);
@@ -131,10 +134,14 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
      */
     @Override
     public void addColumn(final List<FieldMeta<?>> fieldList, final List<String> sqlList) {
+        final int listSize = fieldList.size();
+        if (listSize == 0) {
+            return;
+        }
+
         final StringBuilder builder = new StringBuilder();
         alterTable(true, builder);
 
-        final int listSize = fieldList.size();
         FieldMeta<?> field;
         TableMeta<?> table = null;
         for (int i = 0; i < listSize; i++) {
@@ -162,6 +169,15 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
         }
         sqlList.add(builder.toString());
+
+
+        // outer comment
+        for (int i = 0; i < listSize; i++) {
+            builder.setLength(0);
+            columnOuterComment(fieldList.get(i), builder);
+            sqlList.add(builder.toString());
+        }
+
     }
 
 
@@ -170,10 +186,17 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
      */
     @Override
     public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+        final int listSize = resultList.size();
+        if (listSize == 0) {
+            return;
+        }
+
         final StringBuilder builder = new StringBuilder();
         alterTable(true, builder);
 
-        final int listSize = resultList.size();
+        int alterColumnStartIndex;
+        alterColumnStartIndex = builder.length();
+
         _FieldResult result;
         FieldMeta<?> field;
         TableMeta<?> table = null;
@@ -184,6 +207,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
             if (i == 0) {
                 table = field.tableMeta();
                 tableName(table, builder);
+                alterColumnStartIndex = builder.length(); // update  alterColumnStartIndex
             } else if (field.tableMeta() != table) {
                 // no bug,never here
                 throw new IllegalArgumentException();
@@ -252,16 +276,16 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
         } // result loop
 
-        sqlList.add(builder.toString());
-
+        if (builder.length() > alterColumnStartIndex) {
+            sqlList.add(builder.toString());
+        }
 
         // column comment
         for (int i = 0; i < listSize; i++) {
             result = resultList.get(i);
             if (result.containComment()) {
-                field = result.field();
                 builder.setLength(0);
-                columnOuterComment(field, builder);
+                columnOuterComment(result.field(), builder);
                 sqlList.add(builder.toString());
             }
         }
@@ -274,9 +298,12 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
      */
     @Override
     public <T> void createIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
-        final StringBuilder builder = new StringBuilder();
-
         final int nameListSize = indexNameList.size();
+        if (nameListSize == 0) {
+            return;
+        }
+
+        final StringBuilder builder = new StringBuilder();
 
         String name;
         for (IndexMeta<T> index : table.indexList()) {
@@ -301,6 +328,10 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
      */
     @Override
     public <T> void dropIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
+        final int nameListSize = indexNameList.size();
+        if (nameListSize == 0) {
+            return;
+        }
         final StringBuilder builder = new StringBuilder();
         builder.append("DROP")
                 .append(_Constant.SPACE)
@@ -309,7 +340,6 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                 .append("IF")
                 .append(_Constant.SPACE_EXISTS);
 
-        final int nameListSize = indexNameList.size();
         for (int i = 0; i < nameListSize; i++) {
             if (i > 0) {
                 builder.append(_Constant.COMMA);
