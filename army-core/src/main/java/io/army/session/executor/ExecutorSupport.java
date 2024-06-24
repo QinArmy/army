@@ -29,6 +29,7 @@ import io.army.env.SqlLogMode;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.NullType;
 import io.army.meta.MetaException;
 import io.army.meta.TypeMeta;
 import io.army.session.*;
@@ -145,7 +146,7 @@ public abstract class ExecutorSupport {
             }
         } else if (accessor == RECORD_PSEUDO_ACCESSOR || accessor == ObjectAccessorFactory.MAP_ACCESSOR) {
             compatibleType = type;
-        } else if (accessor.isWritable(fieldName, type.javaType())) {
+        } else if (type == NullType.INSTANCE || accessor.isWritable(fieldName, type.javaType())) {
             compatibleType = type;
         } else {
             compatibleType = type.compatibleFor(dataType, accessor.getJavaType(fieldName));
