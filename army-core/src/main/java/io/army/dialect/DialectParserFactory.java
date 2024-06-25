@@ -36,10 +36,10 @@ public abstract class DialectParserFactory {
         final String className;
         switch (database) {
             case MySQL:
-                className = "io.army.dialect.mysql.MySQLDialectParserFactory";
+                className = "io.army.dialect._MySQLParserFactory";
                 break;
             case PostgreSQL:
-                className = "io.army.dialect._PostgreDialectFactory";
+                className = "io.army.dialect._PostgreParserFactory";
                 break;
             case SQLite:
                 className = "io.army.dialect.sqlite.SQLiteParserFactory";

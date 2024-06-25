@@ -18,7 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLCastType;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.MySQLDialect;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;

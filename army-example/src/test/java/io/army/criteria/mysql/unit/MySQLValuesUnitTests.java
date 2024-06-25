@@ -23,7 +23,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.mysql.MySQLValues;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.util.Decimals;
 import org.slf4j.Logger;

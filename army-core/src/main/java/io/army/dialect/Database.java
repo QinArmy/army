@@ -18,7 +18,6 @@ package io.army.dialect;
 
 
 import io.army.dialect.h2.H2Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.oracle.OracleDialect;
 import io.army.dialect.sqlite.SQLiteDialect;
 import io.army.meta.ServerMeta;

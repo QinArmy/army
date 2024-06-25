@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package io.army.dialect.mysql;
+package io.army.dialect;
 
-import io.army.dialect._Constant;
-import io.army.dialect._Literals;
 import io.army.env.EscapeMode;
 import io.army.util.HexUtils;
 

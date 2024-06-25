@@ -23,7 +23,7 @@ import io.army.criteria.standard.StandardCtes;
 import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.MySQLDialect;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;

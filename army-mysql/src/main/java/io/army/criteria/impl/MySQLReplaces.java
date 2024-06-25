@@ -27,7 +27,7 @@ import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.MySQLDialect;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;

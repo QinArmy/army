@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package io.army.dialect.mysql;
+package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.*;
 import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;

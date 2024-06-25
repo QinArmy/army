@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.dialect.mysql;
-
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnv;
-import io.army.dialect.DialectParser;
-import io.army.dialect.DialectParserFactory;
+package io.army.dialect;
 
 @SuppressWarnings("unused")
 public abstract class _MySQLParsers extends DialectParserFactory {

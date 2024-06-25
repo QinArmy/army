@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.army.dialect.mysql;
+package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
@@ -24,7 +24,6 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLSet;
-import io.army.dialect.*;
 import io.army.env.EscapeMode;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;

@@ -22,7 +22,7 @@ import io.army.criteria.standard.StandardCtes;
 import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.MySQLDialect;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;

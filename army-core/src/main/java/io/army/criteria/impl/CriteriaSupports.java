@@ -21,7 +21,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;

@@ -18,11 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._DerivedTable;
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.*;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.JsonPathType;

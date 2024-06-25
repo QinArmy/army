@@ -20,7 +20,6 @@ package io.army.dialect;
 import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
 import io.army.criteria.Visible;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
 import io.army.generator.FieldGenerator;

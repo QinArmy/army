@@ -21,9 +21,9 @@ package io.army.dialect;
  * <p>This class is used by {@link DialectParserFactory#createDialectParser(DialectEnv)} by reflection.
  */
 @SuppressWarnings("unused")
-public abstract class _PostgreDialectFactory {
+public abstract class _PostgreParserFactory {
 
-    private _PostgreDialectFactory() {
+    private _PostgreParserFactory() {
         throw new UnsupportedOperationException();
     }
 

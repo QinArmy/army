@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package io.army.dialect.mysql;
+package io.army.dialect;
 
-import io.army.dialect._Constant;
-import io.army.dialect._DdlParser;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;

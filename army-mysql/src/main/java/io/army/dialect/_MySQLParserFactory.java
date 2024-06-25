@@ -14,5 +14,19 @@
  * limitations under the License.
  */
 
-@io.army.lang.NonNullApi
-package io.army.dialect.mysql;
+package io.army.dialect;
+
+public abstract class _MySQLParserFactory {
+
+    private _MySQLParserFactory() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static DialectParser dialectParser(final DialectEnv environment) {
+        final MySQLDialect dialect;
+        dialect = (MySQLDialect) DialectParserFactory.targetDialect(environment, Database.MySQL);
+        return MySQLDialectParser.create(environment, dialect);
+    }
+
+
+}

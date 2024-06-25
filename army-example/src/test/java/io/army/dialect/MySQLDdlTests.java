@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package io.army.dialect.mysql;
+package io.army.dialect;
 
 
-import io.army.dialect.Database;
-import io.army.dialect._MockDialects;
 import io.army.example.pill.domain.PillUser_;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
