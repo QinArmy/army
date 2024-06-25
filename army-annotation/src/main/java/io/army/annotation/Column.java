@@ -27,7 +27,8 @@ import java.time.LocalTime;
 import static java.lang.annotation.ElementType.FIELD;
 
 /**
-*/
+ *
+ */
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -38,14 +39,33 @@ public @interface Column {
      *
      * <p>
      * see {@code io.army.util.StringUtils#camelToLowerCase(String)}
-     *
      */
     String name() default "";
 
-    boolean nullable() default true;
+    /**
+     * <p>
+     * blow,don't specify comment of column.
+     * <ol>
+     *     <li>{@code TableMeta#RESERVED_PROPS}</li>
+     *     <li>{@code TableMeta#discriminator()} </li>
+     * </ol>
+     */
+    String comment() default "";
 
-    @Deprecated
-    boolean alwaysNullable() default false;
+    /**
+     * <p>Following fields always ignore this method,because they always not-null:
+     * <ul>
+     *     <li>id</li>
+     *     <li>createTime</li>
+     *     <li>updateTime</li>
+     *     <li>version</li>
+     *     <li>visible</li>
+     *     <li>discriminator field of parent table</li>
+     * </ul>
+     *
+     * @see Table#allColumnNotNull()
+     */
+    boolean notNull() default false;
 
 
     /**
@@ -73,36 +93,25 @@ public @interface Column {
     /**
      * <p>
      * blow,allow to don't specify default value of column.
-     *     <ol>
-     *         <li>{@code TableMeta#RESERVED_PROPS}</li>
-     *         <li>{@code TableMeta#discriminator()} </li>
-     *         <li>mapping field java type is {@link String},because army specify default {@code ''}</li>
-     *         <li>mapping field java type is {@link Long},because army specify default 0</li>
-     *         <li>mapping field java type is {@link Integer},because army specify default 0</li>
-     *         <li>mapping field java type is {@link java.math.BigDecimal} ,because army specify default 0.00 or 0</li>
-     *         <li>mapping field java type is {@link java.math.BigInteger},because army specify default 0</li>
-     *         <li>mapping field java type is {@code io.army.struct.CodeEnum},because army specify default 0</li>
-     *         <li>mapping field java type is {@link InputStream},because can't specify</li>
-     *         <li>mapping field java type is {@code byte[]},because can't specify</li>
-     *         <li>mapping field java type is {@link Byte},because army specify default 0</li>
-     *         <li>mapping field java type is {@link Short},because army specify default 0</li>
-     *         <li>mapping field java type is {@link Double},because army specify default 0</li>
-     *         <li>mapping field java type is {@link Float},because army specify default 0</li>
-     *         <li>mapping field java type is {@link LocalTime},because army specify default {@link LocalTime#MIDNIGHT}</li>
-     *     </ol>
-     *
+     * <ol>
+     *     <li>{@code TableMeta#RESERVED_PROPS}</li>
+     *     <li>{@code TableMeta#discriminator()} </li>
+     *     <li>mapping field java type is {@link String},because army specify default {@code ''}</li>
+     *     <li>mapping field java type is {@link Long},because army specify default 0</li>
+     *     <li>mapping field java type is {@link Integer},because army specify default 0</li>
+     *     <li>mapping field java type is {@link java.math.BigDecimal} ,because army specify default 0.00 or 0</li>
+     *     <li>mapping field java type is {@link java.math.BigInteger},because army specify default 0</li>
+     *     <li>mapping field java type is {@code io.army.struct.CodeEnum},because army specify default 0</li>
+     *     <li>mapping field java type is {@link InputStream},because can't specify</li>
+     *     <li>mapping field java type is {@code byte[]},because can't specify</li>
+     *     <li>mapping field java type is {@link Byte},because army specify default 0</li>
+     *     <li>mapping field java type is {@link Short},because army specify default 0</li>
+     *     <li>mapping field java type is {@link Double},because army specify default 0</li>
+     *     <li>mapping field java type is {@link Float},because army specify default 0</li>
+     *     <li>mapping field java type is {@link LocalTime},because army specify default {@link LocalTime#MIDNIGHT}</li>
+     * </ol>
      */
     String defaultValue() default "";
 
-    /**
-     * <p>
-     * blow,don't specify comment of column.
-     *     <ol>
-     *         <li>{@code TableMeta#RESERVED_PROPS}</li>
-     *         <li>{@code TableMeta#discriminator()} </li>
-     *     </ol>
-     *
-     */
-    String comment() default "";
 
 }

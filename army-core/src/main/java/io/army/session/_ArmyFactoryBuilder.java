@@ -30,9 +30,9 @@ import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
+import io.army.schema.FieldResult;
 import io.army.schema.SchemaResult;
 import io.army.schema.TableResult;
-import io.army.schema._FieldResult;
 import io.army.session.executor.ExecutorFactoryProvider;
 import io.army.util.HexUtils;
 import io.army.util._Collections;
@@ -509,8 +509,8 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
                             .append(field)
                             .append(" not exists.");
                 }
-                for (_FieldResult field : tableResult.changeFieldList()) {
-                    if (field.containSqlType() || field.containDefault() || field.containNullable()) {
+                for (FieldResult field : tableResult.changeFieldList()) {
+                    if (field.containSqlType() || field.containDefault() || field.containNotNull()) {
                         builder.append("\n\t")
                                 .append(field)
                                 .append(" not match.");

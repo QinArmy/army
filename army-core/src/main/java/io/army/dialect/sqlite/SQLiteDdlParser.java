@@ -19,7 +19,7 @@ package io.army.dialect.sqlite;
 import io.army.dialect._Constant;
 import io.army.dialect._DdlParser;
 import io.army.meta.*;
-import io.army.schema._FieldResult;
+import io.army.schema.FieldResult;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
 import io.army.util._Exceptions;
@@ -160,7 +160,7 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
      * @see <a href="https://www.sqlite.org/lang_altertable.html">ALTER TABLE</a>
      */
     @Override
-    protected void doModifyColumn(_FieldResult result, StringBuilder builder) {
+    protected void doModifyColumn(FieldResult result, StringBuilder builder) {
         // no bug , never here
         throw new UnsupportedOperationException("SQLite don't support modify column");
     }

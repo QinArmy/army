@@ -20,7 +20,7 @@ import io.army.annotation.GeneratorType;
 import io.army.mapping.StringType;
 import io.army.mapping.TextType;
 import io.army.meta.*;
-import io.army.schema._FieldResult;
+import io.army.schema.FieldResult;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
@@ -61,7 +61,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
             if (!index.isUnique()) {
                 continue;
             }
-            builder.append(_Constant.SPACE)
+            builder.append(_Constant.COMMA)
                     .append("\n\t");
             if (index.isPrimaryKey()) {
                 builder.append("PRIMARY")
@@ -185,7 +185,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
      * @see <a href="https://www.postgresql.org/docs/current/sql-altertable.html">ALTER TABLE — change the definition of a table</a>
      */
     @Override
-    public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+    public void modifyColumn(final List<FieldResult> resultList, final List<String> sqlList) {
         final int listSize = resultList.size();
         if (listSize == 0) {
             return;
@@ -197,7 +197,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         int alterColumnStartIndex;
         alterColumnStartIndex = builder.length();
 
-        _FieldResult result;
+        FieldResult result;
         FieldMeta<?> field;
         TableMeta<?> table = null;
         String safeColumnName;
@@ -237,17 +237,12 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                 effectiveCount++;
             }
 
-            if (result.containNullable()) {
+            if (result.containNotNull()) {
                 if (effectiveCount > 0) {
                     builder.append(_Constant.COMMA)
                             .append(builder, offset, end);
                 }
-                if (field.nullable()) {
-                    builder.append("DROP");
-                } else {
-                    builder.append("SET");
-                }
-                builder.append(_Constant.SPACE_NOT_NULL);
+                alterColumnNullConstraint(field, builder);
                 effectiveCount++;
             }
 
@@ -256,14 +251,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                     builder.append(_Constant.COMMA)
                             .append(builder, offset, end);
                 }
-                if (_StringUtils.hasText(field.defaultValue())) {
-                    builder.append("SET");
-                    columnDefault(field, builder);
-                } else {
-                    builder.append("DROP")
-                            .append(_Constant.SPACE_DEFAULT);
-
-                }
+                alterColumnDefault(field, builder);
                 effectiveCount++;
             }
 
@@ -292,6 +280,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     }
+
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-createindex.html">CREATE INDEX — define a new index</a>
@@ -361,7 +350,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     @Override
-    protected void doModifyColumn(final _FieldResult result, final StringBuilder builder) {
+    protected void doModifyColumn(final FieldResult result, final StringBuilder builder) {
         appendSpaceIfNeed(builder);
 
         final FieldMeta<?> field;
@@ -387,19 +376,15 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
             count++;
         }
 
-        if (result.containNullable()) {
+        if (result.containNotNull()) {
             if (count > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
             builder.append("\n\t")
                     .append(ALTER_COLUMN_SPACE)
                     .append(safeColumnName);
-            if (field.nullable()) {
-                builder.append(" DROP");
-            } else {
-                builder.append(_Constant.SPACE_SET);
-            }
-            builder.append(_Constant.SPACE_NOT_NULL);
+
+            alterColumnNullConstraint(field, builder);
 
             count++;
         }

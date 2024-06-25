@@ -161,7 +161,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
 
     final MappingType mappingType;
 
-    final boolean nullable;
+    final boolean notNull;
 
     final boolean insertable;
 
@@ -218,9 +218,10 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
             }
             this.updateMode = FieldMetaUtils.columnUpdatable(this, column, isDiscriminator);
             this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
-            this.nullable = !_MetaBridge.RESERVED_FIELDS.contains(this.fieldName)
-                    && !isDiscriminator
-                    && column.nullable();
+            this.notNull = table.allColumnNotNull()
+                    || _MetaBridge.RESERVED_FIELDS.contains(this.fieldName)
+                    || isDiscriminator
+                    || column.notNull();
             this.defaultValue = column.defaultValue();
 
             this.codec = field.getAnnotation(Codec.class) != null;
@@ -281,8 +282,8 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
     }
 
     @Override
-    public final boolean nullable() {
-        return this.nullable;
+    public final boolean notNull() {
+        return this.notNull;
     }
 
 

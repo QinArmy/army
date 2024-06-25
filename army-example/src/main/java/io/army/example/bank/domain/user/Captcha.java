@@ -36,17 +36,17 @@ public class Captcha extends Domain {
     @Column
     private LocalDateTime updateTime;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE
             , comment = "partner user id,@see table u_user,0 representing bank self")
     private Long partnerId;
 
-    @Column(precision = 5, nullable = false, comment = "provide to terminate user captcha")
+    @Column(precision = 5, notNull = true, comment = "provide to terminate user captcha")
     private String captcha;
 
-    @Column(nullable = false, comment = "deadline,invalid after this")
+    @Column(notNull = true, comment = "deadline,invalid after this")
     private LocalDateTime deadline;
 
-    @Column(precision = 30, nullable = false, updateMode = UpdateMode.IMMUTABLE
+    @Column(precision = 30, notNull = true, updateMode = UpdateMode.IMMUTABLE
             , comment = "request number that provide to partner")
     private String requestNo;
 

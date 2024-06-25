@@ -30,10 +30,10 @@ public class BankPerson extends BankUser<BankPerson> {
     @Column(updateMode = UpdateMode.IMMUTABLE, comment = "the user type that user form.")
     private BankUserType fromPartnerType;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user birthday")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "user birthday")
     private LocalDate birthday;
 
-    @Column(nullable = false, precision = 20, comment = "user phone number")
+    @Column(notNull = true, precision = 20, comment = "user phone number")
     private String phone;
 
 

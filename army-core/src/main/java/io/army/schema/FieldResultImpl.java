@@ -18,7 +18,7 @@ package io.army.schema;
 
 import io.army.meta.FieldMeta;
 
-final class FieldResultImpl implements _FieldResult {
+final class FieldResultImpl implements FieldResult {
 
     static FieldResultBuilder builder() {
         return new FieldResultBuilder();
@@ -30,7 +30,7 @@ final class FieldResultImpl implements _FieldResult {
 
     private final boolean defaultExp;
 
-    private final Boolean nullable;
+    private final boolean notNull;
 
     private final boolean comment;
 
@@ -38,7 +38,7 @@ final class FieldResultImpl implements _FieldResult {
         this.field = builder.field;
         this.sqlType = builder.sqlType;
         this.defaultExp = builder.defaultExp;
-        this.nullable = builder.nullable;
+        this.notNull = builder.notNull;
 
         this.comment = builder.comment;
     }
@@ -59,8 +59,8 @@ final class FieldResultImpl implements _FieldResult {
     }
 
     @Override
-    public boolean containNullable() {
-        return this.nullable;
+    public boolean containNotNull() {
+        return this.notNull;
     }
 
     @Override
@@ -75,13 +75,13 @@ final class FieldResultImpl implements _FieldResult {
         sb.append("field=").append(field);
         sb.append(", sqlType=").append(sqlType);
         sb.append(", defaultExp=").append(defaultExp);
-        sb.append(", nullable=").append(nullable);
+        sb.append(", nullable=").append(notNull);
         sb.append(", comment=").append(comment);
         sb.append('}');
         return sb.toString();
     }
 
-    private static final class FieldResultBuilder implements _FieldResult.Builder {
+    private static final class FieldResultBuilder implements FieldResult.Builder {
 
         private FieldMeta<?> field;
 
@@ -89,7 +89,7 @@ final class FieldResultImpl implements _FieldResult {
 
         private boolean defaultExp;
 
-        private Boolean nullable;
+        private boolean notNull;
 
         private boolean comment;
 
@@ -113,8 +113,8 @@ final class FieldResultImpl implements _FieldResult {
         }
 
         @Override
-        public Builder nullable(boolean nullable) {
-            this.nullable = nullable;
+        public Builder notNull(boolean notNull) {
+            this.notNull = notNull;
             return this;
         }
 
@@ -126,17 +126,17 @@ final class FieldResultImpl implements _FieldResult {
 
         @Override
         public boolean hasDifference() {
-            return this.sqlType || this.defaultExp || this.nullable || this.comment;
+            return this.sqlType || this.defaultExp || this.notNull || this.comment;
         }
 
         @Override
         public void clear() {
             this.field = null;
-            this.sqlType = this.defaultExp = this.nullable = this.comment = false;
+            this.sqlType = this.defaultExp = this.notNull = this.comment = false;
         }
 
         @Override
-        public _FieldResult build() {
+        public FieldResult build() {
             return new FieldResultImpl(this);
         }
 
@@ -147,7 +147,7 @@ final class FieldResultImpl implements _FieldResult {
             sb.append("field=").append(field);
             sb.append(", sqlType=").append(sqlType);
             sb.append(", defaultExp=").append(defaultExp);
-            sb.append(", nullable=").append(nullable);
+            sb.append(", nullable=").append(notNull);
             sb.append(", comment=").append(comment);
             sb.append('}');
             return sb.toString();

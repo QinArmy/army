@@ -41,34 +41,34 @@ public class PostgreFullType extends BaseVersionDomain<PostgreFullType> {
     @Column(defaultValue = "0", comment = "my bigint")
     private Long myBigInt;
 
-    @Column(nullable = false, defaultValue = "0.0", precision = 14, scale = 2, comment = "my decimal")
+    @Column(notNull = true, defaultValue = "0.0", precision = 14, scale = 2, comment = "my decimal")
     private BigDecimal myDecimal;
 
-    @Column(nullable = false, defaultValue = "CURRENT_DATE", comment = "my date")
+    @Column(notNull = true, defaultValue = "CURRENT_DATE", comment = "my date")
     private LocalDate myDate;
 
-    @Column(nullable = false, defaultValue = "LOCALTIME", comment = "my time")
+    @Column(notNull = true, defaultValue = "LOCALTIME", comment = "my time")
     private LocalTime myTime;
 
-    @Column(nullable = false, defaultValue = "LOCALTIME(6)", scale = 6, comment = "my time6")
+    @Column(notNull = true, defaultValue = "LOCALTIME(6)", scale = 6, comment = "my time6")
     private LocalTime myTime6;
 
-    @Column(nullable = false, defaultValue = "LOCALTIMESTAMP", comment = "my date time")
+    @Column(notNull = true, defaultValue = "LOCALTIMESTAMP", comment = "my date time")
     private LocalDateTime myDateTime;
 
-    @Column(nullable = false, defaultValue = "LOCALTIMESTAMP(6)", scale = 6, comment = "my date time")
+    @Column(notNull = true, defaultValue = "LOCALTIMESTAMP(6)", scale = 6, comment = "my date time")
     private LocalDateTime myDateTime6;
 
-    @Column(nullable = false, defaultValue = "CURRENT_TIME", comment = "my offset time")
+    @Column(notNull = true, defaultValue = "CURRENT_TIME", comment = "my offset time")
     private OffsetTime myOffsetTime;
 
-    @Column(nullable = false, defaultValue = "CURRENT_TIME(6)", scale = 6, comment = "my offset time")
+    @Column(notNull = true, defaultValue = "CURRENT_TIME(6)", scale = 6, comment = "my offset time")
     private OffsetTime myOffsetTime6;
 
-    @Column(nullable = false, defaultValue = "CURRENT_TIMESTAMP", comment = "my offset date time")
+    @Column(notNull = true, defaultValue = "CURRENT_TIMESTAMP", comment = "my offset date time")
     private OffsetDateTime myOffsetDateTime;
 
-    @Column(nullable = false, defaultValue = "CURRENT_TIMESTAMP(6)", scale = 6, comment = "my offset date time")
+    @Column(notNull = true, defaultValue = "CURRENT_TIMESTAMP(6)", scale = 6, comment = "my offset date time")
     private OffsetDateTime myOffsetDateTime6;
 
 

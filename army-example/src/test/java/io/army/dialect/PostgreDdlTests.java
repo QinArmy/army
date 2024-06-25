@@ -25,7 +25,7 @@ import io.army.meta.IndexMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.schema._FieldResult;
+import io.army.schema.FieldResult;
 import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,17 +98,17 @@ public class PostgreDdlTests {
     @Test
     public void modifyColumn() {
 
-        final List<_FieldResult> resultList = _Collections.arrayList();
-        _FieldResult result;
+        final List<FieldResult> resultList = _Collections.arrayList();
+        FieldResult result;
         for (FieldMeta<PostgreFullType> field : PostgreFullType_.T.fieldList()) {
             if (_MetaBridge.isReserved(field.fieldName())) {
                 continue;
             }
-            result = _FieldResult.builder()
+            result = FieldResult.builder()
                     .field(field)
                     .defaultExp(true)
                     .sqlType(true)
-                    .nullable(true)
+                    .notNull(true)
                     .comment(true)
                     .build();
 

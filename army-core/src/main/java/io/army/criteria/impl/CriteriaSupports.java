@@ -724,7 +724,7 @@ abstract class CriteriaSupports {
                 throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
             } else if (field.updateMode() == UpdateMode.IMMUTABLE) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
-            } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
+            } else if (field.notNull() && ((ArmyExpression) fieldPair.right).isNullValue()) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             } else {
                 this.fieldConsumer.accept(fieldPair);

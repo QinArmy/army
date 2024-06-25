@@ -19,8 +19,8 @@ package io.army.dialect;
 
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.schema.FieldResult;
 import io.army.schema.SchemaResult;
-import io.army.schema._FieldResult;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ interface DdlParser {
 
     void addColumn(List<FieldMeta<?>> fieldList, List<String> sqlList);
 
-    void modifyColumn(List<_FieldResult> resultList, List<String> sqlList);
+    void modifyColumn(List<FieldResult> resultList, List<String> sqlList);
 
     <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
 

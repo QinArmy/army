@@ -23,7 +23,7 @@ import io.army.example.pill.domain.PillUser_;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
-import io.army.schema._FieldResult;
+import io.army.schema.FieldResult;
 import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +106,7 @@ public class MySQLDdlTests {
             }
             ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
 
-            List<_FieldResult> resultList = _Collections.arrayList();
+            List<FieldResult> resultList = _Collections.arrayList();
             resultList.add(new MockFieldResult(PillUser_.nickName, false, true, false, false));
 
             resultList.add(new MockFieldResult(PillUser_.identityId, true, true, false, true));
@@ -230,7 +230,7 @@ public class MySQLDdlTests {
     }
 
 
-    private static final class MockFieldResult implements _FieldResult {
+    private static final class MockFieldResult implements FieldResult {
 
         private final FieldMeta<?> field;
 
@@ -238,15 +238,15 @@ public class MySQLDdlTests {
 
         private final boolean defaultValue;
 
-        private final boolean nullable;
+        private final boolean notNull;
 
         private final boolean comment;
 
-        private MockFieldResult(FieldMeta<?> field, boolean sqlType, boolean defaultValue, boolean nullable, boolean comment) {
+        private MockFieldResult(FieldMeta<?> field, boolean sqlType, boolean defaultValue, boolean notNull, boolean comment) {
             this.field = field;
             this.sqlType = sqlType;
             this.defaultValue = defaultValue;
-            this.nullable = nullable;
+            this.notNull = notNull;
             this.comment = comment;
         }
 
@@ -266,8 +266,8 @@ public class MySQLDdlTests {
         }
 
         @Override
-        public boolean containNullable() {
-            return this.nullable;
+        public boolean containNotNull() {
+            return this.notNull;
         }
 
         @Override

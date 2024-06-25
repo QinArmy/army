@@ -21,7 +21,7 @@ import io.army.meta.FieldMeta;
 /**
  * @see TableResult
  */
-public interface _FieldResult {
+public interface FieldResult {
 
     FieldMeta<?> field();
 
@@ -29,7 +29,7 @@ public interface _FieldResult {
 
     boolean containDefault();
 
-    boolean containNullable();
+    boolean containNotNull();
 
     boolean containComment();
 
@@ -45,7 +45,7 @@ public interface _FieldResult {
 
         Builder defaultExp(boolean defaultExp);
 
-        Builder nullable(boolean nullable);
+        Builder notNull(boolean notNull);
 
         Builder comment(boolean comment);
 
@@ -53,7 +53,7 @@ public interface _FieldResult {
 
         void clear();
 
-        _FieldResult build();
+        FieldResult build();
 
     }
 

@@ -76,6 +76,8 @@ public @interface Table {
      */
     boolean immutable() default false;
 
+    boolean allColumnNotNull() default false;
+
 
     /**
      * (Optional) The option clause of create table

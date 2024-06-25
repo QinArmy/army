@@ -35,7 +35,7 @@ final class ColumnInfoImpl implements ColumnInfo {
 
     private final String defaultExp;
 
-    private final Boolean nullable;
+    private final Boolean notNull;
 
     private final String comment;
 
@@ -48,7 +48,7 @@ final class ColumnInfoImpl implements ColumnInfo {
         this.scale = builder.scale;
 
         this.defaultExp = builder.defaultExp;
-        this.nullable = builder.nullable;
+        this.notNull = builder.notNull;
         this.comment = builder.comment;
         this.autoincrement = builder.autoincrement;
     }
@@ -65,8 +65,8 @@ final class ColumnInfoImpl implements ColumnInfo {
     }
 
     @Override
-    public Boolean nullable() {
-        return this.nullable;
+    public Boolean notNull() {
+        return this.notNull;
     }
 
     @Override
@@ -103,7 +103,7 @@ final class ColumnInfoImpl implements ColumnInfo {
         sb.append(", precision=").append(precision);
         sb.append(", scale=").append(scale);
         sb.append(", defaultExp='").append(defaultExp).append('\'');
-        sb.append(", nullable=").append(nullable);
+        sb.append(", nullable=").append(notNull);
         sb.append(", comment='").append(comment).append('\'');
         sb.append(", autoincrement=").append(autoincrement);
         sb.append('}');
@@ -122,7 +122,7 @@ final class ColumnInfoImpl implements ColumnInfo {
 
         private String defaultExp;
 
-        private Boolean nullable;
+        private Boolean notNull;
 
         private String comment;
 
@@ -160,8 +160,8 @@ final class ColumnInfoImpl implements ColumnInfo {
         }
 
         @Override
-        public Builder nullable(@Nullable Boolean nullable) {
-            this.nullable = nullable;
+        public Builder notNull(@Nullable Boolean notNull) {
+            this.notNull = notNull;
             return this;
         }
 
@@ -188,7 +188,7 @@ final class ColumnInfoImpl implements ColumnInfo {
             this.scale = -1;
 
             this.defaultExp = null;
-            this.nullable = true;
+            this.notNull = true;
             this.comment = null;
             this.autoincrement = false;
 
@@ -203,7 +203,7 @@ final class ColumnInfoImpl implements ColumnInfo {
             sb.append(", precision=").append(precision);
             sb.append(", scale=").append(scale);
             sb.append(", defaultExp='").append(defaultExp).append('\'');
-            sb.append(", nullable=").append(nullable);
+            sb.append(", nullable=").append(notNull);
             sb.append(", comment='").append(comment).append('\'');
             sb.append(", autoincrement=").append(autoincrement);
             sb.append('}');

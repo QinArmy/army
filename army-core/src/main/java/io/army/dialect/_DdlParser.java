@@ -19,7 +19,7 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.mapping.TextType;
 import io.army.meta.*;
-import io.army.schema._FieldResult;
+import io.army.schema.FieldResult;
 import io.army.sqltype.DataType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -207,7 +207,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
 
     @Override
-    public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+    public void modifyColumn(final List<FieldResult> resultList, final List<String> sqlList) {
         final int size = resultList.size();
         if (size == 0) {
             return;
@@ -229,7 +229,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
         TableMeta<?> table = null;
         FieldMeta<?> field;
-        _FieldResult result;
+        FieldResult result;
 
         List<FieldMeta<?>> commentFieldList = null;
         for (int i = 0; i < size; i++) {
@@ -401,12 +401,10 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             this.dataType(field, dataType, builder);
         }
 
-        if (field.nullable()) {
-            builder.append(_Constant.SPACE_NULL);
-        } else {
-            builder.append(_Constant.SPACE_NOT_NULL);
+        if (field.notNull()) {
+            builder.append(_Constant.SPACE_NOT);
         }
-
+        builder.append(_Constant.SPACE_NULL);
         final String defaultValue = field.defaultValue();
         if (_StringUtils.hasText(defaultValue) && checkDefaultComplete(field, defaultValue)) {
             builder.append(" DEFAULT ")
@@ -465,7 +463,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
 
-    protected abstract void doModifyColumn(_FieldResult result, StringBuilder builder);
+    protected abstract void doModifyColumn(FieldResult result, StringBuilder builder);
 
 
     protected void checkEnclosing(final String text) {
@@ -836,11 +834,12 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
 
     final void columnNullConstraint(final FieldMeta<?> field, final StringBuilder builder) {
-        if (!field.nullable()) {
+        if (field.notNull()) {
             builder.append(_Constant.SPACE_NOT);
         }
         builder.append(_Constant.SPACE_NULL);
     }
+
 
     final void columnDefault(final FieldMeta<?> field, final StringBuilder builder) {
         final String defaultValue = field.defaultValue();
@@ -848,6 +847,27 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
             builder.append(_Constant.SPACE_DEFAULT)
                     .append(_Constant.SPACE)
                     .append(defaultValue);
+        }
+    }
+
+    final void alterColumnNullConstraint(final FieldMeta<?> field, final StringBuilder builder) {
+        if (field.notNull()) {
+            builder.append(_Constant.SPACE_SET);
+        } else {
+            builder.append(_Constant.SPACE)
+                    .append("DROP");
+        }
+        builder.append(_Constant.SPACE_NOT_NULL);
+    }
+
+    final void alterColumnDefault(final FieldMeta<?> field, final StringBuilder builder) {
+        if (_StringUtils.hasText(field.defaultValue())) {
+            builder.append(_Constant.SPACE_SET);
+            columnDefault(field, builder);
+        } else {
+            builder.append(_Constant.SPACE)
+                    .append("DROP")
+                    .append(_Constant.SPACE_DEFAULT);
         }
     }
 

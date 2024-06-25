@@ -23,13 +23,13 @@ import io.army.annotation.*;
 @DiscriminatorValue(RegionType.Constant.PROVINCE)
 public class ChinaProvince extends ChinaRegion<ChinaProvince> {
 
-    @Column(precision = 80, nullable = false, comment = "china provincial capital")
+    @Column(precision = 80, notNull = true, comment = "china provincial capital")
     private String provincialCapital;
 
-    @Column(precision = 80, nullable = false, defaultValue = "''", comment = "china provincial governor")
+    @Column(precision = 80, notNull = true, defaultValue = "''", comment = "china provincial governor")
     private String governor;
 
-    @Column(defaultValue = "0", nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "relation Id")
+    @Column(defaultValue = "0", notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "relation Id")
     private Long relationId;
 
 

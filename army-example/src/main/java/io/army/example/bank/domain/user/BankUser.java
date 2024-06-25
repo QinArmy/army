@@ -38,7 +38,7 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
     @Column
     private BankUserType userType;
 
-    @Column(nullable = false, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner user number")
+    @Column(notNull = true, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner user number")
     @Generator(value = SNOWFLAKE, params = {
             @Param(name = START_TIME, value = startTime)
             , @Param(name = DEPEND, value = "partnerUserId")})
@@ -47,16 +47,16 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
     @Column(precision = 50, comment = "user nick name")
     private String nickName;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user certificate table id")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "user certificate table id")
     private Long certificateId;
 
     @Column(updateMode = UpdateMode.ONLY_NULL, comment = "user register complete time")
     private LocalDateTime completeTime;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "partner user id for person user,0 representing bank self.")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "partner user id for person user,0 representing bank self.")
     private Long partnerUserId;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "r_register_record primary key")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "r_register_record primary key")
     private Long registerRecordId;
 
 

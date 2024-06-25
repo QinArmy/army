@@ -40,13 +40,13 @@ public class Certificate<T extends Certificate<T>> extends BaseVersionDomain<T> 
     private Long id;
 
 
-    @Column(nullable = false)
+    @Column(notNull = false)
     private CertificateType certificateType;
 
-    @Column(precision = 30, nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user certificate number.")
+    @Column(precision = 30, notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "user certificate number.")
     private String certificateNo;
 
-    @Column(precision = 50, nullable = false, comment = "person or enterprise name")
+    @Column(precision = 50, notNull = true, comment = "person or enterprise name")
     private String subjectName;
 
 

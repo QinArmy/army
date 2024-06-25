@@ -101,13 +101,13 @@ abstract class ArmySchemaComparer implements SchemaComparer {
     private void compareColumns(TableInfo tableInfo, TableMeta<?> table, TableResult.Builder tableBuilder) {
 
         final Map<String, ColumnInfo> columnMap = tableInfo.columnMap();
-        final _FieldResult.Builder builder = _FieldResult.builder();
+        final FieldResult.Builder builder = FieldResult.builder();
         final ServerMeta serverMeta = this.serverMeta;
         final boolean supportColumnComment = this.supportColumnComment();
 
         ColumnInfo column;
         DataType dataType;
-        Boolean nullable;
+        Boolean notNull;
         for (FieldMeta<?> field : table.fieldList()) {
             column = columnMap.get(field.columnName());
             if (column == null) {
@@ -118,9 +118,9 @@ abstract class ArmySchemaComparer implements SchemaComparer {
             builder.field(field)
                     .sqlType(compareSqlType(column, field, dataType))
                     .defaultExp(compareDefault(column, field, dataType));
-            nullable = column.nullable();
-            if (nullable != null) {
-                builder.nullable(nullable != field.nullable());
+            notNull = column.notNull();
+            if (notNull != null) {
+                builder.notNull(notNull != field.notNull());
             }
             if (supportColumnComment) {
                 builder.comment(!field.comment().equals(column.comment()));

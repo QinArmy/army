@@ -33,17 +33,17 @@ public class AbstractChinaRegion<T extends AbstractChinaRegion<T>> extends BaseV
     @Column
     private RegionType regionType;
 
-    @Column(precision = 80, nullable = false, comment = "china region name")
+    @Column(precision = 80, notNull = true, comment = "china region name")
     private String name;
 
-    @Column(precision = 16, scale = 2, defaultValue = "0.00", nullable = false, comment = "china region GDP")
+    @Column(precision = 16, scale = 2, defaultValue = "0.00", notNull = true, comment = "china region GDP")
     private BigDecimal regionGdp;
 
 
-    @Column(nullable = false, defaultValue = "0", updateMode = UpdateMode.IMMUTABLE, comment = "china region parent level id")
+    @Column(notNull = true, defaultValue = "0", updateMode = UpdateMode.IMMUTABLE, comment = "china region parent level id")
     private Long parentId;
 
-    @Column(defaultValue = "0", nullable = false, comment = "china region population")
+    @Column(defaultValue = "0", notNull = true, comment = "china region population")
     private Integer population;
 
     @Override

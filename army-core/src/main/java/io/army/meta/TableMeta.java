@@ -42,6 +42,8 @@ public interface TableMeta<T> extends TabularItem, DatabaseObject {
 
     boolean immutable();
 
+    boolean allColumnNotNull();
+
     String comment();
 
     PrimaryFieldMeta<T> id();

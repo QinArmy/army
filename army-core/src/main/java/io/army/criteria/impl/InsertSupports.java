@@ -112,7 +112,7 @@ abstract class InsertSupports {
     interface ColumnListClause extends CriteriaContextSpec {
 
         /**
-         * @param value if non-null and not {@link  FieldMeta#nullable()},then validate value isn't non-null expression
+         * @param value if non-null and  {@link  FieldMeta#notNull()},then validate value isn't non-null expression
          */
         void validateField(FieldMeta<?> field, @Nullable ArmyExpression value);
 
@@ -666,7 +666,7 @@ abstract class InsertSupports {
                 }
             }
 
-            if (value != null && !field.nullable() && value.isNullValue()) {
+            if (value != null && field.notNull() && value.isNullValue()) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             }
 
@@ -1864,7 +1864,7 @@ abstract class InsertSupports {
         public final void validateField(FieldMeta<?> field, @Nullable ArmyExpression value) {
             if (field.tableMeta() != this.insertTable) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
-            } else if (!field.nullable() && (value == null || value.isNullValue())) {
+            } else if (field.notNull() && (value == null || value.isNullValue())) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             }
         }

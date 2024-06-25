@@ -21,7 +21,7 @@ import io.army.dialect._DdlParser;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.schema._FieldResult;
+import io.army.schema.FieldResult;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.struct.TextEnum;
@@ -197,13 +197,13 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
 
 
     @Override
-    protected void doModifyColumn(final _FieldResult result, final StringBuilder builder) {
+    protected void doModifyColumn(final FieldResult result, final StringBuilder builder) {
         appendSpaceIfNeed(builder);
 
         final FieldMeta<?> field;
         field = result.field();
         final String defaultValue;
-        if (result.containSqlType() || result.containNullable() || result.containComment()) {
+        if (result.containSqlType() || result.containNotNull() || result.containComment()) {
             builder.append("MODIFY COLUMN ");
             columnDefinition(field, builder);
         } else if (!result.containDefault()) {

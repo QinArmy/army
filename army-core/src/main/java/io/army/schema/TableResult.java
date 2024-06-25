@@ -33,7 +33,7 @@ public interface TableResult {
 
     List<FieldMeta<?>> newFieldList();
 
-    List<_FieldResult> changeFieldList();
+    List<FieldResult> changeFieldList();
 
     List<String> newIndexList();
 
@@ -52,7 +52,7 @@ public interface TableResult {
 
         void comment(boolean comment);
 
-        void appendFieldResult(_FieldResult fieldResult);
+        void appendFieldResult(FieldResult fieldResult);
 
         void appendNewIndex(String indexName);
 

@@ -286,6 +286,8 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
     private final boolean immutable;
 
+    private final boolean allColumnNotNull;
+
     private final String comment;
 
     private final String tableOption;
@@ -315,6 +317,8 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
             this.tableName = TableMetaUtils.tableName(table, domainClass);
             this.comment = TableMetaUtils.tableComment(table, domainClass);
             this.immutable = TableMetaUtils.immutable(table, domainClass);
+            this.allColumnNotNull = table.allColumnNotNull();
+
             this.schemaMeta = _SchemaMetaFactory.getSchema(table.catalog(), table.schema());
 
             this.tableOption = table.tableOption();
@@ -365,6 +369,10 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
         return this.immutable;
     }
 
+    @Override
+    public final boolean allColumnNotNull() {
+        return this.allColumnNotNull;
+    }
 
     @Override
     public final String comment() {

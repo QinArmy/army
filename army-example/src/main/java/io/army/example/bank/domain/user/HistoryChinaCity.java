@@ -24,7 +24,7 @@ import io.army.annotation.Table;
 @DiscriminatorValue(RegionType.Constant.CITY)
 public class HistoryChinaCity extends HistoryChinaRegion<HistoryChinaCity> {
 
-    @Column(precision = 30, defaultValue = "''", nullable = false, comment = "city mayor name")
+    @Column(precision = 30, defaultValue = "''", notNull = true, comment = "city mayor name")
     private String mayorName;
 
 

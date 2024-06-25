@@ -189,16 +189,16 @@ final class JdbdMetaExecutor extends ExecutorSupport implements ReactiveMetaExec
                 .autoincrement(meta.autoincrementMode() == BooleanMode.TRUE)
                 .defaultExp(meta.defaultValue());
 
-        switch (meta.nullableMode()) {
+        switch (meta.notNullMode()) {
             case TRUE:
-                builder.nullable(Boolean.TRUE);
+                builder.notNull(Boolean.TRUE);
                 break;
             case FALSE:
-                builder.nullable(Boolean.FALSE);
+                builder.notNull(Boolean.FALSE);
                 break;
             case UNKNOWN:
             default:
-                // no-op
+                builder.notNull(null);
         }
 
         final long precision;

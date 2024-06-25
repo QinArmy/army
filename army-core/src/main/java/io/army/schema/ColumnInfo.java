@@ -31,7 +31,7 @@ public interface ColumnInfo {
     String defaultExp();
 
     @Nullable
-    Boolean nullable();
+    Boolean notNull();
 
     int precision();
 
@@ -59,7 +59,7 @@ public interface ColumnInfo {
 
         Builder defaultExp(@Nullable String defaultExp);
 
-        Builder nullable(@Nullable Boolean nullable);
+        Builder notNull(@Nullable Boolean notNull);
 
         Builder comment(@Nullable String comment);
 

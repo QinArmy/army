@@ -35,18 +35,18 @@ public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
             , comment = "user id ,primary key of u_user table,when register success.")
     private Long userId;
 
-    @Column(nullable = false, defaultValue = "0", comment = "record handle status")
+    @Column(notNull = true, defaultValue = "0", comment = "record handle status")
     private RecordStatus status;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE
             , comment = "partner user id,0 representing bank self,@see u_user table")
     private Long partnerId;
 
     @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime), @Param(name = DEPEND, value = "partnerId")})
-    @Column(precision = 30, nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner request number")
+    @Column(precision = 30, notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner request number")
     private String requestNo;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "deadline,reject handle request after this")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "deadline,reject handle request after this")
     private LocalDateTime deadline;
 
     @Column(insertable = false, updateMode = UpdateMode.ONLY_NULL, comment = "record handle time")

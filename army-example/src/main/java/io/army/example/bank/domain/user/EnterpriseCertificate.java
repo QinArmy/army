@@ -27,13 +27,13 @@ import java.time.LocalDate;
 @DiscriminatorValue(CertificateType.Constant.ENTERPRISE)
 public class EnterpriseCertificate extends Certificate<EnterpriseCertificate> {
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "enterprise user register day")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "enterprise user register day")
     private LocalDate registerDay;
 
-    @Column(precision = 40, nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "enterprise Unified social credit code")
+    @Column(precision = 40, notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "enterprise Unified social credit code")
     private String creditCode;
 
-    @Column(nullable = false, defaultValue = "0", comment = "enterprise legal person name")
+    @Column(notNull = true, defaultValue = "0", comment = "enterprise legal person name")
     private Long legalPersonCertificateId;
 
 

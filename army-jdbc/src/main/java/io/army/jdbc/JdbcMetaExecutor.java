@@ -202,13 +202,13 @@ class JdbcMetaExecutor implements SyncMetaExecutor {
                 nullable = resultSet.getString("IS_NULLABLE");
                 switch (nullable) {
                     case "YES":
-                        builder.nullable(Boolean.TRUE);
+                        builder.notNull(Boolean.FALSE);
                         break;
                     case "NO":
-                        builder.nullable(Boolean.FALSE);
+                        builder.notNull(Boolean.TRUE);
                         break;
                     case "":
-                        builder.nullable(null);
+                        builder.notNull(null);
                     default: {
                         String m = String.format("IS_NULLABLE is excepted value[%s]", nullable);
                         throw new DataAccessException(m);

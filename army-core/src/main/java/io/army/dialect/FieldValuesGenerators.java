@@ -119,14 +119,14 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         if (domainTable != nonChild) {
             for (FieldMeta<?> field : nonChild.fieldChain()) {
-                if (wrapper.isNullValueParam(field) && !field.nullable()) {
+                if (wrapper.isNullValueParam(field) && field.notNull()) {
                     throw nullValueErrorForMigration(field);
                 }
             }
         }
 
         for (FieldMeta<?> field : domainTable.fieldChain()) {
-            if (wrapper.isNullValueParam(field) && !field.nullable()) {
+            if (wrapper.isNullValueParam(field) && field.notNull()) {
                 throw nullValueErrorForMigration(field);
             }
         }

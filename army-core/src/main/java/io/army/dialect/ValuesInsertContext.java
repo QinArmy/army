@@ -289,7 +289,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                     expression.appendSql(sqlBuilder, this);
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
                     assert mockEnv || migration;
-                    if (migration && !field.nullable()) {
+                    if (migration && field.notNull()) {
                         throw _Exceptions.nonNullField(field);
                     }
                     this.appendInsertValue(literalMode, field, null);
@@ -298,7 +298,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 } else if (nullHandleMode != NullMode.INSERT_NULL) {
                     //no bug,never here
                     throw _Exceptions.unexpectedEnum(nullHandleMode);
-                } else if (!field.nullable()) {
+                } else if (field.notNull()) {
                     throw _Exceptions.nonNullField(field);
                 } else {
                     this.appendInsertValue(literalMode, field, null);

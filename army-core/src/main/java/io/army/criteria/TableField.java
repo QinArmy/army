@@ -67,7 +67,7 @@ public interface TableField extends SqlField, DefiniteExpression, FieldSelection
 
     boolean codec();
 
-    boolean nullable();
+    boolean notNull();
 
     UpdateMode updateMode();
 

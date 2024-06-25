@@ -310,7 +310,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
             throw ContextStack.clearStackAndCastCriteriaApi();
         } else if ((field = (TableField) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
             throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
-        } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
+        } else if (field.notNull() && ((ArmyExpression) fieldPair.right).isNullValue()) {
             throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
         } else if (!(this instanceof _DomainUpdate)) {
             if (field instanceof QualifiedField

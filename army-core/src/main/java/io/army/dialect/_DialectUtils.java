@@ -330,7 +330,7 @@ public abstract class _DialectUtils {
         for (Map.Entry<FieldMeta<?>, _Expression> e : insert.defaultValueMap().entrySet()) {
             field = e.getKey();
             checkInsertField(table, field, null);
-            if (!field.nullable() && e.getValue().isNullValue()) {
+            if (field.notNull() && e.getValue().isNullValue()) {
                 throw _Exceptions.nonNullField(field);
             }
 

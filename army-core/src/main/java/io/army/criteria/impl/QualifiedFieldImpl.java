@@ -63,8 +63,8 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
     }
 
     @Override
-    public boolean nullable() {
-        return this.field.nullable;
+    public boolean notNull() {
+        return this.field.notNull;
     }
 
     @Override

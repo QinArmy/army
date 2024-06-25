@@ -33,27 +33,27 @@ public class BankAccount extends BaseVersionDomain<BankAccount> {
     @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
     private Long id;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "account type")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "account type")
     private BankAccountType accountType;
 
-    @Column(nullable = false, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner account number")
+    @Column(notNull = true, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner account number")
     @Generator(value = SNOWFLAKE, params = {
             @Param(name = START_TIME, value = startTime), @Param(name = DEPEND, value = "userId")})
     private String accountNo;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user id of account")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "user id of account")
     private Long userId;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user type of account")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "user type of account")
     private BankUserType userType;
 
-    @Column(nullable = false, precision = 14, scale = 2, defaultValue = "0.00", comment = "balance of account")
+    @Column(notNull = true, precision = 14, scale = 2, defaultValue = "0.00", comment = "balance of account")
     private BigDecimal balance;
 
-    @Column(nullable = false, precision = 14, scale = 2, defaultValue = "0.00", comment = "frozen account of account")
+    @Column(notNull = true, precision = 14, scale = 2, defaultValue = "0.00", comment = "frozen account of account")
     private BigDecimal frozenAmount;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "r_register_record primary key")
+    @Column(notNull = true, updateMode = UpdateMode.IMMUTABLE, comment = "r_register_record primary key")
     private Long registerRecordId;
 
 

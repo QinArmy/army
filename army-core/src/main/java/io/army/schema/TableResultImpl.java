@@ -35,7 +35,7 @@ final class TableResultImpl implements TableResult {
 
     private final boolean comment;
 
-    private final List<_FieldResult> fieldResultList;
+    private final List<FieldResult> fieldResultList;
 
     private final List<String> newIndexList;
 
@@ -51,7 +51,7 @@ final class TableResultImpl implements TableResult {
         }
         this.comment = builder.comment;
 
-        final List<_FieldResult> fieldResultList = builder.fieldResultList;
+        final List<FieldResult> fieldResultList = builder.fieldResultList;
         if (fieldResultList == null) {
             this.fieldResultList = Collections.emptyList();
         } else {
@@ -90,7 +90,7 @@ final class TableResultImpl implements TableResult {
     }
 
     @Override
-    public List<_FieldResult> changeFieldList() {
+    public List<FieldResult> changeFieldList() {
         return this.fieldResultList;
     }
 
@@ -113,7 +113,7 @@ final class TableResultImpl implements TableResult {
 
         private boolean comment;
 
-        private List<_FieldResult> fieldResultList;
+        private List<FieldResult> fieldResultList;
 
         private List<String> newIndexList;
 
@@ -140,8 +140,8 @@ final class TableResultImpl implements TableResult {
         }
 
         @Override
-        public void appendFieldResult(_FieldResult fieldResult) {
-            List<_FieldResult> fieldResultList = this.fieldResultList;
+        public void appendFieldResult(FieldResult fieldResult) {
+            List<FieldResult> fieldResultList = this.fieldResultList;
             if (fieldResultList == null) {
                 fieldResultList = _Collections.arrayList();
                 this.fieldResultList = fieldResultList;
