@@ -29,7 +29,7 @@ import io.army.util._StringUtils;
 
 import java.util.List;
 
-final class PostgreDdlParser extends _DdlParser<PostgreParser> {
+final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
 
     static PostgreDdlParser create(PostgreParser dialect) {
         return new PostgreDdlParser(dialect);

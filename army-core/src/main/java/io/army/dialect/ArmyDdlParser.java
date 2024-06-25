@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.mapping.StringType;
 import io.army.mapping.TextType;
 import io.army.meta.*;
 import io.army.schema.FieldResult;
@@ -30,7 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlParser {
+public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements DdlParser {
 
     /**
      * non-static
@@ -79,7 +80,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
 
     protected final ServerMeta serverMeta;
 
-    protected _DdlParser(P parser) {
+    protected ArmyDdlParser(P parser) {
         this.parser = parser;
         this.serverMeta = parser.serverMeta;
     }
@@ -850,6 +851,18 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
         }
     }
 
+    final void autoIncrement(final StringBuilder builder) {
+        builder.append(_Constant.SPACE)
+                .append("AUTO_INCREMENT");
+    }
+
+    final void columnComment(final FieldMeta<?> field, final StringBuilder builder) {
+        builder.append(_Constant.SPACE)
+                .append("COMMENT")
+                .append(_Constant.SPACE);
+        this.parser.literal(StringType.INSTANCE, field.comment(), false, builder);
+    }
+
     final void alterColumnNullConstraint(final FieldMeta<?> field, final StringBuilder builder) {
         if (field.notNull()) {
             builder.append(_Constant.SPACE_SET);
@@ -910,6 +923,14 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
     }
 
     void columnOuterComment(FieldMeta<?> field, StringBuilder builder) {
+        throw new UnsupportedOperationException();
+    }
+
+    void tableOptions(TableMeta<?> table, StringBuilder builder) {
+        throw new UnsupportedOperationException();
+    }
+
+    void tablePartitionOptions(TableMeta<?> table, StringBuilder builder) {
         throw new UnsupportedOperationException();
     }
 

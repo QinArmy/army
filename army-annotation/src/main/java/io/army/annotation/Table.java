@@ -83,10 +83,10 @@ public @interface Table {
      * (Optional) The option clause of create table
      *
      */
-    String tableOption() default "";
+    String tableOptions() default "";
 
     /**
      * (Optional) The option clause of create table
      */
-    String partitionOption() default "";
+    String partitionOptions() default "";
 }

@@ -16,8 +16,10 @@
 
 package io.army.dialect;
 
+import io.army.annotation.GeneratorType;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
+import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.schema.FieldResult;
 import io.army.sqltype.DataType;
@@ -28,7 +30,7 @@ import io.army.util._StringUtils;
 
 import java.util.List;
 
-final class MySQLDdlParser extends _DdlParser<MySQLParser> {
+final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
 
     static MySQLDdlParser create(MySQLParser dialect) {
         return new MySQLDdlParser(dialect);
@@ -37,6 +39,46 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     MySQLDdlParser(MySQLParser dialect) {
         super(dialect);
     }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/create-table.html">CREATE TABLE Statement</a>
+     */
+    @Override
+    public <T> void createTable(final TableMeta<T> table, final List<String> sqlList) {
+        final StringBuilder builder;
+        builder = createTableCommandBuilder(table);
+
+        // column definitions
+        columnDefinitionList(table, builder);
+
+        // index definitions
+        for (IndexMeta<T> index : table.indexList()) {
+            builder.append(_Constant.COMMA)
+                    .append("\n\t");
+
+            if (index.isPrimaryKey()) {
+                builder.append("PRIMARY");
+            } else if (index.isUnique()) {
+                builder.append("UNIQUE");
+            }
+            builder.append(_Constant.SPACE)
+                    .append("KEY");
+            justIndexFiledNameList(index, builder);
+
+        } // index loop
+
+        // right paren
+        builder.append('\n')
+                .append(_Constant.RIGHT_PAREN);
+
+        tableOptions(table, builder);
+
+        tablePartitionOptions(table, builder);
+
+        sqlList.add(builder.toString());
+
+    }
+
 
     @Override
     public void modifyTableComment(final TableMeta<?> table, final List<String> sqlList) {
@@ -71,8 +113,31 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
 
     }
 
+
+    @Override
+    void tableOptions(final TableMeta<?> table, final StringBuilder builder) {
+        final String options = table.tableOptions();
+        if (_StringUtils.hasText(options)) {
+            // optimize me
+            builder.append('\n')
+                    .append(options);
+        }
+    }
+
+    @Override
+    void tablePartitionOptions(final TableMeta<?> table, final StringBuilder builder) {
+        final String options = table.partitionOptions();
+        if (_StringUtils.hasText(options)) {
+            // optimize me
+            builder.append('\n')
+                    .append(options);
+        }
+    }
+
     @Override
     protected void dataType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
+        builder.append(_Constant.SPACE);
+        
         switch ((MySQLType) dataType) {
             case TINYINT:
             case SMALLINT:
@@ -168,6 +233,20 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     }
 
     @Override
+    protected void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
+        columnName(field, builder);
+        dataType(field, field.mappingType().map(this.parser.serverMeta), builder);
+        columnNullConstraint(field, builder);
+        columnDefault(field, builder);
+
+        if (field instanceof PrimaryFieldMeta<?> && field.generatorType() == GeneratorType.POST) {
+            autoIncrement(builder);
+        }
+        columnComment(field, builder);
+
+    }
+
+    @Override
     protected void appendPostGenerator(FieldMeta<?> field, StringBuilder builder) {
         builder.append(" AUTO_INCREMENT");
     }
@@ -175,7 +254,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     @Override
     protected void appendTableOption(final TableMeta<?> table, final StringBuilder builder) {
         final String tableOption, partitionOption;
-        tableOption = table.tableOption();
+        tableOption = table.tableOptions();
         if (_StringUtils.hasText(tableOption)) {
             // TODO validate
             builder.append(tableOption);
@@ -184,7 +263,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
         }
         appendColumnComment(table, builder);
 
-        partitionOption = table.partitionOption();
+        partitionOption = table.partitionOptions();
         if (_StringUtils.hasText(partitionOption)) {
             // TODO validate
             builder.append('\n')

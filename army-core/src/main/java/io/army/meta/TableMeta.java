@@ -76,9 +76,9 @@ public interface TableMeta<T> extends TabularItem, DatabaseObject {
     List<FieldMeta<T>> fieldList();
 
 
-    String tableOption();
+    String tableOptions();
 
-    String partitionOption();
+    String partitionOptions();
 
     SchemaMeta schema();
 

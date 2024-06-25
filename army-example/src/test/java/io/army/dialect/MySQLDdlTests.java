@@ -58,10 +58,8 @@ public class MySQLDdlTests {
 
         }
 
+        LOG.debug(_DialectUtils.printDdlSqlList(sqlList));
 
-        for (String sql : sqlList) {
-            LOG.debug(sql);
-        }
 
     }
 

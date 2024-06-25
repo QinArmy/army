@@ -16,8 +16,8 @@
 
 package io.army.dialect.sqlite;
 
+import io.army.dialect.ArmyDdlParser;
 import io.army.dialect._Constant;
-import io.army.dialect._DdlParser;
 import io.army.meta.*;
 import io.army.schema.FieldResult;
 import io.army.sqltype.DataType;
@@ -31,7 +31,7 @@ import java.util.List;
  * @see <a href="https://www.sqlite.org/lang_createtable.html">CREATE TABLE</a>
  * @since 0.6.7
  */
-final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
+final class SQLiteDdlParser extends ArmyDdlParser<SQLiteParser> {
 
     static SQLiteDdlParser create(SQLiteParser parser) {
         return new SQLiteDdlParser(parser);
@@ -137,7 +137,7 @@ final class SQLiteDdlParser extends _DdlParser<SQLiteParser> {
     @Override
     protected void appendTableOption(TableMeta<?> table, StringBuilder builder) {
         final String optionClause;
-        optionClause = table.tableOption();
+        optionClause = table.tableOptions();
         if (_StringUtils.hasText(optionClause)) {
             checkEnclosing(optionClause);
 
