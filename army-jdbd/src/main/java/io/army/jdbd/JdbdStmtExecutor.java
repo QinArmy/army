@@ -738,7 +738,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
 
     /**
-     * @see #bindParameter(ParametrizedStatement, List)
+     * @see #bindParameters(ParametrizedStatement, List)
      */
     final void bindArmyType(ParametrizedStatement stmt, final int indexBasedZero, final MappingType type,
                             final DataType dataType, final ArmyType armyType, final @Nullable Object nullable) {
@@ -1382,12 +1382,12 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
 
         if (stmt instanceof SimpleStmt) {
-            bindParameter(statement, ((SimpleStmt) stmt).paramGroup());
+            bindParameters(statement, ((SimpleStmt) stmt).paramGroup());
         } else if (stmt instanceof BatchStmt) {
             final List<List<SQLParam>> groupList = ((BatchStmt) stmt).groupList();
             final int groupSize = groupList.size();
             for (int i = 0; i < groupSize; i++) {
-                bindParameter(statement, groupList.get(i));
+                bindParameters(statement, groupList.get(i));
                 statement.addBatch();
             }
         } else {
@@ -1414,7 +1414,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
 
-    private void bindParameter(final ParametrizedStatement statement, final List<SQLParam> paramList) {
+    private void bindParameters(final ParametrizedStatement statement, final List<SQLParam> paramList) {
 
         final ServerMeta serverMeta = this.factory.serverMeta;
         final MappingEnv mappingEnv = this.factory.mappingEnv;
@@ -1471,8 +1471,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                     break;
                 }
 
-                if (value == null) { // jdbd client-prepared support dialect type null ,for example postgre : null::text
-                    bind(statement, paramIndex++, type, dataType, null);
+                if (value == null || value == void.class) {
+                    // jdbd client-prepared support dialect type null ,for example postgre : null::text
+                    //   void.class representing out parameter
+                    bind(statement, paramIndex++, type, dataType, value);
                     continue;
                 }
 
