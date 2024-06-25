@@ -1643,6 +1643,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             case BIGINT_UNSIGNED:
             case DECIMAL_UNSIGNED:
             case DECIMAL:
+            case NUMERIC:
                 jdbcType = Types.DECIMAL;
                 break;
             case FLOAT:
@@ -1651,63 +1652,84 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             case DOUBLE:
                 jdbcType = Types.DOUBLE;
                 break;
-            case BIT: {
-                switch (this.factory.serverDatabase) {
-                    case MySQL:
-                        jdbcType = Types.BIGINT;
-                        break;
-                    case PostgreSQL:
-                    case SQLite:
-                    default:
-                }
+            case BIT:
+            case VARBIT: {
+                jdbcType = switch (this.factory.serverDatabase) {
+                    case MySQL -> Types.BIGINT; // MySQL don't use BIT type
+                    case PostgreSQL -> Types.OTHER; // Postgre don't use BIT type
+                    default -> throw _Exceptions.unexpectedEnum(this.factory.serverDatabase);
+                };
             }
             break;
             case CHAR:
+                jdbcType = Types.CHAR;
+                break;
             case VARCHAR:
+            case TINYTEXT:
             case TEXT:
+            case ENUM:
+                jdbcType = Types.VARCHAR;
+                break;
+            case MEDIUMTEXT:
+            case LONGTEXT:
+                jdbcType = Types.LONGVARCHAR;
+                break;
             case BINARY:
+                jdbcType = Types.BINARY;
+                break;
             case VARBINARY:
+            case TINYBLOB:
             case BLOB:
-
-
-            case TIMESTAMP:
+                jdbcType = Types.VARBINARY;
+                break;
+            case MEDIUMBLOB:
+            case LONGBLOB:
+                jdbcType = Types.LONGVARBINARY;
+                break;
             case TIME:
-            case TIMESTAMP_WITH_TIMEZONE:
-            case TIME_WITH_TIMEZONE:
+                jdbcType = Types.TIME;
+                break;
+            case DATE:
             case YEAR:
             case YEAR_MONTH:
             case MONTH_DAY:
-
-            case DURATION:
-            case UNKNOWN:
-
-
-            case PERIOD:
-
-            case JSON:
-            case DATE:
-            case NULL:
+                jdbcType = Types.DATE;
+                break;
+            case TIMESTAMP:
+                jdbcType = Types.TIMESTAMP;
+                break;
+            case TIME_WITH_TIMEZONE:
+                jdbcType = Types.TIME_WITH_TIMEZONE;
+                break;
+            case TIMESTAMP_WITH_TIMEZONE:
+                jdbcType = Types.TIMESTAMP_WITH_TIMEZONE;
+                break;
             case XML:
-            case ENUM:
+                jdbcType = Types.SQLXML;
+                break;
             case ARRAY:
-            case JSONB:
-            case VARBIT:
+                jdbcType = Types.ARRAY;
+                break;
             case ROWID:
-            case NUMERIC:
-            case GEOMETRY:
-            case INTERVAL:
-            case LONGBLOB:
-            case LONGTEXT:
-
-            case TINYBLOB:
-            case TINYTEXT:
-            case COMPOSITE:
-            case MEDIUMBLOB:
-            case MEDIUMTEXT:
+                jdbcType = Types.ROWID;
+                break;
             case REF_CURSOR:
+                jdbcType = Types.REF_CURSOR;
+                break;
+            case NULL:
+                jdbcType = Types.NULL;
+                break;
+            case JSON:
+            case JSONB:
+            case DURATION:
+            case PERIOD:
+            case INTERVAL:
+            case GEOMETRY:
+            case COMPOSITE:
             case DIALECT_TYPE:
-
-
+            case UNKNOWN:
+            default:
+                jdbcType = Types.OTHER;
         }
         return jdbcType;
     }

@@ -430,5 +430,71 @@ public enum ArmyType {
         return match;
     }
 
+//               case BOOLEAN:
+//
+//            case TINYINT:
+//            case TINYINT_UNSIGNED:
+//            case SMALLINT:
+//
+//            case SMALLINT_UNSIGNED:
+//            case MEDIUMINT:
+//            case MEDIUMINT_UNSIGNED:
+//            case INTEGER:
+//
+//            case INTEGER_UNSIGNED:
+//            case BIGINT:
+//
+//            case BIGINT_UNSIGNED:
+//            case DECIMAL_UNSIGNED:
+//            case DECIMAL:
+//            case NUMERIC:
+//
+//            case FLOAT:
+//            case DOUBLE:
+//
+//            case BIT:
+//            case VARBIT:
+//
+//            case CHAR:
+//            case VARCHAR:
+//            case TINYTEXT:
+//            case TEXT:
+//            case MEDIUMTEXT:
+//            case ENUM:
+//            case JSON:
+//            case JSONB:
+//            case XML:
+//            case LONGTEXT:
+//
+//            case BINARY:
+//            case VARBINARY:
+//            case TINYBLOB:
+//            case BLOB:
+//            case MEDIUMBLOB:
+//            case LONGBLOB:
+//
+//            case TIME:
+//            case DATE:
+//            case YEAR:
+//            case YEAR_MONTH:
+//            case MONTH_DAY:
+//            case TIMESTAMP:
+//
+//            case TIME_WITH_TIMEZONE:
+//            case TIMESTAMP_WITH_TIMEZONE:
+//
+//            case DURATION:
+//            case PERIOD:
+//            case INTERVAL:
+//
+//            case ARRAY:
+//            case ROWID:
+//            case GEOMETRY:
+//            case COMPOSITE:
+//
+//            case REF_CURSOR:
+//            case DIALECT_TYPE:
+//            case UNKNOWN:
+//            case NULL:
 
 }
