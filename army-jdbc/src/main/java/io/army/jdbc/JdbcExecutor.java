@@ -1554,6 +1554,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         MappingType type;
         TypeMeta typeMeta;
         DataType dataType;
+        Iterator<?> rowParamIterator;
         List<?> rowParamList;
         final int paramSize = paramGroup.size();
         for (int i = 0, paramIndex = 1, rowParamSize; i < paramSize; i++) {
@@ -1569,20 +1570,26 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             if (sqlParam instanceof SingleParam) {
                 rowParamList = null;
+                rowParamIterator = null;
                 rowParamSize = 1;
-            } else {
-                rowParamList = ((MultiParam) sqlParam).valueList();
+            } else if ((rowParamList = ((MultiParam) sqlParam).valueList()) instanceof ArrayList<?>) {
                 rowParamSize = rowParamList.size();
-
+                rowParamIterator = null;
+            } else {
+                rowParamSize = rowParamList.size();
+                rowParamIterator = rowParamList.iterator();
             }
 
             for (int rowParamIndex = 0; rowParamIndex < rowParamSize; rowParamIndex++) {
 
                 if (rowParamList == null) {
                     value = ((SingleParam) sqlParam).value();
-                } else {
+                } else if (rowParamIterator == null) {
                     value = rowParamList.get(rowParamIndex);
+                } else {
+                    value = rowParamIterator.next();
                 }
+
                 if (value == null) { // jdbd client-prepared support dialect type null ,for example postgre : null::text
                     statement.setNull(paramIndex++, Types.NULL);
                     continue;
