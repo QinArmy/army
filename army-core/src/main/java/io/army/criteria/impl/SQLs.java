@@ -295,6 +295,15 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final ParamExpression PARAM_SPACE = SQLs.param(StringType.INSTANCE, " ");
 
+
+    /**
+     * <p>This instance representing OUT parameter of stored procedure.
+     *
+     * @see CallableStatement
+     */
+    public static final Object OUTER_PARAMETER = SqlWords.OuterParameter.OUTER_PARAMETER;
+
+
     /**
      * @see #BATCH_NO_LITERAL
      */
@@ -587,9 +596,6 @@ public abstract class SQLs extends SQLSyntax {
             return function.apply((Expression) t);
         };
     }
-
-
-
 
 
     static String keyWordsToString(Enum<?> wordEnum) {
@@ -1136,8 +1142,6 @@ public abstract class SQLs extends SQLSyntax {
 
 
     }//CteImpl
-
-
 
 
     /**

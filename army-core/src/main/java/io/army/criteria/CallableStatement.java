@@ -16,6 +16,9 @@
 
 package io.army.criteria;
 
+/**
+ * @see io.army.criteria.impl.SQLs#OUTER_PARAMETER
+ */
 public interface CallableStatement extends Statement {
 
 }

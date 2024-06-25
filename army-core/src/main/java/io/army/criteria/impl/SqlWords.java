@@ -18,12 +18,39 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SQLWords;
 import io.army.dialect._Constant;
+import io.army.util._StringUtils;
 
 abstract class SqlWords {
 
     private SqlWords() {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * <p>Here ,don't use enum ,because {@link io.army.mapping.NameEnumType} .
+     *
+     * @see SQLs#OUTER_PARAMETER
+     */
+    final static class OuterParameter {
+
+        static OuterParameter OUTER_PARAMETER = new OuterParameter();
+
+        /**
+         * private constructor
+         */
+        private OuterParameter() {
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder(20)
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.PERIOD)
+                    .append("OUTER_PARAMETER")
+                    .toString();
+        }
+
+    } // OuterParameter
 
 
     enum SymbolSpaceEnum implements SQLs.SymbolSpace {
