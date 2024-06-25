@@ -1429,7 +1429,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         DataType dataType;
         Iterator<?> rowParamIterator;
         List<?> rowParamList;
-        boolean hasMore;
         for (int itemIndex = 0, paramIndex = 0, rowParamSize = 0; itemIndex < paramSize; itemIndex++) {
             sqlParam = paramList.get(itemIndex);
             typeMeta = sqlParam.typeMeta();
