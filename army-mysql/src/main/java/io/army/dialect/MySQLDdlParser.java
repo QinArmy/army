@@ -75,7 +75,7 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
 
 
     /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/create-table.html">CREATE TABLE Statement</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/alter-table.html">ALTER TABLE Statement</a>
      */
     @Override
     public void modifyTableComment(final TableMeta<?> table, final List<String> sqlList) {
