@@ -544,7 +544,7 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
     }
 
 
-    protected final <T> void appendIndexInTableDef(final IndexMeta<T> index, final StringBuilder builder) {
+    protected <T> void indexDefinition(final IndexMeta<T> index, final StringBuilder builder) {
         if (index.isPrimaryKey()) {
             builder.append(COMMA_PRIMARY_KEY);
         } else if (index.isUnique()) {
@@ -588,6 +588,7 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
         appendIndexFieldList(index, builder);
 
     }
+
 
     protected final <T> void appendIndexType(final IndexMeta<T> index, final StringBuilder builder) {
         final String type;
@@ -863,6 +864,15 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
         this.parser.literal(StringType.INSTANCE, field.comment(), false, builder);
     }
 
+    final void indexName(final IndexMeta<?> index, final StringBuilder builder) {
+        builder.append(_Constant.SPACE);
+        this.parser.identifier(index.name(), builder);
+    }
+
+    final <T> void indexFieldList(final IndexMeta<T> index, final StringBuilder builder) {
+        justIndexFiledNameList(index, builder);
+    }
+
     final void alterColumnNullConstraint(final FieldMeta<?> field, final StringBuilder builder) {
         if (field.notNull()) {
             builder.append(_Constant.SPACE_SET);
@@ -882,24 +892,6 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
                     .append("DROP")
                     .append(_Constant.SPACE_DEFAULT);
         }
-    }
-
-
-    final <T> void justIndexFiledNameList(final IndexMeta<T> index, final StringBuilder builder) {
-        final List<IndexFieldMeta<T>> fieldList = index.fieldList();
-        final int fieldSize = fieldList.size();
-
-        builder.append(_Constant.LEFT_PAREN);
-        for (int i = 0; i < fieldSize; i++) {
-            if (i > 0) {
-                builder.append(_Constant.COMMA);
-            } else {
-                builder.append(_Constant.SPACE);
-            }
-            this.parser.safeObjectName(fieldList.get(i), builder);
-        }
-        builder.append(_Constant.SPACE_RIGHT_PAREN);
-
     }
 
 
@@ -979,6 +971,24 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
 
     }
 
+
+    private <T> void justIndexFiledNameList(final IndexMeta<T> index, final StringBuilder builder) {
+        final List<IndexFieldMeta<T>> fieldList = index.fieldList();
+        final int fieldSize = fieldList.size();
+
+        builder.append(_Constant.LEFT_PAREN);
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            } else {
+                builder.append(_Constant.SPACE);
+            }
+            this.parser.safeObjectName(fieldList.get(i), builder);
+        }
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
+
+    }
+
     /**
      * @see #createTable(TableMeta, List)
      */
@@ -1008,7 +1018,7 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
                 case Oracle:
                 default://no-op
             }
-            appendIndexInTableDef(index, builder);
+            indexDefinition(index, builder);
 
         }
 

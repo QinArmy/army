@@ -70,7 +70,7 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
             } else {
                 builder.append("UNIQUE");
             }
-            justIndexFiledNameList(index, builder);
+            indexFieldList(index, builder);
         }
 
 

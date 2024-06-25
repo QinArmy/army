@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.mapping.StringType;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -56,14 +57,7 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
             builder.append(_Constant.COMMA)
                     .append("\n\t");
 
-            if (index.isPrimaryKey()) {
-                builder.append("PRIMARY");
-            } else if (index.isUnique()) {
-                builder.append("UNIQUE");
-            }
-            builder.append(_Constant.SPACE)
-                    .append("KEY");
-            justIndexFiledNameList(index, builder);
+            indexDefinition(index, builder);
 
         } // index loop
 
@@ -80,13 +74,25 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
     }
 
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/create-table.html">CREATE TABLE Statement</a>
+     */
     @Override
     public void modifyTableComment(final TableMeta<?> table, final List<String> sqlList) {
-        final StringBuilder builder = new StringBuilder()
-                .append("ALTER TABLE ");
-        this.parser.safeObjectName(table, builder);
-        appendColumnComment(table, builder);
+        final StringBuilder builder = new StringBuilder();
+        builder.append("ALTER")
+                .append(_Constant.SPACE)
+                .append("TABLE");
 
+        tableName(table, builder);
+
+        builder.append(_Constant.SPACE)
+                .append("COMMENT")
+                .append(_Constant.SPACE_EQUAL_SPACE);
+
+        this.parser.literal(StringType.INSTANCE, table.comment(), false, builder);
+
+        sqlList.add(builder.toString());
     }
 
 
@@ -116,11 +122,16 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
 
     @Override
     void tableOptions(final TableMeta<?> table, final StringBuilder builder) {
+        builder.append('\n');
         final String options = table.tableOptions();
         if (_StringUtils.hasText(options)) {
             // optimize me
-            builder.append('\n')
-                    .append(options);
+            builder.append(options);
+        } else {
+            builder.append("COMMENT")
+                    .append(_Constant.SPACE_EQUAL_SPACE);
+            this.parser.literal(StringType.INSTANCE, table.comment(), false, builder);
+
         }
     }
 
@@ -137,7 +148,7 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
     @Override
     protected void dataType(final FieldMeta<?> field, final DataType dataType, final StringBuilder builder) {
         builder.append(_Constant.SPACE);
-        
+
         switch ((MySQLType) dataType) {
             case TINYINT:
             case SMALLINT:
@@ -225,6 +236,27 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
         }
 
 
+    }
+
+
+    @Override
+    protected <T> void indexDefinition(final IndexMeta<T> index, final StringBuilder builder) {
+
+        final boolean primaryKey = index.isPrimaryKey();
+
+        if (primaryKey) {
+            builder.append("PRIMARY")
+                    .append(_Constant.SPACE);
+        } else if (index.isUnique()) {
+            builder.append("UNIQUE")
+                    .append(_Constant.SPACE);
+        }
+        builder.append("KEY");
+        if (!primaryKey) {
+            indexName(index, builder);
+        }
+
+        indexFieldList(index, builder);
     }
 
     @Override
