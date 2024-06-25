@@ -17,7 +17,7 @@
 package io.army.criteria;
 
 /**
- * @see io.army.criteria.impl.SQLs#OUT_PARAMETER
+ * <p><strong>NOTE</strong>: {@code void.class} representing out parameter
  */
 public interface CallableStatement extends Statement {
 

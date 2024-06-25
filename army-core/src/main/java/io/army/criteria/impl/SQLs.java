@@ -297,14 +297,6 @@ public abstract class SQLs extends SQLSyntax {
 
 
     /**
-     * <p>This instance representing OUT parameter of stored procedure.
-     *
-     * @see CallableStatement
-     */
-    public static final Object OUT_PARAMETER = SqlWords.OutParameter.OUT_PARAMETER;
-
-
-    /**
      * @see #BATCH_NO_LITERAL
      */
     public static final ParamExpression BATCH_NO_PARAM = SQLs.namedParam(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
