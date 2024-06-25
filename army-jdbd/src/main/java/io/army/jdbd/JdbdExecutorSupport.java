@@ -47,13 +47,13 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
 
     private static abstract class JdbdRecordMeta extends ArmyResultRecordMeta {
 
-        final JdbdStmtExecutor executor;
+        final JdbdExecutor executor;
 
         final ResultRowMeta meta;
 
         private Set<Option<?>> optionSet;
 
-        private JdbdRecordMeta(int resultNo, DataType[] dataTypeArray, JdbdStmtExecutor executor, ResultRowMeta meta) {
+        private JdbdRecordMeta(int resultNo, DataType[] dataTypeArray, JdbdExecutor executor, ResultRowMeta meta) {
             super(resultNo, dataTypeArray, executor.factory.executorEnv);
             this.executor = executor;
             this.meta = meta;
@@ -283,7 +283,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
         private List<String> columnLabelList;
 
         JdbdStmtRowMeta(int resultNo, DataType[] dataTypeArray, List<? extends Selection> selectionList,
-                        JdbdStmtExecutor executor, ResultRowMeta meta) {
+                        JdbdExecutor executor, ResultRowMeta meta) {
             super(resultNo, dataTypeArray, executor, meta);
             this.selectionList = selectionList;
             assert selectionList.size() == dataTypeArray.length;

@@ -36,7 +36,7 @@ import java.time.*;
 import java.util.BitSet;
 import java.util.UUID;
 
-abstract class PostgreStmtExecutor extends JdbdStmtExecutor {
+abstract class PostgreStmtExecutor extends JdbdExecutor {
 
     static ReactiveLocalExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
         throw new UnsupportedOperationException();

@@ -90,7 +90,7 @@ import java.util.function.Supplier;
  * @see JdbdStmtExecutorFactory
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  */
-abstract class JdbdStmtExecutor extends JdbdExecutorSupport
+abstract class JdbdExecutor extends JdbdExecutorSupport
         implements ReactiveExecutor,
         ReactiveExecutor.LocalTransactionSpec,
         ReactiveExecutor.XaTransactionSpec,
@@ -107,7 +107,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     private Set<Option<?>> optionSet;
 
-    JdbdStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session, String sessionName) {
+    JdbdExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session, String sessionName) {
         this.sessionName = sessionName;
         this.factory = factory;
         this.session = session;
@@ -141,7 +141,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     @Override
     public final boolean isSameFactory(StmtExecutor s) {
-        return s instanceof JdbdStmtExecutor && ((JdbdStmtExecutor) s).factory == this.factory;
+        return s instanceof JdbdExecutor && ((JdbdExecutor) s).factory == this.factory;
     }
 
     @Override
@@ -658,8 +658,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         final boolean match;
         if (s == this) {
             match = true;
-        } else if (s instanceof JdbdStmtExecutor) {
-            match = this.session.isSameFactory(((JdbdStmtExecutor) s).session);
+        } else if (s instanceof JdbdExecutor) {
+            match = this.session.isSameFactory(((JdbdExecutor) s).session);
         } else {
             match = false;
         }
@@ -1531,7 +1531,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     private static abstract class RowReader<R> extends ArmyStmtCurrentRecord {
 
-        final JdbdStmtExecutor executor;
+        final JdbdExecutor executor;
 
         final List<? extends Selection> selectionList;
 
@@ -1541,7 +1541,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private final Class<?> resultClass;
 
-        private RowReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
+        private RowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
                           @Nullable Class<?> resultClass) {
             this.executor = executor;
             this.selectionList = selectionList;
@@ -1593,7 +1593,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         @Nullable
         final R readOneRow(final DataRow dataRow) {
 
-            final JdbdStmtExecutor executor = this.executor;
+            final JdbdExecutor executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
             final DataType[] dataTypeArray = this.dataTypeArray;
             final List<? extends Selection> selectionList = this.selectionList;
@@ -1694,7 +1694,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private R row;
 
-        private SingleColumnRowReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
+        private SingleColumnRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
                                       Class<R> resultClass) {
             super(executor, selectionList, resultClass);
         }
@@ -1725,7 +1725,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private R row;
 
-        private OptionalSingleColumnRowReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
+        private OptionalSingleColumnRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
                                               Class<R> resultClass) {
             super(executor, selectionList, resultClass);
         }
@@ -1760,7 +1760,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private R row;
 
-        private BeanReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
+        private BeanReader(JdbdExecutor executor, List<? extends Selection> selectionList,
                            Class<R> resultClass) {
             super(executor, selectionList, resultClass);
             this.accessor = ObjectAccessorFactory.forBean(resultClass);
@@ -1800,7 +1800,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private ObjectAccessor accessor;
 
-        private ObjectRowReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
+        private ObjectRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
                                 Supplier<R> constructor, boolean twoStmtMode) {
             super(executor, selectionList, null);
             this.constructor = constructor;
@@ -1870,7 +1870,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         private int rowIndex = -1;
 
 
-        private SecondRowReader(JdbdStmtExecutor executor, TwoStmtQueryStmt stmt, List<R> rowList) {
+        private SecondRowReader(JdbdExecutor executor, TwoStmtQueryStmt stmt, List<R> rowList) {
             super(executor, stmt.selectionList(), rowResultClass(rowList.get(0)));
             this.rowList = rowList;
             this.rowSize = rowList.size();
@@ -1948,7 +1948,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private long rowCount;
 
-        private CurrentRecordRowReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
+        private CurrentRecordRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
                                        Function<CurrentRecord, R> function) {
             super(executor, selectionList, null);
             this.function = function;
@@ -2053,14 +2053,14 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     private static abstract class JdbdBatchQueryResults extends ArmyReactiveMultiResultSpec {
 
-        private final JdbdStmtExecutor executor;
+        private final JdbdExecutor executor;
 
         private final List<? extends Selection> selectionList;
 
         private final io.jdbd.result.QueryResults jdbdResults;
 
 
-        private JdbdBatchQueryResults(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
+        private JdbdBatchQueryResults(JdbdExecutor executor, List<? extends Selection> selectionList,
                                       io.jdbd.result.QueryResults jdbdResults) {
             this.executor = executor;
             this.selectionList = selectionList;

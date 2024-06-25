@@ -39,11 +39,11 @@ import java.math.BigInteger;
 import java.time.*;
 
 /**
- * <p>This class is MySQL {@link JdbdStmtExecutor}.
+ * <p>This class is MySQL {@link JdbdExecutor}.
  *
  * @since 0.6.0
  */
-abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
+abstract class MySQLStmtExecutor extends JdbdExecutor {
 
     static ReactiveLocalExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
         return new LocalExecutor(factory, session, name);
