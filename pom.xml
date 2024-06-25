@@ -86,8 +86,8 @@
         <postgresql.version>42.6.0</postgresql.version>
 
 
-        <jdbd.version>0.12.6</jdbd.version>
-        <jdbd.mysql.version>0.11.8</jdbd.mysql.version>
+        <jdbd.version>0.13.0-SNAPSHOT</jdbd.version>
+        <jdbd.mysql.version>0.12.0-SNAPSHOT</jdbd.mysql.version>
     </properties>
 
     <dependencyManagement>

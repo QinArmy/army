@@ -301,7 +301,7 @@ public abstract class SQLs extends SQLSyntax {
      *
      * @see CallableStatement
      */
-    public static final Object OUTER_PARAMETER = SqlWords.OuterParameter.OUTER_PARAMETER;
+    public static final Object OUT_PARAMETER = SqlWords.OutParameter.OUT_PARAMETER;
 
 
     /**

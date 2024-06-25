@@ -29,16 +29,16 @@ abstract class SqlWords {
     /**
      * <p>Here ,don't use enum ,because {@link io.army.mapping.NameEnumType} .
      *
-     * @see SQLs#OUTER_PARAMETER
+     * @see SQLs#OUT_PARAMETER
      */
-    final static class OuterParameter {
+    final static class OutParameter {
 
-        static OuterParameter OUTER_PARAMETER = new OuterParameter();
+        static OutParameter OUT_PARAMETER = new OutParameter();
 
         /**
          * private constructor
          */
-        private OuterParameter() {
+        private OutParameter() {
         }
 
         @Override
@@ -46,7 +46,7 @@ abstract class SqlWords {
             return _StringUtils.builder(20)
                     .append(SQLs.class.getSimpleName())
                     .append(_Constant.PERIOD)
-                    .append("OUTER_PARAMETER")
+                    .append("OUT_PARAMETER")
                     .toString();
         }
 
