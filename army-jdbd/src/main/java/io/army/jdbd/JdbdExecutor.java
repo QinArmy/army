@@ -1429,7 +1429,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         DataType dataType;
         Iterator<?> rowParamIterator;
         List<?> rowParamList;
-        for (int itemIndex = 0, paramIndex = 0, rowParamSize = 0; itemIndex < paramSize; itemIndex++) {
+        for (int itemIndex = 0, paramIndex = 0, rowParamSize; itemIndex < paramSize; itemIndex++) {
             sqlParam = paramList.get(itemIndex);
             typeMeta = sqlParam.typeMeta();
 
@@ -1480,7 +1480,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
                 bind(statement, paramIndex++, type, dataType, value);
 
-            } // while loop
+            } // inner for loop
 
 
         }// for loop
@@ -1499,7 +1499,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             e = (ArmyException) cause;
         } else if (!(cause instanceof JdbdException)) {
             e = _Exceptions.unknownError(cause);
-        } else {
+        } else {  // TODO mapping server exception and option function
             final JdbdException je = (JdbdException) cause;
             e = new DriverException(cause, je.getSqlState(), je.getVendorCode());
         }
