@@ -117,6 +117,10 @@ public abstract class _Exceptions {
         return new MetaException(m);
     }
 
+    public static CriteriaException voidClassSupportedByProcedure() {
+        return new CriteriaException("void.class is supported by procedure.");
+    }
+
 
     public static TransactionTimeOutException timeout(int timeout, long restMills) {
         String m;

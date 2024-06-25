@@ -39,6 +39,7 @@ import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
+import io.army.sqltype.SQLType;
 import io.army.stmt.*;
 import io.army.sync.*;
 import io.army.sync.executor.SyncExecutor;
@@ -698,7 +699,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #bindParameter(PreparedStatement, List)
+     * @see #bindParameters(PreparedStatement, List)
      */
     final void bindArmyType(PreparedStatement stmt, final int indexBasedOne, final MappingType type,
                             final DataType dataType, final ArmyType armyType, Object value) throws SQLException {
@@ -1210,7 +1211,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         try (final PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
 
             for (List<SQLParam> group : stmt.groupList()) {
-                bindParameter(statement, group);
+                bindParameters(statement, group);
                 statement.addBatch();
             }
 
@@ -1336,7 +1337,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         try (final PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
 
             for (List<SQLParam> group : stmt.groupList()) {
-                bindParameter(statement, group);
+                bindParameters(statement, group);
                 statement.addBatch();
             }
 
@@ -1399,7 +1400,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         try {
             if (statement instanceof PreparedStatement) {
-                bindParameter((PreparedStatement) statement, paramGroup);
+                bindParameters((PreparedStatement) statement, paramGroup);
             }
             bindStatementOption(statement, stmt, option);
             return statement;
@@ -1429,7 +1430,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         try {
 
             if (statement instanceof PreparedStatement) {
-                bindParameter((PreparedStatement) statement, paramGroup);
+                bindParameters((PreparedStatement) statement, paramGroup);
             }
 
             bindStatementOption(statement, stmt, option);
@@ -1541,7 +1542,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function)
      * @see #executeBatchUpdate(BatchStmt, SyncStmtOption)
      */
-    private void bindParameter(final PreparedStatement statement, final List<SQLParam> paramGroup)
+    private void bindParameters(final PreparedStatement statement, final List<SQLParam> paramGroup)
             throws SQLException {
 
         final ServerMeta serverMeta = this.factory.serverMeta;
@@ -1553,10 +1554,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         MappingType type;
         TypeMeta typeMeta;
         DataType dataType;
-        Iterator<?> iterator;
-        boolean hasMore;
+        List<?> rowParamList;
         final int paramSize = paramGroup.size();
-        for (int i = 0, paramIndex = 1; i < paramSize; i++) {
+        for (int i = 0, paramIndex = 1, rowParamSize; i < paramSize; i++) {
             sqlParam = paramGroup.get(i);
 
             typeMeta = sqlParam.typeMeta();
@@ -1568,26 +1568,32 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             dataType = type.map(serverMeta);
 
             if (sqlParam instanceof SingleParam) {
-                iterator = null;
+                rowParamList = null;
+                rowParamSize = 1;
             } else {
-                iterator = ((MultiParam) sqlParam).valueList().iterator();
+                rowParamList = ((MultiParam) sqlParam).valueList();
+                rowParamSize = rowParamList.size();
 
             }
 
-            hasMore = true;
-            while (hasMore) {
+            for (int rowParamIndex = 0; rowParamIndex < rowParamSize; rowParamIndex++) {
 
-                if (iterator == null) {
+                if (rowParamList == null) {
                     value = ((SingleParam) sqlParam).value();
-                    hasMore = false;
-                } else if (iterator.hasNext()) {
-                    value = iterator.next();
                 } else {
-                    break;
+                    value = rowParamList.get(rowParamIndex);
                 }
-
                 if (value == null) { // jdbd client-prepared support dialect type null ,for example postgre : null::text
                     statement.setNull(paramIndex++, Types.NULL);
+                    continue;
+                } else if (value == void.class) { // void.class representing out parameter
+                    if (!(statement instanceof java.sql.CallableStatement)) {
+                        throw _Exceptions.voidClassSupportedByProcedure();
+                    } else if (dataType instanceof SQLType) {
+                        ((CallableStatement) statement).registerOutParameter(paramIndex++, mapToJdbcType((SQLType) dataType), dataType.typeName());
+                    } else {
+                        ((CallableStatement) statement).registerOutParameter(paramIndex++, Types.OTHER, dataType.typeName());
+                    }
                     continue;
                 }
 
@@ -1601,12 +1607,109 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 bind(statement, paramIndex++, type, dataType, value);
 
-
-            } // inner while loop
-
+            } // inner for loop
 
         } // outer for
 
+    }
+
+
+    /**
+     * @see #bindParameters(PreparedStatement, List)
+     */
+    private int mapToJdbcType(final SQLType dataType) {
+        final int jdbcType;
+        switch (dataType.armyType()) {
+            case BOOLEAN:
+                jdbcType = Types.BOOLEAN;
+                break;
+            case TINYINT:
+                jdbcType = Types.TINYINT;
+                break;
+            case TINYINT_UNSIGNED:
+            case SMALLINT:
+                jdbcType = Types.SMALLINT;
+                break;
+            case SMALLINT_UNSIGNED:
+            case MEDIUMINT:
+            case MEDIUMINT_UNSIGNED:
+            case INTEGER:
+                jdbcType = Types.INTEGER;
+                break;
+            case INTEGER_UNSIGNED:
+            case BIGINT:
+                jdbcType = Types.BIGINT;
+                break;
+            case BIGINT_UNSIGNED:
+            case DECIMAL_UNSIGNED:
+            case DECIMAL:
+                jdbcType = Types.DECIMAL;
+                break;
+            case FLOAT:
+                jdbcType = Types.FLOAT;
+                break;
+            case DOUBLE:
+                jdbcType = Types.DOUBLE;
+                break;
+            case BIT: {
+                switch (this.factory.serverDatabase) {
+                    case MySQL:
+                        jdbcType = Types.BIGINT;
+                        break;
+                    case PostgreSQL:
+                    case SQLite:
+                    default:
+                }
+            }
+            break;
+            case CHAR:
+            case VARCHAR:
+            case TEXT:
+            case BINARY:
+            case VARBINARY:
+            case BLOB:
+
+
+            case TIMESTAMP:
+            case TIME:
+            case TIMESTAMP_WITH_TIMEZONE:
+            case TIME_WITH_TIMEZONE:
+            case YEAR:
+            case YEAR_MONTH:
+            case MONTH_DAY:
+
+            case DURATION:
+            case UNKNOWN:
+
+
+            case PERIOD:
+
+            case JSON:
+            case DATE:
+            case NULL:
+            case XML:
+            case ENUM:
+            case ARRAY:
+            case JSONB:
+            case VARBIT:
+            case ROWID:
+            case NUMERIC:
+            case GEOMETRY:
+            case INTERVAL:
+            case LONGBLOB:
+            case LONGTEXT:
+
+            case TINYBLOB:
+            case TINYTEXT:
+            case COMPOSITE:
+            case MEDIUMBLOB:
+            case MEDIUMTEXT:
+            case REF_CURSOR:
+            case DIALECT_TYPE:
+
+
+        }
+        return jdbcType;
     }
 
 
@@ -1689,7 +1792,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             statement = this.conn.prepareStatement(stmt.sqlText());
 
-            bindParameter(statement, stmt.groupList().get(0));
+            bindParameters(statement, stmt.groupList().get(0));
 
             // bind option
             bindStatementOption(statement, stmt, option);
@@ -1887,6 +1990,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     /*-------------------below private static methods -------------------*/
+
 
     private static NullPointerException actionIsNull() {
         return new NullPointerException("Action consumer is null");
@@ -3521,7 +3625,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             statement.clearParameters();
             statement.clearWarnings();
-            executor.bindParameter(statement, paramGroupList.get(groupIndex));
+            executor.bindParameters(statement, paramGroupList.get(groupIndex));
             executor.bindStatementOption(statement, stmt, this.option);
 
             return statement.executeQuery();
