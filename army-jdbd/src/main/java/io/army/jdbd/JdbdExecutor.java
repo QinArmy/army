@@ -1427,10 +1427,10 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         MappingType type;
         TypeMeta typeMeta;
         DataType dataType;
-        Iterator<?> iterator;
-        List<?> list;
+        Iterator<?> rowParamIterator;
+        List<?> rowParamList;
         boolean hasMore;
-        for (int itemIndex = 0, paramIndex = 0, columnItemSize = 0; itemIndex < paramSize; itemIndex++) {
+        for (int itemIndex = 0, paramIndex = 0, rowParamSize = 0; itemIndex < paramSize; itemIndex++) {
             sqlParam = paramList.get(itemIndex);
             typeMeta = sqlParam.typeMeta();
 
@@ -1443,32 +1443,26 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             dataType = type.map(serverMeta);
 
             if (sqlParam instanceof SingleParam) {
-                list = null;
-                iterator = null;
-            } else if ((list = ((MultiParam) sqlParam).valueList()) instanceof ArrayList) {
-                columnItemSize = list.size();
-                iterator = null;
+                rowParamList = null;
+                rowParamIterator = null;
+                rowParamSize = 1;
+            } else if ((rowParamList = ((MultiParam) sqlParam).valueList()) instanceof ArrayList) {
+                rowParamSize = rowParamList.size();
+                rowParamIterator = null;
             } else {
-                iterator = list.iterator();
+                rowParamSize = rowParamList.size();
+                rowParamIterator = rowParamList.iterator();
 
             }
 
-            hasMore = true;
-            for (int columnItemIndex = 0; hasMore; columnItemIndex++) {
+            for (int rowParamIndex = 0; rowParamIndex < rowParamSize; rowParamIndex++) {
 
-                if (list == null) {
+                if (rowParamList == null) {
                     value = ((SingleParam) sqlParam).value();
-                    hasMore = false;
-                } else if (iterator == null) {
-                    if (columnItemIndex < columnItemSize) {
-                        value = list.get(columnItemIndex);
-                    } else {
-                        break;
-                    }
-                } else if (iterator.hasNext()) {
-                    value = iterator.next();
+                } else if (rowParamIterator == null) {
+                    value = rowParamList.get(rowParamIndex);
                 } else {
-                    break;
+                    value = rowParamIterator.next();
                 }
 
                 if (value == null || value == void.class) {
