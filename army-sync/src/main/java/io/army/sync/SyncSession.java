@@ -293,7 +293,7 @@ public interface SyncSession extends Session, Closeable {
      *                               <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
      *                               <li>update/delete child table (eg : firebird update statement),but {@link #inTransaction()} is false,see {@link ChildDmlNoTractionException}</li>
      *                               <li>statement is query insert statement,but {@link #isQueryInsertAllowed()} is false , see {@link QueryInsertException}</li>
-     *                               <li>result row count more than one,see {@link NonSingleRowException}</li>
+     *                               <li>result row count more than one,see {@link NonMonoException}</li>
      *                               <li>server response error message</li>
      *                           </ul>
      * @see #queryList(DqlStatement, Class, SyncStmtOption)

@@ -199,95 +199,89 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
-        return onlyOneRow(this.queryList(statement, resultClass, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));
+        return query(statement, resultClass, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunc::atMostOne)
+                .orElse(null);
     }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        return onlyOneRow(this.queryList(statement, resultClass, _Collections::arrayListWithCapacity1, option));
+        return query(statement, resultClass, option)
+                .reduce(StreamFunc::atMostOne)
+                .orElse(null);
     }
 
 
     @Override
     public final <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass) {
-        final R row;
-        row = queryOne(statement, resultClass, ArmySyncStmtOptions.DEFAULT);
-        if (row == null) {
-            throw _Exceptions.noAnyRow();
-        }
-        return row;
+        return query(statement, resultClass, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunc::atMostOne)
+                .orElseThrow(_Exceptions::noAnyRow);
     }
 
     @Override
     public final <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        final R row;
-        row = queryOne(statement, resultClass, option);
-        if (row == null) {
-            throw _Exceptions.noAnyRow();
-        }
-        return row;
+        return query(statement, resultClass, option)
+                .reduce(StreamFunc::atMostOne)
+                .orElseThrow(_Exceptions::noAnyRow);
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return onlyOneRow(this.queryObjectList(statement, constructor, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));
+        return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunc::atMostOne)
+                .orElse(null);
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        return onlyOneRow(this.queryObjectList(statement, constructor, _Collections::arrayListWithCapacity1, option));
+        return queryObject(statement, constructor, option)
+                .reduce(StreamFunc::atMostOne)
+                .orElse(null);
     }
 
     @Override
     public final <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        final R row;
-        row = queryOneObject(statement, constructor, ArmySyncStmtOptions.DEFAULT);
-        if (row == null) {
-            throw _Exceptions.noAnyRow();
-        }
-        return row;
+        return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunc::atMostOne)
+                .orElseThrow(_Exceptions::noAnyRow);
     }
 
     @Override
     public final <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        final R row;
-        row = queryOneObject(statement, constructor, option);
-        if (row == null) {
-            throw _Exceptions.noAnyRow();
-        }
-        return row;
+        return queryObject(statement, constructor, option)
+                .reduce(StreamFunc::atMostOne)
+                .orElseThrow(_Exceptions::noAnyRow);
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayListWithCapacity1, ArmySyncStmtOptions.DEFAULT));
+        return queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunc::atMostOne)
+                .orElse(null);
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return onlyOneRow(this.queryRecordList(statement, function, _Collections::arrayListWithCapacity1, option));
+        return queryRecord(statement, function, option)
+                .reduce(StreamFunc::atMostOne)
+                .orElse(null);
     }
 
 
     @Override
     public final <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        final R row;
-        row = queryOneRecord(statement, function, ArmySyncStmtOptions.DEFAULT);
-        if (row == null) {
-            throw _Exceptions.noAnyRow();
-        }
-        return row;
+        return queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunc::atMostOne)
+                .orElseThrow(_Exceptions::noAnyRow);
     }
 
 
     @Override
     public final <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        final R row;
-        row = queryOneRecord(statement, function, option);
-        if (row == null) {
-            throw _Exceptions.noAnyRow();
-        }
-        return row;
+        return queryRecord(statement, function, option)
+                .reduce(StreamFunc::atMostOne)
+                .orElseThrow(_Exceptions::noAnyRow);
     }
 
     @Override

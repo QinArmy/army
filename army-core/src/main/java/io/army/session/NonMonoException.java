@@ -17,9 +17,9 @@
 package io.army.session;
 
 
-public final class NonSingleRowException extends DataAccessException {
+public final class NonMonoException extends DataAccessException {
 
-    public NonSingleRowException(String message) {
+    public NonMonoException(String message) {
         super(message);
     }
 

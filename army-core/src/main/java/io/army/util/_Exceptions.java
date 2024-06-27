@@ -999,13 +999,17 @@ public abstract class _Exceptions {
     }
 
 
-    public static NonSingleRowException nonSingleRow(List<?> list) {
+    public static NonMonoException nonSingleRow(List<?> list) {
         String m = String.format("select result[%s] more than 1.", list.size());
-        return new NonSingleRowException(m);
+        return new NonMonoException(m);
     }
 
-    public static NonSingleRowException nonUnique(Class<?> resultClass) {
-        return new NonSingleRowException(String.format("return %s row count more than 1", resultClass.getName()));
+    public static NonMonoException nonMono() {
+        return new NonMonoException("stream element count more than 1.");
+    }
+
+    public static NonMonoException nonUnique(Class<?> resultClass) {
+        return new NonMonoException(String.format("return %s row count more than 1", resultClass.getName()));
     }
 
 

@@ -28,13 +28,13 @@ import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.DeclareCursorStmt;
 import io.army.stmt.SimpleStmt;
-import io.army.sync.SyncProcCursor;
-import io.army.sync.SyncSession;
-import io.army.sync.SyncStmtCursor;
-import io.army.sync.SyncStmtOption;
+import io.army.sync.*;
 import io.army.type.BlobPath;
 import io.army.type.TextPath;
-import io.army.util.*;
+import io.army.util.ArrayUtils;
+import io.army.util._Collections;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;
@@ -1275,7 +1275,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotOneRow()) {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
-            return StreamUtils.collectAtMostOneRow(executeFetch(direction, null, resultClass, consumer));
+            return executeFetch(direction, null, resultClass, consumer)
+                    .reduce(StreamFunc::atMostOne)
+                    .orElse(null);
         }
 
         @Nullable
@@ -1284,7 +1286,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotOneRow()) {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
-            return StreamUtils.collectAtMostOneRow(executeFetchObject(direction, null, constructor, consumer));
+            return executeFetchObject(direction, null, constructor, consumer)
+                    .reduce(StreamFunc::atMostOne)
+                    .orElse(null);
         }
 
         @Nullable
@@ -1293,7 +1297,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotOneRow()) {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
-            return StreamUtils.collectAtMostOneRow(executeFetchRecord(direction, null, function, consumer));
+            return executeFetchRecord(direction, null, function, consumer)
+                    .reduce(StreamFunc::atMostOne)
+                    .orElse(null);
         }
 
         @Override
