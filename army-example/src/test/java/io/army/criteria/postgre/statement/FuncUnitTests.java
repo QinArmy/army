@@ -44,7 +44,7 @@ public class FuncUnitTests extends PostgreUnitTests {
     public void caseFunc() {
         final Select stmt;
         stmt = Postgres.query()
-                .select(cases(SQLs.space(3))
+                .select(cases(SQLs.constValue(3))
                         .when(1)
                         .then(2)
                         .elseValue(0)

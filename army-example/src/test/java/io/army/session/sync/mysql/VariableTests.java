@@ -91,7 +91,7 @@ public class VariableTests extends SessionTestSupport {
         final DmlCommand stmt;
         stmt = MySQLs.setStmt()
                 .set(SQLs.AT, "my_null", null, SQLs.AT, "my_scalar", SQLs.scalarSubQuery()
-                        .select(SQLs.space("1").as("r"))
+                        .select(SQLs.constValue("1").as("r"))
                         .asQuery()
                 ).comma(SQLs.SESSION, "autocommit", false)
                 .comma(SQLs.SESSION, "sql_mode", SQLs.scalarSubQuery()

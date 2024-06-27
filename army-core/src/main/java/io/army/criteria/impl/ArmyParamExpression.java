@@ -45,7 +45,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationDefinite
         implements ParamExpression {
 
     /**
-     * @see SQLs#paramValue(Object)
+     * @see SQLs#parameter(Object)
      */
     static ArmyParamExpression from(final @Nullable Object value) {
         if (value == null) {

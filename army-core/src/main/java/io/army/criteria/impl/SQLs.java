@@ -465,7 +465,7 @@ public abstract class SQLs extends SQLSyntax {
                     value.getClass().getName());
             throw new CriteriaException(m);
         }
-        return SQLs.paramValue(value);
+        return SQLs.parameter(value);
     }
 
     static Expression _nullableExp(final @Nullable Object value) {
@@ -479,7 +479,7 @@ public abstract class SQLs extends SQLSyntax {
                     value.getClass().getName());
             throw new CriteriaException(m);
         } else {
-            exp = SQLs.paramValue(value);
+            exp = SQLs.parameter(value);
         }
         return exp;
     }

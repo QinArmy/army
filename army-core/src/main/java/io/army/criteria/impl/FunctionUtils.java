@@ -2053,7 +2053,7 @@ abstract class FunctionUtils {
                 } else if (value instanceof RightOperand) {
                     throw new CriteriaException("value must be Expression or parameter");
                 } else {
-                    context.appendParam(SQLs.paramValue(value));
+                    context.appendParam(SQLs.parameter(value));
                 }
 
                 count++;
@@ -2137,7 +2137,7 @@ abstract class FunctionUtils {
                     throw new CriteriaException(m);
                 } else {
                     sqlBuilder.append(_Constant.COMMA);
-                    context.appendParam(SQLs.paramValue(arg));
+                    context.appendParam(SQLs.parameter(arg));
                 }
 
                 index++;

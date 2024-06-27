@@ -2,8 +2,6 @@ package io.army.sync;
 
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
-
 public abstract class StreamFunc {
 
     private StreamFunc() {
@@ -16,19 +14,19 @@ public abstract class StreamFunc {
     }
 
 
-    public static <T> T atMostOne(@Nullable T prev, @Nullable T next) {
+    public static <T> T atMostOne(T prev, T next) {
         throw _Exceptions.nonMono();
     }
 
-    @Nullable
-    public static <T> T first(@Nullable T prev, @Nullable T next) {
+
+    public static <T> T first(T prev, T next) {
         return prev;
     }
 
 
-    @Nullable
-    public static <T> T last(@Nullable T prev, @Nullable T next) {
+    public static <T> T last(T prev, T next) {
         return next;
     }
+
 
 }

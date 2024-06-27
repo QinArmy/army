@@ -32,7 +32,7 @@ public class StandardReactiveFunctionTests extends SessionSupport {
     public void simpleCaseFunc(final ReactiveLocalSession session) {
         final Select stmt;
         stmt = SQLs.query()
-                .select(cases(SQLs.space(3))
+                .select(cases(SQLs.constValue(3))
                         .when(1)
                         .then(2)
                         .elseValue(0)

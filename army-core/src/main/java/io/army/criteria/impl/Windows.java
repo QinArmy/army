@@ -121,7 +121,7 @@ public abstract class Windows {
      *                 <li>null</li>
      *                 <li>{@link Long} type</li>
      *                 <li>{@link Integer} type</li>
-     *                 <li>{@link SQLs#paramValue(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#parameter(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                 <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
      * @throws io.army.criteria.CriteriaException throw when not in statement context
@@ -142,7 +142,7 @@ public abstract class Windows {
      *                         <li>null</li>
      *                         <li>{@link Long} type</li>
      *                         <li>{@link Integer} type</li>
-     *                         <li>{@link SQLs#paramValue(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                         <li>{@link SQLs#parameter(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                         <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                     </ul>
      * @param defaultValue non-null
@@ -175,7 +175,7 @@ public abstract class Windows {
      *                 <li>null</li>
      *                 <li>{@link Long} type</li>
      *                 <li>{@link Integer} type</li>
-     *                 <li>{@link SQLs#paramValue(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#parameter(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                 <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
      * @throws io.army.criteria.CriteriaException throw when not in statement context
@@ -194,7 +194,7 @@ public abstract class Windows {
      *                         <li>null</li>
      *                         <li>{@link Long} type</li>
      *                         <li>{@link Integer} type</li>
-     *                         <li>{@link SQLs#paramValue(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                         <li>{@link SQLs#parameter(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                         <li>{@link SQLs#literalValue(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                     </ul>
      * @param defaultValue non-null
@@ -231,7 +231,7 @@ public abstract class Windows {
      *                           <li>{@link  Byte}</li>
      *                      </ul>
      *               </li>
-     *               <li>positive number parameter {@link  Expression},eg:{@link SQLs#paramValue(Object)}</li>
+     *               <li>positive number parameter {@link  Expression},eg:{@link SQLs#parameter(Object)}</li>
      *               <li>positive number literal {@link  Expression},eg:{@link SQLs#literalValue(Object)}</li>
      *               <li>variable {@link  Expression}</li>
      *          </ul>

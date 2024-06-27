@@ -19,17 +19,12 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
-import io.army.mapping.optional.NoCastBigDecimalType;
-import io.army.mapping.optional.NoCastIntegerType;
-import io.army.mapping.optional.NoCastLongType;
-import io.army.mapping.optional.NoCastTextType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map;
@@ -120,7 +115,7 @@ abstract class SQLSyntax extends Functions {
      * @return parameter expression
      * @see #literalValue(Object)
      */
-    public static ParamExpression paramValue(final Object value) {
+    public static ParamExpression parameter(final Object value) {
         return ArmyParamExpression.from(value);
     }
 
@@ -278,28 +273,23 @@ abstract class SQLSyntax extends Functions {
      *
      * @param value non null
      * @return literal expression
-     * @see SQLs#paramValue(Object)
-     * @see SQLs#space(Object)
+     * @see SQLs#parameter(Object)
+     * @see SQLs#constValue(Object)
      */
     public static LiteralExpression literalValue(final Object value) {
         return ArmyLiteralExpression.from(value, true);
     }
 
+
     /**
      * <p>
      * Create literal expression with nonNullValue.
      * This method is similar to {@link SQLs#literalValue(Object)},except that two exceptions :
-     * <ul>
-     *     <li>{@link String} map to {@link NoCastTextType} not {@link io.army.mapping.StringType}</li>
-     *     <li>{@link Integer} map to {@link NoCastIntegerType} not {@link io.army.mapping.IntegerType}</li>
-     *     <li>{@link Long} map to {@link NoCastLongType} not {@link io.army.mapping.LongType}</li>
-     *     <li>{@link BigDecimal} map to {@link NoCastBigDecimalType} not {@link io.army.mapping.BigDecimalType}</li>
-     * </ul>
      *
      * @param nonNullValue non-null value
      * @see SQLs#literalValue(Object)
      */
-    public static LiteralExpression space(final Object nonNullValue) {
+    public static LiteralExpression constValue(final Object nonNullValue) {
         return ArmyLiteralExpression.from(nonNullValue, false);
     }
 
@@ -323,6 +313,16 @@ abstract class SQLSyntax extends Functions {
         return result;
     }
 
+    public static LiteralExpression constant(final TypeInfer type, final @Nullable Object value) {
+        final LiteralExpression result;
+        if (value instanceof Supplier) {
+            result = ArmyLiteralExpression.single(type, ((Supplier<?>) value).get(), false);
+        } else {
+            result = ArmyLiteralExpression.single(type, value, false);
+        }
+        return result;
+    }
+
     /**
      * <p>
      * Create literal expression,literal expression will output literal of value
@@ -338,6 +338,16 @@ abstract class SQLSyntax extends Functions {
             result = ArmyLiteralExpression.encodingSingle(type, ((Supplier<?>) value).get(), true);
         } else {
             result = ArmyLiteralExpression.encodingSingle(type, value, true);
+        }
+        return result;
+    }
+
+    public static LiteralExpression encodingConst(final TypeInfer type, final @Nullable Object value) {
+        final LiteralExpression result;
+        if (value instanceof Supplier) {
+            result = ArmyLiteralExpression.encodingSingle(type, ((Supplier<?>) value).get(), false);
+        } else {
+            result = ArmyLiteralExpression.encodingSingle(type, value, false);
         }
         return result;
     }
@@ -369,6 +379,11 @@ abstract class SQLSyntax extends Functions {
         return ArmyLiteralExpression.named(type, name, true);
     }
 
+    public static LiteralExpression namedConst(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.named(type, name, false);
+    }
+
+
     /**
      * <p>
      * Create named non-null literal expression. This expression can only be used in values insert statement.
@@ -393,6 +408,10 @@ abstract class SQLSyntax extends Functions {
      */
     public static LiteralExpression encodingNamedLiteral(final TypeInfer type, final String name) {
         return ArmyLiteralExpression.encodingNamed(type, name, true);
+    }
+
+    public static LiteralExpression encodingNamedConst(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.encodingNamed(type, name, false);
     }
 
     /**
@@ -421,6 +440,10 @@ abstract class SQLSyntax extends Functions {
         return ArmyLiteralExpression.namedNullable(type, name, true);
     }
 
+    public static LiteralExpression namedNullableConst(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.namedNullable(type, name, false);
+    }
+
     /**
      * <p>Create named non-null literal expression. This expression can only be used in values insert statement.
      *
@@ -443,6 +466,10 @@ abstract class SQLSyntax extends Functions {
      */
     public static LiteralExpression encodingNamedNullableLiteral(final TypeInfer type, final String name) {
         return ArmyLiteralExpression.encodingNamedNullable(type, name, true);
+    }
+
+    public static LiteralExpression encodingNamedNullableConst(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.encodingNamedNullable(type, name, false);
     }
 
     /**
@@ -473,7 +500,11 @@ abstract class SQLSyntax extends Functions {
      * @see #rowParam(TypeInfer, Collection)
      */
     public static RowLiteralExpression rowLiteral(final TypeInfer type, final Collection<?> values) {
-        return ArmyRowLiteralExpression.multi(type, values);
+        return ArmyRowLiteralExpression.multi(type, values, true);
+    }
+
+    public static RowLiteralExpression rowConst(final TypeInfer type, final Collection<?> values) {
+        return ArmyRowLiteralExpression.multi(type, values, false);
     }
 
     /**
@@ -516,7 +547,11 @@ abstract class SQLSyntax extends Functions {
      * @see #namedRowParam(TypeInfer, String, int)
      */
     public static RowLiteralExpression namedRowLiteral(final TypeInfer type, final String name, final int size) {
-        return ArmyRowLiteralExpression.named(type, name, size);
+        return ArmyRowLiteralExpression.named(type, name, size, true);
+    }
+
+    public static RowLiteralExpression namedRowConst(final TypeInfer type, final String name, final int size) {
+        return ArmyRowLiteralExpression.named(type, name, size, false);
     }
 
     /**
@@ -552,7 +587,11 @@ abstract class SQLSyntax extends Functions {
      * @see #encodingRowParam(TypeInfer, Collection)
      */
     public static RowLiteralExpression encodingRowLiteral(final TypeInfer type, final Collection<?> values) {
-        return ArmyRowLiteralExpression.encodingMulti(type, values);
+        return ArmyRowLiteralExpression.encodingMulti(type, values, true);
+    }
+
+    public static RowLiteralExpression encodingRowConst(final TypeInfer type, final Collection<?> values) {
+        return ArmyRowLiteralExpression.encodingMulti(type, values, false);
     }
 
     /**
@@ -601,7 +640,11 @@ abstract class SQLSyntax extends Functions {
      * @see #encodingNamedRowParam(TypeInfer, String, int)
      */
     public static RowLiteralExpression encodingNamedRowLiteral(final TypeInfer type, final String name, final int size) {
-        return ArmyRowLiteralExpression.encodingNamed(type, name, size);
+        return ArmyRowLiteralExpression.encodingNamed(type, name, size, true);
+    }
+
+    public static RowLiteralExpression encodingNamedRowConst(final TypeInfer type, final String name, final int size) {
+        return ArmyRowLiteralExpression.encodingNamed(type, name, size, false);
     }
 
     public static RowExpression row(SubQuery subQuery) {
