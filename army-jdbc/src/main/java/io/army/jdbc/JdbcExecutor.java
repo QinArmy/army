@@ -122,7 +122,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     @Override
     public final boolean inTransaction() throws DataAccessException {
-        return obtainTransaction() != null;
+        final TransactionInfo info;
+        info = obtainTransaction();
+        return info != null && info.inTransaction();
     }
 
     @Override
@@ -549,7 +551,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         printSqlIfNeed(this.factory, this.sessionName, getLogger(), multiStmtSql);
 
-        final char semicolonChar = ';';
         try (final Statement statement = this.conn.createStatement()) {
             Isolation sessionIsolation = null;
             int batchSize = 0;
@@ -573,7 +574,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 int start = 0;
                 String sql;
 
-                for (int semicolon; (semicolon = multiStmtSql.indexOf(semicolonChar, start)) > 0; start = semicolon + 1) {
+                for (int semicolon; (semicolon = multiStmtSql.indexOf(_Constant.SEMICOLON, start)) > 0; start = semicolon + 1) {
                     sql = multiStmtSql.substring(start, semicolon).trim();
                     batchSize++;
                     if (sql.startsWith("SELECT ") || sql.startsWith("SHOW ")) {
@@ -588,7 +589,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 assert sessionIsolation != null;
             } else {
                 int start = 0;
-                for (int semicolon; (semicolon = multiStmtSql.indexOf(semicolonChar, start)) > 0; start = semicolon + 1) {
+                for (int semicolon; (semicolon = multiStmtSql.indexOf(_Constant.SEMICOLON, start)) > 0; start = semicolon + 1) {
                     statement.addBatch(multiStmtSql.substring(start, semicolon));
                     batchSize++;
                 }

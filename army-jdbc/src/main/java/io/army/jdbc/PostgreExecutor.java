@@ -104,7 +104,20 @@ abstract class PostgreExecutor extends JdbcExecutor {
      */
     @Override
     public final TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc) {
-        final String sql = "SHOW transaction_isolation ; SHOW transaction_read_only ; SHOW transaction_deferrable ";
+        final StringBuilder builder = _StringUtils.builder()
+                .append("SHOW")
+                .append(_Constant.SPACE)
+                .append("default_transaction_isolation") // for startLocalTransaction() method
+                .append(_Constant.SEMICOLON)
+                .append("SHOW")
+                .append(_Constant.SPACE)
+                .append("default_transaction_read_only")
+                .append(_Constant.SEMICOLON)
+                .append("SHOW")
+                .append(_Constant.SPACE)
+                .append("default_transaction_deferrable");
+
+        final String sql = builder.toString();
         try (final Statement statement = this.conn.createStatement()) {
 
             printSqlIfNeed(this.factory, this.sessionName, LOG, sql);
@@ -120,7 +133,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             readOnly = readBooleanFromMultiResult(statement);
             deferrable = readBooleanFromMultiResult(statement);
 
-            return TransactionInfo.builder(false, isolation, readOnly)
+            return TransactionInfo.builder(inTransaction(), isolation, readOnly)
                     .option(DEFERRABLE, deferrable)
                     .build();
         } catch (Exception e) {
@@ -134,7 +147,14 @@ abstract class PostgreExecutor extends JdbcExecutor {
     @Override
     public final void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
         final StringBuilder builder = new StringBuilder(35);
-        builder.append("SET SESSION CHARACTERISTICS AS TRANSACTION ");
+        builder.append("SET")
+                .append(_Constant.SPACE)
+                .append("SESSION")
+                .append(_Constant.SPACE)
+                .append("CHARACTERISTICS")
+                .append(_Constant.SPACE_AS_SPACE)
+                .append("TRANSACTION")
+                .append(_Constant.SPACE);
 
         if (option.isReadOnly()) {
             builder.append(READ_ONLY);
@@ -145,8 +165,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
         final Isolation isolation;
         isolation = option.isolation();
         if (isolation != null) {
-            builder.append(_Constant.SPACE_COMMA_SPACE);
-            builder.append("ISOLATION LEVEL ");
+            builder.append(_Constant.SPACE_COMMA_SPACE)
+                    .append("ISOLATION LEVEL")
+                    .append(_Constant.SPACE);
             standardIsolation(isolation, builder);
         }
 
@@ -478,17 +499,17 @@ abstract class PostgreExecutor extends JdbcExecutor {
      */
     final Isolation readIsolation(final String level) {
         final Isolation isolation;
-        switch (level.toLowerCase(Locale.ROOT)) {
-            case "read committed":
+        switch (level.toUpperCase(Locale.ROOT)) {
+            case "READ COMMITTED":
                 isolation = Isolation.READ_COMMITTED;
                 break;
-            case "repeatable read":
+            case "REPEATABLE READ":
                 isolation = Isolation.REPEATABLE_READ;
                 break;
-            case "serializable":
+            case "SERIALIZABLE":
                 isolation = Isolation.SERIALIZABLE;
                 break;
-            case "read uncommitted":
+            case "READ UNCOMMITTED":
                 isolation = Isolation.READ_UNCOMMITTED;
                 break;
             default:
@@ -513,7 +534,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
     @Override
     final String parseCursorFetch(final String safeCursorName, Direction direction, @Nullable Long rowCount) {
         final StringBuilder builder = new StringBuilder(45);
-        builder.append("FETCH ");
+        builder.append("FETCH")
+                .append(_Constant.SPACE);
 
         appendCursorDirection(builder, direction, rowCount);
 
@@ -526,7 +548,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
     @Override
     final String parseCursorMove(final String safeCursorName, Direction direction, @Nullable Long rowCount) {
         final StringBuilder builder = new StringBuilder(45);
-        builder.append("MOVE ");
+        builder.append("MOVE")
+                .append(_Constant.SPACE);
 
         appendCursorDirection(builder, direction, rowCount);
 
@@ -539,7 +562,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
     @Override
     final String parseCursorClose(final String safeCursorName) {
         return _StringUtils.builder(6 + safeCursorName.length())
-                .append("CLOSE ")
+                .append("CLOSE")
+                .append(_Constant.SPACE)
                 .append(safeCursorName)
                 .toString();
     }
@@ -569,7 +593,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             }
         } else if (value instanceof Path) {
             try {
-                v = new String(Files.readAllBytes((Path) value), StandardCharsets.UTF_8);
+                v = Files.readString((Path) value);
             } catch (Exception e) {
                 throw handleException(e);
             }
@@ -669,7 +693,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
         if (deferrable != null) {
             builder.append(_Constant.SPACE_COMMA_SPACE);
             if (!deferrable) {
-                builder.append("NOT ");
+                builder.append("NOT")
+                        .append(_Constant.SPACE);
             }
             builder.append("DEFERRABLE");
         }
@@ -703,7 +728,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
             isolation = option.isolation();
 
             if (isolation == null) {
-                builder.append("SHOW default_transaction_isolation ; ");
+                builder.append("SHOW")
+                        .append(_Constant.SPACE)
+                        .append("default_transaction_isolation")
+                        .append(_Constant.SEMICOLON);
                 stmtCount++;
             }
 

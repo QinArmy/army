@@ -229,5 +229,7 @@ public interface _Constant {
 
     char EQUAL = '=';
 
+    char SEMICOLON = ';';
+
 
 }
