@@ -21,9 +21,9 @@ import io.army.session.*;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 
-import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -242,9 +242,10 @@ public interface SyncSession extends Session, Closeable {
      *         </code>
      * </pre>
      *
+     * @throws NoSuchElementException throw when no row
+     * @throws NonMonoException       throw when more than one row.
      * @see #queryOne(SimpleDqlStatement, Class, SyncStmtOption)
      */
-    @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass);
 
     /**
@@ -285,6 +286,8 @@ public interface SyncSession extends Session, Closeable {
      *     <li>nullable : resultClass is simple value class</li>
      *     <li>non-null : resultClass is pojo class</li>
      * </ul>
+     * @throws NoSuchElementException throw when no row
+     * @throws NonMonoException       throw when more than one row.
      * @throws CriteriaException throw when
      * @throws SessionException  throw when
      *                           <ul>
@@ -298,38 +301,18 @@ public interface SyncSession extends Session, Closeable {
      *                           </ul>
      * @see #queryList(DqlStatement, Class, SyncStmtOption)
      */
-    @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
 
-    <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass);
-
-
-    <R> R queryOneNonNull(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
-
-
-    @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
-    @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
 
-    <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor);
-
-    <R> R queryOneNonNullObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
-
-    @Nullable
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
 
-    @Nullable
+
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
-
-
-    <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
-
-
-    <R> R queryOneNonNullRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
 
     /**
      * @param <R> representing select result Java Type.
@@ -350,7 +333,6 @@ public interface SyncSession extends Session, Closeable {
      * <p>
      * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     *
      */
     <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor);
 
@@ -361,7 +343,6 @@ public interface SyncSession extends Session, Closeable {
      * <p>
      * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     *
      */
     <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor);
 
@@ -371,7 +352,6 @@ public interface SyncSession extends Session, Closeable {
      * <p>
      * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     *
      */
     <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function);
 
@@ -439,7 +419,6 @@ public interface SyncSession extends Session, Closeable {
      * <p>
      * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     *
      */
     <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
@@ -448,7 +427,6 @@ public interface SyncSession extends Session, Closeable {
      * <p>
      * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     *
      */
     <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function);
 
@@ -456,7 +434,6 @@ public interface SyncSession extends Session, Closeable {
      * <p>
      * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
-     *
      *
      * @throws VisibleModeException throw when satisfy all the following conditions :
      *                              <ul>

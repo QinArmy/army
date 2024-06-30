@@ -1005,7 +1005,7 @@ public abstract class _Exceptions {
     }
 
     public static NonMonoException nonMono() {
-        return new NonMonoException("stream element count more than 1.");
+        return new NonMonoException("stream row count more than 1.");
     }
 
     public static NonMonoException nonUnique(Class<?> resultClass) {

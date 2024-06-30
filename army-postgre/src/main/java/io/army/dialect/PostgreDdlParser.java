@@ -233,7 +233,7 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
 
             if (result.containSqlType()) {
                 builder.append("TYPE");
-                fieldDataType(field, builder);
+                fieldDataType(field, builder);  // TODO fix me , convert old value with USING expression
                 effectiveCount++;
             }
 

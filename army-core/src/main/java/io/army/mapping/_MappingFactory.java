@@ -153,15 +153,10 @@ public abstract class _MappingFactory {
     }
 
 
+
     public static MappingType map(final Mapping mapping, final Field field) {
         final Class<?> mappingClass;
-        try {
-            mappingClass = Class.forName(mapping.value());
-        } catch (ClassNotFoundException e) {
-            String m = String.format("Not found %s.%s mapping type %s ."
-                    , field.getDeclaringClass().getName(), field.getName(), mapping.value());
-            throw new MetaException(m);
-        }
+        mappingClass = getMappingClass(mapping, field);
         if (!MappingType.class.isAssignableFrom(mappingClass)) {
             String m = String.format("%s.%s mapping type %s error."
                     , field.getDeclaringClass().getName(), field.getName(), mapping.value());
@@ -228,6 +223,25 @@ public abstract class _MappingFactory {
             mappingType = createMappingType(mappingClass, javaType);
         }
         return mappingType;
+    }
+
+    private static Class<?> getMappingClass(final Mapping mapping, final Field field) {
+        Class<?> mappingClass;
+        mappingClass = mapping.type();
+        if (mappingClass == void.class) {
+            try {
+                mappingClass = Class.forName(mapping.value());
+            } catch (ClassNotFoundException e) {
+                String m = String.format("Not found %s.%s mapping type %s .",
+                        field.getDeclaringClass().getName(), field.getName(), mapping.value());
+                throw new MetaException(m);
+            }
+        } else if (!MappingType.class.isAssignableFrom(mappingClass)) {
+            String m = String.format("Mapping type[%s] of %s.%s isn't sub class of %s .", mappingClass.getName(),
+                    field.getDeclaringClass().getName(), field.getName(), MappingType.class.getName());
+            throw new MetaException(m);
+        }
+        return mappingClass;
     }
 
     private static MappingType createMappingType(Class<?> mappingClass, Class<?> javaType) throws MetaException {
