@@ -211,6 +211,17 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 .orElseThrow();
     }
 
+    @Override
+    public final <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass) {
+        return query(statement, resultClass, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunctions::atMostOne);
+    }
+
+    @Override
+    public final <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+        return query(statement, resultClass, option)
+                .reduce(StreamFunctions::atMostOne);
+    }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
@@ -226,6 +237,17 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 .orElseThrow();
     }
 
+    @Override
+    public final <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor) {
+        return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunctions::atMostOne);
+    }
+
+    @Override
+    public final <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+        return queryObject(statement, constructor, option)
+                .reduce(StreamFunctions::atMostOne);
+    }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
@@ -241,6 +263,18 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 .orElseThrow();
     }
 
+
+    @Override
+    public final <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
+        return queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT)
+                .reduce(StreamFunctions::atMostOne);
+    }
+
+    @Override
+    public final <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+        return queryRecord(statement, function, option)
+                .reduce(StreamFunctions::atMostOne);
+    }
 
     @Override
     public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass) {

@@ -24,6 +24,7 @@ import io.army.session.record.ResultStates;
 import java.io.Closeable;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -288,31 +289,44 @@ public interface SyncSession extends Session, Closeable {
      * </ul>
      * @throws NoSuchElementException throw when no row
      * @throws NonMonoException       throw when more than one row.
-     * @throws CriteriaException throw when
-     * @throws SessionException  throw when
-     *                           <ul>
-     *                               <li>session have closed</li>
-     *                               <li>statement is dml statement,but {@link #isReadonlySession()} is true,see {@link ReadOnlySessionException}</li>
-     *                               <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
-     *                               <li>update/delete child table (eg : firebird update statement),but {@link #inTransaction()} is false,see {@link ChildDmlNoTractionException}</li>
-     *                               <li>statement is query insert statement,but {@link #isQueryInsertAllowed()} is false , see {@link QueryInsertException}</li>
-     *                               <li>result row count more than one,see {@link NonMonoException}</li>
-     *                               <li>server response error message</li>
-     *                           </ul>
+     * @throws CriteriaException      throw when
+     * @throws SessionException       throw when
+     *                                <ul>
+     *                                    <li>session have closed</li>
+     *                                    <li>statement is dml statement,but {@link #isReadonlySession()} is true,see {@link ReadOnlySessionException}</li>
+     *                                    <li>statement is dml statement,but {@link #isReadOnlyStatus()} is true,see {@link ReadOnlyTransactionException}</li>
+     *                                    <li>update/delete child table (eg : firebird update statement),but {@link #inTransaction()} is false,see {@link ChildDmlNoTractionException}</li>
+     *                                    <li>statement is query insert statement,but {@link #isQueryInsertAllowed()} is false , see {@link QueryInsertException}</li>
+     *                                    <li>result row count more than one,see {@link NonMonoException}</li>
+     *                                    <li>server response error message</li>
+     *                                </ul>
      * @see #queryList(DqlStatement, Class, SyncStmtOption)
      */
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
+
+    <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass);
+
+    <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
 
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
+    <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor);
+
+    <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
+
 
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
 
 
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
+
+    <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
+
+    <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
+
 
     /**
      * @param <R> representing select result Java Type.
