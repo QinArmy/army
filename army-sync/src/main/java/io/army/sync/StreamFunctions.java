@@ -2,9 +2,9 @@ package io.army.sync;
 
 import io.army.util._Exceptions;
 
-public abstract class StreamFunc {
+public abstract class StreamFunctions {
 
-    private StreamFunc() {
+    private StreamFunctions() {
         throw new UnsupportedOperationException();
     }
 

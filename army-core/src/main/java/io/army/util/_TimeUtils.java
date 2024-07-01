@@ -53,7 +53,6 @@ public abstract class _TimeUtils {
             .appendValue(HOUR_OF_DAY, 2)
             .appendLiteral(':')
             .appendValue(MINUTE_OF_HOUR, 2)
-            .optionalStart()
             .appendLiteral(':')
             .appendValue(SECOND_OF_MINUTE, 2)
             .toFormatter(Locale.ENGLISH);

@@ -1276,7 +1276,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
             return executeFetch(direction, null, resultClass, consumer)
-                    .reduce(StreamFunc::atMostOne)
+                    .reduce(StreamFunctions::atMostOne)
                     .orElse(null);
         }
 
@@ -1287,7 +1287,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
             return executeFetchObject(direction, null, constructor, consumer)
-                    .reduce(StreamFunc::atMostOne)
+                    .reduce(StreamFunctions::atMostOne)
                     .orElse(null);
         }
 
@@ -1298,7 +1298,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
             return executeFetchRecord(direction, null, function, consumer)
-                    .reduce(StreamFunc::atMostOne)
+                    .reduce(StreamFunctions::atMostOne)
                     .orElse(null);
         }
 

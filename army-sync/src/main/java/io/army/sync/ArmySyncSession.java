@@ -200,14 +200,14 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
         return query(statement, resultClass, ArmySyncStmtOptions.DEFAULT)
-                .reduce(StreamFunc::atMostOne)
+                .reduce(StreamFunctions::atMostOne)
                 .orElseThrow();
     }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
         return query(statement, resultClass, option)
-                .reduce(StreamFunc::atMostOne)
+                .reduce(StreamFunctions::atMostOne)
                 .orElseThrow();
     }
 
@@ -215,14 +215,14 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
         return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
-                .reduce(StreamFunc::atMostOne)
+                .reduce(StreamFunctions::atMostOne)
                 .orElseThrow();
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
         return queryObject(statement, constructor, option)
-                .reduce(StreamFunc::atMostOne)
+                .reduce(StreamFunctions::atMostOne)
                 .orElseThrow();
     }
 
@@ -230,14 +230,14 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
         return queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT)
-                .reduce(StreamFunc::atMostOne)
+                .reduce(StreamFunctions::atMostOne)
                 .orElseThrow();
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
         return queryRecord(statement, function, option)
-                .reduce(StreamFunc::atMostOne)
+                .reduce(StreamFunctions::atMostOne)
                 .orElseThrow();
     }
 
