@@ -223,7 +223,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
         if (!this.paramAccepter.hasLiteral) {
             this.paramAccepter.setHasLiteral();
         }
-        this.parser.literal(typeMeta, value, typeName, this.sqlBuilder.append(_Constant.SPACE));
+        this.parser.safeLiteral(typeMeta, value, typeName, this.sqlBuilder.append(_Constant.SPACE));
 
     }
 
@@ -261,13 +261,13 @@ abstract class StatementContext implements _StmtContext, StmtParams {
 
             if (this.parser.serverDatabase == Database.PostgreSQL) {
                 sqlBuilder.append(_Constant.SPACE);
-                this.parser.literal(namedLiteral.typeMeta(), null, typeName, sqlBuilder);
+                this.parser.safeLiteral(namedLiteral.typeMeta(), null, typeName, sqlBuilder);
             } else {
                 sqlBuilder.append(_Constant.SPACE_NULL);
             }
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.typeMeta(), value, typeName, sqlBuilder);
+            this.parser.safeLiteral(namedLiteral.typeMeta(), value, typeName, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -285,7 +285,7 @@ abstract class StatementContext implements _StmtContext, StmtParams {
                 } else {
                     sqlBuilder.append(_Constant.SPACE);
                 }
-                parser.literal(typeMeta, v, typeName, sqlBuilder);
+                parser.safeLiteral(typeMeta, v, typeName, sqlBuilder);
                 i++;
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

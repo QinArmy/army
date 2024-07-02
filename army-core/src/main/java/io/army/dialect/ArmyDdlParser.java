@@ -460,7 +460,7 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
 
         builder.append(SPACE_COMMENT)
                 .append(_Constant.SPACE);
-        this.parser.literal(TextType.INSTANCE, object.comment(), false, builder);
+        this.parser.safeLiteral(TextType.INSTANCE, object.comment(), false, builder);
     }
 
 
@@ -773,7 +773,7 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
 
         createTableIfNotExists(builder);
         tableName(table, builder);
-        return builder.append(_Constant.LEFT_PAREN);
+        return builder;
     }
 
     final void createTableIfNotExists(final StringBuilder builder) {
@@ -861,7 +861,7 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
         builder.append(_Constant.SPACE)
                 .append("COMMENT")
                 .append(_Constant.SPACE);
-        this.parser.literal(StringType.INSTANCE, field.comment(), false, builder);
+        this.parser.safeLiteral(StringType.INSTANCE, field.comment(), false, builder);
     }
 
     final void indexName(final IndexMeta<?> index, final StringBuilder builder) {

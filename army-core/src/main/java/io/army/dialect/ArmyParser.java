@@ -745,8 +745,8 @@ abstract class ArmyParser implements DialectParser {
     /**
      * <p>Append  literal
      */
-    public final void literal(final TypeMeta typeMeta, @Nullable Object value, final boolean typeName,
-                              final StringBuilder sqlBuilder) {
+    public final void safeLiteral(final TypeMeta typeMeta, @Nullable Object value, final boolean typeName,
+                                  final StringBuilder sqlBuilder) {
         final MappingType type;
         if (typeMeta instanceof MappingType) {
             type = (MappingType) typeMeta;
@@ -1209,7 +1209,7 @@ abstract class ArmyParser implements DialectParser {
                     if (mappingType == null) {
                         throw _Exceptions.notFoundMappingType(columnValue);
                     }
-                    literal(mappingType, columnValue, true, sqlBuilder.append(_Constant.SPACE));
+                    safeLiteral(mappingType, columnValue, true, sqlBuilder.append(_Constant.SPACE));
                 }
 
             }
@@ -1858,7 +1858,7 @@ abstract class ArmyParser implements DialectParser {
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
 
-        literal(field.mappingType(), table.discriminatorValue(), true, sqlBuilder);
+        safeLiteral(field.mappingType(), table.discriminatorValue(), true, sqlBuilder);
     }
 
 
@@ -1891,7 +1891,7 @@ abstract class ArmyParser implements DialectParser {
         sqlBuilder.append(_Constant.PERIOD);
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
-        this.literal(field.mappingType(), visibleValue, false, sqlBuilder);
+        this.safeLiteral(field.mappingType(), visibleValue, false, sqlBuilder);
     }
 
     protected final void parentVisiblePredicate(final _InsertContext childContext, final boolean firstPredicate) {
@@ -1957,7 +1957,7 @@ abstract class ArmyParser implements DialectParser {
         this.safeObjectName(discriminator, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
 
-        this.literal(discriminator.typeMeta(), childTable.discriminatorValue(), false, sqlBuilder);
+        this.safeLiteral(discriminator.typeMeta(), childTable.discriminatorValue(), false, sqlBuilder);
 
         // below visible predicate
         final FieldMeta<?> visibleField;
@@ -1970,7 +1970,7 @@ abstract class ArmyParser implements DialectParser {
         this.safeObjectName(visibleField, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
 
-        this.literal(visibleField, visibleValue, false, sqlBuilder);
+        this.safeLiteral(visibleField, visibleValue, false, sqlBuilder);
 
         //below sub query right paren
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -2176,7 +2176,7 @@ abstract class ArmyParser implements DialectParser {
                 throw _Exceptions.notFoundMappingType(value);
             }
             sqlBuilder.append(_Constant.SPACE);
-            literal(mappingType, value, true, sqlBuilder);
+            safeLiteral(mappingType, value, true, sqlBuilder);
         }
 
     }
@@ -2789,7 +2789,7 @@ abstract class ArmyParser implements DialectParser {
             sqlBuilder.append(_Constant.SPACE_AND);
             context.parentColumnFromSubQuery(visibleField);
             sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            this.literal(visibleField.mappingType(), visibleValue, false, sqlBuilder);
+            this.safeLiteral(visibleField.mappingType(), visibleValue, false, sqlBuilder);
         }
         return firstPredicate;
     }
@@ -3059,7 +3059,7 @@ abstract class ArmyParser implements DialectParser {
             childBuilder.append(_Constant.SPACE_AND);
             childContext.parentColumnFromSubQuery(visibleField);
             childBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            this.literal(visibleField.mappingType(), visibleValue, false, childBuilder);
+            this.safeLiteral(visibleField.mappingType(), visibleValue, false, childBuilder);
         }
 
         return firstPredicate;

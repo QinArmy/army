@@ -47,7 +47,8 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
     @Override
     public <T> void createTable(final TableMeta<T> table, final List<String> sqlList) {
         final StringBuilder builder;
-        builder = createTableCommandBuilder(table);
+        builder = createTableCommandBuilder(table)
+                .append(_Constant.LEFT_PAREN);
 
         // column definitions
         columnDefinitionList(table, builder);
@@ -90,7 +91,7 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
                 .append("COMMENT")
                 .append(_Constant.SPACE_EQUAL_SPACE);
 
-        this.parser.literal(StringType.INSTANCE, table.comment(), false, builder);
+        this.parser.safeLiteral(StringType.INSTANCE, table.comment(), false, builder);
 
         sqlList.add(builder.toString());
     }
@@ -130,7 +131,7 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
         } else {
             builder.append("COMMENT")
                     .append(_Constant.SPACE_EQUAL_SPACE);
-            this.parser.literal(StringType.INSTANCE, table.comment(), false, builder);
+            this.parser.safeLiteral(StringType.INSTANCE, table.comment(), false, builder);
 
         }
     }

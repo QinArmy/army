@@ -163,7 +163,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             assert discriminator != null;
 
             final StringBuilder codeBuilder = new StringBuilder(10);
-            parser.literal(discriminator.mappingType(), codeEnum, true, codeBuilder);
+            parser.safeLiteral(discriminator.mappingType(), codeEnum, true, codeBuilder);
             discriminatorLiteral = codeBuilder.toString();
 
             discriminatorParam = null;

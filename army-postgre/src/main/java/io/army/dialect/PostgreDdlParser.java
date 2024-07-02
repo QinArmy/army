@@ -51,7 +51,8 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
     @Override
     public <T> void createTable(final TableMeta<T> table, final List<String> sqlList) {
         final StringBuilder builder;
-        builder = createTableCommandBuilder(table);
+        builder = createTableCommandBuilder(table)
+                .append(_Constant.LEFT_PAREN);
 
         // column definitions
         columnDefinitionList(table, builder);
@@ -479,7 +480,7 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
 
         builder.append(" IS ");
 
-        this.parser.literal(TextType.INSTANCE, object.comment(), false, builder);
+        this.parser.safeLiteral(TextType.INSTANCE, object.comment(), false, builder);
 
     }
 
@@ -625,7 +626,7 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
                 .append("IS")
                 .append(_Constant.SPACE);
 
-        this.parser.literal(StringType.INSTANCE, table.comment(), false, builder);
+        this.parser.safeLiteral(StringType.INSTANCE, table.comment(), false, builder);
 
     }
 
@@ -647,7 +648,7 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
                 .append("IS")
                 .append(_Constant.SPACE);
 
-        this.parser.literal(StringType.INSTANCE, field.comment(), false, builder);
+        this.parser.safeLiteral(StringType.INSTANCE, field.comment(), false, builder);
     }
 
 
