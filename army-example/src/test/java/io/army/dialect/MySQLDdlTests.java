@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 
+import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillUser_;
 import io.army.meta.FieldMeta;
@@ -41,30 +42,29 @@ public class MySQLDdlTests {
             ChinaProvince_.T,
             BankUser_.T,
             PillUser_.T,
+            BankAccount_.T,
+            Captcha_.T,
             BankPerson_.T,
             RegisterRecord_.T
     );
 
+    private static final MySQLDdlParser DDL_PARSER = new MySQLDdlParser((MySQLParser) _MockDialects.from(MySQLDialect.MySQL80));
+
     @Test
     public void createTable() {
         final List<String> sqlList = _Collections.arrayList();
-        MySQLDdlParser ddl;
-        for (MySQLDialect dialect : MySQLDialect.values()) {
-            if (dialect.database() != Database.MySQL) {
-                continue;
-            }
-            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
-            ddl.createTable(PillUser_.T, sqlList);
+
+        for (TableMeta<?> table : TABLE_LIST) {
+            DDL_PARSER.createTable(table, sqlList);
 
             List<String> errorList;
-            errorList = ddl.errorMsgList();
+            errorList = DDL_PARSER.errorMsgList();
             if (errorList.size() > 0) {
                 for (String msg : errorList) {
                     LOG.error(msg);
                 }
                 throw new MetaException("error");
             }
-
         }
 
         LOG.debug(_DialectUtils.printDdlSqlList(sqlList));
@@ -76,18 +76,14 @@ public class MySQLDdlTests {
     @Test
     public void addColumn() {
         final List<String> sqlList = _Collections.arrayList();
-        MySQLDdlParser ddl;
 
-
-        final DialectParser parser = _MockDialects.from(MySQLDialect.MySQL80);
-        ddl = new MySQLDdlParser((MySQLParser) parser);
         for (TableMeta<?> table : TABLE_LIST) {
             List<?> fieldList = table.fieldList();
-            ddl.addColumn((List<FieldMeta<?>>) fieldList, sqlList);
+            DDL_PARSER.addColumn((List<FieldMeta<?>>) fieldList, sqlList);
         }
 
         List<String> errorList;
-        errorList = ddl.errorMsgList();
+        errorList = DDL_PARSER.errorMsgList();
         if (errorList.size() > 0) {
             for (String msg : errorList) {
                 LOG.error(msg);
@@ -102,8 +98,6 @@ public class MySQLDdlTests {
     @Test
     public void modifyColumn() {
         final List<String> sqlList = _Collections.arrayList();
-        MySQLDdlParser ddl;
-        ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(MySQLDialect.MySQL80));
         List<FieldResult> resultList;
         List<String> errorList;
 
@@ -111,14 +105,13 @@ public class MySQLDdlTests {
         for (TableMeta<?> table : TABLE_LIST) {
 
             resultList = _Collections.arrayList();
-
             for (FieldMeta<?> field : table.fieldList()) {
                 resultList.add(new MockFieldResult(field, (random.nextInt() & 1) == 0, (random.nextInt() & 1) == 0, (random.nextInt() & 1) == 0, (random.nextInt() & 1) == 0));
             }
 
-            ddl.modifyColumn(resultList, sqlList);
+            DDL_PARSER.modifyColumn(resultList, sqlList);
 
-            errorList = ddl.errorMsgList();
+            errorList = DDL_PARSER.errorMsgList();
             if (errorList.size() > 0) {
                 for (String msg : errorList) {
                     LOG.error(msg);

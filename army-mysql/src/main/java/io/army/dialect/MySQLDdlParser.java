@@ -174,16 +174,14 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
         FieldMeta<?> field;
         TableMeta<?> table = null;
         String safeColumnName;
-        for (int i = 0; i < listSize; i++) {
+        for (int i = 0, effectiveCount = 0; i < listSize; i++) {
             result = resultList.get(i);
             field = result.field();
             if (i == 0) {
                 table = field.tableMeta();
                 alterTableCommand(false, table, builder);
                 alterColumnStartIndex = builder.length(); // update  alterColumnStartIndex
-            } else if (field.tableMeta() == table) {
-                builder.append(_Constant.COMMA);
-            } else {
+            } else if (field.tableMeta() != table) {
                 // no bug,never here
                 throw new IllegalArgumentException();
             }
@@ -191,6 +189,9 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
             safeColumnName = this.parser.safeObjectName(field);
 
             if (result.containSqlType() || result.containNotNull() || result.containComment()) {
+                if (effectiveCount > 0) {
+                    builder.append(_Constant.COMMA);
+                }
                 builder.append("\n\t")
                         .append("CHANGE")
                         .append(_Constant.SPACE)
@@ -199,7 +200,11 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
                         .append(safeColumnName);
 
                 columnDefinition(field, builder);
-            } else {
+                effectiveCount++;
+            } else if (result.containComment()) {
+                if (effectiveCount > 0) {
+                    builder.append(_Constant.COMMA);
+                }
                 builder.append("\n\t")
                         .append("ALTER")
                         .append(_Constant.SPACE)
@@ -209,6 +214,7 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
                         .append(_Constant.SPACE);
 
                 alterColumnDefault(field, builder);
+                effectiveCount++;
             }
 
 
@@ -220,16 +226,22 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
         }
     }
 
-
-    @Override
-    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
-        super.dropIndex(table, indexNameList, sqlList);
-    }
-
     @Override
     public <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
         super.createIndex(table, indexNameList, sqlList);
     }
+
+
+    @Override
+    public <T> void dropIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
+        final int listSize = indexNameList.size();
+        if (listSize == 0) {
+            return;
+        }
+
+        super.dropIndex(table, indexNameList, sqlList);
+    }
+
 
     @Override
     protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
