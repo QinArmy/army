@@ -141,7 +141,6 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
         }
 
         final StringBuilder builder = new StringBuilder();
-        alterTable(true, builder);
 
         FieldMeta<?> field;
         TableMeta<?> table = null;
@@ -150,7 +149,7 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
 
             if (i == 0) {
                 table = field.tableMeta();
-                tableName(table, builder);
+                alterTableCommand(true, table, builder);
             } else if (field.tableMeta() == table) {
                 builder.append(_Constant.COMMA);
             } else {
@@ -193,7 +192,6 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
         }
 
         final StringBuilder builder = new StringBuilder();
-        alterTable(true, builder);
 
         int alterColumnStartIndex;
         alterColumnStartIndex = builder.length();
@@ -207,7 +205,7 @@ final class PostgreDdlParser extends ArmyDdlParser<PostgreParser> {
             field = result.field();
             if (i == 0) {
                 table = field.tableMeta();
-                tableName(table, builder);
+                alterTableCommand(true, table, builder);
                 alterColumnStartIndex = builder.length(); // update  alterColumnStartIndex
             } else if (field.tableMeta() != table) {
                 // no bug,never here

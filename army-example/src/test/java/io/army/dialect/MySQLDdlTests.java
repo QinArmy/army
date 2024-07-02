@@ -17,6 +17,7 @@
 package io.army.dialect;
 
 
+import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillUser_;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
@@ -27,14 +28,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MySQLDdlTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLDdlTests.class);
+
+    private static final List<TableMeta<?>> TABLE_LIST = List.of(
+            ChinaRegion_.T,
+            ChinaCity_.T,
+            ChinaProvince_.T,
+            BankUser_.T,
+            PillUser_.T,
+            BankPerson_.T,
+            RegisterRecord_.T
+    );
 
     @Test
     public void createTable() {
@@ -68,27 +77,25 @@ public class MySQLDdlTests {
     public void addColumn() {
         final List<String> sqlList = _Collections.arrayList();
         MySQLDdlParser ddl;
-        final TableMeta<?> table = PillUser_.T;
-        for (MySQLDialect dialect : MySQLDialect.values()) {
-            if (dialect.database() != Database.MySQL) {
-                continue;
-            }
-            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
+
+
+        final DialectParser parser = _MockDialects.from(MySQLDialect.MySQL80);
+        ddl = new MySQLDdlParser((MySQLParser) parser);
+        for (TableMeta<?> table : TABLE_LIST) {
             List<?> fieldList = table.fieldList();
             ddl.addColumn((List<FieldMeta<?>>) fieldList, sqlList);
-            List<String> errorList;
-            errorList = ddl.errorMsgList();
-            if (errorList.size() > 0) {
-                for (String msg : errorList) {
-                    LOG.error(msg);
-                }
-                throw new MetaException("error");
-            }
+        }
 
+        List<String> errorList;
+        errorList = ddl.errorMsgList();
+        if (errorList.size() > 0) {
+            for (String msg : errorList) {
+                LOG.error(msg);
+            }
+            throw new MetaException("error");
         }
-        for (String sql : sqlList) {
-            LOG.debug(sql);
-        }
+
+        LOG.debug(_DialectUtils.printDdlSqlList(sqlList));
 
     }
 
@@ -96,21 +103,21 @@ public class MySQLDdlTests {
     public void modifyColumn() {
         final List<String> sqlList = _Collections.arrayList();
         MySQLDdlParser ddl;
-        for (MySQLDialect dialect : MySQLDialect.values()) {
-            if (dialect.database() != Database.MySQL) {
-                continue;
+        ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(MySQLDialect.MySQL80));
+        List<FieldResult> resultList;
+        List<String> errorList;
+
+        final Random random = ThreadLocalRandom.current();
+        for (TableMeta<?> table : TABLE_LIST) {
+
+            resultList = _Collections.arrayList();
+
+            for (FieldMeta<?> field : table.fieldList()) {
+                resultList.add(new MockFieldResult(field, (random.nextInt() & 1) == 0, (random.nextInt() & 1) == 0, (random.nextInt() & 1) == 0, (random.nextInt() & 1) == 0));
             }
-            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
-
-            List<FieldResult> resultList = _Collections.arrayList();
-            resultList.add(new MockFieldResult(PillUser_.nickName, false, true, false, false));
-
-            resultList.add(new MockFieldResult(PillUser_.identityId, true, true, false, true));
-            resultList.add(new MockFieldResult(PillUser_.identityType, false, true, false, false));
 
             ddl.modifyColumn(resultList, sqlList);
 
-            List<String> errorList;
             errorList = ddl.errorMsgList();
             if (errorList.size() > 0) {
                 for (String msg : errorList) {
@@ -120,9 +127,9 @@ public class MySQLDdlTests {
             }
 
         }
-        for (String sql : sqlList) {
-            LOG.debug(sql);
-        }
+
+        LOG.debug(_DialectUtils.printDdlSqlList(sqlList));
+
 
     }
 

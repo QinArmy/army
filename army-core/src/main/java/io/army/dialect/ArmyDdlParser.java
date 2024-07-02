@@ -776,7 +776,11 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
         return builder;
     }
 
+
     final void createTableIfNotExists(final StringBuilder builder) {
+        if (builder.length() > 0) {
+            builder.append(_Constant.SPACE);
+        }
         builder.append("CREATE")
                 .append(_Constant.SPACE)
                 .append("TABLE")
@@ -788,6 +792,9 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
 
 
     final void dropTableIfExists(final StringBuilder builder) {
+        if (builder.length() > 0) {
+            builder.append(_Constant.SPACE);
+        }
         builder.append("DROP")
                 .append(_Constant.SPACE)
                 .append("TABLE")
@@ -797,7 +804,10 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
 
     }
 
-    final void alterTable(final boolean ifExists, final StringBuilder builder) {
+    final void alterTableCommand(final boolean ifExists, final TableMeta<?> table, final StringBuilder builder) {
+        if (builder.length() > 0) {
+            builder.append(_Constant.SPACE);
+        }
         builder.append("ALTER")
                 .append(_Constant.SPACE)
                 .append("TABLE");
@@ -806,6 +816,8 @@ public abstract class ArmyDdlParser<P extends _ArmyDialectParser> implements Ddl
                     .append("IF")
                     .append(_Constant.SPACE_EXISTS);
         }
+
+        tableName(table, builder);
 
     }
 

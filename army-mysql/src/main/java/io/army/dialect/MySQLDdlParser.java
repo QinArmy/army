@@ -81,11 +81,7 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
     @Override
     public void modifyTableComment(final TableMeta<?> table, final List<String> sqlList) {
         final StringBuilder builder = new StringBuilder();
-        builder.append("ALTER")
-                .append(_Constant.SPACE)
-                .append("TABLE");
-
-        tableName(table, builder);
+        alterTableCommand(false, table, builder);
 
         builder.append(_Constant.SPACE)
                 .append("COMMENT")
@@ -96,6 +92,144 @@ final class MySQLDdlParser extends ArmyDdlParser<MySQLParser> {
         sqlList.add(builder.toString());
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/drop-table.html">DROP TABLE Statement</a>
+     */
+    @Override
+    public void dropTable(final List<TableMeta<?>> tableList, final List<String> sqlList) {
+        final int listSize = tableList.size();
+        if (listSize == 0) {
+            return;
+        }
+        final StringBuilder builder = new StringBuilder();
+        dropTableIfExists(builder);
+
+        for (int i = 0; i < listSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            }
+            tableName(tableList.get(i), builder);
+        }
+
+        sqlList.add(builder.toString());
+
+    }
+
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/alter-table.html">ALTER TABLE Statement</a>
+     */
+    @Override
+    public void addColumn(final List<FieldMeta<?>> fieldList, final List<String> sqlList) {
+        final int listSize = fieldList.size();
+        if (listSize == 0) {
+            return;
+        }
+
+        final StringBuilder builder = new StringBuilder();
+
+        FieldMeta<?> field;
+        TableMeta<?> table = null;
+        for (int i = 0; i < listSize; i++) {
+            field = fieldList.get(i);
+            if (i == 0) {
+                table = field.tableMeta();
+                alterTableCommand(false, table, builder);
+            } else if (field.tableMeta() == table) {
+                builder.append(_Constant.COMMA);
+            } else {
+                // no bug,never here
+                throw new IllegalArgumentException();
+            }
+
+            builder.append("\n\t")
+                    .append("ADD")
+                    .append(_Constant.SPACE)
+                    .append("COLUMN");
+
+            columnDefinition(field, builder);
+
+
+        } // for loop
+
+
+        sqlList.add(builder.toString());
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/alter-table.html">ALTER TABLE Statement</a>
+     */
+    @Override
+    public void modifyColumn(final List<FieldResult> resultList, final List<String> sqlList) {
+        final int listSize = resultList.size();
+        if (listSize == 0) {
+            return;
+        }
+
+        final StringBuilder builder = new StringBuilder();
+        int alterColumnStartIndex;
+        alterColumnStartIndex = 0;
+
+        FieldResult result;
+        FieldMeta<?> field;
+        TableMeta<?> table = null;
+        String safeColumnName;
+        for (int i = 0; i < listSize; i++) {
+            result = resultList.get(i);
+            field = result.field();
+            if (i == 0) {
+                table = field.tableMeta();
+                alterTableCommand(false, table, builder);
+                alterColumnStartIndex = builder.length(); // update  alterColumnStartIndex
+            } else if (field.tableMeta() == table) {
+                builder.append(_Constant.COMMA);
+            } else {
+                // no bug,never here
+                throw new IllegalArgumentException();
+            }
+
+            safeColumnName = this.parser.safeObjectName(field);
+
+            if (result.containSqlType() || result.containNotNull() || result.containComment()) {
+                builder.append("\n\t")
+                        .append("CHANGE")
+                        .append(_Constant.SPACE)
+                        .append("COLUMN")
+                        .append(_Constant.SPACE)
+                        .append(safeColumnName);
+
+                columnDefinition(field, builder);
+            } else {
+                builder.append("\n\t")
+                        .append("ALTER")
+                        .append(_Constant.SPACE)
+                        .append("COLUMN")
+                        .append(_Constant.SPACE)
+                        .append(safeColumnName)
+                        .append(_Constant.SPACE);
+
+                alterColumnDefault(field, builder);
+            }
+
+
+        } // for loop
+
+
+        if (builder.length() > alterColumnStartIndex) {
+            sqlList.add(builder.toString());
+        }
+    }
+
+
+    @Override
+    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+        super.dropIndex(table, indexNameList, sqlList);
+    }
+
+    @Override
+    public <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+        super.createIndex(table, indexNameList, sqlList);
+    }
 
     @Override
     protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
