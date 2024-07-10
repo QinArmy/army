@@ -17,6 +17,8 @@
 package io.army.sync;
 
 import io.army.ArmyException;
+import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.env.SqlLogMode;
@@ -24,6 +26,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
+import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
@@ -667,6 +670,49 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     }
 
 
+    private <R> Stream<R> executeQuery1(final DqlStatement statement, final SyncStmtOption optionOfUser,
+                                        final Function<CurrentRecord, R> rowFunc) {
+        try {
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = parseDqlStatement(statement, optionOfUser);
+
+            final SyncStmtOption option;
+            if (this.factory.sqlExecutionCostTime) {
+                option = replaceForQueryExecutionLogger(optionOfUser, stmt);  // for transaction timeout and optimistic lock and execution log
+            } else {
+                option = replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, null); // for transaction timeout and optimistic lock
+            }
+
+            final Stream<R> stream;
+            if (stmt instanceof SingleSqlStmt) {
+                stream = this.executor.queryRecord((SingleSqlStmt) stmt, rowFunc, option, Option.EMPTY_FUNC);
+            } else if (!(stmt instanceof PairStmt)) {
+                throw _Exceptions.unexpectedStmt(stmt);
+            } else if (!inTransaction()) {
+                throw updateChildNoTransaction();
+            } else if (statement instanceof InsertStatement) {
+                stream = executePairInsertQuery((InsertStatement) statement, option, (PairStmt) stmt, null);
+            } else {
+                // TODO add for firebird
+                throw _Exceptions.unexpectedStmt(stmt);
+            }
+            return stream;
+        } catch (ChildUpdateException e) {
+            rollbackOnlyOnError(e);
+            throw e;
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).clear();
+            }
+        }
+
+    }
+
+
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #executeQuery(DqlStatement, SyncStmtOption, ExecutorFunction)
@@ -719,6 +765,174 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             throw _Exceptions.childInsertError(this, childTable, e);
         }
     }
+
+
+    /**
+     * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
+     * @see #executeQuery(DqlStatement, SyncStmtOption, ExecutorFunction)
+     */
+    private <R> Stream<R> executePairInsertQuery1(final InsertStatement statement, final SyncStmtOption option,
+                                                  final PairStmt stmt, final Function<CurrentRecord, R> rowFunc) {
+        final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
+        final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
+
+        ResultStates states = null;
+        List<R> resultList = null;
+        if (firstStmtIsQuery) {
+            resultList = this.executor.queryRecord(stmt.firstStmt(), rowFunc, option, Option.EMPTY_FUNC)
+                    .collect(Collectors.toCollection(_Collections::arrayList));
+            if (resultList.size() == 0) {
+                // exists conflict clause
+                return Stream.empty();
+            }
+        } else {
+            states = this.executor.insert(stmt.firstStmt(), option, ResultStates.class, Option.EMPTY_FUNC);
+            if (states.affectedRows() == 0L) {
+                // exists conflict clause
+                return Stream.empty();
+            }
+        }
+
+        final ChildTableMeta<?> childTable;
+        childTable = (ChildTableMeta<?>) childInsert.table();
+
+        try {
+            final Consumer<ResultStates> statesConsumer;
+            final Stream<R> stream;
+            if (firstStmtIsQuery) {
+                final Function<Option<?>, ?> optionFunc;
+                optionFunc = Option.singleFunc(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
+                final SecondRecordReader<R> recordReader = new SecondRecordReader<>((TwoStmtQueryStmt) stmt.secondStmt(), resultList);
+                // TODO 验证 行数
+                stream = this.executor.queryRecord(recordReader.stmt, recordReader::readRecord, option, optionFunc);
+            } else {
+                // TODO 验证 行数,fetch size
+                final ResultStates parentStates = states;
+
+                statesConsumer = childStates -> {
+                    if (childStates.rowCount() != parentStates.affectedRows()) {
+                        throw _Exceptions.parentChildRowsNotMatch(this, childTable, parentStates.affectedRows(), childStates.rowCount());
+                    }
+                };
+                stream = this.executor.queryRecord(stmt.secondStmt(), rowFunc,
+                        ArmySyncStmtOptions.replaceStateConsumer(option, statesConsumer),
+                        Option.singleFunc(Option.FIRST_DML_STATES, parentStates)
+                );
+            }
+            return stream;
+        } catch (Throwable e) {
+            throw _Exceptions.childInsertError(this, childTable, e);
+        }
+    }
+
+    private static final class SecondRecordReader<R> {
+
+        private final TwoStmtQueryStmt stmt;
+
+        private final List<R> firstList;
+
+        private final ObjectAccessor accessor;
+
+        private final Class<?>[] columnClassArray;
+
+        private Map<Object, R> idToRowMap;
+
+        private SecondRecordReader(final TwoStmtQueryStmt stmt, final List<R> firstList) {
+            this.stmt = stmt;
+            this.firstList = firstList;
+
+            final R row = firstList.get(0);
+            final ObjectAccessor accessor;
+            if (row instanceof Map || stmt.maxColumnSize() > 1) {
+                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
+            } else {
+                this.accessor = accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+            }
+
+            final List<? extends Selection> selectionList = stmt.selectionList();
+            final int selectionSize = selectionList.size();
+            final Class<?>[] columnClassArray;
+            this.columnClassArray = columnClassArray = new Class<?>[selectionSize];
+
+            if (accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR) {
+                columnClassArray[0] = row.getClass();
+            } else for (int i = 0; i < selectionSize; i++) {
+                columnClassArray[i] = accessor.getJavaType(selectionList.get(i).label());
+            }
+
+
+        }
+
+
+        private R readRecord(final CurrentRecord row) {
+            final int columnCount = row.getColumnCount();
+            final Class<?>[] columnClassArray = this.columnClassArray;
+            if (columnCount != columnClassArray.length) {
+                throw new IllegalArgumentException(String.format("Column count %d does not match selection count %d", columnCount, columnClassArray.length));
+            }
+
+            Map<Object, R> idToRowMap = this.idToRowMap;
+            if (idToRowMap == null) {
+                this.idToRowMap = idToRowMap = createIdToRowMap();
+            }
+            final ObjectAccessor accessor = this.accessor;
+            final boolean singleColumnRow;
+            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+            assert columnCount > 1 || singleColumnRow;
+            for (int i = 0; i < columnCount; i++) {
+
+            }
+            throw new UnsupportedOperationException();
+        }
+
+        private Map<Object, R> createIdToRowMap() {
+            final ObjectAccessor accessor = this.accessor;
+            final boolean singleColumnRow;
+            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+
+            final String idLabel;
+            if (singleColumnRow) {
+                idLabel = null;
+            } else {
+                idLabel = this.stmt.selectionList().get(this.stmt.idSelectionIndex()).label();
+            }
+
+            final List<R> firstList = this.firstList;
+            final int rowSize = firstList.size();
+            final Map<Object, R> rowMap = _Collections.hashMapForSize(rowSize);
+
+            Object id;
+            R row;
+            for (int i = 0; i < rowSize; i++) {
+
+                row = firstList.get(i);
+                if (row == null) {
+                    // no bug,never here
+                    throw new NullPointerException(String.format("%s row is null", i + 1));
+                }
+
+                if (singleColumnRow) {
+                    id = row;
+                } else {
+                    id = accessor.get(row, idLabel);
+                }
+
+                if (id == null) {
+                    // no bug,never here
+                    throw new NullPointerException(String.format("%s row id is null", i + 1));
+                }
+
+                if (rowMap.putIfAbsent(id, row) != null) {
+                    throw new CriteriaException(String.format("%s row id[%s] duplication", i + 1, id));
+                }
+
+            } // for loop
+
+            return Collections.unmodifiableMap(rowMap);
+        }
+
+
+    } // SecondRecordReader
 
 
     /**
@@ -971,6 +1185,29 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         }
     }
 
+
+    private <R> Stream<R> executeQueryObject(final SimpleDqlStatement statement, final Supplier<R> constructor,
+                                             final SyncStmtOption optionOfUser) {
+        try {
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = parseDqlStatement(statement, optionOfUser);
+
+
+        } catch (ChildUpdateException e) {
+            rollbackOnlyOnError(e);
+            throw e;
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).clear();
+            }
+        }
+        return Stream.empty();
+    }
+
     private SyncStmtOption replaceIfNeed(final SyncStmtOption option) {
         final TransactionInfo info;
 
@@ -1029,22 +1266,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
 
     /*-------------------below private static method -------------------*/
-
-    @Nullable
-    private static <R> R onlyOneRow(final List<R> resultList) {
-        final R result;
-        switch (resultList.size()) {
-            case 1:
-                result = resultList.get(0);
-                break;
-            case 0:
-                result = null;
-                break;
-            default:
-                throw _Exceptions.nonSingleRow(resultList);
-        }
-        return result;
-    }
 
     private static long obtainAffectedRows(final Object result) {
         if (result instanceof Long) {

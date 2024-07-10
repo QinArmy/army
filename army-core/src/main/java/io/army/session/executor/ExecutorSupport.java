@@ -51,9 +51,9 @@ import java.util.function.Supplier;
 public abstract class ExecutorSupport {
 
 
-    protected static final ObjectAccessor SINGLE_COLUMN_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
+    public static final ObjectAccessor SINGLE_COLUMN_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
 
-    protected static final ObjectAccessor RECORD_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
+    public static final ObjectAccessor RECORD_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
 
 
     protected ExecutorSupport() {
@@ -118,9 +118,9 @@ public abstract class ExecutorSupport {
     }
 
 
-    protected static MappingType compatibleTypeFrom(final TypeInfer infer, final DataType dataType,
-                                                    final @Nullable Class<?> resultClass,
-                                                    final ObjectAccessor accessor, final String fieldName)
+    public static MappingType compatibleTypeFrom(final TypeInfer infer, final DataType dataType,
+                                                 final @Nullable Class<?> resultClass,
+                                                 final ObjectAccessor accessor, final String fieldName)
             throws NoMatchMappingException {
         final MappingType type;
         if (infer instanceof MappingType) {
