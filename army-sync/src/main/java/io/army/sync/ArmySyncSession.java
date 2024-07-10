@@ -825,114 +825,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         }
     }
 
-    private static final class SecondRecordReader<R> {
 
-        private final TwoStmtQueryStmt stmt;
-
-        private final List<R> firstList;
-
-        private final ObjectAccessor accessor;
-
-        private final Class<?>[] columnClassArray;
-
-        private Map<Object, R> idToRowMap;
-
-        private SecondRecordReader(final TwoStmtQueryStmt stmt, final List<R> firstList) {
-            this.stmt = stmt;
-            this.firstList = firstList;
-
-            final R row = firstList.get(0);
-            final ObjectAccessor accessor;
-            if (row instanceof Map || stmt.maxColumnSize() > 1) {
-                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
-            } else {
-                this.accessor = accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-            }
-
-            final List<? extends Selection> selectionList = stmt.selectionList();
-            final int selectionSize = selectionList.size();
-            final Class<?>[] columnClassArray;
-            this.columnClassArray = columnClassArray = new Class<?>[selectionSize];
-
-            if (accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR) {
-                columnClassArray[0] = row.getClass();
-            } else for (int i = 0; i < selectionSize; i++) {
-                columnClassArray[i] = accessor.getJavaType(selectionList.get(i).label());
-            }
-
-
-        }
-
-
-        private R readRecord(final CurrentRecord row) {
-            final int columnCount = row.getColumnCount();
-            final Class<?>[] columnClassArray = this.columnClassArray;
-            if (columnCount != columnClassArray.length) {
-                throw new IllegalArgumentException(String.format("Column count %d does not match selection count %d", columnCount, columnClassArray.length));
-            }
-
-            Map<Object, R> idToRowMap = this.idToRowMap;
-            if (idToRowMap == null) {
-                this.idToRowMap = idToRowMap = createIdToRowMap();
-            }
-            final ObjectAccessor accessor = this.accessor;
-            final boolean singleColumnRow;
-            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-            assert columnCount > 1 || singleColumnRow;
-            for (int i = 0; i < columnCount; i++) {
-
-            }
-            throw new UnsupportedOperationException();
-        }
-
-        private Map<Object, R> createIdToRowMap() {
-            final ObjectAccessor accessor = this.accessor;
-            final boolean singleColumnRow;
-            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-
-            final String idLabel;
-            if (singleColumnRow) {
-                idLabel = null;
-            } else {
-                idLabel = this.stmt.selectionList().get(this.stmt.idSelectionIndex()).label();
-            }
-
-            final List<R> firstList = this.firstList;
-            final int rowSize = firstList.size();
-            final Map<Object, R> rowMap = _Collections.hashMapForSize(rowSize);
-
-            Object id;
-            R row;
-            for (int i = 0; i < rowSize; i++) {
-
-                row = firstList.get(i);
-                if (row == null) {
-                    // no bug,never here
-                    throw new NullPointerException(String.format("%s row is null", i + 1));
-                }
-
-                if (singleColumnRow) {
-                    id = row;
-                } else {
-                    id = accessor.get(row, idLabel);
-                }
-
-                if (id == null) {
-                    // no bug,never here
-                    throw new NullPointerException(String.format("%s row id is null", i + 1));
-                }
-
-                if (rowMap.putIfAbsent(id, row) != null) {
-                    throw new CriteriaException(String.format("%s row id[%s] duplication", i + 1, id));
-                }
-
-            } // for loop
-
-            return Collections.unmodifiableMap(rowMap);
-        }
-
-
-    } // SecondRecordReader
 
 
     /**
@@ -1348,6 +1241,120 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         Stream<R> execute(SingleSqlStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
     }
+
+
+    private static final class SecondRecordReader<R> {
+
+        private final TwoStmtQueryStmt stmt;
+
+        private final List<R> firstList;
+
+        private final ObjectAccessor accessor;
+
+        private final Class<?>[] columnClassArray;
+
+        private Map<Object, R> idToRowMap;
+
+        private SecondRecordReader(final TwoStmtQueryStmt stmt, final List<R> firstList) {
+            this.stmt = stmt;
+            this.firstList = firstList;
+
+            final R row = firstList.get(0);
+            final ObjectAccessor accessor;
+            if (row instanceof Map || stmt.maxColumnSize() > 1) {
+                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
+            } else {
+                this.accessor = accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+            }
+
+            final List<? extends Selection> selectionList = stmt.selectionList();
+            final int selectionSize = selectionList.size();
+            final Class<?>[] columnClassArray;
+            this.columnClassArray = columnClassArray = new Class<?>[selectionSize];
+
+            if (accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR) {
+                columnClassArray[0] = row.getClass();
+            } else if (row instanceof Map) {
+                for (int i = 0; i < selectionSize; i++) {
+                    columnClassArray[i] = selectionList.get(i).typeMeta().mappingType().javaType();
+                }
+            } else for (int i = 0; i < selectionSize; i++) {
+                columnClassArray[i] = accessor.getJavaType(selectionList.get(i).label());
+            }
+
+
+        }
+
+
+        private R readRecord(final CurrentRecord record) {
+            final int columnCount = record.getColumnCount();
+            final Class<?>[] columnClassArray = this.columnClassArray;
+            if (columnCount != columnClassArray.length) {
+                throw new IllegalArgumentException(String.format("Column count %d does not match selection count %d", columnCount, columnClassArray.length));
+            }
+
+            Map<Object, R> idToRowMap = this.idToRowMap;
+            if (idToRowMap == null) {
+                this.idToRowMap = idToRowMap = createIdToRowMap();
+            }
+            final ObjectAccessor accessor = this.accessor;
+            final boolean singleColumnRow;
+            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+            assert columnCount > 1 || singleColumnRow;
+            for (int i = 0; i < columnCount; i++) {
+                accessor.set(record, "", record.get(i, columnClassArray[i]));
+            }
+            throw new UnsupportedOperationException();
+        }
+
+        private Map<Object, R> createIdToRowMap() {
+            final ObjectAccessor accessor = this.accessor;
+            final boolean singleColumnRow;
+            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+
+            final String idLabel;
+            if (singleColumnRow) {
+                idLabel = null;
+            } else {
+                idLabel = this.stmt.selectionList().get(this.stmt.idSelectionIndex()).label();
+            }
+
+            final List<R> firstList = this.firstList;
+            final int rowSize = firstList.size();
+            final Map<Object, R> rowMap = _Collections.hashMapForSize(rowSize);
+
+            Object id;
+            R row;
+            for (int i = 0; i < rowSize; i++) {
+
+                row = firstList.get(i);
+                if (row == null) {
+                    // no bug,never here
+                    throw new NullPointerException(String.format("%s row is null", i + 1));
+                }
+
+                if (singleColumnRow) {
+                    id = row;
+                } else {
+                    id = accessor.get(row, idLabel);
+                }
+
+                if (id == null) {
+                    // no bug,never here
+                    throw new NullPointerException(String.format("%s row id is null", i + 1));
+                }
+
+                if (rowMap.putIfAbsent(id, row) != null) {
+                    throw new CriteriaException(String.format("%s row id[%s] duplication", i + 1, id));
+                }
+
+            } // for loop
+
+            return Collections.unmodifiableMap(rowMap);
+        }
+
+
+    } // SecondRecordReader
 
 
 }
