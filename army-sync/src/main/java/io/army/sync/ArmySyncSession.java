@@ -826,8 +826,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     }
 
 
-
-
     /**
      * @param <R> the class of {@link Long} or {@link ResultStates}
      * @see #update(SimpleDmlStatement, SyncStmtOption)
@@ -1079,28 +1077,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     }
 
 
-    private <R> Stream<R> executeQueryObject(final SimpleDqlStatement statement, final Supplier<R> constructor,
-                                             final SyncStmtOption optionOfUser) {
-        try {
-            assertSession(statement);
-
-            final Stmt stmt;
-            stmt = parseDqlStatement(statement, optionOfUser);
-
-
-        } catch (ChildUpdateException e) {
-            rollbackOnlyOnError(e);
-            throw e;
-        } catch (Exception e) {
-            throw wrapSessionError(e);
-        } finally {
-            if (statement instanceof _Statement) {
-                ((_Statement) statement).clear();
-            }
-        }
-        return Stream.empty();
-    }
-
     private SyncStmtOption replaceIfNeed(final SyncStmtOption option) {
         final TransactionInfo info;
 
@@ -1253,7 +1229,12 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
         private final Class<?>[] columnClassArray;
 
-        private Map<Object, R> idToRowMap;
+        private final String[] columnLabelArray;
+
+        private final int idSelectionIndex;
+
+        private final Map<Object, R> idToRowMap;
+
 
         private SecondRecordReader(final TwoStmtQueryStmt stmt, final List<R> firstList) {
             this.stmt = stmt;
@@ -1270,19 +1251,30 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             final List<? extends Selection> selectionList = stmt.selectionList();
             final int selectionSize = selectionList.size();
             final Class<?>[] columnClassArray;
+            final String[] columnLabelArray;
             this.columnClassArray = columnClassArray = new Class<?>[selectionSize];
-
+            this.columnLabelArray = columnLabelArray = new String[selectionSize];
+            this.idSelectionIndex = stmt.idSelectionIndex();
             if (accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR) {
                 columnClassArray[0] = row.getClass();
+                columnLabelArray[0] = selectionList.get(0).label();
             } else if (row instanceof Map) {
+                Selection selection;
                 for (int i = 0; i < selectionSize; i++) {
-                    columnClassArray[i] = selectionList.get(i).typeMeta().mappingType().javaType();
+                    selection = selectionList.get(i);
+                    columnClassArray[i] = selection.typeMeta().mappingType().javaType();
+                    columnLabelArray[i] = selection.label();
                 }
-            } else for (int i = 0; i < selectionSize; i++) {
-                columnClassArray[i] = accessor.getJavaType(selectionList.get(i).label());
+            } else {
+                String columnLabel;
+                for (int i = 0; i < selectionSize; i++) {
+                    columnLabel = selectionList.get(i).label();
+                    columnClassArray[i] = accessor.getJavaType(columnLabel);
+                    columnLabelArray[i] = columnLabel;
+                }
             }
-
-
+            // finally
+            this.idToRowMap = createIdToRowMap();
         }
 
 
@@ -1290,21 +1282,38 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             final int columnCount = record.getColumnCount();
             final Class<?>[] columnClassArray = this.columnClassArray;
             if (columnCount != columnClassArray.length) {
-                throw new IllegalArgumentException(String.format("Column count %d does not match selection count %d", columnCount, columnClassArray.length));
+                String m = String.format("Column count %d does not match selection count %d", columnCount, columnClassArray.length);
+                throw new IllegalArgumentException(m);
             }
 
-            Map<Object, R> idToRowMap = this.idToRowMap;
-            if (idToRowMap == null) {
-                this.idToRowMap = idToRowMap = createIdToRowMap();
+            final Map<Object, R> idToRowMap = this.idToRowMap;
+            final int idSelectionIndex = this.idSelectionIndex;
+
+            final Object id;
+            id = record.get(idSelectionIndex, columnClassArray[idSelectionIndex]);
+            if (id == null) {
+                throw _Exceptions.secondStmtIdIsNull(this.stmt.selectionList().get(idSelectionIndex));
             }
+            final R row;
+            if ((row = idToRowMap.get(id)) == null) {
+                String m = String.format("Not found match row for %s(based 1) row id[%s] in first query ", record.rowNumber(), id);
+                throw new DataAccessException(m);
+            }
+
             final ObjectAccessor accessor = this.accessor;
+            final String[] columnLabelArray = this.columnLabelArray;
             final boolean singleColumnRow;
             singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+
             assert columnCount > 1 || singleColumnRow;
             for (int i = 0; i < columnCount; i++) {
-                accessor.set(record, "", record.get(i, columnClassArray[i]));
+                if (i == idSelectionIndex) {
+                    continue;
+                }
+                accessor.set(row, columnLabelArray[i], record.get(i, columnClassArray[i]));
             }
-            throw new UnsupportedOperationException();
+
+            return row;
         }
 
         private Map<Object, R> createIdToRowMap() {
@@ -1316,7 +1325,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             if (singleColumnRow) {
                 idLabel = null;
             } else {
-                idLabel = this.stmt.selectionList().get(this.stmt.idSelectionIndex()).label();
+                idLabel = this.stmt.selectionList().get(this.idSelectionIndex).label();
             }
 
             final List<R> firstList = this.firstList;

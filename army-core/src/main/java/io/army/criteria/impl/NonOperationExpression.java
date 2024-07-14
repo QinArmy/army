@@ -49,7 +49,9 @@ abstract class NonOperationExpression implements ArmyExpression {
     @Override
     public final boolean isNullValue() {
         final boolean nullable;
-        if (this instanceof SqlValueParam.SingleAnonymousValue) {
+        if (this instanceof UpdateTimePlaceHolderExpression) {
+            nullable = false;
+        } else if (this instanceof SqlValueParam.SingleAnonymousValue) {
             nullable = ((SqlValueParam.SingleAnonymousValue) this).value() == null;
         } else {
             nullable = false;
@@ -555,7 +557,6 @@ abstract class NonOperationExpression implements ArmyExpression {
             }
         }
 
-        @Nullable
         @Override
         public Object value() {
             return null;
