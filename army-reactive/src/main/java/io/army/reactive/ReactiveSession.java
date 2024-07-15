@@ -26,7 +26,6 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -123,18 +122,6 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
 
     <R> Mono<R> queryOne(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
 
-    <R> Mono<Optional<R>> queryOneNullable(SimpleDqlStatement statement, Class<R> resultClass);
-
-    /**
-     * <p>Query at most one nullable row that consist of single column.
-     *
-     * @param statement   simple(non-batch) query statement
-     * @param resultClass result class ,for example : {@code  String.class}, {@code Long.class}
-     * @param <R>         the java type of row
-     * @throws NonMonoException emit(not throw) when server response row count more than one row.
-     */
-    <R> Mono<Optional<R>> queryOneNullable(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
-
     <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
     <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option);
@@ -152,13 +139,6 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
 
     <R> Flux<R> query(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
 
-
-    /*-------------------below queryOptional methods-------------------*/
-
-
-    <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass);
-
-    <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
 
     /*-------------------below queryObject methods-------------------*/
 

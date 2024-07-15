@@ -26,14 +26,11 @@ import io.army.session.record.ResultStates;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
-import io.army.stmt.TwoStmtQueryStmt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 
 /**
@@ -70,16 +67,7 @@ public interface ReactiveExecutor extends StmtExecutor, ReactiveCloseable {
 
     Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Flux<R> query(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
-
-    <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
-
-    <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
-
     <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
-
-    <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList, Function<Option<?>, ?> optionFunc);
-
 
 
     /**

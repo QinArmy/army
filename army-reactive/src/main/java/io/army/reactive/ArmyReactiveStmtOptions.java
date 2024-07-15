@@ -109,6 +109,67 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
     }
 
 
+    static ReactiveStmtOption overrideOptionIfNeed(final ReactiveStmtOption option, final @Nullable TransactionInfo info,
+                                                   final @Nullable Consumer<ResultStates> armyConsumer) {
+
+
+        final Integer timeout;
+        final Long startMillis;
+        if (info == null) {
+            timeout = null;
+            startMillis = null;
+        } else {
+            timeout = info.valueOf(Option.TIMEOUT_MILLIS);
+            startMillis = info.valueOf(Option.START_MILLIS);
+            assert timeout == null || startMillis != null;
+        }
+
+        if (timeout == null && armyConsumer == null) {
+            return option;
+        }
+
+        final Consumer<ResultStates> finalConsumer, consumerOfUser;
+        consumerOfUser = option.stateConsumer();
+        if (armyConsumer == null) {
+            finalConsumer = consumerOfUser;
+        } else if (consumerOfUser == ResultStates.IGNORE_STATES) {
+            finalConsumer = armyConsumer;
+        } else {
+            finalConsumer = armyConsumer.andThen(consumerOfUser);
+        }
+
+
+        final ReactiveStmtOption newOption;
+        if (timeout == null) {
+            if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
+                newOption = new OnlyStateConsumerOption(finalConsumer);
+            } else {
+                newOption = new ArmyReactiveOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer);
+            }
+        } else if (finalConsumer == ResultStates.IGNORE_STATES) {
+            if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
+                newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
+            } else {
+                newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis, finalConsumer);
+            }
+        } else {
+            newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis, finalConsumer);
+        }
+        return newOption;
+    }
+
+    static ReactiveStmtOption replaceStateConsumer(final ReactiveStmtOption option, final Consumer<ResultStates> consumer) {
+        final ReactiveStmtOption newOption;
+        if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
+            newOption = new OnlyStateConsumerOption(consumer);
+        } else if (option.isSupportTimeout()) {
+            newOption = new ArmyReactiveOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), consumer);
+        } else {
+            newOption = new ArmyReactiveOverrideOption(option, 0, 0L, consumer);
+        }
+        return newOption;
+    }
+
     interface TransactionOverrideOption extends ReactiveStmtOption {
 
     }
@@ -292,6 +353,18 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
         }
 
     } // OnlyPreferServerPrepareOption
+
+
+    private static final class ArmyReactiveOverrideOption extends ArmyStmtOption
+            implements TransactionOverrideOption {
+
+        private ArmyReactiveOverrideOption(ReactiveStmtOption option, int timeoutMillis, long startMills,
+                                           Consumer<ResultStates> consumer) {
+            super(option, timeoutMillis, startMills, consumer);
+        }
+
+
+    } // ArmyReactiveOverrideOption
 
 
 }

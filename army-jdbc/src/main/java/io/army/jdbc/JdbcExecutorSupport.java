@@ -28,13 +28,13 @@ import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.DeclareCursorStmt;
 import io.army.stmt.SimpleStmt;
-import io.army.sync.*;
+import io.army.sync.SyncProcCursor;
+import io.army.sync.SyncSession;
+import io.army.sync.SyncStmtCursor;
+import io.army.sync.SyncStmtOption;
 import io.army.type.BlobPath;
 import io.army.type.TextPath;
-import io.army.util.ArrayUtils;
-import io.army.util._Collections;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
+import io.army.util.*;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;

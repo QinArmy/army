@@ -319,56 +319,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         return flux;
     }
 
-    @Override
-    public final <R> Flux<R> query(final SingleSqlStmt stmt, final Class<R> resultClass,
-                                   final ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
-        Flux<R> flux;
-        try {
-            flux = executeQuery(stmt, mapBeanFunc(stmt, resultClass), option, optionFunc);
-        } catch (Throwable e) {
-            flux = Flux.error(wrapExecuteIfNeed(e));
-        }
-        return flux;
-    }
 
-    @Override
-    public final <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, final Class<R> resultClass,
-                                                     ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
-        Flux<Optional<R>> flux;
-        try {
-            final List<? extends Selection> selectionList;
-            selectionList = stmt.selectionList();
-            if (selectionList.size() != 1) {
-                return Flux.error(new IllegalArgumentException("queryOptional method support only single selection"));
-            }
-
-            final OptionalSingleColumnRowReader<R> rowReader;
-            rowReader = new OptionalSingleColumnRowReader<>(this, selectionList, resultClass);
-
-            final Function<CurrentRow, Optional<R>> function;
-            if (stmt instanceof GeneratedKeyStmt) {
-                function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
-            } else {
-                function = rowReader::readOneRow;
-            }
-            flux = executeQuery(stmt, function, option, optionFunc);
-        } catch (Throwable e) {
-            flux = Flux.error(wrapExecuteIfNeed(e));
-        }
-        return flux;
-    }
-
-    @Override
-    public final <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor,
-                                         ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) {
-        Flux<R> flux;
-        try {
-            flux = executeQuery(stmt, mapObjectFunc(stmt, constructor), option, optionFunc);
-        } catch (Throwable e) {
-            flux = Flux.error(wrapExecuteIfNeed(e));
-        }
-        return flux;
-    }
 
     @Override
     public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function,
@@ -402,31 +353,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         return flux;
     }
 
-    @Override
-    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList,
-                                         final Function<Option<?>, ?> optionFunc) {
-        Flux<R> flux;
-        try {
-            final SecondRowReader<R> rowReader;
-            rowReader = new SecondRowReader<>(this, stmt, resultList);
-
-            final Function<Option<?>, ?> func;
-            if (optionFunc == Option.EMPTY_FUNC) {
-                func = Option.singleFunc(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
-            } else {
-                func = o -> {
-                    if (o == Option.SECOND_DML_QUERY_STATES) {
-                        return Boolean.TRUE;
-                    }
-                    return optionFunc.apply(o);
-                };
-            }
-            flux = executeQuery(stmt, rowReader::readOneRow, option, func);
-        } catch (Throwable e) {
-            flux = Flux.error(wrapExecuteIfNeed(e));
-        }
-        return flux;
-    }
 
 
 
@@ -1195,65 +1121,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
-     */
-    private <R> Flux<R> executeQuery(final SingleSqlStmt stmt, final Function<CurrentRow, R> func,
-                                     final ReactiveStmtOption option, Function<Option<?>, ?> optionFunc) throws JdbdException, TimeoutException {
-        return Flux.from(bindStatement(stmt, option).executeQuery(func, createStatesConsumer(option, optionFunc)))
-                .onErrorMap(this::wrapExecuteIfNeed);
-    }
-
-
-    /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
-     */
-    private <R> Function<CurrentRow, R> mapBeanFunc(final SingleSqlStmt stmt, final Class<R> resultClass) {
-        final List<? extends Selection> selectionList;
-        selectionList = stmt.selectionList();
-
-        final RowReader<R> rowReader;
-        if ((stmt instanceof TwoStmtQueryStmt && ((TwoStmtQueryStmt) stmt).maxColumnSize() == 1)
-                || selectionList.size() == 1) {
-            rowReader = new SingleColumnRowReader<>(this, selectionList, resultClass);
-        } else {
-            rowReader = new BeanReader<>(this, selectionList, resultClass);
-        }
-
-        final Function<CurrentRow, R> function;
-        if (stmt instanceof GeneratedKeyStmt) {
-            function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
-        } else {
-            function = rowReader::readOneRow;
-        }
-        return function;
-    }
-
-    /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
-     */
-    private <R> Function<CurrentRow, R> mapObjectFunc(final SingleSqlStmt stmt, final Supplier<R> constructor) {
-
-        final RowReader<R> rowReader;
-        rowReader = new ObjectRowReader<>(this, stmt.selectionList(), constructor, stmt instanceof TwoStmtModeQuerySpec);
-
-        final Function<CurrentRow, R> function;
-        if (stmt instanceof GeneratedKeyStmt) {
-            function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
-        } else {
-            function = rowReader::readOneRow;
-        }
-        return function;
-    }
-
-    /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
      * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
     private <R> Function<CurrentRow, R> mapRecordFunc(final SingleSqlStmt stmt, final Function<CurrentRecord, R> recordFunc) {
@@ -1271,8 +1138,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption, Function)
-     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption, Function)
      * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
     private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveStmtOption option,
@@ -1295,9 +1160,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         };
     }
 
-    /**
-     * @see #mapBeanFunc(SingleSqlStmt, Class)
-     */
+
     private <R> Function<CurrentRow, R> returnIdQueryRowFunc(final GeneratedKeyStmt keyStmt,
                                                              final RowReader<R> rowReader) {
 

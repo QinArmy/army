@@ -109,7 +109,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return this.stmtExecutor.setTransactionCharacteristics(option)
+        return this.executor.setTransactionCharacteristics(option)
                 .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
@@ -124,7 +124,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return this.stmtExecutor.releaseSavePoint(savepoint, optionFunc)
+        return this.executor.releaseSavePoint(savepoint, optionFunc)
                 .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
@@ -139,7 +139,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return this.stmtExecutor.rollbackToSavePoint(savepoint, optionFunc)
+        return this.executor.rollbackToSavePoint(savepoint, optionFunc)
                 .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
@@ -176,7 +176,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
                 mono = Mono.just(info);
             }
         } else {  // start XA transaction
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).start(xid, flags, option)
+            mono = ((ReactiveRmExecutor) this.executor).start(xid, flags, option)
                     .doOnSuccess(info -> {
                         assert info.inTransaction();  // fail ,executor bug
                         assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
@@ -225,7 +225,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             TRANSACTION_INFO.set(this, TransactionInfo.pseudoEnd(lastInfo, flags));
             mono = Mono.just(this);
         } else {
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).end(infoXid, flags, optionFunc) // use infoXid
+            mono = ((ReactiveRmExecutor) this.executor).end(infoXid, flags, optionFunc) // use infoXid
                     .doOnSuccess(info -> {
                         assert info.inTransaction();  // fail ,executor bug
                         assert infoXid.equals(info.valueOf(Option.XID));  // fail ,executor bug
@@ -272,7 +272,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             ROLLBACK_ONLY.compareAndSet(this, 1, 0);
             mono = Mono.just((int) XA_RDONLY);
         } else {
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).prepare(infoXid, optionFunc) // use infoXid
+            mono = ((ReactiveRmExecutor) this.executor).prepare(infoXid, optionFunc) // use infoXid
                     .doOnSuccess(flag -> TRANSACTION_INFO.set(this, null))
                     .onErrorMap(_ArmySession::wrapIfNeed);
         }
@@ -302,7 +302,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         } else if (xid == null) {
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if ((flags & TM_ONE_PHASE) == 0) {   // tow phase commit
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).commit(xid, flags, optionFunc) // use xid
+            mono = ((ReactiveRmExecutor) this.executor).commit(xid, flags, optionFunc) // use xid
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
         } else if ((lastInfo = this.transactionInfo) == null
@@ -317,7 +317,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             ROLLBACK_ONLY.compareAndSet(this, 1, 0);
             mono = Mono.just(this);
         } else {   // one phase commit
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).commit(infoXid, flags, optionFunc) // use infoXid
+            mono = ((ReactiveRmExecutor) this.executor).commit(infoXid, flags, optionFunc) // use infoXid
                     .doOnSuccess(v -> {
                         TRANSACTION_INFO.set(this, null); // clear transactionInfo for one phase commit
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
@@ -348,7 +348,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if ((lastInfo = this.transactionInfo) == null
                 || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {  // two phase rollback
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).rollback(xid, optionFunc) // use xid
+            mono = ((ReactiveRmExecutor) this.executor).rollback(xid, optionFunc) // use xid
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
@@ -358,7 +358,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             ROLLBACK_ONLY.compareAndSet(this, 1, 0);
             mono = Mono.just(this);
         } else {  // one phase rollback
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).rollback(infoXid, optionFunc) // use infoXid
+            mono = ((ReactiveRmExecutor) this.executor).rollback(infoXid, optionFunc) // use infoXid
                     .doOnSuccess(v -> {
                         TRANSACTION_INFO.set(this, null); // clear  for one phase rollback
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
@@ -382,7 +382,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         } else if (xid == null) {
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if (isSupportForget()) {
-            mono = ((ReactiveRmExecutor) this.stmtExecutor).forget(xid, optionFunc)
+            mono = ((ReactiveRmExecutor) this.executor).forget(xid, optionFunc)
                     .thenReturn(this);
         } else {
             mono = Mono.error(_Exceptions.xaDontSupportForget(this));
@@ -400,32 +400,32 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         if (isClosed()) {
             return Flux.error(_Exceptions.sessionClosed(this));
         }
-        return ((ReactiveRmExecutor) this.stmtExecutor).recover(flags, optionFunc);
+        return ((ReactiveRmExecutor) this.executor).recover(flags, optionFunc);
     }
 
     @Override
     public final boolean isSupportForget() {
-        return ((ReactiveRmExecutor) this.stmtExecutor).isSupportForget();
+        return ((ReactiveRmExecutor) this.executor).isSupportForget();
     }
 
     @Override
     public final int startSupportFlags() {
-        return ((ReactiveRmExecutor) this.stmtExecutor).startSupportFlags();
+        return ((ReactiveRmExecutor) this.executor).startSupportFlags();
     }
 
     @Override
     public final int endSupportFlags() {
-        return ((ReactiveRmExecutor) this.stmtExecutor).endSupportFlags();
+        return ((ReactiveRmExecutor) this.executor).endSupportFlags();
     }
 
     @Override
     public final int commitSupportFlags() {
-        return ((ReactiveRmExecutor) this.stmtExecutor).commitSupportFlags();
+        return ((ReactiveRmExecutor) this.executor).commitSupportFlags();
     }
 
     @Override
     public final int recoverSupportFlags() {
-        return ((ReactiveRmExecutor) this.stmtExecutor).recoverSupportFlags();
+        return ((ReactiveRmExecutor) this.executor).recoverSupportFlags();
     }
 
     @Override
@@ -437,7 +437,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
         if (s == this) {
             match = true;
         } else if (s instanceof ArmyReactiveRmSession) {
-            match = ((ReactiveRmExecutor) this.stmtExecutor).isSameRm((ReactiveRmExecutor) ((ArmyReactiveRmSession) s).stmtExecutor);
+            match = ((ReactiveRmExecutor) this.executor).isSameRm((ReactiveRmExecutor) ((ArmyReactiveRmSession) s).executor);
         } else {
             match = false;
         }
@@ -472,7 +472,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             if (isClosed()) {
                 throw _Exceptions.sessionClosed(this);
             }
-            return this.stmtExecutor.isDriverAssignableTo(spiClass);
+            return this.executor.isDriverAssignableTo(spiClass);
         }
 
         @Override
@@ -480,7 +480,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
             if (isClosed()) {
                 throw _Exceptions.sessionClosed(this);
             }
-            return this.stmtExecutor.getDriverSpi(spiClass);
+            return this.executor.getDriverSpi(spiClass);
         }
 
     } // OpenDriverSpiSession

@@ -17,24 +17,19 @@
 package io.army.sync;
 
 import io.army.ArmyException;
-import io.army.bean.ObjectAccessor;
-import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.env.SqlLogMode;
-import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.TypeMeta;
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
-import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
 import io.army.sync.executor.SyncExecutor;
-import io.army.type.ImmutableSpec;
 import io.army.util.ArmyCriteria;
+import io.army.util.StreamFunctions;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -357,24 +352,9 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> query(DqlStatement statement, final Class<R> resultClass, SyncStmtOption option) {
-        final Function<SingleSqlStmt, Function<CurrentRecord, R>> readerFunc;
-        readerFunc = stmt -> {
-            final Function<CurrentRecord, R> rowFunc;
-            if ((stmt instanceof TwoStmtQueryStmt && ((TwoStmtQueryStmt) stmt).maxColumnSize() == 1)
-                    || stmt.selectionList().size() == 1) {
-                rowFunc = record -> record.get(0, resultClass);
-            } else {
-                final ObjectAccessor accessor;
-                accessor = ObjectAccessorFactory.forBean(resultClass);
-
-                final ObjectReader<R> objectReader;
-                objectReader = new ObjectReader<>(ObjectAccessorFactory.beanConstructor(resultClass), accessor, stmt, false);
-                rowFunc = objectReader::readRow;
-            }
-            return rowFunc;
-        };
-        return executeQuery(statement, option, readerFunc);
+        return executeQuery(statement, option, classReaderFunc(resultClass));
     }
+
 
     @Override
     public final <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
@@ -383,15 +363,9 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     @Override
     public final <R> Stream<R> queryObject(DqlStatement statement, final Supplier<R> constructor, SyncStmtOption option) {
-        final Function<SingleSqlStmt, Function<CurrentRecord, R>> readerFunc;
-        readerFunc = stmt -> {
-            final boolean immutable;
-            immutable = !(statement instanceof InsertStatement && firstStatementIsQuery((InsertStatement) statement));
-            final ObjectReader<R> objectReader = new ObjectReader<>(constructor, null, stmt, immutable);
-            return objectReader::readRow;
-        };
-        return executeQuery(statement, option, readerFunc);
+        return executeQuery(statement, option, constructorReaderFunc(constructor));
     }
+
 
     @Override
     public final <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
@@ -673,7 +647,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
 
     private <R> Stream<R> executeQuery(final DqlStatement statement, final SyncStmtOption optionOfUser,
-                                       final Function<SingleSqlStmt, Function<CurrentRecord, R>> readerFunc) {
+                                       final ReaderFunction<R> readerFunc) {
         try {
             assertSession(statement);
 
@@ -691,7 +665,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             final Stream<R> stream;
             if (stmt instanceof SingleSqlStmt) {
                 final Function<CurrentRecord, R> rowFunc;
-                rowFunc = readerFunc.apply((SingleSqlStmt) stmt);
+                rowFunc = readerFunc.apply((SingleSqlStmt) stmt, true);
                 stream = this.executor.queryRecord((SingleSqlStmt) stmt, rowFunc, option, Option.EMPTY_FUNC);
             } else if (!(stmt instanceof PairStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
@@ -720,12 +694,13 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
-     * @see #executeQuery(DqlStatement, SyncStmtOption, Function)
+     * @see #executeQuery(DqlStatement, SyncStmtOption, ReaderFunction)
      */
     private <R> Stream<R> executePairInsertQuery(final InsertStatement statement, final SyncStmtOption option,
-                                                 final PairStmt stmt, final Function<SingleSqlStmt, Function<CurrentRecord, R>> readerFunc) {
-        final boolean firstStmtIsQuery;
-        firstStmtIsQuery = firstStatementIsQuery(statement);
+                                                 final PairStmt stmt, final ReaderFunction<R> readerFunc) {
+        final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
+        final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
+
 
         final SimpleStmt firstStmt = stmt.firstStmt(), secondStmt = stmt.secondStmt();
 
@@ -734,7 +709,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         ResultStates states = null;
         List<R> resultList = null;
         if (firstStmtIsQuery) {
-            rowFunc = readerFunc.apply(firstStmt);
+            rowFunc = readerFunc.apply(firstStmt, false);
             resultList = this.executor.queryRecord(firstStmt, rowFunc, option, Option.EMPTY_FUNC)
                     .collect(Collectors.toCollection(_Collections::arrayList));
             if (resultList.size() == 0) {
@@ -742,7 +717,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
                 return Stream.empty();
             }
         } else {
-            rowFunc = readerFunc.apply(secondStmt);  // use secondStmt
+            rowFunc = readerFunc.apply(secondStmt, true);  // here use secondStmt not firstStmt
             states = this.executor.insert(firstStmt, option, ResultStates.class, Option.EMPTY_FUNC);
             if (states.affectedRows() == 0L) {
                 // exists conflict clause
@@ -759,7 +734,8 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             if (firstStmtIsQuery) {
                 final Function<Option<?>, ?> optionFunc;
                 optionFunc = Option.singleFunc(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
-                final SecondRecordReader<R> recordReader = new SecondRecordReader<>((TwoStmtQueryStmt) secondStmt, resultList);
+                final SyncSecondRecordReader<R> recordReader;
+                recordReader = new SyncSecondRecordReader<>(this, childTable, (TwoStmtQueryStmt) secondStmt, resultList);
                 // TODO 验证 行数
                 stream = this.executor.queryRecord(secondStmt, recordReader::readRecord, option, optionFunc);
             } else {
@@ -1093,16 +1069,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
     /*-------------------below private static method -------------------*/
 
-    private static boolean firstStatementIsQuery(final InsertStatement statement) {
-        final boolean match;
-        if (statement instanceof _Insert._ChildInsert childInsert) {
-            match = childInsert.parentStmt() instanceof _ReturningDml;
-        } else {
-            match = false;
-        }
-        return match;
-    }
-
 
     private static long obtainAffectedRows(final Object result) {
         if (result instanceof Long) {
@@ -1177,258 +1143,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         };
 
     }
-
-
-    private static final class SecondRecordReader<R> {
-
-        private final TwoStmtQueryStmt stmt;
-
-        private final List<R> firstList;
-
-        private final ObjectAccessor accessor;
-
-        private final Class<?>[] columnClassArray;
-
-        private final String[] columnLabelArray;
-
-        private final int idSelectionIndex;
-
-        private final Map<Object, R> idToRowMap;
-
-
-        private SecondRecordReader(final TwoStmtQueryStmt stmt, final List<R> firstList) {
-            this.stmt = stmt;
-            this.firstList = firstList;
-
-            final R row = firstList.get(0);
-            final ObjectAccessor accessor;
-            if (row instanceof Map || stmt.maxColumnSize() > 1) {
-                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
-            } else {
-                this.accessor = accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-            }
-
-            final List<? extends Selection> selectionList = stmt.selectionList();
-            final int selectionSize = selectionList.size();
-            final Class<?>[] columnClassArray;
-            final String[] columnLabelArray;
-            this.columnClassArray = columnClassArray = new Class<?>[selectionSize];
-            this.columnLabelArray = columnLabelArray = new String[selectionSize];
-            this.idSelectionIndex = stmt.idSelectionIndex();
-            if (accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR) {
-                columnClassArray[0] = row.getClass();
-                columnLabelArray[0] = selectionList.get(0).label();
-            } else if (row instanceof Map) {
-                Selection selection;
-                TypeMeta typeMeta;
-                for (int i = 0; i < selectionSize; i++) {
-                    selection = selectionList.get(i);
-                    typeMeta = selection.typeMeta();
-                    if (!(typeMeta instanceof MappingType)) {
-                        typeMeta = typeMeta.mappingType();
-                    }
-                    columnClassArray[i] = ((MappingType) typeMeta).javaType();
-                    columnLabelArray[i] = selection.label();
-                }
-            } else {
-                String columnLabel;
-                for (int i = 0; i < selectionSize; i++) {
-                    columnLabel = selectionList.get(i).label();
-                    columnClassArray[i] = accessor.getJavaType(columnLabel);
-                    columnLabelArray[i] = columnLabel;
-                }
-            }
-            // finally
-            this.idToRowMap = createIdToRowMap();
-        }
-
-
-        @SuppressWarnings("unchecked")
-        private R readRecord(final CurrentRecord record) {
-            final int columnCount = record.getColumnCount();
-            final Class<?>[] columnClassArray = this.columnClassArray;
-            if (columnCount != columnClassArray.length) {
-                throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, columnCount);
-            }
-
-            final Map<Object, R> idToRowMap = this.idToRowMap;
-            final int idSelectionIndex = this.idSelectionIndex;
-
-            final Object id;
-            id = record.get(idSelectionIndex, columnClassArray[idSelectionIndex]);
-            if (id == null) {
-                throw _Exceptions.secondStmtIdIsNull(this.stmt.selectionList().get(idSelectionIndex));
-            }
-            final R row;
-            if ((row = idToRowMap.get(id)) == null) {
-                String m = String.format("Not found match row for %s(based 1) row id[%s] in first query ", record.rowNumber(), id);
-                throw new DataAccessException(m);
-            }
-
-            final ObjectAccessor accessor = this.accessor;
-            final String[] columnLabelArray = this.columnLabelArray;
-            final boolean singleColumnRow;
-            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-
-            assert columnCount > 1 || singleColumnRow;
-            for (int i = 0; i < columnCount; i++) {
-                if (i == idSelectionIndex) {
-                    continue;
-                }
-                accessor.set(row, columnLabelArray[i], record.get(i, columnClassArray[i]));
-            }
-
-            final R finalRow;
-            if (row instanceof Map && row instanceof ImmutableSpec) {
-                finalRow = (R) _Collections.unmodifiableMap((Map<String, Object>) row);
-            } else {
-                finalRow = row;
-            }
-            return finalRow;
-        }
-
-        private Map<Object, R> createIdToRowMap() {
-            final ObjectAccessor accessor = this.accessor;
-            final boolean singleColumnRow;
-            singleColumnRow = accessor == ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-
-            final String idLabel;
-            if (singleColumnRow) {
-                idLabel = null;
-            } else {
-                idLabel = this.stmt.selectionList().get(this.idSelectionIndex).label();
-            }
-
-            final List<R> firstList = this.firstList;
-            final int rowSize = firstList.size();
-            final Map<Object, R> rowMap = _Collections.hashMapForSize(rowSize);
-
-            Object id;
-            R row;
-            for (int i = 0; i < rowSize; i++) {
-
-                row = firstList.get(i);
-                if (row == null) {
-                    // no bug,never here
-                    throw new NullPointerException(String.format("%s row is null", i + 1));
-                }
-
-                if (singleColumnRow) {
-                    id = row;
-                } else {
-                    id = accessor.get(row, idLabel);
-                }
-
-                if (id == null) {
-                    // no bug,never here
-                    throw new NullPointerException(String.format("%s row id is null", i + 1));
-                }
-
-                if (rowMap.putIfAbsent(id, row) != null) {
-                    throw new CriteriaException(String.format("%s row id[%s] duplication", i + 1, id));
-                }
-
-            } // for loop
-
-            return Collections.unmodifiableMap(rowMap);
-        }
-
-
-    } // SecondRecordReader
-
-
-    private static final class ObjectReader<R> {
-
-        private final Supplier<R> constructor;
-
-        private final boolean immutableMap;
-
-        private final List<? extends Selection> selectionList;
-
-        private final Class<?>[] columnClassArray;
-
-        private final String[] columnLabelArray;
-
-        private ObjectAccessor accessor;
-
-        private ObjectReader(Supplier<R> constructor, @Nullable ObjectAccessor accessor, SingleSqlStmt stmt, boolean immutableMap) {
-            this.constructor = constructor;
-            this.accessor = accessor;
-            final List<? extends Selection> selectionList;
-            this.selectionList = selectionList = stmt.selectionList();
-            this.immutableMap = immutableMap;
-
-            final int selectionSize = selectionList.size();
-            this.columnClassArray = new Class<?>[selectionSize];
-
-            final String[] columnLabelArray;
-            this.columnLabelArray = columnLabelArray = new String[selectionSize];
-            for (int i = 0; i < selectionSize; i++) {
-                columnLabelArray[i] = selectionList.get(i).label();
-            }
-        }
-
-
-        @SuppressWarnings("unchecked")
-        private R readRow(final CurrentRecord record) {
-            final int columnCount = record.getColumnCount();
-            final String[] columnLabelArray = this.columnLabelArray;
-
-            if (columnCount != columnLabelArray.length) {
-                throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, columnLabelArray.length);
-            }
-
-            final R row;
-            row = this.constructor.get();
-            if (row == null) {
-                throw _Exceptions.objectConstructorError();
-            }
-            ObjectAccessor accessor = this.accessor;
-            if (accessor == null) {
-                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
-            }
-
-
-            final Class<?>[] columnClassArray = this.columnClassArray;
-            final List<? extends Selection> selectionList = this.selectionList;
-            TypeMeta typeMeta;
-
-            String propertyName;
-            Class<?> clumnClass;
-            Object value;
-            for (int i = 0; i < columnCount; i++) {
-                propertyName = columnLabelArray[i];
-                clumnClass = columnClassArray[i];
-
-                if (clumnClass == null) {
-                    if (row instanceof Map) {
-                        typeMeta = selectionList.get(i).typeMeta();
-                        if (!(typeMeta instanceof MappingType)) {
-                            typeMeta = typeMeta.mappingType();
-                        }
-                        clumnClass = ((MappingType) typeMeta).javaType();
-                    } else {
-                        clumnClass = accessor.getJavaType(propertyName);
-                    }
-                    columnClassArray[i] = clumnClass;
-                }
-
-                value = record.get(i, clumnClass);
-
-                accessor.set(row, propertyName, value);
-            }
-
-            final R finalRow;
-            if (row instanceof Map && row instanceof ImmutableSpec && this.immutableMap) {
-                finalRow = (R) _Collections.unmodifiableMap((Map<String, Object>) row);
-            } else {
-                finalRow = row;
-            }
-            return finalRow;
-        }
-
-
-    } // ObjectReader
 
 
 }

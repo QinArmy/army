@@ -1,6 +1,4 @@
-package io.army.sync;
-
-import io.army.util._Exceptions;
+package io.army.util;
 
 public abstract class StreamFunctions {
 

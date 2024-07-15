@@ -99,7 +99,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return this.stmtExecutor.setTransactionCharacteristics(option)
+        return this.executor.setTransactionCharacteristics(option)
                 .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
@@ -127,7 +127,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
         } else if (option.isolation() == Isolation.PSEUDO) {
             mono = pseudoTransactionInfo(option, mode);
         } else {
-            mono = ((ReactiveLocalExecutor) this.stmtExecutor).startTransaction(option, mode)
+            mono = ((ReactiveLocalExecutor) this.executor).startTransaction(option, mode)
                     .map(info -> {
                         assert info.inTransaction();
                         assert option.isolation() == null || info.isolation().equals(option.isolation());
@@ -172,7 +172,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
             ROLLBACK_ONLY.compareAndSet(this, 1, 0);
             mono = Mono.just(Optional.empty());
         } else {
-            mono = ((ReactiveLocalExecutor) this.stmtExecutor).commit(optionFunc)
+            mono = ((ReactiveLocalExecutor) this.executor).commit(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
                     .onErrorMap(_ArmySession::wrapIfNeed);
         }
@@ -213,7 +213,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
             ROLLBACK_ONLY.compareAndSet(this, 1, 0);
             mono = Mono.just(Optional.empty());
         } else {
-            mono = ((ReactiveLocalExecutor) this.stmtExecutor).rollback(optionFunc)
+            mono = ((ReactiveLocalExecutor) this.executor).rollback(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
                     .onErrorMap(_ArmySession::wrapIfNeed);
         }
@@ -247,7 +247,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return this.stmtExecutor.releaseSavePoint(savepoint, optionFunc)
+        return this.executor.releaseSavePoint(savepoint, optionFunc)
                 .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
@@ -262,7 +262,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return this.stmtExecutor.rollbackToSavePoint(savepoint, optionFunc)
+        return this.executor.rollbackToSavePoint(savepoint, optionFunc)
                 .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
@@ -387,7 +387,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
             if (isClosed()) {
                 throw _Exceptions.sessionClosed(this);
             }
-            return this.stmtExecutor.isDriverAssignableTo(spiClass);
+            return this.executor.isDriverAssignableTo(spiClass);
         }
 
         @Override
@@ -395,7 +395,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
             if (isClosed()) {
                 throw _Exceptions.sessionClosed(this);
             }
-            return this.stmtExecutor.getDriverSpi(spiClass);
+            return this.executor.getDriverSpi(spiClass);
         }
 
 
