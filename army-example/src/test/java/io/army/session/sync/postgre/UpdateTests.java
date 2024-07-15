@@ -169,7 +169,7 @@ public class UpdateTests extends SessionTestSupport {
                         .returning(SQLs.field("p", ChinaProvince_.id).as("myId"))
                         .asReturningUpdate()
                 ).comma("first_parent_cte").as(sw -> sw.update(ChinaRegion_.T, AS, "c")
-                        .set(ChinaRegion_.updateTime, UPDATE_TIME_PARAM_PLACEHOLDER)
+                        .set(ChinaRegion_.updateTime, UPDATE_TIME_PLACEHOLDER)
                         .from("first_child_cte")
                         .where(ChinaRegion_.id::equal, SQLs.refField("first_child_cte", "myId"))
                         .asUpdate()
@@ -182,7 +182,7 @@ public class UpdateTests extends SessionTestSupport {
                         .asReturningUpdate()
                 ).space()
                 .update(ChinaRegion_.T, AS, "c")
-                .set(ChinaRegion_.updateTime, UPDATE_TIME_PARAM_PLACEHOLDER)
+                .set(ChinaRegion_.updateTime, UPDATE_TIME_PLACEHOLDER)
                 .from("child_cte")
                 .where(ChinaRegion_.id::equal, SQLs.refField("child_cte", ChinaRegion_.ID))
                 .asUpdate();

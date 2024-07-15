@@ -25,7 +25,6 @@ import io.army.function.TeFunction;
 import io.army.mapping.NullType;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
-import io.army.stmt.SingleParam;
 
 import javax.annotation.Nullable;
 import java.util.function.BiFunction;
@@ -451,12 +450,8 @@ abstract class NonOperationExpression implements ArmyExpression {
         return NullWord.INSTANCE;
     }
 
-    static Expression updateTimeParamPlaceHolder() {
-        return UpdateTimePlaceHolderExpression.PARAM_PLACEHOLDER;
-    }
-
-    static Expression updateTimeLiteralPlaceHolder() {
-        return UpdateTimePlaceHolderExpression.LITERAL_PLACEHOLDER;
+    static Expression updateTimePlaceHolder() {
+        return UpdateTimePlaceHolderExpression.PLACEHOLDER;
     }
 
 
@@ -532,12 +527,9 @@ abstract class NonOperationExpression implements ArmyExpression {
 
 
     private static final class UpdateTimePlaceHolderExpression extends NonOperationExpression
-            implements SqlValueParam.SingleAnonymousValue,
-            SingleParam, ArmySimpleExpression {
+            implements ArmySimpleExpression {
 
-        private static final UpdateTimePlaceHolderExpression PARAM_PLACEHOLDER = new UpdateTimePlaceHolderExpression();
-
-        private static final UpdateTimePlaceHolderExpression LITERAL_PLACEHOLDER = new UpdateTimePlaceHolderExpression();
+        private static final UpdateTimePlaceHolderExpression PLACEHOLDER = new UpdateTimePlaceHolderExpression();
 
         private UpdateTimePlaceHolderExpression() {
         }
@@ -550,30 +542,17 @@ abstract class NonOperationExpression implements ArmyExpression {
 
         @Override
         public void appendSql(StringBuilder sqlBuilder, _SqlContext context) {
-            if (this == PARAM_PLACEHOLDER) {
-                throw new CriteriaException("SQLs.UPDATE_TIME_PARAM_PLACEHOLDER present in error context");
-            } else {
-                throw new CriteriaException("SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER present in error context");
-            }
+            throw new CriteriaException("SQLs.UPDATE_TIME_PLACEHOLDER present in error context");
         }
 
-        @Override
-        public Object value() {
-            return null;
-        }
 
         @Override
         public String toString() {
-            final String m;
-            if (this == SQLs.UPDATE_TIME_PARAM_PLACEHOLDER) {
-                m = "SQLs.UPDATE_TIME_PARAM_PLACEHOLDER";
-            } else if (this == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
-                m = "SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER";
-            } else {
+            if (this != SQLs.UPDATE_TIME_PLACEHOLDER) {
                 // no bug,never here
                 throw new IllegalStateException();
             }
-            return m;
+            return "SQLs.UPDATE_TIME_PLACEHOLDER";
         }
 
 

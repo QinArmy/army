@@ -212,6 +212,10 @@ public abstract class SQLs extends SQLSyntax {
      */
     public static final VarScope LOCAL = SqlWords.KeyWordVarScope.LOCAL;
 
+    /*-------------------below placeholder -------------------*/
+
+    public static final Expression UPDATE_TIME_PLACEHOLDER = NonOperationExpression.updateTimePlaceHolder();
+
 
     /*-------------------below literal -------------------*/
 
@@ -223,6 +227,8 @@ public abstract class SQLs extends SQLSyntax {
     public static final LiteralExpression LITERAL_2 = SQLs.literal(IntegerType.INSTANCE, 2);
 
     public static final LiteralExpression LITERAL_3 = SQLs.literal(IntegerType.INSTANCE, 3);
+
+    public static final LiteralExpression LITERAL_4 = SQLs.literal(IntegerType.INSTANCE, 4);
 
     public static final LiteralExpression LITERAL_5 = SQLs.literal(IntegerType.INSTANCE, 5);
 
@@ -250,7 +256,45 @@ public abstract class SQLs extends SQLSyntax {
      */
     public static final LiteralExpression BATCH_NO_LITERAL = SQLs.namedLiteral(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
 
-    public static final Expression UPDATE_TIME_LITERAL_PLACEHOLDER = NonOperationExpression.updateTimeLiteralPlaceHolder();
+    /*-------------------below const-------------------*/
+
+    public static final LiteralExpression CONST_0 = SQLs.constant(IntegerType.INSTANCE, 0);
+
+    public static final LiteralExpression CONST_1 = SQLs.constant(IntegerType.INSTANCE, 1);
+
+    public static final LiteralExpression CONST_2 = SQLs.constant(IntegerType.INSTANCE, 2);
+
+    public static final LiteralExpression CONST_3 = SQLs.constant(IntegerType.INSTANCE, 3);
+
+    public static final LiteralExpression CONST_4 = SQLs.constant(IntegerType.INSTANCE, 4);
+
+    public static final LiteralExpression CONST_5 = SQLs.constant(IntegerType.INSTANCE, 5);
+
+    public static final LiteralExpression CONST_10 = SQLs.constant(IntegerType.INSTANCE, 10);
+
+    public static final LiteralExpression CONST_100 = SQLs.constant(IntegerType.INSTANCE, 100);
+
+    public static final LiteralExpression CONST_1000 = SQLs.constant(IntegerType.INSTANCE, 1000);
+
+    public static final LiteralExpression CONST_MINUS_1 = SQLs.constant(IntegerType.INSTANCE, -1);
+
+    public static final LiteralExpression CONST_POINT_5 = SQLs.constant(DoubleType.INSTANCE, 0.5D);
+
+    public static final LiteralExpression CONST_DECIMAL_0;
+
+    /**
+     * @see #PARAM_EMPTY_STRING
+     */
+    public static final LiteralExpression CONST_EMPTY_STRING = SQLs.constant(StringType.INSTANCE, "");
+
+    public static final LiteralExpression CONST_SPACE = SQLs.constant(StringType.INSTANCE, " ");
+
+    /**
+     * @see #BATCH_NO_PARAM
+     */
+    public static final LiteralExpression BATCH_NO_CONST = SQLs.namedConst(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
+
+
 
     /*-------------------below param -------------------*/
 
@@ -275,8 +319,6 @@ public abstract class SQLs extends SQLSyntax {
     public static final ParamExpression PARAM_POINT_5 = SQLs.param(DoubleType.INSTANCE, 0.5D);
 
     public static final ParamExpression PARAM_DECIMAL_0;
-
-    public static final Expression UPDATE_TIME_PARAM_PLACEHOLDER = NonOperationExpression.updateTimeParamPlaceHolder();
 
     /**
      * @see #TRUE
@@ -305,6 +347,7 @@ public abstract class SQLs extends SQLSyntax {
     static {
         final BigDecimal zero = new BigDecimal("0.00");
         LITERAL_DECIMAL_0 = SQLs.literal(BigDecimalType.INSTANCE, zero);
+        CONST_DECIMAL_0 = SQLs.constant(BigDecimalType.INSTANCE, zero);
         PARAM_DECIMAL_0 = SQLs.param(BigDecimalType.INSTANCE, zero);
     }
 
@@ -914,14 +957,9 @@ public abstract class SQLs extends SQLSyntax {
             final SqlField field = this.field;
             final _Expression right = (_Expression) this.right;
 
-            if (right == SQLs.UPDATE_TIME_PARAM_PLACEHOLDER) {
+            if (right == SQLs.UPDATE_TIME_PLACEHOLDER) {
                 if (this instanceof OperatorItemPair) {
-                    throw placeholderError("UPDATE_TIME_PARAM_PLACEHOLDER");
-                }
-                context.appendSetLeftItem(field, right); //  append left item
-            } else if (right == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
-                if (this instanceof OperatorItemPair) {
-                    throw placeholderError("UPDATE_TIME_LITERAL_PLACEHOLDER");
+                    throw placeholderError("UPDATE_TIME_PLACEHOLDER");
                 }
                 context.appendSetLeftItem(field, right); //  append left item
             } else {

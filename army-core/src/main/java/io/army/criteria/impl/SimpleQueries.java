@@ -1052,11 +1052,12 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         } else if (!(dual.left instanceof DerivedField)) {
             m = String.format("%s isn't %s %s.", dual.left, DerivedField.class.getName(), msgSuffix);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
-        } else if (dual.right != SQLs.BATCH_NO_PARAM && dual.right != SQLs.BATCH_NO_LITERAL) {
-            m = String.format("The right item of %s should be %s.%s or %s.%s , but is %s %s",
+        } else if (dual.right != SQLs.BATCH_NO_PARAM && dual.right != SQLs.BATCH_NO_LITERAL && dual.right != SQLs.BATCH_NO_CONST) {
+            m = String.format("The right item of %s should be %s.%s or %s.%s or %s.%s, but is %s %s",
                     dual.left,
                     SQLs.class.getName(), "BATCH_NO_PARAM",
                     SQLs.class.getName(), "BATCH_NO_LITERAL",
+                    SQLs.class.getName(), "BATCH_NO_CONST",
                     dual.right,
                     msgSuffix);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);

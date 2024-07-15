@@ -31,6 +31,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
@@ -232,15 +233,15 @@ abstract class StatementContext implements _StmtContext, StmtParams {
 
         final Function<String, Object> nameValueFunc;
         final Object value;
-        if (namedLiteral == SQLs.BATCH_NO_LITERAL) {
+        if (namedLiteral == SQLs.BATCH_NO_LITERAL || namedLiteral == SQLs.BATCH_NO_CONST) {
             final IntSupplier batchNoFunc = this.paramAccepter.batchIndexFunc;
             if (batchNoFunc == null) {
-                String m = String.format("%s don't support batch no literal", this.getClass().getName());
+                String m = String.format("%s don't support batch no literal/const", this.getClass().getName());
                 throw new CriteriaException(m);
             }
             value = batchNoFunc.getAsInt() + 1;
         } else if ((nameValueFunc = this.paramAccepter.nameValueFunc) == null) {
-            String m = String.format("%s don't support batch no literal", this.getClass().getName());
+            String m = String.format("%s don't support batch no literal/const", this.getClass().getName());
             throw new CriteriaException(m);
         } else {
             value = nameValueFunc.apply(namedLiteral.name());
@@ -374,15 +375,20 @@ abstract class StatementContext implements _StmtContext, StmtParams {
         if (!_MetaBridge.UPDATE_TIME.equals(updateTime.fieldName())) {
             final String m = String.format("Expression %s present in error context", updateTimePlaceholder);
             throw new CriteriaException(m);
-        } else if (updateTimePlaceholder == SQLs.UPDATE_TIME_PARAM_PLACEHOLDER) {
-            this.sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            appendParam(SingleParam.build(updateTime, this.parser.createUpdateTimeValue(updateTime)));
-        } else if (updateTimePlaceholder == SQLs.UPDATE_TIME_LITERAL_PLACEHOLDER) {
-            this.sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            appendLiteral(updateTime, this.parser.createUpdateTimeValue(updateTime), true);
-        } else {
+        } else if (updateTimePlaceholder != SQLs.UPDATE_TIME_PLACEHOLDER) {
             // no bug,never here
             throw _Exceptions.illegalExpression(updateTimePlaceholder);
+        }
+
+        this.sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
+
+        final Temporal updateTimeValue;
+        updateTimeValue = this.parser.createUpdateTimeValue(updateTime);
+
+        if (isUpdateTimeOutputParam()) {
+            appendParam(SingleParam.build(updateTime, updateTimeValue));
+        } else {
+            appendLiteral(updateTime, updateTimeValue, true);
         }
     }
 
