@@ -19,7 +19,6 @@ package io.army.jdbc;
 import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
-import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.dialect._Constant;
@@ -31,7 +30,6 @@ import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.*;
-import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.DataRecord;
@@ -376,20 +374,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         return stream;
     }
 
-    @Override
-    public final <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option,
-                                     Function<Option<?>, ?> optionFunc)
-            throws DataAccessException {
-        return executeQuery(stmt, option, beanReaderFunc(stmt, resultClass), optionFunc);
-
-    }
-
-    @Override
-    public final <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option,
-                                           Function<Option<?>, ?> optionFunc)
-            throws DataAccessException {
-        return this.executeQuery(stmt, option, objectReaderFunc(stmt, constructor), optionFunc);
-    }
 
     @Override
     public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function,
@@ -398,33 +382,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function), optionFunc);
     }
 
-    @Override
-    public final <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList,
-                                           Function<Option<?>, ?> optionFunc)
-            throws DataAccessException {
-
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
-            statement = bindStatement(stmt, option);
-            resultSet = jdbcExecuteQuery(statement, stmt.sqlText());
-
-            final SecondRowReader<R> rowReader;
-            rowReader = new SecondRowReader<>(this, stmt.selectionList(), createSqlTypArray(resultSet.getMetaData()));
-
-            final SimpleSecondSpliterator<R> spliterator;
-            spliterator = new SimpleSecondSpliterator<>(statement, resultSet, rowReader, stmt, option, firstList, Option.EMPTY_FUNC); // currently, don't need session option function
-
-            return assembleStream(spliterator, option);
-        } catch (Exception e) {
-            closeResultSetAndStatement(resultSet, statement);
-            throw handleException(e);
-        } catch (Error e) {
-            closeResultSetAndStatement(resultSet, statement);
-            throw e;
-        }
-
-    }
 
     @Nullable
     @Override
@@ -1480,42 +1437,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-    /**
-     * @see #query(SingleSqlStmt, Class, SyncStmtOption, Function)
-     */
-    private <R> Function<ResultSetMetaData, RowReader<R>> beanReaderFunc(final SingleSqlStmt stmt,
-                                                                         final @Nullable Class<R> resultClass) {
-        if (resultClass == null) {
-            throw new NullPointerException();
-        }
-        return metaData -> {
-            try {
-                return createBeanRowReader(metaData, resultClass, stmt);
-            } catch (Exception e) {
-                throw handleException(e);
-            }
 
-        };
-    }
-
-    /**
-     * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption, Function)
-     */
-    private <R> Function<ResultSetMetaData, RowReader<R>> objectReaderFunc(
-            final SingleSqlStmt stmt, final @Nullable Supplier<R> constructor) {
-        if (constructor == null) {
-            throw new NullPointerException();
-        }
-        return metaData -> {
-            try {
-                return new ObjectReader<>(this, stmt.selectionList(), stmt instanceof TwoStmtModeQuerySpec,
-                        createSqlTypArray(metaData), constructor
-                );
-            } catch (Exception e) {
-                throw handleException(e);
-            }
-        };
-    }
 
     /**
      * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption, Function)
@@ -1744,8 +1666,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #query(SingleSqlStmt, Class, SyncStmtOption, Function)
-     * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption, Function)
      * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption, Function)
      */
     private <R> Stream<R> executeQuery(SingleSqlStmt stmt, SyncStmtOption option,
@@ -2371,73 +2291,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     } // ObjectReader
 
 
-    private static final class SecondRowReader<R> extends MyRowReader<R> {
-
-        /**
-         * @see SimpleSecondSpliterator#readRowStream(int, Consumer)
-         */
-        private R currentRow;
-
-        /**
-         * @see SimpleSecondSpliterator#readRowStream(int, Consumer)
-         */
-        private ObjectAccessor accessor;
-
-        /**
-         * @see JdbcExecutor#secondQuery(TwoStmtQueryStmt, SyncStmtOption, List, Function)
-         */
-        private SecondRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                DataType[] dataTypeArray) {
-            super(executor, selectionList, dataTypeArray, Object.class);
-        }
-
-        /**
-         * @see SimpleSecondSpliterator#readRowStream(int, Consumer)
-         */
-        @Override
-        ObjectAccessor createRow() {
-            if (this.currentRow == null) {
-                // no bug,never here
-                throw new NullPointerException();
-            }
-            final ObjectAccessor accessor = this.accessor;
-            if (accessor == null) {
-                throw new NullPointerException();
-            }
-            return accessor;
-        }
-
-        @Override
-        void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
-            final ObjectAccessor accessor = this.accessor;
-            if (accessor != ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR) {
-                accessor.set(this.currentRow, fieldName, value);
-            } else if (this.currentRow.equals(value)) { // single id row
-                assert indexBasedZero == 0;
-            } else {
-                String m = String.format("child and parent column[%s] id not equals", fieldName);
-                throw new CriteriaException(m);
-            }
-        }
-
-
-        @SuppressWarnings("unchecked")
-        @Override
-        R endOneRow() {
-            R row = this.currentRow;
-            assert row != null;
-            this.currentRow = null;
-
-            if (row instanceof Map && row instanceof ImmutableSpec) {
-                row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
-            }
-            return row;
-        }
-
-
-    } // SecondRowReader
-
-
     private static class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
 
         private final JdbcStmtRecordMeta meta;
@@ -2919,9 +2772,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private Function<Option<?>, ?> createQueryStatesOptionFunc() throws SQLException {
             final Map<Option<?>, Object> map;
             map = this.executor.createStatesOptionMap(this.statement.getWarnings());
-            if (this instanceof SimpleSecondSpliterator) {
-                map.put(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
-            }
 
             final Function<Option<?>, ?> sessionFunc = this.sessionFunc;
             final ResultStates firstDmlStates;
@@ -3193,121 +3043,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     } //InsertRowSpliterator
 
-
-    private static final class SimpleSecondSpliterator<R> extends JdbcSimpleSpliterator<R> {
-
-        private final ObjectAccessor accessor;
-
-        private final Class<?> resultClass;
-
-        private final List<R> firstList;
-
-        private Map<Object, R> rowMap;
-
-        private int rowIndex = 0;
-
-
-        private SimpleSecondSpliterator(Statement statement, ResultSet resultSet, SecondRowReader<R> rowReader,
-                                        TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList, Function<Option<?>, ?> sessionFunc) {
-            super(statement, resultSet, rowReader, stmt, option, sessionFunc);
-            final R row;
-            row = firstList.get(0);
-            if (row instanceof Map) {
-                this.resultClass = Map.class;
-            } else {
-                this.resultClass = row.getClass();
-            }
-            if (row instanceof Map || stmt.maxColumnSize() > 1) {
-                this.accessor = ObjectAccessorFactory.fromInstance(firstList.get(0));
-            } else {
-                this.accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-            }
-            this.firstList = firstList;
-
-        }
-
-        @Override
-        boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
-
-            final ResultSet resultSet = this.resultSet;
-            final SecondRowReader<R> rowReader = (SecondRowReader<R>) this.rowReader;
-            final JdbcExecutor executor = rowReader.executor;
-            final MappingEnv env = executor.factory.mappingEnv;
-
-            final TwoStmtQueryStmt stmt = (TwoStmtQueryStmt) this.stmt;
-            final ObjectAccessor accessor = this.accessor;
-            final List<R> firstList = this.firstList;
-            final int idSelectionIndex = stmt.idSelectionIndex();
-
-            final Selection idSelection = rowReader.selectionList.get(idSelectionIndex);
-            final DataType idSqlType = rowReader.dataTypeArray[idSelectionIndex];
-            final String idLabel = idSelection.label();
-            final MappingType type = compatibleTypeFrom(idSelection, idSqlType, this.resultClass, accessor, idLabel);
-
-            final int idColumnIndexBasedOne = idSelectionIndex + 1;
-
-            Map<Object, R> rowMap = this.rowMap;
-            Object idValue;
-            int readRowCount = 0, rowIndex = this.rowIndex;
-            R row;
-            boolean interrupt = false;
-            while (resultSet.next()) {
-
-                idValue = executor.get(resultSet, idColumnIndexBasedOne, type, idSqlType);
-                if (idValue == null) {
-                    throw _Exceptions.secondStmtIdIsNull(idSelection);
-                }
-                idValue = type.afterGet(idSqlType, env, idValue);
-
-                if (rowMap == null) {
-                    this.rowMap = rowMap = createIdToRowMap(firstList, idLabel, accessor);
-                }
-
-                row = rowMap.get(idValue);
-
-                if (row == null) {
-                    String m = String.format("Not found match row for %s(based 1) row id[%s] in first query ", rowIndex + 1, idValue);
-                    throw new DataAccessException(m);
-                }
-
-                rowReader.currentRow = row;
-                rowReader.accessor = accessor;
-
-                action.accept(rowReader.readOneRow(resultSet));
-
-                readRowCount++;
-                rowIndex++;
-                if (readSize > 0 && readRowCount == readSize) {
-                    interrupt = true;
-                    break;
-                }
-
-                if (rowIndex < 0) {
-                    throw new CriteriaException("Second query row count greater than Integer.MAX_VALUE");
-                }
-
-                if (this.canceled) {
-                    break;
-                }
-
-            }
-
-            this.rowIndex = rowIndex;
-
-            if (this.canceled) {
-                close();
-            } else if (!interrupt) {
-                if (rowIndex != firstList.size()) {
-                    throw _Exceptions.parentChildRowsNotMatch(executor.sessionName, rowIndex, firstList.size());
-                }
-                emitSingleResultStates(rowIndex);
-                close();
-            }
-            return readRowCount > 0;
-        }
-
-
-    } // SimpleSecondSpliterator
 
 
     private static final class CursorRowSpliterator<R> implements Spliterator<R> {

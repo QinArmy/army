@@ -141,9 +141,9 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final SymbolColonEqual COLON_EQUAL = SqlWords.SymbolColonEqualEnum.COLON_EQUAL;
 
-    public static final WordBooleans TRUE = OperationPredicate.booleanWord(true);
+    public static final WordBoolean TRUE = OperationPredicate.booleanWord(true);
 
-    public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
+    public static final WordBoolean FALSE = OperationPredicate.booleanWord(false);
 
 
     public static final WordDefault DEFAULT = new DefaultWord();
@@ -702,7 +702,7 @@ public abstract class SQLs extends SQLSyntax {
 
     }
 
-    public interface WordBooleans extends BooleanTestWord, SimplePredicate {
+    public interface WordBoolean extends BooleanTestWord, SimplePredicate {
 
     }
 

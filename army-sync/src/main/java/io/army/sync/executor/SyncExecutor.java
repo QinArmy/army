@@ -24,7 +24,6 @@ import io.army.session.record.ResultStates;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
-import io.army.stmt.TwoStmtQueryStmt;
 import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtOption;
 
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.LongConsumer;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -105,15 +103,9 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
 
     Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option, Function<Option<?>, ?> optionFunc) throws DataAccessException;
-
-    <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
     <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
             throws DataAccessException;
-
-    <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList,
-                              Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
     @Override
     void close() throws DataAccessException;

@@ -804,7 +804,7 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">parse_ident ( qualified_identifier text [, strict_mode boolean DEFAULT true ] ) → text[]</a>
      */
-    public static SimpleExpression parseIdent(Expression qualifiedIdentifier, SQLs.WordBooleans strictMode) {
+    public static SimpleExpression parseIdent(Expression qualifiedIdentifier, SQLs.WordBoolean strictMode) {
         final String name = "PARSE_IDENT";
         if (strictMode != SQLs.TRUE && strictMode != SQLs.FALSE) {
             throw CriteriaUtils.funcArgError(name, strictMode);

@@ -26,6 +26,7 @@ import java.lang.reflect.*;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 /**
  * @since 0.6.0
@@ -107,6 +108,18 @@ public abstract class ObjectAccessorFactory {
         }
     }
 
+
+    public static <T> Supplier<T> beanConstructor(final Class<T> beanClass) {
+        final Constructor<T> constructor;
+        try {
+            constructor = beanClass.getConstructor();
+        } catch (NoSuchMethodException e) {
+            String m = String.format("%s no default Constructor.", beanClass.getName());
+            throw new ObjectAccessException(m, e);
+        }
+        return () -> createBean(constructor);
+    }
+
     public static <T> Constructor<T> getConstructor(final Class<T> beanClass) {
         try {
             return beanClass.getConstructor();
@@ -115,8 +128,6 @@ public abstract class ObjectAccessorFactory {
             throw new ObjectAccessException(m, e);
         }
     }
-
-
 
 
     private static BeanAccessors createMethodAccessors(final Class<?> beanClass) {
