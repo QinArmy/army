@@ -115,17 +115,19 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
 
     @Override
     public final OD orderBy(Consumer<Consumer<SortItem>> consumer) {
-        consumer.accept(this::onAddOrderBy);
+        final Consumer<SortItem> clause = this::onAddOrderBy;
+        ClauseUtils.invokeConsumer(clause, consumer);
         if (this.orderByList == null) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
+            throw ContextStack.clearStackAnd(_Exceptions::sortItemListIsEmpty);
         }
         return (OD) this;
     }
 
     @Override
     public final OD ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-        consumer.accept(this::onAddOrderBy);
-        if (this.orderByList == null || this instanceof OrderByEventListener) {
+        final Consumer<SortItem> clause = this::onAddOrderBy;
+        ClauseUtils.invokeConsumer(clause, consumer);
+        if (this.orderByList == null && this instanceof OrderByEventListener) { // NOTE! here this.orderByList == null not this.orderByList != null
             ((OrderByEventListener) this).onOrderByEvent();
         }
         return (OD) this;
@@ -197,7 +199,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
 
         final RowSet left;
 
-         final _UnionType unionType;
+        final _UnionType unionType;
 
         final RowSet right;
 
@@ -342,7 +344,6 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
         OrderByClauseClause(CriteriaContext context) {
             super(context);
         }
-
 
 
     } //OrderByClauseClause
