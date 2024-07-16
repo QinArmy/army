@@ -62,7 +62,7 @@ public class CursorTests extends SessionTestSupport {
             LOG.debug("{} firstRow : {}", session.name(), JSON.toJSONString(firstRow));
             cursor.move(Direction.ABSOLUTE, 0);
 
-            rowCount = cursor.fetch(Direction.FORWARD_ALL, ChinaRegion_.CLASS, ResultStates.IGNORE_STATES)
+            rowCount = cursor.fetchObject(Direction.FORWARD_ALL, ChinaRegion_::constructor, ResultStates.IGNORE_STATES)
                     .count();
 
             Assert.assertEquals(rowCount, regionList.size());

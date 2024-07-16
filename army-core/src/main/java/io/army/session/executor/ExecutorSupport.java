@@ -92,7 +92,7 @@ public abstract class ExecutorSupport {
             mode = factory.sqlLogMode;
         }
 
-        final String format = "session[name : {} , executorHash : {}]\n{}";
+        final String format = "session[name : {} , executorHash : {}]\n\n{}\n";
         switch (mode) {
             case OFF:
                 break;
