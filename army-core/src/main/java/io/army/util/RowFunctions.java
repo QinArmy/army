@@ -6,6 +6,8 @@ import io.army.criteria.Selection;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 import io.army.session.record.DataRecord;
+import io.army.stmt.SingleSqlStmt;
+import io.army.stmt.TwoStmtQueryStmt;
 import io.army.type.ImmutableSpec;
 
 import javax.annotation.Nullable;
@@ -73,6 +75,18 @@ public abstract class RowFunctions {
         final SelectionRowReader<R> reader;
         reader = new SelectionRowReader<>(constructor, null, selectionList, immutableMap);
         return reader::readRow;
+    }
+
+    public static <R> Function<DataRecord, R> classRowFunc(final Class<R> resultClass, final SingleSqlStmt stmt) {
+        final Function<DataRecord, R> rowFunc;
+        final List<? extends Selection> selectionList = stmt.selectionList();
+        if ((stmt instanceof TwoStmtQueryStmt && ((TwoStmtQueryStmt) stmt).maxColumnSize() == 1)
+                || selectionList.size() == 1) {
+            rowFunc = record -> record.get(0, resultClass);
+        } else {
+            rowFunc = RowFunctions.beanRowFunc(resultClass, selectionList);
+        }
+        return rowFunc;
     }
 
     /**

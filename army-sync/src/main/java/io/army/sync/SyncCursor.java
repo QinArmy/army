@@ -55,11 +55,11 @@ public interface SyncCursor extends Cursor, AutoCloseable {
     <R> R nextRecord(Function<CurrentRecord, R> function);
 
     @Nullable
-    <R> R fetchOneRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+    <R> R fetchOneRecord(Direction direction, Function<? super CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetchRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetchRecord(Direction direction, Function<? super CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetchRecord(Direction direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetchRecord(Direction direction, long count, Function<? super CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
     Stream<ResultItem> fetch(Direction direction);
 

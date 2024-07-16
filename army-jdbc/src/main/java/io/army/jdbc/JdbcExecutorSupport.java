@@ -1244,6 +1244,13 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         final JdbcExecutor executor;
 
+        private Class<?> resultClass;
+
+        private Function<DataRecord, ?> classRowFunc, objectRowFunc;
+
+        private Supplier<?> objectConstructor;
+
+
         private boolean cursorClosed;
 
         JdbcSyncStmtCursor(JdbcExecutor executor, DeclareCursorStmt stmt, Session session) {
@@ -1293,7 +1300,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         @Nullable
         @Override
-        public final <R> R fetchOneRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
+        public final <R> R fetchOneRecord(Direction direction, Function<? super CurrentRecord, R> function, Consumer<ResultStates> consumer) {
             if (direction.isNotOneRow()) {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
@@ -1335,7 +1342,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
-        public final <R> Stream<R> fetchRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
+        public final <R> Stream<R> fetchRecord(Direction direction, Function<? super CurrentRecord, R> function, Consumer<ResultStates> consumer) {
             if (direction.isNotNoRowCount()) {
                 throw _Exceptions.cursorDirectionNoRowCount(direction);
             }
@@ -1343,7 +1350,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
-        public final <R> Stream<R> fetchRecord(Direction direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
+        public final <R> Stream<R> fetchRecord(Direction direction, long count, Function<? super CurrentRecord, R> function, Consumer<ResultStates> consumer) {
             if (direction.isNotSupportRowCount()) {
                 throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
             }
@@ -1442,46 +1449,52 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
 
+        @SuppressWarnings("unchecked")
         private <R> Stream<R> executeFetch(Direction direction, @Nullable Long count, @Nullable Class<R> resultClass,
                                            @Nullable Consumer<ResultStates> consumer) {
             if (resultClass == null) {
                 throw new NullPointerException();
             } else if (consumer == null) {
                 throw new NullPointerException();
-            } else if (isClosed()) {
-                throw _Exceptions.cursorHaveClosed(this.name());
             }
 
-            try {
-                return this.executor.executeCursorFetch(this.stmt, direction, count, resultClass, consumer);
-            } catch (DriverException e) {
-                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
-                    this.cursorClosed = true;
-                }
-                throw e;
+            Function<DataRecord, R> rowFunc = null;
+            final Class<?> prevResultClass = this.resultClass;
+            if (prevResultClass == null) {
+                this.resultClass = resultClass;
+            } else if (resultClass == prevResultClass) {
+                rowFunc = (Function<DataRecord, R>) this.classRowFunc;
             }
+            if (rowFunc == null) {
+                this.classRowFunc = rowFunc = RowFunctions.classRowFunc(resultClass, this.stmt);
+            }
+            return executeFetchRecord(direction, count, rowFunc, consumer);
         }
 
+
+        @SuppressWarnings("unchecked")
         private <R> Stream<R> executeFetchObject(Direction direction, @Nullable Long count, @Nullable Supplier<R> constructor,
                                                  @Nullable Consumer<ResultStates> consumer) {
             if (constructor == null) {
                 throw new NullPointerException();
             } else if (consumer == null) {
                 throw new NullPointerException();
-            } else if (isClosed()) {
-                throw _Exceptions.cursorHaveClosed(this.name());
             }
-            try {
-                return this.executor.executeCursorFetchObject(this.stmt, direction, count, constructor, consumer);
-            } catch (DriverException e) {
-                if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
-                    this.cursorClosed = true;
-                }
-                throw e;
+
+            Function<DataRecord, R> rowFunc = null;
+            final Supplier<?> prevObjectConstructor = this.objectConstructor;
+            if (prevObjectConstructor == null) {
+                this.objectConstructor = constructor;
+            } else if (prevObjectConstructor == constructor) {
+                rowFunc = (Function<DataRecord, R>) this.objectRowFunc;
             }
+            if (rowFunc == null) {
+                this.objectRowFunc = rowFunc = RowFunctions.objectRowFunc(constructor, this.selectionList, true);
+            }
+            return executeFetchRecord(direction, count, rowFunc, consumer);
         }
 
-        private <R> Stream<R> executeFetchRecord(Direction direction, @Nullable Long count, @Nullable Function<CurrentRecord, R> function,
+        private <R> Stream<R> executeFetchRecord(Direction direction, @Nullable Long count, @Nullable Function<? super CurrentRecord, R> function,
                                                  @Nullable Consumer<ResultStates> consumer) {
             if (function == null) {
                 throw new NullPointerException();

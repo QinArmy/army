@@ -940,7 +940,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     final <R> Stream<R> executeCursorFetchRecord(final DeclareCursorStmt stmt, final Direction direction,
-                                                 final @Nullable Long rowCount, final Function<CurrentRecord, R> function,
+                                                 final @Nullable Long rowCount, final Function<? super CurrentRecord, R> function,
                                                  final Consumer<ResultStates> consumer) {
 
         final Function<ResultSetMetaData, RowReader<R>> readerFunc;

@@ -493,17 +493,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
     }
 
     protected static <R> ReaderFunction<R> classReaderFunc(final Class<R> resultClass) {
-        return (stmt, immutableMap) -> {
-            final Function<? super CurrentRecord, R> rowFunc;
-            final List<? extends Selection> selectionList = stmt.selectionList();
-            if ((stmt instanceof TwoStmtQueryStmt && ((TwoStmtQueryStmt) stmt).maxColumnSize() == 1)
-                    || selectionList.size() == 1) {
-                rowFunc = record -> record.get(0, resultClass);
-            } else {
-                rowFunc = RowFunctions.beanRowFunc(resultClass, selectionList);
-            }
-            return rowFunc;
-        };
+        return (stmt, immutableMap) -> RowFunctions.classRowFunc(resultClass, stmt);
     }
 
 
