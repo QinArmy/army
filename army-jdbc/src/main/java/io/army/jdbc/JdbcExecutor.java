@@ -376,7 +376,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     @Override
-    public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function,
+    public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function,
                                            SyncStmtOption option, Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function), optionFunc);
@@ -1444,7 +1444,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      */
     private <R> Function<ResultSetMetaData, RowReader<R>> recordReaderFunc(
             final List<? extends Selection> selectionList,
-            final @Nullable Function<CurrentRecord, R> function) {
+            final @Nullable Function<? super CurrentRecord, R> function) {
         if (function == null) {
             throw new NullPointerException();
         }
@@ -2295,7 +2295,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private final JdbcStmtRecordMeta meta;
 
-        private final Function<CurrentRecord, R> function;
+        private final Function<? super CurrentRecord, R> function;
 
         private final MappingType[] rawTypeArray;
 
@@ -2309,7 +2309,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
          * @see JdbcExecutor#recordReaderFunc(List, Function)
          */
         private RecordRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                DataType[] dataTypeArray, Function<CurrentRecord, R> function, ResultSetMetaData meta) {
+                                DataType[] dataTypeArray, Function<? super CurrentRecord, R> function, ResultSetMetaData meta) {
             super(executor, selectionList, dataTypeArray);
             this.function = function;
             this.rawTypeArray = createRawTypeArray(selectionList);

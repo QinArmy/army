@@ -524,7 +524,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
             final Flux<R> flux;
             if (stmt instanceof SingleSqlStmt) {
-                final Function<CurrentRecord, R> rowFunc;
+                final Function<? super CurrentRecord, R> rowFunc;
                 rowFunc = readerFunc.apply((SingleSqlStmt) stmt, true);
                 flux = this.executor.queryRecord((SingleSqlStmt) stmt, rowFunc, option, Option.EMPTY_FUNC);
             } else if (!(stmt instanceof PairStmt)) {
@@ -571,7 +571,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
         errorFunc = error -> _Exceptions.childInsertError(this, domainTable, error);
 
         final SimpleStmt firstStmt = stmt.firstStmt(), secondStmt = stmt.secondStmt();
-        final Function<CurrentRecord, R> rowFunc;
+        final Function<? super CurrentRecord, R> rowFunc;
 
         final Flux<R> flux;
         if (firstStmtIsQuery) {

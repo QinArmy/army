@@ -67,7 +67,7 @@ public interface ReactiveExecutor extends StmtExecutor, ReactiveCloseable {
 
     Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
+    <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
 
     /**

@@ -664,7 +664,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
             final Stream<R> stream;
             if (stmt instanceof SingleSqlStmt) {
-                final Function<CurrentRecord, R> rowFunc;
+                final Function<? super CurrentRecord, R> rowFunc;
                 rowFunc = readerFunc.apply((SingleSqlStmt) stmt, true);
                 stream = this.executor.queryRecord((SingleSqlStmt) stmt, rowFunc, option, Option.EMPTY_FUNC);
             } else if (!(stmt instanceof PairStmt)) {
@@ -704,7 +704,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
 
         final SimpleStmt firstStmt = stmt.firstStmt(), secondStmt = stmt.secondStmt();
 
-        final Function<CurrentRecord, R> rowFunc;
+        final Function<? super CurrentRecord, R> rowFunc;
 
         ResultStates states = null;
         List<R> resultList = null;
@@ -1046,7 +1046,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     }
 
     /**
-     * @see #executeQuery(DqlStatement, SyncStmtOption, Function)
+     * @see #executeQuery(DqlStatement, SyncStmtOption, ReaderFunction)
      */
     private SyncStmtOption replaceForQueryExecutionLogger(final SyncStmtOption optionOfUser, final Stmt stmt) {
         final SqlLogMode sqlLogMode;

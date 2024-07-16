@@ -322,7 +322,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
 
     @Override
-    public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function,
+    public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function,
                                          ReactiveStmtOption option, final Function<Option<?>, ?> optionFunc) {
         Flux<R> flux;
         try {
@@ -1123,7 +1123,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
     /**
      * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
      */
-    private <R> Function<CurrentRow, R> mapRecordFunc(final SingleSqlStmt stmt, final Function<CurrentRecord, R> recordFunc) {
+    private <R> Function<CurrentRow, R> mapRecordFunc(final SingleSqlStmt stmt, final Function<? super CurrentRecord, R> recordFunc) {
         final RowReader<R> rowReader;
         rowReader = new CurrentRecordRowReader<>(this, stmt.selectionList(), recordFunc);
 
@@ -1794,7 +1794,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
     private static final class CurrentRecordRowReader<R> extends RowReader<R> {
 
-        private final Function<CurrentRecord, R> function;
+        private final Function<? super CurrentRecord, R> function;
 
         private final Object[] valueArray;
 
@@ -1805,7 +1805,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         private long rowCount;
 
         private CurrentRecordRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
-                                       Function<CurrentRecord, R> function) {
+                                       Function<? super CurrentRecord, R> function) {
             super(executor, selectionList, null);
             this.function = function;
             this.valueArray = new Object[selectionList.size()];

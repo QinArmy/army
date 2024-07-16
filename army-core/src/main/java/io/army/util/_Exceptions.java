@@ -1293,12 +1293,12 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(String.format("unknown save point instance %s", savePoint));
     }
 
-    public static IllegalArgumentException recordFuncError(Function<CurrentRecord, ?> function, CurrentRecord record) {
+    public static IllegalArgumentException recordFuncError(Function<? super CurrentRecord, ?> function, CurrentRecord record) {
         String m = String.format("record function %s couldn't return %s", function, record);
         return new IllegalArgumentException(m);
     }
 
-    public static IllegalArgumentException recordFuncReturnNull(Function<CurrentRecord, ?> function) {
+    public static IllegalArgumentException recordFuncReturnNull(Function<? super CurrentRecord, ?> function) {
         String m = String.format("record function %s couldn't return null", function);
         return new IllegalArgumentException(m);
     }
@@ -1340,7 +1340,7 @@ public abstract class _Exceptions {
         return new DataAccessException(m);
     }
 
-    public static ArmyException recordMapFuncReturnError(Function<CurrentRecord, ?> function) {
+    public static ArmyException recordMapFuncReturnError(Function<? super CurrentRecord, ?> function) {
         final String className = CurrentRecord.class.getName();
         String m = String.format("%s map function %s return %s", className, function, className);
         return new ArmyException(m);
