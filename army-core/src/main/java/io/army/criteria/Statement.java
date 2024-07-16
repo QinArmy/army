@@ -973,7 +973,6 @@ public interface Statement extends Item {
 
         WA and(Function<Expression, IPredicate> expOperator, Expression operand);
 
-        WA and(UnaryOperator<IPredicate> expOperator, IPredicate operand);
 
         <T> WA and(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 

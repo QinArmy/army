@@ -30,7 +30,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * This class is base class of all {@link IPredicate} implementation .
@@ -309,10 +312,6 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         return this.and(supplier.get());
     }
 
-    @Override
-    public final IPredicate and(UnaryOperator<IPredicate> expOperator, IPredicate operand) {
-        return this.and(expOperator.apply(operand));
-    }
 
     @Override
     public final IPredicate and(Function<Expression, IPredicate> expOperator, Expression operand) {
