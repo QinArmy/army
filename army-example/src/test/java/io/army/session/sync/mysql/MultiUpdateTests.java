@@ -88,7 +88,7 @@ public class MultiUpdateTests extends SessionTestSupport {
         stmt = MySQLs.batchMultiUpdate()
                 .with("cte").as(sw -> sw.select(ChinaRegion_.id)
                         .from(ChinaRegion_.T, AS, "c")
-                        .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                        .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
                         .and(ChinaRegion_.regionType::equal, SQLs::param, RegionType.PROVINCE)
                         .asQuery()
                 ).space()

@@ -93,8 +93,8 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
         stmt = SQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, AS, "p") // update only parent table field: ChinaRegion_.*
                 .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
-                .where(ChinaRegion_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, LITERAL_DECIMAL_0) // test method infer
+                .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
+                .and(ChinaRegion_.regionGdp::spacePlus, SQLs::namedParam, Expression::greaterEqual, LITERAL_DECIMAL_0) // test method infer
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0) // test method infer
                 .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0) // test method infer
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")

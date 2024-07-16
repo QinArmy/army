@@ -56,7 +56,7 @@ public class DomainDeleteTests extends SessionSupport {
         final BatchDelete stmt;
         stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
                 .asDelete()
                 .namedParamList(extractRegionIdMapList(regionList));
@@ -105,7 +105,7 @@ public class DomainDeleteTests extends SessionSupport {
         final BatchDelete stmt;
         stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaProvince_.T, AS, "p")
-                .where(ChinaProvince_.id::equal, SQLs::namedParam)
+                .where(ChinaProvince_.id::spaceEqual, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
                 .asDelete()
                 .namedParamList(extractRegionIdMapList(regionList));

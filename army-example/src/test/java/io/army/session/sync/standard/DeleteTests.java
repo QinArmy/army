@@ -54,7 +54,7 @@ public class DeleteTests extends SessionSupport {
         final BatchDelete stmt;
         stmt = SQLs.batchSingleDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
                 .asDelete()
                 .namedParamList(extractRegionIdMapList(regionList));

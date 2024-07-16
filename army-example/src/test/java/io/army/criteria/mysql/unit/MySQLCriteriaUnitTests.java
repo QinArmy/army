@@ -198,8 +198,8 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                 .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
                 .from(ChinaRegion_.T, AS, "r")
                 .partition("p1")
-                .where(ChinaRegion_.name::equal, SQLs::namedParam) // batch parameter
-                .and(ChinaRegion_.regionGdp::equal, SQLs::namedParam)// batch parameter
+                .where(ChinaRegion_.name::spaceEqual, SQLs::namedParam) // batch parameter
+                .and(ChinaRegion_.regionGdp::spaceEqual, SQLs::namedParam)// batch parameter
                 .and(ChinaRegion_.updateTime::between, SQLs::literal, map.get("startTime"), AND, map.get("endTIme"))
                 .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")// common parameter
                 .orderBy(ChinaRegion_.name::desc)
@@ -288,7 +288,7 @@ public class MySQLCriteriaUnitTests extends MySQLUnitTests {
                     .join(ChinaRegion_.T)
                     .partition("p1")
                     .as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
-                    .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                    .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
                     .and(ChinaRegion_.createTime::between, SQLs::literal, map.get("startTime"), AND, map.get("endTIme"))
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map.get("startTime"), AND, map.get("endTIme"))
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")

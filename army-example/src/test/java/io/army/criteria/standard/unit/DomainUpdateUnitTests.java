@@ -94,7 +94,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .update(ChinaProvince_.T, AS, "p")
                 .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .setSpace(ChinaProvince_.governor, SQLs::namedParam)
-                .where(ChinaProvince_.id::equal, SQLs::namedParam)
+                .where(ChinaProvince_.id::spaceEqual, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .asUpdate()

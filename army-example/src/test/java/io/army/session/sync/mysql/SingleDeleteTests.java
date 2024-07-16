@@ -71,7 +71,7 @@ public class SingleDeleteTests extends SessionTestSupport {
         final BatchDelete stmt;
         stmt = MySQLs.batchSingleDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now.plusSeconds(1))
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, regionList.size())

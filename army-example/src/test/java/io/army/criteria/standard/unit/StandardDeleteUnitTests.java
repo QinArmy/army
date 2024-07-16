@@ -61,7 +61,7 @@ public class StandardDeleteUnitTests extends StandardUnitTests {
         stmt = SQLs.batchSingleDelete()
                 .deleteFrom(ChinaRegion_.T, SQLs.AS, "c")
                 .where(ChinaRegion_.createTime::less, SQLs::literal, LocalDateTime.now())
-                .and(ChinaRegion_.name.equal(SQLs::namedParam))
+                .and(ChinaRegion_.name.spaceEqual(SQLs::namedParam))
                 .and(ChinaRegion_.version.equal(SQLs::param, 2))
                 .asDelete()
                 .namedParamList(paramList);

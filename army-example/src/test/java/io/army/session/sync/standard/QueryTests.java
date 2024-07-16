@@ -141,7 +141,7 @@ public class QueryTests extends SessionSupport {
         stmt = SQLs.batchQuery20()
                 .with("cte").as(s -> s.select(ChinaRegion_.id)
                         .from(ChinaRegion_.T, AS, "c")
-                        .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                        .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
                         .asQuery()
                 )
                 .space()

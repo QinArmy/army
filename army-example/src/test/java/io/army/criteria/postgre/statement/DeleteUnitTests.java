@@ -95,8 +95,8 @@ public class DeleteUnitTests extends PostgreUnitTests {
                 .deleteFrom(ChinaRegion_.T, AS, "c")
                 .using(HistoryChinaRegion_.T, AS, "hc")
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
-                .and(ChinaRegion_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::less, SQLs::namedParam)
+                .and(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
+                .and(ChinaRegion_.regionGdp::spaceLess, SQLs::namedParam)
                 .asDelete()
                 .namedParamList(paramList);
 
@@ -124,8 +124,8 @@ public class DeleteUnitTests extends PostgreUnitTests {
                 .deleteFrom(ChinaRegion_.T, AS, "c")
                 .using(HistoryChinaRegion_.T, AS, "hc")
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
-                .and(ChinaRegion_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::less, SQLs::namedParam)
+                .and(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
+                .and(ChinaRegion_.regionGdp::spaceLess, SQLs::namedParam)
                 .returning("c", PERIOD, ChinaRegion_.T)
                 .asReturningDelete()
                 .namedParamList(paramList);

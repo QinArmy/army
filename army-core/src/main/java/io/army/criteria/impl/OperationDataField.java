@@ -39,102 +39,102 @@ abstract class OperationDataField extends OperationExpression.OperationDefiniteE
         _Selection {
 
     @Override
-    public final CompoundPredicate equal(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceEqual(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate less(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceLess(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.LESS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate lessEqual(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceLessEqual(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.LESS_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate greater(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceGreater(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.GREATER, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate greaterEqual(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceGreaterEqual(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate notEqual(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceNotEqual(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate like(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceLike(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.LIKE, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate notLike(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundPredicate spaceNotLike(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualBooleanOperator.NOT_LIKE, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundPredicate in(TeNamedOperator<SqlField> namedOperator, int size) {
+    public final CompoundPredicate spaceIn(TeNamedOperator<SqlField> namedOperator, int size) {
         return Expressions.inPredicate(this, false, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override
-    public final CompoundPredicate notIn(TeNamedOperator<SqlField> namedOperator, int size) {
+    public final CompoundPredicate spaceNotIn(TeNamedOperator<SqlField> namedOperator, int size) {
         return Expressions.inPredicate(this, true, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override
-    public final CompoundExpression mod(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceMod(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.MOD, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression plus(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spacePlus(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.PLUS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression minus(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceMinus(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.MINUS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression times(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceTimes(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.TIMES, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression divide(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceDivide(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.DIVIDE, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression bitwiseAnd(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceBitwiseAnd(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.BITWISE_AND, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression bitwiseOr(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceBitwiseOr(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.BITWISE_OR, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression xor(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceXor(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.BITWISE_XOR, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression rightShift(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceRightShift(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.RIGHT_SHIFT, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final CompoundExpression leftShift(BiFunction<SqlField, String, Expression> namedOperator) {
+    public final CompoundExpression spaceLeftShift(BiFunction<SqlField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualExpOperator.LEFT_SHIFT, namedOperator.apply(this, this.fieldName()));
     }
 

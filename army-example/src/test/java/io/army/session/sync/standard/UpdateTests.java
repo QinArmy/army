@@ -71,7 +71,7 @@ public class UpdateTests extends SessionSupport {
         stmt = SQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
                 .setSpace(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
-                .where(ChinaRegion_.id::equal, SQLs::namedParam)
+                .where(ChinaRegion_.id::spaceEqual, SQLs::namedParam)
                 .and(ChinaRegion_.createTime::between, SQLs::param, now.minusMinutes(10), AND, now)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, LITERAL_DECIMAL_0)
                 .asUpdate()
