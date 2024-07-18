@@ -24,6 +24,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.dialect.MySQLDialect;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.PillUserType;
+import io.army.mapping.StringType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -55,7 +56,7 @@ public class MySQLFunctionUnitTests {
 
                         .elseValue(SQLs.literalValue(0))
 
-                        .end()
+                        .end(StringType.INSTANCE)
                         .plus(SQLs.literalValue(1)).as("userType"))
                 .from(PillUser_.T, SQLs.AS, "u")
                 .asQuery();

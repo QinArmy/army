@@ -22,6 +22,7 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.mapping.JsonbType;
+import io.army.mapping.StringType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -48,7 +49,7 @@ public class FuncUnitTests extends PostgreUnitTests {
                         .when(1)
                         .then(2)
                         .elseValue(0)
-                        .end().as("a")
+                        .end(StringType.INSTANCE).as("a")
                 ).asQuery();
 
         printStmt(LOG, stmt);

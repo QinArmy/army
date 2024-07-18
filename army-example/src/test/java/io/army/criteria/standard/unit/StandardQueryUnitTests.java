@@ -24,6 +24,7 @@ import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.PillUserType;
+import io.army.mapping.StringType;
 import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                             }
                         })
                         .elseValue(SQLs.literalValue(PillUserType.NONE))
-                        .end()
+                        .end(StringType.INSTANCE)
                         .plus(SQLs.literalValue(1)).times(SQLs.literalValue(5)).as("a")
                 ).comma(SQLs.cases()
                         .whens(c -> {
@@ -68,7 +69,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                             }
                         })
                         .elseValue(SQLs.literalValue(PillUserType.NONE))
-                        .end()
+                        .end(StringType.INSTANCE)
                         .plus(SQLs.literalValue(1)).times(SQLs.literalValue(5)).as("a")
                 )
                 .asQuery();

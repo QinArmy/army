@@ -25,7 +25,6 @@ import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
-import io.army.mapping.TextType;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -892,10 +891,6 @@ abstract class LiteralFunctions {
             return this;
         }
 
-        @Override
-        public Expression end() {
-            return this.endCaseFunction(TextType.INSTANCE);
-        }
 
 
         @Override

@@ -25,6 +25,7 @@ import io.army.example.bank.domain.user.RegionType;
 import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.PillUserType;
+import io.army.mapping.StringType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -53,7 +54,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                         .then(RegionType.PROVINCE.name())
                         .when(RegionType.CITY)
                         .then(RegionType.CITY.name())
-                        .elseValue(NULL).end()::as, ChinaRegion_.REGION_TYPE
+                        .elseValue(NULL).end(StringType.INSTANCE)::as, ChinaRegion_.REGION_TYPE
                 )
                 .comma(MySQLs.rowNumber().over()::as, "rowNumber")
                 .comma(MySQLs.sum(ChinaRegion_.regionGdp).over(s -> s.partitionBy(ChinaRegion_.regionType))::as, "gdpSum")

@@ -18,6 +18,7 @@ package io.army.session.reactive.standard;
 
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
+import io.army.mapping.StringType;
 import io.army.reactive.ReactiveLocalSession;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -36,7 +37,7 @@ public class StandardReactiveFunctionTests extends SessionSupport {
                         .when(1)
                         .then(2)
                         .elseValue(0)
-                        .end().as("a")
+                        .end(StringType.INSTANCE).as("a")
                 ).asQuery();
 
         final String result;
