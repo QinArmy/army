@@ -452,9 +452,6 @@ public abstract class SQLs extends SQLSyntax {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD20, SELECT_IDENTITY);
     }
 
-    public static StandardQuery.SelectSpec<Statement._BatchSelectParamSpec> batchQuery() {
-        return StandardQueries.batchQuery(StandardDialect.STANDARD10);
-    }
 
     public static StandardQuery.WithSpec<Select> query20() {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD20, SELECT_IDENTITY);
@@ -464,20 +461,12 @@ public abstract class SQLs extends SQLSyntax {
         return StandardQueries.batchQuery(StandardDialect.STANDARD20);
     }
 
-    public static StandardQuery.SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SUB_QUERY_IDENTITY);
-    }
-
-    public static StandardQuery.WithSpec<SubQuery> subQuery20() {
+    public static StandardQuery.WithSpec<SubQuery> subQuery() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SUB_QUERY_IDENTITY);
     }
 
 
-    public static StandardQuery.SelectSpec<Expression> scalarSubQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SCALAR_SUB_QUERY);
-    }
-
-    public static StandardQuery.WithSpec<Expression> scalarSubQuery20() {
+    public static StandardQuery.WithSpec<Expression> scalarSubQuery() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SCALAR_SUB_QUERY);
     }
 
