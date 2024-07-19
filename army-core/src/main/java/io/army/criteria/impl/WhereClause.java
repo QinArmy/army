@@ -374,6 +374,10 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
         return this.and(expOperator.apply(operand));
     }
 
+    @Override
+    public final WA and(UnaryOperator<IPredicate> expOperator, SQLs.SymbolSpace space, IPredicate operand) {
+        return this.and(expOperator.apply(operand));
+    }
 
     @Override
     public final <T> WA and(Function<T, IPredicate> expOperator, Supplier<T> supplier) {
