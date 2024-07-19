@@ -31,7 +31,7 @@ package io.army.session;
  * here ,you can download the pdf about The XA Specification.
  * @since 0.6.0
  */
-public interface RmSession extends Session, Session.XaTransactionSupportSpec {
+public sealed interface RmSession extends Session, Session.XaTransactionSupportSpec permits PackageSession.PackageRmSession {
 
 
     /**

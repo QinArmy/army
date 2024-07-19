@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  * @see ArmySyncSessionFactory
  * @since 0.6.0
  */
-class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
+non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     static ArmySyncRmSession create(ArmySyncSessionFactory.RmBuilder builder) {
         final ArmySyncRmSession session;

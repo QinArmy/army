@@ -39,7 +39,7 @@ import java.util.function.Function;
  * @see SyncSessionFactory
  * @since 0.6.0
  */
-public interface SyncLocalSession extends SyncSession, LocalSession {
+public sealed interface SyncLocalSession extends SyncSession, PackageSession.PackageLocalSession permits ArmySyncLocalSession {
 
 
     /**

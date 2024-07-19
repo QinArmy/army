@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
  *
  * @since 0.6.0
  */
-abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFactory> implements ReactiveSession {
+non-sealed abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFactory> implements ReactiveSession {
 
     private static final AtomicIntegerFieldUpdater<ArmyReactiveSession> SESSION_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmyReactiveSession.class, "sessionClosed");

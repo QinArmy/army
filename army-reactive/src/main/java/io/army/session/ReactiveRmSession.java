@@ -36,7 +36,8 @@ import java.util.function.Function;
  *
  * @since 0.6.0
  */
-public interface ReactiveRmSession extends ReactiveSession, RmSession {
+public sealed interface ReactiveRmSession extends ReactiveSession, PackageSession.PackageRmSession
+        permits ArmyReactiveRmSession {
 
 
     Mono<TransactionInfo> start(Xid xid);

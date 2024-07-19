@@ -60,7 +60,7 @@ import java.util.stream.Stream;
  * @see SyncSessionFactory
  * @since 0.6.0
  */
-public interface SyncRmSession extends SyncSession, RmSession {
+public sealed interface SyncRmSession extends SyncSession, PackageSession.PackageRmSession permits ArmySyncRmSession {
 
     TransactionInfo start(Xid xid);
 

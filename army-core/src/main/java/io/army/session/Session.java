@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @see SessionFactory
  */
-public interface Session extends CloseableSpec, SessionSpec {
+public sealed interface Session extends CloseableSpec, SessionSpec permits LocalSession, RmSession, PackageSession {
 
 
     /**

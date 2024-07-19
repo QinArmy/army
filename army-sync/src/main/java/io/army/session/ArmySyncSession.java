@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  * @see ArmySyncSessionFactory
  * @since 0.6.0
  */
-abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> implements SyncSession {
+non-sealed abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> implements SyncSession {
 
 
     final SyncExecutor executor;

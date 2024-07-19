@@ -48,7 +48,7 @@ import java.util.stream.Stream;
  *
  * @since 0.6.0
  */
-public interface SyncSession extends Session, Closeable {
+public sealed interface SyncSession extends PackageSession, Closeable permits SyncLocalSession, SyncRmSession, ArmySyncSession {
 
 
     /**

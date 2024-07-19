@@ -33,7 +33,8 @@ import java.util.function.Function;
  * @see ReactiveSessionFactory
  * @since 0.6.0
  */
-public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
+public sealed interface ReactiveLocalSession extends ReactiveSession, PackageSession.PackageLocalSession
+        permits ArmyReactiveLocalSession {
 
 
     /**

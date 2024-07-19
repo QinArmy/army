@@ -45,7 +45,8 @@ import java.util.function.Supplier;
  *
  * @since 0.6.0
  */
-public interface ReactiveSession extends Session, ReactiveCloseable {
+public sealed interface ReactiveSession extends PackageSession, ReactiveCloseable
+        permits ReactiveLocalSession, ReactiveRmSession, ArmyReactiveSession {
 
     @Override
     ReactiveSessionFactory sessionFactory();

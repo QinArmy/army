@@ -42,7 +42,7 @@ import java.util.function.Function;
  *
  * @see ArmyReactiveSessionFactory
  */
-class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
+non-sealed class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
 
     /**
      * @see ArmyReactiveSessionFactory.LocalBuilder#createSession(String, boolean, Function)

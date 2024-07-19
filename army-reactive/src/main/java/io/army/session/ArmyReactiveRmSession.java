@@ -41,7 +41,7 @@ import java.util.function.Function;
  *
  * @see ArmyReactiveSessionFactory
  */
-class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSession {
+non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSession {
 
     /**
      * @see ArmyReactiveSessionFactory.RmBuilder#createSession(String, boolean, Function)

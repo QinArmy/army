@@ -69,7 +69,7 @@ import java.util.function.Supplier;
  *
  * @since 0.6.0
  */
-public abstract class _ArmySession<F extends _ArmySessionFactory> implements Session {
+abstract class _ArmySession<F extends _ArmySessionFactory> implements PackageSession {
 
     protected static final String PSEUDO_SAVE_POINT = "ARMY_PSEUDO_SAVE_POINT";
 
@@ -85,7 +85,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
 
     private final Visible visible;
 
-    protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<F, ?, ?> builder) {
+    _ArmySession(_ArmySessionFactory.ArmySessionBuilder<F, ?, ?> builder) {
 
         this.name = builder.name;
         this.readonly = builder.readonly;
@@ -228,7 +228,7 @@ public abstract class _ArmySession<F extends _ArmySessionFactory> implements Ses
 
     @Override
     public final <T> T nonNullOf(Option<T> option) {
-        return Session.super.nonNullOf(option);
+        return PackageSession.super.nonNullOf(option);
     }
 
     @Override

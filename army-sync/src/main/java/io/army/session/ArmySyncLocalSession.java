@@ -38,7 +38,7 @@ import java.util.function.Function;
  *
  * @see ArmySyncSessionFactory
  */
-class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
+non-sealed class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     /**
      * @see ArmySyncSessionFactory.LocalBuilder#createSession(String, boolean, Function)
