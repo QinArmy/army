@@ -13,7 +13,7 @@ import io.army.sqltype.SQLType;
 /**
  * <p>Just for {@link SQLs#NULL}
  */
-public final class NullType extends MappingType {
+public final class NullType extends _ArmyBuildInMapping {
 
 
     public final static NullType INSTANCE = new NullType();

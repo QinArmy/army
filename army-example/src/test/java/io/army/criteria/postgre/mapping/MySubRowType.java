@@ -30,7 +30,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.List;
 
-public final class MySubRowType extends MappingType
+public final class MySubRowType extends UserMappingType
         implements MappingType.SqlUserDefinedType, MappingType.SqlCompositeType {
 
 

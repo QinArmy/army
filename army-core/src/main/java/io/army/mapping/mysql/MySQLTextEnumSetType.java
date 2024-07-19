@@ -19,10 +19,7 @@ package io.army.mapping.mysql;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.MultiGenericsMappingType;
-import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -32,11 +29,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySqlTextEnumSetType extends MappingType implements MultiGenericsMappingType {
+public final class MySQLTextEnumSetType extends _ArmyBuildInMapping implements MultiGenericsMappingType {
 
-    private static final ConcurrentMap<Class<?>, MySqlTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, MySQLTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static MySqlTextEnumSetType fromSet(final Class<?> fieldType, final Class<?> elementTypes) {
+    public static MySQLTextEnumSetType fromSet(final Class<?> fieldType, final Class<?> elementTypes) {
         throw new UnsupportedOperationException();
     }
 
@@ -44,7 +41,7 @@ public final class MySqlTextEnumSetType extends MappingType implements MultiGene
 
     private final Map<String, ? extends TextEnum> textEnumMap;
 
-    private MySqlTextEnumSetType(Class<?> elementJavaType) {
+    private MySQLTextEnumSetType(Class<?> elementJavaType) {
         this.elementTypes = Collections.singletonList(elementJavaType);
         this.textEnumMap = TextEnum.getTextToEnumMap(elementJavaType);
     }

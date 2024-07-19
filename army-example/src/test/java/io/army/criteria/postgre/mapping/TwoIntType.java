@@ -21,10 +21,7 @@ import io.army.criteria.postgre.type.TwoInt;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
-import io.army.mapping.IntegerType;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.*;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -33,7 +30,7 @@ import io.army.util.ArrayUtils;
 
 import java.util.List;
 
-public final class TwoIntType extends MappingType
+public final class TwoIntType extends UserMappingType
         implements MappingType.SqlUserDefinedType, MappingType.SqlCompositeType {
 
 

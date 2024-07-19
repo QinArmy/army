@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentMap;
  * @see NameEnumType
  * @see CodeEnumType
  */
-public final class TextEnumType extends MappingType {
+public final class TextEnumType extends _ArmyBuildInMapping {
 
     public static TextEnumType from(final Class<?> enumType) {
         final Class<?> actualType;
