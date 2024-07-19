@@ -16,7 +16,7 @@
 
 package io.army.result;
 
-import io.army.option.OptionSpec;
+import io.army.spec.OptionSpec;
 
 public interface Warning extends OptionSpec {
 

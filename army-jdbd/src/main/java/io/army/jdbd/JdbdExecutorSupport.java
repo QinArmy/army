@@ -18,13 +18,9 @@ package io.army.jdbd;
 
 import io.army.criteria.Selection;
 import io.army.executor.DataAccessException;
+import io.army.executor.ReactiveExecutorSupport;
 import io.army.option.Option;
-import io.army.reactive.ReactiveMultiResultSpec;
-import io.army.reactive.executor.ReactiveExecutorSupport;
-import io.army.result.CurrentRecord;
-import io.army.result.FieldType;
-import io.army.result.KeyType;
-import io.army.result.ResultStates;
+import io.army.result.*;
 import io.army.sqltype.DataType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;

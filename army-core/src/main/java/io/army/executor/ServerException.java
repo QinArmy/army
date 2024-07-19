@@ -17,7 +17,7 @@
 package io.army.executor;
 
 import io.army.option.Option;
-import io.army.option.OptionSpec;
+import io.army.spec.OptionSpec;
 
 import javax.annotation.Nullable;
 import java.util.Set;

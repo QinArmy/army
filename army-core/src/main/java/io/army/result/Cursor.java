@@ -17,10 +17,10 @@
 package io.army.result;
 
 import io.army.criteria.Selection;
-import io.army.option.CloseableSpec;
 import io.army.option.Option;
-import io.army.option.OptionSpec;
 import io.army.session.Session;
+import io.army.spec.CloseableSpec;
+import io.army.spec.OptionSpec;
 
 /**
  * <p>This interface representing database cursor.

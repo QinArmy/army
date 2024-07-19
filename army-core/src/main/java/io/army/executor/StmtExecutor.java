@@ -17,8 +17,8 @@
 package io.army.executor;
 
 
-import io.army.option.CloseableSpec;
-import io.army.option.OptionSpec;
+import io.army.spec.CloseableSpec;
+import io.army.spec.OptionSpec;
 
 /**
  * <p>This interface representing executor or {@link io.army.stmt.Stmt}.

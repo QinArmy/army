@@ -20,9 +20,7 @@ import io.army.ArmyException;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.env.SqlLogMode;
-import io.army.executor.DataAccessException;
-import io.army.executor.DriverException;
-import io.army.executor.StmtExecutor;
+import io.army.executor.*;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -30,20 +28,19 @@ import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.option.Option;
-import io.army.reactive.ReactiveStmtOption;
-import io.army.reactive.executor.ReactiveExecutor;
-import io.army.reactive.executor.ReactiveLocalExecutor;
-import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.result.CurrentRecord;
 import io.army.result.ResultStates;
 import io.army.result.Warning;
+import io.army.session.ReactiveStmtOption;
 import io.army.session.Session;
 import io.army.session.TimeoutException;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.*;
 import io.army.transaction.*;
+import io.army.type.Blob;
 import io.army.type.BlobPath;
+import io.army.type.Clob;
 import io.army.type.TextPath;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -827,11 +824,11 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         final Object value;
         if (nullable == null || nullable instanceof byte[] || nullable instanceof String) {
             value = nullable;
-        } else if (nullable instanceof io.army.reactive.type.Blob) {
-            final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
+        } else if (nullable instanceof Blob) {
+            final Blob blob = (Blob) nullable;
             value = io.jdbd.type.Blob.from(blob.value());
-        } else if (nullable instanceof io.army.reactive.type.Clob) {
-            final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
+        } else if (nullable instanceof Clob) {
+            final Clob clob = (Clob) nullable;
             value = io.jdbd.type.Clob.from(clob.value());
         } else if (nullable instanceof io.army.type.BlobPath) {
             final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
@@ -853,8 +850,8 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         } else if (nullable instanceof io.army.type.TextPath) {
             final io.army.type.TextPath armyPath = (io.army.type.TextPath) nullable;
             value = io.jdbd.type.TextPath.from(armyPath.isDeleteOnClose(), armyPath.charset(), armyPath.value());
-        } else if (nullable instanceof io.army.reactive.type.Clob) {
-            final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
+        } else if (nullable instanceof Clob) {
+            final Clob clob = (Clob) nullable;
             value = io.jdbd.type.Clob.from(clob.value());
         } else {
             throw beforeBindMethodError(type, dataType, nullable);
@@ -870,8 +867,8 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         } else if (nullable instanceof io.army.type.BlobPath) {
             final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
             value = io.jdbd.type.BlobPath.from(path.isDeleteOnClose(), path.value());
-        } else if (nullable instanceof io.army.reactive.type.Blob) {
-            final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
+        } else if (nullable instanceof Blob) {
+            final Blob blob = (Blob) nullable;
             value = io.jdbd.type.Blob.from(blob.value());
         } else {
             throw beforeBindMethodError(type, dataType, nullable);

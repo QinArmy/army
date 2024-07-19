@@ -20,13 +20,13 @@ import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.env.AllowMode;
 import io.army.env.ArmyEnvironment;
+import io.army.executor.ExecutorFactory;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.executor.ExecutorFactory;
-import io.army.option.CloseableSpec;
 import io.army.option.Option;
-import io.army.option.OptionSpec;
+import io.army.spec.CloseableSpec;
+import io.army.spec.OptionSpec;
 
 import javax.annotation.Nullable;
 import java.time.ZoneOffset;

@@ -16,9 +16,9 @@
 
 package io.army.executor;
 
-import io.army.option.CloseableSpec;
 import io.army.option.Option;
-import io.army.option.OptionSpec;
+import io.army.spec.CloseableSpec;
+import io.army.spec.OptionSpec;
 
 import java.util.function.Function;
 

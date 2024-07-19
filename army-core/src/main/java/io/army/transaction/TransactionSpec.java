@@ -1,6 +1,6 @@
 package io.army.transaction;
 
-import io.army.option.IterableOptionSpec;
+import io.army.spec.IterableOptionSpec;
 
 /**
  * <p>Package interface

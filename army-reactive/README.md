@@ -2,6 +2,6 @@
 
 This module provider below reactive session api:
 
-* reactive io.army.reactive.ReactiveSessionFactory
-* reactive io.army.reactive.ReactiveLocalSession
-* reactive io.army.reactive.ReactiveRmSession
+* reactive io.army.session.ReactiveSessionFactory
+* reactive io.army.session.ReactiveLocalSession
+* reactive io.army.session.ReactiveRmSession

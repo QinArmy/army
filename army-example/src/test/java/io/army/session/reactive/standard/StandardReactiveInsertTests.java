@@ -23,8 +23,8 @@ import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.reactive.ReactiveLocalSession;
 import io.army.result.ResultStates;
+import io.army.session.ReactiveLocalSession;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

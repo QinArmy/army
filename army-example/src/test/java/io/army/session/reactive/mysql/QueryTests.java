@@ -21,7 +21,7 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.reactive.ReactiveLocalSession;
+import io.army.session.ReactiveLocalSession;
 import org.testng.annotations.Test;
 
 import static io.army.criteria.impl.SQLs.AS;

@@ -17,7 +17,6 @@
 package io.army.executor;
 
 
-import io.army.option.CloseableSpec;
 import io.army.option.Option;
 import io.army.result.CurrentRecord;
 import io.army.result.ResultStates;
@@ -25,6 +24,7 @@ import io.army.session.RmSession;
 import io.army.session.RmSessionException;
 import io.army.session.StreamOption;
 import io.army.session.SyncStmtOption;
+import io.army.spec.CloseableSpec;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
