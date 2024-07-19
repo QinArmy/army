@@ -21,7 +21,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.ObjectType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.mapping.array.PostgreArrays;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
@@ -39,7 +39,7 @@ import java.util.List;
  *     <li>{@link io.army.mapping.array.SqlRecordArrayType}</li>
  * </ul>
  */
-public abstract class _SqlRecordSupport extends _ArmyBuildInMapping {
+public abstract class _SqlRecordSupport extends _ArmyBuildInType {
 
 
     protected final List<MappingType> columnTypeList;

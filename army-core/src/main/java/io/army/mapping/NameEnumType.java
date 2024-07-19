@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
  * @see Enum
  * @see TextEnumType
  */
-public final class NameEnumType extends _ArmyNoInjectionMapping {
+public final class NameEnumType extends _ArmyNoInjectionType {
 
     public static NameEnumType from(final Class<?> enumType) {
         final Class<?> actualEnumType;

@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -28,7 +28,7 @@ import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLiteType;
 
-public final class JsonPathType extends _ArmyBuildInMapping implements MappingType.SqlJsonPathType {
+public final class JsonPathType extends _ArmyBuildInType implements MappingType.SqlJsonPathType {
 
     public static JsonPathType from(Class<?> javaType) {
         if (javaType != String.class) {

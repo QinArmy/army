@@ -24,7 +24,7 @@ import io.army.sqltype.*;
 
 import java.util.UUID;
 
-public final class UUIDType extends _ArmyNoInjectionMapping {
+public final class UUIDType extends _ArmyNoInjectionType {
 
 
     public static UUIDType from(final Class<?> javaType) {

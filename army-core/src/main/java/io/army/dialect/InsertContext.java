@@ -23,7 +23,7 @@ import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.SessionSpec;
@@ -916,7 +916,7 @@ abstract class InsertContext extends StatementContext
                 this.appendParam(SingleParam.build(field, value));
                 break;
             case PREFERENCE: {
-                if (!(field.mappingType() instanceof _ArmyNoInjectionMapping)) {
+                if (!(field.mappingType() instanceof _ArmyNoInjectionType)) {
                     this.appendParam(SingleParam.build(field, value));
                 } else if (value == null) {
                     this.sqlBuilder.append(_Constant.SPACE_NULL);

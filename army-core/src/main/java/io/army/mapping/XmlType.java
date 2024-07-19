@@ -26,7 +26,7 @@ import io.army.util._Collections;
 
 import java.util.concurrent.ConcurrentMap;
 
-public final class XmlType extends _ArmyBuildInMapping {
+public final class XmlType extends _ArmyBuildInType {
 
 
     public static XmlType from(final Class<?> javaType) {

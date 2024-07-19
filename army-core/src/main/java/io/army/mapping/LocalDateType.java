@@ -41,7 +41,7 @@ import java.time.*;
  *  to sql date,if overflow,throw {@link io.army.ArmyException}
  * * @since 0.6.0
  */
-public final class LocalDateType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
+public final class LocalDateType extends _ArmyNoInjectionType implements MappingType.SqlLocalDateType {
 
 
     public static LocalDateType from(final Class<?> javaType) {

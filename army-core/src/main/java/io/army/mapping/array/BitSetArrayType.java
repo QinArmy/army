@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.BitSetType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -35,7 +35,7 @@ import java.util.BitSet;
 /**
  * @see BitSetType
  */
-public class BitSetArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class BitSetArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
     public static BitSetArrayType from(final Class<?> javaType) {
         final BitSetArrayType instance;

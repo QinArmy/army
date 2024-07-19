@@ -22,7 +22,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
@@ -57,7 +57,7 @@ import java.util.function.Function;
  *
  * @since 0.6.0
  */
-public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
+public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionType {
 
 
     public final PostgreType dataType;

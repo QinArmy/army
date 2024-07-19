@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.SqlCharType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -29,7 +29,7 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
-public class SqlCharArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class SqlCharArrayType extends _ArmyBuildInType implements MappingType.SqlArrayType {
 
     public static SqlCharArrayType from(final Class<?> arrayType) {
         final SqlCharArrayType instance;

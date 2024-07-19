@@ -21,7 +21,7 @@ import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.mapping.postgre.array.PostgreAclItemArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -34,7 +34,7 @@ import io.army.sqltype.PostgreType;
  * This class representing Postgre aclitem type {@link MappingType}
  * * @see <a href="https://www.postgresql.org/docs/current/ddl-priv.html">Privileges</a>
  */
-public final class PostgreAclItemType extends _ArmyBuildInMapping {
+public final class PostgreAclItemType extends _ArmyBuildInType {
 
     public static PostgreAclItemType from(final Class<?> javaType) {
         if (javaType != String.class) {

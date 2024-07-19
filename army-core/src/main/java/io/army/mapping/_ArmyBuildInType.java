@@ -19,12 +19,12 @@ package io.army.mapping;
 
 import io.army.sqltype.DataType;
 
-public non-sealed abstract class _ArmyBuildInMapping extends AbstractMappingType {
+public non-sealed abstract class _ArmyBuildInType extends AbstractMappingType {
 
 
     protected static final String CREATE = "create";
 
-    protected _ArmyBuildInMapping() {
+    protected _ArmyBuildInType() {
         final Class<?> thisClass = this.getClass();
         if (!thisClass.getName().startsWith("io.army.mapping.")) {
             String m = String.format("Non army class couldn't extend %s .", thisClass.getName());

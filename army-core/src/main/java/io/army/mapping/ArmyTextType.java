@@ -32,7 +32,7 @@ import io.army.sqltype.DataType;
  *
  * @since 0.6.0
  */
-abstract class ArmyTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
+abstract class ArmyTextType extends _ArmyBuildInType implements MappingType.SqlTextType {
 
 
     ArmyTextType() {

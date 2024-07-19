@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -30,7 +30,7 @@ import io.army.util.ArrayUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class XmlArrayType extends _ArmyBuildInMapping {
+public class XmlArrayType extends _ArmyBuildInType {
 
 
     public static XmlArrayType from(final Class<?> javaType) {

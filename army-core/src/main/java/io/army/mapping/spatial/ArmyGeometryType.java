@@ -16,10 +16,10 @@
 
 package io.army.mapping.spatial;
 
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 
 
-abstract class ArmyGeometryType extends _ArmyBuildInMapping {
+abstract class ArmyGeometryType extends _ArmyBuildInType {
 
 
     ArmyGeometryType() {

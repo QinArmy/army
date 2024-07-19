@@ -30,7 +30,7 @@ import io.army.sqltype.SQLiteType;
  *
  * @see VarBinaryType
  */
-public final class BinaryType extends _ArmyBuildInMapping implements MappingType.SqlBinaryType {
+public final class BinaryType extends _ArmyBuildInType implements MappingType.SqlBinaryType {
 
 
     public static BinaryType from(final Class<?> fieldType) {

@@ -42,7 +42,7 @@ import java.time.LocalTime;
  *
  * @since 0.6.0
  */
-public final class LocalTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalTimeType {
+public final class LocalTimeType extends _ArmyNoInjectionType implements MappingType.SqlLocalTimeType {
 
 
     public static LocalTimeType from(final Class<?> javaType) {

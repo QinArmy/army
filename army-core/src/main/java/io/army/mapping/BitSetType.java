@@ -43,7 +43,7 @@ import java.util.BitSet;
  *  to {@link BitSet}
  * * @since 0.6.0
  */
-public final class BitSetType extends _ArmyNoInjectionMapping implements MappingType.SqlBitType {
+public final class BitSetType extends _ArmyNoInjectionType implements MappingType.SqlBitType {
 
 
     public static BitSetType from(Class<?> fieldType) {

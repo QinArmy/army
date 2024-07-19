@@ -24,7 +24,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType, NoCastType {
+public final class NoCastTextType extends _ArmyBuildInType implements MappingType.SqlTextType, NoCastType {
 
 
     public static NoCastTextType from(final Class<?> javaType) {

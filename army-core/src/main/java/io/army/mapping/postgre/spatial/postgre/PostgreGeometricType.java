@@ -16,9 +16,9 @@
 
 package io.army.mapping.postgre.spatial.postgre;
 
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 
-public abstract class PostgreGeometricType extends _ArmyNoInjectionMapping {
+public abstract class PostgreGeometricType extends _ArmyNoInjectionType {
 
     /**
      * <p>

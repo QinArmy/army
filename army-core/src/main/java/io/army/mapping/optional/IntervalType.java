@@ -20,12 +20,12 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class IntervalType extends _ArmyNoInjectionMapping implements MappingType.SqlIntervalType {
+public final class IntervalType extends _ArmyNoInjectionType implements MappingType.SqlIntervalType {
 
 
     public static IntervalType from(Class<?> javaType) {

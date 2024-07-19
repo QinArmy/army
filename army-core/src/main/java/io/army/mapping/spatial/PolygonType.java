@@ -20,12 +20,12 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class PolygonType extends _ArmyBuildInMapping implements MappingType.SqlPolygonType {
+public final class PolygonType extends _ArmyBuildInType implements MappingType.SqlPolygonType {
 
 
     public static final PolygonType TEXT = new PolygonType(String.class);

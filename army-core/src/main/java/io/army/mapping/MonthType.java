@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @since 0.6.0
  */
-public final class MonthType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalFieldType {
+public final class MonthType extends _ArmyNoInjectionType implements MappingType.SqlTemporalFieldType {
 
 
     public static MonthType form(final Class<?> javaType) {

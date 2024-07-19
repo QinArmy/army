@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -28,7 +28,7 @@ import io.army.sqltype.PostgreType;
 
 import java.util.UUID;
 
-public final class PostgreUuidType extends _ArmyNoInjectionMapping {
+public final class PostgreUuidType extends _ArmyNoInjectionType {
 
     public static final PostgreUuidType INSTANCE = new PostgreUuidType();
 

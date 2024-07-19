@@ -21,7 +21,7 @@ import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -37,7 +37,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.BitSet;
 import java.util.Objects;
 
-public final class SQLiteDynamicType extends _ArmyBuildInMapping {
+public final class SQLiteDynamicType extends _ArmyBuildInType {
 
     public static SQLiteDynamicType from(Class<?> javaType) {
         Objects.requireNonNull(javaType);

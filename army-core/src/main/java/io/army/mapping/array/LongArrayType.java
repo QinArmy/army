@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -29,7 +29,7 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
-public class LongArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class LongArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
 
     public static LongArrayType from(final Class<?> arrayClass) {

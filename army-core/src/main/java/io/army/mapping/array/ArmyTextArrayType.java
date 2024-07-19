@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -37,7 +37,7 @@ import io.army.sqltype.DataType;
  *
  * @since 0.6.0
  */
-abstract class ArmyTextArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+abstract class ArmyTextArrayType extends _ArmyBuildInType implements MappingType.SqlArrayType {
 
     final Class<?> javaType;
 

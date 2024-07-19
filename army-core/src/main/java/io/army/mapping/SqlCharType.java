@@ -27,7 +27,7 @@ import io.army.sqltype.*;
  *
  * @since 0.6.0
  */
-public final class SqlCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
+public final class SqlCharType extends _ArmyBuildInType implements MappingType.SqlStringType {
 
     public static SqlCharType from(Class<?> javaType) {
         if (javaType != String.class) {

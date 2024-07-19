@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -29,7 +29,7 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
-public class BooleanArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class BooleanArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
     public static BooleanArrayType from(final Class<?> javaType) {
         final BooleanArrayType instance;

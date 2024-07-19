@@ -31,7 +31,7 @@ package io.army.mapping;
  *         <li>{@link _UnsignedNumericType}</li>
  *     </ul>
 */
-public abstract class _NumericType extends _ArmyNoInjectionMapping {
+public abstract class _NumericType extends _ArmyNoInjectionType {
 
 
 

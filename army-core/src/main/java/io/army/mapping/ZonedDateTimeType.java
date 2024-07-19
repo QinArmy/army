@@ -42,7 +42,7 @@ import java.time.ZonedDateTime;
  *  to {@link ZonedDateTime},if error,throw {@link io.army.ArmyException}
  ** @since 0.6.0
  */
-public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlOffsetDateTimeType {
+public final class ZonedDateTimeType extends _ArmyNoInjectionType implements MappingType.SqlOffsetDateTimeType {
 
 
     public static ZonedDateTimeType from(Class<?> javaType) {

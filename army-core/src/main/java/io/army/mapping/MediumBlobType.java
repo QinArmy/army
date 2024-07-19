@@ -30,7 +30,7 @@ import io.army.sqltype.*;
  * @see BlobType
  * @since 0.6.0
  */
-public final class MediumBlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
+public final class MediumBlobType extends _ArmyBuildInType implements MappingType.SqlBlobType {
 
     public static MediumBlobType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {

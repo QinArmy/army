@@ -8,7 +8,7 @@ import io.army.sqltype.DataType;
 
 import java.util.Objects;
 
-public final class ObjectType extends _ArmyBuildInMapping {
+public final class ObjectType extends _ArmyBuildInType {
 
     public static ObjectType from(final Class<?> javaType) {
         Objects.requireNonNull(javaType);

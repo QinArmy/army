@@ -29,7 +29,7 @@ import io.army.util._TimeUtils;
 import java.time.Duration;
 import java.time.LocalTime;
 
-public final class DurationType extends _ArmyNoInjectionMapping implements MappingType.SqlDurationType {
+public final class DurationType extends _ArmyNoInjectionType implements MappingType.SqlDurationType {
 
     public static DurationType from(final Class<?> javaType) {
         if (javaType == Duration.class) {

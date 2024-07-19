@@ -29,7 +29,7 @@ import java.math.BigInteger;
  * @see UnsignedBigintType
  * @see UnsignedIntegerType
  */
-public final class UnsignedLongType extends _ArmyNoInjectionMapping
+public final class UnsignedLongType extends _ArmyNoInjectionType
         implements MappingType.SqlIntegerType, MappingType.SqlUnsignedNumberType {
 
 

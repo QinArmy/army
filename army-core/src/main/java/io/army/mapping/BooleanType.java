@@ -43,7 +43,7 @@ import java.util.Locale;
  *
  * @see <a href="https://www.postgresql.org/docs/current/catalog-pg-type.html">Postgre pg_type table ,oid : 16</a>
  */
-public final class BooleanType extends _ArmyNoInjectionMapping implements MappingType.SqlBooleanType {
+public final class BooleanType extends _ArmyNoInjectionType implements MappingType.SqlBooleanType {
 
 
     public static BooleanType from(Class<?> fieldType) {

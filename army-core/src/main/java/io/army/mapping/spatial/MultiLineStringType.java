@@ -20,12 +20,12 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public final class MultiLineStringType extends _ArmyBuildInMapping implements MappingType.SqlMultiLineStringType {
+public final class MultiLineStringType extends _ArmyBuildInType implements MappingType.SqlMultiLineStringType {
 
 
     public static final MultiLineStringType TEXT = new MultiLineStringType(String.class);

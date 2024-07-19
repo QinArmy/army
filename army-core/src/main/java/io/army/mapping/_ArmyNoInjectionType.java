@@ -16,10 +16,10 @@
 
 package io.army.mapping;
 
-public abstract class _ArmyNoInjectionMapping extends _ArmyBuildInMapping {
+public abstract class _ArmyNoInjectionType extends _ArmyBuildInType {
 
 
-    protected _ArmyNoInjectionMapping() {
+    protected _ArmyNoInjectionType() {
         final Class<?> thisClass = this.getClass();
         if (thisClass == StringType.class ||
                 thisClass == VarBinaryType.class) {

@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -32,7 +32,7 @@ import io.army.sqltype.DataType;
 *
  * @see <a href="https://www.postgresql.org/docs/current/datatype-net-types.html#DATATYPE-MACADDR8">macaddr8</a>
  */
-public final class PostgreMacAddr8Type extends _ArmyNoInjectionMapping {
+public final class PostgreMacAddr8Type extends _ArmyNoInjectionType {
 
 
     public static final PostgreMacAddr8Type INSTANCE = new PostgreMacAddr8Type();

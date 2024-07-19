@@ -42,7 +42,7 @@ import java.util.function.Function;
  * @see NameEnumType
  * @since 0.6.0
  */
-public final class CodeEnumType extends _ArmyNoInjectionMapping {
+public final class CodeEnumType extends _ArmyNoInjectionType {
 
 
     public static CodeEnumType from(final Class<?> enumClass) {

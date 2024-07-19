@@ -6,7 +6,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -20,7 +20,7 @@ import io.army.sqltype.PostgreType;
  * @see <a href="https://www.postgresql.org/docs/current/datatype-character.html">bpchar</a>
  * @since 0.6.4
  */
-public final class PostgreBpCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
+public final class PostgreBpCharType extends _ArmyBuildInType implements MappingType.SqlStringType {
 
     public static PostgreBpCharType from(final Class<?> javaType) {
         if (javaType != String.class) {

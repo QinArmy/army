@@ -21,7 +21,7 @@ import io.army.mapping.array.MediumBlobArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
-public final class TinyBlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
+public final class TinyBlobType extends _ArmyBuildInType implements MappingType.SqlBlobType {
 
 
     public static TinyBlobType from(final Class<?> javaType) {

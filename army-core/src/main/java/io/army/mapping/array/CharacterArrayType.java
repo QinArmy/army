@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.CharacterType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -32,7 +32,7 @@ import io.army.util.ArrayUtils;
 /**
  * @see CharacterType
  */
-public class CharacterArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class CharacterArrayType extends _ArmyBuildInType implements MappingType.SqlArrayType {
 
     public static CharacterArrayType from(final Class<?> javaType) {
         final CharacterArrayType instance;

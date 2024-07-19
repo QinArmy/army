@@ -22,7 +22,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.OffsetTimeType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -32,7 +32,7 @@ import io.army.util._TimeUtils;
 
 import java.time.OffsetTime;
 
-public class OffsetTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class OffsetTimeArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
 
     public static OffsetTimeArrayType from(final Class<?> arrayClass) {

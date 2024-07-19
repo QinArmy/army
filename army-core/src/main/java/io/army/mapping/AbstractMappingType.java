@@ -48,7 +48,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.function.BiFunction;
 
-abstract sealed class AbstractMappingType extends MappingSupport implements MappingType permits _ArmyBuildInMapping, UserMappingType {
+abstract sealed class AbstractMappingType extends MappingSupport implements MappingType permits _ArmyBuildInType, UserMappingType {
 
 
     @Deprecated
@@ -729,7 +729,7 @@ abstract sealed class AbstractMappingType extends MappingSupport implements Mapp
         final StringBuilder builder = new StringBuilder();
         builder.append(ClassUtils.safeClassName(nonNull));
 
-        if (type instanceof _ArmyNoInjectionMapping
+        if (type instanceof _ArmyNoInjectionType
                 || nonNull instanceof Number
                 || nonNull instanceof Enum
                 || nonNull instanceof Temporal) {

@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -32,7 +32,7 @@ import io.army.sqltype.DataType;
 *
  * @see <a href="https://www.postgresql.org/docs/15/datatype-pg-lsn.html">pg_lsn</a>
  */
-public class PostgrePgLsnArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class PostgrePgLsnArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
 
     private PostgrePgLsnArrayType() {

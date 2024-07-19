@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.BigIntegerType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -29,7 +29,7 @@ import io.army.util.ArrayUtils;
 
 import java.math.BigInteger;
 
-public class BigIntegerArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class BigIntegerArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
     public static BigIntegerArrayType from(final Class<?> javaType) {
         final BigIntegerArrayType instance;

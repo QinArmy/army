@@ -29,7 +29,7 @@ import io.army.sqltype.*;
  * @see MediumBlobType
  * @since 0.6.0
  */
-public final class BlobType extends _ArmyBuildInMapping implements MappingType.SqlBlobType {
+public final class BlobType extends _ArmyBuildInType implements MappingType.SqlBlobType {
 
 
     public static BlobType from(final Class<?> fieldType) {

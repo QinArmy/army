@@ -31,7 +31,7 @@ import java.nio.file.Paths;
  * <p>This class map {@link java.nio.file.Path} to sql varchar .
  * <p>If you need to map char ,you can use {@link SqlCharType} instead of this class.
  */
-public final class PathType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
+public final class PathType extends _ArmyBuildInType implements MappingType.SqlStringType {
 
 
     public static PathType from(final Class<?> javaType) {

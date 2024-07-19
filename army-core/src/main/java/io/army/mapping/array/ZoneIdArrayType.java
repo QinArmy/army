@@ -20,12 +20,12 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
-public class ZoneIdArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class ZoneIdArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
 
     public static ZoneIdArrayType from(Class<?> javaType) {

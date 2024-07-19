@@ -21,7 +21,7 @@ import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -34,7 +34,7 @@ import io.army.sqltype.PostgreType;
 *
  * @see <a href="https://www.postgresql.org/docs/current/datatype-textsearch.html#DATATYPE-TSVECTOR">tsvector</a>
  */
-public final class PostgreTsVectorType extends _ArmyNoInjectionMapping {
+public final class PostgreTsVectorType extends _ArmyNoInjectionType {
 
 
     public static final PostgreTsVectorType INSTANCE = new PostgreTsVectorType();

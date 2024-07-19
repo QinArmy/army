@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.BlobType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -32,7 +32,7 @@ import io.army.util.ArrayUtils;
 /**
  * @see BlobType
  */
-public class BlobArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class BlobArrayType extends _ArmyBuildInType implements MappingType.SqlArrayType {
 
 
     public static BlobArrayType from(final Class<?> javaType) {

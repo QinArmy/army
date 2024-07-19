@@ -20,7 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
@@ -30,7 +30,7 @@ import java.util.BitSet;
 /**
  * @see Long
  */
-public final class MySqlBitType extends _ArmyNoInjectionMapping {
+public final class MySqlBitType extends _ArmyNoInjectionType {
 
     public static MySqlBitType from(Class<?> javaType) {
         if (javaType != Long.class) {

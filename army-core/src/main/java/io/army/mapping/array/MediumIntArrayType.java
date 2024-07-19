@@ -21,13 +21,13 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.MediumIntType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 
-public class MediumIntArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class MediumIntArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
 
     public static MediumIntArrayType from(final Class<?> arrayClass) {

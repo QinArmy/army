@@ -39,7 +39,7 @@ import java.time.*;
  *
  * @since 0.6.0
  */
-public final class YearType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalType,
+public final class YearType extends _ArmyNoInjectionType implements MappingType.SqlTemporalType,
         MappingType.SqlTemporalFieldType {
 
     public static YearType from(final Class<?> fieldType) {

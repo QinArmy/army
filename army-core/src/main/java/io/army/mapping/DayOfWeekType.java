@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentMap;
  *  to {@link DayOfWeek},if error,throw {@link io.army.ArmyException}
  * * @since 0.6.0
  */
-public final class DayOfWeekType extends _ArmyNoInjectionMapping {
+public final class DayOfWeekType extends _ArmyNoInjectionType {
 
 
     public static DayOfWeekType from(final Class<?> javaType) {

@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySQLTextEnumSetType extends _ArmyBuildInMapping implements MultiGenericsMappingType {
+public final class MySQLTextEnumSetType extends _ArmyBuildInType implements MultiGenericsMappingType {
 
     private static final ConcurrentMap<Class<?>, MySQLTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 

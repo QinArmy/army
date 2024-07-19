@@ -34,7 +34,7 @@ import java.io.Reader;
  * @see TextType
  * @see MediumTextType
  */
-public final class LongText extends _ArmyBuildInMapping implements MappingType.SqlTextType {
+public final class LongText extends _ArmyBuildInType implements MappingType.SqlTextType {
 
     public static LongText from(final Class<?> javaType) {
         final LongText instance;

@@ -60,7 +60,7 @@ import java.time.temporal.TemporalAmount;
  * @see MediumTextType
  * @since 0.6.0
  */
-public final class StringType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
+public final class StringType extends _ArmyBuildInType implements MappingType.SqlStringType {
 
 
     public static StringType from(final Class<?> fieldType) {

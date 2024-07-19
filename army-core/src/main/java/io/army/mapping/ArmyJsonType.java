@@ -30,7 +30,7 @@ import io.army.sqltype.DataType;
  *
  * @since 0.6.0
  */
-abstract class ArmyJsonType extends _ArmyBuildInMapping {
+abstract class ArmyJsonType extends _ArmyBuildInType {
 
     final Class<?> javaType;
 

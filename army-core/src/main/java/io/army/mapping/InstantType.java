@@ -22,7 +22,7 @@ import io.army.sqltype.DataType;
 
 import java.time.Instant;
 
-public final class InstantType extends _ArmyNoInjectionMapping implements MappingType.SqlIntegerType {
+public final class InstantType extends _ArmyNoInjectionType implements MappingType.SqlIntegerType {
 
     public static InstantType from(final Class<?> javaType) {
         if (javaType != Instant.class) {

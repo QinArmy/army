@@ -22,7 +22,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -32,7 +32,7 @@ import io.army.util._TimeUtils;
 
 import java.time.LocalDateTime;
 
-public class LocalDateTimeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
+public class LocalDateTimeArrayType extends _ArmyNoInjectionType implements MappingType.SqlArrayType {
 
 
     public static LocalDateTimeArrayType from(final Class<?> arrayClass) {

@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.VarBinaryType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
@@ -37,7 +37,7 @@ import io.army.util.ArrayUtils;
  * @see BinaryArrayType
  * @since 0.6.0
  */
-public class VarBinaryArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType {
+public class VarBinaryArrayType extends _ArmyBuildInType implements MappingType.SqlArrayType {
 
     public static VarBinaryArrayType from(final Class<?> javaType) {
         final VarBinaryArrayType instance;
