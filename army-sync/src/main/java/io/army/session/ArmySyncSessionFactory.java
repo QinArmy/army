@@ -31,7 +31,7 @@ import java.util.function.Function;
  *
  * @since 0.6.0
  */
-final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSessionFactory {
+final class ArmySyncSessionFactory extends ArmySessionFactory implements SyncSessionFactory {
 
     static ArmySyncSessionFactory create(ArmySyncFactoryBuilder builder) {
         return new ArmySyncSessionFactory(builder);

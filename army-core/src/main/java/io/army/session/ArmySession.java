@@ -66,26 +66,31 @@ import java.util.function.Supplier;
  *     <li>{@code  io.army.sync.ArmySyncSession}</li>
  *     <li>{@code io.army.reactive.ArmyReactiveSession}</li>
  * </ul>
+ * <p>Package class
  *
  * @since 0.6.0
  */
-abstract class _ArmySession<F extends _ArmySessionFactory> implements PackageSession {
+abstract class ArmySession<F extends ArmySessionFactory> implements PackageSession {
 
     protected static final String PSEUDO_SAVE_POINT = "ARMY_PSEUDO_SAVE_POINT";
 
-    protected static final Consumer<ResultStates> OPTIMISTIC_LOCK_VALIDATOR = _ArmySession::validateOptimisticLock;
+    protected static final Consumer<ResultStates> OPTIMISTIC_LOCK_VALIDATOR = ArmySession::validateOptimisticLock;
 
 
-    protected final F factory;
+    final F factory;
 
-    protected final String name;
+    final String name;
 
-    protected final boolean readonly;
-    protected final boolean allowQueryInsert;
+    final boolean readonly;
+
+    final boolean allowQueryInsert;
 
     private final Visible visible;
 
-    _ArmySession(_ArmySessionFactory.ArmySessionBuilder<F, ?, ?> builder) {
+    /**
+     * <p>Package constructor
+     */
+    ArmySession(ArmySessionFactory.ArmySessionBuilder<F, ?, ?> builder) {
 
         this.name = builder.name;
         this.readonly = builder.readonly;
@@ -387,7 +392,7 @@ abstract class _ArmySession<F extends _ArmySessionFactory> implements PackageSes
 
     protected final SqlLogMode obtainSqlLogMode() {
         SqlLogMode mode;
-        final _ArmySessionFactory factory = this.factory;
+        final ArmySessionFactory factory = this.factory;
         if (factory.sqlLogDynamic) {
             mode = factory.env.getOrDefault(ArmyKey.SQL_LOG_MODE);
         } else {
@@ -717,7 +722,7 @@ abstract class _ArmySession<F extends _ArmySessionFactory> implements PackageSes
             } else {
                 finalRow = row;
             }
-            if (this instanceof _ArmySession.SyncSecondRecordReader<R>) {
+            if (this instanceof ArmySession.SyncSecondRecordReader<R>) {
                 ((SyncSecondRecordReader<R>) this).rowCount++;
             } else {
                 ReactiveSecondRecordReader.ROW_COUNT.getAndIncrement((ReactiveSecondRecordReader<R>) this);
@@ -728,7 +733,7 @@ abstract class _ArmySession<F extends _ArmySessionFactory> implements PackageSes
         public final void validateRowCount() {
             final int firstListSize = this.firstList.size();
             final long rowCount;
-            if (this instanceof _ArmySession.SyncSecondRecordReader<R>) {
+            if (this instanceof ArmySession.SyncSecondRecordReader<R>) {
                 rowCount = ((SyncSecondRecordReader<R>) this).rowCount;
             } else {
                 rowCount = ((ReactiveSecondRecordReader<R>) this).rowCount;

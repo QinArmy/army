@@ -105,7 +105,7 @@ non-sealed class ArmyReactiveLocalSession extends ArmyReactiveSession implements
             return Mono.error(_Exceptions.sessionClosed(this));
         }
         return this.executor.setTransactionCharacteristics(option)
-                .onErrorMap(_ArmySession::wrapIfNeed)
+                .onErrorMap(ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
@@ -150,7 +150,7 @@ non-sealed class ArmyReactiveLocalSession extends ArmyReactiveSession implements
                     .onErrorMap(error -> {
                         TRANSACTION_INFO.set(this, null);
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-                        return _ArmySession.wrapIfNeed(error);
+                        return ArmySession.wrapIfNeed(error);
                     });
         }
 
@@ -179,7 +179,7 @@ non-sealed class ArmyReactiveLocalSession extends ArmyReactiveSession implements
         } else {
             mono = ((ReactiveLocalExecutor) this.executor).commit(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
-                    .onErrorMap(_ArmySession::wrapIfNeed);
+                    .onErrorMap(ArmySession::wrapIfNeed);
         }
         return mono;
     }
@@ -220,7 +220,7 @@ non-sealed class ArmyReactiveLocalSession extends ArmyReactiveSession implements
         } else {
             mono = ((ReactiveLocalExecutor) this.executor).rollback(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
-                    .onErrorMap(_ArmySession::wrapIfNeed);
+                    .onErrorMap(ArmySession::wrapIfNeed);
         }
         return mono;
     }
@@ -253,7 +253,7 @@ non-sealed class ArmyReactiveLocalSession extends ArmyReactiveSession implements
             return Mono.error(_Exceptions.sessionClosed(this));
         }
         return this.executor.releaseSavePoint(savepoint, optionFunc)
-                .onErrorMap(_ArmySession::wrapIfNeed)
+                .onErrorMap(ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
@@ -268,7 +268,7 @@ non-sealed class ArmyReactiveLocalSession extends ArmyReactiveSession implements
             return Mono.error(_Exceptions.sessionClosed(this));
         }
         return this.executor.rollbackToSavePoint(savepoint, optionFunc)
-                .onErrorMap(_ArmySession::wrapIfNeed)
+                .onErrorMap(ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 

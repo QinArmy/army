@@ -53,7 +53,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
-public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B, R> {
+abstract class ArmyFactoryBuilder<B, R> implements PackageFactoryBuilder<B, R> {
 
     String name;
 
@@ -93,7 +93,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     Map<Class<?>, TableMeta<?>> tableMap;
 
 
-    protected _ArmyFactoryBuilder() {
+    protected ArmyFactoryBuilder() {
     }
 
     @Override
@@ -273,7 +273,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         return Collections.emptyMap();
     }
 
-    protected final List<String> parseMetaDdl(_ArmySessionFactory sessionFactory, SchemaResult schemaResult) {
+    protected final List<String> parseMetaDdl(ArmySessionFactory sessionFactory, SchemaResult schemaResult) {
         return sessionFactory.dialectParser.schemaDdl(schemaResult);
     }
 
@@ -390,7 +390,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         return builder.toString();
     }
 
-    protected static DialectParser dialectParser(_ArmySessionFactory factory) {
+    protected static DialectParser dialectParser(ArmySessionFactory factory) {
         return factory.dialectParser;
     }
 

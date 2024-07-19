@@ -36,7 +36,7 @@ import java.util.function.Function;
  * @see ArmyReactiveRmSession
  * @since 0.6.0
  */
-final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements ReactiveSessionFactory {
+final class ArmyReactiveSessionFactory extends ArmySessionFactory implements ReactiveSessionFactory {
 
 
     /**
@@ -190,7 +190,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
                     this.factory.executorFactory
                             .localExecutor(sessionName, readonly, optionFunc)
                             .map(this::createLocalSession)
-                            .onErrorMap(_ArmySession::wrapIfNeed)
+                            .onErrorMap(ArmySession::wrapIfNeed)
             );
         }
 
@@ -226,7 +226,7 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
                     this.factory.executorFactory
                             .rmExecutor(sessionName, readonly, optionFunc)
                             .map(this::createRmSession)
-                            .onErrorMap(_ArmySession::wrapIfNeed)
+                            .onErrorMap(ArmySession::wrapIfNeed)
             );
         }
 

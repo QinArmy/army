@@ -44,7 +44,7 @@ import java.util.List;
  * @since 0.6.0
  */
 final class ArmySyncFactoryBuilder
-        extends _ArmyFactoryBuilder<SyncFactoryBuilder, SyncSessionFactory> implements SyncFactoryBuilder {
+        extends ArmyFactoryBuilder<SyncFactoryBuilder, SyncSessionFactory> implements SyncFactoryBuilder {
 
     /**
      * @see SyncFactoryBuilder#builder()

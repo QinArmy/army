@@ -18,6 +18,7 @@ package io.army.datasource;
 
 
 import io.army.option.Option;
+import io.army.session.FactoryBuilder;
 
 import java.util.function.Function;
 
@@ -35,7 +36,7 @@ public interface ReadWriteSplittingDataSource<R> {
      * <p>Above options is passed by application developer with following methods :
      * <ul>
      *     <li>{@link io.army.session.SessionFactory.SessionBuilderSpec#dataSourceOption(Option, Object)} </li>
-     *     <li>{@link io.army.session.FactoryBuilderSpec#dataSourceOption(Option, Object)}</li>
+     *     <li>{@link FactoryBuilder#dataSourceOption(Option, Object)}</li>
      * </ul>
      *
      * @param func option function, default {@link Option#EMPTY_FUNC}
@@ -55,7 +56,7 @@ public interface ReadWriteSplittingDataSource<R> {
      * <p>Above options is passed by application developer with following methods :
      * <ul>
      *     <li>{@link io.army.session.SessionFactory.SessionBuilderSpec#dataSourceOption(Option, Object)} </li>
-     *     <li>{@link io.army.session.FactoryBuilderSpec#dataSourceOption(Option, Object)}</li>
+     *     <li>{@link FactoryBuilder#dataSourceOption(Option, Object)}</li>
      * </ul>l
      *
      * @param func option function, default {@link Option#EMPTY_FUNC}

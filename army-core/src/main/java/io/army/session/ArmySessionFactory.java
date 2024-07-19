@@ -45,10 +45,11 @@ import java.util.function.Function;
  *     <li>{@code  io.army.reactive.ArmyReactiveSessionFactory}</li>
  *     <li>{@code io.army.sync.ArmySyncSessionFactory}</li>
  * </ul>
+ * <p>Package class
  *
  * @since 0.6.0
  */
-public abstract class _ArmySessionFactory implements SessionFactory {
+abstract class ArmySessionFactory implements PackageSessionFactory {
 
     protected static final ConcurrentMap<String, Boolean> FACTORY_MAP = _Collections.concurrentHashMap(3);
 
@@ -89,7 +90,10 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     final boolean sqlParsingCostTime;
 
 
-    protected _ArmySessionFactory(final _ArmyFactoryBuilder<?, ?> support) throws SessionFactoryException {
+    /**
+     * <p>Package constructor
+     */
+    ArmySessionFactory(final ArmyFactoryBuilder<?, ?> support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
         final ArmyEnvironment env = Objects.requireNonNull(support.environment);
 
@@ -314,7 +318,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
 
     @SuppressWarnings("unchecked")
-    public static abstract class ArmySessionBuilder<F extends _ArmySessionFactory, B, R>
+    public static abstract class ArmySessionBuilder<F extends ArmySessionFactory, B, R>
             implements SessionFactory.SessionBuilderSpec<B, R> {
 
         public final F factory;
@@ -392,7 +396,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
                 this.visible = visible = Visible.ONLY_VISIBLE;
             }
 
-            final _ArmySessionFactory factory = this.factory;
+            final ArmySessionFactory factory = this.factory;
             final boolean readonly = this.readonly;
             try {
                 if (!readonly && factory.readonly) {
@@ -416,7 +420,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         public final boolean inOpenDriverSpi() {
             final boolean match;
-            final _ArmySessionFactory factory = this.factory;
+            final ArmySessionFactory factory = this.factory;
             switch (factory.driverSpiMode) {
                 case NEVER:
                     match = false;

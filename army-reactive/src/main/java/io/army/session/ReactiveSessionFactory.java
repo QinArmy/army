@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
  *
  * @since 0.6.0
  */
-public interface ReactiveSessionFactory extends SessionFactory, ReactiveCloseable {
+public sealed interface ReactiveSessionFactory extends PackageSessionFactory, ReactiveCloseable permits ArmyReactiveSessionFactory {
 
     Mono<ReactiveLocalSession> localSession();
 

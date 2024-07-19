@@ -23,7 +23,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
-import io.army.session.FactoryBuilderSpec;
+import io.army.session.FactoryBuilder;
 
 import javax.annotation.Nullable;
 import java.time.ZoneOffset;
@@ -31,7 +31,7 @@ import java.util.Map;
 
 
 /**
- * <p>The instance of this interface is created by the implementation of {@link FactoryBuilderSpec}.
+ * <p>The instance of this interface is created by the implementation of {@link FactoryBuilder}.
  */
 public interface DialectEnv {
 

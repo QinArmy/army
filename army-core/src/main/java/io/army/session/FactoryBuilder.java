@@ -36,12 +36,13 @@ import java.util.function.Function;
 /**
  * <p>This interface representing the builder spec of {@link SessionFactory} .
  * <p>This interface is base interface of all factory builder.
+ * <p>package interface
  *
  * @param <B> factory builder java type,it is the sub interface of this interface
  * @param <R> sync session factory or Mono
  * @since 0.6.0
  */
-public interface FactoryBuilderSpec<B, R> {
+public sealed interface FactoryBuilder<B, R> permits PackageFactoryBuilder {
 
 
     /**

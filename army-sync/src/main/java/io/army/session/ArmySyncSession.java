@@ -49,12 +49,12 @@ import java.util.stream.Stream;
  *     <li>{@link ArmySyncLocalSession}</li>
  *     <li>{@link ArmySyncRmSession}</li>
  * </ul>
- * <p>This class extends {@link _ArmySession} and implements of {@link SyncSession}.
+ * <p>This class extends {@link ArmySession} and implements of {@link SyncSession}.
  *
  * @see ArmySyncSessionFactory
  * @since 0.6.0
  */
-non-sealed abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> implements SyncSession {
+non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFactory> implements SyncSession {
 
 
     final SyncExecutor executor;
@@ -123,7 +123,7 @@ non-sealed abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFa
         try {
             return this.executor.transactionInfo();
         } catch (Exception e) {
-            throw _ArmySession.wrapSessionError(e);
+            throw ArmySession.wrapSessionError(e);
         }
     }
 
@@ -135,7 +135,7 @@ non-sealed abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFa
         try {
             return this.executor.sessionTransactionCharacteristics(Option.EMPTY_FUNC);
         } catch (Exception e) {
-            throw _ArmySession.wrapSessionError(e);
+            throw ArmySession.wrapSessionError(e);
         }
     }
 
@@ -495,7 +495,7 @@ non-sealed abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFa
         final List<Long> resultList;
         if (this.factory.resultItemDriverSpi) {
             if (!(statement instanceof _BatchStatement)) {
-                throw _ArmySession.wrapSessionError(_Exceptions.unexpectedStatement(statement));
+                throw ArmySession.wrapSessionError(_Exceptions.unexpectedStatement(statement));
             }
 
             final int batchSize;
@@ -510,7 +510,7 @@ non-sealed abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFa
 
                 resultList = Collections.unmodifiableList(tempList);
             } catch (Exception e) {
-                throw _ArmySession.wrapSessionError(e);
+                throw ArmySession.wrapSessionError(e);
             }
         } else {
             // JDBC driver here

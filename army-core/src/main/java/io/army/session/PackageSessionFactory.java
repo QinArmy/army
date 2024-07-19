@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
+
 package io.army.session;
 
-import reactor.core.publisher.Mono;
 
 /**
- * <p>This interface representing the builder of {@link ReactiveSessionFactory}.
- * <p>The instance of This interface is created by {@link #builder()}.
- *
- * @since 0.6.0
+ * package interface
  */
-public sealed interface ReactiveFactoryBuilder extends PackageFactoryBuilder<ReactiveFactoryBuilder, Mono<ReactiveSessionFactory>>
-        permits ArmyReactiveFactorBuilder {
-
-
-    @Override
-    Mono<ReactiveSessionFactory> build();
-
-    static ReactiveFactoryBuilder builder() {
-        return ArmyReactiveFactorBuilder.create();
-    }
+non-sealed interface PackageSessionFactory extends SessionFactory {
 
 
 }

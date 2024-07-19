@@ -57,11 +57,11 @@ import java.util.stream.Collectors;
  *     <li>{@link ArmyReactiveLocalSession}</li>
  *     <li>{@link ArmyReactiveRmSession}</li>
  * </ul>
- * <p>This class extends {@link _ArmySession} and implements of {@link ReactiveSession}.
+ * <p>This class extends {@link ArmySession} and implements of {@link ReactiveSession}.
  *
  * @since 0.6.0
  */
-non-sealed abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFactory> implements ReactiveSession {
+non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSessionFactory> implements ReactiveSession {
 
     private static final AtomicIntegerFieldUpdater<ArmyReactiveSession> SESSION_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmyReactiveSession.class, "sessionClosed");
@@ -309,7 +309,7 @@ non-sealed abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveS
                 throw updateChildNoTransaction();
             }
         } catch (Throwable e) {
-            flux = Flux.error(_ArmySession.wrapIfNeed(e));
+            flux = Flux.error(ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).clear();
@@ -644,7 +644,7 @@ non-sealed abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveS
                 mono = Mono.error(updateChildNoTransaction());
             }
         } catch (Throwable e) {
-            mono = Mono.error(_ArmySession.wrapIfNeed(e));
+            mono = Mono.error(ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).clear();
@@ -703,7 +703,7 @@ non-sealed abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveS
                         .then(this.executor.update(pairStmt.secondStmt(), option, Option.EMPTY_FUNC));
             }
         } catch (Throwable e) {
-            mono = Mono.error(_ArmySession.wrapIfNeed(e));
+            mono = Mono.error(ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).clear();
@@ -730,7 +730,7 @@ non-sealed abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveS
         if (cause instanceof SessionClosedException) {
             SESSION_CLOSED.compareAndSet(this, 0, 1);
         }
-        return _ArmySession.wrapIfNeed(cause);
+        return ArmySession.wrapIfNeed(cause);
     }
 
 

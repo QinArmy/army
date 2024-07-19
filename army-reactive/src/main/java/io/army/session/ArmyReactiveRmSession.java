@@ -112,7 +112,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
             return Mono.error(_Exceptions.sessionClosed(this));
         }
         return this.executor.setTransactionCharacteristics(option)
-                .onErrorMap(_ArmySession::wrapIfNeed)
+                .onErrorMap(ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
@@ -127,7 +127,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
             return Mono.error(_Exceptions.sessionClosed(this));
         }
         return this.executor.releaseSavePoint(savepoint, optionFunc)
-                .onErrorMap(_ArmySession::wrapIfNeed)
+                .onErrorMap(ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
@@ -142,7 +142,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
             return Mono.error(_Exceptions.sessionClosed(this));
         }
         return this.executor.rollbackToSavePoint(savepoint, optionFunc)
-                .onErrorMap(_ArmySession::wrapIfNeed)
+                .onErrorMap(ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
@@ -191,7 +191,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
 
                         TRANSACTION_INFO.set(this, info);
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
-                    }).onErrorMap(_ArmySession::wrapIfNeed);
+                    }).onErrorMap(ArmySession::wrapIfNeed);
         }
         return mono;
     }
@@ -239,7 +239,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
                         assert Objects.equals(info.valueOf(Option.TIMEOUT_MILLIS), lastInfo.valueOf(Option.TIMEOUT_MILLIS));
 
                         TRANSACTION_INFO.set(this, info);
-                    }).onErrorMap(_ArmySession::wrapIfNeed)
+                    }).onErrorMap(ArmySession::wrapIfNeed)
                     .thenReturn(this);
         }
         return mono;
@@ -276,7 +276,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
         } else {
             mono = ((ReactiveRmExecutor) this.executor).prepare(infoXid, optionFunc) // use infoXid
                     .doOnSuccess(flag -> TRANSACTION_INFO.set(this, null))
-                    .onErrorMap(_ArmySession::wrapIfNeed);
+                    .onErrorMap(ArmySession::wrapIfNeed);
         }
         return mono;
     }
@@ -305,7 +305,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
             mono = Mono.error(_Exceptions.xidIsNull());
         } else if ((flags & TM_ONE_PHASE) == 0) {   // tow phase commit
             mono = ((ReactiveRmExecutor) this.executor).commit(xid, flags, optionFunc) // use xid
-                    .onErrorMap(_ArmySession::wrapIfNeed)
+                    .onErrorMap(ArmySession::wrapIfNeed)
                     .thenReturn(this);
         } else if ((lastInfo = this.transactionInfo) == null
                 || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {
@@ -324,7 +324,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
                         TRANSACTION_INFO.set(this, null); // clear transactionInfo for one phase commit
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
                     })
-                    .onErrorMap(_ArmySession::wrapIfNeed)
+                    .onErrorMap(ArmySession::wrapIfNeed)
                     .thenReturn(this);
         }
         return mono;
@@ -351,7 +351,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
         } else if ((lastInfo = this.transactionInfo) == null
                 || !(infoXid = lastInfo.nonNullOf(Option.XID)).equals(xid)) {  // two phase rollback
             mono = ((ReactiveRmExecutor) this.executor).rollback(xid, optionFunc) // use xid
-                    .onErrorMap(_ArmySession::wrapIfNeed)
+                    .onErrorMap(ArmySession::wrapIfNeed)
                     .thenReturn(this);
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             mono = Mono.error(_Exceptions.xaStatesDontSupportRollbackCommand(infoXid, states)); // use infoXid
@@ -365,7 +365,7 @@ non-sealed class ArmyReactiveRmSession extends ArmyReactiveSession implements Re
                         TRANSACTION_INFO.set(this, null); // clear  for one phase rollback
                         ROLLBACK_ONLY.compareAndSet(this, 1, 0);
                     })
-                    .onErrorMap(_ArmySession::wrapIfNeed)
+                    .onErrorMap(ArmySession::wrapIfNeed)
                     .thenReturn(this);
         }
         return mono;

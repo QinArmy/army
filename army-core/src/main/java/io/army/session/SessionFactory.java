@@ -41,7 +41,7 @@ import java.util.Map;
  *
  * @since 0.6.0
  */
-public interface SessionFactory extends CloseableSpec, OptionSpec {
+public sealed interface SessionFactory extends CloseableSpec, OptionSpec permits PackageSessionFactory {
 
     String name();
 

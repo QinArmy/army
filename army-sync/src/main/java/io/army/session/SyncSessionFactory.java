@@ -28,7 +28,7 @@ import java.io.Closeable;
  *
  * @since 0.6.0
  */
-public interface SyncSessionFactory extends SessionFactory, Closeable {
+public sealed interface SyncSessionFactory extends PackageSessionFactory, Closeable permits ArmySyncSessionFactory {
 
 
     SyncLocalSession localSession();

@@ -22,7 +22,8 @@ package io.army.session;
  *
  * @since 0.6.0
  */
-public interface SyncFactoryBuilder extends FactoryBuilderSpec<SyncFactoryBuilder, SyncSessionFactory> {
+public sealed interface SyncFactoryBuilder extends PackageFactoryBuilder<SyncFactoryBuilder, SyncSessionFactory>
+        permits ArmySyncFactoryBuilder {
 
 
     @Override

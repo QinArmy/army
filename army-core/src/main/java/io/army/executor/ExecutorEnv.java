@@ -23,6 +23,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.result.ResultRecord;
+import io.army.session.FactoryBuilder;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -47,7 +48,7 @@ public interface ExecutorEnv {
     MappingEnv mappingEnv();
 
     /**
-     * @see io.army.session.FactoryBuilderSpec#columnConverterFunc(Function)
+     * @see FactoryBuilder#columnConverterFunc(Function)
      * @see ResultRecord#get(int, Class)
      */
     @Nullable
