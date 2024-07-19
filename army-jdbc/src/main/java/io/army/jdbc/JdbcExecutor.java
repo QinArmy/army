@@ -1437,8 +1437,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-
-
     /**
      * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption, Function)
      */
@@ -2756,13 +2754,20 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final Map<Option<?>, Object> map;
             map = this.executor.createStatesOptionMap(this.statement.getWarnings());
 
-            final Function<Option<?>, ?> sessionFunc = this.sessionFunc;
-            final ResultStates firstDmlStates;
-            if (sessionFunc != Option.EMPTY_FUNC
-                    && (firstDmlStates = (ResultStates) sessionFunc.apply(Option.FIRST_DML_STATES)) != null) {
-                map.put(Option.FIRST_DML_STATES, firstDmlStates);
+            final Function<Option<?>, ?> sessionFunc = this.sessionFunc, function;
+            if (sessionFunc == Option.EMPTY_FUNC) {
+                function = map::get;
+            } else {
+                function = option -> {
+                    final Object value;
+                    value = sessionFunc.apply(option);
+                    if (value != null) {
+                        return value;
+                    }
+                    return map.get(option);
+                };
             }
-            return map::get;
+            return function;
         }
 
 
@@ -3025,7 +3030,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     } //InsertRowSpliterator
-
 
 
     private static final class CursorRowSpliterator<R> implements Spliterator<R> {

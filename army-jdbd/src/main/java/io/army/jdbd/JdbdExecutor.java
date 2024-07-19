@@ -319,8 +319,8 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         Flux<R> flux;
         try {
 
-            final CurrentRecordForJdbd<R> record;
-            record = new CurrentRecordForJdbd<>(this, stmt, option, function, optionFunc);
+            final JdbdCurrentRecord<R> record;
+            record = new JdbdCurrentRecord<>(this, stmt, option, function, optionFunc);
 
             flux = Flux.from(bindStatement(stmt, option).executeQuery(record::readOneRow, record::acceptStates))
                     .onErrorMap(this::wrapExecuteIfNeed);
@@ -1320,7 +1320,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
     /*-------------------below static class -------------------*/
 
 
-    private static final class CurrentRecordForJdbd<R> extends ArmyStmtCurrentRecord {
+    private static final class JdbdCurrentRecord<R> extends ArmyStmtCurrentRecord {
 
         private final JdbdExecutor executor;
 
@@ -1345,13 +1345,11 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
         private JdbdStmtRecordMeta meta;
 
-        private int columnIndex;
-
         private long rowCount;
 
-        private CurrentRecordForJdbd(JdbdExecutor executor, SingleSqlStmt stmt, ReactiveStmtOption stmtOption,
-                                     Function<? super CurrentRecord, R> function,
-                                     Function<Option<?>, ?> sessionOptionFunc) {
+        private JdbdCurrentRecord(JdbdExecutor executor, SingleSqlStmt stmt, ReactiveStmtOption stmtOption,
+                                  Function<? super CurrentRecord, R> function,
+                                  Function<Option<?>, ?> sessionOptionFunc) {
             this.executor = executor;
             this.stmt = stmt;
             this.stmtOption = stmtOption;
@@ -1372,12 +1370,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             return meta;
         }
 
-        @Override
-        protected Object[] copyValueArray() {
-            final Object[] array = new Object[this.dataTypeArray.length];
-            final int arrayLength = array.length;
-            return array;
-        }
 
         @Override
         public long rowNumber() {
@@ -1424,10 +1416,20 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             return (T) readOneColumn(indexBasedZero, type, dataType);
         }
 
+        @Override
+        protected Object[] copyValueArray() {
+            final Object[] valueArray = new Object[this.dataTypeArray.length];
+            final int arrayLength = valueArray.length;
+            for (int i = 0; i < arrayLength; i++) {
+                valueArray[i] = readOneColumn(i, null, null);
+            }
+            return valueArray;
+        }
+
 
         private R readOneRow(final CurrentRow jdbdRow) {
             if (this.meta == null) {
-                if (jdbdRow.rowNumber() != 0) {
+                if (jdbdRow.rowNumber() != 1L) {
                     throw driverError();
                 }
                 this.meta = createRecordMeta(jdbdRow.getRowMeta());
@@ -1436,6 +1438,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             final R row;
             try {
                 this.jdbdRow = jdbdRow;
+                this.rowCount++;
 
                 row = this.function.apply(this);
             } catch (Exception e) {
@@ -1484,6 +1487,8 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         }
 
         private JdbdStmtRecordMeta createRecordMeta(final ResultRowMeta rowMeta) {
+
+            this.rowCount = 0;   // reset
 
             final DataType[] dataTypeArray = this.dataTypeArray, metaDataTypeArray;
 
@@ -1554,6 +1559,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         private final JdbdStmtExecutorFactory executorFactory;
 
         private final Function<Option<?>, ?> sessionOptionFunc;
+
         private Warning warning;
 
         private Set<Option<?>> optionSet;
