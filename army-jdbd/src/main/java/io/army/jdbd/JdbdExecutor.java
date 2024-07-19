@@ -17,8 +17,6 @@
 package io.army.jdbd;
 
 import io.army.ArmyException;
-import io.army.bean.ObjectAccessor;
-import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.env.SqlLogMode;
@@ -33,18 +31,14 @@ import io.army.reactive.executor.ReactiveExecutor;
 import io.army.reactive.executor.ReactiveLocalExecutor;
 import io.army.reactive.executor.ReactiveRmExecutor;
 import io.army.session.*;
-import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.*;
 import io.army.type.BlobPath;
-import io.army.type.ImmutableSpec;
 import io.army.type.TextPath;
-import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
@@ -65,7 +59,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
@@ -320,32 +313,16 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
     }
 
 
-
     @Override
     public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function,
                                          ReactiveStmtOption option, final Function<Option<?>, ?> optionFunc) {
         Flux<R> flux;
         try {
-            final Consumer<ResultStates> armyConsumer;
-            armyConsumer = option.stateConsumer();
-            final Consumer<io.jdbd.result.ResultStates> jdbdConsumer;
-            if (armyConsumer == ResultStates.IGNORE_STATES) {
-                jdbdConsumer = io.jdbd.result.ResultStates.IGNORE_STATES;
-            } else {
-                jdbdConsumer = states -> {
-                    final ResultStates armyStates;
-                    armyStates = new JdbdResultStates(states, this.factory, optionFunc);
-                    try {
-                        armyConsumer.accept(armyStates);
-                    } catch (Exception e) {
-                        String m = String.format("%s %s throw error, %s", ResultStates.class.getName(),
-                                armyConsumer, e.getMessage());
-                        throw new ArmyException(m);
-                    }
-                };
-            }
 
-            flux = Flux.from(bindStatement(stmt, option).executeQuery(mapRecordFunc(stmt, function), jdbdConsumer))
+            final CurrentRecordForJdbd<R> record;
+            record = new CurrentRecordForJdbd<>(this, stmt, option, function, optionFunc);
+
+            flux = Flux.from(bindStatement(stmt, option).executeQuery(record::readOneRow, record::acceptStates))
                     .onErrorMap(this::wrapExecuteIfNeed);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
@@ -1120,49 +1097,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
     }
 
 
-    /**
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
-     */
-    private <R> Function<CurrentRow, R> mapRecordFunc(final SingleSqlStmt stmt, final Function<? super CurrentRecord, R> recordFunc) {
-        final RowReader<R> rowReader;
-        rowReader = new CurrentRecordRowReader<>(this, stmt.selectionList(), recordFunc);
-
-        final Function<CurrentRow, R> function;
-        if (stmt instanceof GeneratedKeyStmt) {
-            function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
-        } else {
-            function = rowReader::readOneRow;
-        }
-        return function;
-    }
-
-
-    /**
-     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption, Function)
-     */
-    private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveStmtOption option,
-                                                                       final Function<Option<?>, ?> optionFunc) {
-        final Consumer<ResultStates> armyConsumer;
-        armyConsumer = option.stateConsumer();
-        if (armyConsumer == ResultStates.IGNORE_STATES) {
-            return io.jdbd.result.ResultStates.IGNORE_STATES;
-        }
-        return states -> {
-            final ResultStates armyStates;
-            armyStates = mapToArmyQueryStates(states, optionFunc);
-            try {
-                armyConsumer.accept(armyStates);
-            } catch (Exception e) {
-                String m = String.format("%s %s throw error, %s", ResultStates.class.getName(),
-                        armyConsumer, e.getMessage());
-                throw new ArmyException(m);
-            }
-        };
-    }
-
-
-    private <R> Function<CurrentRow, R> returnIdQueryRowFunc(final GeneratedKeyStmt keyStmt,
-                                                             final RowReader<R> rowReader) {
+    private <R> Function<CurrentRow, R> returnIdQueryRowFunc(final GeneratedKeyStmt keyStmt) {
 
 
         final int indexBasedZero = keyStmt.idSelectionIndex();
@@ -1185,7 +1120,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             idValue = type.afterGet(dataType, env, idValue);
             keyStmt.setGeneratedIdValue(rowIndex, idValue);
 
-            return rowReader.readOneRow(dataRow);
+            throw new UnsupportedOperationException();
         };
     }
 
@@ -1385,443 +1320,62 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
     /*-------------------below static class -------------------*/
 
 
-    private static abstract class RowReader<R> extends ArmyStmtCurrentRecord {
+    private static final class CurrentRecordForJdbd<R> extends ArmyStmtCurrentRecord {
 
-        final JdbdExecutor executor;
+        private final JdbdExecutor executor;
 
-        final List<? extends Selection> selectionList;
+        private final SingleSqlStmt stmt;
 
-        final DataType[] dataTypeArray;
+        private final ReactiveStmtOption stmtOption;
 
-        private final MappingType[] compatibleTypeArray;
-
-        private final Class<?> resultClass;
-
-        private RowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
-                          @Nullable Class<?> resultClass) {
-            this.executor = executor;
-            this.selectionList = selectionList;
-            this.dataTypeArray = new DataType[selectionList.size()];
-            this.compatibleTypeArray = new MappingType[this.dataTypeArray.length];
-
-            this.resultClass = resultClass;
-        }
-
-        @Override
-        public ArmyResultRecordMeta getRecordMeta() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        protected Object[] copyValueArray() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public long rowNumber() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Nullable
-        @Override
-        public Object get(int indexBasedZero) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Nullable
-        @Override
-        public Object get(int indexBasedZero, MappingType type) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Nullable
-        @Override
-        public <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Nullable
-        @Override
-        public <T> T get(int indexBasedZero, Class<T> columnClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Nullable
-        final R readOneRow(final DataRow dataRow) {
-
-            final JdbdExecutor executor = this.executor;
-            final MappingEnv env = executor.factory.mappingEnv;
-            final DataType[] dataTypeArray = this.dataTypeArray;
-            final List<? extends Selection> selectionList = this.selectionList;
-
-            final MappingType[] compatibleTypeArray = this.compatibleTypeArray;
-            final Object documentNullValue = MappingType.DOCUMENT_NULL_VALUE;
-
-            final int columnCount;
-            if (dataTypeArray[0] == null
-                    || (this instanceof CurrentRecordRowReader
-                    && resultNo() < dataRow.resultNo())) {
-                columnCount = dataRow.getColumnCount();
-                if (columnCount != dataTypeArray.length) {
-                    throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, dataTypeArray.length);
-                }
-                final ResultRowMeta meta = dataRow.getRowMeta();
-                for (int i = 0; i < columnCount; i++) {
-                    dataTypeArray[i] = executor.getDataType(meta, i);
-                }
-                if (this instanceof CurrentRecordRowReader) {
-                    ((CurrentRecordRowReader<?>) this).acceptRowMeta(dataRow.getRowMeta(), dataTypeArray);
-                }
-            } else {
-                columnCount = dataTypeArray.length;
-            }
-
-            final ObjectAccessor accessor;
-            accessor = createRow();
-
-            TypeMeta typeMeta;
-            MappingType type;
-            Selection selection;
-            Object columnValue;
-            DataType dataType;
-            String fieldName;
-
-            for (int i = 0; i < columnCount; i++) {
-
-                selection = selectionList.get(i);
-                fieldName = selection.label();
-
-                dataType = dataTypeArray[i];
-
-                if ((type = compatibleTypeArray[i]) == null) {
-                    if (!(this instanceof CurrentRecordRowReader)) {
-                        type = compatibleTypeFrom(selection, dataType, this.resultClass, accessor, fieldName);
-                    } else if ((typeMeta = selection.typeMeta()) instanceof MappingType) {
-                        type = (MappingType) typeMeta;
-                    } else {
-                        type = typeMeta.mappingType();
-                    }
-                    compatibleTypeArray[i] = type;
-                }
-
-
-                columnValue = executor.get(dataRow, i, type, dataType);
-
-                if (columnValue == null) {
-                    acceptColumn(i, fieldName, null);
-                    continue;
-                }
-
-                columnValue = type.afterGet(dataType, env, columnValue);
-
-                if ((columnValue == documentNullValue)) {
-                    if (!(type instanceof MappingType.SqlDocumentType)) {
-                        throw afterGetMethodError(type, dataType, columnValue);
-                    }
-                    acceptColumn(i, fieldName, null);
-                    continue;
-                }
-
-                //TODO field codec
-                acceptColumn(i, fieldName, columnValue);
-
-            } // for loop
-
-            return endOneRow();
-        }
-
-
-        abstract ObjectAccessor createRow();
-
-        abstract void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value);
-
-        @Nullable
-        abstract R endOneRow();
-
-
-        private DataType getDataType(int index) {
-            return this.dataTypeArray[index];
-        }
-
-
-    }// RowReader
-
-    private static final class SingleColumnRowReader<R> extends RowReader<R> {
-
-        private R row;
-
-        private SingleColumnRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
-                                      Class<R> resultClass) {
-            super(executor, selectionList, resultClass);
-        }
-
-        @Override
-        ObjectAccessor createRow() {
-            this.row = null;
-            return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
-            assert indexBasedZero == 0;
-            this.row = (R) value;
-        }
-
-        @Override
-        R endOneRow() {
-            final R row = this.row;
-            this.row = null;
-            return row;
-        }
-
-    }// SingleColumnRowReader
-
-    private static final class OptionalSingleColumnRowReader<R> extends RowReader<Optional<R>> {
-
-        private R row;
-
-        private OptionalSingleColumnRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
-                                              Class<R> resultClass) {
-            super(executor, selectionList, resultClass);
-        }
-
-        @Override
-        ObjectAccessor createRow() {
-            this.row = null;
-            return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
-            assert indexBasedZero == 0;
-            this.row = (R) value;
-        }
-
-        @Override
-        Optional<R> endOneRow() {
-            final R row = this.row;
-            this.row = null;
-            return Optional.ofNullable(row);
-        }
-
-
-    }// OptionalSingleColumnRowReader
-
-    private static final class BeanReader<R> extends RowReader<R> {
-
-        private final ObjectAccessor accessor;
-        private final Constructor<R> constructor;
-
-        private R row;
-
-        private BeanReader(JdbdExecutor executor, List<? extends Selection> selectionList,
-                           Class<R> resultClass) {
-            super(executor, selectionList, resultClass);
-            this.accessor = ObjectAccessorFactory.forBean(resultClass);
-            this.constructor = ObjectAccessorFactory.getConstructor(resultClass);
-        }
-
-        @Override
-        ObjectAccessor createRow() {
-            this.row = ObjectAccessorFactory.createBean(this.constructor);
-            return this.accessor;
-        }
-
-        @Override
-        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
-            this.accessor.set(this.row, fieldName, value);
-        }
-
-        @Override
-        R endOneRow() {
-            final R row = this.row;
-            this.row = null;
-            return row;
-        }
-
-    }// BeanReader
-
-
-    private static final class ObjectRowReader<R> extends RowReader<R> {
-
-        private final Supplier<R> constructor;
-
-        private final boolean twoStmtMode;
-
-        private R row;
-
-        private Class<?> rowJavaClass;
-
-        private ObjectAccessor accessor;
-
-        private ObjectRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
-                                Supplier<R> constructor, boolean twoStmtMode) {
-            super(executor, selectionList, null);
-            this.constructor = constructor;
-            this.twoStmtMode = twoStmtMode;
-        }
-
-        @Override
-        ObjectAccessor createRow() {
-            assert this.row == null;
-
-            final R row;
-            this.row = row = this.constructor.get();
-            if (row == null) {
-                throw _Exceptions.objectConstructorError();
-            }
-
-            Class<?> rowJavaClass = this.rowJavaClass;
-            final ObjectAccessor accessor;
-            if (rowJavaClass == null || rowJavaClass != row.getClass()) {
-                this.rowJavaClass = row.getClass();
-                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
-            } else {
-                accessor = this.accessor;
-                assert accessor != null;
-            }
-            return accessor;
-        }
-
-        @Override
-        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
-            this.accessor.set(this.row, fieldName, value);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        R endOneRow() {
-            R row = this.row;
-            assert row != null;
-            this.row = null;
-
-            if (row instanceof Map && row instanceof ImmutableSpec && !this.twoStmtMode) {
-                row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
-            }
-            return row;
-        }
-
-
-    }// ObjectReader
-
-    private static final class SecondRowReader<R> extends RowReader<R> {
-
-        private final List<R> rowList;
-
-        private final int rowSize;
-
-        private final boolean singleColumn;
-
-        private ObjectAccessor accessor;
-
-        private R row;
-
-        private Class<?> rowJavaClass;
-
-        /**
-         * from -1 not 0
-         */
-        private int rowIndex = -1;
-
-
-        private SecondRowReader(JdbdExecutor executor, TwoStmtQueryStmt stmt, List<R> rowList) {
-            super(executor, stmt.selectionList(), rowResultClass(rowList.get(0)));
-            this.rowList = rowList;
-            this.rowSize = rowList.size();
-            if (stmt.maxColumnSize() == 1) {
-                this.singleColumn = true;
-                this.accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-            } else {
-                this.singleColumn = false;
-            }
-
-        }
-
-        @Override
-        ObjectAccessor createRow() {
-            final int rowIndex = ++this.rowIndex;
-            if (rowIndex >= this.rowSize) {
-                throw secondQueryRowCountNotMatch(this.rowSize, rowIndex + 1);
-            }
-
-            final R row;
-            this.row = row = this.rowList.get(rowIndex);
-
-
-            final ObjectAccessor accessor;
-            if (this.singleColumn) {
-                accessor = this.accessor;
-                assert accessor != null;
-            } else if (this.rowJavaClass != row.getClass()) {
-                this.rowJavaClass = row.getClass();
-                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
-            } else {
-                accessor = this.accessor;
-                assert accessor != null;
-            }
-            return accessor;
-        }
-
-        @Override
-        void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
-            if (!this.singleColumn) {
-                this.accessor.set(this.row, fieldName, value);
-            } else if (Objects.equals(value, this.row)) {
-                assert indexBasedZero == 0;
-            } else {
-                String m = String.format("error , single column row[rowIndexBasedZero : %s ,indexBasedZero : %s , selection label : %s] and first query not match.",
-                        this.rowIndex, indexBasedZero, fieldName);
-                throw new DataAccessException(m);
-            }
-
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        R endOneRow() {
-            R row = this.row;
-            if (row instanceof Map && row instanceof ImmutableSpec) {
-                row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
-            }
-
-            this.row = null;
-            return row;
-        }
-
-    }// SecondRowReader
-
-    private static final class CurrentRecordRowReader<R> extends RowReader<R> {
+        private final List<? extends Selection> selectionList;
 
         private final Function<? super CurrentRecord, R> function;
 
-        private final Object[] valueArray;
+        private final Consumer<ResultStates> statesConsumer;
 
-        private JdbdStmtRowMeta meta;
+
+        private final Function<Option<?>, ?> sessionOptionFunc;
+
+        private final DataType[] dataTypeArray;
+
+        private final MappingType[] originalTypeArray;
+
+        private CurrentRow jdbdRow;
+
+        private JdbdStmtRecordMeta meta;
 
         private int columnIndex;
 
         private long rowCount;
 
-        private CurrentRecordRowReader(JdbdExecutor executor, List<? extends Selection> selectionList,
-                                       Function<? super CurrentRecord, R> function) {
-            super(executor, selectionList, null);
+        private CurrentRecordForJdbd(JdbdExecutor executor, SingleSqlStmt stmt, ReactiveStmtOption stmtOption,
+                                     Function<? super CurrentRecord, R> function,
+                                     Function<Option<?>, ?> sessionOptionFunc) {
+            this.executor = executor;
+            this.stmt = stmt;
+            this.stmtOption = stmtOption;
+            this.selectionList = stmt.selectionList();
+
             this.function = function;
-            this.valueArray = new Object[selectionList.size()];
+            this.statesConsumer = stmtOption.stateConsumer();
+            this.sessionOptionFunc = sessionOptionFunc;
+            this.dataTypeArray = new DataType[selectionList.size()];
+
+            this.originalTypeArray = new MappingType[this.dataTypeArray.length];
         }
 
         @Override
         public ArmyResultRecordMeta getRecordMeta() {
-            final JdbdStmtRowMeta meta = this.meta;
+            final JdbdStmtRecordMeta meta = this.meta;
             assert meta != null;
             return meta;
         }
 
         @Override
         protected Object[] copyValueArray() {
-            final Object[] array = new Object[this.valueArray.length];
-            System.arraycopy(this.valueArray, 0, array, 0, array.length);
+            final Object[] array = new Object[this.dataTypeArray.length];
+            final int arrayLength = array.length;
             return array;
         }
 
@@ -1832,138 +1386,166 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
         @Nullable
         @Override
-        public Object get(int indexBasedZero) {
-            final JdbdStmtRowMeta meta = this.meta;
+        public Object get(final int indexBasedZero) {
+            final JdbdStmtRecordMeta meta = this.meta;
             assert meta != null;
-            return this.valueArray[meta.checkIndex(indexBasedZero)];
+
+            return readOneColumn(meta.checkIndex(indexBasedZero), null, null);
         }
 
         @Nullable
         @Override
-        public Object get(int indexBasedZero, MappingType type) {
-            // TODO
-            throw new UnsupportedOperationException();
+        public Object get(final int indexBasedZero, final @Nullable MappingType type) {
+            final JdbdStmtRecordMeta meta = this.meta;
+            assert meta != null;
+            if (type == null) {
+                throw new NullPointerException();
+            }
+            return readOneColumn(meta.checkIndex(indexBasedZero), type, null);
         }
 
+        @SuppressWarnings("unchecked")
         @Nullable
         @Override
-        public <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
-            // TODO
-            throw new UnsupportedOperationException();
+        public <T> T get(final int indexBasedZero, final Class<T> columnClass) {
+
+            final JdbdStmtRecordMeta meta = this.meta;
+            assert meta != null;
+
+            DataType dataType = null;
+
+            MappingType type;
+            type = this.originalTypeArray[meta.checkIndex(indexBasedZero)];
+            if (!columnClass.isAssignableFrom(type.javaType())) {
+                dataType = this.dataTypeArray[meta.checkIndex(indexBasedZero)];
+                type = type.compatibleFor(dataType, columnClass);
+            }
+
+            return (T) readOneColumn(indexBasedZero, type, dataType);
         }
 
-        @Nullable
-        @Override
-        public <T> T get(int indexBasedZero, Class<T> columnClass) {
-            // TODO
-            throw new UnsupportedOperationException();
-        }
 
-        @Override
-        ObjectAccessor createRow() {
-            assert this.columnIndex == this.valueArray.length;
-            this.columnIndex = 0;
-            return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
-        }
-
-        @Override
-        void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
-            final int currentIndex = this.columnIndex++;
-            assert indexBasedZero == currentIndex;
-            this.valueArray[indexBasedZero] = value;
-        }
-
-        @Override
-        R endOneRow() {
-            assert this.columnIndex == this.valueArray.length;
-            this.rowCount++;  // firstly ,++
+        private R readOneRow(final CurrentRow jdbdRow) {
+            if (this.meta == null) {
+                if (jdbdRow.rowNumber() != 0) {
+                    throw driverError();
+                }
+                this.meta = createRecordMeta(jdbdRow.getRowMeta());
+            }
 
             final R row;
-            row = this.function.apply(this); // secondly , invoke user function
+            try {
+                this.jdbdRow = jdbdRow;
+
+                row = this.function.apply(this);
+            } catch (Exception e) {
+                throw _Exceptions.recordMapFuncInvokeError(this.function);
+            } finally {
+                this.jdbdRow = null; /// must clear
+            }
+
             if (row instanceof CurrentRecord) {
                 throw _Exceptions.recordMapFuncReturnError(this.function);
             }
+
             return row;
+
         }
 
-        private void acceptRowMeta(final ResultRowMeta rowMeta, final DataType[] dataTypeArray) {
-            final JdbdStmtRowMeta meta = this.meta;
-            final int resultNo;
-            if (meta == null) {
-                resultNo = 1;
-            } else {
-                resultNo = meta.resultNo() + 1;
+
+        @Nullable
+        private Object readOneColumn(final int indexBasedZero, @Nullable MappingType type, @Nullable DataType dataType) {
+            if (dataType == null) {
+                dataType = this.dataTypeArray[indexBasedZero];
             }
 
-            if (resultNo != rowMeta.resultNo()) {
+            if (type == null) {
+                type = this.originalTypeArray[indexBasedZero];
+            }
+
+            final CurrentRow jdbdRow = this.jdbdRow;
+            assert jdbdRow != null;
+
+            Object value;
+            value = this.executor.get(jdbdRow, indexBasedZero, type, dataType);
+
+            if (value == null) {
+                return null;
+            }
+
+            // TODO 解密 ,脱敏
+
+            value = type.afterGet(dataType, this.executor.factory.mappingEnv, value);
+            if (value == MappingType.DOCUMENT_NULL_VALUE) {
+                value = null;
+            }
+
+            return value;
+        }
+
+        private JdbdStmtRecordMeta createRecordMeta(final ResultRowMeta rowMeta) {
+
+            final DataType[] dataTypeArray = this.dataTypeArray, metaDataTypeArray;
+
+            final int columnLength = dataTypeArray.length;
+            if (rowMeta.getColumnCount() != columnLength) {
+                throw _Exceptions.columnCountAndSelectionCountNotMatch(rowMeta.getColumnCount(), columnLength);
+            }
+            final List<? extends Selection> selectionList = this.selectionList;
+
+            final MappingType[] originalTypeArray = this.originalTypeArray;
+            final JdbdExecutor executor = this.executor;
+            TypeMeta typeMeta;
+            for (int i = 0; i < columnLength; i++) {
+
+                dataTypeArray[i] = executor.getDataType(rowMeta, i);
+
+                if (originalTypeArray[i] != null) {
+                    continue;
+                }
+                typeMeta = selectionList.get(i).typeMeta();
+                if (!(typeMeta instanceof MappingType)) {
+                    typeMeta = typeMeta.mappingType();
+                }
+                originalTypeArray[i] = (MappingType) typeMeta;
+            }
+
+
+            if (this.stmt instanceof SimpleStmt && this.stmtOption.fetchSize() > 0) {
+                metaDataTypeArray = dataTypeArray;
+            } else {
+                metaDataTypeArray = new DataType[dataTypeArray.length];
+                System.arraycopy(dataTypeArray, 0, metaDataTypeArray, 0, dataTypeArray.length);
+            }
+            return new JdbdStmtRecordMeta(rowMeta.resultNo(), metaDataTypeArray, selectionList, this.executor, rowMeta);
+        }
+
+        private void acceptStates(final @Nullable io.jdbd.result.ResultStates jdbdStates) {
+
+            this.meta = null; // must clear meta
+
+            if (jdbdStates == null) {
                 throw driverError();
             }
 
-            this.meta = new JdbdStmtRowMeta(resultNo, dataTypeArray, this.selectionList, this.executor, rowMeta);
-            this.rowCount = 0L; // reset
-        }
-
-
-    }//CurrentRecordRowReader
-
-
-    private static abstract class JdbdBatchQueryResults extends ArmyReactiveMultiResultSpec {
-
-        private final JdbdExecutor executor;
-
-        private final List<? extends Selection> selectionList;
-
-        private final io.jdbd.result.QueryResults jdbdResults;
-
-
-        private JdbdBatchQueryResults(JdbdExecutor executor, List<? extends Selection> selectionList,
-                                      io.jdbd.result.QueryResults jdbdResults) {
-            this.executor = executor;
-            this.selectionList = selectionList;
-            this.jdbdResults = jdbdResults;
-        }
-
-        @Override
-        public final <R> Flux<R> nextQuery(Class<R> resultClass, Consumer<ResultStates> consumer) {
-            final RowReader<R> reader;
-            final List<? extends Selection> selectionList = this.selectionList;
-            if (selectionList.size() == 1) {
-                reader = new SingleColumnRowReader<>(this.executor, selectionList, resultClass);
-            } else {
-                reader = new BeanReader<>(this.executor, selectionList, resultClass);
+            final Consumer<ResultStates> statesConsumer = this.statesConsumer;
+            if (statesConsumer == null || statesConsumer == ResultStates.IGNORE_STATES) {
+                return;
             }
-            return Flux.from(this.jdbdResults.nextQuery(reader::readOneRow, getJdbdStatesConsumer(consumer)));
-        }
 
-        @Override
-        public final <R> Flux<Optional<R>> nextQueryOptional(Class<R> resultClass, Consumer<ResultStates> consumer) {
-            return Flux.empty();
-        }
+            final ResultStates armyStates;
+            armyStates = this.executor.mapToArmyQueryStates(jdbdStates, this.sessionOptionFunc);
 
-        @Override
-        public final <R> Flux<R> nextQueryObject(Supplier<R> constructor, Consumer<ResultStates> consumer) {
-            final RowReader<R> reader;
-            reader = new ObjectRowReader<>(this.executor, this.selectionList, constructor, false);
-            return Flux.from(this.jdbdResults.nextQuery(reader::readOneRow, getJdbdStatesConsumer(consumer)));
-        }
-
-        @Override
-        public final <R> Flux<R> nextQueryRecord(Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
-            //TODO
-            return Flux.empty();
-        }
-
-        @Override
-        public final Flux<ResultItem> nextQueryAsFlux() {
-            return Flux.empty();
-        }
-
-        Consumer<io.jdbd.result.ResultStates> getJdbdStatesConsumer(Consumer<ResultStates> armyConsumer) {
-            throw new UnsupportedOperationException();
+            try {
+                statesConsumer.accept(armyStates);
+            } catch (Exception e) {
+                throw _Exceptions.statesConsumerInvokeError(statesConsumer);
+            }
         }
 
 
-    }// JdbdMultiResultSpec
+    } //CurrentRecordRowReader
+
 
     private static final class JdbdResultStates implements ResultStates {
 

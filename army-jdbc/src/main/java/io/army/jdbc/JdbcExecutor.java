@@ -2067,12 +2067,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             throw new UnsupportedOperationException();
         }
 
-        @Nullable
-        @Override
-        public final <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
-            // no bug,never here
-            throw new UnsupportedOperationException();
-        }
 
         @Nullable
         @Override
@@ -2375,17 +2369,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             return (T) getColumnValue(indexBasedZero, type);
         }
 
-        @SuppressWarnings("unchecked")
-        @Nullable
-        @Override
-        public <T> T get(final int indexBasedZero, final Class<T> columnClass, final MappingType type) {
-            this.meta.checkIndex(indexBasedZero);
-            if (!columnClass.isAssignableFrom(type.javaType())) {
-                String m = String.format("%s and %s not match", columnClass.getName(), type.getClass().getName());
-                throw new IllegalArgumentException(m);
-            }
-            return (T) getColumnValue(indexBasedZero, type);
-        }
 
 
         /*-------------------below protected -------------------*/

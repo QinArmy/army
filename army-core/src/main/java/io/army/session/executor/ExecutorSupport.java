@@ -144,7 +144,10 @@ public abstract class ExecutorSupport {
             } else {
                 compatibleType = type.compatibleFor(dataType, resultClass);
             }
-        } else if (accessor == RECORD_PSEUDO_ACCESSOR || accessor == ObjectAccessorFactory.MAP_ACCESSOR) {
+        } else if (accessor == RECORD_PSEUDO_ACCESSOR) {
+            assert resultClass != null;
+            compatibleType = type.compatibleFor(dataType, resultClass);
+        } else if (accessor == ObjectAccessorFactory.MAP_ACCESSOR) {
             compatibleType = type;
         } else if (type == NullType.INSTANCE || accessor.isWritable(fieldName, type.javaType())) {
             compatibleType = type;
@@ -1355,6 +1358,20 @@ public abstract class ExecutorSupport {
             return new ArmyResultRecord(this);
         }
 
+
+        @SuppressWarnings("unchecked")
+        @Nullable
+        @Override
+        public final <T> T get(int indexBasedZero, Class<T> columnClass, MappingType type) {
+            final Object value;
+            value = get(indexBasedZero, type);
+
+            if (value != null && !columnClass.isInstance(value)) {
+                String m = String.format("%s and %s not match", columnClass.getName(), type.getClass().getName());
+                throw new IllegalArgumentException(m);
+            }
+            return (T) value;
+        }
 
         @Override
         public final <T> T getNonNull(int indexBasedZero, Class<T> columnClass, MappingType type) {

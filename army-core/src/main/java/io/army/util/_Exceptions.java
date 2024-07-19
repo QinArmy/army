@@ -39,6 +39,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.*;
 import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLType;
 import io.army.stmt.MultiStmt;
@@ -48,6 +49,7 @@ import io.army.type.SqlRecord;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
@@ -1343,6 +1345,16 @@ public abstract class _Exceptions {
     public static ArmyException recordMapFuncReturnError(Function<? super CurrentRecord, ?> function) {
         final String className = CurrentRecord.class.getName();
         String m = String.format("%s map function %s return %s", className, function, className);
+        return new ArmyException(m);
+    }
+
+    public static ArmyException recordMapFuncInvokeError(Function<? super CurrentRecord, ?> function) {
+        String m = String.format("%s map function %s throw error", CurrentRecord.class.getName(), function);
+        return new ArmyException(m);
+    }
+
+    public static ArmyException statesConsumerInvokeError(Consumer<ResultStates> consumer) {
+        String m = String.format("%s Consumer %s throw error", ResultStates.class.getName(), consumer);
         return new ArmyException(m);
     }
 
