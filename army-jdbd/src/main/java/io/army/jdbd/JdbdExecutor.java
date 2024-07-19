@@ -322,7 +322,11 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             final JdbdCurrentRecord<R> record;
             record = new JdbdCurrentRecord<>(this, stmt, option, function, optionFunc);
 
-            flux = Flux.from(bindStatement(stmt, option).executeQuery(record::readOneRow, record::acceptStates))
+            final BindStatement statement;
+            statement = bindStatement(stmt, option);
+
+            // TODO 处理批量查询
+            flux = Flux.from(statement.executeQuery(record::readOneRow, record::acceptStates))
                     .onErrorMap(this::wrapExecuteIfNeed);
         } catch (Throwable e) {
             flux = Flux.error(wrapExecuteIfNeed(e));
@@ -1577,15 +1581,15 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         @Override
         public <T> T valueOf(final Option<T> option) {
 
-            final Object value;
-            if (option == Option.FIRST_DML_STATES || option == Option.SECOND_DML_QUERY_STATES) {
+            Object value = null;
+            if (this.sessionOptionFunc != Option.EMPTY_FUNC) {
                 value = this.sessionOptionFunc.apply(option);
-            } else {
+            }
+
+            if (value == null) {
                 final io.jdbd.session.Option<?> jdbdOption;
                 jdbdOption = this.executorFactory.mapToJdbdOption(option);
-                if (jdbdOption == null) {
-                    value = null;
-                } else {
+                if (jdbdOption != null) {
                     value = this.jdbdStates.valueOf(jdbdOption);
                 }
             }
@@ -1597,6 +1601,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             Set<Option<?>> armyOptionSet = this.optionSet;
             if (armyOptionSet == null) {
                 this.optionSet = armyOptionSet = this.executorFactory.mapArmyOptionSet(this.jdbdStates.optionSet());
+                // TODO 加上 session options
             }
             return armyOptionSet;
         }
