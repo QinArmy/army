@@ -16,8 +16,8 @@
 
 package io.army.jdbc;
 
+import io.army.executor.DataAccessException;
 import io.army.schema.*;
-import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncMetaExecutor;
 import io.army.util._Collections;
 

@@ -16,6 +16,8 @@
 
 package io.army.session;
 
+import io.army.executor.DataAccessException;
+
 /**
  * @see Session#isRollbackOnly()
  * @since 0.6.0

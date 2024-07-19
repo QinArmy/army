@@ -20,6 +20,7 @@ import io.army.ArmyException;
 import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.dialect.DialectParser;
+import io.army.env.AllowMode;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
@@ -27,6 +28,7 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
+import io.army.option.Option;
 import io.army.util.*;
 
 import javax.annotation.Nullable;

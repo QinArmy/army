@@ -20,7 +20,7 @@ import io.army.session.Session;
 import io.army.session.SessionException;
 import io.army.session.SessionFactory;
 import io.army.session.SessionFactoryException;
-import io.army.session.executor.ExecutorFactory;
+import io.army.executor.ExecutorFactory;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;

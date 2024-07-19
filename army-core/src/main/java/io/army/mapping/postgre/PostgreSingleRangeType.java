@@ -24,7 +24,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
@@ -400,7 +400,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      *                  <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link PostgreRangeType#INFINITY}</li>
      *                  </ul>
      * @throws IllegalArgumentException            when rangeFunc is null and {@link MappingType#javaType()} isn't {@link String#getClass()}
-     * @throws io.army.session.DataAccessException when text error and handler throw this type.
+     * @throws DataAccessException when text error and handler throw this type.
      */
     public static <T, R> R rangeAfterGet(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
                                          final Function<String, T> parseFunc, final DataType dataType,

@@ -5,10 +5,11 @@ import io.army.criteria.TypeInfer;
 import io.army.criteria.TypeItem;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
+import io.army.executor.DataAccessException;
+import io.army.executor.StmtExecutor;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
-import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLType;
 import io.army.util._StringUtils;
@@ -48,7 +49,7 @@ public sealed interface MappingType extends TypeMeta, TypeInfer, TypeItem permit
     Object beforeBind(DataType dataType, MappingEnv env, Object source) throws CriteriaException;
 
     /**
-     * @param dataType from {@link  io.army.session.executor.StmtExecutor}
+     * @param dataType from {@link  StmtExecutor}
      * @param source   never null
      * @return non-null, the instance of {@link #javaType()}.
      */

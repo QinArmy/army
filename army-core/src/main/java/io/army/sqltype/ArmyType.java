@@ -16,11 +16,11 @@
 
 package io.army.sqltype;
 
-import io.army.session.Cursor;
-import io.army.session.Option;
-import io.army.session.record.DataRecord;
-import io.army.session.record.ResultRecordMeta;
-import io.army.session.record.ResultStates;
+import io.army.option.Option;
+import io.army.result.Cursor;
+import io.army.result.DataRecord;
+import io.army.result.ResultRecordMeta;
+import io.army.result.ResultStates;
 
 /**
  * <p>This enum is a implementation of {@link DataType} for the convenience that application get column type meta by ResultRecordMeta#getArmyType(int) .

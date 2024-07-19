@@ -18,10 +18,13 @@ package io.army.session.sync;
 
 import io.army.criteria.annotaion.VisibleMode;
 import io.army.dialect.Database;
+import io.army.option.Option;
 import io.army.session.*;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncSession;
 import io.army.sync.SyncSessionFactory;
+import io.army.transaction.Isolation;
+import io.army.transaction.TransactionOption;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;

@@ -16,6 +16,8 @@
 
 package io.army.session;
 
+import io.army.transaction.TransactionException;
+
 /**
  * Exception thrown when operate and transaction status not match, like commit,rollBack.
  */

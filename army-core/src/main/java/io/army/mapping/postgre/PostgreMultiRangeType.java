@@ -27,7 +27,7 @@ import io.army.mapping.TextType;
 import io.army.mapping.array.PostgreArrays;
 import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.meta.MetaException;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;

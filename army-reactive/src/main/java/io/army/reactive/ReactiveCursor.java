@@ -16,7 +16,7 @@
 
 package io.army.reactive;
 
-import io.army.session.Cursor;
+import io.army.result.Cursor;
 
 
 /**

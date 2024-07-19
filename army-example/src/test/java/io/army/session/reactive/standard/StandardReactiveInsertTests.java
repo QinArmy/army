@@ -24,7 +24,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.reactive.ReactiveLocalSession;
-import io.army.session.record.ResultStates;
+import io.army.result.ResultStates;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

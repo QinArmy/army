@@ -18,6 +18,7 @@ package io.army.session;
 
 
 import io.army.criteria.Expression;
+import io.army.executor.DataAccessException;
 import io.army.stmt.Stmt;
 
 /**

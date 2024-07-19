@@ -18,7 +18,7 @@ package io.army.sync.executor;
 
 
 import io.army.schema.SchemaInfo;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 
 import java.util.List;
 

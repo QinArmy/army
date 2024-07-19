@@ -16,7 +16,7 @@
 
 package io.army.reactive.executor;
 
-import io.army.session.executor.ExecutorSupport;
+import io.army.executor.ExecutorSupport;
 
 public abstract class ReactiveExecutorSupport extends ExecutorSupport {
 

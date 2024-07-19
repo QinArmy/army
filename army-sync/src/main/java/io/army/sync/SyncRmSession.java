@@ -16,7 +16,11 @@
 
 package io.army.sync;
 
+import io.army.option.Option;
 import io.army.session.*;
+import io.army.transaction.TransactionInfo;
+import io.army.transaction.TransactionOption;
+import io.army.transaction.Xid;
 
 import java.util.List;
 import java.util.function.Function;

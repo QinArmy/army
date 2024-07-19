@@ -17,15 +17,20 @@
 package io.army.reactive.executor;
 
 
+import io.army.option.CloseableSpec;
+import io.army.option.Option;
 import io.army.reactive.ReactiveCloseable;
 import io.army.reactive.ReactiveStmtOption;
-import io.army.session.*;
-import io.army.session.executor.StmtExecutor;
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultStates;
+import io.army.executor.StmtExecutor;
+import io.army.result.CurrentRecord;
+import io.army.result.ResultStates;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
+import io.army.transaction.HandleMode;
+import io.army.transaction.TransactionInfo;
+import io.army.transaction.TransactionOption;
+import io.army.transaction.Xid;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -40,7 +45,7 @@ import java.util.function.Function;
  *     <li>{@link ReactiveLocalExecutor}</li>
  *     <li>{@link ReactiveRmExecutor}</li>
  * </ul>
- * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
+ * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link CloseableSpec},
  * so all implementation of methods of this interface don't check whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *

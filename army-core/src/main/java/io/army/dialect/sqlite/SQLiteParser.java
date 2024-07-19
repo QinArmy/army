@@ -28,7 +28,7 @@ import io.army.env.EscapeMode;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.executor.ExecutorSupport;
+import io.army.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
 import io.army.util.HexUtils;

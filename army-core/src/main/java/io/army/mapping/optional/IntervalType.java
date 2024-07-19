@@ -18,11 +18,11 @@ package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.executor.DataAccessException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
 public final class IntervalType extends _ArmyNoInjectionType implements MappingType.SqlIntervalType {

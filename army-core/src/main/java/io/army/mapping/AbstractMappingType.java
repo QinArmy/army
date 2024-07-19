@@ -19,9 +19,10 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
+import io.army.executor.DataAccessException;
+import io.army.executor.StmtExecutor;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
-import io.army.session.DataAccessException;
 import io.army.session.ParamException;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
@@ -91,7 +92,7 @@ abstract sealed class AbstractMappingType extends MappingSupport implements Mapp
     /**
      * <p>Find compatible {@link AbstractMappingType} for targetType.
      *
-     * @param dataType   from {@link io.army.session.executor.StmtExecutor}, underlying api is one of following :
+     * @param dataType   from {@link StmtExecutor}, underlying api is one of following :
      *                   <ul>
      *                        <li>{@code  java.sql.ResultSetMetaData#getTableName(int)}</li>
      *                        <li>{@code io.jdbd.result.ResultRowMeta#getDataType(int)}</li>

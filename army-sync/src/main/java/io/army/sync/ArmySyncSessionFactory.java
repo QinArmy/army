@@ -17,7 +17,7 @@
 package io.army.sync;
 
 import io.army.env.SyncKey;
-import io.army.session.Option;
+import io.army.option.Option;
 import io.army.session.SessionException;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;

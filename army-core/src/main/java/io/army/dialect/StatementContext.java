@@ -21,7 +21,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.session.Option;
+import io.army.option.Option;
 import io.army.session.Session;
 import io.army.session.SessionSpec;
 import io.army.stmt.MultiParam;

@@ -17,9 +17,14 @@
 package io.army.sync;
 
 import io.army.dialect.Database;
-import io.army.session.*;
-import io.army.session.executor.DriverSpiHolder;
+import io.army.executor.DriverSpiHolder;
+import io.army.option.Option;
+import io.army.session.ChildUpdateException;
 import io.army.sync.executor.SyncLocalExecutor;
+import io.army.transaction.HandleMode;
+import io.army.transaction.Isolation;
+import io.army.transaction.TransactionInfo;
+import io.army.transaction.TransactionOption;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

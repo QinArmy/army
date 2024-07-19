@@ -18,7 +18,10 @@ package io.army.session;
 
 
 import io.army.dialect.Database;
+import io.army.executor.StmtExecutor;
 import io.army.meta.TableMeta;
+import io.army.option.CloseableSpec;
+import io.army.transaction.TransactionInfo;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -243,7 +246,7 @@ public interface Session extends CloseableSpec, SessionSpec {
      * <p>This interface is base interface of following :
      * <ul>
      *     <li>{@link RmSession}</li>
-     *     <li>RM {@link io.army.session.executor.StmtExecutor}</li>
+     *     <li>RM {@link StmtExecutor}</li>
      * </ul>
      * /**
      * <p><strong>NOTE</strong> : this interface never extends any interface.

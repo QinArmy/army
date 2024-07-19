@@ -16,6 +16,8 @@
 
 package io.army.session;
 
+import io.army.executor.DataAccessException;
+
 /**
  * @see RmSession
  * @since 0.6.0

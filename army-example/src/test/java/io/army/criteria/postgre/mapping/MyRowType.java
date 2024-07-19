@@ -21,11 +21,11 @@ import io.army.criteria.postgre.type.MyRow;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
+import io.army.executor.DataAccessException;
 import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 

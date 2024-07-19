@@ -18,7 +18,7 @@ package io.army.reactive.executor;
 
 import io.army.reactive.ReactiveCloseable;
 import io.army.schema.SchemaInfo;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import reactor.core.publisher.Mono;
 
 import java.util.List;

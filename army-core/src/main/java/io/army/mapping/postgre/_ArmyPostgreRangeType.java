@@ -20,6 +20,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
+import io.army.executor.DataAccessException;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionType;
@@ -338,7 +339,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionType {
     /**
      * @throws IllegalArgumentException            when rangeFunc is null and {@link MappingType#javaType()} isn't {@link String#getClass()}
      * @throws CriteriaException                   when text error and handler throw this type.
-     * @throws io.army.session.DataAccessException when text error and handler throw this type.
+     * @throws DataAccessException when text error and handler throw this type.
      */
     @SuppressWarnings("unchecked")
     static <T, R> R parseRange(final String text, final @Nullable RangeFunction<T, R> rangeFunc,

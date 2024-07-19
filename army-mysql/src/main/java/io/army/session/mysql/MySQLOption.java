@@ -16,7 +16,7 @@
 
 package io.army.session.mysql;
 
-import io.army.session.Option;
+import io.army.option.Option;
 
 public abstract class MySQLOption {
 

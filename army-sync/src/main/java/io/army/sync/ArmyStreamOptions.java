@@ -16,7 +16,7 @@
 
 package io.army.sync;
 
-import io.army.session.record.ResultStates;
+import io.army.result.ResultStates;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;

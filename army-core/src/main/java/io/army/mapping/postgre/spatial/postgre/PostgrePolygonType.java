@@ -21,7 +21,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import io.army.sqltype.DataType;
 
 

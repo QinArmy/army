@@ -16,7 +16,7 @@
 
 package io.army.sync.executor;
 
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 
 @Deprecated
 public interface SyncLocalExecutorFactory extends SyncExecutorFactory {

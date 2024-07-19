@@ -23,7 +23,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping._ArmyBuildInType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLType;

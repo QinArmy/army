@@ -17,15 +17,19 @@
 package io.army.sync.executor;
 
 
+import io.army.executor.DataAccessException;
+import io.army.option.CloseableSpec;
+import io.army.option.Option;
 import io.army.session.*;
-import io.army.session.executor.StmtExecutor;
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultStates;
+import io.army.executor.StmtExecutor;
+import io.army.result.CurrentRecord;
+import io.army.result.ResultStates;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
 import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtOption;
+import io.army.transaction.*;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -42,7 +46,7 @@ import java.util.stream.Stream;
  *     <li>{@link SyncLocalExecutor}</li>
  *     <li>{@link SyncRmExecutor}</li>
  * </ul>
- * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
+ * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link CloseableSpec},
  * so all implementation of methods of this interface don't check underlying database session whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  * <p>The instance of this interface is created by {@link SyncExecutorFactory}.

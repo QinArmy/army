@@ -16,6 +16,8 @@
 
 package io.army.session;
 
+import io.army.transaction.TransactionUsageException;
+
 /**
  * Exception thrown when session has no transaction.
  */

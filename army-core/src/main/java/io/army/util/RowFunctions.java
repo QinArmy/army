@@ -5,7 +5,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.Selection;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
-import io.army.session.record.DataRecord;
+import io.army.result.DataRecord;
 import io.army.stmt.SingleSqlStmt;
 import io.army.stmt.TwoStmtQueryStmt;
 import io.army.type.ImmutableSpec;

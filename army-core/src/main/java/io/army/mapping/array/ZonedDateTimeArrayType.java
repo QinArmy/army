@@ -24,7 +24,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.ZonedDateTimeType;
 import io.army.mapping._ArmyNoInjectionType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 import io.army.util._TimeUtils;

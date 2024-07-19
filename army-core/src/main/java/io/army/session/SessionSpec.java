@@ -1,6 +1,7 @@
 package io.army.session;
 
 import io.army.criteria.Visible;
+import io.army.option.OptionSpec;
 
 /**
  * <p>This interface is base interface of {@link Session} for pass to {@link io.army.dialect.DialectParser}.

@@ -25,7 +25,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.ObjectType;
 import io.army.mapping.array.SqlRecordArrayType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.type.ArraySqlRecord;

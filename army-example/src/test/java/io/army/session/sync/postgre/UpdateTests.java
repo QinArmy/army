@@ -11,7 +11,7 @@ import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.session.record.ResultStates;
+import io.army.result.ResultStates;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncStmtOption;
 import io.army.util.Decimals;

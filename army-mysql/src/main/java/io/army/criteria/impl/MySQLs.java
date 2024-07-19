@@ -23,8 +23,8 @@ import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.LocalDateType;
 import io.army.mapping.LocalTimeType;
 import io.army.mapping.MappingType;
+import io.army.option.StmtOption;
 import io.army.session.Session;
-import io.army.session.StmtOption;
 
 public abstract class MySQLs extends MySQLSyntax {
 

@@ -17,9 +17,11 @@
 package io.army.reactive.executor;
 
 
+import io.army.option.CloseableSpec;
+
 /**
  * <p>This interface representing local {@link ReactiveExecutor} that support local transaction.
- * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
+ * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link CloseableSpec},
  * so all implementation of methods of this interface don't check whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *

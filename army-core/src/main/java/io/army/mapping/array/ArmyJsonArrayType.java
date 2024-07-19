@@ -19,11 +19,11 @@ package io.army.mapping.array;
 
 import io.army.codec.JsonCodec;
 import io.army.criteria.CriteriaException;
+import io.army.executor.DataAccessException;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInType;
-import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 
 import java.util.function.BiConsumer;

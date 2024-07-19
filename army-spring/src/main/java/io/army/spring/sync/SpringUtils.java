@@ -16,7 +16,7 @@
 
 package io.army.spring.sync;
 
-import io.army.session.Isolation;
+import io.army.transaction.Isolation;
 import io.army.session.Session;
 import io.army.session.SessionException;
 import org.springframework.core.NestedRuntimeException;

@@ -17,9 +17,9 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.executor.DataAccessException;
 import io.army.mapping.array.CodeEnumArrayType;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
 import io.army.sqltype.DataType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;

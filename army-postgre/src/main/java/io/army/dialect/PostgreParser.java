@@ -25,7 +25,7 @@ import io.army.criteria.standard.StandardStatement;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.executor.ExecutorSupport;
+import io.army.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLType;

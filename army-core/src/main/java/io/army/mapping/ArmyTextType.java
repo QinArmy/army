@@ -17,7 +17,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
-import io.army.session.DataAccessException;
+import io.army.executor.DataAccessException;
 import io.army.sqltype.DataType;
 
 

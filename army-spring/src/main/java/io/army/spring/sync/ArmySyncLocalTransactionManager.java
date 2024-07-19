@@ -16,15 +16,17 @@
 
 package io.army.spring.sync;
 
-import io.army.session.*;
+import io.army.option.Option;
+import io.army.session.SessionException;
 import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncSessionContext;
 import io.army.sync.SyncSessionFactory;
+import io.army.transaction.HandleMode;
+import io.army.transaction.Isolation;
+import io.army.transaction.TransactionInfo;
+import io.army.transaction.TransactionOption;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
-import org.springframework.transaction.IllegalTransactionStateException;
-import org.springframework.transaction.TransactionException;
-import org.springframework.transaction.TransactionUsageException;
 import org.springframework.transaction.*;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;

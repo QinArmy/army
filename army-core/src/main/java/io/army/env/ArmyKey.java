@@ -20,7 +20,6 @@ import io.army.annotation.Column;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.meta.FieldMeta;
-import io.army.session.AllowMode;
 import io.army.session.DdlMode;
 import io.army.util.ClassUtils;
 import io.army.util._Collections;
