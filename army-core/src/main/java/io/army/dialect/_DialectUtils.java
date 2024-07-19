@@ -41,14 +41,6 @@ public abstract class _DialectUtils {
         throw new UnsupportedOperationException();
     }
 
-    @SuppressWarnings("unchecked")
-    public static List<FieldMeta<?>> castFieldList(final TableMeta<?> table) {
-        final List<?> list;
-        list = table.fieldList();
-        return (List<FieldMeta<?>>) list;
-    }
-
-
     public static String printDdlSqlList(final List<String> sqlList) {
         final StringBuilder builder = new StringBuilder(128);
 

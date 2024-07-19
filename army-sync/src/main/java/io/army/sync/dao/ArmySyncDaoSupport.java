@@ -21,7 +21,7 @@ import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sync.SyncSession;
 import io.army.sync.SyncSessionContext;
-import io.army.util.ArmyCriteria;
+import io.army.util.SQLStmts;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -85,7 +85,7 @@ public abstract class ArmySyncDaoSupport implements SyncDaoSupport {
 
     protected static <T> long countRowOf(final TableMeta<T> table, final SyncSession session) {
         final Long rowCount;
-        rowCount = session.queryOne(ArmyCriteria.countRowStmtOf(table), Long.class);
+        rowCount = session.queryOne(SQLStmts.rowCountStmtOf(table), Long.class);
         assert rowCount != null;
         return rowCount;
     }
@@ -96,7 +96,7 @@ public abstract class ArmySyncDaoSupport implements SyncDaoSupport {
                                               final SyncSession session, final String fieldName,
                                               final Object fieldValue) {
         final Select stmt;
-        stmt = ArmyCriteria.queryDomainByUniqueStmtFor(domainTable, fieldName, fieldValue);
+        stmt = SQLStmts.queryDomainByUniqueStmtFor(domainTable, fieldName, fieldValue);
         return session.queryOne(stmt, returnClass);
     }
 

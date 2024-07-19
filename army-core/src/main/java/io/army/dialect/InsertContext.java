@@ -28,6 +28,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.SessionSpec;
 import io.army.stmt.*;
+import io.army.util.SQLStmts;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
@@ -193,7 +194,7 @@ abstract class InsertContext extends StatementContext
             this.fieldList = createNonChildFieldList((SingleTableMeta<?>) this.insertTable, fieldMap::containsKey);
         } else {
             assert !(targetStmt instanceof _Insert._QueryInsert);
-            this.fieldList = _DialectUtils.castFieldList(this.insertTable);
+            this.fieldList = SQLStmts.castFieldList(this.insertTable);
         }
 
 
@@ -333,7 +334,7 @@ abstract class InsertContext extends StatementContext
             this.fieldList = createChildFieldList((ChildTableMeta<?>) this.insertTable);
         } else {
             assert !(stmt instanceof _Insert._QueryInsert);
-            this.fieldList = _DialectUtils.castFieldList(this.insertTable);
+            this.fieldList = SQLStmts.castFieldList(this.insertTable);
         }
 
         if (this.hasConflictClause

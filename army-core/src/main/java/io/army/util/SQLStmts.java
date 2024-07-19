@@ -31,34 +31,53 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.util.List;
 
-public abstract class ArmyCriteria {
+public abstract class SQLStmts {
 
-    private ArmyCriteria() {
+    SQLStmts() {
         throw new UnsupportedOperationException();
     }
 
 
     @SuppressWarnings("unchecked")
-    public static <T> Insert insertStmt(final Session session, final T domain) {
-        return insertStmtOf((TableMeta<T>) session.tableMeta(domain.getClass()), domain);
+    public static <T> Insert insertStmt(Session session, LiteralMode mode, T domain) {
+        return insertStmtOf((TableMeta<T>) session.tableMeta(domain.getClass()), mode, domain);
     }
 
-    public static <T> Insert insertStmtOf(TableMeta<T> table, final T domain) {
+    public static <T> Insert insertStmtOf(final TableMeta<T> table, final LiteralMode mode, final T domain) {
         final Insert stmt;
         if (table instanceof SimpleTableMeta) {
             stmt = SQLs.singleInsert()
+                    .literalMode(mode)
                     .insertInto((SimpleTableMeta<T>) table)
                     .value(domain)
                     .asInsert();
         } else if (table instanceof ChildTableMeta) {
-            stmt = childInsertStatement((ChildTableMeta<T>) table, domain);
+            stmt = childInsertStatement((ChildTableMeta<T>) table, mode, domain);
         } else {
             stmt = SQLs.singleInsert()
+                    .literalMode(mode)
                     .insertInto((ParentTableMeta<T>) table)
                     .value(domain)
                     .asInsert();
         }
         return stmt;
+    }
+
+    public static <P, T extends P> Insert childInsertStatement(final ChildTableMeta<T> table, final LiteralMode mode,
+                                                               final T domain) {
+        final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
+
+        return SQLs.singleInsert()
+                .literalMode(mode)
+                .insertInto(child.parentMeta())
+                .value(domain)
+                .asInsert()
+
+                .child()
+
+                .insertInto(child)
+                .value(domain)
+                .asInsert();
     }
 
     @SuppressWarnings("unchecked")
@@ -92,7 +111,7 @@ public abstract class ArmyCriteria {
      * @see TableMeta#fieldList()
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<FieldMeta<?>> fieldListOf(TableMeta<T> table) {
+    public static List<FieldMeta<?>> castFieldList(TableMeta<?> table) {
         final List<?> fieldList;
         fieldList = table.fieldList();
         return (List<FieldMeta<?>>) fieldList;
@@ -149,12 +168,12 @@ public abstract class ArmyCriteria {
     }
 
 
-    public static <T> Select countRowStmt(final Session session, final Class<T> domainClass) {
-        return countRowStmtOf(session.tableMeta(domainClass));
+    public static <T> Select rowCountStmt(final Session session, final Class<T> domainClass) {
+        return rowCountStmtOf(session.tableMeta(domainClass));
     }
 
 
-    public static <T> Select countRowStmtOf(final TableMeta<T> domainTable) {
+    public static <T> Select rowCountStmtOf(final TableMeta<T> domainTable) {
         final Select stmt;
         if (domainTable instanceof ChildTableMeta) {
             final ParentTableMeta<?> parent = ((ChildTableMeta<T>) domainTable).parentMeta();
@@ -173,20 +192,7 @@ public abstract class ArmyCriteria {
     }
 
 
-    private static <P, T extends P> Insert childInsertStatement(final ChildTableMeta<T> table, final T domain) {
-        final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
 
-        return SQLs.singleInsert()
-                .insertInto(child.parentMeta())
-                .value(domain)
-                .asInsert()
-
-                .child()
-
-                .insertInto(child)
-                .value(domain)
-                .asInsert();
-    }
 
 
     private static <P, T extends P> Insert childBatchInsertStatement(final ChildTableMeta<T> table,

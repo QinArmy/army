@@ -25,7 +25,7 @@ import io.army.mapping.CodeEnumType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util.ArmyCriteria;
+import io.army.util.SQLStmts;
 import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -614,7 +614,7 @@ abstract class InsertSupports {
         public final List<FieldMeta<?>> fieldList() {
             List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldList == null) {
-                this.fieldList = fieldList = ArmyCriteria.fieldListOf(this.insertTable);
+                this.fieldList = fieldList = SQLStmts.castFieldList(this.insertTable);
             } else if (fieldList instanceof ArrayList) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
@@ -752,8 +752,8 @@ abstract class InsertSupports {
 
             List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldList == null) {
-                this.fieldList = fieldList = ArmyCriteria.fieldListOf(this.insertTable);
-            } else if (fieldList != ArmyCriteria.fieldListOf(this.insertTable)) {
+                this.fieldList = fieldList = SQLStmts.castFieldList(this.insertTable);
+            } else if (fieldList != SQLStmts.castFieldList(this.insertTable)) {
                 throw ContextStack.clearStackAndCastCriteriaApi();
             }
 

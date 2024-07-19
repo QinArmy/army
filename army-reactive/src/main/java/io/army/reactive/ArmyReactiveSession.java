@@ -26,7 +26,7 @@ import io.army.session.executor.DriverSpiHolder;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
-import io.army.util.ArmyCriteria;
+import io.army.util.SQLStmts;
 import io.army.util.StreamFunctions;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -214,7 +214,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
 
     @Override
     public final <T> Mono<ResultStates> save(T domain, ReactiveStmtOption option) {
-        return update(ArmyCriteria.insertStmt(this, domain), option);
+        return update(SQLStmts.insertStmt(this, LiteralMode.DEFAULT, domain), option);
     }
 
     @Override
@@ -255,7 +255,7 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
         if (domainList.size() == 0) {
             throw new IllegalArgumentException("domainList must non-empty.");
         }
-        return update(ArmyCriteria.batchInsertStmt(this, literalMode, domainList), option);
+        return update(SQLStmts.batchInsertStmt(this, literalMode, domainList), option);
     }
 
     @Override

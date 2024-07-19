@@ -28,7 +28,7 @@ import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
 import io.army.stmt.*;
 import io.army.sync.executor.SyncExecutor;
-import io.army.util.ArmyCriteria;
+import io.army.util.SQLStmts;
 import io.army.util.StreamFunctions;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -410,7 +410,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
     @Override
     public final <T> int save(T domain, SyncStmtOption option) {
         final long rowCount;
-        rowCount = update(ArmyCriteria.insertStmt(this, domain), option);
+        rowCount = update(SQLStmts.insertStmt(this, LiteralMode.DEFAULT, domain), option);
         if (rowCount > 1) {
             throw new DataAccessException(String.format("insert row count[%s] great than one ", rowCount));
         }
@@ -460,7 +460,7 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
             throw new IllegalArgumentException("domainList must non-empty.");
         }
         final long rowCount;
-        rowCount = update(ArmyCriteria.batchInsertStmt(this, literalMode, domainList), option);
+        rowCount = update(SQLStmts.batchInsertStmt(this, literalMode, domainList), option);
 
         if (rowCount > domainList.size()) {
             String m = String.format("insert row count[%s] and expected row count[%s] not match.",

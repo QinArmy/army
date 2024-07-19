@@ -18,6 +18,7 @@ package io.army.meta;
 
 import io.army.criteria.TabularItem;
 import io.army.struct.CodeEnum;
+import io.army.util.SQLStmts;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -71,7 +72,7 @@ public interface TableMeta<T> extends TabularItem, DatabaseObject {
 
     /**
      * @return unmodified list, always same instance.
-     * @see io.army.util.ArmyCriteria#fieldListOf(TableMeta)
+     * @see SQLStmts#castFieldList(TableMeta)
      */
     List<FieldMeta<T>> fieldList();
 
