@@ -196,15 +196,6 @@ final class JdbdStmtExecutorFactory extends ExecutorFactorySupport implements Re
         return null;
     }
 
-    @Override
-    public Set<Option<?>> optionSet() {
-        Set<Option<?>> optionSet = this.optionSet;
-        if (optionSet == null) {
-            this.optionSet = optionSet = mapArmyOptionSet(this.sessionFactory.optionSet());
-        }
-        return optionSet;
-    }
-
 
     @Override
     public boolean isClosed() {

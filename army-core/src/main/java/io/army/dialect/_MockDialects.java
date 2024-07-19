@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 public abstract class _MockDialects implements DialectEnv {
@@ -134,11 +133,6 @@ public abstract class _MockDialects implements DialectEnv {
                 return (T) Boolean.TRUE;
             }
             return null;
-        }
-
-        @Override
-        public final Set<Option<?>> optionSet() {
-            return Collections.singleton(Option.BACKSLASH_ESCAPES);
         }
 
         @Override

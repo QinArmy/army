@@ -591,14 +591,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         return value;
     }
 
-    @Override
-    public final Set<Option<?>> optionSet() {
-        Set<Option<?>> optionSet = this.optionSet;
-        if (optionSet == null) {
-            this.optionSet = optionSet = this.factory.mapArmyOptionSet(this.session.optionSet());
-        }
-        return optionSet;
-    }
 
     @Override
     public final boolean isClosed() {
@@ -1596,15 +1588,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             return (T) value;
         }
 
-        @Override
-        public Set<Option<?>> optionSet() {
-            Set<Option<?>> armyOptionSet = this.optionSet;
-            if (armyOptionSet == null) {
-                this.optionSet = armyOptionSet = this.executorFactory.mapArmyOptionSet(this.jdbdStates.optionSet());
-                // TODO 加上 session options
-            }
-            return armyOptionSet;
-        }
 
         @Override
         public int batchSize() {
@@ -1698,7 +1681,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
         private final JdbdStmtExecutorFactory executorFactory;
 
-        private Set<Option<?>> optionSet;
 
         private ArmyWarning(io.jdbd.result.Warning jdbdWarning, JdbdStmtExecutorFactory executorFactory) {
             this.jdbdWarning = jdbdWarning;
@@ -1719,14 +1701,6 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             return (T) value;
         }
 
-        @Override
-        public Set<Option<?>> optionSet() {
-            Set<Option<?>> armyOptionSet = this.optionSet;
-            if (armyOptionSet == null) {
-                this.optionSet = armyOptionSet = this.executorFactory.mapArmyOptionSet(this.jdbdWarning.optionSet());
-            }
-            return armyOptionSet;
-        }
 
         @Override
         public String message() {

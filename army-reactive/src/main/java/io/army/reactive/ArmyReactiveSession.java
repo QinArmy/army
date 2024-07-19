@@ -39,7 +39,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
@@ -384,14 +383,6 @@ abstract class ArmyReactiveSession extends _ArmySession<ArmyReactiveSessionFacto
         }
     }
 
-    @Override
-    public final Set<Option<?>> optionSet() {
-        try {
-            return this.executor.optionSet();
-        } catch (Exception e) {
-            throw (RuntimeException) handleExecutionError(e);
-        }
-    }
 
     @Override
     public final boolean isClosed() {

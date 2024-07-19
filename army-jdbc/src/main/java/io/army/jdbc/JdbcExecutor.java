@@ -389,10 +389,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         return null;
     }
 
-    @Override
-    public final Set<Option<?>> optionSet() {
-        return Collections.emptySet();
-    }
 
     @Override
     public final void close() throws DataAccessException {

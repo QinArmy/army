@@ -26,7 +26,6 @@ import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 
@@ -141,14 +140,6 @@ final class ArmyReactiveSessionFactory extends _ArmySessionFactory implements Re
         }
     }
 
-    @Override
-    public Set<Option<?>> optionSet() {
-        try {
-            return this.executorFactory.optionSet();
-        } catch (Exception e) {
-            throw wrapError(e);
-        }
-    }
 
 
     @Override

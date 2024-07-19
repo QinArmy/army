@@ -53,11 +53,4 @@ public final class ServerException extends DriverException implements OptionSpec
         return null;
     }
 
-
-    @Override
-    public Set<Option<?>> optionSet() {
-        return this.optionSet;
-    }
-
-
 }

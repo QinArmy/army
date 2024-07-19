@@ -32,7 +32,10 @@ import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
 
@@ -534,11 +537,6 @@ abstract class StatementContext implements _StmtContext, StmtParams {
         @Override
         public <T> T valueOf(Option<T> option) {
             return this.sessionSpec.valueOf(option);
-        }
-
-        @Override
-        public Set<Option<?>> optionSet() {
-            return this.sessionSpec.optionSet();
         }
 
         @Override

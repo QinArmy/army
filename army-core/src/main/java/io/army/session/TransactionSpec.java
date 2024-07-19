@@ -8,7 +8,7 @@ package io.army.session;
  *     <li>{@link TransactionInfo}</li>
  * </ul>
  */
-interface TransactionSpec extends OptionSpec {
+interface TransactionSpec extends IterableOptionSpec {
 
 
 

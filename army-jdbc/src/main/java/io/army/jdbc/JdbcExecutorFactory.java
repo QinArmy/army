@@ -43,8 +43,6 @@ import javax.sql.XADataSource;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -275,12 +273,6 @@ final class JdbcExecutorFactory extends ExecutorFactorySupport implements SyncEx
     @Override
     public <T> T valueOf(Option<T> option) {
         return null;
-    }
-
-
-    @Override
-    public Set<Option<?>> optionSet() {
-        return Collections.emptySet();
     }
 
     @Override

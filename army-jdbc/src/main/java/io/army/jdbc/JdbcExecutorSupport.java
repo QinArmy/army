@@ -808,11 +808,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
-        public Set<Option<?>> optionSet() {
-            return OPTION_SET;
-        }
-
-        @Override
         public String message() {
             return this.message;
         }
@@ -839,7 +834,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     private static abstract class JdbcResultStates implements ResultStates {
 
-        private static final Set<Option<?>> OPTION_SET = Collections.singleton(Option.READ_ONLY);
 
         private final int resultNo;
 
@@ -904,40 +898,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Nullable
         @Override
         public final <T> T valueOf(final Option<T> option) {
-            final Object value;
-            if (option == Option.READ_ONLY
-                    || option == Option.FIRST_DML_STATES
-                    || option == Option.SECOND_DML_QUERY_STATES
-                    || SyncStmtCursor.SYNC_STMT_CURSOR.equals(option)) {
-                value = this.optionFunc.apply(option);
-            } else {
-                value = null;
-            }
-            return (T) value;
+            return (T) this.optionFunc.apply(option);
         }
 
-        @Override
-        public final Set<Option<?>> optionSet() {
-            final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
-            assert meta != null;
-            final Set<Option<?>> optionSet;
-            switch (meta.serverDatabase()) {
-                case MySQL:
-                    optionSet = OPTION_SET;
-                    break;
-                case PostgreSQL: {
-                    if (this.optionFunc.apply(SyncStmtCursor.SYNC_STMT_CURSOR) == null) {
-                        optionSet = Collections.emptySet();
-                    } else {
-                        optionSet = OPTION_SET;
-                    }
-                }
-                break;
-                default:
-                    optionSet = Collections.emptySet();
-            }
-            return optionSet;
-        }
 
         final DataAccessException dontSupportLastInsertedId() {
             final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
@@ -1424,10 +1387,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return null;
         }
 
-        @Override
-        public final Set<Option<?>> optionSet() {
-            return Collections.emptySet();
-        }
 
         @Override
         public final SyncSession session() {

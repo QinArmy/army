@@ -26,7 +26,6 @@ import io.army.sync.executor.SyncExecutorFactory;
 import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 
@@ -149,14 +148,6 @@ final class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSe
         }
     }
 
-    @Override
-    public Set<Option<?>> optionSet() {
-        try {
-            return this.executorFactory.optionSet();
-        } catch (Exception e) {
-            throw wrapError(e);
-        }
-    }
 
     @Override
     public boolean isClosed() {

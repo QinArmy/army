@@ -590,10 +590,6 @@ abstract class ArmySyncSession extends _ArmySession<ArmySyncSessionFactory> impl
         return this.executor.valueOf(option);
     }
 
-    @Override
-    public final Set<Option<?>> optionSet() {
-        return this.executor.optionSet();
-    }
 
     @Override
     public final boolean isClosed() {
