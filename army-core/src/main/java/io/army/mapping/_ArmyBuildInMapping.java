@@ -19,7 +19,7 @@ package io.army.mapping;
 
 import io.army.sqltype.DataType;
 
-public abstract class _ArmyBuildInMapping extends MappingType {
+public non-sealed abstract class _ArmyBuildInMapping extends AbstractMappingType {
 
 
     protected static final String CREATE = "create";

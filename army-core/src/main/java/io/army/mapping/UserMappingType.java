@@ -1,8 +1,8 @@
 package io.army.mapping;
 
-public abstract class UserMappingType extends MappingType {
+public non-sealed abstract class UserMappingType extends AbstractMappingType {
 
-    public UserMappingType() {
+    protected UserMappingType() {
     }
 
 

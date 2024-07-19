@@ -35,7 +35,7 @@ public class MappingUtilsTests {
     public void bitwiseToString() {
         BitSet bitSet = BitSet.valueOf(new long[]{0xffff_ffffL, 2});
         String bitStr;
-        bitStr = BitSetType.bitwiseToString(BitSetType.INSTANCE, MySQLType.BIT, bitSet, MappingType.PARAM_ERROR_HANDLER);
+        bitStr = BitSetType.bitwiseToString(BitSetType.INSTANCE, MySQLType.BIT, bitSet, AbstractMappingType.PARAM_ERROR_HANDLER);
         Assert.assertEquals(bitStr, "100000000000000000000000000000000011111111111111111111111111111111");
     }
 
@@ -48,7 +48,7 @@ public class MappingUtilsTests {
         long paramValue;
         for (long word : words) {
             bitSet = BitSet.valueOf(new long[]{word});
-            paramValue = BitSetType.bitwiseToLong(BitSetType.INSTANCE, MySQLType.BIT, bitSet.toByteArray(), MappingType.PARAM_ERROR_HANDLER);
+            paramValue = BitSetType.bitwiseToLong(BitSetType.INSTANCE, MySQLType.BIT, bitSet.toByteArray(), AbstractMappingType.PARAM_ERROR_HANDLER);
             Assert.assertEquals(paramValue, word);
         }
 
