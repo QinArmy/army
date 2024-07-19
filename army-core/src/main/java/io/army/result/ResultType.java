@@ -4,6 +4,5 @@ public enum ResultType {
 
     UPDATE,
     QUERY,
-    UNKNOWN,
     NONE
 }
