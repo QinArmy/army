@@ -1,7 +1,7 @@
 package io.army.util;
 
 import io.army.meta.TableMeta;
-import io.army.sync.SyncSession;
+import io.army.session.SyncSession;
 
 public abstract class SyncCriteria {
 

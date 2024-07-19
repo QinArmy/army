@@ -25,8 +25,6 @@ import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.util.FastJsonCodec;
 import io.army.reactive.ReactiveFactoryBuilder;
 import io.army.reactive.ReactiveSessionFactory;
-import io.army.sync.SyncFactoryBuilder;
-import io.army.sync.SyncSessionFactory;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.jdbd.Driver;

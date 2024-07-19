@@ -7,7 +7,7 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import io.army.util.Decimals;
 import io.army.util.RowMaps;
 import org.testng.Assert;

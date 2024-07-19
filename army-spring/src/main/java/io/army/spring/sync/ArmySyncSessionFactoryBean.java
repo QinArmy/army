@@ -16,10 +16,11 @@
 
 package io.army.spring.sync;
 
+import io.army.session.SyncFactoryBuilder;
+import io.army.session.SyncSessionFactory;
 import io.army.spring.ArmySessionFactoryBeanSupport;
-import io.army.sync.SyncFactoryBuilder;
-import io.army.sync.SyncSessionFactory;
 import org.springframework.beans.factory.FactoryBean;
+
 
 public class ArmySyncSessionFactoryBean extends ArmySessionFactoryBeanSupport
         implements FactoryBean<SyncSessionFactory> {

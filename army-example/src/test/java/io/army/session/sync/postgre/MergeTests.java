@@ -7,7 +7,7 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.example.bank.domain.user.*;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;

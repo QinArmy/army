@@ -19,7 +19,7 @@ package io.army.result;
 import io.army.executor.DataAccessException;
 import io.army.option.Option;
 import io.army.option.OptionSpec;
-import io.army.option.StmtOption;
+import io.army.session.StmtOption;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;

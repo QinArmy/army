@@ -24,7 +24,7 @@ import io.army.example.common.BaseService;
 import io.army.example.common.BeanUtils;
 import io.army.example.common.Pair;
 import io.army.meta.ComplexTableMeta;
-import io.army.sync.SyncSession;
+import io.army.session.SyncSession;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 

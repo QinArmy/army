@@ -24,7 +24,7 @@ import io.army.option.OptionSpec;
  * <p>This interface representing executor or {@link io.army.stmt.Stmt}.
  * <p>This interface is base interface of following :
  * <ul>
- *     <li>{@code io.army.sync.executor.SyncStmtExecutor}</li>
+ *     <li>{@code io.army.executor.SyncStmtExecutor}</li>
  *     <li>{@code io.army.reactive.executor.ReactiveStmtExecutor}</li>
  * </ul>
  * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link CloseableSpec},

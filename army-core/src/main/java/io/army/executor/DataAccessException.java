@@ -16,9 +16,9 @@
 
 package io.army.executor;
 
+import io.army.result.ChildUpdateException;
 import io.army.result.Cursor;
-import io.army.session.ChildUpdateException;
-import io.army.session.OptimisticLockException;
+import io.army.result.OptimisticLockException;
 import io.army.session.Session;
 import io.army.session.SessionException;
 

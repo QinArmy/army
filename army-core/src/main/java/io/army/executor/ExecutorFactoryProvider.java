@@ -32,7 +32,7 @@ import java.util.function.Function;
  *  </pre>
  * <p>This interface is base interface of following
  * <ul>
- *     <li>{@code io.army.sync.executor.SyncStmtExecutorFactoryProvider}</li>
+ *     <li>{@code io.army.executor.SyncStmtExecutorFactoryProvider}</li>
  *     <li>{@code io.army.reactive.executor.ReactiveStmtExecutorFactoryProvider}</li>
  * </ul>
  * The sub interface must override following methods :

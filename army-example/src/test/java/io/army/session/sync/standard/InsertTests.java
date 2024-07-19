@@ -7,7 +7,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.Windows;
 import io.army.example.bank.domain.user.*;
 import io.army.result.ResultStates;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;

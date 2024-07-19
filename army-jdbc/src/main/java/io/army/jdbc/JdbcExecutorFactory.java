@@ -22,17 +22,10 @@ import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
-import io.army.executor.DataAccessException;
-import io.army.executor.DriverException;
-import io.army.executor.ExecutorEnv;
-import io.army.executor.ExecutorFactorySupport;
+import io.army.executor.*;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.option.Option;
-import io.army.sync.executor.SyncExecutorFactory;
-import io.army.sync.executor.SyncLocalExecutor;
-import io.army.sync.executor.SyncMetaExecutor;
-import io.army.sync.executor.SyncRmExecutor;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 

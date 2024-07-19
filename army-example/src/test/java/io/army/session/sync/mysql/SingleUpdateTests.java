@@ -10,7 +10,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import io.army.util.Decimals;
 import org.testng.Assert;
 import org.testng.annotations.Test;

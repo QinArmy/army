@@ -4,7 +4,7 @@ package io.army.session.sync.postgre;
 import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import io.army.util.RowMaps;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;

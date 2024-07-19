@@ -10,7 +10,7 @@ import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import io.army.util.RowMaps;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;

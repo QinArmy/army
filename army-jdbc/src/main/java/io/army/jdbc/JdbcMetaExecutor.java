@@ -17,8 +17,8 @@
 package io.army.jdbc;
 
 import io.army.executor.DataAccessException;
+import io.army.executor.SyncMetaExecutor;
 import io.army.schema.*;
-import io.army.sync.executor.SyncMetaExecutor;
 import io.army.util._Collections;
 
 import javax.annotation.Nullable;

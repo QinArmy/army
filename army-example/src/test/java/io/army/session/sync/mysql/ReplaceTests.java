@@ -11,7 +11,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;

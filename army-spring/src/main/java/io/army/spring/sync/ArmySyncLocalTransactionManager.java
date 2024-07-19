@@ -18,9 +18,9 @@ package io.army.spring.sync;
 
 import io.army.option.Option;
 import io.army.session.SessionException;
-import io.army.sync.SyncLocalSession;
-import io.army.sync.SyncSessionContext;
-import io.army.sync.SyncSessionFactory;
+import io.army.session.SyncLocalSession;
+import io.army.session.SyncSessionContext;
+import io.army.session.SyncSessionFactory;
 import io.army.transaction.HandleMode;
 import io.army.transaction.Isolation;
 import io.army.transaction.TransactionInfo;

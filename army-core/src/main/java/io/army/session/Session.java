@@ -21,6 +21,7 @@ import io.army.dialect.Database;
 import io.army.executor.StmtExecutor;
 import io.army.meta.TableMeta;
 import io.army.option.CloseableSpec;
+import io.army.result.ChildUpdateException;
 import io.army.transaction.TransactionInfo;
 
 import javax.annotation.Nullable;

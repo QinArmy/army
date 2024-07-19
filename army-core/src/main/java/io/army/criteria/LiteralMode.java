@@ -16,7 +16,7 @@
 
 package io.army.criteria;
 
-import io.army.option.StmtOption;
+import io.army.session.StmtOption;
 
 public enum LiteralMode {
 

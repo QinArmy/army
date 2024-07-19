@@ -25,8 +25,8 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.sync.SyncSession;
-import io.army.sync.SyncSessionContext;
+import io.army.session.SyncSession;
+import io.army.session.SyncSessionContext;
 
 import java.util.HashMap;
 import java.util.List;

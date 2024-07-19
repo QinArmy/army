@@ -19,7 +19,7 @@ package io.army.reactive;
 import io.army.executor.DriverSpiHolder;
 import io.army.option.Option;
 import io.army.reactive.executor.ReactiveRmExecutor;
-import io.army.session.ChildUpdateException;
+import io.army.result.ChildUpdateException;
 import io.army.session.RmSession;
 import io.army.session.SessionException;
 import io.army.session._ArmySession;

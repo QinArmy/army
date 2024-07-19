@@ -19,13 +19,13 @@ package io.army.jdbc;
 
 import io.army.dialect._Constant;
 import io.army.executor.DataAccessException;
+import io.army.executor.ExecutorSupport;
+import io.army.executor.SyncLocalExecutor;
+import io.army.executor.SyncRmExecutor;
 import io.army.mapping.MappingType;
 import io.army.option.Option;
-import io.army.executor.ExecutorSupport;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLiteType;
-import io.army.sync.executor.SyncLocalExecutor;
-import io.army.sync.executor.SyncRmExecutor;
 import io.army.transaction.HandleMode;
 import io.army.transaction.Isolation;
 import io.army.transaction.TransactionInfo;

@@ -10,7 +10,7 @@ import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.mapping.LongType;
-import io.army.sync.SyncLocalSession;
+import io.army.session.SyncLocalSession;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

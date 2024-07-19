@@ -26,7 +26,7 @@ import java.util.function.Function;
  * <p>This interface representing {@link StmtExecutor} factory spec .
  * <p>This interface is base interface of following :
  * <ul>
- *     <li>{@code io.army.sync.executor.SyncExecutorFactory}</li>
+ *     <li>{@code io.army.executor.SyncExecutorFactory}</li>
  *     <li>{@code io.army.reactive.executor.ReactiveStmtExecutorFactory}</li>
  * </ul>
  * The sub interface must override following methods :

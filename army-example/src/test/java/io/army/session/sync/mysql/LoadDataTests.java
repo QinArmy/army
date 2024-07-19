@@ -8,8 +8,8 @@ import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.session.MyPaths;
-import io.army.sync.SyncLocalSession;
-import io.army.sync.SyncStmtOption;
+import io.army.session.SyncLocalSession;
+import io.army.session.SyncStmtOption;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.Test;
 
