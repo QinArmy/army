@@ -93,11 +93,6 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
     }
 
     @Override
-    public final boolean isSync() {
-        return false;
-    }
-
-    @Override
     public final boolean inTransaction() {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);

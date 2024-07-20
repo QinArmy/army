@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 public abstract class _Exceptions {
@@ -62,19 +63,7 @@ public abstract class _Exceptions {
         throw new UnsupportedOperationException();
     }
 
-
-    //Xa
-    static final String ER_XAER_NOTA = "XAE04";
-    static final String ER_XAER_INVAL = "XAE05";
-    static final String ER_XAER_RMFAIL = "XAE07";
-    static final String ER_XAER_OUTSIDE = "XAE09";
-
-    static final String ER_XA_RMERR = "XAE03";
-    static final String ER_XA_RBROLLBACK = "XA100";
-    static final String ER_XAER_DUPID = "XAE08";
-    static final String XA_RBTIMEOUT = "XA106";
-
-    static final String ER_XA_RBDEADLOCK = "XA102";
+    public static final Supplier<NullPointerException> NO_ANY_ROW_FUNC = _Exceptions::noAnyRow;
 
     public static ArmyException unexpectedEnum(Enum<?> e) {
         String m = String.format("unexpected enum %s.%s", e.getClass().getName(), e.name());

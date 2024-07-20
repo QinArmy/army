@@ -172,11 +172,6 @@ public sealed interface Session extends CloseableSpec, SessionSpec permits Local
      */
     boolean isReactive();
 
-    /**
-     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
-     */
-    boolean isSync();
-
 
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.

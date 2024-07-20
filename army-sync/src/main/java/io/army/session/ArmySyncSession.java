@@ -75,11 +75,6 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         return false;
     }
 
-    @Override
-    public final boolean isSync() {
-        // always true
-        return true;
-    }
 
     @Override
     public final SyncSessionFactory sessionFactory() {
@@ -202,18 +197,19 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         this.executor.setTransactionCharacteristics(option);
     }
 
+
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
         return query(statement, resultClass, ArmySyncStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow();
+                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
     }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
         return query(statement, resultClass, option)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow();
+                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
     }
 
     @Override
@@ -232,14 +228,14 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
         return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow();
+                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
         return queryObject(statement, constructor, option)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow();
+                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
     }
 
     @Override
@@ -258,14 +254,14 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
         return queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow();
+                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
         return queryRecord(statement, function, option)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow();
+                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
     }
 
 
