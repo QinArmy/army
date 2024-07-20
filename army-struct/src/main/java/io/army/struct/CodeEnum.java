@@ -17,7 +17,8 @@
 package io.army.struct;
 
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
+
 import java.util.Map;
 
 /**

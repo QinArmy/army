@@ -22,7 +22,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.session.SessionSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 abstract class SingleJoinableDmlContext extends SingleTableDmlContext implements _MultiTableStmtContext {
 

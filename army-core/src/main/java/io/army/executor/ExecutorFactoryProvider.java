@@ -18,7 +18,7 @@ package io.army.executor;
 
 import io.army.dialect.Database;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Function;
 
 /**

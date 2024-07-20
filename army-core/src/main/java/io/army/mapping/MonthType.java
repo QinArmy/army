@@ -24,7 +24,7 @@ import io.army.util._Collections;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;

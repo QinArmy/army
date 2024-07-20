@@ -19,15 +19,15 @@ package io.army.meta;
 
 import io.army.struct.CodeEnum;
 
-import javax.annotation.Nonnull;
+import io.army.lang.NonNull;
 
 public interface ParentTableMeta<T> extends SingleTableMeta<T> {
 
 
-    @Nonnull
+    @NonNull
     FieldMeta<T> discriminator();
 
-    @Nonnull
+    @NonNull
     CodeEnum discriminatorValue();
 
 

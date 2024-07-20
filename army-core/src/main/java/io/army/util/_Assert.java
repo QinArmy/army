@@ -18,8 +18,7 @@ package io.army.util;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
-
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * @since 0.6.0

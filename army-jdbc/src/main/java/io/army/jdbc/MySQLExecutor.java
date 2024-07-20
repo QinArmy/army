@@ -37,7 +37,7 @@ import io.army.util._StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.math.BigDecimal;
 import java.math.BigInteger;

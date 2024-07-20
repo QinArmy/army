@@ -25,7 +25,7 @@ import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.*;
 
 @SuppressWarnings("unchecked")

@@ -19,7 +19,7 @@ package io.army.result;
 import io.army.criteria.Selection;
 import io.army.option.Option;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;

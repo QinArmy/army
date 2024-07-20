@@ -25,7 +25,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;

@@ -18,10 +18,10 @@ package io.army.mapping;
 
 import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
+import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.time.Clock;
 import java.time.ZoneOffset;
 

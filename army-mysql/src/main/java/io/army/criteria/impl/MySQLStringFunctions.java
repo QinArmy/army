@@ -24,7 +24,7 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 

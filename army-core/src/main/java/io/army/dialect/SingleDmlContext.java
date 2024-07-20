@@ -21,7 +21,7 @@ import io.army.meta.FieldMeta;
 import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 abstract class SingleDmlContext extends SingleTableDmlContext {
 

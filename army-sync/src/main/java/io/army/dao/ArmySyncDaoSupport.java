@@ -17,6 +17,7 @@
 package io.army.dao;
 
 import io.army.criteria.Select;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.session.SyncSession;
@@ -24,7 +25,6 @@ import io.army.session.SyncSessionContext;
 import io.army.util.SQLStmts;
 import io.army.util.SyncCriteria;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**

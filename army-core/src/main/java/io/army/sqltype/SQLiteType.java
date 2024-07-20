@@ -21,7 +21,7 @@ import io.army.criteria.TypeDef;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.dialect.Database;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.time.*;
 

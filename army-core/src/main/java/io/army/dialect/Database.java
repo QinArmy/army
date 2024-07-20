@@ -20,11 +20,11 @@ package io.army.dialect;
 import io.army.dialect.h2.H2Dialect;
 import io.army.dialect.oracle.OracleDialect;
 import io.army.dialect.sqlite.SQLiteDialect;
+import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.function.Function;
 import java.util.function.Supplier;
 

@@ -18,9 +18,8 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.TableField;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
-
-import javax.annotation.Nullable;
 
 public interface _Predicate extends IPredicate, _Expression {
 

@@ -20,7 +20,7 @@ import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
 import io.army.meta.TypeMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface SingleParam extends SQLParam, SqlValueParam.SingleValue {
 

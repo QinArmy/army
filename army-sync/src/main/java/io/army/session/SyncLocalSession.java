@@ -23,7 +23,7 @@ import io.army.transaction.Isolation;
 import io.army.transaction.TransactionInfo;
 import io.army.transaction.TransactionOption;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Function;
 
 /**

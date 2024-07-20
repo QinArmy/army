@@ -23,7 +23,7 @@ import io.army.meta.TypeMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.List;
 

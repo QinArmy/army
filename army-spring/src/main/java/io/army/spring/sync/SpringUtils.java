@@ -23,7 +23,7 @@ import org.springframework.core.NestedRuntimeException;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionDefinition;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public abstract class SpringUtils {
 

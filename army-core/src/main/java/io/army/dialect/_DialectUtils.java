@@ -19,6 +19,7 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -26,7 +27,6 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;

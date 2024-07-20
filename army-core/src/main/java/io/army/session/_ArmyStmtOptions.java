@@ -16,10 +16,10 @@
 
 package io.army.session;
 
+import io.army.lang.Nullable;
 import io.army.option.MultiStmtMode;
 import io.army.result.ResultStates;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public abstract class _ArmyStmtOptions {

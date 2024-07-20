@@ -27,7 +27,7 @@ import io.army.type.BlobPath;
 import io.army.type.TextPath;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;

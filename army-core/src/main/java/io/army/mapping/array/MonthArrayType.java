@@ -29,7 +29,7 @@ import io.army.sqltype.DataType;
 import io.army.util.ArrayUtils;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.LocalDate;
 import java.time.Month;
 

@@ -27,7 +27,7 @@ import io.army.sqltype.DataType;
 import io.army.sqltype.SQLType;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Locale;
 
 abstract class TypeDefs implements TypeDef {

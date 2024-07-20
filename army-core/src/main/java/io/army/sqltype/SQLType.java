@@ -20,7 +20,7 @@ import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.mapping.MappingType;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Supplier;
 
 public interface SQLType extends DataType {

@@ -25,7 +25,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

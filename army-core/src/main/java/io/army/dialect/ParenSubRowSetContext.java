@@ -23,7 +23,7 @@ import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 final class ParenSubRowSetContext extends StatementContext implements _ParenRowSetContext {
 

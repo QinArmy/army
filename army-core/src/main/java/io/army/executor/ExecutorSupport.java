@@ -42,7 +42,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;

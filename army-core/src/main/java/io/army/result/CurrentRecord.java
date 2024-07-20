@@ -17,9 +17,9 @@
 package io.army.result;
 
 
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
-import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public interface CurrentRecord extends DataRecord {

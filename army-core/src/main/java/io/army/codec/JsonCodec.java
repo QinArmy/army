@@ -16,7 +16,7 @@
 
 package io.army.codec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 
 public interface JsonCodec {

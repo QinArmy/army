@@ -16,7 +16,8 @@
 
 package io.army.schema;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
+
 import java.util.Locale;
 
 final class ColumnInfoImpl implements ColumnInfo {

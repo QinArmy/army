@@ -26,7 +26,7 @@ import io.army.meta.TableMeta;
 import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Map;
 
 final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpdateContext {

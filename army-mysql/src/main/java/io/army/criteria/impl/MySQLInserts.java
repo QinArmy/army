@@ -31,7 +31,7 @@ import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

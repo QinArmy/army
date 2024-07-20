@@ -21,7 +21,7 @@ import io.army.util._TimeUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.function.Function;

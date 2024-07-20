@@ -17,7 +17,7 @@
 package io.army.env;
 
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public final class SyncKey<T> extends ArmyKey<T> {
 

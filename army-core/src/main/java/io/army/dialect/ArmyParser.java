@@ -32,6 +32,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.EscapeMode;
 import io.army.env.NameMode;
+import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -46,7 +47,6 @@ import io.army.sqltype.DataType;
 import io.army.stmt.*;
 import io.army.util.*;
 
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;

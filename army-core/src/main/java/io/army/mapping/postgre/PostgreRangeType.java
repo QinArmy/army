@@ -22,7 +22,7 @@ import io.army.meta.MetaException;
 import io.army.sqltype.PostgreType;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

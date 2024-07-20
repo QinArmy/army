@@ -21,7 +21,7 @@ import io.army.annotation.Index;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import javax.annotation.processing.Filer;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ElementKind;

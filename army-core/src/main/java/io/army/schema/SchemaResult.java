@@ -18,7 +18,7 @@ package io.army.schema;
 
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.List;
 

@@ -17,7 +17,7 @@
 package io.army.dialect;
 
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * <p>

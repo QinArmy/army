@@ -18,8 +18,8 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.Selection;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**

@@ -10,7 +10,7 @@ import io.army.stmt.SingleSqlStmt;
 import io.army.stmt.TwoStmtQueryStmt;
 import io.army.type.ImmutableSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;

@@ -18,7 +18,7 @@ package io.army.schema;
 
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;

@@ -33,7 +33,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * <p>

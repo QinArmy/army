@@ -24,7 +24,7 @@ import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map;

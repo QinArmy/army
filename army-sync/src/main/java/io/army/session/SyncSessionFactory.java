@@ -18,7 +18,7 @@ package io.army.session;
 
 import io.army.executor.ExecutorFactory;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.io.Closeable;
 
 /**

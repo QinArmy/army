@@ -17,9 +17,9 @@
 package io.army.modelgen;
 
 import io.army.annotation.*;
+import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
 
-import javax.annotation.Nullable;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;

@@ -32,7 +32,7 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.math.BigInteger;
 import java.time.*;
 import java.util.List;

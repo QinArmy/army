@@ -23,7 +23,7 @@ import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

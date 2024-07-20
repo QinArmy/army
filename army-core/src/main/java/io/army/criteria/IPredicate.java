@@ -20,7 +20,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.*;
 import io.army.mapping.BooleanType;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;

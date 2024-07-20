@@ -16,10 +16,10 @@
 
 package io.army.transaction;
 
+import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.Function;
 

@@ -23,7 +23,7 @@ import io.army.transaction.*;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;

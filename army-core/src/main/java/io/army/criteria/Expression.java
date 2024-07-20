@@ -22,7 +22,7 @@ import io.army.function.TeFunction;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.BiFunction;

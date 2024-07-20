@@ -17,7 +17,7 @@
 package io.army.criteria;
 
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * <p>

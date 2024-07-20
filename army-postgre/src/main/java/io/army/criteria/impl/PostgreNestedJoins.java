@@ -27,7 +27,7 @@ import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

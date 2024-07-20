@@ -16,12 +16,12 @@
 
 package io.army.session;
 
+import io.army.lang.Nullable;
 import io.army.option.MultiStmtMode;
 import io.army.option.Option;
 import io.army.result.ResultStates;
 import io.army.transaction.TransactionInfo;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {

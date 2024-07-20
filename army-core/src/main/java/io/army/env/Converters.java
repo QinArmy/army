@@ -16,11 +16,11 @@
 
 package io.army.env;
 
+import io.army.lang.Nullable;
 import io.army.struct.TextEnum;
 import io.army.util.NumberUtils;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

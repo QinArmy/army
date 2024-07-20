@@ -23,7 +23,7 @@ import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.postgre.PostgreStatement;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;

@@ -28,7 +28,7 @@ import io.army.option.Option;
 import io.army.spec.CloseableSpec;
 import io.army.spec.OptionSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.ZoneOffset;
 import java.util.Map;
 

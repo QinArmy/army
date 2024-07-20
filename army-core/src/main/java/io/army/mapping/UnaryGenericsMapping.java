@@ -16,7 +16,7 @@
 
 package io.army.mapping;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;

@@ -23,7 +23,7 @@ import io.army.criteria.impl.inner._SingleDelete;
 import io.army.meta.ChildTableMeta;
 import io.army.session.SessionSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 final class SingleJoinableDeleteContext extends SingleJoinableDmlContext implements _SingleDeleteContext {
 

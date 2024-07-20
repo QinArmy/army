@@ -18,7 +18,7 @@ package io.army.result;
 
 import io.army.session.FactoryBuilder;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Function;
 
 public interface ResultRecord extends DataRecord {

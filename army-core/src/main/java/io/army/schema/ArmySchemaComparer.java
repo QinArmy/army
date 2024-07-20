@@ -17,11 +17,11 @@
 package io.army.schema;
 
 
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.sqltype.DataType;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

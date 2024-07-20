@@ -17,7 +17,7 @@
 package io.army.example.common;
 
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.Map;
 

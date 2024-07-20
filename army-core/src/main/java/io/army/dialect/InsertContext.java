@@ -33,7 +33,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;

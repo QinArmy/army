@@ -16,7 +16,7 @@
 
 package io.army.executor;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * <p>Throw(or emit) by driver spi (for example {@code java.sql.Connection} , {@code io.jdbd.session.DatabaseSession} )<br/>

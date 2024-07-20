@@ -28,7 +28,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

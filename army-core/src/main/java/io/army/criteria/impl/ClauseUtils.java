@@ -2,10 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.lang.Nullable;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

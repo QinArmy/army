@@ -26,8 +26,8 @@ import io.army.util.Pair;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -84,8 +84,8 @@ abstract class TableMetaUtils {
     }
 
 
-    @Nonnull
-    static Table tableMeta(@Nonnull Class<?> entityClass) {
+    @NonNull
+    static Table tableMeta(@NonNull Class<?> entityClass) {
         final Table table = entityClass.getAnnotation(Table.class);
         if (table == null) {
             throw createNonAnnotationException(entityClass, Table.class);

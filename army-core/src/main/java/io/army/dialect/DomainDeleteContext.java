@@ -17,9 +17,8 @@
 package io.army.dialect;
 
 import io.army.criteria.impl.inner._DomainDelete;
+import io.army.lang.Nullable;
 import io.army.session.SessionSpec;
-
-import javax.annotation.Nullable;
 
 final class DomainDeleteContext extends DomainDmlStmtContext implements _SingleDeleteContext {
 

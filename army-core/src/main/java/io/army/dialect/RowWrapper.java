@@ -20,7 +20,7 @@ import io.army.bean.ReadWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.temporal.Temporal;
 
 /**

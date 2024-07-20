@@ -19,7 +19,7 @@ package io.army.transaction;
 
 import io.army.option.Option;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * @see TransactionInfo

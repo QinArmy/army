@@ -26,7 +26,7 @@ import io.army.util._Assert;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.BooleanSupplier;
 
 final class PostgreDeclareCursors extends CriteriaSupports.StatementMockSupport implements PostgreCursor,

@@ -19,13 +19,13 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;

@@ -21,10 +21,10 @@ import io.army.bean.ReadAccessor;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Statement;
+import io.army.lang.Nullable;
 import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**

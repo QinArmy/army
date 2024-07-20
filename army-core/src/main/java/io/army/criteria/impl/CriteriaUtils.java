@@ -22,6 +22,7 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -30,7 +31,6 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

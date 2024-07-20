@@ -18,7 +18,7 @@ package io.army.type;
 
 import org.reactivestreams.Publisher;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 abstract class TypeFactory {
 

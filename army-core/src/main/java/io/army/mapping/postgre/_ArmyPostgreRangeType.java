@@ -22,6 +22,7 @@ import io.army.dialect.UnsupportedDialectException;
 import io.army.dialect._Constant;
 import io.army.executor.DataAccessException;
 import io.army.function.TextFunction;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionType;
 import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
@@ -35,7 +36,6 @@ import io.army.util.ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

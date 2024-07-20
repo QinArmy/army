@@ -22,6 +22,7 @@ import io.army.criteria.SqlValueParam;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.session.SessionSpec;
 import io.army.stmt.InsertStmtParams;
@@ -30,7 +31,6 @@ import io.army.struct.CodeEnum;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

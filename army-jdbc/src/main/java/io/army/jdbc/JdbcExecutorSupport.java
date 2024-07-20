@@ -37,7 +37,7 @@ import io.army.type.BlobPath;
 import io.army.type.TextPath;
 import io.army.util.*;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.math.BigDecimal;
 import java.math.BigInteger;

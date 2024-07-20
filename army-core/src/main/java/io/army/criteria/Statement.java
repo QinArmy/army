@@ -25,7 +25,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.*;

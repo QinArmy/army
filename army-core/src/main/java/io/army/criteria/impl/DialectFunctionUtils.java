@@ -24,6 +24,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.optional.CompositeTypeField;
@@ -36,7 +37,6 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

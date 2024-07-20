@@ -23,7 +23,7 @@ import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.EnumSet;
 import java.util.List;
 

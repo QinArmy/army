@@ -16,9 +16,9 @@
 
 package io.army.session;
 
+import io.army.lang.Nullable;
 import io.army.result.ResultStates;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 abstract class ArmyStreamOptions {

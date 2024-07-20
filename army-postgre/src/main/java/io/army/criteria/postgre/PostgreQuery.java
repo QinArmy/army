@@ -24,7 +24,7 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;

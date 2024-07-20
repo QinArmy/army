@@ -22,7 +22,7 @@ import io.army.criteria.dialect.DmlCommand;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Consumer;
 
 /**

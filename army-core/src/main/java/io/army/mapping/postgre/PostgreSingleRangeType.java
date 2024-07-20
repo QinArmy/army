@@ -30,7 +30,7 @@ import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;

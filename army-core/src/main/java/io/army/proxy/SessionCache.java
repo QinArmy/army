@@ -28,7 +28,7 @@ import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.Collections;

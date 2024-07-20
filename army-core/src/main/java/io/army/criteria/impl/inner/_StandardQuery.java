@@ -17,8 +17,7 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.SQLWords;
-
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface _StandardQuery extends _Query, _Query._WindowClauseSpec {
 

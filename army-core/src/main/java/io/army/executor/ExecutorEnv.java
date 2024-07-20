@@ -25,7 +25,7 @@ import io.army.meta.ServerMeta;
 import io.army.result.ResultRecord;
 import io.army.session.FactoryBuilder;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Map;
 import java.util.function.Function;
 

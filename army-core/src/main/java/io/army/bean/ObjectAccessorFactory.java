@@ -20,7 +20,7 @@ package io.army.bean;
 import io.army.proxy.ArmyProxy;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
 import java.util.Map;

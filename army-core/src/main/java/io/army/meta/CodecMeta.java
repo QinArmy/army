@@ -17,8 +17,7 @@
 package io.army.meta;
 
 import io.army.codec.FieldCodec;
-
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface CodecMeta extends Meta {
 

@@ -19,8 +19,8 @@ package io.army.function;
 import io.army.criteria.CompoundPredicate;
 import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
+import io.army.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.function.BiFunction;
 
 @FunctionalInterface

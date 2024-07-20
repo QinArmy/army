@@ -18,7 +18,7 @@ package io.army.meta;
 
 import io.army.ArmyException;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public final class TableMetaLoadException extends ArmyException {
 

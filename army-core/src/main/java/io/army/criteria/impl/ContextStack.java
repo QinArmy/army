@@ -21,11 +21,11 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.impl.inner._TabularBlock;
+import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;

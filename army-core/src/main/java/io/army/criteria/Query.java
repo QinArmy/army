@@ -25,7 +25,7 @@ import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.function.*;
 

@@ -26,7 +26,7 @@ import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;

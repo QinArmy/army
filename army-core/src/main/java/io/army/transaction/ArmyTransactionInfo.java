@@ -16,13 +16,13 @@
 
 package io.army.transaction;
 
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.session.RmSession;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -302,7 +302,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
         return rollbackOnly;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Isolation isolation() {
         return this.isolation;

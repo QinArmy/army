@@ -16,9 +16,9 @@
 
 package io.army.util;
 
+import io.army.lang.Nullable;
 import io.army.option.Option;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Function;
 

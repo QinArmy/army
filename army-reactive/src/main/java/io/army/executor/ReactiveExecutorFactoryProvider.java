@@ -20,7 +20,7 @@ import io.army.dialect.Database;
 import io.army.meta.ServerMeta;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Function;
 
 /**

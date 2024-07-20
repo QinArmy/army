@@ -30,7 +30,7 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
 import io.army.transaction.*;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;

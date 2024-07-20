@@ -23,7 +23,7 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Dialect;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;

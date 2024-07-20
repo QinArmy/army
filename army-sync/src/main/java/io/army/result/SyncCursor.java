@@ -21,7 +21,7 @@ import io.army.executor.DataAccessException;
 import io.army.option.Option;
 import io.army.session.SyncSession;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;

@@ -26,7 +26,7 @@ import io.army.mapping.NullType;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 

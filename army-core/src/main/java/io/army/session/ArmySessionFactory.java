@@ -24,6 +24,7 @@ import io.army.env.AllowMode;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
@@ -31,7 +32,6 @@ import io.army.meta.TableMeta;
 import io.army.option.Option;
 import io.army.util.*;
 
-import javax.annotation.Nullable;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Objects;

@@ -20,10 +20,9 @@ import io.army.criteria.NamedLiteral;
 import io.army.criteria.SQLParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 import io.army.session.SessionSpec;
-
-import javax.annotation.Nullable;
 
 /**
  * <p>

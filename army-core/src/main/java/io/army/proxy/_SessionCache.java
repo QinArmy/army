@@ -17,10 +17,10 @@
 package io.army.proxy;
 
 
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public interface _SessionCache {

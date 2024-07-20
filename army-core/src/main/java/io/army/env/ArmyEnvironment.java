@@ -17,9 +17,8 @@
 package io.army.env;
 
 
+import io.army.lang.Nullable;
 import io.army.session.SessionFactory;
-
-import javax.annotation.Nullable;
 
 /**
  * Interface representing the environment in which Army is running.

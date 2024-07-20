@@ -35,7 +35,7 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;

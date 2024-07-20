@@ -20,7 +20,7 @@ import io.army.codec.JsonCodec;
 import io.army.codec.XmlCodec;
 import io.army.meta.ServerMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.ZoneOffset;
 
 

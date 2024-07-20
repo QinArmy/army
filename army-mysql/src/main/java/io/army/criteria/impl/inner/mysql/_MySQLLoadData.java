@@ -22,10 +22,10 @@ import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 

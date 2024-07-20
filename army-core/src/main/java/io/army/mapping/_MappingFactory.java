@@ -17,12 +17,12 @@
 package io.army.mapping;
 
 import io.army.annotation.Mapping;
+import io.army.lang.Nullable;
 import io.army.mapping.array.*;
 import io.army.meta.MetaException;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

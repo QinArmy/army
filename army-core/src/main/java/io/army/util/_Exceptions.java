@@ -35,6 +35,7 @@ import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
 import io.army.env.EscapeMode;
 import io.army.executor.DataAccessException;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -49,7 +50,6 @@ import io.army.stmt.Stmt;
 import io.army.transaction.*;
 import io.army.type.SqlRecord;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;

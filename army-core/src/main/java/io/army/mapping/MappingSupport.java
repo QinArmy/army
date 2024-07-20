@@ -19,7 +19,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.sqltype.DataType;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public abstract class MappingSupport {
 

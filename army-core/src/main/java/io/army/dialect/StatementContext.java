@@ -30,7 +30,7 @@ import io.army.stmt.StmtParams;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -23,7 +23,7 @@ import io.army.meta.*;
 import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _SingleTableContext,
         _DmlContext._DomainUpdateSpec {

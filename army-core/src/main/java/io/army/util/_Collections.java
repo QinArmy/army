@@ -16,7 +16,8 @@
 
 package io.army.util;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 

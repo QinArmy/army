@@ -32,7 +32,7 @@ import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 

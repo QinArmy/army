@@ -34,7 +34,7 @@ import io.army.struct.CodeEnum;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ObjIntConsumer;

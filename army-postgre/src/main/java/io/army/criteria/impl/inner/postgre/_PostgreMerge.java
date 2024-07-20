@@ -21,8 +21,8 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Merge;
 import io.army.criteria.impl.inner._Statement;
+import io.army.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public interface _PostgreMerge extends _Merge, _Statement._WithClauseSpec {

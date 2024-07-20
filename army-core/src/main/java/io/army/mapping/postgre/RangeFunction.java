@@ -18,7 +18,7 @@ package io.army.mapping.postgre;
 
 import io.army.type.DaoLayer;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * <p>

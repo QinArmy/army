@@ -51,7 +51,7 @@ import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.io.IOException;
 import java.io.InputStream;

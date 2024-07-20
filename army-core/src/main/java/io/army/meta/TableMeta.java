@@ -20,7 +20,7 @@ import io.army.criteria.TabularItem;
 import io.army.struct.CodeEnum;
 import io.army.util.SQLStmts;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 
 /**

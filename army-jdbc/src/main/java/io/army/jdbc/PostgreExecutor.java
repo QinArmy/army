@@ -37,7 +37,7 @@ import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.io.Reader;
 import java.math.BigDecimal;

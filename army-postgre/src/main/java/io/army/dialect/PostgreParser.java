@@ -31,7 +31,7 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SQLType;
 import io.army.util.*;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;

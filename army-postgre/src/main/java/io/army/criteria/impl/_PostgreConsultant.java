@@ -22,8 +22,7 @@ import io.army.criteria.impl.inner.postgre._PostgreCommand;
 import io.army.criteria.postgre.PostgreCursor;
 import io.army.criteria.postgre.PostgreMerge;
 import io.army.dialect.Database;
-
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public abstract class _PostgreConsultant extends _SQLConsultant {
 

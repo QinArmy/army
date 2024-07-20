@@ -22,7 +22,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * <p>This interface representing Postgre UPDATE syntax.

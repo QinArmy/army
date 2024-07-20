@@ -20,8 +20,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelfDescribed;
-
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface _PostgreCte extends _Cte {
 

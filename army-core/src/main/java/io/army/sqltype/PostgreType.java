@@ -24,7 +24,7 @@ import io.army.mapping.MappingType;
 import io.army.type.SqlRecord;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.BitSet;

@@ -28,7 +28,7 @@ import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 

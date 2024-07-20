@@ -24,7 +24,7 @@ import io.army.result.ChildUpdateException;
 import io.army.spec.CloseableSpec;
 import io.army.transaction.TransactionInfo;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Map;
 import java.util.Set;
 

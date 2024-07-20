@@ -29,6 +29,7 @@ import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
 import io.army.executor.DataAccessException;
 import io.army.executor.ExecutorSupport;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -52,7 +53,6 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.function.Consumer;

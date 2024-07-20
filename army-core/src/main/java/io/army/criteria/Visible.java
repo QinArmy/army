@@ -18,7 +18,7 @@ package io.army.criteria;
 
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public enum Visible {
 

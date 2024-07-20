@@ -27,7 +27,7 @@ import io.army.util._Exceptions;
 import io.jdbd.result.ResultRowMeta;
 import reactor.core.publisher.Flux;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

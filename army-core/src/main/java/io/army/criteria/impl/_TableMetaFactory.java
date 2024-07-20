@@ -17,13 +17,13 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.Table;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen.ArmyMetaModelDomainProcessor;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

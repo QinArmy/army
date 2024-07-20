@@ -19,7 +19,7 @@ package io.army.meta;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface ServerMeta {
 

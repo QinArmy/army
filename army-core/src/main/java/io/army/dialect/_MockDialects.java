@@ -23,6 +23,7 @@ import io.army.criteria.Visible;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
 import io.army.generator.FieldGenerator;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.option.Option;
@@ -30,7 +31,6 @@ import io.army.session.SessionSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Map;

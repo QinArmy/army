@@ -4,7 +4,7 @@ import io.army.criteria.Item;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface PgSingleDeleteClause<I extends Item, Q extends Item> extends Item {
 

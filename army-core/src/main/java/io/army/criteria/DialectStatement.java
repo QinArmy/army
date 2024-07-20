@@ -18,11 +18,11 @@ package io.army.criteria;
 
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.SQLs;
+import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;

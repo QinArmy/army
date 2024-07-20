@@ -18,6 +18,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
@@ -26,7 +27,6 @@ import io.army.meta.TypeMeta;
 import io.army.stmt.SingleParam;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**

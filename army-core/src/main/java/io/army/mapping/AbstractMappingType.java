@@ -21,6 +21,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.UnsupportedDialectException;
 import io.army.executor.DataAccessException;
 import io.army.executor.StmtExecutor;
+import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.ParamException;
@@ -34,7 +35,6 @@ import io.army.util.ArrayUtils;
 import io.army.util.ClassUtils;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;

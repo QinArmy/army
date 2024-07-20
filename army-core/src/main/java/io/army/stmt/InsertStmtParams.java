@@ -18,7 +18,7 @@ package io.army.stmt;
 
 import io.army.meta.PrimaryFieldMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.ObjIntConsumer;
 
 public interface InsertStmtParams extends DmlStmtParams {

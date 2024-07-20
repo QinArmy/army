@@ -18,7 +18,7 @@ package io.army.generator.snowflake;
 
 import io.army.ArmyException;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 
 public final class SnowflakeWorkerException extends ArmyException {

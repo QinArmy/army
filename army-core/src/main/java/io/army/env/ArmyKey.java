@@ -19,13 +19,13 @@ package io.army.env;
 import io.army.annotation.Column;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.session.DdlMode;
 import io.army.util.ClassUtils;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.ZoneOffset;

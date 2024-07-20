@@ -29,6 +29,7 @@ import io.army.executor.ExecutorEnv;
 import io.army.executor.ExecutorFactoryProvider;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.option.Option;
@@ -41,7 +42,6 @@ import io.army.util._FunctionUtils;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

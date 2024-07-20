@@ -25,7 +25,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.ChildTableMeta;
 import io.army.session.SessionSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 final class SingleJoinableUpdateContext extends SingleJoinableDmlContext implements _SingleUpdateContext {
 

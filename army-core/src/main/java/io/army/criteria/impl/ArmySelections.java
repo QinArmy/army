@@ -21,12 +21,11 @@ import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
-
-import javax.annotation.Nullable;
 
 abstract class ArmySelections implements _Selection {
 

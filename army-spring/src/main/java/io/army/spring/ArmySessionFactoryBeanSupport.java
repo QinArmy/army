@@ -22,6 +22,7 @@ import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorFactoryProvider;
 import io.army.generator.FieldGeneratorFactory;
+import io.army.lang.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -31,7 +32,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;

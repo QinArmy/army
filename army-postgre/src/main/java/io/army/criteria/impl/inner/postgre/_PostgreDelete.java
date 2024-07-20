@@ -21,8 +21,7 @@ import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._JoinableDelete;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._Statement;
-
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface _PostgreDelete extends _SingleDelete,
         _JoinableDelete,

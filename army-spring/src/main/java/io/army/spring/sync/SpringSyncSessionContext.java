@@ -19,7 +19,7 @@ package io.army.spring.sync;
 import io.army.session.*;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 final class SpringSyncSessionContext implements SyncSessionContext {
 

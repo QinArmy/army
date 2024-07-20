@@ -16,10 +16,10 @@
 
 package io.army.criteria.impl;
 
+import io.army.lang.NonNull;
 import io.army.meta.SchemaMeta;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nonnull;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,7 +53,7 @@ public abstract class _SchemaMetaFactory {
             this.schema = schema.toLowerCase(Locale.ROOT);
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String catalog() {
             return this.catalog;
@@ -64,7 +64,7 @@ public abstract class _SchemaMetaFactory {
             return this.catalog.isEmpty() && this.schema.isEmpty();
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String schema() {
             return this.schema;

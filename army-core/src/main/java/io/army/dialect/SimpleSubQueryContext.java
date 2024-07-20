@@ -22,7 +22,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 final class SimpleSubQueryContext extends MultiTableQueryContext implements _SubQueryContext {
 

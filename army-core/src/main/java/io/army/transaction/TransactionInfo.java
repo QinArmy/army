@@ -22,8 +22,8 @@ import io.army.option.Option;
 import io.army.session.RmSession;
 import io.army.session.Session;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 
 /**
  * <p>This interface representing the transaction info of session.
@@ -47,7 +47,7 @@ public interface TransactionInfo extends TransactionSpec {
      *
      * @return non-null
      */
-    @Nonnull
+    @NonNull
     Isolation isolation();
 
     /**

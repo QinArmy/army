@@ -24,7 +24,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.session.SessionSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.function.ObjIntConsumer;
 

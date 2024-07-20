@@ -16,7 +16,7 @@
 
 package io.army.proxy;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public interface ArmyProxy {
 

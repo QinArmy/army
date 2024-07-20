@@ -23,6 +23,7 @@ import io.army.env.SqlLogMode;
 import io.army.executor.DataAccessException;
 import io.army.executor.DriverSpiHolder;
 import io.army.executor.SyncExecutor;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.option.Option;
@@ -37,7 +38,6 @@ import io.army.util.StreamFunctions;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;

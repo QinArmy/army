@@ -30,7 +30,7 @@ import io.jdbd.statement.ParametrizedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.BitSet;

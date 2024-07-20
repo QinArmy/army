@@ -27,7 +27,7 @@ import io.army.mapping.array.IntervalArrayType;
 import io.army.mapping.optional.IntervalType;
 import io.army.meta.TypeMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;

@@ -19,10 +19,10 @@ package io.army.session;
 import io.army.env.SyncKey;
 import io.army.executor.SyncExecutor;
 import io.army.executor.SyncExecutorFactory;
+import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 

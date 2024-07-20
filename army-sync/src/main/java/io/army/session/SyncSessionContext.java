@@ -16,7 +16,7 @@
 
 package io.army.session;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 /**
  * <p>This interface representing current {@link SyncSession} context.

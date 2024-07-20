@@ -25,7 +25,7 @@ import io.army.criteria.standard.StandardJoins;
 import io.army.criteria.standard.StandardStatement;
 import io.army.meta.TableMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;

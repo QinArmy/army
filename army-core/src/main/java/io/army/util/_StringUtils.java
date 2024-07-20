@@ -18,8 +18,8 @@ package io.army.util;
 
 
 import io.army.dialect._Constant;
+import io.army.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.BitSet;
 import java.util.Locale;
 import java.util.Map;

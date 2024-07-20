@@ -20,10 +20,10 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.optional.NoCastTextType;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;

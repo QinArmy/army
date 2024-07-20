@@ -21,7 +21,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.meta.*;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;

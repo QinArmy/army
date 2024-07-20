@@ -26,7 +26,7 @@ import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._TabularBlock;
 import io.army.util._Assert;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;

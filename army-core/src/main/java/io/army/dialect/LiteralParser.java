@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.meta.TypeMeta;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 
 @FunctionalInterface

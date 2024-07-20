@@ -19,7 +19,7 @@ package io.army.criteria;
 
 import io.army.function.ExpressionOperator;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;

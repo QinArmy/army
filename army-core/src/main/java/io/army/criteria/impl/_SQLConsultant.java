@@ -22,11 +22,10 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.dialect.Database;
+import io.army.lang.Nullable;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SQLType;
 import io.army.util.ClassUtils;
-
-import javax.annotation.Nullable;
 
 public abstract class _SQLConsultant {
     // consultant

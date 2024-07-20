@@ -27,7 +27,7 @@ import io.army.generator.FieldGeneratorFactory;
 import io.army.option.Option;
 import io.army.result.ResultRecord;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;

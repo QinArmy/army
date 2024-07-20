@@ -22,7 +22,7 @@ import io.army.meta.PrimaryFieldMeta;
 import io.army.session.SessionSpec;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 abstract class ValuesSyntaxInsertContext extends InsertContext implements _ValueSyntaxInsertContext {
 

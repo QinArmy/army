@@ -22,7 +22,7 @@ import io.army.criteria.impl._SQLConsultant;
 import io.army.dialect.Database;
 import io.army.mapping.MappingType;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Supplier;
 
 public enum H2DataType implements SQLType {

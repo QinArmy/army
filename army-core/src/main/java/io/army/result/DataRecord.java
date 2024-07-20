@@ -16,7 +16,8 @@
 
 package io.army.result;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
+
 import java.util.function.Supplier;
 
 public interface DataRecord extends ResultItem, ResultItem.ResultAccessSpec {

@@ -29,7 +29,7 @@ import io.army.option.Option;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;

@@ -21,7 +21,7 @@ import io.army.executor.SyncMetaExecutor;
 import io.army.schema.*;
 import io.army.util._Collections;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.sql.*;
 import java.util.List;

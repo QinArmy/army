@@ -21,7 +21,7 @@ import io.army.criteria.SelectStatement;
 import io.army.criteria.impl.inner._Query;
 import io.army.session.SessionSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 final class SimpleSelectContext extends MultiTableQueryContext implements  _SelectContext {
 

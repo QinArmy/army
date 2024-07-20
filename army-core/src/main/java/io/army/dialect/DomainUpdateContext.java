@@ -23,7 +23,7 @@ import io.army.session.SessionSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.List;
 
 final class DomainUpdateContext extends DomainDmlStmtContext implements _SingleUpdateContext {

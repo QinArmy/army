@@ -9,7 +9,7 @@ import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Locale;
 
 /**

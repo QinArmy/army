@@ -18,7 +18,7 @@ package io.army.codec;
 
 import io.army.ArmyException;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 
 public final class FieldCodecException extends ArmyException {
     public FieldCodecException(String message) {

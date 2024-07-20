@@ -22,7 +22,7 @@ import io.army.criteria.mysql.MySQLCharset;
 import io.army.mapping.*;
 import io.army.util._Exceptions;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

@@ -17,8 +17,9 @@
 package io.army.modelgen;
 
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +79,7 @@ public abstract class _MetaBridge {
 
     @SafeVarargs
     @SuppressWarnings("varargs")
-    @Nonnull
+    @NonNull
     public static <T> List<T> asUnmodifiableList(@Nullable T... e) {
         final List<T> list;
         if (e == null || e.length == 0) {

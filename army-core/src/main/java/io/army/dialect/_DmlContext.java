@@ -18,10 +18,10 @@ package io.army.dialect;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SqlField;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.BatchStmt;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**

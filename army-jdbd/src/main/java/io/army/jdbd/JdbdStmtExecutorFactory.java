@@ -36,7 +36,7 @@ import io.jdbd.session.LocalDatabaseSession;
 import io.jdbd.session.RmDatabaseSession;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;

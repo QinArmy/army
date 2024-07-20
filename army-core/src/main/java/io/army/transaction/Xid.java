@@ -20,7 +20,7 @@ import io.army.option.Option;
 import io.army.session.RmSession;
 import io.army.spec.OptionSpec;
 
-import javax.annotation.Nullable;
+import io.army.lang.Nullable;
 import java.util.function.Function;
 
 /**

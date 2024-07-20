@@ -20,9 +20,8 @@ import io.army.annotation.SortOrder;
 import io.army.criteria.SortItem;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
-
-import javax.annotation.Nullable;
 
 class ArmySortItems implements ArmySortItem {
 

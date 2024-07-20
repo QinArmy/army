@@ -19,8 +19,8 @@ package io.army.criteria.impl.inner.mysql;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._Statement;
+import io.army.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public interface _MySQLQuery extends _Query,

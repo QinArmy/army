@@ -18,6 +18,7 @@ package io.army.session;
 
 import io.army.executor.DriverSpiHolder;
 import io.army.executor.SyncRmExecutor;
+import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.result.ChildUpdateException;
 import io.army.transaction.*;
@@ -26,7 +27,6 @@ import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.function.Function;
