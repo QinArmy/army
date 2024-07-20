@@ -1340,6 +1340,26 @@ public abstract class _Exceptions {
         return new ArmyException(m);
     }
 
+    public static DataAccessException batchQueryHaveEnded() {
+        return new DataAccessException("batch query have ended");
+    }
+
+    public static DataAccessException lastStreamDontEnd() {
+        return new DataAccessException("last stream not end,you don't create new stream");
+    }
+
+    public static DataAccessException multiResultHaveClosed() {
+        return new DataAccessException("multi-result have closed");
+    }
+
+    public static NullPointerException recordMapFuncIsNull() {
+        return new NullPointerException("row map Function is null");
+    }
+
+    public static NullPointerException statesConsumerIsNull() {
+        return new NullPointerException("states Consumer is null");
+    }
+
     public static ArmyException recordMapFuncInvokeError(Function<? super CurrentRecord, ?> function) {
         String m = String.format("%s map function %s throw error", CurrentRecord.class.getName(), function);
         return new ArmyException(m);

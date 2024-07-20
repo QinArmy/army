@@ -26,6 +26,7 @@ import io.army.executor.DataAccessException;
 import io.army.executor.DriverException;
 import io.army.executor.StmtExecutor;
 import io.army.executor.SyncExecutor;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnsignedBigintType;
@@ -45,13 +46,9 @@ import io.army.transaction.Isolation;
 import io.army.transaction.TransactionInfo;
 import io.army.transaction.Xid;
 import io.army.type.ImmutableSpec;
-import io.army.util._Collections;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
-import io.army.util._TimeUtils;
+import io.army.util.*;
 import org.slf4j.Logger;
 
-import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.io.IOException;
 import java.io.InputStream;
@@ -379,10 +376,28 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     @Override
-    public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function,
-                                           SyncStmtOption option, Function<Option<?>, ?> optionFunc)
+    public final <R> Stream<R> query(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function,
+                                     SyncStmtOption option, Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function), optionFunc);
+    }
+
+
+    @Override
+    public final SyncBatchQuery batchQuery(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc) {
+        PreparedStatement statement = null;
+        try {
+
+            statement = this.conn.prepareStatement(stmt.sqlText());
+
+            return new JdbcBatchQuery(true, this, stmt, option, optionFunc, statement);
+        } catch (Exception e) {
+            closeResource(statement);
+            throw handleException(e);
+        } catch (Throwable e) {
+            closeResource(statement);
+            throw e;
+        }
     }
 
 
@@ -951,7 +966,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             } catch (SQLException e) {
                 throw handleException(e);
             }
-            return new RecordRowReader<>(this, stmt.selectionList(), dataTypeArray, function, meta);
+            return new JdbcCurrentRecord<>(this, stmt.selectionList(), dataTypeArray, function, consumer, meta);
         };
 
         return executeCursorFetch(stmt.safeCursorName(), direction, rowCount, readerFunc, consumer);
@@ -1437,7 +1452,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption, Function)
+     * @see #query(SingleSqlStmt, Function, SyncStmtOption, Function)
      */
     private <R> Function<ResultSetMetaData, RowReader<R>> recordReaderFunc(
             final List<? extends Selection> selectionList,
@@ -1447,7 +1462,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
         return meta -> {
             try {
-                return new RecordRowReader<>(this, selectionList, createSqlTypArray(meta), function, meta);
+                return new JdbcCurrentRecord<>(this, selectionList, createSqlTypArray(meta), function, ResultStates.IGNORE_STATES, meta);
             } catch (Exception e) {
                 throw handleException(e);
             }
@@ -1663,7 +1678,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption, Function)
+     * @see #query(SingleSqlStmt, Function, SyncStmtOption, Function)
      */
     private <R> Stream<R> executeQuery(SingleSqlStmt stmt, SyncStmtOption option,
                                        final Function<ResultSetMetaData, RowReader<R>> function,
@@ -1710,9 +1725,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final JdbcSimpleSpliterator<R> spliterator;
             if (stmt instanceof GeneratedKeyStmt) {
-                spliterator = new InsertRowSpliterator<>(statement, resultSet, rowReader, (GeneratedKeyStmt) stmt, option, sessionFunc);
+                spliterator = new InsertRowSpliterator<>(true, statement, resultSet, rowReader, (GeneratedKeyStmt) stmt, option, sessionFunc);
             } else {
-                spliterator = new SimpleRowSpliterator<>(statement, resultSet, rowReader, stmt, option, sessionFunc);
+                spliterator = new SimpleRowSpliterator<>(true, statement, resultSet, rowReader, stmt, option, sessionFunc);
             }
             return assembleStream(spliterator, option);
         } catch (Throwable e) {
@@ -1979,7 +1994,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      *     <li>{@link BeanRowReader}</li>
      *     <li>{@link SingleColumnRowReader}</li>
      *     <li>{@link ObjectReader}</li>
-     *     <li>{@link RecordRowReader}</li>
+     *     <li>{@link JdbcCurrentRecord}</li>
      * </ul>
      *
      * @param <R> row java type
@@ -2282,11 +2297,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     } // ObjectReader
 
 
-    private static class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
+    private static class JdbcCurrentRecord<R> extends RowReader<R> implements CurrentRecord {
 
         private final JdbcStmtRecordMeta meta;
 
         private final Function<? super CurrentRecord, R> function;
+
+        private final Consumer<ResultStates> consumer;
 
         private final MappingType[] rawTypeArray;
 
@@ -2299,18 +2316,21 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         /**
          * @see JdbcExecutor#recordReaderFunc(List, Function)
          */
-        private RecordRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                DataType[] dataTypeArray, Function<? super CurrentRecord, R> function, ResultSetMetaData meta) {
+        private JdbcCurrentRecord(JdbcExecutor executor, List<? extends Selection> selectionList,
+                                  DataType[] dataTypeArray, Function<? super CurrentRecord, R> function,
+                                  Consumer<ResultStates> consumer, ResultSetMetaData meta) {
             super(executor, selectionList, dataTypeArray);
             this.function = function;
+            this.consumer = consumer;
             this.rawTypeArray = createRawTypeArray(selectionList);
             this.compatibleTypeArray = new MappingType[dataTypeArray.length];
             this.meta = new JdbcStmtRecordMeta(1, executor, dataTypeArray, selectionList, meta);
         }
 
-        private RecordRowReader(RecordRowReader<R> r, ResultSetMetaData meta) {
+        private JdbcCurrentRecord(JdbcCurrentRecord<R> r, ResultSetMetaData meta) {
             super(r.executor, r.selectionList, r.dataTypeArray);
             this.function = r.function;
+            this.consumer = r.consumer;
             this.rawTypeArray = r.rawTypeArray;
             this.compatibleTypeArray = r.compatibleTypeArray;
             this.meta = new JdbcStmtRecordMeta(r.meta.resultNo() + 1, r.executor, r.dataTypeArray, r.selectionList, meta);
@@ -2441,11 +2461,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     } // RecordRowReader
 
-    private static final class ResultItemRowReader extends RecordRowReader<ResultItem> {
+    private static final class ResultItemRowReader extends JdbcCurrentRecord<ResultItem> {
 
         private ResultItemRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
                                     DataType[] dataTypeArray, ResultSetMetaData meta) {
-            super(executor, selectionList, dataTypeArray, CurrentRecord::asResultRecord, meta);
+            super(executor, selectionList, dataTypeArray, CurrentRecord::asResultRecord, ResultStates.IGNORE_STATES, meta);
         }
 
         private ResultItemRowReader(ResultItemRowReader r, ResultSetMetaData meta) {
@@ -2482,6 +2502,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private boolean closed;
 
         boolean canceled;
+
+        private Runnable closeListener;
 
         private JdbcRowSpliterator(JdbcExecutor executor, Statement statement, StmtType stmtType,
                                    SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
@@ -2569,6 +2591,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             return Long.MAX_VALUE;
         }
 
+        @Override
+        public final int characteristics() {
+            return 0;
+        }
 
         abstract boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException;
 
@@ -2688,7 +2714,20 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
             this.closed = true;
 
-            doCloseStream();
+            final Runnable closeListener = this.closeListener;
+            if (closeListener == null) {
+                doCloseStream();
+            } else {
+                try {
+                    closeListener.run();
+                } catch (Throwable e) {
+                    // ignore, not bug ,no error, simple closeListener
+                } finally {
+                    doCloseStream();
+                }
+            }
+
+
 
             final JdbcExecutor executor = this.executor;
 
@@ -2702,6 +2741,18 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         }
 
+
+        final void addCloseListener(final Runnable listener) {
+            final Runnable currentListener = this.closeListener;
+            if (currentListener == null) {
+                this.closeListener = listener;
+            } else {
+                this.closeListener = () -> {
+                    currentListener.run();
+                    listener.run();
+                };
+            }
+        }
 
         /**
          * <p>Read one fetch,if fetchSize is 0 ,read all row.
@@ -2775,9 +2826,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     private static abstract class JdbcSimpleSpliterator<R> extends JdbcRowSpliterator<R> {
 
+        final boolean needCloseStatement;
+
         final Statement statement;
 
-        final SimpleStmt stmt;
+        final SingleSqlStmt stmt;
 
         final ResultSet resultSet;
 
@@ -2786,9 +2839,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         final boolean hasOptimistic;
 
 
-        private JdbcSimpleSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
-                                      SimpleStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
+        private JdbcSimpleSpliterator(boolean needCloseStatement, Statement statement, ResultSet resultSet, RowReader<R> rowReader,
+                                      SingleSqlStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
             super(rowReader.executor, statement, stmt.stmtType(), option, sessionFunc);
+            this.needCloseStatement = needCloseStatement;
             this.statement = statement;
             this.stmt = stmt;
             this.resultSet = resultSet;
@@ -2798,14 +2852,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         }
 
-        @Override
-        public final int characteristics() {
-            int bits = 0;
-            if (this.rowReader instanceof BeanRowReader || this.rowReader instanceof ObjectReader) {
-                bits |= NONNULL;
-            }
-            return bits;
-        }
 
         @Override
         final void doCloseStream() {
@@ -2835,12 +2881,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private int currentFetchRows = 0;
 
+
         /**
          * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
          */
-        private SimpleRowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader, SimpleStmt stmt,
+        private SimpleRowSpliterator(boolean needCloseStatement, Statement statement, ResultSet resultSet, RowReader<R> rowReader, SingleSqlStmt stmt,
                                      SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
-            super(statement, resultSet, rowReader, stmt, option, sessionFunc);
+            super(needCloseStatement, statement, resultSet, rowReader, stmt, option, sessionFunc);
         }
 
         @Override
@@ -2932,11 +2979,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         /**
          * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function, Function)
          */
-        private InsertRowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
+        private InsertRowSpliterator(boolean needCloseStatement, Statement statement, ResultSet resultSet, RowReader<R> rowReader,
                                      GeneratedKeyStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
-            super(statement, resultSet, rowReader, stmt, option, sessionFunc);
-
-
+            super(needCloseStatement, statement, resultSet, rowReader, stmt, option, sessionFunc);
         }
 
         /**
@@ -3248,15 +3293,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         }
 
-        @Override
-        public final int characteristics() {
-            int bits = 0;
-            if (this.rowReader instanceof BeanRowReader || this.rowReader instanceof ObjectReader) {
-                bits |= NONNULL;
-            }
-            return bits;
-        }
-
 
         @Override
         final void doCloseStream() {
@@ -3316,11 +3352,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 // reset for next result set
                 this.resultNo++;
                 this.currentResultTotalRows = 0L;
-                if (resultSet != null && rowReader instanceof RecordRowReader) {
+                if (resultSet != null && rowReader instanceof JdbcCurrentRecord) {
                     if (rowReader instanceof ResultItemRowReader) {
                         rowReader = (RowReader<R>) new ResultItemRowReader((ResultItemRowReader) rowReader, resultSet.getMetaData());
                     } else {
-                        rowReader = new RecordRowReader<>((RecordRowReader<R>) rowReader, resultSet.getMetaData());
+                        rowReader = new JdbcCurrentRecord<>((JdbcCurrentRecord<R>) rowReader, resultSet.getMetaData());
                     }
                     this.rowReader = rowReader;
                     assert rowReader.resultNo() == this.resultNo;
@@ -3732,6 +3768,255 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     } // XidRowSpliterator
+
+
+    private static final class JdbcBatchQuery implements SyncBatchQuery {
+
+        private final JdbcExecutor executor;
+
+        private final BatchStmt stmt;
+
+        private final SyncStmtOption stmtOption;
+
+        private final Function<Option<?>, ?> optionFunc;
+
+        private final PreparedStatement statement;
+
+        private final int batchSize;
+
+        private final boolean closeStatement;
+
+        private final DataType[] dataTypeArray;
+
+        private ResultType nextResultType;
+
+        private int nextBatchIndex = 0;
+
+        private SimpleRowSpliterator<?> lastSpliterator;
+
+        private Class<?> resultClass;
+
+        private Supplier<?> objectConstructor;
+
+        private Function<DataRecord, ?> classRowFunc, objectRowFunc;
+
+        private boolean closed;
+
+        /**
+         * @see #batchQuery(BatchStmt, SyncStmtOption, Function)
+         */
+        private JdbcBatchQuery(boolean closeStatement, JdbcExecutor executor, BatchStmt stmt, SyncStmtOption stmtOption,
+                               Function<Option<?>, ?> optionFunc, PreparedStatement statement) {
+            this.executor = executor;
+            this.stmt = stmt;
+            this.stmtOption = stmtOption;
+            this.optionFunc = optionFunc;
+
+            this.closeStatement = closeStatement;
+            this.statement = statement;
+            this.dataTypeArray = new DataType[stmt.selectionList().size()];
+            this.batchSize = stmt.groupList().size();
+
+            if (this.batchSize == 1) {
+                this.nextResultType = ResultType.NONE;
+            } else {
+                this.nextResultType = ResultType.QUERY;
+            }
+        }
+
+        @Override
+        public ResultType nextType() throws ArmyException {
+            if (this.closed) {
+                throw _Exceptions.multiResultHaveClosed();
+            }
+            return this.nextResultType;
+        }
+
+        @Override
+        public int batchNo() {
+            if (this.closed) {
+                throw _Exceptions.multiResultHaveClosed();
+            }
+            return this.nextBatchIndex;
+        }
+
+        @Override
+        public int batchSize() {
+            return this.stmt.groupList().size();
+        }
+
+        @Override
+        public <R> R queryOne(Class<R> resultClass) throws ArmyException {
+            return query(resultClass, ResultStates.IGNORE_STATES)
+                    .reduce(StreamFunctions::atMostOne)
+                    .orElse(null);
+        }
+
+        @Override
+        public <R> R queryOneObject(Supplier<R> constructor) throws ArmyException {
+            return queryObject(constructor, ResultStates.IGNORE_STATES)
+                    .reduce(StreamFunctions::atMostOne)
+                    .orElse(null);
+        }
+
+        @Override
+        public <R> R queryOneRecord(Function<? super CurrentRecord, R> function) throws ArmyException {
+            return queryRecord(function, ResultStates.IGNORE_STATES)
+                    .reduce(StreamFunctions::atMostOne)
+                    .orElse(null);
+        }
+
+        @Override
+        public <R> Stream<R> query(Class<R> resultClass) throws ArmyException {
+            return query(resultClass, ResultStates.IGNORE_STATES);
+        }
+
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <R> Stream<R> query(final Class<R> resultClass, final Consumer<ResultStates> consumer) throws ArmyException {
+            Function<DataRecord, R> rowFunc = null;
+            final Class<?> prevResultClass = this.resultClass;
+            if (prevResultClass == null) {
+                this.resultClass = resultClass;
+            } else if (resultClass == prevResultClass) {
+                rowFunc = (Function<DataRecord, R>) this.classRowFunc;
+            }
+            if (rowFunc == null) {
+                this.classRowFunc = rowFunc = RowFunctions.classRowFunc(resultClass, this.stmt);
+            }
+            return queryRecord(rowFunc, consumer);
+        }
+
+        @Override
+        public <R> Stream<R> queryObject(Supplier<R> constructor) throws ArmyException {
+            return queryObject(constructor, ResultStates.IGNORE_STATES);
+        }
+
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <R> Stream<R> queryObject(final Supplier<R> constructor, final Consumer<ResultStates> consumer) throws ArmyException {
+            Function<DataRecord, R> rowFunc = null;
+            final Supplier<?> prevObjectConstructor = this.objectConstructor;
+            if (prevObjectConstructor == null) {
+                this.objectConstructor = constructor;
+            } else if (prevObjectConstructor == constructor) {
+                rowFunc = (Function<DataRecord, R>) this.objectRowFunc;
+            }
+            if (rowFunc == null) {
+                this.objectRowFunc = rowFunc = RowFunctions.objectRowFunc(constructor, this.stmt.selectionList(), true);
+            }
+            return queryRecord(rowFunc, consumer);
+        }
+
+        @Override
+        public <R> Stream<R> queryRecord(Function<? super CurrentRecord, R> function) throws ArmyException {
+            return queryRecord(function, ResultStates.IGNORE_STATES);
+        }
+
+        @Override
+        public <R> Stream<R> queryRecord(final @Nullable Function<? super CurrentRecord, R> function, final @Nullable Consumer<ResultStates> consumer)
+                throws ArmyException {
+
+            if (function == null) {
+                throw _Exceptions.recordMapFuncIsNull();
+            } else if (consumer == null) {
+                throw _Exceptions.statesConsumerIsNull();
+            }
+
+            final JdbcExecutor executor = this.executor;
+            final BatchStmt stmt = this.stmt;
+            final int batchIndex = this.nextBatchIndex++;
+            if (batchIndex >= this.batchSize) {
+                throw _Exceptions.batchQueryHaveEnded();
+            } else if (this.lastSpliterator != null) {
+                throw _Exceptions.lastStreamDontEnd();
+            }
+
+            if (batchIndex + 1 == this.batchSize) {
+                this.nextResultType = ResultType.NONE;
+            }
+
+            ResultSet resultSet = null;
+            try {
+                final PreparedStatement statement = this.statement;
+
+                statement.clearParameters();
+                statement.clearBatch();
+                statement.clearWarnings();
+
+                final List<SQLParam> paramList = stmt.groupList().get(batchIndex);
+                final SyncStmtOption stmtOption = this.stmtOption;
+
+                executor.bindParameters(statement, paramList);
+                executor.bindStatementOption(statement, stmt, stmtOption);
+
+                resultSet = statement.executeQuery();
+
+                final ResultSetMetaData metaData;
+                metaData = resultSet.getMetaData();
+
+                final DataType[] dataTypeArray = this.dataTypeArray;
+                final int columnSize = dataTypeArray.length;
+                for (int i = 0; i < columnSize; i++) {
+                    dataTypeArray[i] = executor.getDataType(metaData, i + 1);
+                }
+
+                final JdbcCurrentRecord<R> currentRecord;
+                currentRecord = new JdbcCurrentRecord<>(executor, this.stmt.selectionList(), dataTypeArray,
+                        function, combineConsumer(consumer, stmtOption), metaData);
+
+                final SimpleRowSpliterator<R> spliterator;
+                this.lastSpliterator = spliterator = new SimpleRowSpliterator<>(false, statement, resultSet, currentRecord,
+                        stmt, stmtOption, this.optionFunc);
+
+                spliterator.addCloseListener(this::streamCloseListener);
+
+                return executor.assembleStream(spliterator, stmtOption);
+            } catch (Exception e) {
+                closeResource(resultSet);
+                throw executor.handleException(e);
+            } catch (Throwable e) {
+                closeResource(resultSet);
+                throw e;
+            }
+
+
+        }
+
+        @Override
+        public void close() throws ArmyException {
+            if (this.closed) {
+                return;
+            }
+            this.closed = true;
+            final SimpleRowSpliterator<?> spliterator = this.lastSpliterator;
+            if (spliterator == null) {
+                if (this.closeStatement) {
+                    closeResource(this.statement);
+                }
+            } else {
+                try {
+                    spliterator.close();
+                } catch (Exception e) {
+                    throw this.executor.handleException(e);
+                } finally {
+                    if (this.closeStatement) {
+                        closeResource(this.statement);
+                    }
+                }
+            }
+
+        }
+
+        private void streamCloseListener() {
+            this.lastSpliterator = null;
+        }
+
+
+    } //JdbcBatchQuery
+
 
 
 }

@@ -26,6 +26,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.NullType;
@@ -34,6 +35,7 @@ import io.army.meta.TypeMeta;
 import io.army.option.Option;
 import io.army.result.*;
 import io.army.session.Session;
+import io.army.session.StmtOption;
 import io.army.sqltype.*;
 import io.army.stmt.DeclareCursorStmt;
 import io.army.transaction.Isolation;
@@ -42,10 +44,10 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 
-import io.army.lang.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -909,6 +911,20 @@ public abstract class ExecutorSupport {
                 dataType = SQLiteType.UNKNOWN;
         }
         return dataType;
+    }
+
+    protected static Consumer<ResultStates> combineConsumer(final Consumer<ResultStates> consumer, final StmtOption stmtOption) {
+        final Consumer<ResultStates> consumerOfOption, finalConsumer;
+        consumerOfOption = stmtOption.stateConsumer();
+
+        if (consumer == ResultStates.IGNORE_STATES) {
+            finalConsumer = consumerOfOption;
+        } else if (consumerOfOption == ResultStates.IGNORE_STATES) {
+            finalConsumer = consumer;
+        } else {
+            finalConsumer = consumerOfOption.andThen(consumer);
+        }
+        return finalConsumer;
     }
 
     /*-------------------below Exception  -------------------*/

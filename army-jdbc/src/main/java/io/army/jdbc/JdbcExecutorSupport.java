@@ -22,6 +22,7 @@ import io.army.criteria.Selection;
 import io.army.executor.DataAccessException;
 import io.army.executor.DriverException;
 import io.army.executor.ExecutorSupport;
+import io.army.lang.Nullable;
 import io.army.mapping.OffsetTimeType;
 import io.army.meta.ServerMeta;
 import io.army.option.Option;
@@ -31,13 +32,11 @@ import io.army.session.SyncSession;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.DeclareCursorStmt;
-import io.army.stmt.SimpleStmt;
 import io.army.transaction.Isolation;
 import io.army.type.BlobPath;
 import io.army.type.TextPath;
 import io.army.util.*;
 
-import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -91,10 +90,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     }
 
-    /**
-     * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption, Class, Function)
-     * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption, Class, Function)
-     */
+
     @Nullable
     static Warning mapToArmyWarning(final @Nullable SQLWarning warning) {
         if (warning == null) {
@@ -119,8 +115,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
     }
 
-    static void closeResource(final AutoCloseable resource)
+    static void closeResource(final @Nullable AutoCloseable resource)
             throws ArmyException {
+        if (resource == null) {
+            return;
+        }
         try {
             resource.close();
         } catch (Exception e) {

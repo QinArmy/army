@@ -17,9 +17,11 @@
 package io.army.executor;
 
 
+import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.result.CurrentRecord;
 import io.army.result.ResultStates;
+import io.army.result.SyncBatchQuery;
 import io.army.session.RmSession;
 import io.army.session.RmSessionException;
 import io.army.session.StreamOption;
@@ -30,7 +32,6 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
 import io.army.transaction.*;
 
-import io.army.lang.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -107,8 +108,11 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
     Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
 
-    <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
+    <R> Stream<R> query(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
             throws DataAccessException;
+
+    SyncBatchQuery batchQuery(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
+
 
     @Override
     void close() throws DataAccessException;

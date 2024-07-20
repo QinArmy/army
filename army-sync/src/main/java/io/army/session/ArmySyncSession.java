@@ -404,7 +404,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             } else {
                 newOption = replaceForQueryIfNeed(stmt.hasOptimistic(), option, null); // for transaction timeout and optimistic lock
             }
-            return this.executor.queryRecord((SingleSqlStmt) stmt, function, newOption, Option.EMPTY_FUNC);
+            return this.executor.query((SingleSqlStmt) stmt, function, newOption, Option.EMPTY_FUNC);
         } catch (Exception e) {
             throw wrapSessionError(e);
         } finally {
@@ -416,13 +416,23 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
     @Override
     public final <T> int save(T domain) {
-        return save(domain, ArmySyncStmtOptions.DEFAULT);
+        return save(domain, LiteralMode.DEFAULT, ArmySyncStmtOptions.DEFAULT);
     }
 
     @Override
     public final <T> int save(T domain, SyncStmtOption option) {
+        return save(domain, LiteralMode.DEFAULT, option);
+    }
+
+    @Override
+    public final <T> int save(T domain, LiteralMode literalMode) {
+        return save(domain, literalMode, ArmySyncStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T> int save(T domain, LiteralMode literalMode, SyncStmtOption option) {
         final long rowCount;
-        rowCount = update(SQLStmts.insertStmt(this, LiteralMode.DEFAULT, domain), option);
+        rowCount = update(SQLStmts.insertStmt(this, literalMode, domain), option);
         if (rowCount > 1) {
             throw new DataAccessException(String.format("insert row count[%s] great than one ", rowCount));
         }
@@ -674,7 +684,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             if (stmt instanceof SingleSqlStmt) {
                 final Function<? super CurrentRecord, R> rowFunc;
                 rowFunc = readerFunc.apply((SingleSqlStmt) stmt, true);
-                stream = this.executor.queryRecord((SingleSqlStmt) stmt, rowFunc, option, Option.EMPTY_FUNC);
+                stream = this.executor.query((SingleSqlStmt) stmt, rowFunc, option, Option.EMPTY_FUNC);
             } else if (!(stmt instanceof PairStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (!inTransaction()) {
@@ -718,7 +728,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         List<R> resultList = null;
         if (firstStmtIsQuery) {
             rowFunc = readerFunc.apply(firstStmt, false);
-            resultList = this.executor.queryRecord(firstStmt, rowFunc, option, Option.EMPTY_FUNC)
+            resultList = this.executor.query(firstStmt, rowFunc, option, Option.EMPTY_FUNC)
                     .collect(Collectors.toCollection(_Collections::arrayList));
             if (resultList.size() == 0) {
                 // exists conflict clause
@@ -745,7 +755,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
                 final SyncSecondRecordReader<R> recordReader;
                 recordReader = new SyncSecondRecordReader<>(this, childTable, (TwoStmtQueryStmt) secondStmt, resultList);
                 // TODO 验证 行数
-                stream = this.executor.queryRecord(secondStmt, recordReader::readRecord, option, optionFunc);
+                stream = this.executor.query(secondStmt, recordReader::readRecord, option, optionFunc);
             } else {
                 // TODO 验证 行数,fetch size
                 final ResultStates parentStates = states;
@@ -755,7 +765,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
                         throw _Exceptions.parentChildRowsNotMatch(this, childTable, parentStates.affectedRows(), childStates.rowCount());
                     }
                 };
-                stream = this.executor.queryRecord(secondStmt, rowFunc,
+                stream = this.executor.query(secondStmt, rowFunc,
                         ArmySyncStmtOptions.replaceStateConsumer(option, statesConsumer),
                         Option.singleFunc(Option.FIRST_DML_STATES, parentStates)
                 );

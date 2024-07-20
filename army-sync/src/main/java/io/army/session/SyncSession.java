@@ -495,6 +495,10 @@ public sealed interface SyncSession extends PackageSession, Closeable permits Sy
 
     <T> int save(T domain, SyncStmtOption option);
 
+    <T> int save(T domain, LiteralMode literalMode);
+
+    <T> int save(T domain, LiteralMode literalMode, SyncStmtOption option);
+
     <T> int batchSave(List<T> domainList);
 
     <T> int batchSave(List<T> domainList, LiteralMode literalMode);
