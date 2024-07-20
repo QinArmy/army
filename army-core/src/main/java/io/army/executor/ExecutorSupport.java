@@ -1512,17 +1512,21 @@ public abstract class ExecutorSupport {
 
     protected static abstract class ArmyStmtCursor implements StmtCursor {
 
-        protected final DeclareCursorStmt stmt;
+        public final DeclareCursorStmt stmt;
 
         protected final Session session;
 
-        protected final List<? extends Selection> selectionList;
+        public final Function<Option<?>, ?> sessionFunc;
+
+        public final List<? extends Selection> selectionList;
 
         private Map<String, Selection> selectionMap;
 
-        protected ArmyStmtCursor(DeclareCursorStmt stmt, Session session) {
+        protected ArmyStmtCursor(DeclareCursorStmt stmt, Function<Option<?>, ?> sessionFunc) {
             this.stmt = stmt;
-            this.session = session;
+            this.sessionFunc = sessionFunc;
+            this.session = (Session) sessionFunc.apply(Option.ARMY_SESSION);
+            assert this.session != null;
             this.selectionList = stmt.selectionList();
         }
 

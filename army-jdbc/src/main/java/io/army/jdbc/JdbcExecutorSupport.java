@@ -27,8 +27,8 @@ import io.army.mapping.OffsetTimeType;
 import io.army.meta.ServerMeta;
 import io.army.option.Option;
 import io.army.result.*;
-import io.army.session.Session;
 import io.army.session.SyncSession;
+import io.army.session.SyncStmtOption;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.DeclareCursorStmt;
@@ -67,9 +67,28 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     static final String ISOLATION_LEVEL_SPACE = "ISOLATION LEVEL ";
 
-    static final Option<ServerMeta> SERVER_META = Option.from("SERVER META", ServerMeta.class);
+    static final Option<ServerMeta> SERVER_META = Option.from("SERVER_META", ServerMeta.class);
 
     static final Option<Warning> WARNING = Option.from("WARNING", Warning.class);
+
+    static final Option<Long> RESULT_NO = Option.from("RESULT_NO", Long.class);
+
+    static final Option<Long> ROW_COUNT = Option.from("ROW_COUNT", Long.class);
+
+    static final Option<Long> AFFECTED_ROWS = Option.from("AFFECTED_ROWS", Long.class);
+
+    static final Option<Boolean> HAS_MORE_FETCH = Option.from("HAS_MORE_FETCH", Boolean.class);
+
+    static final Option<Boolean> HAS_COLUMN = Option.from("HAS_COLUMN", Boolean.class);
+
+    static final Option<Boolean> HAS_MORE_RESULT = Option.from("HAS_MORE_RESULT", Boolean.class);
+
+    static final Option<Integer> BATCH_SIZE = Option.from("BATCH_SIZE", Integer.class);
+
+    static final Option<Integer> BATCH_NO = Option.from("BATCH_NO", Integer.class);
+
+    static final Option<Long> LAST_INSERTED_ID = Option.from("LAST_INSERTED_ID", Long.class);
+
 
     JdbcExecutorSupport() {
     }
@@ -832,26 +851,46 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
     } // ArmyWarning
 
 
-    private static abstract class JdbcResultStates implements ResultStates {
-
-
-        private final int resultNo;
+    static final class JdbcResultStates implements ResultStates {
 
         private final Function<Option<?>, ?> optionFunc;
 
-        private JdbcResultStates(int resultNo, Function<Option<?>, ?> optionFunc) {
-            assert optionFunc.apply(SERVER_META) instanceof ServerMeta;
-            this.resultNo = resultNo;
+        JdbcResultStates(Function<Option<?>, ?> optionFunc) {
             this.optionFunc = optionFunc;
         }
 
         @Override
-        public final int resultNo() {
-            return this.resultNo;
+        public long affectedRows() {
+            final Object value;
+            value = this.optionFunc.apply(AFFECTED_ROWS);
+            if (value instanceof Long) {
+                return (Long) value;
+            }
+            return 0;
         }
 
         @Override
-        public final boolean isSupportInsertId() {
+        public int batchSize() {
+            final Object value;
+            value = this.optionFunc.apply(BATCH_SIZE);
+            if (value instanceof Integer) {
+                return (Integer) value;
+            }
+            return 0;
+        }
+
+        @Override
+        public int batchNo() {
+            final Object value;
+            value = this.optionFunc.apply(BATCH_NO);
+            if (value instanceof Integer) {
+                return (Integer) value;
+            }
+            return 0;
+        }
+
+        @Override
+        public boolean isSupportInsertId() {
             final boolean support;
             final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
             assert meta != null;
@@ -871,38 +910,103 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
-        public final boolean inTransaction() {
-            final Object o;
-            o = this.optionFunc.apply(Option.IN_TRANSACTION);
-            return o instanceof Boolean && (Boolean) o;
+        public long lastInsertedId() throws DataAccessException {
+            final Object value;
+            value = this.optionFunc.apply(LAST_INSERTED_ID);
+            if (value instanceof Long) {
+                return (Long) value;
+            }
+            throw dontSupportLastInsertedId();
         }
 
         @Override
-        public final String message() {
-            // JDBC always empty
+        public boolean inTransaction() {
+            final Object value;
+            value = this.optionFunc.apply(Option.IN_TRANSACTION);
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+            return false;
+        }
+
+        @Override
+        public String message() {
+            // jdbc don't support
             return "";
         }
 
-        @Nullable
         @Override
-        public final Warning warning() {
-            final Object o;
-            o = this.optionFunc.apply(WARNING);
-            if (o instanceof Warning) {
-                return (Warning) o;
+        public boolean hasMoreResult() {
+            final Object value;
+            value = this.optionFunc.apply(HAS_MORE_RESULT);
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean hasMoreFetch() {
+            final Object value;
+            value = this.optionFunc.apply(HAS_MORE_FETCH);
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean hasColumn() {
+            final Object value;
+            value = this.optionFunc.apply(HAS_COLUMN);
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+            return false;
+        }
+
+        @Override
+        public long rowCount() {
+            final Object value;
+            value = this.optionFunc.apply(ROW_COUNT);
+            if (value instanceof Long) {
+                return (Long) value;
+            }
+            return 0;
+        }
+
+        @Override
+        public Warning warning() {
+            final Object value;
+            value = this.optionFunc.apply(WARNING);
+            if (value instanceof Warning) {
+                return (Warning) value;
             }
             return null;
         }
 
         @SuppressWarnings("unchecked")
-        @Nullable
         @Override
-        public final <T> T valueOf(final Option<T> option) {
-            return (T) this.optionFunc.apply(option);
+        public <T> T valueOf(Option<T> option) {
+            final Object value;
+            value = this.optionFunc.apply(option);
+            if (option.javaType().isInstance(value)) {
+                return (T) value;
+            }
+            return null;
         }
 
+        @Override
+        public int resultNo() {
+            final Object value;
+            value = this.optionFunc.apply(RESULT_NO);
+            if (value instanceof Integer) {
+                return (Integer) value;
+            }
+            return 1; // default 1
+        }
 
-        final DataAccessException dontSupportLastInsertedId() {
+        private DataAccessException dontSupportLastInsertedId() {
             final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
             assert meta != null;
             String m = String.format("database[%s  %s] don't support lastInsertedId() method.",
@@ -911,287 +1015,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
 
-    } // JdbcResultStates
+    } // MyJdbcResultStates
 
-
-    private static abstract class JdbcUpdateStates extends JdbcResultStates {
-
-        private JdbcUpdateStates(int resultNo, Function<Option<?>, ?> optionFunc) {
-            super(resultNo, optionFunc);
-        }
-
-        @Override
-        public final boolean hasColumn() {
-            // always false for update result
-            return false;
-        }
-
-        @Override
-        public final boolean hasMoreFetch() {
-            // always false for update result
-            return false;
-        }
-
-        @Override
-        public final long rowCount() {
-            // always 0 for update result
-            return 0L;
-        }
-
-
-    } // JdbcUpdateStates
-
-
-    private static abstract class JdbcQueryStates extends JdbcResultStates {
-
-        private final long rowCount;
-
-        private final long affectedRows;
-
-        private JdbcQueryStates(int resultNo, Function<Option<?>, ?> optionFunc,
-                                long rowCount, long affectedRows) {
-            super(resultNo, optionFunc);
-            this.rowCount = rowCount;
-            this.affectedRows = affectedRows;
-        }
-
-        @Override
-        public final long lastInsertedId() throws DataAccessException {
-            if (!isSupportInsertId()) {
-                throw dontSupportLastInsertedId();
-            }
-            return 0L;
-        }
-
-        @Override
-        public final long rowCount() {
-            return this.rowCount;
-        }
-
-
-        @Override
-        public final long affectedRows() {
-            return this.affectedRows;
-        }
-
-        @Override
-        public final boolean hasColumn() {
-            // always true for query result
-            return true;
-        }
-
-
-    } // JdbcQueryStates
-
-    static final class SingleQueryStates extends JdbcQueryStates {
-
-
-        private final boolean moreFetch;
-
-
-        SingleQueryStates(int resultNo, Function<Option<?>, ?> optionFunc,
-                          long rowCount, boolean moreFetch, long affectedRows) {
-            super(resultNo, optionFunc, rowCount, affectedRows);
-            this.moreFetch = moreFetch;
-        }
-
-        @Override
-        public int batchSize() {
-            return 0;
-        }
-
-        @Override
-        public int batchNo() {
-            return 0;
-        }
-
-        @Override
-        public boolean hasMoreResult() {
-            // always false for single result
-            return false;
-        }
-
-        @Override
-        public boolean hasMoreFetch() {
-            return this.moreFetch;
-        }
-
-
-    } // SingleQueryStates
-
-
-    static final class MultiResultQueryStates extends JdbcQueryStates {
-
-
-        private final boolean moreResult;
-
-        MultiResultQueryStates(int resultNo, Function<Option<?>, ?> optionFunc,
-                               long rowCount, boolean moreResult, long affectedRows) {
-            super(resultNo, optionFunc, rowCount, affectedRows);
-            this.moreResult = moreResult;
-        }
-
-
-        @Override
-        public int batchSize() {
-            return 0;
-        }
-
-        @Override
-        public int batchNo() {
-            return 0;
-        }
-
-        @Override
-        public boolean hasMoreResult() {
-            return this.moreResult;
-        }
-
-        @Override
-        public boolean hasMoreFetch() {
-            // always false for multi result
-            return false;
-        }
-
-
-    } // MultiResultQueryStates
-
-
-    static final class BatchQueryStates extends JdbcQueryStates {
-
-        private final int batchSize;
-
-        private final int batchNo;
-
-        BatchQueryStates(Function<Option<?>, ?> optionFunc, int batchSize, int batchNo, long rowCount, long affectedRows) {
-            super(1, optionFunc, rowCount, affectedRows);
-            this.batchSize = batchSize;
-            this.batchNo = batchNo;
-        }
-
-
-        @Override
-        public int batchSize() {
-            return this.batchSize;
-        }
-
-        @Override
-        public int batchNo() {
-            return this.batchNo;
-        }
-
-        @Override
-        public boolean hasMoreResult() {
-            return this.batchNo < this.batchSize;
-        }
-
-        @Override
-        public boolean hasMoreFetch() {
-            //currently, always false for batch-query
-            return false;
-        }
-
-
-    } // BatchQueryStates
-
-    static final class SingleUpdateStates extends JdbcUpdateStates {
-
-        private final long firstId;
-        private final long affectedRows;
-
-        private final boolean moreResult;
-
-        SingleUpdateStates(int resultNo, Function<Option<?>, ?> optionFunc, long firstId,
-                           long affectedRows, boolean moreResult) {
-            super(resultNo, optionFunc);
-            this.firstId = firstId;
-            this.affectedRows = affectedRows;
-            this.moreResult = moreResult;
-        }
-
-        @Override
-        public long lastInsertedId() throws DataAccessException {
-            if (!isSupportInsertId()) {
-                throw dontSupportLastInsertedId();
-            }
-            return this.firstId;
-        }
-
-
-        @Override
-        public int batchSize() {
-            // non-batch
-            return 0;
-        }
-
-        @Override
-        public int batchNo() {
-            // non-batch
-            return 0;
-        }
-
-        @Override
-        public long affectedRows() {
-            return this.affectedRows;
-        }
-
-        @Override
-        public boolean hasMoreResult() {
-            return this.moreResult;
-        }
-
-
-    } // SingleUpdateStates
-
-
-    static final class BatchUpdateStates extends JdbcUpdateStates {
-
-        private final int batchSize;
-
-        private final int batchNo;
-
-        private final long affectedRows;
-
-        BatchUpdateStates(int resultNo, Function<Option<?>, ?> optionFunc, int batchSize, int batchNo, long affectedRows) {
-            super(resultNo, optionFunc);
-            this.batchSize = batchSize;
-            this.batchNo = batchNo;
-            this.affectedRows = affectedRows;
-        }
-
-        @Override
-        public long lastInsertedId() throws DataAccessException {
-            if (!isSupportInsertId()) {
-                throw dontSupportLastInsertedId();
-            }
-            return 0L;
-        }
-
-
-        @Override
-        public int batchSize() {
-            // non-batch
-            return this.batchSize;
-        }
-
-        @Override
-        public int batchNo() {
-            // non-batch
-            return this.batchNo;
-        }
-
-        @Override
-        public long affectedRows() {
-            return this.affectedRows;
-        }
-
-        @Override
-        public boolean hasMoreResult() {
-            return this.batchNo < this.batchSize;
-        }
-
-
-    } // BatchUpdateStates
 
     interface XaConnectionExecutor {
 
@@ -1201,11 +1026,18 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     }
 
-    protected static class JdbcSyncStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
 
-        private static final String INVALID_CURSOR_NAME = "34000";
+    protected static class JdbcStmtCursor extends ArmyStmtCursor implements SyncStmtCursor {
+
+        static final String INVALID_CURSOR_NAME = "34000";
 
         final JdbcExecutor executor;
+
+        final SyncStmtOption stmtOption;
+
+        final DataType[] dataTypeArray;
+
+        final Statement statement;
 
         private Class<?> resultClass;
 
@@ -1213,12 +1045,15 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private Supplier<?> objectConstructor;
 
-
         private boolean cursorClosed;
 
-        JdbcSyncStmtCursor(JdbcExecutor executor, DeclareCursorStmt stmt, Session session) {
-            super(stmt, session);
+        JdbcStmtCursor(JdbcExecutor executor, DeclareCursorStmt stmt, SyncStmtOption stmtOption,
+                       Function<Option<?>, ?> sessionFunc) throws SQLException {
+            super(stmt, sessionFunc);
             this.executor = executor;
+            this.stmtOption = stmtOption;
+            this.dataTypeArray = new DataType[this.selectionList.size()];
+            this.statement = executor.conn.createStatement();
         }
 
         @Nullable
