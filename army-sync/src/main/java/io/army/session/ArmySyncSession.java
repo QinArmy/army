@@ -33,6 +33,7 @@ import io.army.result.ResultStates;
 import io.army.stmt.*;
 import io.army.transaction.TransactionInfo;
 import io.army.transaction.TransactionOption;
+import io.army.type.ImmutableSpec;
 import io.army.util.SQLStmts;
 import io.army.util.StreamFunctions;
 import io.army.util._Collections;
@@ -202,14 +203,14 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
         return query(statement, resultClass, ArmySyncStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
+                .orElse(null);
     }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
         return query(statement, resultClass, option)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
+                .orElse(null);
     }
 
     @Override
@@ -228,14 +229,14 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
         return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
+                .orElse(null);
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
         return queryObject(statement, constructor, option)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
+                .orElse(null);
     }
 
     @Override
@@ -254,14 +255,14 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
         return queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
+                .orElse(null);
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
         return queryRecord(statement, function, option)
                 .reduce(StreamFunctions::atMostOne)
-                .orElseThrow(_Exceptions.NO_ANY_ROW_FUNC);
+                .orElse(null);
     }
 
 
@@ -294,10 +295,13 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
     @Override
     public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        try (Stream<R> stream = query(statement, resultClass, option)) {
-
-            return stream.collect(Collectors.toCollection(listConstructor));
+        List<R> rowList;
+        rowList = query(statement, resultClass, option)
+                .collect(Collectors.toCollection(listConstructor));
+        if (rowList instanceof ImmutableSpec) {
+            rowList = _Collections.unmodifiableList(rowList);
         }
+        return rowList;
     }
 
 
@@ -318,9 +322,13 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
     @Override
     public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        try (Stream<R> stream = queryObject(statement, constructor, option)) {
-            return stream.collect(Collectors.toCollection(listConstructor));
+        List<R> rowList;
+        rowList = queryObject(statement, constructor, option)
+                .collect(Collectors.toCollection(listConstructor));
+        if (rowList instanceof ImmutableSpec) {
+            rowList = _Collections.unmodifiableList(rowList);
         }
+        return rowList;
     }
 
     @Override
@@ -340,9 +348,13 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
     @Override
     public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        try (Stream<R> stream = queryRecord(statement, function, option)) {
-            return stream.collect(Collectors.toCollection(listConstructor));
+        List<R> rowList;
+        rowList = queryRecord(statement, function, option)
+                .collect(Collectors.toCollection(listConstructor));
+        if (rowList instanceof ImmutableSpec) {
+            rowList = _Collections.unmodifiableList(rowList);
         }
+        return rowList;
     }
 
     @Override

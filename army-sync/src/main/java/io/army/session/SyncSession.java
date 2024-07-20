@@ -18,6 +18,7 @@ package io.army.session;
 
 import io.army.criteria.*;
 import io.army.executor.ServerException;
+import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.result.*;
 import io.army.transaction.*;
@@ -248,6 +249,7 @@ public sealed interface SyncSession extends PackageSession, Closeable permits Sy
      * @throws NonMonoException       throw when more than one row.
      * @see #queryOne(SimpleDqlStatement, Class, SyncStmtOption)
      */
+    @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass);
 
     /**
@@ -303,25 +305,27 @@ public sealed interface SyncSession extends PackageSession, Closeable permits Sy
      *                                </ul>
      * @see #queryList(DqlStatement, Class, SyncStmtOption)
      */
+    @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
     <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass);
 
     <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
-
+    @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
+    @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
     <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
     <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
-
+    @Nullable
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
 
-
+    @Nullable
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
 
     <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
