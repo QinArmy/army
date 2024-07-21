@@ -18,7 +18,6 @@ package io.army.session;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.env.SqlLogMode;
 import io.army.executor.DataAccessException;
 import io.army.executor.DriverSpiHolder;
 import io.army.executor.ReactiveExecutor;
@@ -433,18 +432,14 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
      * @see #queryRecord(DqlStatement, Function, ReactiveStmtOption)
      */
     private ReactiveStmtOption replaceForQueryExecutionLogger(final ReactiveStmtOption optionOfUser, final Stmt stmt) {
-        final SqlLogMode sqlLogMode;
-        if ((sqlLogMode = obtainSqlLogMode()) == SqlLogMode.OFF) {
-            return replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, null);
-        }
 
         final long executionStartNanoSecond;
-        executionStartNanoSecond = System.nanoTime();
+        executionStartNanoSecond = getExecutionStartNanoSecond();
 
         final Consumer<ResultStates> logConsumer;
         logConsumer = states -> {
-            if (!states.hasMoreResult() && !states.hasMoreFetch()) {
-                printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
+            if (executionStartNanoSecond > 0 && states.isLastStates()) {
+                printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
             }
         };
         return replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, logConsumer);
@@ -541,7 +536,6 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
         }
 
     }
-
 
 
     /**
@@ -887,8 +881,6 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
 
     } // ValidateBatchStatesSubscriber
-
-
 
 
 }

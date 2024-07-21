@@ -946,6 +946,18 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
+        public boolean isLastStates() {
+            final int batchSize = batchSize();
+            final boolean match;
+            if (batchSize > 0) {
+                match = batchNo() == batchSize && !hasMoreResult() && !hasMoreFetch();
+            } else {
+                match = !hasMoreResult() && !hasMoreFetch();
+            }
+            return match;
+        }
+
+        @Override
         public boolean hasMoreFetch() {
             final Object value;
             value = this.optionFunc.apply(HAS_MORE_FETCH);

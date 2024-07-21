@@ -390,6 +390,21 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
 
     }
 
+
+    final long getExecutionStartNanoSecond() {
+        final SqlLogMode mode;
+        if (factory.sqlLogDynamic) {
+            mode = factory.env.getOrDefault(ArmyKey.SQL_LOG_MODE);
+        } else {
+            mode = factory.sqlLogMode;
+        }
+
+        if (mode == SqlLogMode.OFF) {
+            return -1L;
+        }
+        return System.nanoTime();
+    }
+
     protected final SqlLogMode obtainSqlLogMode() {
         SqlLogMode mode;
         final ArmySessionFactory factory = this.factory;
@@ -456,12 +471,15 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
     }
 
 
-    protected final void printExecutionCostTimeLog(final Logger logger, final Stmt stmt, final SqlLogMode sqlLogMode,
+    protected final void printExecutionCostTimeLog(final Logger logger, final Stmt stmt,
                                                    final long startNanoSecond) {
 
-        if (startNanoSecond < 1L || sqlLogMode == SqlLogMode.OFF) {
+        if (startNanoSecond < 1L) {
             return;
         }
+
+        final SqlLogMode logMode;
+        logMode = obtainSqlLogMode();
 
         final long costNano, millis, micro, nano;
         costNano = System.nanoTime() - startNanoSecond;
@@ -479,7 +497,7 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
                 .append(System.identityHashCode(this))
                 .append("]\n\n");
 
-        this.factory.dialectParser.printStmt(stmt, sqlLogMode.beautify, builder::append);
+        this.factory.dialectParser.printStmt(stmt, logMode.beautify, builder::append);
 
 
         builder.append("\n\nsql execution cost ")
@@ -490,7 +508,7 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
                 .append(nano)
                 .append(" nano");
 
-        if (sqlLogMode.debug) {
+        if (logMode.debug) {
             logger.debug(builder.toString());
         } else {
             logger.info(builder.toString());

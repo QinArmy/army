@@ -1641,6 +1641,18 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
         }
 
         @Override
+        public boolean isLastStates() {
+            final int batchSize = batchSize();
+            final boolean match;
+            if (batchSize > 0) {
+                match = batchNo() == batchSize && !hasMoreResult() && !hasMoreFetch();
+            } else {
+                match = !hasMoreResult() && !hasMoreFetch();
+            }
+            return match;
+        }
+
+        @Override
         public boolean hasMoreFetch() {
             return this.jdbdStates.hasMoreFetch();
         }

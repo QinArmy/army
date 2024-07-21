@@ -19,7 +19,6 @@ package io.army.session;
 import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.env.SqlLogMode;
 import io.army.executor.DataAccessException;
 import io.army.executor.DriverSpiHolder;
 import io.army.executor.SyncExecutor;
@@ -39,7 +38,10 @@ import io.army.util.StreamFunctions;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -214,18 +216,6 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     }
 
     @Override
-    public final <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass) {
-        return query(statement, resultClass, ArmySyncStmtOptions.DEFAULT)
-                .reduce(StreamFunctions::atMostOne);
-    }
-
-    @Override
-    public final <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        return query(statement, resultClass, option)
-                .reduce(StreamFunctions::atMostOne);
-    }
-
-    @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
         return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne)
@@ -239,17 +229,6 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
                 .orElse(null);
     }
 
-    @Override
-    public final <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return queryObject(statement, constructor, ArmySyncStmtOptions.DEFAULT)
-                .reduce(StreamFunctions::atMostOne);
-    }
-
-    @Override
-    public final <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        return queryObject(statement, constructor, option)
-                .reduce(StreamFunctions::atMostOne);
-    }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
@@ -263,19 +242,6 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         return queryRecord(statement, function, option)
                 .reduce(StreamFunctions::atMostOne)
                 .orElse(null);
-    }
-
-
-    @Override
-    public final <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return queryRecord(statement, function, ArmySyncStmtOptions.DEFAULT)
-                .reduce(StreamFunctions::atMostOne);
-    }
-
-    @Override
-    public final <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return queryRecord(statement, function, option)
-                .reduce(StreamFunctions::atMostOne);
     }
 
     @Override
@@ -432,8 +398,8 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     @Override
     public final <T> int save(T domain, LiteralMode literalMode, SyncStmtOption option) {
         final long rowCount;
-        rowCount = update(SQLStmts.insertStmt(this, literalMode, domain), option);
-        if (rowCount > 1) {
+        rowCount = updateAsResult(SQLStmts.insertStmt(this, literalMode, domain), option, Long.class);
+        if (rowCount > 1) { // TODO 有些方言在冲突可能大于 1
             throw new DataAccessException(String.format("insert row count[%s] great than one ", rowCount));
         }
         return (int) rowCount;
@@ -482,7 +448,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             throw new IllegalArgumentException("domainList must non-empty.");
         }
         final long rowCount;
-        rowCount = update(SQLStmts.batchInsertStmt(this, literalMode, domainList), option);
+        rowCount = updateAsResult(SQLStmts.batchInsertStmt(this, literalMode, domainList), option, Long.class);
 
         if (rowCount > domainList.size()) {
             String m = String.format("insert row count[%s] and expected row count[%s] not match.",
@@ -782,7 +748,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
      * @see #update(SimpleDmlStatement, SyncStmtOption)
      * @see #updateAsStates(SimpleDmlStatement, SyncStmtOption)
      */
-    private <R> R updateAsResult(final SimpleDmlStatement statement, final SyncStmtOption unsafeOption, Class<R> resultClass) {
+    private <R> R updateAsResult(final SimpleDmlStatement statement, final SyncStmtOption optionOfUser, Class<R> resultClass) {
         try {
             if (statement instanceof _BatchStatement) {
                 throw _Exceptions.unexpectedStatement(statement);
@@ -791,7 +757,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             assertSession(statement);
 
             final SyncStmtOption option;
-            option = replaceIfNeed(unsafeOption);
+            option = replaceIfNeed(optionOfUser);
 
             final R result;
             if (statement instanceof InsertStatement) {
@@ -814,29 +780,17 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
 
     /**
-     * @param userOption the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
+     * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #updateAsResult(SimpleDmlStatement, SyncStmtOption, Class)
      */
-    private <R> R executeInsert(InsertStatement statement, SyncStmtOption userOption, Class<R> resultClass)
+    private <R> R executeInsert(InsertStatement statement, SyncStmtOption option, Class<R> resultClass)
             throws ArmyException {
 
         final Stmt stmt;
-        stmt = this.parseInsertStatement(statement);
+        stmt = parseInsertStatement(statement);
 
-        final SyncStmtOption option;
-        option = replaceIfNeed(userOption);
-
-        final SqlLogMode sqlLogMode;
         final long executionStartNanoSecond;
-        if (!this.factory.sqlExecutionCostTime) {
-            sqlLogMode = SqlLogMode.OFF;
-            executionStartNanoSecond = -1L;
-        } else if ((sqlLogMode = obtainSqlLogMode()) == SqlLogMode.OFF) {
-            executionStartNanoSecond = -1L;
-        } else {
-            executionStartNanoSecond = System.nanoTime();
-        }
-
+        executionStartNanoSecond = getExecutionStartNanoSecond();
 
         final R states;
 
@@ -883,8 +837,8 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             throw updateChildNoTransaction();
         }
 
-        if (sqlLogMode != SqlLogMode.OFF) {
-            printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
+        if (executionStartNanoSecond > 0) {
+            printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
         }
         return states;
     }
@@ -903,16 +857,8 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         final Stmt stmt;
         stmt = parseDmlStatement(statement, option);
 
-        final SqlLogMode sqlLogMode;
         final long executionStartNanoSecond;
-        if (!this.factory.sqlExecutionCostTime) {
-            sqlLogMode = SqlLogMode.OFF;
-            executionStartNanoSecond = -1L;
-        } else if ((sqlLogMode = obtainSqlLogMode()) == SqlLogMode.OFF) {
-            executionStartNanoSecond = -1L;
-        } else {
-            executionStartNanoSecond = System.nanoTime();
-        }
+        executionStartNanoSecond = getExecutionStartNanoSecond();
 
         final R result;
         if (stmt instanceof SimpleStmt) {
@@ -964,7 +910,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             result = this.executor.update(pairStmt.secondStmt(), option, resultClass, Option.EMPTY_FUNC);
         }
         if (executionStartNanoSecond > 0L) {
-            printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
+            printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
         }
         return result;
     }
@@ -1067,18 +1013,14 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
      * @see #executeQuery(DqlStatement, SyncStmtOption, ReaderFunction)
      */
     private SyncStmtOption replaceForQueryExecutionLogger(final SyncStmtOption optionOfUser, final Stmt stmt) {
-        final SqlLogMode sqlLogMode;
-        if ((sqlLogMode = obtainSqlLogMode()) == SqlLogMode.OFF) {
-            return replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, null);
-        }
 
         final long executionStartNanoSecond;
-        executionStartNanoSecond = System.nanoTime();
+        executionStartNanoSecond = getExecutionStartNanoSecond();
 
         final Consumer<ResultStates> logConsumer;
         logConsumer = states -> {
-            if (!states.hasMoreResult() && !states.hasMoreFetch()) {
-                printExecutionCostTimeLog(getLogger(), stmt, sqlLogMode, executionStartNanoSecond);
+            if (executionStartNanoSecond > 0 && states.isLastStates()) {
+                printExecutionCostTimeLog(getLogger(), stmt, executionStartNanoSecond);
             }
         };
         return replaceForQueryIfNeed(stmt.hasOptimistic(), optionOfUser, logConsumer);

@@ -26,7 +26,6 @@ import io.army.transaction.*;
 import java.io.Closeable;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -308,30 +307,17 @@ public sealed interface SyncSession extends PackageSession, Closeable permits Sy
     @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
-    <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass);
-
-    <R> Optional<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
-
     @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
     @Nullable
     <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
-    <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor);
-
-    <R> Optional<R> queryOneOptionalObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
-
     @Nullable
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
 
     @Nullable
     <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
-
-    <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
-
-    <R> Optional<R> queryOneOptionalRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
-
 
     /**
      * @param <R> representing select result Java Type.

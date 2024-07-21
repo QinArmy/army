@@ -17,11 +17,11 @@
 package io.army.result;
 
 import io.army.executor.DataAccessException;
+import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.session.StmtOption;
 import io.army.spec.OptionSpec;
 
-import io.army.lang.Nullable;
 import java.util.function.Consumer;
 
 public interface ResultStates extends ResultItem, OptionSpec {
@@ -91,6 +91,11 @@ public interface ResultStates extends ResultItem, OptionSpec {
      * @return true : exists more result after this result
      */
     boolean hasMoreResult();
+
+    /**
+     * @return true : this {@link ResultStates} is the last {@link ResultStates} of current stream.
+     */
+    boolean isLastStates();
 
 
     /**
@@ -200,7 +205,6 @@ public interface ResultStates extends ResultItem, OptionSpec {
      * @return true : child dml query with tow statement mode,for example : postgre insert child with RETURNING clause.
      * @see Option#FIRST_DML_STATES
      * @see Option#SECOND_DML_QUERY_STATES
-     *
      */
     @Nullable
     @Override
