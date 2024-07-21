@@ -24,45 +24,45 @@ import java.util.function.Consumer;
 public interface SyncStmtOption extends StmtOption, StreamOption {
 
     static SyncStmtOption defaultOption() {
-        return ArmySyncStmtOptions.DEFAULT;
+        return SyncStmtOptions.DEFAULT;
     }
 
 
     static SyncStmtOption fetchSize(int value) {
-        return ArmySyncStmtOptions.fetchSize(value);
+        return SyncStmtOptions.fetchSize(value);
     }
 
 
     static SyncStmtOption frequency(int value) {
-        return ArmySyncStmtOptions.frequency(value);
+        return SyncStmtOptions.frequency(value);
     }
 
     static SyncStmtOption splitSize(int value) {
-        return ArmySyncStmtOptions.splitSize(value);
+        return SyncStmtOptions.splitSize(value);
     }
 
     static SyncStmtOption timeoutMillis(int millis) {
-        return ArmySyncStmtOptions.timeoutMillis(millis);
+        return SyncStmtOptions.timeoutMillis(millis);
     }
 
     static SyncStmtOption multiStmtMode(MultiStmtMode mode) {
-        return ArmySyncStmtOptions.multiStmtMode(mode);
+        return SyncStmtOptions.multiStmtMode(mode);
     }
 
     static SyncStmtOption stateConsumer(Consumer<ResultStates> consumer) {
-        return ArmySyncStmtOptions.stateConsumer(consumer);
+        return SyncStmtOptions.stateConsumer(consumer);
     }
 
     static SyncStmtOption commanderConsumer(Consumer<StreamCommander> consumer) {
-        return ArmySyncStmtOptions.commanderConsumer(consumer);
+        return SyncStmtOptions.commanderConsumer(consumer);
     }
 
     static SyncStmtOption preferServerPrepare(boolean prefer) {
-        return ArmySyncStmtOptions.preferServerPrepare(prefer);
+        return SyncStmtOptions.preferServerPrepare(prefer);
     }
 
     static Builder builder() {
-        return ArmySyncStmtOptions.builder();
+        return SyncStmtOptions.builder();
     }
 
 

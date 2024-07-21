@@ -1,5 +1,7 @@
 package io.army.util;
 
+import io.army.lang.Nullable;
+
 public abstract class StreamFunctions {
 
     private StreamFunctions() {
@@ -7,7 +9,7 @@ public abstract class StreamFunctions {
     }
 
 
-    public static void ignore(Object o) {
+    public static void ignore(@Nullable Object o) {
         // no-op
     }
 

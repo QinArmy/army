@@ -22,10 +22,10 @@ import io.army.result.ResultStates;
 
 import java.util.function.Consumer;
 
-public abstract class _ArmyStmtOptions {
+public abstract class StmtOptions {
 
 
-    protected _ArmyStmtOptions() {
+    protected StmtOptions() {
         throw new UnsupportedOperationException();
     }
 
@@ -211,8 +211,7 @@ public abstract class _ArmyStmtOptions {
                               final Consumer<ResultStates> statesConsumer) {
             super(timeoutMillis, startMills);
 
-            if (option instanceof ArmyStmtOption) {
-                final ArmyStmtOption armyOption = (ArmyStmtOption) option;
+            if (option instanceof ArmyStmtOption armyOption) {
 
                 this.preferServerPrepare = armyOption.preferServerPrepare;
                 this.parseBatchAsMultiStmt = armyOption.parseBatchAsMultiStmt;
@@ -220,6 +219,7 @@ public abstract class _ArmyStmtOptions {
                 this.frequency = armyOption.frequency;
 
                 this.multiStmtMode = armyOption.multiStmtMode;
+
             } else {
                 this.preferServerPrepare = option.isPreferServerPrepare();
                 this.parseBatchAsMultiStmt = option.isParseBatchAsMultiStmt();
@@ -227,8 +227,8 @@ public abstract class _ArmyStmtOptions {
                 this.frequency = option.frequency();
 
                 this.multiStmtMode = option.multiStmtMode();
-            }
 
+            }
             this.statesConsumer = statesConsumer;
 
         }

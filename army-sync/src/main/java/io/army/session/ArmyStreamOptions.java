@@ -79,7 +79,7 @@ abstract class ArmyStreamOptions {
 
         @Override
         public boolean isPreferClientStream() {
-            return ArmySyncStmtOptions.DEFAULT_PREFER_CLIENT_STREAM;
+            return SyncStmtOptions.DEFAULT_PREFER_CLIENT_STREAM;
         }
 
         @Override

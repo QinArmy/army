@@ -32,6 +32,7 @@ import io.army.executor.ExecutorSupport;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.option.Option;
@@ -39,6 +40,7 @@ import io.army.result.ChildDmlNoTractionException;
 import io.army.result.ChildUpdateException;
 import io.army.result.CurrentRecord;
 import io.army.result.ResultStates;
+import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.SingleSqlStmt;
 import io.army.stmt.Stmt;
 import io.army.stmt.TwoStmtQueryStmt;
@@ -626,6 +628,66 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
 
         Function<? super CurrentRecord, R> apply(SingleSqlStmt stmt, boolean immutableMap);
     }
+
+
+    static final class InsertQueryRowReader<R> {
+
+        private final GeneratedKeyStmt stmt;
+
+        private final Function<? super CurrentRecord, R> function;
+
+        private final PrimaryFieldMeta<?> idField;
+
+        private final MappingType idType;
+
+        private final int rowSize;
+
+        private final int idSelectionIndex;
+
+        private int rowIndex;
+
+
+        // private  final boolean oneRowWithConflict;
+
+        InsertQueryRowReader(GeneratedKeyStmt stmt, @Nullable Function<? super CurrentRecord, R> function) {
+            this.stmt = stmt;
+            this.function = function;
+            this.idField = stmt.idField();
+
+            this.idType = this.idField.mappingType();
+            this.idSelectionIndex = stmt.idSelectionIndex();
+            this.rowSize = stmt.rowSize();
+            assert this.idSelectionIndex > -1;
+            // this.oneRowWithConflict =   this.rowSize == 1 && stmt.hasConflictClause(); // query don't need
+        }
+
+
+        @Nullable
+        R readOneRow(final CurrentRecord record) {
+            final int rowIndex = this.rowIndex;
+            if (rowIndex == this.rowSize) {
+                throw _Exceptions.insertedRowsAndGenerateIdNotMatch(this.rowSize, rowIndex + 1);
+            }
+
+            final int idSelectionIndex = this.idSelectionIndex;
+            final Object idValue;
+            idValue = record.get(idSelectionIndex, this.idType);
+            if (idValue == null) {
+                throw _Exceptions.idValueIsNull(rowIndex, this.idField);
+            }
+            this.stmt.setGeneratedIdValue(rowIndex, idValue);
+            this.rowIndex++;
+
+            final Function<? super CurrentRecord, R> function = this.function;
+
+            if (function == null) {
+                return null;
+            }
+            return function.apply(record);
+        }
+
+
+    } // InsertQueryRowReader
 
 
     private static abstract class SecondRecordReader<R> {

@@ -208,16 +208,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
-    public final <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> sessionFunc)
+    public final ResultStates update(SimpleStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException {
 
         assert !(stmt instanceof GeneratedKeyStmt) || stmt.selectionList().size() == 0;
 
-        if (resultClass != Long.class && resultClass != ResultStates.class) {
-            throw new IllegalArgumentException();
-        }
+
         try (final Statement statement = bindStatement(stmt, option)) {
 
             final long affectedRows;
@@ -251,9 +248,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 firstIdHolder = null;
             }
 
-            if (resultClass == Long.class) {
-                return (R) Long.valueOf(affectedRows);
-            }
 
             final Map<Option<?>, Object> optionMap = _Collections.hashMap();
             putExecutorOptions(statement.getWarnings(), optionMap);
@@ -265,7 +259,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 final JdbcStmtCursor cursor = new JdbcStmtCursor(this, (DeclareCursorStmt) stmt, option, sessionFunc);
                 optionMap.put(SyncStmtCursor.SYNC_STMT_CURSOR, cursor);
             }
-            return (R) new JdbcResultStates(mergeOptionFunc(optionMap, sessionFunc));
+            return new JdbcResultStates(mergeOptionFunc(optionMap, sessionFunc));
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -1720,7 +1714,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     if (oneRowWithConflict) {
                         continue;
                     }
-                    throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
+                    throw _Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
                 }
                 idValue = get(resultSet, idColumnIndexBaseOne, type, sqlType);
                 if (idValue == null) {
@@ -1740,7 +1734,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 stmt.setGeneratedIdValue(rowIndex, idValue);
             }
             if (rowIndex != rowSize && !(oneRowWithConflict && rowIndex == 2)) {
-                throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
+                throw _Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
             }
             return rowIndex;
         }
@@ -1822,13 +1816,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             resultSet = statement.executeQuery(sql);
         }
         return resultSet;
-    }
-
-
-    private static DataAccessException insertedRowsAndGenerateIdNotMatch(int insertedRows, int actualCount) {
-        String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows,
-                actualCount);
-        return new DataAccessException(m);
     }
 
 

@@ -1453,6 +1453,12 @@ public abstract class _Exceptions {
         return new IllegalArgumentException("double quote count not match");
     }
 
+    public static DataAccessException insertedRowsAndGenerateIdNotMatch(int insertedRows, int actualCount) {
+        String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows,
+                actualCount);
+        return new DataAccessException(m);
+    }
+
 
     private static final class ExistsTransactionException extends TransactionException {
 

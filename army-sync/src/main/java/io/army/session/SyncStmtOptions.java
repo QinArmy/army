@@ -24,9 +24,9 @@ import io.army.transaction.TransactionInfo;
 
 import java.util.function.Consumer;
 
-abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
+abstract class SyncStmtOptions extends StmtOptions {
 
-    private ArmySyncStmtOptions() {
+    private SyncStmtOptions() {
         throw new UnsupportedOperationException();
     }
 
@@ -155,13 +155,20 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
 
 
     static SyncStmtOption replaceStateConsumer(final SyncStmtOption option, final Consumer<ResultStates> consumer) {
+        final Consumer<ResultStates> consumerOfUser, finalConsumer;
+        consumerOfUser = option.stateConsumer();
+        if (consumerOfUser == ResultStates.IGNORE_STATES) {
+            finalConsumer = consumer;
+        } else {
+            finalConsumer = consumer.andThen(consumerOfUser);
+        }
         final SyncStmtOption newOption;
         if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
-            newOption = new OnlyStateConsumerOption(consumer);
+            newOption = new OnlyStateConsumerOption(finalConsumer);
         } else if (option.isSupportTimeout()) {
-            newOption = new ArmySyncOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), consumer);
+            newOption = new ArmySyncOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer);
         } else {
-            newOption = new ArmySyncOverrideOption(option, 0, 0L, consumer);
+            newOption = new ArmySyncOverrideOption(option, 0, 0L, finalConsumer);
         }
         return newOption;
     }
@@ -229,8 +236,7 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
                                    Consumer<ResultStates> consumer) {
             super(option, timeoutMillis, startMills, consumer);
 
-            if (option instanceof ArmySyncStmtOption) {
-                final ArmySyncStmtOption syncOption = (ArmySyncStmtOption) option;
+            if (option instanceof ArmySyncStmtOption syncOption) {
                 this.splitSize = syncOption.splitSize;
                 this.commanderConsumer = syncOption.commanderConsumer;
                 this.preferClientStream = syncOption.preferClientStream;
@@ -477,7 +483,7 @@ abstract class ArmySyncStmtOptions extends _ArmyStmtOptions {
         private static final OnlyPreferServerPrepareOption INSTANCE = new OnlyPreferServerPrepareOption();
 
         /**
-         * @see ArmySyncStmtOptions#preferServerPrepare(boolean)
+         * @see SyncStmtOptions#preferServerPrepare(boolean)
          */
         private OnlyPreferServerPrepareOption() {
         }

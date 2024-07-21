@@ -24,7 +24,7 @@ import io.army.transaction.TransactionInfo;
 
 import java.util.function.Consumer;
 
-abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
+abstract class ArmyReactiveStmtOptions extends StmtOptions {
 
 
     private ArmyReactiveStmtOptions() {
