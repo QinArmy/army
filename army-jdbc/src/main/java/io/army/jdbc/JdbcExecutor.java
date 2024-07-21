@@ -228,35 +228,31 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
         try (final Statement statement = bindStatement(stmt, option)) {
 
-            final long rows;
-
+            final long affectedRows;
             if (statement instanceof PreparedStatement) {
                 if (this.factory.useLargeUpdate) {
-                    rows = ((PreparedStatement) statement).executeLargeUpdate();
+                    affectedRows = ((PreparedStatement) statement).executeLargeUpdate();
                 } else {
-                    rows = ((PreparedStatement) statement).executeUpdate();
+                    affectedRows = ((PreparedStatement) statement).executeUpdate();
                 }
             } else if (this.factory.useLargeUpdate) {
                 if (stmt instanceof GeneratedKeyStmt) {
-                    rows = statement.executeLargeUpdate(stmt.sqlText(), Statement.RETURN_GENERATED_KEYS);
+                    affectedRows = statement.executeLargeUpdate(stmt.sqlText(), Statement.RETURN_GENERATED_KEYS);
                 } else {
-                    rows = statement.executeLargeUpdate(stmt.sqlText());
+                    affectedRows = statement.executeLargeUpdate(stmt.sqlText());
                 }
-
             } else if (stmt instanceof GeneratedKeyStmt) {
-                rows = statement.executeUpdate(stmt.sqlText(), Statement.RETURN_GENERATED_KEYS);
+                affectedRows = statement.executeUpdate(stmt.sqlText(), Statement.RETURN_GENERATED_KEYS);
             } else {
-                rows = statement.executeUpdate(stmt.sqlText());
+                affectedRows = statement.executeUpdate(stmt.sqlText());
             }
 
-
             final long[] firstIdHolder;
-
             if (stmt instanceof GeneratedKeyStmt) {
                 firstIdHolder = new long[1];
                 final int insertRowCount;
                 insertRowCount = readRowId(statement.getGeneratedKeys(), firstIdHolder, (GeneratedKeyStmt) stmt);
-                if (insertRowCount != rows) {
+                if (insertRowCount != affectedRows) {
                     throw driverError();
                 }
             } else {
@@ -264,16 +260,15 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             }
 
             if (resultClass == Long.class) {
-                return (R) Long.valueOf(rows);
+                return (R) Long.valueOf(affectedRows);
             }
+
             final Map<Option<?>, Object> optionMap = _Collections.hashMap();
             putExecutorOptions(statement.getWarnings(), optionMap);
-            optionMap.put(AFFECTED_ROWS, rows);
-
+            optionMap.put(AFFECTED_ROWS, affectedRows);
             if (firstIdHolder != null) {
                 optionMap.put(LAST_INSERTED_ID, firstIdHolder[0]);
             }
-
             if (stmt instanceof DeclareCursorStmt) {
                 final JdbcStmtCursor cursor = new JdbcStmtCursor(this, (DeclareCursorStmt) stmt, option, sessionFunc);
                 optionMap.put(SyncStmtCursor.SYNC_STMT_CURSOR, cursor);
@@ -305,7 +300,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         final Stream<ResultStates> stream;
 
         if (option.isParseBatchAsMultiStmt()) {
-            stream = executeMultiStmtBatchUpdate(stmt, option);
+            stream = executeMultiStmtBatchUpdate(stmt, option, optionFunc);
         } else {
             stream = executeBatchUpdate(stmt, option);
         }
@@ -345,7 +340,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             statement = this.conn.prepareStatement(stmt.sqlText());
 
-            return new JdbcBatchQuery(true, this, stmt, option, optionFunc, statement);
+            // return new JdbcBatchQuery(true, this, stmt, option, optionFunc, statement);
+            throw new UnsupportedOperationException();
         } catch (Exception e) {
             closeResource(statement);
             throw handleException(e);
@@ -844,14 +840,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-    final <R> Stream<R> executeCursorFetchRecord(final DeclareCursorStmt stmt, final Direction direction,
-                                                 final @Nullable Long rowCount, final Function<? super CurrentRecord, R> function,
-                                                 final Consumer<ResultStates> consumer) {
-
-        return executeCursorFetch(stmt.safeCursorName(), direction, rowCount, null, consumer);
-    }
-
-
     final ResultStates executeCursorMove(final String safeCursorName, final Direction direction, final @Nullable Long rowCount) {
 
         try (Statement statement = this.conn.createStatement()) {
@@ -938,9 +926,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-    /**
-     * @see #executeCursorFetchRecord(DeclareCursorStmt, Direction, Long, Function, Consumer)
-     */
     private <R> Stream<R> executeCursorFetch(final JdbcStmtCursor stmtCursor,
                                              final Direction direction, final @Nullable Long rowCount,
                                              final @Nullable Function<? super CurrentRecord, R> function,
@@ -975,13 +960,15 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final List<? extends Selection> selectionList = stmtCursor.selectionList;
 
             final JdbcCurrentRecord<R> currentRecord;
-            currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function, consumer, metaData);
+            currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function, consumer,
+                    metaData, resultItemStream);
 
-            final JdbcCursorRowSpliterator<R> spliterator;
-            spliterator = new JdbcCursorRowSpliterator<>(cursorStatement.getWarnings(), stmtCursor.stmtOption,
-                    resultSet, currentRecord, stmtCursor.sessionFunc, resultItemStream);
-
-            return assembleStream(spliterator, stmtCursor.stmtOption);
+//            final JdbcCursorRowSpliterator<R> spliterator;
+//            spliterator = new JdbcCursorRowSpliterator<>(cursorStatement.getWarnings(), stmtCursor.stmtOption,
+//                    resultSet, currentRecord, stmtCursor.sessionFunc, resultItemStream);
+//
+//            return assembleStream(spliterator, stmtCursor.stmtOption);
+            throw new UnsupportedOperationException();
         } catch (Exception e) {
             closeResource(resultSet);
             throw handleException(e);
@@ -1128,10 +1115,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     /**
      * @see #batchUpdate(BatchStmt, SyncStmtOption, Function)
      */
-    private Stream<ResultStates> executeMultiStmtBatchUpdate(BatchStmt stmt, SyncStmtOption option) {
+    private Stream<ResultStates> executeMultiStmtBatchUpdate(final BatchStmt stmt, final SyncStmtOption option,
+                                                             final Function<Option<?>, ?> sessionFunc) {
         final List<List<SQLParam>> groupList;
         groupList = stmt.groupList();
-        if (groupList.get(0).size() > 0) {
+        if (groupList.getFirst().size() > 0) {
             throw new IllegalArgumentException("stmt error");
         }
 
@@ -1150,19 +1138,34 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final int stmtSize;
             stmtSize = groupList.size();
 
-            final Function<Option<?>, ?> statesOptionFunc;
-            statesOptionFunc = putExecutorOptions(statement.getWarnings())::get;
+            final Map<Option<?>, Object> optionMap = _Collections.hashMap();
+            putExecutorOptions(statement.getWarnings(), optionMap);
+            optionMap.put(BATCH_SIZE, stmtSize);
 
             final List<ResultStates> resultList;
             resultList = _Collections.arrayList(stmtSize);
 
+            Map<Option<?>, Object> resultOptionMap;
+
             long updateCount;
             int resultNo = 0;
-            while (true) {
+            for (long affectedRows = -1; ; affectedRows = updateCount, resultNo++) {
                 if (useLargeUpdate) {
                     updateCount = statement.getLargeUpdateCount();
                 } else {
                     updateCount = statement.getUpdateCount();
+                }
+
+                if (affectedRows != -1) {
+                    resultOptionMap = _Collections.hashMap(optionMap);
+
+                    resultOptionMap.put(AFFECTED_ROWS, affectedRows);
+                    resultOptionMap.put(RESULT_NO, resultNo);
+                    resultOptionMap.put(BATCH_NO, resultNo);
+
+                    resultOptionMap.put(HAS_MORE_RESULT, updateCount != -1);
+
+                    resultList.add(new JdbcResultStates(mergeOptionFunc(resultOptionMap, sessionFunc)));
                 }
 
                 if (updateCount == -1L) {
@@ -1170,24 +1173,20 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     break;
                 }
 
-                resultNo++;
-
-                resultList.add(new SingleUpdateStates(resultNo, statesOptionFunc, 0L, updateCount, resultNo < stmtSize));
-
                 if (statement.getMoreResults()) {
                     statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
                     // sql error
                     throw _Exceptions.batchUpdateReturnResultSet();
                 }
 
-            }
+            } // for loop
 
             if (resultNo != stmtSize) {
                 throw _Exceptions.batchCountNotMatch(stmtSize, resultNo);
             }
             return resultList.stream();
         } catch (Exception e) {
-            throw wrapError(e);
+            throw handleException(e);
         }
 
     }
