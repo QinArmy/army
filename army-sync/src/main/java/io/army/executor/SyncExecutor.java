@@ -89,9 +89,6 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
     void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
 
-    <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc) throws DataAccessException;
-
-
     <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
             throws DataAccessException;
 
