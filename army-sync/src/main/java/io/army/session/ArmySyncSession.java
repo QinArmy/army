@@ -17,13 +17,17 @@
 package io.army.session;
 
 import io.army.ArmyException;
+import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.executor.DataAccessException;
 import io.army.executor.DriverSpiHolder;
 import io.army.executor.SyncExecutor;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.option.Option;
 import io.army.result.ChildUpdateException;
@@ -779,6 +783,96 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     }
 
 
+    static final class InsertQueryRowReader<R> {
+
+        private final GeneratedKeyStmt stmt;
+
+        private final List<? extends Selection> selectionList;
+
+        private final Supplier<R> constructor;
+
+        private final PrimaryFieldMeta<?> idField;
+
+        private final MappingType idType;
+
+        private final int rowSize;
+
+        private final int idSelectionIndex;
+
+        private final Class<?>[] classArray;
+
+        private int rowIndex;
+
+        private ObjectAccessor accessor;
+
+        // private  final boolean oneRowWithConflict;
+
+        private InsertQueryRowReader(GeneratedKeyStmt stmt, Supplier<R> constructor) {
+            this.stmt = stmt;
+            this.selectionList = stmt.selectionList();
+            this.constructor = constructor;
+            this.idField = stmt.idField();
+
+            this.idType = this.idField.mappingType();
+            this.idSelectionIndex = stmt.idSelectionIndex();
+            this.classArray = new Class<?>[stmt.selectionList().size()];
+            this.rowSize = stmt.rowSize();
+            assert this.idSelectionIndex > -1;
+            // this.oneRowWithConflict =   this.rowSize == 1 && stmt.hasConflictClause(); // query don't need
+        }
+
+
+        @Nullable
+        R readOneRow(final CurrentRecord record) {
+            final int idSelectionIndex = this.idSelectionIndex;
+
+            final Object idValue;
+            idValue = record.get(idSelectionIndex, this.idType);
+            final int rowIndex = this.rowIndex;
+            if (idValue == null) {
+                throw _Exceptions.idValueIsNull(rowIndex, this.idField);
+            }
+            this.stmt.setGeneratedIdValue(rowIndex, idValue);
+            this.rowIndex++;
+
+            final Supplier<R> constructor = this.constructor;
+            if (constructor == null) {
+                return null;
+            }
+            final R row;
+            row = constructor.get();
+            if (row == null) {
+                throw _Exceptions.objectConstructorError();
+            }
+            ObjectAccessor accessor = this.accessor;
+            if (accessor == null) {
+                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
+            }
+            final Class<?>[] classArray = this.classArray;
+            Class<?> columnClass;
+            final int columnCount = record.getColumnCount();
+            for (int i = 0; i < columnCount; i++) {
+                if (i == idSelectionIndex) {
+                    accessor.set(row, this.idField.fieldName(), idValue);
+                    continue;
+                }
+                columnClass = classArray[i];
+                if (columnClass == null) {
+                    if (row instanceof Map) {
+                        columnClass =
+                    } else {
+
+                    }
+                }
+
+            }
+            return null;
+        }
+
+
+    } // InsertQueryRowReader
+
+
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
      * @see #updateAsResult(SimpleDmlStatement, SyncStmtOption, Class)
@@ -795,6 +889,12 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         final R states;
 
         if (stmt instanceof SimpleStmt) {
+            if (stmt instanceof GeneratedKeyStmt && ((GeneratedKeyStmt) stmt).selectionList().size() > 0) {
+
+                this.executor.query((SimpleStmt) stmt, null, option, Option.EMPTY_FUNC);
+            } else {
+
+            }
             states = this.executor.update((SimpleStmt) stmt, option, resultClass, Option.EMPTY_FUNC);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
