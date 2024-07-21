@@ -24,37 +24,37 @@ import java.util.function.Consumer;
 public interface ReactiveStmtOption extends StmtOption {
 
     static ReactiveStmtOption defaultOption() {
-        return ArmyReactiveStmtOptions.DEFAULT;
+        return ReactiveStmtOptions.DEFAULT;
     }
 
 
     static ReactiveStmtOption fetchSize(int value) {
-        return ArmyReactiveStmtOptions.fetchSize(value);
+        return ReactiveStmtOptions.fetchSize(value);
     }
 
 
     static ReactiveStmtOption frequency(int value) {
-        return ArmyReactiveStmtOptions.frequency(value);
+        return ReactiveStmtOptions.frequency(value);
     }
 
     static ReactiveStmtOption timeoutMillis(int millis) {
-        return ArmyReactiveStmtOptions.timeoutMillis(millis);
+        return ReactiveStmtOptions.timeoutMillis(millis);
     }
 
     static ReactiveStmtOption multiStmtMode(MultiStmtMode mode) {
-        return ArmyReactiveStmtOptions.multiStmtMode(mode);
+        return ReactiveStmtOptions.multiStmtMode(mode);
     }
 
     static ReactiveStmtOption stateConsumer(Consumer<ResultStates> consumer) {
-        return ArmyReactiveStmtOptions.stateConsumer(consumer);
+        return ReactiveStmtOptions.stateConsumer(consumer);
     }
 
     static ReactiveStmtOption preferServerPrepare(boolean prefer) {
-        return ArmyReactiveStmtOptions.preferServerPrepare(prefer);
+        return ReactiveStmtOptions.preferServerPrepare(prefer);
     }
 
     static Builder builder() {
-        return ArmyReactiveStmtOptions.builder();
+        return ReactiveStmtOptions.builder();
     }
 
 

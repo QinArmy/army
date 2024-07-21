@@ -1468,21 +1468,31 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             final CurrentRow jdbdRow = this.jdbdRow;
             assert jdbdRow != null;
 
-            Object value;
-            value = this.executor.get(jdbdRow, indexBasedZero, type, dataType);
 
-            if (value == null) {
-                return null;
+            try {
+                Object value;
+                value = this.executor.get(jdbdRow, indexBasedZero, type, dataType);
+
+                if (value == null) {
+                    return null;
+                }
+
+                // TODO 解密 ,脱敏
+
+                value = type.afterGet(dataType, this.executor.factory.mappingEnv, value);
+                if (value == MappingType.DOCUMENT_NULL_VALUE) {
+                    if (!(type instanceof MappingType.SqlDocumentType)) {
+                        throw afterGetMethodError(type, dataType, value);
+                    }
+                    value = null;
+                }
+
+                return value;
+            } catch (Exception e) {
+                final DataAccessException error;
+                error = _Exceptions.columnGetError(indexBasedZero, getColumnLabel(indexBasedZero), e);
+                throw this.executor.wrapExecutingError(error);
             }
-
-            // TODO 解密 ,脱敏
-
-            value = type.afterGet(dataType, this.executor.factory.mappingEnv, value);
-            if (value == MappingType.DOCUMENT_NULL_VALUE) {
-                value = null;
-            }
-
-            return value;
         }
 
         private JdbdStmtRecordMeta createRecordMeta(final ResultRowMeta rowMeta) {
@@ -1543,7 +1553,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
             try {
                 statesConsumer.accept(armyStates);
             } catch (Exception e) {
-                throw _Exceptions.statesConsumerInvokeError(statesConsumer);
+                throw _Exceptions.statesConsumerInvokeError(statesConsumer, e);
             }
         }
 

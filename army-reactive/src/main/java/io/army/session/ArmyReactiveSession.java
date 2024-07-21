@@ -112,7 +112,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <R> Mono<R> queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
-        return query(statement, resultClass, ArmyReactiveStmtOptions.DEFAULT)
+        return query(statement, resultClass, ReactiveStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne);
     }
 
@@ -125,7 +125,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return queryObject(statement, constructor, ArmyReactiveStmtOptions.DEFAULT)
+        return queryObject(statement, constructor, ReactiveStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne);
     }
 
@@ -137,7 +137,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <R> Mono<R> queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return queryRecord(statement, function, ArmyReactiveStmtOptions.DEFAULT)
+        return queryRecord(statement, function, ReactiveStmtOptions.DEFAULT)
                 .reduce(StreamFunctions::atMostOne);
     }
 
@@ -149,7 +149,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <R> Flux<R> query(DqlStatement statement, Class<R> resultClass) {
-        return query(statement, resultClass, ArmyReactiveStmtOptions.DEFAULT);
+        return query(statement, resultClass, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -159,7 +159,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <R> Flux<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
-        return this.queryObject(statement, constructor, ArmyReactiveStmtOptions.DEFAULT);
+        return this.queryObject(statement, constructor, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -169,7 +169,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <R> Flux<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecord(statement, function, ArmyReactiveStmtOptions.DEFAULT);
+        return this.queryRecord(statement, function, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -205,7 +205,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <T> Mono<ResultStates> save(T domain) {
-        return save(domain, ArmyReactiveStmtOptions.DEFAULT);
+        return save(domain, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -215,7 +215,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final Mono<ResultStates> update(SimpleDmlStatement statement) {
-        return update(statement, ArmyReactiveStmtOptions.DEFAULT);
+        return update(statement, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -233,12 +233,12 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final <T> Mono<ResultStates> batchSave(List<T> domainList) {
-        return batchSave(domainList, LiteralMode.DEFAULT, ArmyReactiveStmtOptions.DEFAULT);
+        return batchSave(domainList, LiteralMode.DEFAULT, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
     public final <T> Mono<ResultStates> batchSave(List<T> domainList, LiteralMode literalMode) {
-        return batchSave(domainList, literalMode, ArmyReactiveStmtOptions.DEFAULT);
+        return batchSave(domainList, literalMode, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -256,7 +256,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
 
     @Override
     public final Flux<ResultStates> batchUpdate(BatchDmlStatement statement) {
-        return batchUpdate(statement, ArmyReactiveStmtOptions.DEFAULT);
+        return batchUpdate(statement, ReactiveStmtOptions.DEFAULT);
     }
 
     @Override
@@ -460,12 +460,12 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
                     consumer = OPTIMISTIC_LOCK_VALIDATOR.andThen(consumer);
                 }
             }
-            newOption = ArmyReactiveStmtOptions.overrideOptionIfNeed(option, obtainTransactionInfo(), consumer);
-        } else if (option instanceof ArmyReactiveStmtOptions.TransactionOverrideOption
+            newOption = ReactiveStmtOptions.overrideOptionIfNeed(option, obtainTransactionInfo(), consumer);
+        } else if (option instanceof ReactiveStmtOptions.TransactionOverrideOption
                 || (info = obtainTransactionInfo()) == null) {
             newOption = option;
         } else {
-            newOption = ArmyReactiveStmtOptions.overrideOptionIfNeed(option, info, null);
+            newOption = ReactiveStmtOptions.overrideOptionIfNeed(option, info, null);
         }
         return newOption;
     }
@@ -475,11 +475,11 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
         final TransactionInfo info;
 
         final ReactiveStmtOption newOption;
-        if (option instanceof ArmyReactiveStmtOptions.TransactionOverrideOption
+        if (option instanceof ReactiveStmtOptions.TransactionOverrideOption
                 || (info = obtainTransactionInfo()) == null) {
             newOption = option;
         } else {
-            newOption = ArmyReactiveStmtOptions.overrideTimeoutIfNeed(option, info);
+            newOption = ReactiveStmtOptions.overrideTimeoutIfNeed(option, info);
         }
         return newOption;
     }
@@ -593,7 +593,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
                             }
                         };
                         final ReactiveStmtOption newOption;
-                        newOption = ArmyReactiveStmtOptions.replaceStateConsumer(option, statesConsumer);
+                        newOption = ReactiveStmtOptions.replaceStateConsumer(option, statesConsumer, false);
 
                         return this.executor.queryRecord(secondStmt, rowFunc, newOption, Option.singleFunc(Option.FIRST_DML_STATES, parentStates))
                                 .onErrorMap(errorFunc);

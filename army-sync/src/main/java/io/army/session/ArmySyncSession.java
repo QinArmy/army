@@ -658,11 +658,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
                 if (stmt instanceof GeneratedKeyStmt) {
                     final Function<? super CurrentRecord, R> function;
                     function = readerFunc.apply((SingleSqlStmt) stmt, true);
-
-                    final InsertQueryRowReader<R> rowReader;
-                    rowReader = new InsertQueryRowReader<>((GeneratedKeyStmt) stmt, function);
-
-                    rowFunc = rowReader::readOneRow;
+                    rowFunc = insertRowFunc((GeneratedKeyStmt) stmt, function);
                 } else {
                     rowFunc = readerFunc.apply((SingleSqlStmt) stmt, true);
                 }
@@ -691,6 +687,22 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
     }
 
+    private ResultStates executeInsertWithOnlyReturnId(final GeneratedKeyStmt stmt, final SyncStmtOption option,
+                                                       final Function<Option<?>, ?> sessionFunc) {
+        final Function<? super CurrentRecord, Void> idRowFunc;
+        idRowFunc = insertRowFunc(stmt, null);
+        final ResultStates[] statesHolder = new ResultStates[1];
+        final Consumer<ResultStates> consumer = states -> {
+            statesHolder[0] = states;
+        };
+        this.executor.query(stmt, idRowFunc, SyncStmtOptions.replaceStateConsumer(option, consumer, true), sessionFunc)
+                .forEach(StreamFunctions::ignore);
+
+        final ResultStates states;
+        states = statesHolder[0];
+        assert states != null;
+        return states;
+    }
 
     /**
      * @param option the instance is returned by {@link #replaceIfNeed(SyncStmtOption)}
@@ -704,30 +716,32 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
         final SimpleStmt firstStmt = stmt.firstStmt(), secondStmt = stmt.secondStmt();
 
-        final Function<? super CurrentRecord, R> rowFunc;
+        final Function<? super CurrentRecord, R> userFunc;
 
-        if (!firstStmtIsQuery) {
-            rowFunc = readerFunc.apply(secondStmt, true);  // here use secondStmt not firstStmt
-        } else if (firstStmt instanceof GeneratedKeyStmt) {
-            final Function<? super CurrentRecord, R> function;
-            function = readerFunc.apply(firstStmt, false);
-
-            final InsertQueryRowReader<R> rowReader;
-            rowReader = new InsertQueryRowReader<>((GeneratedKeyStmt) firstStmt, function);
-            rowFunc = rowReader::readOneRow;
+        if (firstStmtIsQuery) {
+            userFunc = readerFunc.apply(firstStmt, false);
         } else {
-            rowFunc = readerFunc.apply(firstStmt, false);
+            userFunc = readerFunc.apply(secondStmt, true);  // here use secondStmt not firstStmt
         }
+
 
         ResultStates states = null;
         List<R> resultList = null;
         if (firstStmtIsQuery) {
-            resultList = this.executor.query(firstStmt, rowFunc, option, Option.EMPTY_FUNC)
+            final Function<? super CurrentRecord, R> firstRowFunc;
+            if (firstStmt instanceof GeneratedKeyStmt) {
+                firstRowFunc = insertRowFunc((GeneratedKeyStmt) firstStmt, userFunc);
+            } else {
+                firstRowFunc = userFunc;
+            }
+            resultList = this.executor.query(firstStmt, firstRowFunc, option, Option.EMPTY_FUNC)
                     .collect(Collectors.toCollection(_Collections::arrayList));
             if (resultList.size() == 0) {
                 // exists conflict clause
                 return Stream.empty();
             }
+        } else if (firstStmt instanceof GeneratedKeyStmt && firstStmt.selectionList().size() > 0) {
+            states = executeInsertWithOnlyReturnId((GeneratedKeyStmt) firstStmt, option, Option.EMPTY_FUNC);
         } else {
             states = this.executor.update(firstStmt, option, Option.EMPTY_FUNC);
             if (states.affectedRows() == 0L) {
@@ -741,26 +755,32 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
         try {
             final Consumer<ResultStates> statesConsumer;
+            final Function<Option<?>, ?> sessionFunc;
             final Stream<R> stream;
             if (firstStmtIsQuery) {
-                final Function<Option<?>, ?> optionFunc;
-                optionFunc = Option.singleFunc(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
+                sessionFunc = Option.singleFunc(Option.SECOND_DML_QUERY_STATES, Boolean.TRUE);
                 final SyncSecondRecordReader<R> recordReader;
                 recordReader = new SyncSecondRecordReader<>(this, childTable, (TwoStmtQueryStmt) secondStmt, resultList);
-                // TODO 验证 行数
-                stream = this.executor.query(secondStmt, recordReader::readRecord, option, optionFunc);
+                statesConsumer = childStates -> {
+                    if (childStates.isLastStates()) {
+                        recordReader.validateRowCount();
+                    }
+                };
+                stream = this.executor.query(secondStmt, recordReader::readRecord,
+                        SyncStmtOptions.replaceStateConsumer(option, statesConsumer, false),
+                        sessionFunc);
             } else {
-                // TODO 验证 行数,fetch size
                 final ResultStates parentStates = states;
 
                 statesConsumer = childStates -> {
-                    if (childStates.rowCount() != parentStates.affectedRows()) {
+                    if (childStates.isLastStates() && childStates.rowCount() != parentStates.affectedRows()) {
                         throw _Exceptions.parentChildRowsNotMatch(this, childTable, parentStates.affectedRows(), childStates.rowCount());
                     }
                 };
-                stream = this.executor.query(secondStmt, rowFunc,
-                        SyncStmtOptions.replaceStateConsumer(option, statesConsumer),
-                        Option.singleFunc(Option.FIRST_DML_STATES, parentStates)
+                sessionFunc = Option.singleFunc(Option.FIRST_DML_STATES, parentStates);
+                stream = this.executor.query(secondStmt, userFunc,
+                        SyncStmtOptions.replaceStateConsumer(option, statesConsumer, false),
+                        sessionFunc
                 );
             }
             return stream;
@@ -782,8 +802,6 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
         final Function<? super CurrentRecord, Void> rowFunc;
 
-        final ResultStates[] statesHolder;
-
         final Stmt effectiveFirstStmt;
         if (stmt instanceof PairStmt) {
             effectiveFirstStmt = ((PairStmt) stmt).firstStmt();
@@ -791,20 +809,9 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             effectiveFirstStmt = stmt;
         }
 
-        final SyncStmtOption finalOption;
-        if (effectiveFirstStmt instanceof GeneratedKeyStmt
-                && ((GeneratedKeyStmt) effectiveFirstStmt).selectionList().size() > 0) {
-            final InsertQueryRowReader<Void> reader;
-            reader = new InsertQueryRowReader<>((GeneratedKeyStmt) effectiveFirstStmt, null);
-            rowFunc = reader::readOneRow;
-            statesHolder = new ResultStates[1];
-            final Consumer<ResultStates> statesConsumer = states -> statesHolder[0] = states;
-            finalOption = SyncStmtOptions.replaceStateConsumer(option, statesConsumer);
-        } else {
-            rowFunc = null;
-            statesHolder = null;
-            finalOption = option;
-        }
+        final boolean firstIsQueryInsert;
+        firstIsQueryInsert = effectiveFirstStmt instanceof GeneratedKeyStmt
+                && ((GeneratedKeyStmt) effectiveFirstStmt).selectionList().size() > 0;
 
         final long executionStartNanoSecond;
         executionStartNanoSecond = getExecutionStartNanoSecond();
@@ -812,13 +819,10 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         final ResultStates states;
 
         if (stmt instanceof SimpleStmt) {
-            if (rowFunc == null) {
-                states = this.executor.update((SimpleStmt) stmt, finalOption, Option.EMPTY_FUNC);
+            if (firstIsQueryInsert) {
+                states = executeInsertWithOnlyReturnId((GeneratedKeyStmt) stmt, option, Option.EMPTY_FUNC);
             } else {
-                this.executor.query((SimpleStmt) stmt, rowFunc, finalOption, Option.EMPTY_FUNC)
-                        .forEach(StreamFunctions::ignore);
-                states = statesHolder[0];
-                assert states != null;
+                states = this.executor.update((SimpleStmt) stmt, option, Option.EMPTY_FUNC);
             }
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
@@ -831,18 +835,15 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
             final ResultStates parentStates;
 
-            if (rowFunc == null) {
-                parentStates = this.executor.update(firstStmt, option, Option.EMPTY_FUNC);
+            if (firstIsQueryInsert) {
+                parentStates = executeInsertWithOnlyReturnId((GeneratedKeyStmt) firstStmt, option, Option.EMPTY_FUNC);
             } else {
-                this.executor.query(firstStmt, rowFunc, finalOption, Option.EMPTY_FUNC)
-                        .forEach(StreamFunctions::ignore);
-                parentStates = statesHolder[0];
-                assert parentStates != null;
+                parentStates = this.executor.update(firstStmt, option, Option.EMPTY_FUNC);
             }
             try {
                 final Function<Option<?>, ?> optionFunc;
                 optionFunc = Option.singleFunc(Option.FIRST_DML_STATES, parentStates);
-                states = this.executor.update(pairStmt.secondStmt(), option, optionFunc);
+                states = this.executor.update(pairStmt.secondStmt(), option, optionFunc); // here use option not finalOption
             } catch (Throwable e) {
                 throw _Exceptions.childInsertError(this, domainTable, e);
             }

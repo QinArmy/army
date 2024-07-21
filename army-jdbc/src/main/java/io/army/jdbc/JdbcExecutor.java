@@ -252,6 +252,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final Map<Option<?>, Object> optionMap = _Collections.hashMap();
             putExecutorOptions(statement.getWarnings(), optionMap);
             optionMap.put(AFFECTED_ROWS, affectedRows);
+            optionMap.put(HAS_COLUMN, Boolean.FALSE);
             if (firstIdHolder != null) {
                 optionMap.put(LAST_INSERTED_ID, firstIdHolder[0]);
             }
@@ -939,7 +940,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
+     * @see #update(SimpleStmt, SyncStmtOption, Function)
      */
     private void putExecutorOptions(final @Nullable SQLWarning jdbcWarning, final Map<Option<?>, Object> map) {
         map.put(SERVER_META, this.factory.serverMeta);
@@ -1116,6 +1117,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final Map<Option<?>, Object> optionMap = _Collections.hashMap();
             putExecutorOptions(statement.getWarnings(), optionMap);
             optionMap.put(BATCH_SIZE, stmtSize);
+            optionMap.put(HAS_COLUMN, Boolean.FALSE);
 
             final List<ResultStates> resultList;
             resultList = _Collections.arrayList(stmtSize);
@@ -1199,6 +1201,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final Map<Option<?>, Object> optionMap = _Collections.hashMap();
             putExecutorOptions(statement.getWarnings(), optionMap);
             optionMap.put(BATCH_SIZE, batchSize);
+            optionMap.put(HAS_COLUMN, Boolean.FALSE);
 
             final List<ResultStates> resultList = _Collections.arrayList(batchSize);
 
@@ -1248,7 +1251,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
+     * @see #update(SimpleStmt, SyncStmtOption, Function)
      */
     private Statement bindStatement(final SimpleStmt stmt, final SyncStmtOption option)
             throws TimeoutException, SQLException {
@@ -1317,7 +1320,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     /**
-     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
+     * @see #update(SimpleStmt, SyncStmtOption, Function)
      * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function, Function, boolean)
      */
     private void bindParameters(final PreparedStatement statement, final List<SQLParam> paramGroup)
@@ -1793,7 +1796,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 if (value != null) {
                     return value;
                 }
-                return mapFunc;
+                return mapFunc.apply(option);
             };
         }
         return optionFunc;
@@ -1897,7 +1900,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         public final Object get(final int indexBasedZero) {
             this.recordMeta.checkIndex(indexBasedZero);
 
-            return getColumnValue(indexBasedZero, this.rawTypeArray[indexBasedZero]);
+            return readOneColumn(indexBasedZero, null, null);
         }
 
         @Nullable
@@ -1907,7 +1910,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 throw new NullPointerException();
             }
             this.recordMeta.checkIndex(indexBasedZero);
-            return getColumnValue(indexBasedZero, type);
+            return readOneColumn(indexBasedZero, type, null);
         }
 
         @SuppressWarnings("unchecked")
@@ -1924,11 +1927,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             if (type == null) {
                 type = this.rawTypeArray[indexBasedZero];
             }
+            DataType dataType = null;
             if (!columnClass.isAssignableFrom(type.javaType())) {
-                type = type.compatibleFor(this.dataTypeArray[indexBasedZero], columnClass);
+                dataType = this.dataTypeArray[indexBasedZero];
+                type = type.compatibleFor(dataType, columnClass);
                 this.compatibleTypeArray[indexBasedZero] = type;
             }
-            return (T) getColumnValue(indexBasedZero, type);
+            return (T) readOneColumn(indexBasedZero, type, dataType);
         }
 
 
@@ -1943,7 +1948,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final Object[] valueArray = new Object[length];
 
             for (int i = 0; i < length; i++) {
-                valueArray[i] = getColumnValue(i, typeArray[i]);
+                valueArray[i] = readOneColumn(i, typeArray[i], null);
             }
             return valueArray;
         }
@@ -1970,15 +1975,18 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
         @Nullable
-        private Object getColumnValue(final int indexBasedZero, final MappingType type) {
-            final ResultSet resultSet = this.resultSet;
-            if (resultSet == null) {
-                throw new IllegalStateException("resultSet is null");
+        private Object readOneColumn(final int indexBasedZero, @Nullable MappingType type, @Nullable DataType dataType) {
+            if (dataType == null) {
+                dataType = this.dataTypeArray[indexBasedZero];
             }
 
-            try {
+            if (type == null) {
+                type = this.rawTypeArray[indexBasedZero];
+            }
+            final ResultSet resultSet = this.resultSet;
+            assert resultSet != null;
 
-                final DataType dataType = this.dataTypeArray[indexBasedZero];
+            try {
 
                 Object value;
                 value = this.executor.get(resultSet, indexBasedZero + 1, type, dataType);
@@ -1987,7 +1995,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                     return null;
                 }
 
-                // TODO field codec
+                // TODO 解密 ,脱敏
 
                 value = type.afterGet(dataType, this.executor.factory.mappingEnv, value);
                 if (value == MappingType.DOCUMENT_NULL_VALUE) {
@@ -1998,11 +2006,27 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 }
                 return value;
             } catch (Exception e) {
-                throw this.executor.handleException(e);
+                final DataAccessException error;
+                error = _Exceptions.columnGetError(indexBasedZero, getColumnLabel(indexBasedZero), e);
+                throw this.executor.handleException(error);
             }
         }
 
+
         private void acceptResultStates(@Nullable ResultStates states) {
+            if (states == null) {
+                return;
+            }
+            final Consumer<ResultStates> statesConsumer = this.consumer;
+            if (statesConsumer == null || statesConsumer == ResultStates.IGNORE_STATES || this.resultItemStream) {
+                return;
+            }
+
+            try {
+                statesConsumer.accept(states);
+            } catch (Exception e) {
+                throw _Exceptions.statesConsumerInvokeError(statesConsumer, e);
+            }
 
         }
 
@@ -2333,6 +2357,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 final Map<Option<?>, Object> optionMap = _Collections.hashMap();
                 optionMap.put(AFFECTED_ROWS, affectedRows);
                 optionMap.put(ROW_COUNT, rowCount);
+                optionMap.put(HAS_COLUMN, Boolean.TRUE);
 
                 this.executor.putExecutorOptions(this.statement.getWarnings(), optionMap);
 
@@ -2374,6 +2399,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 optionMap.put(AFFECTED_ROWS, affectedRows);
                 optionMap.put(ROW_COUNT, rowCount);
                 optionMap.put(HAS_MORE_RESULT, moreResult);
+                optionMap.put(HAS_COLUMN, Boolean.TRUE);
 
                 this.executor.putExecutorOptions(this.statement.getWarnings(), optionMap);
 
@@ -2414,6 +2440,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 optionMap.put(BATCH_SIZE, batchSize);
                 optionMap.put(BATCH_NO, batchNo);
+                optionMap.put(HAS_COLUMN, Boolean.TRUE);
 
                 this.executor.putExecutorOptions(this.statement.getWarnings(), optionMap);
 
@@ -2456,8 +2483,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
                 final Map<Option<?>, Object> optionMap = _Collections.hashMap();
                 optionMap.put(AFFECTED_ROWS, affectedRows);
-                optionMap.put(ROW_COUNT, fetchRows);
+                optionMap.put(ROW_COUNT, (long) fetchRows);
                 optionMap.put(HAS_MORE_FETCH, moreFetch); // not multi result
+                optionMap.put(HAS_COLUMN, Boolean.TRUE);
 
                 if (batchSize > 0) {
                     optionMap.put(BATCH_SIZE, batchSize);
@@ -2834,6 +2862,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             final Map<Option<?>, Object> map = _Collections.hashMap();
             map.put(ROW_COUNT, totalRowCount);
+            map.put(HAS_COLUMN, Boolean.TRUE);
             this.currentRecord.executor.putExecutorOptions(this.jdbcWarning, map);
 
             final ResultStates states;
@@ -3161,6 +3190,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             try {
                 final Map<Option<?>, Object> optionMap = _Collections.hashMap();
                 optionMap.put(ROW_COUNT, rowCount);
+                optionMap.put(HAS_COLUMN, Boolean.TRUE);
                 this.executor.putExecutorOptions(this.statement.getWarnings(), optionMap);
 
                 final ResultStates states;

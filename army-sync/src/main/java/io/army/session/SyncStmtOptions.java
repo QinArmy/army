@@ -139,22 +139,23 @@ abstract class SyncStmtOptions extends StmtOptions {
             if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
                 newOption = new OnlyStateConsumerOption(finalConsumer);
             } else {
-                newOption = new ArmySyncOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer);
+                newOption = new ArmySyncOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer, option.fetchSize());
             }
         } else if (finalConsumer == ResultStates.IGNORE_STATES) {
             if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
                 newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
             } else {
-                newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer);
+                newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer, option.fetchSize());
             }
         } else {
-            newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer);
+            newOption = new ArmySyncOverrideOption(option, timeout, startMillis, finalConsumer, option.fetchSize());
         }
         return newOption;
     }
 
 
-    static SyncStmtOption replaceStateConsumer(final SyncStmtOption option, final Consumer<ResultStates> consumer) {
+    static SyncStmtOption replaceStateConsumer(final SyncStmtOption option, final Consumer<ResultStates> consumer,
+                                               boolean dropFetchSize) {
         final Consumer<ResultStates> consumerOfUser, finalConsumer;
         consumerOfUser = option.stateConsumer();
         if (consumerOfUser == ResultStates.IGNORE_STATES) {
@@ -162,16 +163,24 @@ abstract class SyncStmtOptions extends StmtOptions {
         } else {
             finalConsumer = consumer.andThen(consumerOfUser);
         }
+        final int fetchSize;
+        if (dropFetchSize) {
+            fetchSize = 0;
+        } else {
+            fetchSize = option.fetchSize();
+        }
+
         final SyncStmtOption newOption;
         if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
             newOption = new OnlyStateConsumerOption(finalConsumer);
         } else if (option.isSupportTimeout()) {
-            newOption = new ArmySyncOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer);
+            newOption = new ArmySyncOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer, fetchSize);
         } else {
-            newOption = new ArmySyncOverrideOption(option, 0, 0L, finalConsumer);
+            newOption = new ArmySyncOverrideOption(option, 0, 0L, finalConsumer, fetchSize);
         }
         return newOption;
     }
+
 
 
     interface TransactionOverrideOption extends SyncStmtOption {
@@ -233,8 +242,8 @@ abstract class SyncStmtOptions extends StmtOptions {
         }
 
         private ArmySyncStmtOption(final SyncStmtOption option, int timeoutMillis, long startMills,
-                                   Consumer<ResultStates> consumer) {
-            super(option, timeoutMillis, startMills, consumer);
+                                   Consumer<ResultStates> consumer, int fetchSize) {
+            super(option, timeoutMillis, startMills, consumer, fetchSize);
 
             if (option instanceof ArmySyncStmtOption syncOption) {
                 this.splitSize = syncOption.splitSize;
@@ -299,8 +308,8 @@ abstract class SyncStmtOptions extends StmtOptions {
             implements TransactionOverrideOption {
 
         private ArmySyncOverrideOption(SyncStmtOption option, int timeoutMillis, long startMills,
-                                       Consumer<ResultStates> consumer) {
-            super(option, timeoutMillis, startMills, consumer);
+                                       Consumer<ResultStates> consumer, int fetchSize) {
+            super(option, timeoutMillis, startMills, consumer, fetchSize);
         }
 
 

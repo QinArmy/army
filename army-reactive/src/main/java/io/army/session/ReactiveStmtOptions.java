@@ -24,10 +24,10 @@ import io.army.transaction.TransactionInfo;
 
 import java.util.function.Consumer;
 
-abstract class ArmyReactiveStmtOptions extends StmtOptions {
+abstract class ReactiveStmtOptions extends StmtOptions {
 
 
-    private ArmyReactiveStmtOptions() {
+    private ReactiveStmtOptions() {
         throw new UnsupportedOperationException();
     }
 
@@ -102,7 +102,7 @@ abstract class ArmyReactiveStmtOptions extends StmtOptions {
         if (option == DEFAULT || option instanceof ReactiveTimeoutOption) {
             newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
         } else {
-            newOption = new ArmyTransactionTimeoutOption(option, timeout, startMillis, option.stateConsumer());
+            newOption = new ArmyTransactionTimeoutOption(option, timeout, startMillis, option.stateConsumer(), option.fetchSize());
         }
         return newOption;
     }
@@ -143,28 +143,44 @@ abstract class ArmyReactiveStmtOptions extends StmtOptions {
             if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
                 newOption = new OnlyStateConsumerOption(finalConsumer);
             } else {
-                newOption = new ArmyReactiveOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer);
+                newOption = new ArmyReactiveOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer, option.fetchSize());
             }
         } else if (finalConsumer == ResultStates.IGNORE_STATES) {
             if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
                 newOption = new OnlyTransactionTimeoutOption(timeout, startMillis);
             } else {
-                newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis, finalConsumer);
+                newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis, finalConsumer, option.fetchSize());
             }
         } else {
-            newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis, finalConsumer);
+            newOption = new ArmyReactiveOverrideOption(option, timeout, startMillis, finalConsumer, option.fetchSize());
         }
         return newOption;
     }
 
-    static ReactiveStmtOption replaceStateConsumer(final ReactiveStmtOption option, final Consumer<ResultStates> consumer) {
+    static ReactiveStmtOption replaceStateConsumer(final ReactiveStmtOption option,
+                                                   final Consumer<ResultStates> consumer,
+                                                   final boolean dropFetchSize) {
+        final Consumer<ResultStates> consumerOfUser, finalConsumer;
+        consumerOfUser = option.stateConsumer();
+        if (consumerOfUser == ResultStates.IGNORE_STATES) {
+            finalConsumer = consumer;
+        } else {
+            finalConsumer = consumer.andThen(consumerOfUser);
+        }
+        final int fetchSize;
+        if (dropFetchSize) {
+            fetchSize = 0;
+        } else {
+            fetchSize = option.fetchSize();
+        }
+
         final ReactiveStmtOption newOption;
         if (option == DEFAULT || option instanceof OnlyStateConsumerOption) {
-            newOption = new OnlyStateConsumerOption(consumer);
+            newOption = new OnlyStateConsumerOption(finalConsumer);
         } else if (option.isSupportTimeout()) {
-            newOption = new ArmyReactiveOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), consumer);
+            newOption = new ArmyReactiveOverrideOption(option, option.timeoutMillis(), option.startTimeMillis(), finalConsumer, fetchSize);
         } else {
-            newOption = new ArmyReactiveOverrideOption(option, 0, 0L, consumer);
+            newOption = new ArmyReactiveOverrideOption(option, 0, 0L, finalConsumer, fetchSize);
         }
         return newOption;
     }
@@ -253,8 +269,8 @@ abstract class ArmyReactiveStmtOptions extends StmtOptions {
             implements TransactionOverrideOption {
 
         private ArmyTransactionTimeoutOption(ReactiveStmtOption option, int timeoutMillis, long startMills,
-                                             Consumer<ResultStates> consumer) {
-            super(option, timeoutMillis, startMills, consumer);
+                                             Consumer<ResultStates> consumer, int fetchSize) {
+            super(option, timeoutMillis, startMills, consumer, fetchSize);
         }
 
 
@@ -341,7 +357,7 @@ abstract class ArmyReactiveStmtOptions extends StmtOptions {
         private static final OnlyPreferServerPrepareOption INSTANCE = new OnlyPreferServerPrepareOption();
 
         /**
-         * @see ArmyReactiveStmtOptions#preferServerPrepare(boolean)
+         * @see ReactiveStmtOptions#preferServerPrepare(boolean)
          */
         private OnlyPreferServerPrepareOption() {
         }
@@ -358,8 +374,8 @@ abstract class ArmyReactiveStmtOptions extends StmtOptions {
             implements TransactionOverrideOption {
 
         private ArmyReactiveOverrideOption(ReactiveStmtOption option, int timeoutMillis, long startMills,
-                                           Consumer<ResultStates> consumer) {
-            super(option, timeoutMillis, startMills, consumer);
+                                           Consumer<ResultStates> consumer, int fetchSize) {
+            super(option, timeoutMillis, startMills, consumer, fetchSize);
         }
 
 

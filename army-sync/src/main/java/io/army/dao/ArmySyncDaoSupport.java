@@ -93,8 +93,7 @@ public abstract class ArmySyncDaoSupport implements SyncDaoSupport {
                                               final Object fieldValue) {
         final Select stmt;
         stmt = SQLStmts.queryDomainByUniqueStmtFor(domainTable, fieldName, fieldValue);
-        return session.queryOneOptional(stmt, returnClass)
-                .orElse(null);
+        return session.queryOne(stmt, returnClass);
     }
 
 }

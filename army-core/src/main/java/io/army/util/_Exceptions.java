@@ -1271,6 +1271,11 @@ public abstract class _Exceptions {
         throw new DataAccessException(m);
     }
 
+    public static DataAccessException columnGetError(int indexBasedZero, String columnLabel, Throwable cause) {
+        String m = String.format("column[index(%s) , label (%s)] get error.", indexBasedZero, columnLabel);
+        return new DataAccessException(m, cause);
+    }
+
     public static NullPointerException terminatorIsNull() {
         return new NullPointerException("terminator is null");
     }
@@ -1365,9 +1370,9 @@ public abstract class _Exceptions {
         return new ArmyException(m);
     }
 
-    public static ArmyException statesConsumerInvokeError(Consumer<ResultStates> consumer) {
+    public static ArmyException statesConsumerInvokeError(Consumer<ResultStates> consumer, Throwable cause) {
         String m = String.format("%s Consumer %s throw error", ResultStates.class.getName(), consumer);
-        return new ArmyException(m);
+        return new ArmyException(m, cause);
     }
 
 

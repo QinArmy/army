@@ -891,22 +891,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         @Override
         public boolean isSupportInsertId() {
-            final boolean support;
-            final ServerMeta meta = (ServerMeta) this.optionFunc.apply(SERVER_META);
-            assert meta != null;
-            switch (meta.serverDatabase()) {
-                case PostgreSQL:
-                    support = meta.major() < 12;
-                    break;
-                case SQLite:
-                    support = false;
-                    break;
-                case MySQL:
-                case H2:
-                default:
-                    support = true;
-            }
-            return support;
+            return this.optionFunc.apply(LAST_INSERTED_ID) instanceof Long;
         }
 
         @Override

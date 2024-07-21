@@ -213,7 +213,11 @@ public class InsertTests extends SessionTestSupport {
             currentFetchRow = states.rowCount();
 
 
-            Assert.assertEquals(states.affectedRows(), currentFetchRow);
+            try {
+                Assert.assertEquals(states.affectedRows(), currentFetchRow);
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
             fetchRowHolder[0] += (int) currentFetchRow;
 
             if (currentFetchRow < fetchSize) {

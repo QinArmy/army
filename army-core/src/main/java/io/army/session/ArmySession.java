@@ -579,6 +579,12 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
         return domainTable;
     }
 
+    static <R> Function<? super CurrentRecord, R> insertRowFunc(GeneratedKeyStmt stmt,
+                                                                @Nullable Function<? super CurrentRecord, R> function) {
+        final InsertQueryRowReader<R> reader = new InsertQueryRowReader<>(stmt, function);
+        return reader::readOneRow;
+    }
+
 
     protected static ChildDmlNoTractionException updateChildNoTransaction() {
         return new ChildDmlNoTractionException("insert/update/delete child must in transaction.");
@@ -630,7 +636,7 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
     }
 
 
-    static final class InsertQueryRowReader<R> {
+    private static final class InsertQueryRowReader<R> {
 
         private final GeneratedKeyStmt stmt;
 
@@ -649,7 +655,7 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
 
         // private  final boolean oneRowWithConflict;
 
-        InsertQueryRowReader(GeneratedKeyStmt stmt, @Nullable Function<? super CurrentRecord, R> function) {
+        private InsertQueryRowReader(GeneratedKeyStmt stmt, @Nullable Function<? super CurrentRecord, R> function) {
             this.stmt = stmt;
             this.function = function;
             this.idField = stmt.idField();
@@ -663,7 +669,7 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
 
 
         @Nullable
-        R readOneRow(final CurrentRecord record) {
+        private R readOneRow(final CurrentRecord record) {
             final int rowIndex = this.rowIndex;
             if (rowIndex == this.rowSize) {
                 throw _Exceptions.insertedRowsAndGenerateIdNotMatch(this.rowSize, rowIndex + 1);
@@ -871,6 +877,7 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
 
 
     } // SecondRecordReader
+
 
     protected static final class SyncSecondRecordReader<R> extends SecondRecordReader<R> {
 
