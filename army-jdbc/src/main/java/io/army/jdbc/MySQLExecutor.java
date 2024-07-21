@@ -94,7 +94,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_tx_read_only">tx_read_only</a>
      */
     @Override
-    public final TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc) {
+    public final TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
         final String sql;
         final ServerMeta serverMeta = this.factory.serverMeta;
         if (serverMeta.meetsMinimum(8, 0, 3)
@@ -129,7 +129,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/set-transaction.html">SET TRANSACTION Statement</a>
      */
     @Override
-    public final void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
+    public final void setTransactionCharacteristics(final TransactionOption option, Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         final StringBuilder builder = new StringBuilder(30);
         builder.append("SET SESSION TRANSACTION ");
 
@@ -362,7 +362,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_tx_isolation">tx_isolation</a>
          */
         @Override
-        public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
+        public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode, Function<Option<?>, ?> sessionFunc) {
 
             final StringBuilder builder = new StringBuilder(168);
 
@@ -433,7 +433,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          */
         @Nullable
         @Override
-        public TransactionInfo commit(final Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo commit(final Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
             return commitOrRollback(true, optionFunc);
         }
 
@@ -442,7 +442,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          */
         @Nullable
         @Override
-        public TransactionInfo rollback(final Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo rollback(final Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
             return commitOrRollback(false, optionFunc);
         }
 

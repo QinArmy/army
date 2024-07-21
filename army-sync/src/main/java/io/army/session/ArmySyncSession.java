@@ -85,7 +85,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     @Override
     public final long sessionIdentifier() throws SessionException {
         if (this.factory.sessionIdentifierEnable) {
-            return this.executor.sessionIdentifier();
+            return this.executor.sessionIdentifier(Option.EMPTY_FUNC);
         }
         return 0L;
     }
@@ -117,7 +117,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             return info;
         }
         try {
-            return this.executor.transactionInfo();
+            return this.executor.transactionInfo(Option.EMPTY_FUNC);
         } catch (Exception e) {
             throw ArmySession.wrapSessionError(e);
         }
@@ -129,7 +129,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             throw _Exceptions.sessionClosed(this);
         }
         try {
-            return this.executor.sessionTransactionCharacteristics(Option.EMPTY_FUNC);
+            return this.executor.sessionTransactionCharacteristics(Option.EMPTY_FUNC, Option.EMPTY_FUNC);
         } catch (Exception e) {
             throw ArmySession.wrapSessionError(e);
         }
@@ -146,7 +146,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             return PSEUDO_SAVE_POINT;
         }
         try {
-            return this.executor.setSavePoint(optionFunc);
+            return this.executor.setSavePoint(optionFunc, Option.EMPTY_FUNC);
         } catch (Exception e) {
             throw wrapSessionError(e);
         }
@@ -161,7 +161,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     public final void releaseSavePoint(final Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (!inPseudoTransaction()) {
             try {
-                this.executor.releaseSavePoint(savepoint, optionFunc);
+                this.executor.releaseSavePoint(savepoint, optionFunc, Option.EMPTY_FUNC);
             } catch (Exception e) {
                 throw wrapSessionError(e);
             }
@@ -180,7 +180,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     public final void rollbackToSavePoint(final Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (!inPseudoTransaction()) {
             try {
-                this.executor.rollbackToSavePoint(savepoint, optionFunc);
+                this.executor.rollbackToSavePoint(savepoint, optionFunc, Option.EMPTY_FUNC);
             } catch (Exception e) {
                 throw wrapSessionError(e);
             }
@@ -195,7 +195,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        this.executor.setTransactionCharacteristics(option);
+        this.executor.setTransactionCharacteristics(option, Option.EMPTY_FUNC);
     }
 
 
@@ -736,7 +736,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             }
         } else {
             rowFunc = readerFunc.apply(secondStmt, true);  // here use secondStmt not firstStmt
-            states = this.executor.insert(firstStmt, option, ResultStates.class, Option.EMPTY_FUNC);
+            states = this.executor.update(firstStmt, option, ResultStates.class, Option.EMPTY_FUNC);
             if (states.affectedRows() == 0L) {
                 // exists conflict clause
                 return Stream.empty();
@@ -841,7 +841,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
         final R states;
 
         if (stmt instanceof SimpleStmt) {
-            states = this.executor.insert((SimpleStmt) stmt, option, resultClass, Option.EMPTY_FUNC);
+            states = this.executor.update((SimpleStmt) stmt, option, resultClass, Option.EMPTY_FUNC);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
         } else if (inTransaction()) {
@@ -849,7 +849,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             final PairStmt pairStmt = (PairStmt) stmt;
 
             final R parentStates;
-            parentStates = this.executor.insert(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_FUNC);
+            parentStates = this.executor.update(pairStmt.firstStmt(), option, resultClass, Option.EMPTY_FUNC);
 
             try {
                 final Function<Option<?>, ?> optionFunc;
@@ -858,7 +858,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
                 } else {
                     optionFunc = Option.EMPTY_FUNC;
                 }
-                states = this.executor.insert(pairStmt.secondStmt(), option, resultClass, optionFunc);
+                states = this.executor.update(pairStmt.secondStmt(), option, resultClass, optionFunc);
             } catch (Throwable e) {
                 throw _Exceptions.childInsertError(this, domainTable, e);
             }

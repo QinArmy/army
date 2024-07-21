@@ -118,7 +118,7 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
         final TransactionInfo info;
 
         if (option.isolation() != Isolation.PSEUDO) {
-            info = ((SyncRmExecutor) this.executor).start(xid, flags, option);
+            info = ((SyncRmExecutor) this.executor).start(xid, flags, option, Option.EMPTY_FUNC);
             assertTransactionInfo(info, option);
             assert xid.equals(info.valueOf(Option.XID));  // fail ,executor bug
             assert info.valueOf(Option.XA_STATES) == XaStates.ACTIVE;  // fail ,executor bug
@@ -173,7 +173,7 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
         if (lastInfo.isolation() == Isolation.PSEUDO) {
             info = TransactionInfo.pseudoEnd(lastInfo, flags);
         } else {
-            info = ((SyncRmExecutor) this.executor).end(infoXid, flags, optionFunc); // use infoXid
+            info = ((SyncRmExecutor) this.executor).end(infoXid, flags, optionFunc, Option.EMPTY_FUNC); // use infoXid
 
             assertXaEndTransactionInfo(lastInfo, flags, info);
         }
@@ -216,7 +216,7 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
         if (lastInfo.isolation() == Isolation.PSEUDO) {
             flags = XA_RDONLY;
         } else {
-            flags = ((SyncRmExecutor) this.executor).prepare(infoXid, optionFunc); // use infoXid
+            flags = ((SyncRmExecutor) this.executor).prepare(infoXid, optionFunc, Option.EMPTY_FUNC); // use infoXid
 
         }
 
@@ -256,7 +256,7 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
             if (info != null && info.nonNullOf(Option.XID).equals(xid)) {
                 throw _Exceptions.xaTowPhaseXidConflict(xid);
             }
-            ((SyncRmExecutor) this.executor).commit(xid, flags, optionFunc); // use xid
+            ((SyncRmExecutor) this.executor).commit(xid, flags, optionFunc, Option.EMPTY_FUNC); // use xid
         } else if (info == null) {
             throw _Exceptions.noTransaction(this);
         } else if (!(infoXid = info.nonNullOf(Option.XID)).equals(xid)) {
@@ -271,7 +271,7 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
             this.rollbackOnly = false; // clear transactionInfo for one phase commit
         } else {  // one phase commit
 
-            ((SyncRmExecutor) this.executor).commit(infoXid, flags, optionFunc); // use infoXid
+            ((SyncRmExecutor) this.executor).commit(infoXid, flags, optionFunc, Option.EMPTY_FUNC); // use infoXid
             if (this.transactionInfo != info) {
                 throw new ConcurrentModificationException();
             }
@@ -300,14 +300,14 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
         final Xid infoXid;
 
         if (info == null || !((infoXid = info.nonNullOf(Option.XID)).equals(xid))) { // tow phase rollback
-            ((SyncRmExecutor) this.executor).rollback(xid, optionFunc);
+            ((SyncRmExecutor) this.executor).rollback(xid, optionFunc, Option.EMPTY_FUNC);
         } else if ((states = info.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, states);
         } else if (info.isolation() == Isolation.PSEUDO) { // one phase rollback pseudo transaction
             this.transactionInfo = null; // clear  for one phase rollback
             this.rollbackOnly = false; // clear  for one phase rollback
         } else {
-            ((SyncRmExecutor) this.executor).rollback(infoXid, optionFunc);  // use infoXid
+            ((SyncRmExecutor) this.executor).rollback(infoXid, optionFunc, Option.EMPTY_FUNC);  // use infoXid
             if (this.transactionInfo != info) {
                 throw new ConcurrentModificationException();
             }
@@ -334,7 +334,7 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
             throw new NullPointerException();
         }
 
-        ((SyncRmExecutor) this.executor).forget(xid, optionFunc);
+        ((SyncRmExecutor) this.executor).forget(xid, optionFunc, Option.EMPTY_FUNC);
 
     }
 
@@ -360,7 +360,7 @@ non-sealed class ArmySyncRmSession extends ArmySyncSession implements SyncRmSess
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        return ((SyncRmExecutor) this.executor).recover(flags, optionFunc, option);
+        return ((SyncRmExecutor) this.executor).recover(flags, optionFunc, option, Option.EMPTY_FUNC);
     }
 
     @Override

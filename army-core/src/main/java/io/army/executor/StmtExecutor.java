@@ -17,8 +17,11 @@
 package io.army.executor;
 
 
+import io.army.option.Option;
 import io.army.spec.CloseableSpec;
 import io.army.spec.OptionSpec;
+
+import java.util.function.Function;
 
 /**
  * <p>This interface representing executor or {@link io.army.stmt.Stmt}.
@@ -51,7 +54,7 @@ public interface StmtExecutor extends OptionSpec, DriverSpiHolder {
      * @return session identifier
      * @throws DataAccessException throw when underlying database session have closed.
      */
-    long sessionIdentifier() throws DataAccessException;
+    long sessionIdentifier(Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
 
     /**

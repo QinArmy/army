@@ -22,6 +22,7 @@ import io.army.executor.DataAccessException;
 import io.army.executor.ExecutorSupport;
 import io.army.executor.SyncLocalExecutor;
 import io.army.executor.SyncRmExecutor;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.option.Option;
 import io.army.sqltype.DataType;
@@ -35,7 +36,6 @@ import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -84,7 +84,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalExecutor {
 
 
     @Override
-    public TransactionInfo sessionTransactionCharacteristics(final Function<Option<?>, ?> optionFunc)
+    public TransactionInfo sessionTransactionCharacteristics(final Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException {
 
         final Isolation isolationLevel;
@@ -97,7 +97,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalExecutor {
 
 
     @Override
-    public void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
+    public void setTransactionCharacteristics(final TransactionOption option, Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         final Isolation isolation;
         isolation = option.isolation();
 
@@ -112,7 +112,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalExecutor {
      * @see <a href="https://www.sqlite.org/lang_transaction.html">BEGIN Transaction</a>
      */
     @Override
-    public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
+    public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode, Function<Option<?>, ?> sessionFunc) {
         final StringBuilder builder = new StringBuilder(168);
         int stmtCount = 0;
         if (inTransaction()) {
@@ -190,7 +190,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalExecutor {
 
     @Nullable
     @Override
-    public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+    public TransactionInfo commit(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
         executeSimpleStaticStatement(COMMIT, LOG);
         this.transactionInfo = null;
         return null;
@@ -198,7 +198,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalExecutor {
 
     @Nullable
     @Override
-    public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+    public TransactionInfo rollback(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
         executeSimpleStaticStatement(ROLLBACK, LOG);
         this.transactionInfo = null;
         return null;

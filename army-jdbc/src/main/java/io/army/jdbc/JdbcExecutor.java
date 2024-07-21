@@ -110,7 +110,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     @Override
-    public final long sessionIdentifier() throws DataAccessException {
+    public final long sessionIdentifier(Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         return this.identifier;
     }
 
@@ -146,17 +146,17 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     @Override
-    public final TransactionInfo transactionInfo() throws DataAccessException {
+    public final TransactionInfo transactionInfo(Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         final TransactionInfo info;
         info = obtainTransaction();
         if (info != null) {
             return info;
         }
-        return sessionTransactionCharacteristics(Option.EMPTY_FUNC);
+        return sessionTransactionCharacteristics(Option.EMPTY_FUNC, sessionFunc);
     }
 
     @Override
-    public final Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException {
+    public final Object setSavePoint(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         final Object name;
         if (optionFunc == Option.EMPTY_FUNC) {
             name = null;
@@ -178,7 +178,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     @Override
-    public final void releaseSavePoint(final Object savepoint, final Function<Option<?>, ?> optionFunc)
+    public final void releaseSavePoint(final Object savepoint, final Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException {
 
         if (!(savepoint instanceof Savepoint)) {
@@ -194,7 +194,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     @Override
-    public final void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc)
+    public final void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException {
         if (!(savepoint instanceof Savepoint)) {
             throw _Exceptions.unknownSavePoint(savepoint);
@@ -332,8 +332,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
             statement = this.conn.prepareStatement(stmt.sqlText());
 
-            // return new JdbcBatchQuery(true, this, stmt, option, sessionFunc, statement);
-            throw new UnsupportedOperationException();
+            return new JdbcBatchQuery(true, this, stmt, option, sessionFunc, statement);
         } catch (Exception e) {
             closeResource(statement);
             throw handleException(e);

@@ -320,7 +320,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
             throw _Exceptions.sessionClosed(this);
         }
         try {
-            return this.executor.sessionIdentifier();
+            return this.executor.sessionIdentifier(Option.EMPTY_FUNC);
         } catch (Exception e) {
             throw (RuntimeException) handleExecutionError(e);
         }

@@ -74,19 +74,19 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
      * @throws DataAccessException throw when underlying database session have closed
      */
     @Override
-    long sessionIdentifier() throws DataAccessException;
+    long sessionIdentifier(Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
-    TransactionInfo transactionInfo() throws DataAccessException;
+    TransactionInfo transactionInfo(Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
-    TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
-    void setTransactionCharacteristics(TransactionOption option) throws DataAccessException;
+    void setTransactionCharacteristics(TransactionOption option, Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
-    Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    Object setSavePoint(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
-    void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
-    void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
 
     <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> sessionFunc)
@@ -121,13 +121,13 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
      */
     interface LocalTransactionSpec {
 
-        TransactionInfo startTransaction(TransactionOption option, HandleMode mode);
+        TransactionInfo startTransaction(TransactionOption option, HandleMode mode, Function<Option<?>, ?> sessionFunc);
 
         @Nullable
-        TransactionInfo commit(Function<Option<?>, ?> optionFunc);
+        TransactionInfo commit(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc);
 
         @Nullable
-        TransactionInfo rollback(Function<Option<?>, ?> optionFunc);
+        TransactionInfo rollback(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc);
 
     }
 

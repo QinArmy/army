@@ -150,7 +150,7 @@ non-sealed class ArmySyncLocalSession extends ArmySyncSession implements SyncLoc
         if (startPseudo) {
             info = TransactionInfo.pseudoLocal(option);
         } else {
-            info = ((SyncLocalExecutor) this.executor).startTransaction(option, mode);
+            info = ((SyncLocalExecutor) this.executor).startTransaction(option, mode, Option.EMPTY_FUNC);
             assertTransactionInfo(info, option);
         }
 
@@ -294,9 +294,9 @@ non-sealed class ArmySyncLocalSession extends ArmySyncSession implements SyncLoc
 
         final TransactionInfo newInfo;
         if (commit) {
-            newInfo = ((SyncLocalExecutor) this.executor).commit(optionFunc);
+            newInfo = ((SyncLocalExecutor) this.executor).commit(optionFunc, Option.EMPTY_FUNC);
         } else {
-            newInfo = ((SyncLocalExecutor) this.executor).rollback(optionFunc);
+            newInfo = ((SyncLocalExecutor) this.executor).rollback(optionFunc, Option.EMPTY_FUNC);
         }
 
         switch (database) {

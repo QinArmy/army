@@ -21,6 +21,7 @@ import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.env.SqlLogMode;
 import io.army.executor.*;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -61,7 +62,6 @@ import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
@@ -118,7 +118,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
 
 
     @Override
-    public final long sessionIdentifier() throws DataAccessException {
+    public final long sessionIdentifier(Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         try {
             return this.session.sessionIdentifier();
         } catch (Exception e) {

@@ -106,7 +106,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
      * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-DEFERRABLE">transaction_deferrable</a>
      */
     @Override
-    public final TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc) {
+    public final TransactionInfo sessionTransactionCharacteristics(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
         final StringBuilder builder = _StringUtils.builder()
                 .append("SHOW")
                 .append(_Constant.SPACE)
@@ -148,7 +148,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
      * @see <a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">SET TRANSACTION Statement</a>
      */
     @Override
-    public final void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
+    public final void setTransactionCharacteristics(final TransactionOption option, Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         final StringBuilder builder = new StringBuilder(35);
         builder.append("SET")
                 .append(_Constant.SPACE)
@@ -672,7 +672,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
 
     /**
-     * @see #sessionTransactionCharacteristics(Function)
+     * @see #sessionTransactionCharacteristics(Function, Function)
      */
     private static boolean readBooleanFromMultiResult(Statement statement) throws SQLException {
         if (!statement.getMoreResults()) {
@@ -718,7 +718,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a>
          */
         @Override
-        public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
+        public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode, Function<Option<?>, ?> sessionFunc) {
             final StringBuilder builder = new StringBuilder(168);
 
             int stmtCount = 0;
@@ -775,13 +775,13 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
         @Nullable
         @Override
-        public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo commit(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
             return commitOrRollback(true, optionFunc);
         }
 
         @Nullable
         @Override
-        public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+        public TransactionInfo rollback(Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
             return commitOrRollback(false, optionFunc);
         }
 
