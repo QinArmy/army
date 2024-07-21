@@ -22,6 +22,7 @@ import io.army.executor.DataAccessException;
 import io.army.executor.ExecutorSupport;
 import io.army.executor.SyncLocalExecutor;
 import io.army.executor.SyncRmExecutor;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.option.Option;
@@ -37,7 +38,6 @@ import io.army.util._StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -521,7 +521,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final TransactionInfo start(final Xid xid, final int flags, final TransactionOption option)
+        public final TransactionInfo start(final Xid xid, final int flags, final TransactionOption option, Function<Option<?>, ?> sessionFunc)
                 throws RmSessionException {
 
             if (this.transactionInfo != null) {
@@ -590,7 +590,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final TransactionInfo end(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+        public final TransactionInfo end(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
 
             final TransactionInfo info = this.transactionInfo;
 
@@ -626,7 +626,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
 
             final TransactionInfo info = this.transactionInfo;
 
@@ -666,7 +666,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+        public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
 
             if (((~commitSupportFlags()) & flags) != 0) {
                 throw _Exceptions.xaInvalidFlag(flags, "commit");
@@ -709,7 +709,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
          */
         @Override
-        public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) {
 
             final TransactionInfo info = this.transactionInfo;
 
@@ -742,12 +742,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException {
             throw _Exceptions.xaDontSupportForget(Database.MySQL);
         }
 
         @Override
-        public final Stream<Xid> recover(final int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
+        public final Stream<Xid> recover(final int flags, Function<Option<?>, ?> optionFunc, StreamOption option, Function<Option<?>, ?> sessionFunc) {
 
             if (((~recoverSupportFlags()) & flags) != 0) {
                 throw _Exceptions.xaInvalidFlag(flags, "recover");
@@ -756,7 +756,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             if ((flags & RmSession.TM_START_RSCAN) != 0) {
                 return Stream.empty();
             }
-            return jdbcRecover("XA RECOVER CONVERT XID", this::recordToXid, option);
+            return jdbcRecover("XA RECOVER CONVERT XID", this::recordToXid, option, sessionFunc);
         }
 
         @Override

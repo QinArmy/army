@@ -89,7 +89,7 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
     void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
 
-    <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
+    <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException;
 
     /**
@@ -99,16 +99,16 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
      * @return a unmodified list
      */
     List<Long> batchUpdateList(BatchStmt stmt, @Nullable IntFunction<List<Long>> listConstructor, SyncStmtOption option,
-                               @Nullable LongConsumer consumer, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+                               @Nullable LongConsumer consumer, Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
 
     Stream<ResultStates> batchUpdate(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
 
 
-    <R> Stream<R> query(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
+    <R> Stream<R> query(SingleSqlStmt stmt, Function<? super CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException;
 
-    SyncBatchQuery batchQuery(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc);
+    SyncBatchQuery batchQuery(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc);
 
 
     @Override
@@ -138,9 +138,9 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
      */
     interface XaTransactionSpec {
 
-        TransactionInfo start(Xid xid, int flags, TransactionOption option) throws RmSessionException;
+        TransactionInfo start(Xid xid, int flags, TransactionOption option, Function<Option<?>, ?> sessionFunc) throws RmSessionException;
 
-        TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException;
 
         /**
          * @param xid        target transaction xid
@@ -158,15 +158,15 @@ public interface SyncExecutor extends StmtExecutor, AutoCloseable {
          *                                <li>database server response error message</li>
          *                            </ol>
          */
-        int prepare(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        int prepare(Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException;
 
-        void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException;
 
-        void rollback(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        void rollback(Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException;
 
-        void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        void forget(Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException;
 
-        Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) throws RmSessionException;
+        Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option, Function<Option<?>, ?> sessionFunc) throws RmSessionException;
 
 
     }

@@ -1102,7 +1102,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotOneRow()) {
                 throw _Exceptions.cursorDirectionNotOneRow(direction);
             }
-            return executeFetchRecord(direction, null, function, consumer)
+            return executeFetchRecord(direction, null, function, consumer, false)
                     .reduce(StreamFunctions::atMostOne)
                     .orElse(null);
         }
@@ -1144,7 +1144,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotNoRowCount()) {
                 throw _Exceptions.cursorDirectionNoRowCount(direction);
             }
-            return executeFetchRecord(direction, null, function, consumer);
+            return executeFetchRecord(direction, null, function, consumer, false);
         }
 
         @Override
@@ -1152,7 +1152,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (direction.isNotSupportRowCount()) {
                 throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
             }
-            return executeFetchRecord(direction, count, function, consumer);
+            return executeFetchRecord(direction, count, function, consumer, false);
         }
 
         @Override
@@ -1161,7 +1161,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorDirectionNoRowCount(direction);
             }
             try {
-                return this.executor.executeCursorFetchResultItem(this.stmt, direction, null);
+                return executeFetchRecord(direction, null, CurrentRecord::asResultRecord, ResultStates.IGNORE_STATES, true);
             } catch (DriverException e) {
                 if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
                     this.cursorClosed = true;
@@ -1176,7 +1176,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
             }
             try {
-                return this.executor.executeCursorFetchResultItem(this.stmt, direction, count);
+                return executeFetchRecord(direction, count, CurrentRecord::asResultRecord, ResultStates.IGNORE_STATES, true);
             } catch (DriverException e) {
                 if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
                     this.cursorClosed = true;
@@ -1191,7 +1191,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorDirectionNoRowCount(direction);
             }
             try {
-                return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, null);
+                return this.executor.executeCursorMove(this, direction, null);
             } catch (DriverException e) {
                 if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
                     this.cursorClosed = true;
@@ -1206,7 +1206,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorDirectionDontSupportRowCount(direction);
             }
             try {
-                return this.executor.executeCursorMove(this.stmt.safeCursorName(), direction, count);
+                return this.executor.executeCursorMove(this, direction, count);
             } catch (DriverException e) {
                 if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
                     this.cursorClosed = true;
@@ -1239,7 +1239,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 return;
             }
             this.cursorClosed = true;
-            this.executor.executeCursorClose(this.stmt.safeCursorName());
+            this.executor.executeCursorClose(this);
         }
 
 
@@ -1262,7 +1262,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (rowFunc == null) {
                 this.classRowFunc = rowFunc = RowFunctions.classRowFunc(resultClass, this.stmt);
             }
-            return executeFetchRecord(direction, count, rowFunc, consumer);
+            return executeFetchRecord(direction, count, rowFunc, consumer, false);
         }
 
 
@@ -1285,11 +1285,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (rowFunc == null) {
                 this.objectRowFunc = rowFunc = RowFunctions.objectRowFunc(constructor, this.selectionList, true);
             }
-            return executeFetchRecord(direction, count, rowFunc, consumer);
+            return executeFetchRecord(direction, count, rowFunc, consumer, false);
         }
 
         private <R> Stream<R> executeFetchRecord(Direction direction, @Nullable Long count, @Nullable Function<? super CurrentRecord, R> function,
-                                                 @Nullable Consumer<ResultStates> consumer) {
+                                                 @Nullable Consumer<ResultStates> consumer, boolean resultItemStream) {
             if (function == null) {
                 throw new NullPointerException();
             } else if (consumer == null) {
@@ -1298,7 +1298,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 throw _Exceptions.cursorHaveClosed(this.name());
             }
             try {
-                return this.executor.executeCursorFetchRecord(this.stmt, direction, count, function, consumer);
+                return this.executor.executeCursorFetch(this, direction, count, function, consumer, resultItemStream);
             } catch (DriverException e) {
                 if (INVALID_CURSOR_NAME.equals(e.getSqlState())) {
                     this.cursorClosed = true;

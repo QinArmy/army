@@ -275,7 +275,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     @Override
     public final List<Long> batchUpdateList(BatchStmt stmt, @Nullable IntFunction<List<Long>> listConstructor, SyncStmtOption option,
-                                            @Nullable LongConsumer consumer, Function<Option<?>, ?> optionFunc)
+                                            @Nullable LongConsumer consumer, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException {
 
         final List<Long> resultList;
@@ -302,7 +302,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     @Override
     public final <R> Stream<R> query(SingleSqlStmt stmt, final @Nullable Function<? super CurrentRecord, R> function,
-                                     SyncStmtOption option, Function<Option<?>, ?> optionFunc)
+                                     SyncStmtOption option, Function<Option<?>, ?> sessionFunc)
             throws DataAccessException {
         if (function == null) {
             throw _Exceptions.recordMapFuncIsNull();
@@ -310,13 +310,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         try {
             final Stream<R> stream;
             if (stmt instanceof SimpleStmt) {
-                stream = executeSimpleQuery((SimpleStmt) stmt, option, function, optionFunc, false);
+                stream = executeSimpleQuery((SimpleStmt) stmt, option, function, sessionFunc, false);
             } else if (!(stmt instanceof BatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (option.isParseBatchAsMultiStmt()) {
-                stream = executeMultiStmtBatchQuery((BatchStmt) stmt, option, function, optionFunc);
+                stream = executeMultiStmtBatchQuery((BatchStmt) stmt, option, function, sessionFunc, false);
             } else {
-                stream = executeBatchQuery((BatchStmt) stmt, option, function);
+                stream = executeBatchQuery((BatchStmt) stmt, option, function, sessionFunc, false);
             }
             return stream;
         } catch (Exception e) {
@@ -326,13 +326,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
 
     @Override
-    public final SyncBatchQuery batchQuery(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> optionFunc) {
+    public final SyncBatchQuery batchQuery(BatchStmt stmt, SyncStmtOption option, Function<Option<?>, ?> sessionFunc) {
         PreparedStatement statement = null;
         try {
 
             statement = this.conn.prepareStatement(stmt.sqlText());
 
-            // return new JdbcBatchQuery(true, this, stmt, option, optionFunc, statement);
+            // return new JdbcBatchQuery(true, this, stmt, option, sessionFunc, statement);
             throw new UnsupportedOperationException();
         } catch (Exception e) {
             closeResource(statement);
@@ -552,7 +552,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-    final Stream<Xid> jdbcRecover(final String sql, Function<DataRecord, Xid> function, StreamOption option) {
+    final Stream<Xid> jdbcRecover(final String sql, Function<DataRecord, Xid> function, StreamOption option,
+                                  final Function<Option<?>, ?> sessionFunc) {
 
         printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
 
@@ -574,17 +575,16 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final DataType[] dataTypeArray;
             dataTypeArray = createSqlTypArray(resultSet.getMetaData());
 
-//            final XidRowSpliterator spliterator;
-//            spliterator = new XidRowSpliterator(this, option, statement, resultSet, dataTypeArray, function);
-//
-//            final Consumer<StreamCommander> consumer;
-//            consumer = option.commanderConsumer();
-//            if (consumer != null) {
-//                consumer.accept(spliterator::cancel);
-//            }
-//            return StreamSupport.stream(spliterator, false)
-//                    .onClose(spliterator::close);
-            throw new UnsupportedOperationException();
+            final XidRowSpliterator spliterator;
+            spliterator = new XidRowSpliterator(this, option, statement, resultSet, dataTypeArray, function, sessionFunc);
+
+            final Consumer<StreamCommander> consumer;
+            consumer = option.commanderConsumer();
+            if (consumer != null) {
+                consumer.accept(spliterator::cancel);
+            }
+            return StreamSupport.stream(spliterator, false)
+                    .onClose(spliterator::close);
         } catch (Exception e) {
             closeResultSetAndStatement(resultSet, statement);
             throw handleException(e);
@@ -833,33 +833,96 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
 
-    final ResultStates executeCursorMove(final String safeCursorName, final Direction direction, final @Nullable Long rowCount) {
+    final <R> Stream<R> executeCursorFetch(final JdbcStmtCursor stmtCursor,
+                                           final Direction direction, final @Nullable Long rowCount,
+                                           final @Nullable Function<? super CurrentRecord, R> function,
+                                           final @Nullable Consumer<ResultStates> consumer,
+                                           final boolean resultItemStream) {
+        if (function == null) {
+            throw _Exceptions.recordMapFuncIsNull();
+        } else if (consumer == null) {
+            throw _Exceptions.statesConsumerIsNull();
+        }
 
-        try (Statement statement = this.conn.createStatement()) {
+        ResultSet resultSet = null;
+        try {
 
             final String sql;
-            sql = parseCursorMove(safeCursorName, direction, rowCount);
+            sql = parseCursorFetch(stmtCursor.stmt.safeCursorName(), direction, rowCount);
 
             printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
 
-            final int rows;
-            rows = statement.executeUpdate(sql);
+            final Statement cursorStatement = stmtCursor.statement;
 
-            // return new SingleUpdateStates(1, putExecutorOptions(statement.getWarnings())::get, 0L, rows, false);
-            throw new UnsupportedOperationException();
+            cursorStatement.clearWarnings();
+
+            resultSet = cursorStatement.executeQuery(sql);
+
+            final ResultSetMetaData metaData;
+            metaData = resultSet.getMetaData();
+
+            final DataType[] dataTypeArray = stmtCursor.dataTypeArray;
+            readDataTypeArray(metaData, dataTypeArray);
+
+            final List<? extends Selection> selectionList = stmtCursor.selectionList;
+
+            final JdbcCurrentRecord<R> currentRecord;
+            currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function, consumer,
+                    metaData, resultItemStream);
+
+            final JdbcCursorRowSpliterator<R> spliterator;
+            spliterator = new JdbcCursorRowSpliterator<>(cursorStatement.getWarnings(), stmtCursor.stmtOption,
+                    resultSet, currentRecord, stmtCursor.sessionFunc);
+
+            return assembleStream(spliterator, stmtCursor.stmtOption);
+        } catch (Exception e) {
+            closeResource(resultSet);
+            throw handleException(e);
+        } catch (Error e) {
+            closeResource(resultSet);
+            throw e;
+        }
+
+    }
+
+
+    final ResultStates executeCursorMove(final JdbcStmtCursor stmtCursor, final Direction direction,
+                                         final @Nullable Long rowCount) {
+
+        try {
+
+            final String sql;
+            sql = parseCursorMove(stmtCursor.stmt.safeCursorName(), direction, rowCount);
+
+            printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
+
+            final Statement cursorStatement = stmtCursor.statement;
+            cursorStatement.clearWarnings();
+
+            final int affectedRows;
+            affectedRows = cursorStatement.executeUpdate(sql);
+
+            final Map<Option<?>, Object> map = _Collections.hashMap();
+            map.put(AFFECTED_ROWS, affectedRows);
+
+            return new JdbcResultStates(mergeOptionFunc(map, stmtCursor.sessionFunc));
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
-    final void executeCursorClose(final String safeCursorName) {
-        try (Statement statement = this.conn.createStatement()) {
+    final void executeCursorClose(final JdbcStmtCursor stmtCursor) {
+
+        try (Statement cursorStatement = stmtCursor.statement) {
             final String sql;
-            sql = parseCursorClose(safeCursorName);
+            sql = parseCursorClose(stmtCursor.safeName());
 
             printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
 
-            statement.executeUpdate(sql);
+            cursorStatement.clearWarnings();
+
+            cursorStatement.executeUpdate(sql);
+
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -896,80 +959,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             map.put(Option.IN_TRANSACTION, info.inTransaction());
             map.put(Option.READ_ONLY, info.isReadOnly());
         }
-    }
-
-    static Function<Option<?>, ?> mergeOptionFunc(final Map<Option<?>, Object> map,
-                                                  final Function<Option<?>, ?> sessionFunc) {
-        final Function<Option<?>, ?> mapFunc, optionFunc;
-        mapFunc = map::get;
-
-        if (sessionFunc == Option.EMPTY_FUNC) {
-            optionFunc = mapFunc;
-        } else {
-            optionFunc = option -> {
-                final Object value;
-                value = sessionFunc.apply(option);
-                if (value != null) {
-                    return value;
-                }
-                return mapFunc;
-            };
-        }
-        return optionFunc;
-    }
-
-
-    private <R> Stream<R> executeCursorFetch(final JdbcStmtCursor stmtCursor,
-                                             final Direction direction, final @Nullable Long rowCount,
-                                             final @Nullable Function<? super CurrentRecord, R> function,
-                                             final @Nullable Consumer<ResultStates> consumer,
-                                             final boolean resultItemStream) {
-        if (function == null) {
-            throw _Exceptions.recordMapFuncIsNull();
-        } else if (consumer == null) {
-            throw _Exceptions.statesConsumerIsNull();
-        }
-
-        ResultSet resultSet = null;
-        try {
-
-            final String sql;
-            sql = parseCursorFetch(stmtCursor.stmt.safeCursorName(), direction, rowCount);
-
-            printSqlIfNeed(this.factory, this.sessionName, getLogger(), sql);
-
-            final Statement cursorStatement = stmtCursor.statement;
-
-            cursorStatement.clearWarnings();
-
-            resultSet = cursorStatement.executeQuery(sql);
-
-            final ResultSetMetaData metaData;
-            metaData = resultSet.getMetaData();
-
-            final DataType[] dataTypeArray = stmtCursor.dataTypeArray;
-            readDataTypeArray(metaData, dataTypeArray);
-
-            final List<? extends Selection> selectionList = stmtCursor.selectionList;
-
-            final JdbcCurrentRecord<R> currentRecord;
-            currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function, consumer,
-                    metaData, resultItemStream);
-
-//            final JdbcCursorRowSpliterator<R> spliterator;
-//            spliterator = new JdbcCursorRowSpliterator<>(cursorStatement.getWarnings(), stmtCursor.stmtOption,
-//                    resultSet, currentRecord, stmtCursor.sessionFunc, resultItemStream);
-//
-//            return assembleStream(spliterator, stmtCursor.stmtOption);
-            throw new UnsupportedOperationException();
-        } catch (Exception e) {
-            closeResource(resultSet);
-            throw handleException(e);
-        } catch (Error e) {
-            closeResource(resultSet);
-            throw e;
-        }
-
     }
 
 
@@ -1336,7 +1325,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
     /**
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
-     * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function)
+     * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function, Function, boolean)
      */
     private void bindParameters(final PreparedStatement statement, final List<SQLParam> paramGroup)
             throws SQLException {
@@ -1569,11 +1558,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function,
                     option.stateConsumer(), metaData, resultItemStream);
 
-//            final JdbcSimpleSpliterator<R> spliterator;
-//            spliterator = new JdbcSimpleSpliterator<>(true, statement, resultSet, currentRecord, stmt, option, sessionFunc, false);
-//
-//            return assembleStream(spliterator, option);
-            throw new UnsupportedOperationException();
+            final JdbcSimpleSpliterator<R> spliterator;
+            spliterator = new JdbcSimpleSpliterator<>(true, statement, resultSet, currentRecord, stmt, option, sessionFunc);
+
+            return assembleStream(spliterator, option);
         } catch (Throwable e) {
             closeResultSetAndStatement(resultSet, statement);
             throw e;
@@ -1587,8 +1575,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      *
      * @see #query(SingleSqlStmt, Function, SyncStmtOption, Function)
      */
-    private <R> Stream<R> executeBatchQuery(BatchStmt stmt, SyncStmtOption option, Function<? super CurrentRecord, R> function)
-            throws SQLException {
+    private <R> Stream<R> executeBatchQuery(BatchStmt stmt, SyncStmtOption option,
+                                            Function<? super CurrentRecord, R> function,
+                                            final Function<Option<?>, ?> sessionFunc,
+                                            final boolean resultItemStream) throws SQLException {
 
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -1609,21 +1599,17 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final ResultSetMetaData metaData;
             metaData = resultSet.getMetaData();
 
-            final DataType[] dataTypeArray;
-            dataTypeArray = createSqlTypArray(metaData);
+            final DataType[] dataTypeArray = new DataType[selectionList.size()];
+            readDataTypeArray(metaData, dataTypeArray);
 
-            if (dataTypeArray.length != selectionList.size()) {
-                throw _Exceptions.columnCountAndSelectionCountNotMatch(dataTypeArray.length, selectionList.size());
-            }
+            final JdbcCurrentRecord<R> currentRecord;
+            currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function, option.stateConsumer(),
+                    metaData, resultItemStream);
 
-//            final JdbcCurrentRecord<R> rowReader;
-//            rowReader = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function, option.stateConsumer(), metaData);
-//
-//            final BatchRowSpliterator<R> spliterator;
-//            spliterator = new BatchRowSpliterator<>(statement, rowReader, stmt, option, resultSet, Option.EMPTY_FUNC);
-//
-//            return assembleStream(spliterator, option);
-            throw new UnsupportedOperationException();
+            final BatchRowSpliterator<R> spliterator;
+            spliterator = new BatchRowSpliterator<>(statement, currentRecord, stmt, option, resultSet, sessionFunc);
+
+            return assembleStream(spliterator, option);
         } catch (Throwable e) {
             closeResultSetAndStatement(resultSet, statement);
             throw e;
@@ -1637,7 +1623,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
      */
     private <R> Stream<R> executeMultiStmtBatchQuery(final BatchStmt stmt, SyncStmtOption option,
                                                      final Function<? super CurrentRecord, R> function,
-                                                     final Function<Option<?>, ?> optionFunc)
+                                                     final Function<Option<?>, ?> sessionFunc,
+                                                     final boolean resultItemStream)
             throws SQLException, TimeoutException {
 
         final List<List<SQLParam>> groupList = stmt.groupList();
@@ -1670,21 +1657,18 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
             final ResultSetMetaData metaData;
             metaData = resultSet.getMetaData();
 
-            final DataType[] dataTypeArray;
-            dataTypeArray = createSqlTypArray(metaData);
+            final DataType[] dataTypeArray = new DataType[selectionList.size()];
+            readDataTypeArray(metaData, dataTypeArray);
 
-            if (dataTypeArray.length != selectionList.size()) {
-                throw _Exceptions.columnCountAndSelectionCountNotMatch(dataTypeArray.length, selectionList.size());
-            }
+            final JdbcCurrentRecord<R> currentRecord;
+            currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function,
+                    option.stateConsumer(), metaData, resultItemStream);
 
-//            final JdbcCurrentRecord<R> currentRecord;
-//            currentRecord = new JdbcCurrentRecord<>(this, selectionList, dataTypeArray, function, option.stateConsumer(), metaData);
-//
-//            final MultiSmtBatchRowSpliterator<R> spliterator;
-//            spliterator = new MultiSmtBatchRowSpliterator<>(statement, currentRecord, stmt, option, resultSet, optionFunc);
-//
-//            return assembleStream(spliterator, option);
-            throw new UnsupportedOperationException();
+            final MultiSmtBatchRowSpliterator<R> spliterator;
+            spliterator = new MultiSmtBatchRowSpliterator<>(statement, currentRecord, stmt, option, resultSet,
+                    sessionFunc);
+
+            return assembleStream(spliterator, option);
         } catch (Throwable e) {
             closeResultSetAndStatement(resultSet, statement);
             throw e;
@@ -1801,6 +1785,26 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     /*-------------------below private static methods -------------------*/
+
+    private static Function<Option<?>, ?> mergeOptionFunc(final Map<Option<?>, Object> map,
+                                                          final Function<Option<?>, ?> sessionFunc) {
+        final Function<Option<?>, ?> mapFunc, optionFunc;
+        mapFunc = map::get;
+
+        if (sessionFunc == Option.EMPTY_FUNC) {
+            optionFunc = mapFunc;
+        } else {
+            optionFunc = option -> {
+                final Object value;
+                value = sessionFunc.apply(option);
+                if (value != null) {
+                    return value;
+                }
+                return mapFunc;
+            };
+        }
+        return optionFunc;
+    }
 
 
     private static NullPointerException actionIsNull() {
@@ -2270,7 +2274,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         }
 
 
-
         @SuppressWarnings("unchecked")
         final long readWithFetchSize(final ResultSet resultSet, final int batchSize, final int batchNo,
                                      final long totalRowCount, final JdbcCurrentRecord<R> currentRecord,
@@ -2718,9 +2721,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
 
         private int groupIndex = 1; // here from 1 not 0.
 
-        /**
-         * @see JdbcExecutor#executeBatchQuery(BatchStmt, SyncStmtOption, Function)
-         */
+
         private BatchRowSpliterator(PreparedStatement statement, JdbcCurrentRecord<R> rowReader,
                                     BatchStmt stmt, SyncStmtOption option, ResultSet resultSet,
                                     Function<Option<?>, ?> sessionFunc) {
@@ -2944,9 +2945,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
         private boolean canceled;
         private boolean closed;
 
-        /**
-         * @see JdbcExecutor#jdbcRecover(String, Function, StreamOption)
-         */
+
         private XidRowSpliterator(JdbcExecutor executor, StreamOption option, Statement statement, ResultSet resultSet,
                                   DataType[] dataTypeArray, Function<DataRecord, Xid> function,
                                   Function<Option<?>, ?> sessionFunc) throws SQLException {

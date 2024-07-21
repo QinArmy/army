@@ -22,6 +22,7 @@ import io.army.executor.DataAccessException;
 import io.army.executor.SyncExecutor;
 import io.army.executor.SyncLocalExecutor;
 import io.army.executor.SyncRmExecutor;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.option.Option;
 import io.army.result.DataRecord;
@@ -37,7 +38,6 @@ import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.army.lang.Nullable;
 import javax.sql.XAConnection;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -848,7 +848,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a>
          */
         @Override
-        public final TransactionInfo start(final Xid xid, final int flags, TransactionOption option)
+        public final TransactionInfo start(final Xid xid, final int flags, TransactionOption option, Function<Option<?>, ?> sessionFunc)
                 throws RmSessionException {
 
             final TransactionInfo info = this.transactionInfo;
@@ -886,7 +886,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final TransactionInfo end(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc)
+        public final TransactionInfo end(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc)
                 throws RmSessionException {
 
             final TransactionInfo info = this.transactionInfo;
@@ -912,7 +912,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/sql-prepare-transaction.html">PREPARE TRANSACTION</a>
          */
         @Override
-        public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException {
 
             final TransactionInfo info = this.transactionInfo;
 
@@ -950,7 +950,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/sql-commit.html">COMMIT</a>
          */
         @Override
-        public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc)
+        public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc)
                 throws RmSessionException {
 
             if (flags != RmSession.TM_ONE_PHASE && flags != RmSession.TM_NO_FLAGS) {
@@ -993,7 +993,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
          * @see <a href="https://www.postgresql.org/docs/current/sql-rollback.html">ROLLBACK</a>
          */
         @Override
-        public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException {
 
             final TransactionInfo info = this.transactionInfo;
 
@@ -1027,18 +1027,18 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc, Function<Option<?>, ?> sessionFunc) throws RmSessionException {
             throw _Exceptions.xaDontSupportForget(Database.PostgreSQL);
         }
 
         @Override
-        public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option)
+        public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option, Function<Option<?>, ?> sessionFunc)
                 throws RmSessionException {
 
             final Stream<Xid> stream;
             if (flags == RmSession.TM_END_RSCAN) {
                 final String sql = "SELECT gid FROM pg_prepared_xacts where database = current_database()";
-                stream = jdbcRecover(sql, this::recordToXid, option);
+                stream = jdbcRecover(sql, this::recordToXid, option, sessionFunc);
             } else if (flags == RmSession.TM_START_RSCAN) {
                 stream = Stream.empty();
             } else {
