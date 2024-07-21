@@ -99,7 +99,7 @@ non-sealed abstract class ArmyReactiveSession extends ArmySession<ArmyReactiveSe
         }
         boolean in;
         try {
-            in = this.executor.inTransaction();
+            in = this.executor.inTransaction(Option.EMPTY_FUNC);
         } catch (DataAccessException e) {
             final TransactionInfo info;
             info = obtainTransactionInfo();

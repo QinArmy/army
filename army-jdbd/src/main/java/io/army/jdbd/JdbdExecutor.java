@@ -127,7 +127,7 @@ abstract class JdbdExecutor extends JdbdExecutorSupport
     }
 
     @Override
-    public final boolean inTransaction() throws DataAccessException {
+    public final boolean inTransaction(Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         try {
             return this.session.inTransaction();
         } catch (JdbdException e) {

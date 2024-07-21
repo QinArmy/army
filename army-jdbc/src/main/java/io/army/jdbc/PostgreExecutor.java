@@ -136,7 +136,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             readOnly = readBooleanFromMultiResult(statement);
             deferrable = readBooleanFromMultiResult(statement);
 
-            return TransactionInfo.builder(inTransaction(), isolation, readOnly)
+            return TransactionInfo.builder(inTransaction(Option.EMPTY_FUNC), isolation, readOnly)
                     .option(DEFERRABLE, deferrable)
                     .build();
         } catch (Exception e) {

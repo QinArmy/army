@@ -367,7 +367,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final StringBuilder builder = new StringBuilder(168);
 
             int stmtCount = 0;
-            if (inTransaction()) {
+            if (inTransaction(Option.EMPTY_FUNC)) {
                 handleInTransaction(builder, mode);
                 stmtCount++;
             }

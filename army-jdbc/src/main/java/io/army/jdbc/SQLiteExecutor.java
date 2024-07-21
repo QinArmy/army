@@ -115,7 +115,7 @@ final class SQLiteExecutor extends JdbcExecutor implements SyncLocalExecutor {
     public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode, Function<Option<?>, ?> sessionFunc) {
         final StringBuilder builder = new StringBuilder(168);
         int stmtCount = 0;
-        if (inTransaction()) {
+        if (inTransaction(Option.EMPTY_FUNC)) {
             handleInTransaction(builder, mode);
             stmtCount++;
         }

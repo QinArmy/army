@@ -61,7 +61,7 @@ public interface StmtExecutor extends OptionSpec, DriverSpiHolder {
      * @return true : underlying database session in transaction block.
      * @throws DataAccessException throw when underlying database session have closed.
      */
-    boolean inTransaction() throws DataAccessException;
+    boolean inTransaction(Function<Option<?>, ?> sessionFunc) throws DataAccessException;
 
     boolean isSameFactory(StmtExecutor s);
 

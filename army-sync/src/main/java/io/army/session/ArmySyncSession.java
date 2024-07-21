@@ -102,7 +102,7 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
             return info != null && info.inTransaction();
         }
         // due to session open driver spi to application developer, TransactionInfo probably error.
-        return this.executor.inTransaction();
+        return this.executor.inTransaction(Option.EMPTY_FUNC);
     }
 
 

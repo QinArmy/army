@@ -115,7 +115,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
     }
 
     @Override
-    public final boolean inTransaction() throws DataAccessException {
+    public final boolean inTransaction(Function<Option<?>, ?> sessionFunc) throws DataAccessException {
         final TransactionInfo info;
         info = obtainTransaction();
         return info != null && info.inTransaction();
@@ -1307,7 +1307,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncExecutor 
                 if (this instanceof PostgreExecutor
                         && this.factory.postgreFetchSizeAutoCommit
                         && this.conn.getAutoCommit()
-                        && inTransaction()) {
+                        && inTransaction(Option.EMPTY_FUNC)) {
                     // see org.postgresql.core.QueryExecutor.QUERY_FORWARD_CURSOR
                     // see org.postgresql.jdbc.PgStatement.executeInternal()
                     this.conn.setAutoCommit(false); // postgre command ,see io.army.jdbc.PostgreExecutor.handleAutoCommitAfterTransactionEndForPostgreFetchSize()
