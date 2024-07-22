@@ -18,6 +18,7 @@ package io.army.session;
 
 import io.army.criteria.*;
 import io.army.executor.ServerException;
+import io.army.function.PageConstructor;
 import io.army.lang.Nullable;
 import io.army.option.Option;
 import io.army.result.*;
@@ -48,7 +49,8 @@ import java.util.stream.Stream;
  *
  * @since 0.6.0
  */
-public sealed interface SyncSession extends PackageSession, Closeable permits SyncLocalSession, SyncRmSession, ArmySyncSession {
+public sealed interface SyncSession extends PackageSession, Closeable
+        permits SyncLocalSession, SyncRmSession, ArmySyncSession {
 
 
     /**
@@ -449,6 +451,24 @@ public sealed interface SyncSession extends PackageSession, Closeable permits Sy
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
     <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
+
+    <T, R> R paging(PagingPair pagingPair, Class<T> rowClass, PageConstructor<T, R> pageConstructor);
+
+    <T, R> R paging(PagingPair pagingPair, Class<T> rowClass, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor);
+
+    <T, R> R paging(PagingPair pagingPair, Class<T> rowClass, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor, SyncStmtOption option);
+
+    <T, R> R pagingObject(PagingPair pagingPair, Supplier<T> constructor, PageConstructor<T, R> pageConstructor);
+
+    <T, R> R pagingObject(PagingPair pagingPair, Supplier<T> constructor, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor);
+
+    <T, R> R pagingObject(PagingPair pagingPair, Supplier<T> constructor, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor, SyncStmtOption option);
+
+    <T, R> R pagingRecord(PagingPair pagingPair, Function<? super CurrentRecord, T> function, PageConstructor<T, R> pageConstructor);
+
+    <T, R> R pagingRecord(PagingPair pagingPair, Function<? super CurrentRecord, T> function, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor);
+
+    <T, R> R pagingRecord(PagingPair pagingPair, Function<? super CurrentRecord, T> function, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor, SyncStmtOption option);
 
 
     long update(SimpleDmlStatement statement);

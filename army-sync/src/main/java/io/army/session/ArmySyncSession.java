@@ -22,6 +22,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.executor.DataAccessException;
 import io.army.executor.DriverSpiHolder;
 import io.army.executor.SyncExecutor;
+import io.army.function.PageConstructor;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -359,29 +360,48 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
     }
 
     @Override
-    public final <T> int save(T domain) {
-        return save(domain, LiteralMode.DEFAULT, SyncStmtOptions.DEFAULT);
+    public final <T, R> R paging(PagingPair pagingPair, Class<T> rowClass, PageConstructor<T, R> pageConstructor) {
+        return executePaging(pagingPair, classRowFunc(rowClass), pageConstructor, _Collections::arrayList, SyncStmtOptions.DEFAULT);
     }
 
     @Override
-    public final <T> int save(T domain, SyncStmtOption option) {
-        return save(domain, LiteralMode.DEFAULT, option);
+    public final <T, R> R paging(PagingPair pagingPair, Class<T> rowClass, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor) {
+        return executePaging(pagingPair, classRowFunc(rowClass), pageConstructor, listConstructor, SyncStmtOptions.DEFAULT);
     }
 
     @Override
-    public final <T> int save(T domain, LiteralMode literalMode) {
-        return save(domain, literalMode, SyncStmtOptions.DEFAULT);
+    public final <T, R> R paging(PagingPair pagingPair, Class<T> rowClass, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor, SyncStmtOption option) {
+        return executePaging(pagingPair, classRowFunc(rowClass), pageConstructor, listConstructor, option);
     }
 
     @Override
-    public final <T> int save(T domain, LiteralMode literalMode, SyncStmtOption option) {
-        final long rowCount;
-        rowCount = updateAsStates(SQLStmts.insertStmt(this, literalMode, domain), option)
-                .affectedRows();
-        if (rowCount > 1) { // TODO 有些方言在冲突可能大于 1
-            throw new DataAccessException(String.format("insert row count[%s] great than one ", rowCount));
-        }
-        return (int) rowCount;
+    public final <T, R> R pagingObject(PagingPair pagingPair, Supplier<T> constructor, PageConstructor<T, R> pageConstructor) {
+        return executePaging(pagingPair, constructorRowFunc(constructor), pageConstructor, _Collections::arrayList, SyncStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T, R> R pagingObject(PagingPair pagingPair, Supplier<T> constructor, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor) {
+        return executePaging(pagingPair, constructorRowFunc(constructor), pageConstructor, listConstructor, SyncStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T, R> R pagingObject(PagingPair pagingPair, Supplier<T> constructor, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor, SyncStmtOption option) {
+        return executePaging(pagingPair, constructorRowFunc(constructor), pageConstructor, listConstructor, option);
+    }
+
+    @Override
+    public final <T, R> R pagingRecord(PagingPair pagingPair, Function<? super CurrentRecord, T> function, PageConstructor<T, R> pageConstructor) {
+        return executePaging(pagingPair, recordRowFunc(function), pageConstructor, _Collections::arrayList, SyncStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T, R> R pagingRecord(PagingPair pagingPair, Function<? super CurrentRecord, T> function, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor) {
+        return executePaging(pagingPair, recordRowFunc(function), pageConstructor, listConstructor, SyncStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T, R> R pagingRecord(PagingPair pagingPair, Function<? super CurrentRecord, T> function, PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor, SyncStmtOption option) {
+        return executePaging(pagingPair, recordRowFunc(function), pageConstructor, listConstructor, option);
     }
 
     @Override
@@ -429,6 +449,33 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
                 ((_Statement) statement).clear();
             }
         }
+    }
+
+
+    @Override
+    public final <T> int save(T domain) {
+        return save(domain, LiteralMode.DEFAULT, SyncStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T> int save(T domain, SyncStmtOption option) {
+        return save(domain, LiteralMode.DEFAULT, option);
+    }
+
+    @Override
+    public final <T> int save(T domain, LiteralMode literalMode) {
+        return save(domain, literalMode, SyncStmtOptions.DEFAULT);
+    }
+
+    @Override
+    public final <T> int save(T domain, LiteralMode literalMode, SyncStmtOption option) {
+        final long rowCount;
+        rowCount = updateAsStates(SQLStmts.insertStmt(this, literalMode, domain), option)
+                .affectedRows();
+        if (rowCount > 1) { // TODO 有些方言在冲突可能大于 1
+            throw new DataAccessException(String.format("insert row count[%s] great than one ", rowCount));
+        }
+        return (int) rowCount;
     }
 
     @Override
@@ -654,13 +701,12 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
 
             final Stream<R> stream;
             if (stmt instanceof SingleSqlStmt) {
-                final Function<? super CurrentRecord, R> rowFunc;
+                final Function<? super CurrentRecord, R> function, rowFunc;
+                function = readerFunc.apply((SingleSqlStmt) stmt, true);
                 if (stmt instanceof GeneratedKeyStmt) {
-                    final Function<? super CurrentRecord, R> function;
-                    function = readerFunc.apply((SingleSqlStmt) stmt, true);
                     rowFunc = insertRowFunc((GeneratedKeyStmt) stmt, function);
                 } else {
-                    rowFunc = readerFunc.apply((SingleSqlStmt) stmt, true);
+                    rowFunc = function;
                 }
                 stream = this.executor.query((SingleSqlStmt) stmt, rowFunc, option, Option.EMPTY_FUNC);
             } else if (!(stmt instanceof PairStmt)) {
@@ -998,6 +1044,12 @@ non-sealed abstract class ArmySyncSession extends ArmySession<ArmySyncSessionFac
                 ((_Statement) statement).clear();
             }
         }
+    }
+
+    private <T, R> R executePaging(PagingPair pagingPair, RowFunction<T> readerFun,
+                                   PageConstructor<T, R> pageConstructor, Supplier<List<T>> listConstructor,
+                                   SyncStmtOption optionOfUser) {
+        throw new UnsupportedOperationException();
     }
 
 

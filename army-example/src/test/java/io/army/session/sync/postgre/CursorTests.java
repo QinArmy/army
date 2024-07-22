@@ -17,8 +17,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "localSessionProvider")
 public class CursorTests extends SessionTestSupport {
@@ -36,7 +35,7 @@ public class CursorTests extends SessionTestSupport {
                 .forSpace()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id.in(SQLs::rowParam, extractRegionIdList(regionList)))
+                .where(ChinaRegion_.id::in, SPACE, SQLs::rowLiteral, extractRegionIdList(regionList))
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::literal, regionList.size())
                 .asQuery()

@@ -521,16 +521,27 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
 
     /*-------------------below static method -------------------*/
 
-    protected static <R> ReaderFunction<R> constructorReaderFunc(final Supplier<R> constructor) {
+    static <R> ReaderFunction<R> constructorReaderFunc(final Supplier<R> constructor) {
         return (stmt, immutableMap) -> RowFunctions.objectRowFunc(constructor, stmt.selectionList(), immutableMap);
     }
 
-    protected static <R> ReaderFunction<R> classReaderFunc(final Class<R> resultClass) {
+    static <R> ReaderFunction<R> classReaderFunc(final Class<R> resultClass) {
         return (stmt, immutableMap) -> RowFunctions.classRowFunc(resultClass, stmt);
     }
 
+    static <R> RowFunction<R> classRowFunc(final Class<R> resultClass) {
+        return stmt -> RowFunctions.classRowFunc(resultClass, stmt);
+    }
 
-    protected static void assertTransactionInfo(final @Nullable TransactionInfo info, final TransactionOption option) {
+    static <R> RowFunction<R> constructorRowFunc(final Supplier<R> constructor) {
+        return stmt -> RowFunctions.objectRowFunc(constructor, stmt.selectionList(), true);
+    }
+
+    static <R> RowFunction<R> recordRowFunc(final Function<? super CurrentRecord, R> function) {
+        return stmt -> function;
+    }
+
+    static void assertTransactionInfo(final @Nullable TransactionInfo info, final TransactionOption option) {
         assert info != null;
 
         final Isolation isolation = option.isolation();
@@ -630,9 +641,16 @@ abstract class ArmySession<F extends ArmySessionFactory> implements PackageSessi
 
 
     @FunctionalInterface
-    protected interface ReaderFunction<R> {
+    interface ReaderFunction<R> {
 
         Function<? super CurrentRecord, R> apply(SingleSqlStmt stmt, boolean immutableMap);
+    }
+
+
+    @FunctionalInterface
+    interface RowFunction<R> {
+
+        Function<? super CurrentRecord, R> apply(SingleSqlStmt stmt);
     }
 
 
