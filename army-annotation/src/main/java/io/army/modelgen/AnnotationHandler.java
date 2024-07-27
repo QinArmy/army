@@ -340,10 +340,10 @@ final class AnnotationHandler {
                 if (!discriminatorField && !MetaUtils.hasText(column.comment())) {
                     noCommentError(className, field);
                 }
-                if (field.asType().getKind().isPrimitive()) {
-                    this.errorMsgList.add(String.format("Field %s.%s couldn't be primitive."
-                            , className, fieldName));
-                }
+//                if (field.asType().getKind().isPrimitive()) {
+//                    this.errorMsgList.add(String.format("Field %s.%s couldn't be primitive."
+//                            , className, fieldName));
+//                }
             }
         }
     }

@@ -27,6 +27,7 @@ import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -34,7 +35,6 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import io.army.lang.Nullable;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -219,6 +219,7 @@ public abstract class SQLs extends SQLSyntax {
 
     /*-------------------below literal -------------------*/
 
+    public static final LiteralExpression LITERAL_MINUS_1 = SQLs.literal(IntegerType.INSTANCE, -1);
 
     public static final LiteralExpression LITERAL_0 = SQLs.literal(IntegerType.INSTANCE, 0);
 
@@ -232,13 +233,19 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final LiteralExpression LITERAL_5 = SQLs.literal(IntegerType.INSTANCE, 5);
 
+    public static final LiteralExpression LITERAL_6 = SQLs.literal(IntegerType.INSTANCE, 6);
+
+    public static final LiteralExpression LITERAL_7 = SQLs.literal(IntegerType.INSTANCE, 7);
+
+    public static final LiteralExpression LITERAL_8 = SQLs.literal(IntegerType.INSTANCE, 8);
+
+    public static final LiteralExpression LITERAL_9 = SQLs.literal(IntegerType.INSTANCE, 9);
+
     public static final LiteralExpression LITERAL_10 = SQLs.literal(IntegerType.INSTANCE, 10);
 
     public static final LiteralExpression LITERAL_100 = SQLs.literal(IntegerType.INSTANCE, 100);
 
     public static final LiteralExpression LITERAL_1000 = SQLs.literal(IntegerType.INSTANCE, 1000);
-
-    public static final LiteralExpression LITERAL_MINUS_1 = SQLs.literal(IntegerType.INSTANCE, -1);
 
     public static final LiteralExpression LITERAL_POINT_5 = SQLs.literal(DoubleType.INSTANCE, 0.5D);
 
@@ -258,6 +265,8 @@ public abstract class SQLs extends SQLSyntax {
 
     /*-------------------below const-------------------*/
 
+    public static final LiteralExpression CONST_MINUS_1 = SQLs.constant(IntegerType.INSTANCE, -1);
+
     public static final LiteralExpression CONST_0 = SQLs.constant(IntegerType.INSTANCE, 0);
 
     public static final LiteralExpression CONST_1 = SQLs.constant(IntegerType.INSTANCE, 1);
@@ -270,13 +279,19 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final LiteralExpression CONST_5 = SQLs.constant(IntegerType.INSTANCE, 5);
 
+    public static final LiteralExpression CONST_6 = SQLs.constant(IntegerType.INSTANCE, 6);
+
+    public static final LiteralExpression CONST_7 = SQLs.constant(IntegerType.INSTANCE, 7);
+
+    public static final LiteralExpression CONST_8 = SQLs.constant(IntegerType.INSTANCE, 8);
+
+    public static final LiteralExpression CONST_9 = SQLs.constant(IntegerType.INSTANCE, 9);
+
     public static final LiteralExpression CONST_10 = SQLs.constant(IntegerType.INSTANCE, 10);
 
     public static final LiteralExpression CONST_100 = SQLs.constant(IntegerType.INSTANCE, 100);
 
     public static final LiteralExpression CONST_1000 = SQLs.constant(IntegerType.INSTANCE, 1000);
-
-    public static final LiteralExpression CONST_MINUS_1 = SQLs.constant(IntegerType.INSTANCE, -1);
 
     public static final LiteralExpression CONST_POINT_5 = SQLs.constant(DoubleType.INSTANCE, 0.5D);
 
@@ -298,6 +313,8 @@ public abstract class SQLs extends SQLSyntax {
 
     /*-------------------below param -------------------*/
 
+    public static final ParamExpression PARAM_MINUS_1 = SQLs.param(IntegerType.INSTANCE, -1);
+
     public static final ParamExpression PARAM_0 = SQLs.param(IntegerType.INSTANCE, 0);
 
     public static final ParamExpression PARAM_1 = SQLs.param(IntegerType.INSTANCE, 1);
@@ -308,13 +325,19 @@ public abstract class SQLs extends SQLSyntax {
 
     public static final ParamExpression PARAM_5 = SQLs.param(IntegerType.INSTANCE, 5);
 
+    public static final ParamExpression PARAM_6 = SQLs.param(IntegerType.INSTANCE, 6);
+
+    public static final ParamExpression PARAM_7 = SQLs.param(IntegerType.INSTANCE, 7);
+
+    public static final ParamExpression PARAM_8 = SQLs.param(IntegerType.INSTANCE, 8);
+
+    public static final ParamExpression PARAM_9 = SQLs.param(IntegerType.INSTANCE, 9);
+
     public static final ParamExpression PARAM_10 = SQLs.param(IntegerType.INSTANCE, 10);
 
     public static final ParamExpression PARAM_100 = SQLs.param(IntegerType.INSTANCE, 100);
 
     public static final ParamExpression PARAM_1000 = SQLs.param(IntegerType.INSTANCE, 1000);
-
-    public static final ParamExpression PARAM_MINUS_1 = SQLs.param(IntegerType.INSTANCE, -1);
 
     public static final ParamExpression PARAM_POINT_5 = SQLs.param(DoubleType.INSTANCE, 0.5D);
 

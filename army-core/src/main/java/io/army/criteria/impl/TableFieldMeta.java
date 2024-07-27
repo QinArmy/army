@@ -25,6 +25,7 @@ import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.generator.FieldGenerator;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.MultiGenericsMappingType;
 import io.army.meta.*;
@@ -32,7 +33,6 @@ import io.army.modelgen._MetaBridge;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
-import io.army.lang.Nullable;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
@@ -221,6 +221,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
             this.notNull = table.allColumnNotNull()
                     || _MetaBridge.RESERVED_FIELDS.contains(this.fieldName)
                     || isDiscriminator
+                    || field.getType().isPrimitive()
                     || column.notNull();
             this.defaultValue = column.defaultValue();
 
