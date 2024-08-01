@@ -26,7 +26,7 @@ import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -117,7 +117,7 @@ abstract class ContextStack {
             HOLDER.remove();
             //no bug,never here
             String m = String.format("outer context[%s] and current[%s] not match,reject push",
-                    outerContext, stack.peek());
+                    outerContext, stack.getLast());
             throw new IllegalArgumentException(m);
         }
 
@@ -263,7 +263,7 @@ abstract class ContextStack {
     private static void clearStackOnError(final CriteriaContext criteriaContext) {
         final Stack stack;
         stack = HOLDER.get();
-        if (stack != null && stack.peekLast() == criteriaContext) {
+        if (stack != null && stack.getLast() == criteriaContext) {
             HOLDER.remove();
             stack.clear();
         }
@@ -278,9 +278,10 @@ abstract class ContextStack {
     }
 
 
-    private static final class Stack extends LinkedList<CriteriaContext> {
+    private static final class Stack extends ArrayList<CriteriaContext> {
 
         private Stack(CriteriaContext root) {
+            super(5);
             this.addLast(root);
         }
 
