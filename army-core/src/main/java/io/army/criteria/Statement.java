@@ -21,11 +21,11 @@ import io.army.criteria.dialect.BatchReturningUpdate;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.function.*;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
-import io.army.lang.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.*;
@@ -1171,7 +1171,78 @@ public interface Statement extends Item {
     }
 
 
-    interface _QueryOffsetClause<R> {
+    interface _QueryLimitOffsetClause<R> {
+
+        R offset(Expression start);
+
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+         *                 </ul>
+         * @param start    non-negative integer
+         */
+        R offset(BiFunction<MappingType, Number, Expression> operator, long start);
+
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+         *                 </ul>
+         * @param supplier return non-negative integer
+         */
+        <N extends Number> R offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+         *                 </ul>
+         * @param function {@link Function#apply(Object)} return non-negative integer
+         * @param keyName  keyName that is passed to function
+         */
+        R offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+         *                 </ul>
+         * @param start    non-negative integer
+         */
+        R ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+         *                 </ul>
+         * @param supplier return non-negative integer
+         */
+        <N extends Number> R ifOffset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+         *                 </ul>
+         * @param function {@link Function#apply(Object)} return non-negative integer
+         * @param keyName  keyName that is passed to function
+         */
+        R ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+    }
+
+
+    interface _QueryFetchOffsetClause<R> {
 
         R offset(Expression start, SQLs.FetchRow row);
 

@@ -20,18 +20,19 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.BigDecimalType;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 
-import io.army.lang.Nullable;
 import java.util.function.*;
 
 @SuppressWarnings("unchecked")
 abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<OR, OD>
         implements Statement._LimitClause<LR>,
-        Statement._QueryOffsetClause<LO>,
+        Statement._QueryLimitOffsetClause<LF>,
+        Statement._QueryFetchOffsetClause<LO>,
         Statement._FetchPercentClause<LF>,
         Statement._DmlRowCountLimitClause<LR>,
         Statement._RowCountLimitAllClause<LR>,
@@ -223,12 +224,68 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         return (LR) this;
     }
 
+
+    @Override
+    public final LF offset(final @Nullable Expression start) {
+        if (start == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        this.offsetExp = (ArmyExpression) start;
+        this.offsetRow = null;
+        return (LF) this;
+    }
+
+    @Override
+    public final LF offset(BiFunction<MappingType, Number, Expression> operator, long start) {
+        return offset(operator.apply(LongType.INSTANCE, start));
+    }
+
+    @Override
+    public final <N extends Number> LF offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier) {
+        return offset(operator.apply(LongType.INSTANCE, supplier.get()));
+    }
+
+    @Override
+    public final LF offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        return offset(operator.apply(LongType.INSTANCE, function.apply(keyName)));
+    }
+
+    @Override
+    public final LF ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start) {
+        if (start != null) {
+            offset(operator.apply(LongType.INSTANCE, start));
+        }
+        return (LF) this;
+    }
+
+    @Override
+    public final <N extends Number> LF ifOffset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier) {
+        final N start;
+        start = supplier.get();
+        if (start != null) {
+            offset(operator.apply(LongType.INSTANCE, start));
+        }
+        return (LF) this;
+    }
+
+    @Override
+    public final LF ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        final Object start;
+        start = function.apply(keyName);
+        if (start != null) {
+            offset(operator.apply(LongType.INSTANCE, start));
+        }
+        return (LF) this;
+    }
+
+    /*-------------------below _QueryFetchOffsetClause methods-------------------*/
+
     @Override
     public final LO offset(final @Nullable Expression start, final SQLs.FetchRow row) {
         if (start == null) {
-            throw ContextStack.nullPointer(this.context);
+            throw ContextStack.clearStackAndNullPointer();
         } else if (row != SQLs.ROW && row != SQLs.ROWS) {
-            throw CriteriaUtils.unknownWords(this.context);
+            throw CriteriaUtils.unknownWords(row);
         }
         this.offsetExp = (ArmyExpression) start;
         this.offsetRow = (SQLWords) row;

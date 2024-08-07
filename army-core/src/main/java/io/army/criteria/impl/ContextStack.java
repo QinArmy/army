@@ -109,7 +109,7 @@ abstract class ContextStack {
             //no bug,never here
             throw new IllegalArgumentException("exists outer context,but no stack.");
         } else if (outerContext == stack.getLast()) {
-            stack.addLast(context);
+            stack.add(context);
             if (LOG.isTraceEnabled()) {
                 LOG.trace("push {}", context);
             }
@@ -282,7 +282,7 @@ abstract class ContextStack {
 
         private Stack(CriteriaContext root) {
             super(5);
-            this.addLast(root);
+            add(root);
         }
 
     }//Stack

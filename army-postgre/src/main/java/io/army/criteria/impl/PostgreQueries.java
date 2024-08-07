@@ -23,13 +23,13 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
 import io.army.dialect._Constant;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import io.army.lang.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -60,7 +60,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._WindowSpec<I>,
         PostgreQuery._OrderByCommaSpec<I>,
         PostgreQuery._LimitSpec<I>,
-        PostgreQuery._OffsetSpec<I>,
+        PostgreQuery._LimitOffsetSpec<I>,
         PostgreQuery._FetchSpec<I>,
         PostgreQuery._LockSpec<I>,
         PostgreQuery._QueryWithComplexSpec<I>>
@@ -77,6 +77,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._WindowCommaSpec<I>,
         PostgreQuery._GroupByCommaSpec<I>,
         PostgreQuery._OrderByCommaSpec<I>,
+        PostgreQuery._LimitOffsetSpec<I>,
         PostgreQuery._FetchSpec<I> {
 
 
@@ -1027,14 +1028,14 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             PostgreQuery._UnionOrderBySpec<I>,
             PostgreQuery._UnionOrderByCommaSpec<I>,
             PostgreQuery._UnionLimitSpec<I>,
-            PostgreQuery._UnionOffsetSpec<I>,
+            _UnionLimitOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I>,
             Query._AsQueryClause<I>,
             PostgreQuery._QueryWithComplexSpec<I>>
             implements PostgreQuery._UnionOrderBySpec<I>,
             PostgreQuery._UnionOrderByCommaSpec<I>,
+            PostgreQuery._UnionLimitOffsetSpec<I>,
             PostgreQuery,
-            PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I> {
 
         private PostgreBracketQuery(ArmyStmtSpec spec) {

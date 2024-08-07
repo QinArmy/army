@@ -23,8 +23,8 @@ import io.army.criteria.Query;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
-
 import io.army.lang.Nullable;
+
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -53,12 +53,16 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>, _UnionFetchSpec<I> {
+    interface _UnionFetchOffsetSpec<I extends Item> extends _QueryFetchOffsetClause<_UnionFetchSpec<I>>, _UnionFetchSpec<I> {
 
 
     }
 
-    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionOffsetSpec<I>>, _UnionOffsetSpec<I> {
+    interface _UnionLimitOffsetSpec<I extends Item> extends _QueryLimitOffsetClause<_AsQueryClause<I>>, _AsQueryClause<I> {
+
+    }
+
+    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionLimitOffsetSpec<I>>, _UnionFetchOffsetSpec<I> {
 
     }
 
@@ -126,14 +130,19 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-
-    interface _OffsetSpec<I extends Item> extends _QueryOffsetClause<_FetchSpec<I>>, _LockSpec<I> {
+    interface _FetchOffsetSpec<I extends Item> extends _QueryFetchOffsetClause<_FetchSpec<I>>, _LockSpec<I> {
 
 
     }
 
 
-    interface _LimitSpec<I extends Item> extends _RowCountLimitAllClause<_OffsetSpec<I>>, _OffsetSpec<I> {
+    interface _LimitOffsetSpec<I extends Item> extends _QueryLimitOffsetClause<_LockSpec<I>>, _LockSpec<I> {
+
+
+    }
+
+
+    interface _LimitSpec<I extends Item> extends _RowCountLimitAllClause<_LimitOffsetSpec<I>>, _FetchOffsetSpec<I> {
 
     }
 

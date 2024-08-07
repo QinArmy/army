@@ -127,7 +127,7 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
 
-    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>
+    interface _UnionOffsetSpec<I extends Item> extends _QueryFetchOffsetClause<_UnionFetchSpec<I>>
             , _UnionLockSpec<I> {
 
     }
@@ -180,7 +180,7 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
 
-    interface _OffsetSpec<I extends Item> extends _QueryOffsetClause<_FetchSpec<I>>
+    interface _OffsetSpec<I extends Item> extends _QueryFetchOffsetClause<_FetchSpec<I>>
             , _LockSpec<I> {
 
     }

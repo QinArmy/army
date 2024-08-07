@@ -38,7 +38,7 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
-    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>, _UnionFetchSpec<I> {
+    interface _UnionOffsetSpec<I extends Item> extends _QueryFetchOffsetClause<_UnionFetchSpec<I>>, _UnionFetchSpec<I> {
 
     }
 
@@ -66,7 +66,7 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
-    interface _OffsetSpec<I extends Item> extends _QueryOffsetClause<_FetchSpec<I>>, _FetchSpec<I> {
+    interface _OffsetSpec<I extends Item> extends _QueryFetchOffsetClause<_FetchSpec<I>>, _FetchSpec<I> {
 
     }
 
